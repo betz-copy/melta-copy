@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
@@ -25,7 +25,6 @@ const ComponentToPrint = React.forwardRef<
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
-        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showSummary: boolean;
@@ -34,17 +33,7 @@ const ComponentToPrint = React.forwardRef<
     }
 >(
     (
-        {
-            processTemplate,
-            processInstance,
-            options,
-            filesToPrint,
-            setSelectedFiles,
-            mutateAsync,
-            setCurrProcessInstance,
-            setIsProcessChanged,
-            setFilesLoadingStatus,
-        },
+        { processTemplate, processInstance, options, filesToPrint, mutateAsync, setCurrProcessInstance, setIsProcessChanged, setFilesLoadingStatus },
         ref,
     ) => {
         const theme = useTheme();
@@ -52,14 +41,23 @@ const ComponentToPrint = React.forwardRef<
         const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
         return (
-            <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+            <Box ref={ref} margin="20px" width="750px" style={{ direction: 'rtl' }}>
                 {options.showSummary && (
-                    <Box sx={{ minHeight: '1000px' }}>
-                        <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
-                    </Box>
+                    <>
+                        <Box sx={{ minHeight: '1000px' }}>
+                            <ProcessSummary isPrinting processInstance={processInstance} processTemplate={processTemplate} />
+                        </Box>
+                        {processTemplate.steps.length > 6 && <Divider sx={{ paddingY: '50px' }} />}
+                    </>
                 )}
                 <Grid style={{ pageBreakInside: 'avoid' }}>
-                    <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1} width="700px">
+                    <Grid style={{ textAlign: 'left', padding: '15px' }}>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
+                            'en-UK',
+                        )}`}</Typography>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
+                    </Grid>
+                    <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                         <Box display="flex" alignItems="center" justifyItems="flex-end">
                             <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                 {processInstance.name}
@@ -73,15 +71,9 @@ const ComponentToPrint = React.forwardRef<
                                 {processTemplate.displayName}
                             </Typography>
                         </Box>
-                        <Box display="flex" alignItems="center" justifyItems="flex-start" gap="10px">
-                            <Grid style={{ textAlign: 'left', width: '100%' }}>
-                                <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
-                                    'en-UK',
-                                )}`}</Typography>
-                                <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
-                            </Grid>
-                            <Grid width="5px">
-                                <ProcessStatus instance={processInstance} />
+                        <Box display="flex" alignItems="center" justifyItems="flex-start">
+                            <Grid>
+                                <ProcessStatus instance={processInstance} isPrinting />
                             </Grid>
                         </Box>
                     </Box>
@@ -90,31 +82,21 @@ const ComponentToPrint = React.forwardRef<
                 {processInstance.steps.map((stepInstance, index) => {
                     const stepTemplate = getStepTemplateByStepInstance(stepInstance, processTemplate);
                     return (
-                        <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`}>
-                            <Box
-                                paddingBottom="0.4rem"
-                                display="flex"
-                                justifyContent="space-between"
-                                alignItems="center"
-                                marginTop={5}
-                                marginBottom={1}
-                                width="700px"
-                            >
-                                <Box display="flex" alignItems="center">
+                        <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`} marginTop={5}>
+                            <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
+                                <Box display="flex" alignItems="center" justifyItems="flex-end">
                                     <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
                                         {stepTemplate.displayName}
                                     </Typography>
-
                                     <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
                                         /
                                     </Typography>
-
                                     <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
                                         {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
                                     </Typography>
                                 </Box>
-                                <Grid width="5px">
-                                    <ProcessStatus instance={processInstance} />
+                                <Grid>
+                                    <ProcessStatus instance={stepInstance} isPrinting />
                                 </Grid>
                             </Box>
                             <StepComponentToPrint
@@ -139,15 +121,19 @@ const ComponentToPrint = React.forwardRef<
                 })}
                 {options.showFiles && (
                     <>
-                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
-                            <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                        <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '27%' }}>
+                            <BlueTitle
+                                title={i18next.t('entityPage.print.accompanyingFiles')}
+                                component="h2"
+                                variant="h2"
+                                style={{ marginTop: '2rem' }}
+                            />
                         </Grid>
                         {filesToPrint.map((file) => {
                             return (
                                 <FileToPrint
                                     file={file}
                                     key={`${file.id}-${file.contentType}`}
-                                    setSelectedFiles={setSelectedFiles}
                                     onPreviewLoadingFinished={() => {
                                         setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
                                     }}

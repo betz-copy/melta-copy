@@ -59,7 +59,6 @@ const Print: React.FC<{
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selectedConnections}
                     filesToPrint={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
@@ -68,14 +67,13 @@ const Print: React.FC<{
                 <PrintOptionsDialog
                     open={openModal}
                     entityConnections={{
-                        expandedEntity,
                         connectionsTemplates,
                         selectedConnections,
                         setSelectedConnections,
                         categoriesWithConnectionsTemplates,
                     }}
-                    instanceProperties={expandedEntity.entity.properties}
-                    templateProperties={entityTemplate}
+                    instance={expandedEntity}
+                    template={entityTemplate}
                     handleClose={handleClose}
                     files={files}
                     setFiles={setFiles}

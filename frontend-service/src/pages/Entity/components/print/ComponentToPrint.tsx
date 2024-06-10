@@ -17,7 +17,6 @@ const ComponentToPrint = React.forwardRef<
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
-        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showDate: boolean;
@@ -27,7 +26,7 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles, setFilesLoadingStatus }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setFilesLoadingStatus }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -56,7 +55,6 @@ const ComponentToPrint = React.forwardRef<
                     entityTemplate={entityTemplate}
                     entity={expandedEntity.entity}
                     showPreviewPropertiesOnly={options.showPreviewPropertiesOnly}
-                    files={filesToPrint}
                 />
             </Grid>
             {connectionsTemplatesToPrint.length !== 0 && (
@@ -139,15 +137,19 @@ const ComponentToPrint = React.forwardRef<
             )}
             {options.showEntityFiles && (
                 <>
-                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '37.5%' }}>
-                        <BlueTitle title={i18next.t('entityPage.print.appendices')} component="h2" variant="h2" style={{ marginTop: '2rem' }} />
+                    <Grid sx={{ width: '100%', height: '100%', paddingY: '55%', paddingX: '27%' }}>
+                        <BlueTitle
+                            title={i18next.t('entityPage.print.accompanyingFiles')}
+                            component="h2"
+                            variant="h2"
+                            style={{ marginTop: '2rem' }}
+                        />
                     </Grid>
                     {filesToPrint.map((file) => {
                         return (
                             <FileToPrint
                                 file={file}
                                 key={`${file.id}-${file.contentType}`}
-                                setSelectedFiles={setSelectedFiles}
                                 onPreviewLoadingFinished={() => {
                                     setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
                                 }}

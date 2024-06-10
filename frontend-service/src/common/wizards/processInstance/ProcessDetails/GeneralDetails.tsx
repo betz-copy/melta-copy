@@ -21,6 +21,7 @@ import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { TextAreaProperty } from '../ProcessSteps/processStep';
+import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
 export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {
     const schema = pickProcessFieldsPropertiesSchema(values.template.details);
@@ -31,20 +32,19 @@ export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, s
             title: property.title,
         }));
 
-    const textAreaValues = textAreaSchema.map((property) => {
-        const value =
-            values.details[property.key]
-                ?.replace(/<\/?p>/g, '')
-                .replace(/<br>/g, '\n')
-                .replace(/&nbsp;/g, '') || '';
-        return { ...property, value };
+    const textAreaValues = textAreaSchema.flatMap((property) => {
+        if (values.details[property.key]) {
+            const value = renderHTML(values.details[property.key]);
+            return [{ ...property, value }];
+        }
+        return [{ ...property }];
     });
 
     return (
         <Box paddingTop={0.5} paddingLeft={1}>
             <BlueTitle
                 title={i18next.t('wizard.entityTemplate.properties')}
-                style={{ marginTop: toPrint ? '30px' : '' }}
+                style={{ marginTop: toPrint ? '30px' : undefined }}
                 component="h6"
                 variant="h6"
             />
@@ -310,9 +310,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 InputLabelProps={{
                                                     shrink: viewMode || undefined,
                                                 }}
-                                                onChange={(e) => {
-                                                    setFieldValue('name', e.target.value);
-                                                }}
+                                                onChange={(e) => setFieldValue('name', e.target.value)}
                                                 helperText={touched.name ? errors.name : ''}
                                                 error={touched.name && Boolean(errors.name)}
                                                 onBlur={handleBlur}
@@ -408,7 +406,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                             overflowY: 'auto',
                                             paddingLeft: toPrint ? 0 : 3,
                                         }}
-                                        xs={toPrint ? 0 : 7}
+                                        xs={toPrint ? 15 : 7}
                                     >
                                         {Object.keys(pickProcessFieldsPropertiesSchema(values.template.details).properties).length !== 0 && (
                                             <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />

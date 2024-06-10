@@ -7,15 +7,13 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 import { RootState } from '../../../../store';
-import { IFile } from '../../../../interfaces/preview';
 
 const EntityComponentToPrint: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
     options?: { showDates?: boolean };
     showPreviewPropertiesOnly?: boolean;
-    files?: IFile[];
-}> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly, files }) => {
+}> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly }) => {
     const theme = useTheme();
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
@@ -28,7 +26,6 @@ const EntityComponentToPrint: React.FC<{
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly={showPreviewPropertiesOnly}
-                    files={files}
                     mode="normal"
                     textWrap
                     isPrintingMode

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { isImage } from '../FilePreview/PreviewDialog';
@@ -10,34 +10,18 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
+    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     onPreviewLoadingFinished: () => void;
-}> = ({ file, setSelectedFiles, onPreviewLoadingFinished }) => {
+}> = ({ file, setFiles, onPreviewLoadingFinished }) => {
     const [numOfPages, setNumOfPages] = useState(0);
     const fileRef = useRef<HTMLDivElement>(null);
-    const [currentPage, setCurrentPage] = useState(1);
-    const currentPageRef = useRef(currentPage);
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
 
-    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
+    const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
     };
-
-    React.useEffect(() => {
-        setSelectedFiles((prevFilesToPrint) => {
-            return prevFilesToPrint.map((currFile) => {
-                if (currFile.id === file.id) {
-                    return {
-                        ...currFile,
-                        refetch,
-                    };
-                }
-                return currFile;
-            });
-        });
-    }, []);
 
     React.useEffect(() => {
         if (isImage(file.contentType) && isPreviewLoading === false) {
@@ -45,31 +29,10 @@ const FileToPrint: React.FC<{
         }
     }, [isPreviewLoading === true]);
 
-    useEffect(() => {
-        const handleScroll = async () => {
-            if (fileRef.current) {
-                const pageHeight = fileRef.current.scrollHeight / numOfPages;
-                const scrolledPage = Math.floor(fileRef.current.scrollTop / pageHeight) + 1;
-                currentPageRef.current = scrolledPage;
-            }
-        };
-
-        const container = fileRef.current;
-        container?.addEventListener('scroll', handleScroll);
-        return () => container?.removeEventListener('scroll', handleScroll);
-    }, [numOfPages]);
-
-    useEffect(() => {
-        if (file) {
-            setCurrentPage(1);
-            currentPageRef.current = 1;
+    React.useEffect(() => {
+        if (noSuchKeyError) {
         }
-        setNumOfPages(0);
-    }, [file]);
-
-    useEffect(() => {
-        currentPageRef.current = currentPage;
-    }, [currentPage]);
+    });
 
     return (
         <Grid item ref={fileRef}>

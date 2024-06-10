@@ -6,15 +6,15 @@ import { toast } from 'react-toastify';
 import { SelectCheckbox } from '../SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
-import { IEntityExpanded } from '../../interfaces/entities';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
 import { isUnsupported, isVideoOrAudio } from '../FilePreview/PreviewDialog';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IProcessDetails } from '../../interfaces/processes/processTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
+import { IEntityExpanded } from '../../interfaces/entities';
 
 type IOption = {
     show: boolean;
@@ -22,14 +22,29 @@ type IOption = {
     label: string;
 };
 
-export const getFilesFromTemplate = (template: any, instance: any): IFile[] => {
-    return Object.keys(template.properties)
+const getFilesFromTemplate = (
+    instanceProperties:
+        | {
+              properties: {
+                  _id: string;
+                  createdAt: string;
+                  updatedAt: string;
+                  disabled: boolean;
+              } & Record<string, any>;
+          }
+        | InstanceProperties,
+    templateProperties:
+        | { type: 'object'; properties: Record<string, IEntitySingleProperty>; required: string[]; hide: string[] }
+        | {
+              type: 'object';
+              properties: Record<string, IProcessSingleProperty>;
+              required: string[];
+          },
+): IFile[] => {
+    return Object.keys(templateProperties.properties)
         .flatMap((propertyKey) => {
-            const propertySchema = template.properties[propertyKey];
-            const propertyValue = instance[propertyKey];
-            console.log({ propertyKey });
-            console.log({ propertySchema });
-            console.log({ propertyValue });
+            const propertySchema = templateProperties.properties[propertyKey];
+            const propertyValue = instanceProperties[propertyKey];
 
             if (propertyValue) {
                 if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
@@ -41,38 +56,29 @@ export const getFilesFromTemplate = (template: any, instance: any): IFile[] => {
         .filter((file) => file !== undefined) as IFile[];
 };
 
-export const handlePrintError = async (selectedFiles: IFile[], setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>) => {
-    const refetchPromises = selectedFiles.map((file) => {
-        if (file.refetch) return file.refetch();
-        return undefined;
-    });
+// const handlePrintError = async (selectedFiles: IFile[], setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>) => {
+//     const refetchPromises = selectedFiles.map((file) => {
+//         if (file.refetch) return file.refetch();
+//         return undefined;
+//     });
 
-    const arrRefetch = await Promise.all(refetchPromises);
-    try {
-        arrRefetch.forEach((refetch) => {
-            if (!refetch) return;
-            if (refetch.isError) throw new Error('Refetch error');
-        });
-    } catch {
-        setSelectedFiles([]);
-        toast.error(i18next.t('errorPage.filePrintError'));
-    }
-};
+//     const arrRefetch = await Promise.all(refetchPromises);
+//     try {
+//         arrRefetch.forEach((refetch) => {
+//             if (!refetch) return;
+//             if (refetch.isError) throw new Error('Refetch error');
+//         });
+//     } catch {
+//         setSelectedFiles([]);
+//         toast.error(i18next.t('errorPage.filePrintError'));
+//     }
+// };
 
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    instanceProperties:
-        | {
-              properties: {
-                  _id: string;
-                  createdAt: string;
-                  updatedAt: string;
-                  disabled: boolean;
-              } & Record<string, any>;
-          }
-        | InstanceProperties;
-    templateProperties: IMongoEntityTemplatePopulated | IProcessDetails;
+    template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
+    instance: IEntityExpanded | IMongoProcessInstancePopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
@@ -80,7 +86,6 @@ const PrintOptionsDialog: React.FC<{
     filesLoadingStatus: {};
     setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
     entityConnections?: {
-        expandedEntity: IEntityExpanded;
         connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
         selectedConnections: IConnectionTemplateOfExpandedEntity[];
         setSelectedConnections: React.Dispatch<React.SetStateAction<IConnectionTemplateOfExpandedEntity[]>>;
@@ -103,8 +108,8 @@ const PrintOptionsDialog: React.FC<{
 }> = ({
     open,
     handleClose,
-    instanceProperties,
-    templateProperties,
+    template,
+    instance,
     entityConnections,
     files,
     setFiles,
@@ -118,18 +123,44 @@ const PrintOptionsDialog: React.FC<{
     const [isLoading, setIsLoading] = React.useState(false);
 
     const getPropertiesFiles = React.useCallback((): IFile[] => {
-        console.log({ templateProperties });
-        console.log({ instanceProperties });
+        if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
+        return getFilesFromTemplate(
+            (instance as IMongoProcessInstancePopulated).details,
+            (template as IMongoProcessTemplatePopulated).details.properties,
+        );
+    }, [template, instance]);
 
-        return getFilesFromTemplate(templateProperties, instanceProperties);
-    }, [templateProperties, instanceProperties]);
+    const getProcessStepsFiles = React.useCallback((): IFile[] => {
+        if ('steps' in template && 'steps' in instance) {
+            return template.steps
+                .flatMap((stepTemplate) => {
+                    return instance.steps.flatMap((step) => {
+                        return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
+                            if (step.properties) {
+                                const propertySchema = stepTemplate.properties.properties[propertyKey];
+                                const propertyValue = step.properties[propertyKey];
+                                if (propertyValue) {
+                                    if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
+                                    if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
+                                        return propertyValue.map((id: string) => getFile(id));
+                                }
+                            }
+                            return [];
+                        });
+                    });
+                })
+                .filter((file) => file !== undefined) as IFile[];
+        }
+        return [];
+    }, [instance, template]);
 
     React.useEffect(() => {
-        const currFiles = getPropertiesFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType));
-        // .concat(getStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
+        const currFiles = getPropertiesFiles()
+            .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType))
+            .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
         setFiles(currFiles);
         setSelectedFiles([]);
-    }, [getPropertiesFiles, /* getStepsFiles, */ setFiles, setSelectedFiles]);
+    }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);
 
     React.useEffect(() => {
         setFilesLoadingStatus(
@@ -137,10 +168,7 @@ const PrintOptionsDialog: React.FC<{
                 return { ...acc, [file.id]: true };
             }, {}),
         );
-    }, [selectedFiles, setFilesLoadingStatus]);
-
-    React.useEffect(() => {
-        handlePrintError(selectedFiles, setSelectedFiles);
+        // handlePrintError(selectedFiles, setSelectedFiles);
     }, [selectedFiles]);
 
     React.useEffect(() => {
@@ -149,6 +177,13 @@ const PrintOptionsDialog: React.FC<{
             return;
         }
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
+        const error = Object.values(filesLoadingStatus).some((fileLoadingStatus) => {
+            return fileLoadingStatus === 404;
+        });
+        if (error) {
+            setIsLoading(false);
+            toast.error(i18next.t('entityPage.previewRefetch'));
+        }
     }, [filesLoadingStatus]);
 
     return (
@@ -166,7 +201,7 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px', height: '240px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && entityConnections.selectedConnections.length !== 0 && (
+                        {entityConnections && entityConnections.connectionsTemplates && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseRelationship')}
                                 options={entityConnections.connectionsTemplates}
@@ -186,7 +221,7 @@ const PrintOptionsDialog: React.FC<{
                                 }) => {
                                     if (
                                         !isExpandedEntityRelationshipSource &&
-                                        destinationEntityId === entityConnections.expandedEntity.entity.templateId
+                                        destinationEntityId === (instance as IEntityExpanded).entity.templateId
                                     ) {
                                         // special case to differentiate between outgoing/incoming relationships of relationshipTemplate that is of format expandedEntityTemplate -> expandedEntityTemplate
                                         return `${displayName} (${sourceEntityDisplayName} < ${destinationEntityDisplayName})`;
@@ -233,38 +268,6 @@ const PrintOptionsDialog: React.FC<{
                                 )
                             );
                         })}
-
-                        {/* <Grid>
-                            <FormControlLabel
-                                control={
-                                    <MeltaCheckbox
-                                        checked={options.showPreviewPropertiesOnly}
-                                        onChange={() => options.setShowPreviewPropertiesOnly((cur) => !cur)}
-                                    />
-                                }
-                                label={i18next.t('entityPage.print.showOnlyPreviewProperties')}
-                            />
-                        </Grid>
-                        <Grid>
-                            <FormControlLabel
-                                control={<MeltaCheckbox checked={options.showDate} onChange={() => options.setShowDate((cur) => !cur)} />}
-                                label={i18next.t('entityPage.print.showDate')}
-                            />
-                        </Grid>
-                        <Grid>
-                            <FormControlLabel
-                                control={<MeltaCheckbox checked={options.showDisabled} onChange={() => options.setShowDisabled((cur) => !cur)} />}
-                                label={i18next.t('entityPage.print.showDisabled')}
-                            />
-                        </Grid>
-                        <Grid>
-                            <FormControlLabel
-                                control={
-                                    <MeltaCheckbox checked={options.showEntityDates} onChange={() => options.setShowEntityDates((cur) => !cur)} />
-                                }
-                                label={i18next.t('entityPage.print.showEntityDates')}
-                            />
-                        </Grid> */}
                     </Grid>
                 </Grid>
             </DialogContent>

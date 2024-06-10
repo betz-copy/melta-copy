@@ -19,7 +19,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             size="small"
             toTopBar
             isDraggableDisabled
-            process
+            horizontalOrigin={178}
         />
     );
 };

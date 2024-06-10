@@ -120,7 +120,7 @@ export default {
             chooseRelationship: 'בחירת קשרים',
             chooseFiles: 'בחירת קבצים',
             printOptions: 'הגדרות הדפסה',
-            appendices: 'נספחים',
+            accompanyingFiles: 'קבצים נלווים',
         },
         previewRefetch: 'קובץ בתהליך עיבוד, נסה שוב מאוחר יותר',
     },

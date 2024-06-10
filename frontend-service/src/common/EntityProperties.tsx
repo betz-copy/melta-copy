@@ -58,7 +58,6 @@ interface IEntityPropertiesProps {
     properties: IEntity['properties'];
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
-    files?: IFile[];
     overridePropertiesToShow?: string[];
     removeFiles?: boolean;
     style?: CSSProperties;
@@ -73,7 +72,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     properties,
     mode,
     showPreviewPropertiesOnly = false,
-    files,
     overridePropertiesToShow,
     removeFiles = false,
     style,
@@ -85,13 +83,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) propertiesOrderedToShow = overridePropertiesToShow;
     else if (showPreviewPropertiesOnly) {
-        if (files) {
-            propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-                (propertyKey) =>
-                    entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
-            );
-        } else
-            propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
+            (propertyKey) =>
+                entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
+        );
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>

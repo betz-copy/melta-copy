@@ -125,7 +125,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                 </Grid>
             )}
 
-            <Grid item container alignItems={title ? 'center' : ''} justifyContent={title ? 'center' : ''} spacing={title ? 3 : 0}>
+            <Grid item container alignItems="center" justifyContent="center" spacing={title ? 3 : 0}>
                 {editStatus?.isEditMode ? (
                     <>
                         <StatusButton
@@ -177,14 +177,14 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
             {instance.reviewedAt && (
                 <Grid item container justifyContent="center">
                     <Grid item>
-                        <Typography fontSize="14px" style={{ textAlign: 'center' }}>
+                        <Typography fontSize={isPrinting && !title ? '12px' : '14px'} style={{ textAlign: 'center' }}>
                             {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
                         </Typography>
-                        <Typography fontSize="16px">{getLongDate(instance.reviewedAt)} </Typography>
+                        <Typography fontSize={isPrinting && !title ? '14px' : '16px'}>{getLongDate(instance.reviewedAt)} </Typography>
                     </Grid>
                     {(instance as IMongoStepInstancePopulated).reviewer && (
                         <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
-                            <span style={{ fontWeight: 'bold' }}>
+                            <span style={{ fontWeight: 'bold', fontSize: isPrinting && !title ? '14px' : undefined }}>
                                 {` ${
                                     currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
                                         ? i18next.t('wizard.processInstance.summary.byYou')

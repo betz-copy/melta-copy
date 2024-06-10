@@ -43,57 +43,13 @@ const Print: React.FC<{
         return `@page { margin: 15px 10px 15px 10px !important; }`;
     };
 
-    // const getProcessStepsFiles = React.useCallback((): IFile[] => {
-    //     return processTemplate.steps
-    //         .flatMap((stepTemplate) => {
-    //             return processInstance.steps.flatMap((step) => {
-    //                 return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
-    //                     if (step.properties) {
-    //                         const propertySchema = stepTemplate.properties.properties[propertyKey];
-    //                         const propertyValue = step.properties[propertyKey];
-    //                         if (propertyValue) {
-    //                             if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-    //                             if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-    //                                 return propertyValue.map((id: string) => getFile(id));
-    //                         }
-    //                     }
-    //                     return [];
-    //                 });
-    //             });
-    //         })
-    //         .filter((file) => file !== undefined) as IFile[];
-    // }, [processTemplate.steps, processInstance.steps]);
-
-    // const getProcessStepsFiles = React.useCallback(
-    //     (template, instance): IFile[] => {
-    //         return template.steps
-    //             .flatMap((stepTemplate) => {
-    //                 return instance.steps.flatMap((step) => {
-    //                     return stepTemplate.propertiesOrder.flatMap((propertyKey) => {
-    //                         if (step.properties) {
-    //                             const propertySchema = stepTemplate.properties.properties[propertyKey];
-    //                             const propertyValue = step.properties[propertyKey];
-    //                             if (propertyValue) {
-    //                                 if (propertySchema.format === 'fileId') return [getFile(propertyValue)];
-    //                                 if (propertySchema.type === 'array' && propertySchema.items?.format === 'fileId')
-    //                                     return propertyValue.map((id: string) => getFile(id));
-    //                             }
-    //                         }
-    //                         return [];
-    //                     });
-    //                 });
-    //             })
-    //             .filter((file) => file !== undefined) as IFile[];
-    //     },
-    //     [processTemplate.steps, processInstance.steps],
-    // );
-
     return (
         <>
             {isProcessCard ? (
                 <MenuButton
                     onClick={(e) => {
                         e.stopPropagation();
+                        e.preventDefault();
                         handleOpen();
                     }}
                     text={i18next.t('actions.print')}
@@ -115,7 +71,6 @@ const Print: React.FC<{
                     processInstance={processInstance}
                     options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
                     filesToPrint={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
                     mutateAsync={mutateAsync}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     setCurrProcessInstance={setCurrProcessInstance}
@@ -126,8 +81,8 @@ const Print: React.FC<{
                 <PrintOptionsDialog
                     open={openModal}
                     handleClose={handleClose}
-                    templateProperties={processTemplate.details}
-                    instanceProperties={processInstance.details}
+                    instance={processInstance}
+                    template={processTemplate}
                     files={files}
                     setFiles={setFiles}
                     selectedFiles={selectedFiles}

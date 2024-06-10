@@ -24,6 +24,7 @@ import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
 import { getStepValuesFromStepInstance } from './stepsFormik';
 import OpenPreview from '../../../FilePreview/OpenPreview';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
 export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
     if (!values.comments) {
@@ -42,13 +43,13 @@ export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstanc
 
 export const TextAreaProperty: FC<{
     textArea: {
-        value: any;
+        value?: any;
         key: string;
         title: string;
     };
 }> = ({ textArea }) => {
     return (
-        <Box key={textArea.key} marginTop={2}>
+        <Box key={textArea.key} marginY={2}>
             <InputLabel
                 style={{
                     fontFamily: 'Rubik',
@@ -84,7 +85,7 @@ export const TextAreaProperty: FC<{
                     borderBottom: '1px solid grey',
                 }}
             >
-                {textArea.value}
+                {textArea.value || ''}
             </Typography>
         </Box>
     );
@@ -170,13 +171,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                         title: property.title,
                     }));
 
-                const textAreaValues = textAreaSchema.map((property) => {
-                    const value =
-                        values.properties[property.key]
-                            ?.replace(/<\/?p>/g, '')
-                            .replace(/<br>/g, '\n')
-                            .replace(/&nbsp;/g, '') || '';
-                    return { ...property, value };
+                const textAreaValues = textAreaSchema.flatMap((property) => {
+                    if (values.properties[property.key]) {
+                        const value = renderHTML(values.properties[property.key]);
+                        return [{ ...property }];
+                    }
+                    return [{ ...property }];
                 });
 
                 return (
