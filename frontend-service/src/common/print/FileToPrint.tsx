@@ -10,18 +10,31 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     onPreviewLoadingFinished: () => void;
-}> = ({ file, setFiles, onPreviewLoadingFinished }) => {
+}> = ({ file, onPreviewLoadingFinished }) => {
     const [numOfPages, setNumOfPages] = useState(0);
     const fileRef = useRef<HTMLDivElement>(null);
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
 
-    const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
+    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
 
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
     };
+
+    // React.useEffect(() => {
+    //     setSelectedFiles((prevFilesToPrint) => {
+    //         return prevFilesToPrint.map((currFile) => {
+    //             if (currFile.id === file.id) {
+    //                 return {
+    //                     ...currFile,
+    //                     refetch,
+    //                 };
+    //             }
+    //             return currFile;
+    //         });
+    //     });
+    // }, []);
 
     React.useEffect(() => {
         if (isImage(file.contentType) && isPreviewLoading === false) {
@@ -29,10 +42,11 @@ const FileToPrint: React.FC<{
         }
     }, [isPreviewLoading === true]);
 
-    React.useEffect(() => {
-        if (noSuchKeyError) {
-        }
-    });
+    // React.useEffect(() => {
+    //     if (noSuchKeyError) {
+    //         onPreviewLoadingFinished();
+    //     }
+    // }, [noSuchKeyError, onPreviewLoadingFinished]);
 
     return (
         <Grid item ref={fileRef}>
@@ -59,9 +73,7 @@ const FileToPrint: React.FC<{
                                     width={750}
                                     pageNumber={i + 1}
                                     onRenderSuccess={() => {
-                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) {
-                                            onPreviewLoadingFinished();
-                                        }
+                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
                                     }}
                                     renderTextLayer={false}
                                 />
