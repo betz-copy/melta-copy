@@ -1,4 +1,4 @@
-export interface IFrameexport interface IFrame {
+export interface IFrame {
     name: string;
     url: string;
     categoryIds: string[];

@@ -1,4 +1,5 @@
 // import lodashIsEqual from 'lodash.isequal';
+import axios from 'axios';
 import { IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
 import { IFrame, IFramesService, IMongoIFrame, ISearchIFramesBody } from '../../externalServices/iFramesService';
 // import { InstanceManagerService } from '../../externalServices/instanceService';
@@ -6,6 +7,7 @@ import { IFrame, IFramesService, IMongoIFrame, ISearchIFramesBody } from '../../
 // import { ServiceError } from '../error';
 import { getAllowedCategoriesForInstances } from '../instances/middlewares';
 import { IPermissionsOfUser } from '../permissions/interfaces';
+
 
 export class IFrameManager {
     private static filterIFrameWithPermissions(iFrame: IMongoIFrame, allowedEntityTemplates: IMongoEntityTemplatePopulated[]) {
@@ -15,6 +17,20 @@ export class IFrameManager {
         console.log({ filteredIFrame });
 
         return filteredIFrame;
+    }
+
+    static async getExternalSiteById(req, res, next) {
+        const iFrame: IFrame = await this.getIFrameById(req.params.iFrameId);
+        const IFramesManagerProxy = createProxyMiddleware({
+            target: iFrame.url,
+            changeOrigin: true,
+            onProxyReq: (proxyReq, _req, _res) => {
+                // proxyReq.setHeader('Authorization', `Bearer ${iFrame.apiToken}`);
+                proxyReq.setHeader('Content-Type', 'application/json');
+            },
+            proxyTimeout: 1000,
+        });
+        IFramesManagerProxy(req, res, next);
     }
 
     static async searchIFrames(searchBody: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
@@ -29,7 +45,7 @@ export class IFrameManager {
         const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
 
         const iFrame = await IFramesService.getIFrameById(iFrameId);
-        return this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates);
+        // return this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates);
     }
 
     // private static doesRelationshipContainsEntityTemplate(

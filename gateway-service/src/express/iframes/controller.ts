@@ -1,22 +1,28 @@
 import { Request, Response } from 'express';
+import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { IFrameManager } from './manager';
 
 class IFrameController {
     static async searchIFrames(req: Request, res: Response) {
-        res.json(await IFrameManager.searchIFrames(req.body));
+        const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await IFrameManager.searchIFrames(body, permissionsOfUserId));
     }
 
     static async getIFrameById(req: Request, res: Response) {
+        const {
+            params: { iFrameId },
+            permissionsOfUserId,
+        } = req as RequestWithPermissionsOfUserId;
 
-        // res.json(await IFrameManager.getIFrameById(req.params.iFrameId));
+        res.json(await IFrameManager.getIFrameById(iFrameId, permissionsOfUserId));
     }
 
-    // static async getExternalSiteById(req: Request, res: Response) {
-    //     res.json(await IFrameManager.getExternalSiteById(req.params.iFrameId));
-    // }
+    static async getExternalSiteById(req: Request, res: Response) {
+        const {
+            params: { iFrameId },
+        } = req as RequestWithPermissionsOfUserId;
 
-    static async getAllIFrames(_req: Request, res: Response) {
-        res.json(await IFrameManager.getAllIFrames());
+        res.send(await IFrameManager.getExternalSiteById(req, res, next));
     }
 
     static async createIFrame(req: Request, res: Response) {
