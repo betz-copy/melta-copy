@@ -31,8 +31,6 @@ import { updateCategoryRequest } from '../../../services/templates/categoriesSer
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { environment } from '../../../globals';
-import { Wizard } from '../../../common/wizards';
-import { ChooseCategory } from '../../../common/wizards/entityTemplate/ChooseCategory';
 import { CodeEditorDialog } from './codeEditor';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
@@ -595,22 +593,11 @@ const EntityTemplatesRow: React.FC = () => {
                 </Grid>
             </DragDropContext>
             <EntityTemplateWizard
-                open={entityTemplateWizardDialogState.isWizardOpen || addActionsToEntityTemplateDialogState.isWizardOpen}
-                handleClose={() =>
-                    entityTemplateWizardDialogState.isWizardOpen
-                        ? setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })
-                        : setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })
-                }
-                initialValues={
-                    addActionsToEntityTemplateDialogState.isWizardOpen
-                        ? entityTemplateObjectToEntityTemplateForm(addActionsToEntityTemplateDialogState.entityTemplate)
-                        : entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)
-                }
-                isEditMode={
-                    Boolean(entityTemplateWizardDialogState.entityTemplate?._id) || Boolean(addActionsToEntityTemplateDialogState.entityTemplate?._id)
-                }
+                open={entityTemplateWizardDialogState.isWizardOpen}
+                handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
+                initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
+                isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
-                actionStepper={addActionsToEntityTemplateDialogState.isWizardOpen}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}
@@ -618,24 +605,11 @@ const EntityTemplatesRow: React.FC = () => {
                 onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
                 isLoading={deleteTemplateIsLoading}
             />
-
-            {/* <Wizard
+            <CodeEditorDialog
                 open={addActionsToEntityTemplateDialogState.isWizardOpen}
-                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplateId: null })}
-                title="add actions to entity"
-                initialValues={defaultEntityTemplatePopulated}
-                isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
-                initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
-                steps={[
-                    {
-                        label: i18next.t('wizard.entityTemplate.chooseCategroy'),
-                        // eslint-disable-next-line react/no-unstable-nested-components
-                        component: (props) => <ChooseCategory {...props} />,
-                    },
-                ]}
-                isLoading={false}
-                submitFucntion={console.log('hiii')}
-            /> */}
+                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+            />
         </Grid>
     );
 };

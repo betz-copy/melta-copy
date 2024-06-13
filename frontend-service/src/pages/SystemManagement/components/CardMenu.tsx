@@ -7,6 +7,7 @@ import {
     MoreVertOutlined as OptionsIcon,
     DoDisturbAlt as DisabledIcon,
     ContentCopy as DuplicateIcon,
+    ControlPoint as AddIcon,
 } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
@@ -18,7 +19,8 @@ export const CardMenu: React.FC<{
     disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick }) => {
+    onAddActionsClick?: MouseEventHandler;
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -63,6 +65,17 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.duplicate')}
                         icon={<DuplicateIcon color="action" />}
+                    />
+                )}
+
+                {onAddActionsClick && (
+                    <MenuButton
+                        onClick={(e) => {
+                            onAddActionsClick(e);
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.addActions')}
+                        icon={<AddIcon color="action" />}
                     />
                 )}
 

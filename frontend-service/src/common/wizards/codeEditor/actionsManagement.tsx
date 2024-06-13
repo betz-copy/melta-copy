@@ -4,25 +4,19 @@ import { Clear } from '@mui/icons-material';
 import i18next from 'i18next';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
-import { StepComponentProps } from '..';
 import { CodeEditor1 } from '../../inputs/CodeEditor';
-import { EntityTemplateWizardValues } from '../entityTemplate';
 import { AddIconWithText } from '../../AddIconWithText';
 import { generateInterface } from '../../../utils/jsonSchemToInterface-ts';
-import { AddActionWizardValues } from '.';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 
-const ActionManagement: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode'>> = ({
-    values,
-    touched,
-    errors,
-    handleChange,
-    setFieldValue,
-    isEditMode,
-}) => {
-    console.log({ values, touched, errors, handleChange, setFieldValue, isEditMode });
+const ActionManagement: React.FC<{
+    entityTemplate: IMongoEntityTemplatePopulated | null;
+    onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
+}> = ({ entityTemplate, onChange }) => {
     const [viewAction, setViewAction] = useState(true);
-    const entityName = values.name;
-    const entityProperties = values.properties;
+
+    const entityName = entityTemplate?.name;
+    const entityProperties = entityTemplate?.properties.properties;
 
     const handleEditorDidMount = (editorDefs: editor.IStandaloneCodeEditor, monaco: Monaco) => {
         // eslint-disable-next-line no-param-reassign
@@ -43,11 +37,8 @@ const ActionManagement: React.FC<StepComponentProps<EntityTemplateWizardValues, 
 
         // editorDefs.setPosition(new monaco.Position(3, 5));
 
-        // const sourceInterface = generateInterface(sourceProperties.properties, sourceEntityName);
-        // const destInterface = generateInterface(destProperties.properties, destinationEntityName);
-        const entityInterface = generateInterface(entityProperties, entityName);
+        const entityInterface = generateInterface(entityProperties!, entityName!);
         monaco.languages.typescript.typescriptDefaults.addExtraLib(entityInterface, 'ts:entity/x.d.ts');
-        // monaco.languages.typescript.typescriptDefaults.addExtraLib(sourceInterface, 'ts:dest/x.d.ts');
     };
 
     const defaultValue = [
@@ -70,23 +61,10 @@ const ActionManagement: React.FC<StepComponentProps<EntityTemplateWizardValues, 
                         }
                     />
                     <CardContent>
-                        {/* <Editor
-                            height="250px"
-                            width="800px"
-                            onChange={(_e, value) => setFieldValue('action', value || '')}
-                            defaultLanguage="typescript"
-                            defaultValue={defaultValue}
-                            onMount={handleEditorDidMount}
-                            // value={values.action}
-                            options={{
-                                minimap: { enabled: false },
-                                scrollbar: { handleMouseWheel: true },
-                            }}
-                        /> */}
                         <CodeEditor1
                             style={{ height: '250px', width: '800px' }}
                             language="typescript"
-                            onChange={(_e, value) => setFieldValue('action', value || '')}
+                            onChange={onChange}
                             onMount={handleEditorDidMount}
                             defaultValue={defaultValue}
                         />
@@ -94,12 +72,17 @@ const ActionManagement: React.FC<StepComponentProps<EntityTemplateWizardValues, 
                 </Card>
             ) : (
                 <AddIconWithText
-                    textStyle={{ display: 'flex', alignItems: 'center', fontSize: '14px', marginTop: '5px' }}
+                    textStyle={{
+                        display: 'flex',
+                        flexWrap: 'wrap',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        marginTop: '5px',
+                    }}
                     iconStyle={{ marginLeft: '11px' }}
                     text={i18next.t('wizard.relationshipTemplate.addAction')}
                     onClick={() => {
                         setViewAction(!viewAction);
-                        setFieldValue('action', undefined);
                     }}
                 />
             )}

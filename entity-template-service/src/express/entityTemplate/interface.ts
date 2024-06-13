@@ -1,3 +1,14 @@
+import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+
+export const options: TSESTreeOptions = {
+    comment: true,
+    tokens: true,
+    loc: true,
+    range: true,
+    errorOnUnknownASTType: true,
+    errorOnTypeScriptSyntacticAndSemanticIssues: true,
+    jsx: true,
+};
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
@@ -16,6 +27,7 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     uniqueItems?: true;
+    actions?: { originalCode: string; codeAST: AST<typeof options> }[];
 }
 
 export interface IProperties {

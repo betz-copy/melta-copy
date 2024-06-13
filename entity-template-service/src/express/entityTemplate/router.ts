@@ -9,11 +9,12 @@ import {
     createEntityTemplateSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    updateEntityTemplateActionSchema,
 } from './validator.schema';
 
 const entityTemplateRouter: Router = Router();
 
-entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateController.searchEntityTemplates));
+entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateControFller.searchEntityTemplates));
 
 entityTemplateRouter.get(
     '/:templateId',
@@ -30,6 +31,12 @@ entityTemplateRouter.delete(
 );
 
 entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), wrapController(EntityTemplateController.updateEntityTemplate));
+
+entityTemplateRouter.put(
+    '/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    wrapController(EntityTemplateController.updateEntityTemplateAction),
+);
 
 entityTemplateRouter.patch(
     '/:templateId/status',

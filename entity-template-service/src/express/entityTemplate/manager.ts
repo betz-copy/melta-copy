@@ -1,9 +1,20 @@
 import { FilterQuery, Document } from 'mongoose';
+import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
 import EntityTemplateModel from './model';
-import { IEntitySingleProperty, IEntityTemplate } from './interface';
+import { IEntitySingleProperty, IEntityTemplate, options } from './interface';
 import { ServiceError } from '../error';
 import { escapeRegExp } from '../../utils';
 import { sendUpdateIndexesOnUpdateTemplate, sendUpdateIndexesOnDeleteTemplate } from '../../externalServices/globalSearchIndexCreator';
+
+export const options1: TSESTreeOptions = {
+    comment: true,
+    tokens: true,
+    loc: true,
+    range: true,
+    errorOnUnknownASTType: true,
+    errorOnTypeScriptSyntacticAndSemanticIssues: true,
+    jsx: true,
+};
 
 export class EntityTemplateManager {
     static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
@@ -95,6 +106,16 @@ export class EntityTemplateManager {
 
     static async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
         return EntityTemplateModel.findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+            .populate('category')
+            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    static async updateEntityTemplateAction(id: string, updatedCode: { originalCode: string; codeAST: AST<typeof options> }[]) {
+        return EntityTemplateModel.findByIdAndUpdate(id, {
+            actions: updatedCode,
+        })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()

@@ -5,6 +5,7 @@ import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
+import * as ts from 'typescript';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
@@ -281,6 +282,11 @@ const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: Com
     return data;
 };
 
+const updateActionToEntity = async (entityTemplateId: string, originalCode: string, AST: ts.SourceFile) => {
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/actions`, { originalCode, AST });
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
@@ -289,4 +295,5 @@ export {
     updateEntityTemplateStatusRequest,
     updateEnumFieldRequest,
     deleteEnumFieldRequest,
+    updateActionToEntity,
 };
