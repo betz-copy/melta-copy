@@ -56,24 +56,6 @@ const getFilesFromTemplate = (
         .filter((file) => file !== undefined) as IFile[];
 };
 
-// const handlePrintError = async (selectedFiles: IFile[], setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>) => {
-//     const refetchPromises = selectedFiles.map((file) => {
-//         if (file.refetch) return file.refetch();
-//         return undefined;
-//     });
-
-//     const arrRefetch = await Promise.all(refetchPromises);
-//     try {
-//         arrRefetch.forEach((refetch) => {
-//             if (!refetch) return;
-//             if (refetch.isError) throw new Error('Refetch error');
-//         });
-//     } catch {
-//         setSelectedFiles([]);
-//         toast.error(i18next.t('errorPage.filePrintError'));
-//     }
-// };
-
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
@@ -168,7 +150,6 @@ const PrintOptionsDialog: React.FC<{
                 return { ...acc, [file.id]: true };
             }, {}),
         );
-        // handlePrintError(selectedFiles, setSelectedFiles);
     }, [selectedFiles]);
 
     React.useEffect(() => {
@@ -177,17 +158,10 @@ const PrintOptionsDialog: React.FC<{
             return;
         }
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
-        const error = Object.values(filesLoadingStatus).some((fileLoadingStatus) => {
-            return fileLoadingStatus === 404;
-        });
-        if (error) {
-            setIsLoading(false);
-            toast.error(i18next.t('entityPage.previewRefetch'));
-        }
     }, [filesLoadingStatus]);
 
     return (
-        <Dialog open={open} onClose={handleClose}>
+        <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
             <DialogTitle paddingLeft="4px">
                 <Grid container display="flex" justifyContent="space-between">
                     <Grid item> {i18next.t('entityPage.print.printOptions')}</Grid>

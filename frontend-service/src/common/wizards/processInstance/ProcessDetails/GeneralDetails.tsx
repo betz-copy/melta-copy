@@ -90,7 +90,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
             <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
                 {value.items === undefined ? (
                     <InstanceSingleFileInput
-                        key={`${key}-${value.title}`}
+                        key={key}
                         fileFieldName={`detailsAttachments.${key}`}
                         fieldTemplateTitle={value.title}
                         setFieldValue={setFieldValue}
@@ -105,7 +105,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
                     />
                 ) : (
                     <InstanceFileInput
-                        key={`${key}-${value.title}`}
+                        key={key}
                         fileFieldName={`detailsAttachments.${key}`}
                         fieldTemplateTitle={value.title}
                         setFieldValue={setFieldValue}
@@ -141,7 +141,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                     }
                 }
                 return (
-                    <Grid container spacing={1} display="flex" flexDirection="column" key={`${fieldName}-${title}`}>
+                    <Grid container spacing={1} display="flex" flexDirection="column" key={fieldName}>
                         <Grid item>
                             <Typography display="inline" variant="body1">
                                 {title}:
@@ -178,7 +178,6 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
                     touched={touched}
                     setFieldTouched={setFieldTouched}
                     toPrint={toPrint}
-                    key={`${values.id}${values.startDate}`}
                 />
             )}
         </Box>
@@ -186,6 +185,8 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
 };
 
 const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode, toPrint }) => {
+    console.log({ detailsFormikData });
+
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
@@ -228,7 +229,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }} key={`${values.name} - ${values.template?.name}`}>
+            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }}>
                 <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
@@ -425,7 +426,6 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     setFieldTouched,
                                                     toPrint,
                                                 }}
-                                                key={`${values.name}${values.endDate}`}
                                             />
                                         )}
                                         {Object.keys(templateEntityReferenceProperties!).length !== 0 && (
@@ -438,7 +438,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 />
                                                 {Object.entries(templateEntityReferenceProperties!).map(([fieldName, { title }]) => (
                                                     <Field
-                                                        key={`${fieldName}-1`}
+                                                        key={fieldName}
                                                         validate={(changedValue) => {
                                                             return (
                                                                 values.template?.details.properties.required.includes(fieldName) &&

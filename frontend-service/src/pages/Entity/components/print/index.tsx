@@ -59,6 +59,7 @@ const Print: React.FC<{
                     expandedEntity={expandedEntity}
                     connectionsTemplatesToPrint={selectedConnections}
                     filesToPrint={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />

@@ -71,6 +71,7 @@ const Print: React.FC<{
                     processInstance={processInstance}
                     options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
                     filesToPrint={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
                     mutateAsync={mutateAsync}
                     setFilesLoadingStatus={setFilesLoadingStatus}
                     setCurrProcessInstance={setCurrProcessInstance}

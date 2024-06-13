@@ -10,31 +10,16 @@ pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 const FileToPrint: React.FC<{
     file: IFile;
-    onPreviewLoadingFinished: () => void;
+    onPreviewLoadingFinished: (error?: boolean) => void;
 }> = ({ file, onPreviewLoadingFinished }) => {
     const [numOfPages, setNumOfPages] = useState(0);
     const fileRef = useRef<HTMLDivElement>(null);
-    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
+    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(false);
 
-    const { data, refetch, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
-
+    const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
     const onLoadSuccess = ({ numPages }: { numPages: number }) => {
         setNumOfPages(numPages);
     };
-
-    // React.useEffect(() => {
-    //     setSelectedFiles((prevFilesToPrint) => {
-    //         return prevFilesToPrint.map((currFile) => {
-    //             if (currFile.id === file.id) {
-    //                 return {
-    //                     ...currFile,
-    //                     refetch,
-    //                 };
-    //             }
-    //             return currFile;
-    //         });
-    //     });
-    // }, []);
 
     React.useEffect(() => {
         if (isImage(file.contentType) && isPreviewLoading === false) {
@@ -42,11 +27,9 @@ const FileToPrint: React.FC<{
         }
     }, [isPreviewLoading === true]);
 
-    // React.useEffect(() => {
-    //     if (noSuchKeyError) {
-    //         onPreviewLoadingFinished();
-    //     }
-    // }, [noSuchKeyError, onPreviewLoadingFinished]);
+    React.useEffect(() => {
+        if (noSuchKeyError) onPreviewLoadingFinished(true);
+    }, [noSuchKeyError === true]);
 
     return (
         <Grid item ref={fileRef}>

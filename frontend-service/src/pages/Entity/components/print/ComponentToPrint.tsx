@@ -2,6 +2,7 @@ import React from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../../common/BlueTitle';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -17,6 +18,7 @@ const ComponentToPrint = React.forwardRef<
         expandedEntity: IEntityExpanded;
         connectionsTemplatesToPrint: IConnectionTemplateOfExpandedEntity[];
         filesToPrint: IFile[];
+        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showDate: boolean;
@@ -26,7 +28,7 @@ const ComponentToPrint = React.forwardRef<
             showPreviewPropertiesOnly: boolean;
         };
     }
->(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setFilesLoadingStatus }, ref) => {
+>(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles, setFilesLoadingStatus }, ref) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -150,8 +152,14 @@ const ComponentToPrint = React.forwardRef<
                             <FileToPrint
                                 file={file}
                                 key={`${file.id}-${file.contentType}`}
-                                onPreviewLoadingFinished={() => {
+                                onPreviewLoadingFinished={(error?: boolean) => {
                                     setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
+                                    if (error) {
+                                        toast.error(i18next.t('entityPage.previewRefetch'));
+                                        setSelectedFiles((prevSelectedFiles) =>
+                                            prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
+                                        );
+                                    }
                                 }}
                             />
                         );

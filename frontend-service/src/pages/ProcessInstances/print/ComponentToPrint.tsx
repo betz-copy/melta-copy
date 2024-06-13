@@ -3,6 +3,7 @@ import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
@@ -25,6 +26,7 @@ const ComponentToPrint = React.forwardRef<
         setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
         setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
         filesToPrint: IFile[];
+        setSelectedFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
         setFilesLoadingStatus: React.Dispatch<React.SetStateAction<{}>>;
         options: {
             showSummary: boolean;
@@ -33,7 +35,17 @@ const ComponentToPrint = React.forwardRef<
     }
 >(
     (
-        { processTemplate, processInstance, options, filesToPrint, mutateAsync, setCurrProcessInstance, setIsProcessChanged, setFilesLoadingStatus },
+        {
+            processTemplate,
+            processInstance,
+            options,
+            filesToPrint,
+            setSelectedFiles,
+            mutateAsync,
+            setCurrProcessInstance,
+            setIsProcessChanged,
+            setFilesLoadingStatus,
+        },
         ref,
     ) => {
         const theme = useTheme();
@@ -134,8 +146,14 @@ const ComponentToPrint = React.forwardRef<
                                 <FileToPrint
                                     file={file}
                                     key={`${file.id}-${file.contentType}`}
-                                    onPreviewLoadingFinished={() => {
+                                    onPreviewLoadingFinished={(error?: boolean) => {
                                         setFilesLoadingStatus((prev) => ({ ...prev, [file.id]: false }));
+                                        if (error) {
+                                            toast.error(i18next.t('entityPage.previewRefetch'));
+                                            setSelectedFiles((prevSelectedFiles) =>
+                                                prevSelectedFiles.filter((selectedFile) => selectedFile.id !== file.id),
+                                            );
+                                        }
                                     }}
                                 />
                             );
