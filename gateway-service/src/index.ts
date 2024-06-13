@@ -1,4 +1,5 @@
 import menash from 'menashmq';
+import * as mongoose from 'mongoose';
 import axios from 'axios';
 import apm from 'elastic-apm-node';
 import Server from './express/server';
@@ -6,7 +7,7 @@ import config from './config';
 import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
-const { service, rabbit, logs } = config;
+const { service, rabbit, logs, mongo } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -30,7 +31,22 @@ const initializeRabbit = async () => {
     logger.info('Rabbit initialized');
 };
 
+const initializeMongo = async () => {
+    logger.info('Connecting to Mongo...');
+
+    await mongoose.connect(mongo.url, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+        useFindAndModify: false,
+        useCreateIndex: true,
+    } as mongoose.ConnectOptions);
+
+    logger.info('Mongo connection established');
+};
+
 const main = async () => {
+    await initializeMongo();
+
     await initializeRabbit();
 
     await checkForDateNotifications();

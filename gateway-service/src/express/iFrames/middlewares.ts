@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IFrame, IFramesService } from '../../externalServices/iFramesService';
+import { IFrame } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import { getAllowedCategoriesForInstances } from '../instances/middlewares';
 import PermissionsManager from '../permissions/manager';
@@ -14,7 +14,7 @@ const validateHasPermissionsToIFrameItems = async (iFrame: IFrame, allowedCatego
     }
 };
 
-export const validateUserHasPermissionsToIFrame = async (userId: string, newIFrame: IFrame | undefined, existingIFrameId: string | undefined) => {
+export const validateUserHasPermissionsToIFrame = async (userId: string, newIFrame: IFrame | undefined, _existingIFrameId: string | undefined) => {
     const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
 
     if (!userPermissions.templatesManagementId) {
@@ -27,10 +27,10 @@ export const validateUserHasPermissionsToIFrame = async (userId: string, newIFra
     if (newIFrame) {
         await validateHasPermissionsToIFrameItems(newIFrame, allowedCategoriesIds);
     }
-    if (existingIFrameId) {
-        const existingIFrame = await IFramesService.getIFrameById(existingIFrameId);
-        await validateHasPermissionsToIFrameItems(existingIFrame, allowedCategoriesIds);
-    }
+    // if (existingIFrameId) {
+    //     const existingIFrame = await IFramesService.getIFrameById(existingIFrameId);
+    //     await validateHasPermissionsToIFrameItems(existingIFrame, allowedCategoriesIds);
+    // }
 };
 
 export const validateUserCanCreateIFrame = async (req: Request) => {

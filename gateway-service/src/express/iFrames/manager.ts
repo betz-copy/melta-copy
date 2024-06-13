@@ -1,51 +1,66 @@
-// import lodashIsEqual from 'lodash.isequal';
-import axios from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { IFrame, IFramesService, IMongoIFrame, ISearchIFramesBody } from '../../externalServices/iFramesService';
-// import { InstanceManagerService } from '../../externalServices/instanceService';
-// import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
-// import { ServiceError } from '../error';
-import { getAllowedCategoriesForInstances } from '../instances/middlewares';
+import { FilterQuery } from 'mongoose';
+import { IFrame, IFramesService, ISearchIFramesBody } from '../../externalServices/iFramesService';
+import { ServiceError } from '../error';
+import IFrameModel from './model';
+import { IFrameDocument } from './interface';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 
-
 export class IFrameManager {
-    private static filterIFrameWithPermissions(iFrame: IMongoIFrame, allowedEntityTemplates: IMongoEntityTemplatePopulated[]) {
-        const filteredIFrame = iFrame.categoryIds.filter((id) => {
-            return allowedEntityTemplates.some(({ _id }) => _id === id);
-        });
-        console.log({ filteredIFrame });
+    // private static filterIFrameWithPermissions(iFrame: IMongoIFrame, allowedEntityTemplates: IMongoEntityTemplatePopulated[]) {
+    //     const filteredIFrame = iFrame.categoryIds.filter((id) => {
+    //         return allowedEntityTemplates.some(({ _id }) => _id === id);
+    //     });
+    //     console.log({ filteredIFrame });
 
-        return filteredIFrame;
+    //     return filteredIFrame;
+    // }
+
+    static escapeRegExp(text: string) {
+        return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    static async getExternalSiteById(req, res, next) {
-        const iFrame: IFrame = await this.getIFrameById(req.params.iFrameId);
-        const IFramesManagerProxy = createProxyMiddleware({
-            target: iFrame.url,
-            changeOrigin: true,
-            onProxyReq: (proxyReq, _req, _res) => {
-                // proxyReq.setHeader('Authorization', `Bearer ${iFrame.apiToken}`);
-                proxyReq.setHeader('Content-Type', 'application/json');
-            },
-            proxyTimeout: 1000,
-        });
-        IFramesManagerProxy(req, res, next);
+    static searchIFrames({ search, limit, step }: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        // const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
+
+        const query: FilterQuery<IFrameDocument> = {};
+
+        if (search) {
+            query.name = { $regex: this.escapeRegExp(search) };
+        }
+
+        const iFrames = IFrameModel.find(query)
+            .limit(limit)
+            .skip(step * limit)
+            .lean()
+            .exec();
+        // return iFrames.map((gantt) => this.filterIFramesWithPermissions(gantt, allowedEntityTemplates));
+        return iFrames;
     }
 
-    static async searchIFrames(searchBody: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        // const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
-
-        // const iFrames = await IFramesService.searchIFrames(searchBody);
-        // return iFrames.map((iFrame) => this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates));
-        return IFramesService.searchIFrames(searchBody);
+    static getIFrameById(iframeId: string) {
+        return IFrameModel.findById(iframeId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
-    static async getIFrameById(iFrameId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
+    static async getExternalSiteById(iFrameId: string) {
+        // אוטנטיקציות של באק
 
-        const iFrame = await IFramesService.getIFrameById(iFrameId);
-        // return this.filterIFrameWithPermissions(iFrame, allowedEntityTemplates);
+        const iFrame = await this.getIFrameById(iFrameId);
+        return IFramesService.getExternalSiteById(iFrame);
+    }
+
+    static async createIFrame(iframe: IFrame) {
+        return IFrameModel.create(iframe);
+    }
+
+    static deleteIFrame(iframeId: string) {
+        return IFrameModel.findByIdAndDelete(iframeId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+    }
+
+    static async updateIFrame(iframeId: string, iframe: IFrame) {
+        return IFrameModel.findByIdAndUpdate(iframeId, iframe, { new: true, overwrite: true })
+            .orFail(new ServiceError(404, 'IFrame not found'))
+            .lean()
+            .exec();
     }
 
     // private static doesRelationshipContainsEntityTemplate(
@@ -230,20 +245,6 @@ export class IFrameManager {
     //         IFrameManager.validateConnectedEntityOfIFrameItem(iframeItem, allEntityTemplates, relationshipTemplatesMap);
     //     });
     // }
-
-    static async createIFrame(iframe: IFrame) {
-        // await this.validateTemplatesDataOfIFrame(iframe);
-        return IFramesService.createIFrame(iframe);
-    }
-
-    static deleteIFrame(iframeId: string) {
-        return IFramesService.deleteIFrame(iframeId);
-    }
-
-    static async updateIFrame(iframeId: string, iframe: IFrame) {
-        // await this.validateTemplatesDataOfIFrame(iframe);
-        return IFramesService.updateIFrame(iframeId, iframe);
-    }
 }
 
 export default IFrameManager;

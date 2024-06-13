@@ -15,21 +15,21 @@ const IFrameSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
+        apiToken: {
+            type: String,
+        },
         categoryIds: {
             type: [String],
             require: true,
         },
         height: {
             type: Number,
-            require: false,
         },
         width: {
             type: Number,
-            require: false,
         },
         placeInSideBar: {
             type: Boolean,
-            require: false,
         },
     },
     { timestamps: true, versionKey: false },

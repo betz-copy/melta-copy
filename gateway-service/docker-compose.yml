@@ -10,6 +10,8 @@ services:
     build: .
     environment:
       PORT: 8000
+      MONGO_URL: mongodb://mongo
+      MONGO_IFRAMES_COLLECTION_NAME: iFrames
       TOKEN_SECRET: secret
       ENTITY_TEMPLATE_SERVICE_URL: http://entity-template-service:8000
       STORAGE_SERVICE_URL: http://storage-service:8000

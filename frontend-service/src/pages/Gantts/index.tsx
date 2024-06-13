@@ -31,8 +31,6 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
 
     const queryKey = ['searchGantts', search];
 
-    
-
     return (
         <>
             <Grid container direction="column" padding="0 4rem">
@@ -46,9 +44,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         </IconButton>
                     )}
                 </Grid>
-                <iframe src="https://www.youtube.com/embed/wL0pEjZ9mdw?token=123213213213" title="W3Schools Free Online Web Tutorials" />
-
-                <iframe src="https://www.google.com/" title="h" />
+                <iframe src="/iFrames/externalSite/666ad14b19ac9e0012c6be20" title="h" />
                 <ViewingBox minHeight="82vh">
                     <InfiniteScroll<IGantt>
                         queryKey={queryKey}

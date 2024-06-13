@@ -7,13 +7,8 @@ class IFrameController {
     }
 
     static async getIFrameById(req: Request, res: Response) {
-
-        // res.json(await IFrameManager.getIFrameById(req.params.iFrameId));
+        res.json(await IFrameManager.getIFrameById(req.params.iFrameId));
     }
-
-    // static async getExternalSiteById(req: Request, res: Response) {
-    //     res.json(await IFrameManager.getExternalSiteById(req.params.iFrameId));
-    // }
 
     static async getAllIFrames(_req: Request, res: Response) {
         res.json(await IFrameManager.getAllIFrames());

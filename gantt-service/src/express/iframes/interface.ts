@@ -3,6 +3,7 @@ import { Document } from 'mongoose';
 export interface IFrame {
     name: string;
     url: string;
+    apiToken?: string;
     categoryIds: string[];
     height?: number;
     width?: number;
