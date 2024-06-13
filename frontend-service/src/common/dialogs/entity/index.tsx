@@ -4,4 +4,3 @@ export interface EntityWizardValues {
     properties: object & { disabled: boolean };
     attachmentsProperties: Record<string, File[] | File | undefined>;
 }
-
