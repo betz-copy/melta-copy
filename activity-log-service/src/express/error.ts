@@ -28,7 +28,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     }
 
-    logger.error('Request failed with error: ', error);
+    logger.error('Request failed with error: ', { error });
 
     next();
 };
