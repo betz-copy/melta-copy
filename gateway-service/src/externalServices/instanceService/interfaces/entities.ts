@@ -31,10 +31,15 @@ export interface IRequiredConstraint {
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
+export interface IUniqueConstraintOfTemplate {
+    groupName: string;
+    properties: string[];
+}
+
 export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityWithDirectRelationships {
