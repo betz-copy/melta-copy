@@ -14,6 +14,7 @@ import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { IFilterOfField, IFilterOfTemplate, ISearchBatchBody, ISearchEntitiesOfTemplateBody, ISearchFilter } from './interface';
+import DefaultController from '../../utils/express/controller';
 
 const { neo4j } = config;
 
@@ -36,12 +37,14 @@ ajv.addKeyword({
     type: 'number',
 });
 
-export default class EntityValidator {
+export default class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
     constructor(dbName: string) {
+        super(undefined);
+
         this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
     }

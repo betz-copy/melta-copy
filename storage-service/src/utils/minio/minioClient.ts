@@ -24,7 +24,7 @@ export class MinIOClient {
             useSSL,
             accessKey,
             secretKey,
-            transport: new http.Agent(transportAgent),
+            transportAgent: new http.Agent(transportAgent),
         });
 
         MinIOClient.isInitialized = true;

@@ -10,7 +10,11 @@ class NotificationsConsumer {
             const msgContent = msg.getContent();
             const value = basicValidateRequest(notificationSchema, msgContent);
 
-            await NotificationsManager.createNotification(value);
+            // Extract dbHeaderName from msg headers
+            const { dbHeaderName } = msg.properties.headers;
+            const manager = new NotificationsManager(dbHeaderName);
+
+            await manager.createNotification(value);
 
             msg.ack();
         } catch (err: any) {
