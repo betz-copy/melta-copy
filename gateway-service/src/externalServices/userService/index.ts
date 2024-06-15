@@ -19,6 +19,11 @@ export class UserService {
         return data;
     }
 
+    static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
+        const { data } = await this.userService.post<string[]>(`${usersRoute}/search-ids`, searchBody);
+        return data;
+    }
+
     static async searchUsers(searchBody: IUserSearchBody): Promise<IUser[]> {
         const { data } = await this.userService.post<IUser[]>(`${usersRoute}/search`, searchBody);
         return data;

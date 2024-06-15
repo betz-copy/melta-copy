@@ -13,6 +13,8 @@ import { UsersController } from './controller';
 export const usersRouter: Router = Router();
 
 usersRouter.get('/:id', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
+
+usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));

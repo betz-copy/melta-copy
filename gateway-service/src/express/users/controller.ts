@@ -6,6 +6,10 @@ export class UsersController {
         res.json(await UsersManager.getUserById(req.params.userId));
     }
 
+    static async searchUserIds(req: Request, res: Response) {
+        res.json(await UsersManager.searchUserIds(req.body));
+    }
+
     static async searchUsers(req: Request, res: Response) {
         res.json(await UsersManager.searchUsers(req.body));
     }

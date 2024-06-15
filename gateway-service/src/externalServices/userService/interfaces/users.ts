@@ -19,8 +19,8 @@ export interface IUser extends IBaseUser {
 }
 
 export interface IUserSearchBody {
-    search: string;
-    permissions: ISubCompactPermissions;
+    search?: string;
+    permissions?: ISubCompactPermissions;
     limit: number;
-    step: number;
+    step?: number;
 }

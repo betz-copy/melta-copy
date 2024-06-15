@@ -14,6 +14,8 @@ import {
 export const usersRouter: Router = Router();
 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
+
+usersRouter.get('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 usersRouter.get('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));

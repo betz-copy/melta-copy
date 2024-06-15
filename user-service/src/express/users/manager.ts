@@ -12,7 +12,12 @@ export class UsersManager {
         return this.appendPermissionsToUser(baseUser);
     }
 
-    static async searchUsers(search: string, permissions: ISubCompactPermissions, limit: number, step: number): Promise<IUser[]> {
+    static async SearchBaseUsers(
+        search: string | undefined,
+        permissions: ISubCompactPermissions | undefined,
+        limit: number,
+        step: number,
+    ): Promise<IBaseUser[]> {
         const query: FilterQuery<IBaseUser> = {};
 
         if (search) {
@@ -39,10 +44,30 @@ export class UsersManager {
             query._id = { $in: usersIds };
         }
 
-        const baseUsers = await UsersModel.find(query, { limit, skip: step * limit })
+        const baseUsers = await UsersModel.find(query, {}, { limit, skip: step * limit })
             .lean()
             .exec();
 
+        return baseUsers;
+    }
+
+    static async searchUserIds(
+        search: string | undefined,
+        permissions: ISubCompactPermissions | undefined,
+        limit: number,
+        step: number,
+    ): Promise<string[]> {
+        const baseUsers = await this.SearchBaseUsers(search, permissions, limit, step);
+        return baseUsers.map(({ _id }) => _id);
+    }
+
+    static async searchUsers(
+        search: string | undefined,
+        permissions: ISubCompactPermissions | undefined,
+        limit: number,
+        step: number,
+    ): Promise<IUser[]> {
+        const baseUsers = await this.SearchBaseUsers(search, permissions, limit, step);
         return this.appendPermissionsToUsers(baseUsers);
     }
 
