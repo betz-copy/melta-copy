@@ -14,3 +14,9 @@ export const createController = <T extends InstanceType<typeof DefaultController
         };
     };
 };
+
+export const wrapValidator = (func: (req: Request, res: Response) => Promise<void>) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        func(req, res).then(next).catch(next);
+    };
+};

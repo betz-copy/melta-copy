@@ -11,7 +11,7 @@ export const createController = <T extends InstanceType<typeof DefaultController
             const dbName = req.headers[config.service.dbHeaderName];
             if (typeof dbName !== 'string') return next(new ServiceError(400, 'Invalid database name in header'));
 
-            return (new controller(dbName)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+            return (new controller(dbName)[funcName] as unknown as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
 };
