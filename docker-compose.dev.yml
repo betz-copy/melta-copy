@@ -76,7 +76,7 @@ services:
       - relationship-template-service
       - storage-service
       - instance-service
-      - permission-service
+      - user-service
       - process-service
       - gantt-service
     restart: on-failure
@@ -99,7 +99,7 @@ services:
       - 8003:8000
     restart: always
 
-  permission-service:
+  user-service:
     ports:
       - 8005:8000
     restart: always
@@ -138,12 +138,12 @@ services:
       - 8009:8000
     restart: always
 
-  # mailer-service:
-  #   depends_on:
-  #     - redis
-  #   ports:
-  #     - 8010:8000
-  #   restart: always
+  mailer-service:
+    depends_on:
+      - redis
+    ports:
+      - 8010:8000
+    restart: always
 
   preview-service:
     ports:

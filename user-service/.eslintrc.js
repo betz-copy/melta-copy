@@ -8,7 +8,6 @@ module.exports = {
     globals: {
         Atomics: 'readonly',
         SharedArrayBuffer: 'readonly',
-        Express: 'readonly',
     },
     parser: '@typescript-eslint/parser',
     parserOptions: {
@@ -19,7 +18,7 @@ module.exports = {
     settings: {
         'import/resolver': {
             node: {
-                extensions: ['.js', '.jsx', '.ts', '.tsx', '.json'],
+                extensions: ['.js', '.ts', '.json'],
             },
         },
     },
@@ -34,13 +33,13 @@ module.exports = {
                 json: 'never',
             },
         ],
-        'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-unused-vars': 'off', // Checked by typescript
-        'import/prefer-default-export': 'off',
+        'arrow-body-style': 'off',
         'no-shadow': 'off',
-        'no-restricted-syntax': 'off',
-        '@typescript-eslint/no-shadow': 'error',
-        'no-plusplus': 'off',
+        'import/prefer-default-export': 'off',
         'max-classes-per-file': 'off',
+        'no-underscore-dangle': 'off',
+        'consistent-return': 'off',
+        'no-plusplus': 'off',
     },
 };

@@ -1,13 +1,29 @@
 import { Router } from 'express';
-import UsersController from './controller';
+import { UsersController } from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import {
+    createUserRequestSchema,
+    getUserByIdRequestSchema,
+    searchExternalUsersRequestSchema,
+    searchUsersRequestSchema,
+    syncUserPermissionsRequestSchema,
+    updateUserExternalMetadataRequestSchema,
+} from './validator.schema';
 
-import { searchUsersRequestSchema, getUserById } from './validator.schema';
+export const usersRouter: Router = Router();
 
-const usersRouter: Router = Router();
-
+usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 usersRouter.get('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
-usersRouter.get('/:userId', ValidateRequest(getUserById), wrapController(UsersController.getUserById));
 
-export default usersRouter;
+usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
+
+usersRouter.patch(
+    '/:userId/external',
+    ValidateRequest(updateUserExternalMetadataRequestSchema),
+    wrapController(UsersController.updateUserExternalMetadata),
+);
+
+usersRouter.post('/:userId/permissions/sync', ValidateRequest(syncUserPermissionsRequestSchema), wrapController(UsersController.syncUserPermissions));
+
+usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));

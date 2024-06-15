@@ -16,12 +16,13 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
-  permission-service:
-    build: ./permission-service
+  user-service:
+    build: ./user-service
     environment:
       PORT: 8000
       MONGO_URL: ${PERMISSION_SERVICE_MONGO_URL}
-      MONGO_PERMISSIONS_COLLECTION_NAME: permissions
+      MONGO_PERMISSIONS_COLLECTION_NAME: ${MONGO_PERMISSIONS_COLLECTION_NAME}
+      MONGO_USERS_COLLECTION_NAME: ${MONGO_USERS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
 
   storage-service:
@@ -169,13 +170,13 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
 
-  # mailer-service:
-  #   image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
-  #   environment:
-  #     PORT: 8000
-  #     MAIL_HOSTS: ${MAIL_HOSTS}
-  #     MAIL_USER: ${MAIL_USER}
-  #     MAIL_PASS: ${MAIL_PASS}
-  #     USE_AUTH: "true"
-  #     RABBIT_URI: ${RABBIT_URL}
-  #     REDIS_CONNECTION_URI: ${REDIS_HOST}
+  mailer-service:
+    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+    environment:
+      PORT: 8000
+      MAIL_HOSTS: ${MAIL_HOSTS}
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
+      USE_AUTH: "true"
+      RABBIT_URI: ${RABBIT_URL}
+      REDIS_CONNECTION_URI: ${REDIS_HOST}

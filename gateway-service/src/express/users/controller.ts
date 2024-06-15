@@ -1,15 +1,30 @@
 import { Request, Response } from 'express';
 import { UsersManager } from './manager';
-import { RequestWithQuery } from '../../utils/express';
 
-class UsersController {
-    static async searchUsers(req: RequestWithQuery<{ search: string }>, res: Response) {
-        res.json(await UsersManager.searchUsers(req.query.search));
-    }
-
+export class UsersController {
     static async getUserById(req: Request, res: Response) {
         res.json(await UsersManager.getUserById(req.params.userId));
     }
-}
 
-export default UsersController;
+    static async searchUsers(req: Request, res: Response) {
+        res.json(await UsersManager.searchUsers(req.body));
+    }
+
+    static async createUser(req: Request, res: Response) {
+        const { kartoffelId, digitalIdentitySource, permissions } = req.body;
+
+        res.json(await UsersManager.createUser(kartoffelId, digitalIdentitySource, permissions));
+    }
+
+    static async updateUserExternalMetadata(req: Request, res: Response) {
+        res.json(await UsersManager.updateUserExternalMetadata(req.params.userId, req.body));
+    }
+
+    static async syncUserPermissions(req: Request, res: Response) {
+        res.json(await UsersManager.syncUserPermissions(req.params.userId, req.body));
+    }
+
+    static async searchExternalUsers(req: Request, res: Response) {
+        res.json(await UsersManager.searchExternalUsers(req.body.search));
+    }
+}
