@@ -14,13 +14,13 @@ export class UserService {
         timeout: requestTimeout,
     });
 
-    static async getUserById(userId: string): Promise<IUser> {
-        const { data } = await this.userService.get<IUser>(`${usersRoute}/${userId}`);
+    static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
+        const { data } = await this.userService.post<IUser>(`${usersRoute}/find-by-id/${userId}`, { workspaceIds });
         return data;
     }
 
-    static async getUserByExternalId(userExternalId: string): Promise<IUser> {
-        const { data } = await this.userService.get<IUser>(`${usersRoute}/external/${userExternalId}`);
+    static async getUserByExternalId(userExternalId: string, workspaceIds?: string[]): Promise<IUser> {
+        const { data } = await this.userService.post<IUser>(`${usersRoute}/find-by-external-id/${userExternalId}`, { workspaceIds });
         return data;
     }
 

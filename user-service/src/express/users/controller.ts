@@ -3,11 +3,11 @@ import { UsersManager } from './manager';
 
 export class UsersController {
     static async getUserById(req: Request, res: Response) {
-        res.json(await UsersManager.getUserById(req.params.id));
+        res.json(await UsersManager.getUserById(req.params.id, req.body.workspaceIds));
     }
 
     static async getUserByExternalId(req: Request, res: Response) {
-        res.json(await UsersManager.getUserByExternalId(req.params.id));
+        res.json(await UsersManager.getUserByExternalId(req.params.externalId, req.body.workspaceIds));
     }
 
     static async searchUserIds(req: Request, res: Response) {

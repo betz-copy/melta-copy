@@ -6,21 +6,25 @@ import { config } from '../../config';
 
 const { maxFindLimit } = config.mongo;
 
-// GET /api/users/:id
+// POST /api/users/find-by-id/:id
 export const getUserByIdRequestSchema = joi.object({
     query: {},
-    body: {},
+    body: {
+        workspaceIds: joi.array().items(mongoIdSchema.required()),
+    },
     params: {
         id: mongoIdSchema.required(),
     },
 });
 
-// GET /api/users/external/:id
+// POST /api/users/find-by-external-id/:externalId
 export const getUserByExternalIdRequestSchema = joi.object({
     query: {},
-    body: {},
+    body: {
+        workspaceIds: joi.array().items(mongoIdSchema.required()),
+    },
     params: {
-        id: mongoIdSchema.required(),
+        externalId: mongoIdSchema.required(),
     },
 });
 

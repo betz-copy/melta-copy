@@ -7,18 +7,17 @@ import { UserDoesNotExistError } from './errors';
 import { ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
-    static async getUserById(id: string): Promise<IUser> {
+    static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.appendPermissionsToUser(baseUser);
+        return this.appendPermissionsToUser(baseUser, workspaceIds);
     }
 
-    static async getUserByExternalId(id: string): Promise<IUser> {
+    static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findOne({ externalMetadata: { kartoffelId: id } })
             .orFail(new UserDoesNotExistError(id))
             .lean()
             .exec();
-
-        return this.appendPermissionsToUser(baseUser);
+        return this.appendPermissionsToUser(baseUser, workspaceIds);
     }
 
     static async SearchBaseUsers(
@@ -99,8 +98,8 @@ export class UsersManager {
         );
     }
 
-    private static async appendPermissionsToUser(user: IBaseUser): Promise<IUser> {
-        const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id);
+    private static async appendPermissionsToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
+        const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id, workspaceIds);
         return { ...user, permissions };
     }
 

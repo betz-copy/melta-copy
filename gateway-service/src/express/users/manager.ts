@@ -8,12 +8,8 @@ import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError 
 import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
 export class UsersManager {
-    static async getUserById(userId: string): Promise<IUser> {
-        return UserService.getUserById(userId);
-    }
-
-    static async getUserByExternalId(userExternalId: string): Promise<IUser> {
-        return UserService.getUserByExternalId(userExternalId);
+    static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
+        return UserService.getUserById(userId, workspaceIds);
     }
 
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {

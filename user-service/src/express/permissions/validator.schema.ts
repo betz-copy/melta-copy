@@ -6,10 +6,11 @@ import { CompactNullablePermissionsSchema } from '../../utils/joi/schemas/permis
 export const getCompactPermissionsOfUserRequestSchema = joi.object({
     query: {},
     body: {
-        userId: mongoIdSchema.required(),
-        workspaceIds: joi.array().items(mongoIdSchema.required()).min(1),
+        workspaceIds: joi.array().items(mongoIdSchema.required()),
     },
-    params: {},
+    params: {
+        userId: mongoIdSchema.required(),
+    },
 });
 
 // POST /api/permissions/compact/update
