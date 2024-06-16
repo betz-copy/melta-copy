@@ -12,6 +12,15 @@ export class UsersManager {
         return this.appendPermissionsToUser(baseUser);
     }
 
+    static async getUserByExternalId(id: string): Promise<IUser> {
+        const baseUser = await UsersModel.findOne({ externalMetadata: { kartoffelId: id } })
+            .orFail(new UserDoesNotExistError(id))
+            .lean()
+            .exec();
+
+        return this.appendPermissionsToUser(baseUser);
+    }
+
     static async SearchBaseUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,

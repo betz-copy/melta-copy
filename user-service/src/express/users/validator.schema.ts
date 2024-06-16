@@ -15,6 +15,15 @@ export const getUserByIdRequestSchema = joi.object({
     },
 });
 
+// GET /api/users/external/:id
+export const getUserByExternalIdRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: mongoIdSchema.required(),
+    },
+});
+
 // POST /api/users/search
 export const searchUsersRequestSchema = joi.object({
     query: {},

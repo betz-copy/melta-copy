@@ -6,6 +6,10 @@ export class UsersController {
         res.json(await UsersManager.getUserById(req.params.id));
     }
 
+    static async getUserByExternalId(req: Request, res: Response) {
+        res.json(await UsersManager.getUserByExternalId(req.params.id));
+    }
+
     static async searchUserIds(req: Request, res: Response) {
         const { search, permissions, limit, step } = req.body;
 

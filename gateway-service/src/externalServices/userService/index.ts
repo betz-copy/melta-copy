@@ -19,6 +19,11 @@ export class UserService {
         return data;
     }
 
+    static async getUserByExternalId(userExternalId: string): Promise<IUser> {
+        const { data } = await this.userService.get<IUser>(`${usersRoute}/external/${userExternalId}`);
+        return data;
+    }
+
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
         const { data } = await this.userService.post<string[]>(`${usersRoute}/search-ids`, searchBody);
         return data;

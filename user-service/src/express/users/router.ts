@@ -3,6 +3,7 @@ import { wrapController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
 import {
     createUserRequestSchema,
+    getUserByExternalIdRequestSchema,
     getUserByIdRequestSchema,
     searchUsersRequestSchema,
     updateUserRequestSchema,
@@ -13,6 +14,7 @@ import { UsersController } from './controller';
 export const usersRouter: Router = Router();
 
 usersRouter.get('/:id', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
+usersRouter.get('/external/:id', ValidateRequest(getUserByExternalIdRequestSchema), wrapController(UsersController.getUserByExternalId));
 
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));

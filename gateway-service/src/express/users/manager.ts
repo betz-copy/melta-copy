@@ -12,6 +12,10 @@ export class UsersManager {
         return UserService.getUserById(userId);
     }
 
+    static async getUserByExternalId(userExternalId: string): Promise<IUser> {
+        return UserService.getUserByExternalId(userExternalId);
+    }
+
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
         return UserService.searchUserIds(searchBody);
     }
