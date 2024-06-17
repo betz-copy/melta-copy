@@ -2,14 +2,14 @@ import { AxiosError } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
 import {
-    EntityTemplateManagerService,
+    EntityTemplateService,
     ICategory,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/entityTemplateService';
-import { InstanceManagerService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { InstancesService } from '../../externalServices/instanceService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
+import { StorageService } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -20,10 +20,11 @@ import { getParametersOfFormula } from './rules';
 import { IFormula } from './rules/interfaces/formula';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
-import { ProcessManagerService } from '../../externalServices/processService';
+import { ProcessService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
+import DefaultManagerProxy from '../../utils/express/manager';
 
 const {
     categoryHasTemplates,
@@ -35,7 +36,29 @@ const {
     ruleHasAlertsOrRequests,
 } = config.errorCodes;
 
-export class TemplatesManager {
+export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService> {
+    private storageService: StorageService;
+
+    private relationshipTemplateService: RelationshipsTemplateService;
+
+    private entityTemplateService: EntityTemplateService;
+
+    private instancesService: InstancesService;
+
+    private processService: ProcessService;
+
+    private ruleBreachService: RuleBreachService;
+
+    constructor(dbName: string) {
+        super(new EntityTemplateService(dbName));
+        this.storageService = new StorageService(dbName);
+        this.relationshipTemplateService = new RelationshipsTemplateService(dbName);
+        this.entityTemplateService = new EntityTemplateService(dbName);
+        this.instancesService = new InstancesService(dbName);
+        this.processService = new ProcessService(dbName);
+        this.ruleBreachService = new RuleBreachService(dbName);
+    }
+
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
     private static getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
         allowedRelationshipsTemplatesBySource: IRelationshipTemplate[],
@@ -63,13 +86,10 @@ export class TemplatesManager {
         return Array.from(extendedAllowedRelationshipsTemplatesIds);
     }
 
-    private static async getAllowedRules(
-        allowedRelationshipsTemplates: IRelationshipTemplate[],
-        allowedEntityTemplatesIdsByOneRelationship: string[],
-    ) {
+    private async getAllowedRules(allowedRelationshipsTemplates: IRelationshipTemplate[], allowedEntityTemplatesIdsByOneRelationship: string[]) {
         const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
 
-        const rulesByAllowedRelationshipTemplates = await RelationshipsTemplateManagerService.searchRules({
+        const rulesByAllowedRelationshipTemplates = await this.relationshipTemplateService.searchRules({
             relationshipTemplateIds: allowedRelationshipsTemplatesIds,
         });
 
@@ -84,7 +104,7 @@ export class TemplatesManager {
          *    and flight is the pinned entity in the rule, and the rule might contain aggregation of "flight.flightsOn.person",
          *    and rule might break on person change
          */
-        const rulesPinnedByEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
+        const rulesPinnedByEntityTemplatesByOneRelationship = await this.relationshipTemplateService.searchRules({
             pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
         });
 
@@ -94,7 +114,7 @@ export class TemplatesManager {
             .map(({ relationshipTemplateId }) => relationshipTemplateId)
             .filter((relationshipTemplateId) => !allowedRelationshipsTemplatesIds.includes(relationshipTemplateId));
 
-        const allowedRelationshipTemplatesBecauseOfRules = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+        const allowedRelationshipTemplatesBecauseOfRules = await this.relationshipTemplateService.searchRelationshipTemplates({
             ids: allowedRelationshipTemplatesIdsBecauseOfRules,
         });
 
@@ -111,7 +131,7 @@ export class TemplatesManager {
             return !allowedEntityTemplatesIdsByOneRelationship.includes(entityTemplateId);
         });
 
-        const allowedEntityTemplatesBecauseOfRules = await EntityTemplateManagerService.searchEntityTemplates({
+        const allowedEntityTemplatesBecauseOfRules = await this.entityTemplateService.searchEntityTemplates({
             ids: unknownUnpinnedEntityTemplatesIdsOfAllowedRules,
         });
 
@@ -123,16 +143,16 @@ export class TemplatesManager {
     }
 
     // all
-    static async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allCategories = await TemplatesManager.getAllCategories();
+    async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allCategories = await this.getAllCategories();
 
-        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
-        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+        const allowedRelationshipsTemplatesBySource = await this.relationshipTemplateService.searchRelationshipTemplates({
             sourceEntityIds: allowedEntityTemplatesIds,
         });
-        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+        const allowedRelationshipsTemplatesByDestination = await this.relationshipTemplateService.searchRelationshipTemplates({
             destinationEntityIds: allowedEntityTemplatesIds,
         });
         const allowedRelationshipsTemplates = lodashUniqby(
@@ -140,18 +160,20 @@ export class TemplatesManager {
             '_id',
         );
 
-        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+        const allowedEntityTemplatesIdsByOneRelationship = TemplatesManager.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             allowedRelationshipsTemplatesBySource,
             allowedRelationshipsTemplatesByDestination,
             allowedEntityTemplatesIds,
         );
 
-        const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
+        const allowedEntityTemplatesByOneRelationship = await this.entityTemplateService.searchEntityTemplates({
             ids: allowedEntityTemplatesIdsByOneRelationship,
         });
 
-        const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } =
-            await TemplatesManager.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship);
+        const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } = await this.getAllowedRules(
+            allowedRelationshipsTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
 
         const allAllowedEntityTemplates = [
             ...allowedEntityTemplates,
@@ -159,8 +181,8 @@ export class TemplatesManager {
             ...allowedEntityTemplatesBecauseOfRules,
         ];
 
-        const allAllowedEntityTemplatesWithConstraints = await TemplatesManager.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
-        const processTemplatesBeforePopulate = await ProcessManagerService.searchProcessTemplates(
+        const allAllowedEntityTemplatesWithConstraints = await this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
+        const processTemplatesBeforePopulate = await this.processService.searchProcessTemplates(
             (await isProcessManager(userId)) ? {} : { reviewerId: userId },
         );
         const processTemplates = await Promise.all(
@@ -176,24 +198,24 @@ export class TemplatesManager {
         };
     }
 
-    static async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+    async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
-        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+        const allowedRelationshipsTemplatesBySource = await this.relationshipTemplateService.searchRelationshipTemplates({
             sourceEntityIds: allowedEntityTemplatesIds,
         });
-        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+        const allowedRelationshipsTemplatesByDestination = await this.relationshipTemplateService.searchRelationshipTemplates({
             destinationEntityIds: allowedEntityTemplatesIds,
         });
 
-        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+        const allowedEntityTemplatesIdsByOneRelationship = TemplatesManager.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             allowedRelationshipsTemplatesBySource,
             allowedRelationshipsTemplatesByDestination,
             allowedEntityTemplatesIds,
         );
 
-        const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
+        const allowedEntityTemplatesByOneRelationship = await this.entityTemplateService.searchEntityTemplates({
             ids: allowedEntityTemplatesIdsByOneRelationship,
         });
 
@@ -201,60 +223,60 @@ export class TemplatesManager {
     }
 
     // categories
-    static async getAllCategories() {
-        return EntityTemplateManagerService.getAllCategories();
+    async getAllCategories() {
+        return this.entityTemplateService.getAllCategories();
     }
 
-    static async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
+    async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
         if (file) {
-            const newFileId = await uploadFile(file);
+            const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
-            return EntityTemplateManagerService.createCategory({ ...categoryData, iconFileId: newFileId });
+            return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
         }
 
-        return EntityTemplateManagerService.createCategory({ ...categoryData, iconFileId: null });
+        return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: null });
     }
 
     // TODO: race condition here
-    static async deleteCategory(id: string) {
-        const templates = await EntityTemplateManagerService.searchEntityTemplates({ categoryIds: [id] });
+    async deleteCategory(id: string) {
+        const templates = await this.entityTemplateService.searchEntityTemplates({ categoryIds: [id] });
         if (templates.length > 0) {
             throw new ServiceError(400, 'category still has entity templates', { errorCode: categoryHasTemplates });
         }
 
-        const category = await EntityTemplateManagerService.getCategoryById(id);
+        const category = await this.entityTemplateService.getCategoryById(id);
 
         // deleting first the category so if it will fail, the icon and the permissions wont be deleted
-        await EntityTemplateManagerService.deleteCategory(id);
+        await this.entityTemplateService.deleteCategory(id);
 
         if (category.iconFileId !== null) {
-            await trycatch(() => deleteFile(category.iconFileId!));
+            await trycatch(() => this.storageService.deleteFile(category.iconFileId!));
         }
 
         await trycatch(() => PermissionsManager.deletePermissionsOfCategory(id));
     }
 
-    static async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
-        const { iconFileId } = await EntityTemplateManagerService.getCategoryById(id);
+    async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
+        const { iconFileId } = await this.entityTemplateService.getCategoryById(id);
 
         if (file) {
             if (iconFileId) {
-                await deleteFile(iconFileId);
+                await this.storageService.deleteFile(iconFileId);
             }
 
-            const newFileId = await uploadFile(file);
+            const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
 
-            return EntityTemplateManagerService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
+            return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
         }
 
         if (iconFileId && !updatedData.iconFileId) {
-            await deleteFile(iconFileId);
+            await this.storageService.deleteFile(iconFileId);
 
-            return EntityTemplateManagerService.updateCategory(id, { ...updatedData, iconFileId: null });
+            return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: null });
         }
 
-        return EntityTemplateManagerService.updateCategory(id, updatedData);
+        return this.entityTemplateService.updateCategory(id, updatedData);
     }
 
     // entity templates
@@ -273,8 +295,8 @@ export class TemplatesManager {
         };
     }
 
-    private static async getAndPopulateAllTemplatesConstraints(entityTemplates: IMongoEntityTemplatePopulated[]) {
-        const allConstraints = await InstanceManagerService.getAllConstraints();
+    private async getAndPopulateAllTemplatesConstraints(entityTemplates: IMongoEntityTemplatePopulated[]) {
+        const allConstraints = await this.instancesService.getAllConstraints();
 
         const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = entityTemplates.map((entityTemplate) => {
             const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
@@ -288,14 +310,14 @@ export class TemplatesManager {
         return entityTemplatesWithConstraints;
     }
 
-    static async createEntityTemplate(
+    async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        await EntityTemplateManagerService.getCategoryById(templateData.category);
+        await this.entityTemplateService.getCategoryById(templateData.category);
         let iconFileId: string | null;
         if (file) {
-            iconFileId = await uploadFile(file);
+            iconFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
         } else {
             iconFileId = null;
@@ -304,25 +326,25 @@ export class TemplatesManager {
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
-        const entityTemplate = await EntityTemplateManagerService.createEntityTemplate({
+        const entityTemplate = await this.entityTemplateService.createEntityTemplate({
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
         });
 
-        await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
+        await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
 
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static async throwIfEntityHasRelationships(id: string) {
-        const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
+    async throwIfEntityHasRelationships(id: string) {
+        const outgoingRelationships = await this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: [id] });
         if (outgoingRelationships.length > 0) {
             throw new ServiceError(400, 'entity template still has outgoing relationships', {
                 errorCode: entityTemplateHasOutgoingRelationships,
             });
         }
-        const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [id] });
+        const incomingRelationships = await this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: [id] });
         if (incomingRelationships.length > 0) {
             throw new ServiceError(400, 'entity template still has incoming relationships', {
                 errorCode: entityTemplateHasIncomingRelationships,
@@ -330,25 +352,25 @@ export class TemplatesManager {
         }
     }
 
-    static async throwIfEntityTemplateHasInstances(id: string) {
-        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+    async throwIfEntityTemplateHasInstances(id: string) {
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         if (count > 0) {
             throw new ServiceError(400, 'entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
     }
 
-    static async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
-        await TemplatesManager.throwIfEntityHasRelationships(id);
-        await TemplatesManager.throwIfEntityTemplateHasInstances(id);
+    async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
+        await this.throwIfEntityHasRelationships(id);
+        await this.throwIfEntityTemplateHasInstances(id);
 
-        const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const { iconFileId } = await this.entityTemplateService.getEntityTemplateById(id);
         if (iconFileId) {
-            await deleteFile(iconFileId);
+            await this.storageService.deleteFile(iconFileId);
         }
 
-        await InstanceManagerService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
+        await this.instancesService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
 
-        const entityTemplate = await EntityTemplateManagerService.deleteEntityTemplate(id);
+        const entityTemplate = await this.entityTemplateService.deleteEntityTemplate(id);
 
         return {
             ...entityTemplate,
@@ -360,15 +382,15 @@ export class TemplatesManager {
         };
     }
 
-    static async updateEntityTemplate(
+    async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         file?: Express.Multer.File,
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
-        await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
+        await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
-        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
-        const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+        const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
 
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
@@ -400,13 +422,13 @@ export class TemplatesManager {
         let iconFileId: string | null;
         if (file) {
             if (currTemplate.iconFileId) {
-                await deleteFile(currTemplate.iconFileId);
+                await this.storageService.deleteFile(currTemplate.iconFileId);
             }
 
-            iconFileId = await uploadFile(file);
+            iconFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
-            await deleteFile(currTemplate.iconFileId);
+            await this.storageService.deleteFile(currTemplate.iconFileId);
 
             iconFileId = null;
         } else {
@@ -415,13 +437,13 @@ export class TemplatesManager {
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = updatedTemplateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
-        const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
+        const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
         });
 
-        await InstanceManagerService.updateConstraintsOfTemplate(id, {
+        await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
             requiredConstraints,
         });
@@ -429,13 +451,13 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(updatedTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
-        return EntityTemplateManagerService.updateEntityTemplateStatus(id, disabledStatus);
+    updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        return this.entityTemplateService.updateEntityTemplateStatus(id, disabledStatus);
     }
 
     // relationship templates
-    private static async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
-        const { err: getEntityErr } = await trycatch(() => EntityTemplateManagerService.getEntityTemplateById(entityTemplateId));
+    private async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
+        const { err: getEntityErr } = await trycatch(() => this.entityTemplateService.getEntityTemplateById(entityTemplateId));
         if (getEntityErr) {
             const { response } = getEntityErr as AxiosError;
 
@@ -446,36 +468,36 @@ export class TemplatesManager {
         }
     }
 
-    static async createRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
+    async createRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-        await TemplatesManager.throwIfEntityTemplateDoesntExist(sourceEntityId, 'source entity of relation doesnt exist');
-        await TemplatesManager.throwIfEntityTemplateDoesntExist(destinationEntityId, 'destination entity of relation doesnt exist');
+        await this.throwIfEntityTemplateDoesntExist(sourceEntityId, 'source entity of relation doesnt exist');
+        await this.throwIfEntityTemplateDoesntExist(destinationEntityId, 'destination entity of relation doesnt exist');
 
-        const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
-        const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
+        const { disabled: sourceEntityDisabled } = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
+        const { disabled: destinationEntityDisabled } = await this.entityTemplateService.getEntityTemplateById(destinationEntityId);
 
         if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
             throw new ServiceError(400, 'can not create relationship template with disabled entity');
         }
 
-        return RelationshipsTemplateManagerService.createRelationshipTemplate(relationshipTemplate);
+        return this.relationshipTemplateService.createRelationshipTemplate(relationshipTemplate);
     }
 
-    static async updateRelationshipTemplate(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
+    async updateRelationshipTemplate(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
         if (updatedFields.sourceEntityId) {
-            await TemplatesManager.throwIfEntityTemplateDoesntExist(updatedFields.sourceEntityId, 'source entity of relation doesnt exist');
+            await this.throwIfEntityTemplateDoesntExist(updatedFields.sourceEntityId, 'source entity of relation doesnt exist');
         }
 
         if (updatedFields.destinationEntityId) {
-            await TemplatesManager.throwIfEntityTemplateDoesntExist(updatedFields.destinationEntityId, 'destination entity of relation doesnt exist');
+            await this.throwIfEntityTemplateDoesntExist(updatedFields.destinationEntityId, 'destination entity of relation doesnt exist');
         }
 
-        const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
-        const currTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+        const relationshipCount = await this.instancesService.getRelationshipsCountByTemplateId(templateId);
+        const currTemplate = await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
 
-        const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.sourceEntityId);
-        const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.destinationEntityId);
+        const { disabled: sourceEntityDisabled } = await this.entityTemplateService.getEntityTemplateById(currTemplate.sourceEntityId);
+        const { disabled: destinationEntityDisabled } = await this.entityTemplateService.getEntityTemplateById(currTemplate.destinationEntityId);
 
         if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
             throw new ServiceError(400, 'can not update relationship template with disabled entity');
@@ -488,7 +510,7 @@ export class TemplatesManager {
                 throw new ServiceError(400, 'can not change destination entity template');
         }
 
-        return RelationshipsTemplateManagerService.updateRelationshipTemplate(templateId, updatedFields);
+        return this.relationshipTemplateService.updateRelationshipTemplate(templateId, updatedFields);
     }
 
     static getDependentRelationshipTemplates(formula: IFormula) {
@@ -499,18 +521,18 @@ export class TemplatesManager {
         return [...new Set(relationshipTemplates)];
     }
 
-    static async deleteRelationshipTemplate(templateId: string) {
-        const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
+    async deleteRelationshipTemplate(templateId: string) {
+        const relationshipCount = await this.instancesService.getRelationshipsCountByTemplateId(templateId);
         if (relationshipCount !== 0) {
             throw new ServiceError(400, 'relationship template still has instances', { errorCode: relationshipTemplateHasInstances });
         }
 
-        const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
+        const relationshipTemplate = await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-        const relationshipRelatedRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
-        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [sourceEntityId] });
-        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [destinationEntityId] });
+        const relationshipRelatedRules = await this.relationshipTemplateService.searchRules({ relationshipTemplateIds: [templateId] });
+        const sourceRelatedRules = await this.relationshipTemplateService.searchRules({ pinnedEntityTemplateIds: [sourceEntityId] });
+        const destinationRelatedRules = await this.relationshipTemplateService.searchRules({ pinnedEntityTemplateIds: [destinationEntityId] });
 
         const dependentRelationshipsToSource = sourceRelatedRules.map(({ formula }) => {
             return TemplatesManager.getDependentRelationshipTemplates(formula);
@@ -525,11 +547,11 @@ export class TemplatesManager {
             throw new ServiceError(400, 'relationship template still has rules', { errorCode: relationshipTemplateHasRules });
         }
 
-        return RelationshipsTemplateManagerService.deleteRelationshipTemplate(templateId);
+        return this.relationshipTemplateService.deleteRelationshipTemplate(templateId);
     }
 
     // entities
-    static async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>) {
+    async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>) {
         const searchBody: ISearchEntityTemplatesBody = {};
 
         const { templatesManagementId, instancesPermissions } = userPermissions;
@@ -540,26 +562,26 @@ export class TemplatesManager {
             searchBody.categoryIds = allowedCategories;
         }
 
-        return EntityTemplateManagerService.searchEntityTemplates(searchBody);
+        return this.entityTemplateService.searchEntityTemplates(searchBody);
     }
 
     // rules
-    static async updateRuleStatusById(ruleId: string, disabled: boolean) {
+    async updateRuleStatusById(ruleId: string, disabled: boolean) {
         // todo: if disabling, check no open requests, search in rule-breaches
         // if (!disabled) {
 
         // }
 
-        return RelationshipsTemplateManagerService.updateRuleStatusById(ruleId, disabled);
+        return this.relationshipTemplateService.updateRuleStatusById(ruleId, disabled);
     }
 
-    static async deleteRuleById(ruleId: string) {
-        const alerts = await RuleBreachService.getRuleBreachAlertsByRuleId(ruleId);
-        const requests = await RuleBreachService.getRuleBreachRequestsByRuleId(ruleId);
+    async deleteRuleById(ruleId: string) {
+        const alerts = await this.ruleBreachService.getRuleBreachAlertsByRuleId(ruleId);
+        const requests = await this.ruleBreachService.getRuleBreachRequestsByRuleId(ruleId);
         if (alerts.length !== 0 || requests.length !== 0) {
             throw new ServiceError(400, 'rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
         }
-        return RelationshipsTemplateManagerService.deleteRuleById(ruleId);
+        return this.relationshipTemplateService.deleteRuleById(ruleId);
     }
 }
 

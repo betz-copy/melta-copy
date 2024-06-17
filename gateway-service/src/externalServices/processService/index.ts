@@ -11,7 +11,7 @@ const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
 } = config;
 
-export class ProcessManagerService extends DefaultExternalServiceApi {
+export class ProcessService extends DefaultExternalServiceApi {
     constructor(dbName: string) {
         super(dbName, { baseURL: url, timeout: requestTimeout });
     }

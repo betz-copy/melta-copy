@@ -1,8 +1,11 @@
-import { deleteFiles, uploadFiles } from '../../externalServices/storageService';
+import config from '../../config';
+import { StorageService } from '../../externalServices/storageService';
 import { IWorkspace } from './interface';
 import { WorkspaceService } from './service';
 
 export class WorkspaceManager {
+    private static storageService = new StorageService(config.workspaceService.dbName);
+
     static async getDir(path: IWorkspace['path']) {
         return WorkspaceService.getDir(path);
     }
@@ -18,7 +21,7 @@ export class WorkspaceManager {
     private static async uploadFilesWrapper(files: Express.Multer.File[]) {
         if (!files.length) return {};
 
-        const fileIds = await uploadFiles(files);
+        const fileIds = await this.storageService.uploadFiles(files);
 
         return files.reduce(
             (acc, { fieldname }, index) => ({ ...acc, [fieldname]: fileIds[index] }),
@@ -47,7 +50,7 @@ export class WorkspaceManager {
         if (workspace.iconFileId && workspace.iconFileId !== updatedWorkspace.iconFileId) filesToDelete.push(workspace.iconFileId);
         if (workspace.logoFileId && workspace.logoFileId !== updatedWorkspace.logoFileId) filesToDelete.push(workspace.logoFileId);
 
-        return !filesToDelete.length ? [] : deleteFiles(filesToDelete);
+        return !filesToDelete.length ? [] : this.storageService.deleteFiles(filesToDelete);
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
@@ -63,7 +66,7 @@ export class WorkspaceManager {
     static async deleteOne(id: string) {
         const { iconFileId, logoFileId } = await WorkspaceService.getById(id);
 
-        await WorkspaceManager.deleteFilesWrapper(id, () => deleteFiles([iconFileId, logoFileId].filter(Boolean) as string[]));
+        await WorkspaceManager.deleteFilesWrapper(id, () => this.storageService.deleteFiles([iconFileId, logoFileId].filter(Boolean) as string[]));
 
         return WorkspaceService.deleteOne(id);
     }

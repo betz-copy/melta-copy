@@ -1,4 +1,4 @@
-import { ProcessManagerService } from '../../../externalServices/processService';
+import { ProcessService } from '../../../externalServices/processService';
 import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoStepInstance,
@@ -6,13 +6,27 @@ import {
     IStepInstance,
     UpdateStepReqBody,
 } from '../../../externalServices/processService/interfaces/stepInstance';
-import { deleteFiles } from '../../../externalServices/storageService';
+import { StorageService } from '../../../externalServices/storageService';
+import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
 import { InstancesManager } from '../../instances/manager';
-import UsersManager from '../../users/manager';
+import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
 
-export default class StepsInstancesManager {
+export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
+    private storageService: StorageService;
+
+    private instancesManager: InstancesManager;
+
+    private processInstancesManager: ProcessesInstancesManager;
+
+    constructor(dbName: string) {
+        super(new ProcessService(dbName));
+        this.storageService = new StorageService(dbName);
+        this.instancesManager = new InstancesManager(dbName);
+        this.processInstancesManager = new ProcessesInstancesManager(dbName);
+    }
+
     private static async handleNotificationsOnUpdateStepInstance(
         process: IMongoProcessInstancePopulated,
         previousProcess: IMongoProcessInstanceWithSteps,
@@ -26,12 +40,12 @@ export default class StepsInstancesManager {
         ]);
     }
 
-    static async getStepInstanceWithEntitesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
-        const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(step._id);
+    async getStepInstanceWithEntitesAndReviewers(step: IMongoStepInstance, userId: string): Promise<IMongoStepInstancePopulated> {
+        const stepTemplate = await this.service.getStepTemplateByStepInstanceId(step._id);
         const reviewerPromise = step.reviewerId ? UsersManager.getUserById(step.reviewerId) : Promise.resolve(undefined);
         const populatedReviewersPromise = Promise.all(step.reviewers.map((id) => UsersManager.getUserById(id)));
         const propertiesPromise =
-            step.properties && ProcessesInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, userId);
+            step.properties && this.processInstancesManager.getPropertiesWithEntities(step.properties, stepTemplate.properties, userId);
         return Promise.all([reviewerPromise, populatedReviewersPromise, propertiesPromise]).then(([reviewer, populatedReviewers, properties]) => {
             const { reviewerId, ...populatedStep } = {
                 ...step,
@@ -43,7 +57,7 @@ export default class StepsInstancesManager {
         });
     }
 
-    static async updateStep(
+    async updateStep(
         processId: string,
         stepId: string,
         updatedData: Partial<Pick<IStepInstance, 'properties' | 'status' | 'comments'>>,
@@ -55,38 +69,40 @@ export default class StepsInstancesManager {
             ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId }, comments, processId }
             : { properties, comments, processId };
 
-        const process = await ProcessManagerService.getProcessInstanceById(processId, userId);
-        const stepTemplate = await ProcessManagerService.getStepTemplateByStepInstanceId(stepId);
-        if (properties) await ProcessesInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
+        const process = await this.service.getProcessInstanceById(processId, userId);
+        const stepTemplate = await this.service.getStepTemplateByStepInstanceId(stepId);
+        if (properties) await this.processInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
         if (!files.length) {
-            //add remove old files
-            const updatedStep = await ProcessManagerService.updateStepInstance(stepId, processServiceUpdateData);
-            const updatedProcess = await ProcessesInstancesManager.getProcessInstance(processId, userId);
-            if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
+            // add remove old files
+            const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData);
+            const updatedProcess = await this.processInstancesManager.getProcessInstance(processId, userId);
+            if (updatedStepStatus) StepsInstancesManager.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
-        const { props, files: filesToUpload } = await InstancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
-        const { properties: oldProperties } = await ProcessManagerService.getStepInstanceById(stepId);
-        const updatedStep = await ProcessManagerService.updateStepInstance(stepId, {
-            ...processServiceUpdateData,
-            properties: props,
-        }).catch((processServiceError) => {
-            deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-                // eslint-disable-next-line no-console
-                console.log(`failed to delete files ${deleteFilesError}`);
+        const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
+        const { properties: oldProperties } = await this.service.getStepInstanceById(stepId);
+        const updatedStep = await this.service
+            .updateStepInstance(stepId, {
+                ...processServiceUpdateData,
+                properties: props,
+            })
+            .catch((processServiceError) => {
+                this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
+                    // eslint-disable-next-line no-console
+                    console.log(`failed to delete files ${deleteFilesError}`);
+                    throw processServiceError;
+                });
                 throw processServiceError;
             });
-            throw processServiceError;
-        });
-        if (oldProperties) await ProcessesInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
+        if (oldProperties) await this.processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);
             }),
         );
         if (updatedData.status) {
-            const updatedProcess = await ProcessesInstancesManager.getProcessInstance(processId, userId);
-            this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
+            const updatedProcess = await this.processInstancesManager.getProcessInstance(processId, userId);
+            StepsInstancesManager.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
         return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
     }

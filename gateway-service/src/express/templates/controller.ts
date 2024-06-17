@@ -2,66 +2,71 @@ import assert from 'assert';
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
+import DefaultController from '../../utils/express/controller';
 
-export default class TemplatesController {
+export default class TemplatesController extends DefaultController<TemplatesManager> {
+    constructor(dbName: string) {
+        super(new TemplatesManager(dbName));
+    }
+
     // all
-    static async getAllAllowedTemplates(req: Request, res: Response) {
+    async getAllAllowedTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.getAllAllowedTemplates(user.id, permissionsOfUserId));
+        res.json(await this.manager.getAllAllowedTemplates(user.id, permissionsOfUserId));
     }
 
     // categories
-    static async createCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.createCategory(req.body, req.file));
+    async createCategory(req: Request, res: Response) {
+        res.json(await this.manager.createCategory(req.body, req.file));
     }
 
-    static async deleteCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteCategory(req.params.id));
+    async deleteCategory(req: Request, res: Response) {
+        res.json(await this.manager.deleteCategory(req.params.id));
     }
 
-    static async updateCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
+    async updateCategory(req: Request, res: Response) {
+        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file));
     }
 
     // entityTemplates
-    static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
+    async createEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createEntityTemplate(req.body, req.file));
     }
 
-    static async deleteEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteEntityTemplate(req.params.id));
+    async deleteEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteEntityTemplate(req.params.id));
     }
 
-    static async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
+    async updateEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.file));
     }
 
-    static async updateEntityTemplateStatus(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
+    async updateEntityTemplateStatus(req: Request, res: Response) {
+        res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
 
     // relationshipTemplates
-    static async createRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createRelationshipTemplate(req.body));
+    async createRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createRelationshipTemplate(req.body));
     }
 
-    static async deleteRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteRelationshipTemplate(req.params.id));
+    async deleteRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteRelationshipTemplate(req.params.id));
     }
 
-    static async updateRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
+    async updateRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateRelationshipTemplate(req.params.id, req.body));
     }
 
     // rules
-    static async updateRuleStatusById(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
+    async updateRuleStatusById(req: Request, res: Response) {
+        res.json(await this.manager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
     }
 
-    static async deleteRuleById(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteRuleById(req.params.ruleId));
+    async deleteRuleById(req: Request, res: Response) {
+        res.json(await this.manager.deleteRuleById(req.params.ruleId));
     }
 }

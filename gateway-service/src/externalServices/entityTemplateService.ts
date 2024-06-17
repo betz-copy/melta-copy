@@ -79,7 +79,7 @@ export interface ISearchEntityTemplatesBody {
     skip?: number;
 }
 
-export class EntityTemplateManagerService extends DefaultExternalServiceApi {
+export class EntityTemplateService extends DefaultExternalServiceApi {
     constructor(dbName: string) {
         super(dbName, { baseURL: url, timeout: requestTimeout });
     }

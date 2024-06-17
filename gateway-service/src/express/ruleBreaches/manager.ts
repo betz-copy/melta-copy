@@ -1,11 +1,11 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IConnection } from '../../externalServices/instanceService/interfaces/rules';
-import { InstanceManagerService } from '../../externalServices/instanceService';
+import { InstancesService } from '../../externalServices/instanceService';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsService';
-import { deleteFiles } from '../../externalServices/storageService';
+import { StorageService } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
 import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
@@ -45,34 +45,55 @@ import {
     RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
-import UsersManager from '../users/manager';
+import { UsersManager } from '../users/manager';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { rabbitCreateNotification } from '../../utils/createNotification';
+import { RabbitManager } from '../../utils/rabbit';
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
+import DefaultManagerProxy from '../../utils/express/manager';
 
 const { errorCodes } = config;
 
-export class RuleBreachesManager {
-    static async createRuleBreachRequest<T>(
+export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> {
+    private storageService: StorageService;
+
+    private entityTemplateService: EntityTemplateService;
+
+    private instancesService: InstancesService;
+
+    private instancesManager: InstancesManager;
+
+    private rabbitManager: RabbitManager;
+
+    constructor(dbName: string) {
+        super(new RuleBreachService(dbName));
+        this.storageService = new StorageService(dbName);
+        this.entityTemplateService = new EntityTemplateService(dbName);
+        this.instancesService = new InstancesService(dbName);
+        this.instancesManager = new InstancesManager(dbName);
+
+        this.rabbitManager = new RabbitManager(dbName);
+    }
+
+    async createRuleBreachRequest<T>(
         ruleBreachRequestData: Omit<IRuleBreachRequest<T>, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
     ): Promise<IRuleBreachRequestPopulated<IActionMetadataPopulated>> {
-        await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>, files);
+        await this.uploadRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>, files);
 
         const { result, err } = await trycatch(async () => {
-            const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest<T>({
+            const ruleBreachRequest = await this.service.createRuleBreachRequest<T>({
                 ...ruleBreachRequestData,
                 originUserId: userId,
             });
-            const request = await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequest._id);
+            const request = await this.getRuleBreachRequestById(ruleBreachRequest._id);
 
-            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
+            await this.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
                 NotificationType.ruleBreachRequest,
                 { requestId: ruleBreachRequest._id },
                 { request },
@@ -83,25 +104,25 @@ export class RuleBreachesManager {
         });
 
         if (err || !result) {
-            await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>);
+            await this.deleteRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>);
             throw err;
         }
 
         return result;
     }
 
-    static async createRuleBreachAlert<T>(
+    async createRuleBreachAlert<T>(
         ruleBreachAlertData: Omit<IRuleBreachAlert<T>, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
     ): Promise<IRuleBreachAlertPopulated<IActionMetadataPopulated>> {
-        await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachAlertData as unknown as Partial<IRuleBreach>, files);
+        await this.uploadRuleBreachFiles(ruleBreachAlertData as unknown as Partial<IRuleBreach>, files);
 
         const { result, err } = await trycatch(async () => {
-            const rulesBreachAlert = await RuleBreachService.createRuleBreachAlert<T>({ ...ruleBreachAlertData, originUserId: userId });
-            const alert = await RuleBreachesManager.getRuleBreachAlertsById(rulesBreachAlert._id);
+            const rulesBreachAlert = await this.service.createRuleBreachAlert<T>({ ...ruleBreachAlertData, originUserId: userId });
+            const alert = await this.getRuleBreachAlertsById(rulesBreachAlert._id);
 
-            await RuleBreachesManager.sendNotification<IRuleBreachAlertNotificationMetadata, IRuleBreachAlertNotificationMetadataPopulated>(
+            await this.sendNotification<IRuleBreachAlertNotificationMetadata, IRuleBreachAlertNotificationMetadataPopulated>(
                 NotificationType.ruleBreachAlert,
                 { alertId: rulesBreachAlert._id },
                 { alert },
@@ -112,7 +133,7 @@ export class RuleBreachesManager {
         });
 
         if (err || !result) {
-            await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachAlertData as unknown as Partial<IRuleBreach>);
+            await this.deleteRuleBreachFiles(ruleBreachAlertData as unknown as Partial<IRuleBreach>);
             throw err;
         }
 
@@ -125,32 +146,32 @@ export class RuleBreachesManager {
         }
     }
 
-    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
+    async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+        const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
         try {
-            if (isCreateRelationshipRuleBreach(ruleBreachRequest)) await RuleBreachesManager.createRelationship(ruleBreachRequest);
-            else if (isDeleteRelationshipRuleBreach(ruleBreachRequest)) await RuleBreachesManager.deleteRelationship(ruleBreachRequest);
-            else if (isUpdateEntityRuleBreach(ruleBreachRequest)) await RuleBreachesManager.updateEntity(ruleBreachRequest);
-            else if (isUpdateEntityStatusRuleBreach(ruleBreachRequest)) await RuleBreachesManager.updateEntityStatus(ruleBreachRequest);
+            if (isCreateRelationshipRuleBreach(ruleBreachRequest)) await this.createRelationship(ruleBreachRequest);
+            else if (isDeleteRelationshipRuleBreach(ruleBreachRequest)) await this.deleteRelationship(ruleBreachRequest);
+            else if (isUpdateEntityRuleBreach(ruleBreachRequest)) await this.updateEntity(ruleBreachRequest);
+            else if (isUpdateEntityStatusRuleBreach(ruleBreachRequest)) await this.updateEntityStatus(ruleBreachRequest);
         } catch (error: any) {
             if (error.metadata.errorCode === errorCodes.ruleBlock) {
-                await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
+                await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
             }
 
             throw error;
         }
 
-        const updatedRuleBreachRequest = await RuleBreachService.updateRuleBreachRequestStatus(
+        const updatedRuleBreachRequest = await this.service.updateRuleBreachRequestStatus(
             ruleBreachRequestId,
             user.id,
             RuleBreachRequestStatus.Approved,
         );
 
-        const ruleBreachRequestPopulated = await RuleBreachesManager.populateRuleBreachRequest(updatedRuleBreachRequest);
+        const ruleBreachRequestPopulated = await this.populateRuleBreachRequest(updatedRuleBreachRequest);
 
-        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
+        await this.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,
@@ -162,7 +183,7 @@ export class RuleBreachesManager {
         return ruleBreachRequestPopulated;
     }
 
-    private static async sendNotification<
+    private async sendNotification<
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends INotificationMetadataPopulated,
     >(type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated, extraViewers: string[] = []) {
@@ -172,13 +193,13 @@ export class RuleBreachesManager {
         rulesPermissions.forEach((rulesPermission) => viewers.add(rulesPermission.userId));
         extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
 
-        await rabbitCreateNotification(Array.from(viewers), type, metadata, populatedMetaData);
+        await this.rabbitManager.createNotification(Array.from(viewers), type, metadata, populatedMetaData);
     }
 
-    private static async createRelationship(ruleBreachRequest: IRuleBreachRequest<ICreateRelationshipMetadata>) {
+    private async createRelationship(ruleBreachRequest: IRuleBreachRequest<ICreateRelationshipMetadata>) {
         const { relationshipTemplateId, sourceEntityId, destinationEntityId } = ruleBreachRequest.actionMetadata;
 
-        await InstancesManager.createRelationshipInstance(
+        await this.instancesManager.createRelationshipInstance(
             { templateId: relationshipTemplateId, sourceEntityId, destinationEntityId, properties: {} as any },
             ruleBreachRequest.brokenRules,
             ruleBreachRequest.originUserId,
@@ -186,8 +207,8 @@ export class RuleBreachesManager {
         );
     }
 
-    private static async deleteRelationship(ruleBreachRequest: IRuleBreachRequest<IDeleteRelationshipMetadata>) {
-        await InstancesManager.deleteRelationshipInstance(
+    private async deleteRelationship(ruleBreachRequest: IRuleBreachRequest<IDeleteRelationshipMetadata>) {
+        await this.instancesManager.deleteRelationshipInstance(
             ruleBreachRequest.actionMetadata.relationshipId,
             ruleBreachRequest.brokenRules,
             ruleBreachRequest.originUserId,
@@ -195,8 +216,8 @@ export class RuleBreachesManager {
         );
     }
 
-    private static async updateEntityStatus(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityStatusMetadata>) {
-        await InstancesManager.updateEntityStatus(
+    private async updateEntityStatus(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityStatusMetadata>) {
+        await this.instancesManager.updateEntityStatus(
             ruleBreachRequest.actionMetadata.entityId,
             ruleBreachRequest.actionMetadata.disabled,
             ruleBreachRequest.brokenRules,
@@ -205,16 +226,16 @@ export class RuleBreachesManager {
         );
     }
 
-    private static async updateEntity(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityMetadata>) {
+    private async updateEntity(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityMetadata>) {
         const { entityId, updatedFields } = ruleBreachRequest.actionMetadata;
 
-        const entity = await InstanceManagerService.getEntityInstanceById(entityId);
+        const entity = await this.instancesService.getEntityInstanceById(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
 
-        await InstancesManager.updateEntityInstance(
+        await this.instancesManager.updateEntityInstance(
             entityId,
             { ...entity, properties: newEntityPropertiesWithoutNulls },
             [],
@@ -223,38 +244,38 @@ export class RuleBreachesManager {
             false,
         );
 
-        await RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
+        await this.service.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
             ...ruleBreachRequest.actionMetadata,
             before: entity,
         });
     }
 
-    static async discardRuleBreachRequest(
+    async discardRuleBreachRequest(
         ruleBreachRequest: IRuleBreachRequest,
         user: Express.User,
         type: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequestPopulated> {
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
-        RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequest);
+        this.deleteRuleBreachFiles(ruleBreachRequest);
 
         const [updatedRuleBreachRequest, { actionMetadata: updatedMetadata }] = await Promise.all([
-            RuleBreachService.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
+            this.service.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
 
             isUpdateEntityRuleBreach(ruleBreachRequest)
-                ? InstanceManagerService.getEntityInstanceById(ruleBreachRequest.actionMetadata.entityId).then((entity) =>
-                      RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
+                ? this.instancesService.getEntityInstanceById(ruleBreachRequest.actionMetadata.entityId).then((entity) =>
+                      this.service.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
                           ...ruleBreachRequest.actionMetadata,
                           before: entity,
                       }),
                   )
                 : { actionMetadata: ruleBreachRequest.actionMetadata },
         ]);
-        const ruleBreachRequestPopulated = await RuleBreachesManager.populateRuleBreachRequest({
+        const ruleBreachRequestPopulated = await this.populateRuleBreachRequest({
             ...updatedRuleBreachRequest,
             actionMetadata: updatedMetadata,
         });
-        await RuleBreachesManager.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
+        await this.sendNotification<IRuleBreachResponseNotificationMetadata, IRuleBreachResponseNotificationMetadataPopulated>(
             NotificationType.ruleBreachResponse,
             {
                 requestId: ruleBreachRequest._id,
@@ -266,25 +287,25 @@ export class RuleBreachesManager {
         return ruleBreachRequestPopulated;
     }
 
-    static async denyRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
-        return RuleBreachesManager.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Denied);
+    async denyRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+        const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
+        return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Denied);
     }
 
-    static async cancelRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
+    async cancelRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+        const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (ruleBreachRequest.originUserId !== user.id) {
             throw new ServiceError(403, 'only the origin user can cancel rule breach request');
         }
 
-        return RuleBreachesManager.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
+        return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
-    private static async uploadRuleBreachFiles(ruleBreach: Partial<IRuleBreach>, files: Express.Multer.File[]) {
+    private async uploadRuleBreachFiles(ruleBreach: Partial<IRuleBreach>, files: Express.Multer.File[]) {
         if (!isUpdateEntityRuleBreach(ruleBreach) || !files.length) return;
 
-        const { props: uploadedFilesProperties } = await InstancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
+        const { props: uploadedFilesProperties } = await this.instancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
 
         // eslint-disable-next-line no-param-reassign
         ruleBreach.actionMetadata.updatedFields = {
@@ -293,11 +314,11 @@ export class RuleBreachesManager {
         };
     }
 
-    private static async deleteRuleBreachFiles(ruleBreach: Partial<IRuleBreach>) {
+    private async deleteRuleBreachFiles(ruleBreach: Partial<IRuleBreach>) {
         if (!isUpdateEntityRuleBreach(ruleBreach)) return;
 
-        const entity = await InstanceManagerService.getEntityInstanceById(ruleBreach.actionMetadata.entityId);
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+        const entity = await this.instancesService.getEntityInstanceById(ruleBreach.actionMetadata.entityId);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
         const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(entityTemplate);
 
@@ -306,49 +327,49 @@ export class RuleBreachesManager {
             value: id,
         }));
 
-        await deleteFiles(filesToDelete);
+        await this.storageService.deleteFiles(filesToDelete);
     }
 
-    static async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
+    async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
         const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
-        const result = await RuleBreachService.searchRuleBreachRequests(updatedAgGridRequest);
+        const result = await this.service.searchRuleBreachRequests(updatedAgGridRequest);
 
         return {
             ...result,
-            rows: await RuleBreachesManager.populateRulesBreachRequests(result.rows),
+            rows: await this.populateRulesBreachRequests(result.rows),
         };
     }
 
-    static async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
+    async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
         const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
-        const result = await RuleBreachService.searchRuleBreachAlerts(updatedAgGridRequest);
+        const result = await this.service.searchRuleBreachAlerts(updatedAgGridRequest);
 
         return {
             ...result,
-            rows: await RuleBreachesManager.populateRulesBreachAlerts(result.rows),
+            rows: await this.populateRulesBreachAlerts(result.rows),
         };
     }
 
-    static async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
+    async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
+        const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user.id && !(await isRuleManager(user.id))) {
             throw new ServiceError(403, 'user does not have permissions to this rule breach request');
         }
 
-        return RuleBreachesManager.populateRuleBreachRequest(ruleBreachRequest);
+        return this.populateRuleBreachRequest(ruleBreachRequest);
     }
 
-    static async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: Express.User): Promise<IRuleBreachAlertPopulated> {
-        const ruleBreachAlert = await RuleBreachService.getRuleBreachAlertById(ruleBreachAlertId);
+    async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: Express.User): Promise<IRuleBreachAlertPopulated> {
+        const ruleBreachAlert = await this.service.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user.id && !(await isRuleManager(user.id))) {
             throw new ServiceError(403, 'user does not have permissions to this rule breach alert');
         }
 
-        return RuleBreachesManager.populateRuleBreachAlert(ruleBreachAlert);
+        return this.populateRuleBreachAlert(ruleBreachAlert);
     }
 
     private static async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
@@ -365,10 +386,10 @@ export class RuleBreachesManager {
         return updatedAgGridRequest;
     }
 
-    private static async populateBrokenRule(brokenRule: IBrokenRule): Promise<IBrokenRulePopulated> {
+    private async populateBrokenRule(brokenRule: IBrokenRule): Promise<IBrokenRulePopulated> {
         const includesCreatedRelationshipId = brokenRule.relationshipIds.includes('created-relationship-id');
 
-        const relationshipConnections: IConnection[] = await InstanceManagerService.getRelationshipsConnectionsByIds(brokenRule.relationshipIds);
+        const relationshipConnections: IConnection[] = await this.instancesService.getRelationshipsConnectionsByIds(brokenRule.relationshipIds);
 
         const relationships: IBrokenRulePopulated['relationships'] = relationshipConnections.map(
             ({ sourceEntity, destinationEntity, relationship: { sourceEntityId, destinationEntityId, ...restOfRelationship } }) => ({
@@ -389,14 +410,14 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateBrokenRules(brokenRules: IBrokenRule[]): Promise<IBrokenRulePopulated[]> {
-        return Promise.all(brokenRules.map(RuleBreachesManager.populateBrokenRule));
+    public async populateBrokenRules(brokenRules: IBrokenRule[]): Promise<IBrokenRulePopulated[]> {
+        return Promise.all(brokenRules.map(this.populateBrokenRule));
     }
 
-    private static async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) {
+    private async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) {
         const [sourceEntity, destinationEntity] = await Promise.all([
-            InstanceManagerService.getEntityInstanceById(sourceEntityId).catch(() => null),
-            InstanceManagerService.getEntityInstanceById(destinationEntityId).catch(() => null),
+            this.instancesService.getEntityInstanceById(sourceEntityId).catch(() => null),
+            this.instancesService.getEntityInstanceById(destinationEntityId).catch(() => null),
         ]);
 
         return {
@@ -405,32 +426,32 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateCreateRelationshipActionMetadata(
+    public async populateCreateRelationshipActionMetadata(
         actionMetadata: ICreateRelationshipMetadata,
     ): Promise<ICreateRelationshipMetadataPopulated> {
         const { sourceEntityId, destinationEntityId, ...restOfMetadata } = actionMetadata;
 
         return {
             ...restOfMetadata,
-            ...(await RuleBreachesManager.populateSourceAndDestinationEntities(sourceEntityId, destinationEntityId)),
+            ...(await this.populateSourceAndDestinationEntities(sourceEntityId, destinationEntityId)),
         };
     }
 
-    public static async populateDeleteRelationshipActionMetadata(
+    public async populateDeleteRelationshipActionMetadata(
         actionMetadata: IDeleteRelationshipMetadata,
     ): Promise<IDeleteRelationshipMetadataPopulated> {
         const { sourceEntityId, destinationEntityId, ...restOfMetadata } = actionMetadata;
 
         return {
             ...restOfMetadata,
-            ...(await RuleBreachesManager.populateSourceAndDestinationEntities(sourceEntityId, destinationEntityId)),
+            ...(await this.populateSourceAndDestinationEntities(sourceEntityId, destinationEntityId)),
         };
     }
 
-    public static async populateUpdateEntityActionMetadata(actionMetadata: IUpdateEntityMetadata): Promise<IUpdateEntityMetadataPopulated> {
+    public async populateUpdateEntityActionMetadata(actionMetadata: IUpdateEntityMetadata): Promise<IUpdateEntityMetadataPopulated> {
         const { entityId, ...restOfMetadata } = actionMetadata;
 
-        const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
+        const entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         return {
             ...restOfMetadata,
@@ -438,12 +459,12 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateUpdateEntityStatusActionMetadata(
+    public async populateUpdateEntityStatusActionMetadata(
         actionMetadata: IUpdateEntityStatusMetadata,
     ): Promise<IUpdateEntityStatusMetadataPopulated> {
         const { entityId, ...restOfMetadata } = actionMetadata;
 
-        const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
+        const entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         return {
             ...restOfMetadata,
@@ -451,22 +472,22 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
+    public async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
         const { originUserId, brokenRules, ...restOfRuleBreach } = ruleBreach;
 
         let populatedActionMetadataPromise: Promise<IActionMetadataPopulated>;
 
         if (isCreateRelationshipRuleBreach(ruleBreach))
-            populatedActionMetadataPromise = RuleBreachesManager.populateCreateRelationshipActionMetadata(ruleBreach.actionMetadata);
+            populatedActionMetadataPromise = this.populateCreateRelationshipActionMetadata(ruleBreach.actionMetadata);
         else if (isDeleteRelationshipRuleBreach(ruleBreach))
-            populatedActionMetadataPromise = RuleBreachesManager.populateDeleteRelationshipActionMetadata(ruleBreach.actionMetadata);
+            populatedActionMetadataPromise = this.populateDeleteRelationshipActionMetadata(ruleBreach.actionMetadata);
         else if (isUpdateEntityRuleBreach(ruleBreach))
-            populatedActionMetadataPromise = RuleBreachesManager.populateUpdateEntityActionMetadata(ruleBreach.actionMetadata);
+            populatedActionMetadataPromise = this.populateUpdateEntityActionMetadata(ruleBreach.actionMetadata);
         else if (isUpdateEntityStatusRuleBreach(ruleBreach))
-            populatedActionMetadataPromise = RuleBreachesManager.populateUpdateEntityStatusActionMetadata(ruleBreach.actionMetadata);
+            populatedActionMetadataPromise = this.populateUpdateEntityStatusActionMetadata(ruleBreach.actionMetadata);
 
         const [populatedBrokenRules, originUser, actionMetadata] = await Promise.all([
-            RuleBreachesManager.populateBrokenRules(brokenRules),
+            this.populateBrokenRules(brokenRules),
             UsersManager.getUserById(originUserId),
             populatedActionMetadataPromise!,
         ]);
@@ -479,11 +500,11 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateRuleBreachRequest(ruleBreachRequest: IRuleBreachRequest): Promise<IRuleBreachRequestPopulated> {
+    public async populateRuleBreachRequest(ruleBreachRequest: IRuleBreachRequest): Promise<IRuleBreachRequestPopulated> {
         const { reviewerId, ...restOfRulesBreachRequest } = ruleBreachRequest;
 
         const [populatedRuleBreach, reviewer] = await Promise.all([
-            RuleBreachesManager.populateRuleBreach(restOfRulesBreachRequest),
+            this.populateRuleBreach(restOfRulesBreachRequest),
             reviewerId ? UsersManager.getUserById(reviewerId) : undefined,
         ]);
 
@@ -494,16 +515,16 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateRuleBreachAlert(ruleBreachAlert: IRuleBreachAlert): Promise<IRuleBreachAlertPopulated> {
-        return RuleBreachesManager.populateRuleBreach(ruleBreachAlert);
+    public async populateRuleBreachAlert(ruleBreachAlert: IRuleBreachAlert): Promise<IRuleBreachAlertPopulated> {
+        return this.populateRuleBreach(ruleBreachAlert);
     }
 
-    public static async populateRulesBreachRequests(ruleBreachRequests: IRuleBreachRequest[]): Promise<IRuleBreachRequestPopulated[]> {
-        return Promise.all(ruleBreachRequests.map(RuleBreachesManager.populateRuleBreachRequest));
+    public async populateRulesBreachRequests(ruleBreachRequests: IRuleBreachRequest[]): Promise<IRuleBreachRequestPopulated[]> {
+        return Promise.all(ruleBreachRequests.map(this.populateRuleBreachRequest));
     }
 
-    public static async populateRulesBreachAlerts(ruleBreachAlerts: IRuleBreachAlert[]): Promise<IRuleBreachAlertPopulated[]> {
-        return Promise.all(ruleBreachAlerts.map(RuleBreachesManager.populateRuleBreachAlert));
+    public async populateRulesBreachAlerts(ruleBreachAlerts: IRuleBreachAlert[]): Promise<IRuleBreachAlertPopulated[]> {
+        return Promise.all(ruleBreachAlerts.map(this.populateRuleBreachAlert));
     }
 }
 

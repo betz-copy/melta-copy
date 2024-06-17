@@ -35,7 +35,7 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
 
-export class ActivityLogManagerService extends DefaultExternalServiceApi {
+export class ActivityLogService extends DefaultExternalServiceApi {
     constructor(dbName: string) {
         super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }

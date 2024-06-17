@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { wrapMiddleware } from '../utils/express';
+import { createWorkspacesProxyMiddleware, wrapMiddleware } from '../utils/express';
 import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
 import { usersRouter } from './users/router';
 import templatesRouter from './templates/router';
@@ -28,7 +28,7 @@ apiRouter.use('/instances', instancesRouter);
 apiRouter.use(
     '/files',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
+    createWorkspacesProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import NotificationsController from './controller';
@@ -13,38 +13,40 @@ import {
 
 const notificationsRouter: Router = Router();
 
+const NotificationsControllerMiddleware = createWorkspacesController(NotificationsController);
+
 notificationsRouter.get(
     '/my',
     ValidateRequest(getMyNotificationsRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotifications),
+    NotificationsControllerMiddleware('getMyNotifications'),
 );
 
 notificationsRouter.get(
     '/my/count',
     ValidateRequest(getMyNotificationCountRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotificationCount),
+    NotificationsControllerMiddleware('getMyNotificationCount'),
 );
 notificationsRouter.post(
     '/my/group-count',
     ValidateRequest(getMyNotificationGroupCountRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotificationGroupCount),
+    NotificationsControllerMiddleware('getMyNotificationGroupCount'),
 );
 
 notificationsRouter.post(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.notificationsSeen),
+    NotificationsControllerMiddleware('notificationsSeen'),
 );
 
 notificationsRouter.post(
     '/seen',
     ValidateRequest(manyNotificationSeenRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.manyNotificationsSeen),
+    NotificationsControllerMiddleware('manyNotificationsSeen'),
 );
 
 export default notificationsRouter;

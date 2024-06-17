@@ -9,7 +9,7 @@ const {
     instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
 } = config;
 
-export class InstanceManagerService extends DefaultExternalServiceApi {
+export class InstancesService extends DefaultExternalServiceApi {
     constructor(dbName: string) {
         super(dbName, { baseURL: url, timeout: requestTimeout });
     }

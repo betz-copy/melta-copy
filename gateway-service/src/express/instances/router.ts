@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
 import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
@@ -16,7 +16,7 @@ import {
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
 import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
-import InstancesController from './controller';
+import { InstancesController } from './controller';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
@@ -30,13 +30,16 @@ import {
 import ValidateRequest from '../../utils/joi';
 
 const { instanceService } = config;
-const InstanceManagerProxy = createProxyMiddleware({
+
+const InstanceManagerProxy = createWorkspacesProxyMiddleware({
     target: instanceService.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: instanceService.requestTimeout,
 });
 
 const InstancesRouter: Router = Router();
+
+const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
 
 // entities (Instances)
 InstancesRouter.post(
@@ -50,14 +53,14 @@ InstancesRouter.post(
     '/entities/export',
     wrapMiddleware(validateUserCanExportEntities),
     ValidateRequest(exportEntitiesSchema),
-    wrapController(InstancesController.exportEntities),
+    InstancesControllerMiddleware('exportEntities'),
 );
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanReadEntityInstance), InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
     wrapMiddleware(validateUserCanGetExpandedEntity),
-    wrapMiddleware(InstancesController.viewEntityInstance),
+    InstancesControllerMiddleware('viewEntityInstance'),
     InstanceManagerProxy,
 );
 InstancesRouter.post(
@@ -65,7 +68,7 @@ InstancesRouter.post(
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
     wrapMiddleware(validateUserCanCreateEntityInstance),
-    wrapController(InstancesController.createEntityInstance),
+    InstancesControllerMiddleware('createEntityInstance'),
 );
 InstancesRouter.put(
     '/entities/:id',
@@ -73,26 +76,26 @@ InstancesRouter.put(
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.updateEntityInstance),
+    InstancesControllerMiddleware('updateEntityInstance'),
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.duplicateEntityInstance),
+    InstancesControllerMiddleware('duplicateEntityInstance'),
 );
 InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.deleteEntityInstance),
+    InstancesControllerMiddleware('deleteEntityInstance'),
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
-    wrapController(InstancesController.updateEntityStatus),
+    InstancesControllerMiddleware('updateEntityStatus'),
 );
 
 // relationships (Instances)
@@ -102,7 +105,7 @@ InstancesRouter.post(
     ValidateRequest(createRelationshipSchema),
     wrapMiddleware(validateUserCanCreateRelationshipInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.createRelationshipInstance),
+    InstancesControllerMiddleware('createRelationshipInstance'),
 );
 InstancesRouter.put('/relationships/:id', wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance), InstanceManagerProxy);
 InstancesRouter.delete(
@@ -110,7 +113,7 @@ InstancesRouter.delete(
     ValidateRequest(deleteRelationshipSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipInstance),
     wrapMiddleware(validateUserCanIgnoreRules),
-    wrapController(InstancesController.deleteRelationshipInstance),
+    InstancesControllerMiddleware('deleteRelationshipInstance'),
 );
 
 export default InstancesRouter;

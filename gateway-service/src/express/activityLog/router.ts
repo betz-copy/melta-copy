@@ -1,10 +1,11 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { fixRequestBody } from 'http-proxy-middleware';
+import { createWorkspacesProxyMiddleware } from '../../utils/express';
 import config from '../../config';
 
 const { activityLogService: activityLog } = config;
 
-const ActivityLogProxy = createProxyMiddleware({
+const ActivityLogProxy = createWorkspacesProxyMiddleware({
     target: activityLog.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: activityLog.requestTimeout,

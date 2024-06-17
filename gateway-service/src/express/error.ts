@@ -59,3 +59,15 @@ export const errorMiddleware = async (error: Error, _req: express.Request, res: 
 
     next();
 };
+
+export class InvalidWorkspaceHeaderError extends ServiceError {
+    constructor() {
+        super(400, 'Invalid workspace id in header');
+    }
+}
+
+export class UserNotFoundError extends ServiceError {
+    constructor() {
+        super(400, 'User not found');
+    }
+}

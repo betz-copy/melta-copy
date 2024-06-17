@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { wrapController, wrapMiddleware } from '../../../utils/express';
+import { createWorkspacesController, wrapMiddleware } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
 import config from '../../../config';
 import ValidateRequest from '../../../utils/joi';
@@ -19,28 +19,30 @@ const {
 
 const TemplatesRouter: Router = Router();
 
+const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplatesController);
+
 // TODO add validate User Is Processes Manager
-TemplatesRouter.get('/:id', ValidateRequest(getTemplateByIdSchema), wrapController(ProcessTemplatesController.getTemplateById));
+TemplatesRouter.get('/:id', ValidateRequest(getTemplateByIdSchema), TemplatesControllerMiddleware('getTemplateById'));
 TemplatesRouter.post(
     '/',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createProcessTemplateSchema),
     wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.createProcessTemplate),
+    TemplatesControllerMiddleware('createProcessTemplate'),
 );
-TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), wrapController(ProcessTemplatesController.searchProcessTemplates));
+TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), TemplatesControllerMiddleware('searchProcessTemplates'));
 TemplatesRouter.delete(
     '/:id',
     ValidateRequest(deleteProcessTemplateSchema),
     wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.deleteProcessTemplate),
+    TemplatesControllerMiddleware('deleteProcessTemplate'),
 );
 TemplatesRouter.put(
     '/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateProcessTemplateSchema),
     wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.updateProcessTemplate),
+    TemplatesControllerMiddleware('updateProcessTemplate'),
 );
 
 export default TemplatesRouter;

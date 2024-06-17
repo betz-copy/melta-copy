@@ -1,33 +1,36 @@
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { GanttManager } from './manager';
+import DefaultController from '../../utils/express/controller';
 
-class GanttController {
-    static async searchGantts(req: Request, res: Response) {
-        const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        res.json(await GanttManager.searchGantts(body, permissionsOfUserId));
+export class GanttController extends DefaultController<GanttManager> {
+    constructor(dbName: string) {
+        super(new GanttManager(dbName));
     }
 
-    static async getGanttById(req: Request, res: Response) {
+    async searchGantts(req: Request, res: Response) {
+        const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        res.json(await this.manager.searchGantts(body, permissionsOfUserId));
+    }
+
+    async getGanttById(req: Request, res: Response) {
         const {
             params: { ganttId },
             permissionsOfUserId,
         } = req as RequestWithPermissionsOfUserId;
 
-        res.json(await GanttManager.getGanttById(ganttId, permissionsOfUserId));
+        res.json(await this.manager.getGanttById(ganttId, permissionsOfUserId));
     }
 
-    static async createGantt(req: Request, res: Response) {
-        res.json(await GanttManager.createGantt(req.body));
+    async createGantt(req: Request, res: Response) {
+        res.json(await this.manager.createGantt(req.body));
     }
 
-    static async deleteGantt(req: Request, res: Response) {
-        res.json(await GanttManager.deleteGantt(req.params.ganttId));
+    async deleteGantt(req: Request, res: Response) {
+        res.json(await this.manager.deleteGantt(req.params.ganttId));
     }
 
-    static async updateGantt(req: Request, res: Response) {
-        res.json(await GanttManager.updateGantt(req.params.ganttId, req.body));
+    async updateGantt(req: Request, res: Response) {
+        res.json(await this.manager.updateGantt(req.params.ganttId, req.body));
     }
 }
-
-export default GanttController;

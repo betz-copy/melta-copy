@@ -5,6 +5,8 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         meltaBaseUrl: env.get('SYSTEM_MELTA_BASE_URL').required().asString(),
+        workspaceHeaderName: env.get('WORKSPACE_HEADER_NAME').default('workspaceId').asString(),
+        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
@@ -101,6 +103,7 @@ const config = {
         requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     workspaceService: {
+        dbName: env.get('WORKSPACE_SERVICE_DB_NAME').default('workspaces').asString(),
         url: env.get('WORKSPACE_SERVICE_URL').required().asString(),
         baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
         requestTimeout: env.get('WORKSPACES_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),

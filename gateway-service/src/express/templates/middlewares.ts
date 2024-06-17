@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { EntityTemplateService } from '../../externalServices/entityTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 
 export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) => {
@@ -13,7 +13,7 @@ export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) =
 export const validateUserCanUpdateOrDeleteEntityTemplate = async (req: Request) => {
     const templateId = req.params.id;
 
-    const { category } = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+    const { category } = await EntityTemplateService.getEntityTemplateById(templateId);
 
     return validateAuthorization(req, 'Templates', [category._id]);
 };
@@ -21,8 +21,8 @@ export const validateUserCanUpdateOrDeleteEntityTemplate = async (req: Request) 
 export const getRelatedCategoriesFromRelationshipTemplate = async (relationshipTemplate: IRelationshipTemplate) => {
     const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-    const { category: srcCategory } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
-    const { category: dstCategory } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
+    const { category: srcCategory } = await EntityTemplateService.getEntityTemplateById(sourceEntityId);
+    const { category: dstCategory } = await EntityTemplateService.getEntityTemplateById(destinationEntityId);
 
     return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
 };
@@ -34,7 +34,7 @@ export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Request) => {
-    const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(req.params.id);
+    const relationshipTemplate = await RelationshipsTemplateService.getRelationshipTemplateById(req.params.id);
 
     const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
 

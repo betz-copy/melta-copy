@@ -1,13 +1,27 @@
 import lodashIsEqual from 'lodash.isequal';
-import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
 import { IGantt, ISearchGanttsBody, GanttsService, IMongoGantt, IGanttItem } from '../../externalServices/ganttsService';
-import { InstanceManagerService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { InstancesService } from '../../externalServices/instanceService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
 import { IPermissionsOfUser } from '../permissions/interfaces';
+import DefaultManagerProxy from '../../utils/express/manager';
 
-export class GanttManager {
+export class GanttManager extends DefaultManagerProxy<GanttsService> {
+    private instancesService: InstancesService;
+
+    private entityTemplateService: EntityTemplateService;
+
+    private relationshipsTemplateService: RelationshipsTemplateService;
+
+    constructor(dbName: string) {
+        super(new GanttsService(dbName));
+        this.instancesService = new InstancesService(dbName);
+        this.entityTemplateService = new EntityTemplateService(dbName);
+        this.relationshipsTemplateService = new RelationshipsTemplateService(dbName);
+    }
+
     private static filterGanttWithPermissions(gantt: IMongoGantt, allowedEntityTemplates: IMongoEntityTemplatePopulated[]): IMongoGantt | null {
         const filteredItems = gantt.items.filter(({ entityTemplate }) => {
             return allowedEntityTemplates.some(({ _id }) => _id === entityTemplate.id);
@@ -19,19 +33,19 @@ export class GanttManager {
         };
     }
 
-    static async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
 
-        const gantts = await GanttsService.searchGantts(searchBody);
-        return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
+        const gantts = await this.service.searchGantts(searchBody);
+        return gantts.map((gantt) => GanttManager.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
-    static async getGanttById(ganttId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async getGanttById(ganttId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(permissionsOfUserId);
 
-        const gantt = await GanttsService.getGanttById(ganttId);
+        const gantt = await this.service.getGanttById(ganttId);
 
-        return this.filterGanttWithPermissions(gantt, allowedEntityTemplates);
+        return GanttManager.filterGanttWithPermissions(gantt, allowedEntityTemplates);
     }
 
     private static doesRelationshipContainsEntityTemplate(
@@ -55,7 +69,7 @@ export class GanttManager {
         }
     }
 
-    private static async validateGanttGroupBy(gantt: IGantt, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
+    private async validateGanttGroupBy(gantt: IGantt, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
         if (!gantt.groupBy) {
             if (gantt.items.some(({ groupByRelationshipId }) => groupByRelationshipId)) {
                 throw new ServiceError(400, 'gantt contains items with "groupByRelationshipId" without having "groupBy"');
@@ -63,7 +77,7 @@ export class GanttManager {
             return;
         }
 
-        const groupByEntityTemplateConstraints = await InstanceManagerService.getConstraintsOfTemplate(gantt.groupBy.entityTemplateId);
+        const groupByEntityTemplateConstraints = await this.instancesService.getConstraintsOfTemplate(gantt.groupBy.entityTemplateId);
         if (
             !groupByEntityTemplateConstraints.uniqueConstraints.find((uniqueConstraint) =>
                 lodashIsEqual(uniqueConstraint, [gantt.groupBy!.groupNameField]),
@@ -148,12 +162,12 @@ export class GanttManager {
         });
     }
 
-    private static async validateTemplatesDataOfGantt(gantt: IGantt) {
+    private async validateTemplatesDataOfGantt(gantt: IGantt) {
         const entityTemplateIdsOfItems = gantt.items.map(({ entityTemplate: { id } }) => id);
         if (gantt.groupBy) entityTemplateIdsOfItems.push(gantt.groupBy.entityTemplateId);
 
         const entityTemplateIds = [...new Set(entityTemplateIdsOfItems)];
-        const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: entityTemplateIds });
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: entityTemplateIds });
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         gantt.items.forEach((ganttItem) => {
@@ -174,7 +188,7 @@ export class GanttManager {
         );
 
         const relationshipTemplateIds = [...new Set(relationshipTemplateIdsOfItems)];
-        const relationshipTemplates = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: relationshipTemplateIds });
+        const relationshipTemplates = await this.relationshipsTemplateService.searchRelationshipTemplates({ ids: relationshipTemplateIds });
         const relationshipTemplatesMap = new Map(
             relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
         );
@@ -182,7 +196,7 @@ export class GanttManager {
         gantt.items.forEach((ganttItem) => {
             GanttManager.validateRelationshipOfGanttItem(ganttItem, relationshipTemplatesMap);
         });
-        await GanttManager.validateGanttGroupBy(gantt, relationshipTemplatesMap);
+        await this.validateGanttGroupBy(gantt, relationshipTemplatesMap);
 
         const additionalEntityTemplateIdsFromRelationshipsOfItems: string[] = [];
         gantt.items.forEach(({ entityTemplate: { id: entityTemplateId }, connectedEntityTemplates }) => {
@@ -202,7 +216,7 @@ export class GanttManager {
         });
         const additionalEntityTemplateIds = [...new Set(additionalEntityTemplateIdsFromRelationshipsOfItems)];
 
-        const additionalEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates({
+        const additionalEntityTemplates = await this.entityTemplateService.searchEntityTemplates({
             ids: additionalEntityTemplateIds,
         });
         const additionalEntityTemplatesEntries: Array<[string, IMongoEntityTemplatePopulated]> = additionalEntityTemplates.map((entityTemplate) => [
@@ -217,18 +231,18 @@ export class GanttManager {
         });
     }
 
-    static async createGantt(gantt: IGantt) {
+    async createGantt(gantt: IGantt) {
         await this.validateTemplatesDataOfGantt(gantt);
-        return GanttsService.createGantt(gantt);
+        return this.createGantt(gantt);
     }
 
-    static deleteGantt(ganttId: string) {
-        return GanttsService.deleteGantt(ganttId);
+    deleteGantt(ganttId: string) {
+        return this.deleteGantt(ganttId);
     }
 
-    static async updateGantt(ganttId: string, gantt: IGantt) {
+    async updateGantt(ganttId: string, gantt: IGantt) {
         await this.validateTemplatesDataOfGantt(gantt);
-        return GanttsService.updateGantt(ganttId, gantt);
+        return this.updateGantt(ganttId, gantt);
     }
 }
 

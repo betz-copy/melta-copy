@@ -1,10 +1,10 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { InstanceManagerService } from '../../externalServices/instanceService';
+import { InstancesService } from '../../externalServices/instanceService';
 import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
@@ -14,7 +14,7 @@ import { IRule } from '../templates/rules/interfaces';
 
 // entities
 const getCategoryIdFromTemplateId = async (templateId: string) => {
-    const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+    const template = await EntityTemplateService.getEntityTemplateById(templateId);
     const { category } = template;
 
     return category._id;
@@ -30,7 +30,7 @@ export const validateUserCanCreateEntityInstance = async (req: Request) => {
 
 export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
     const allowedCategories = userPermissions.instancesPermissions.map((permission) => permission.category);
-    return EntityTemplateManagerService.searchEntityTemplates({ categoryIds: allowedCategories });
+    return EntityTemplateService.searchEntityTemplates({ categoryIds: allowedCategories });
 };
 
 export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.User, templateIds: string[]) => {
@@ -65,7 +65,7 @@ export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Om
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: Scope) => {
     const instanceId = req.params.id;
-    const { templateId } = await InstanceManagerService.getEntityInstanceById(instanceId);
+    const { templateId } = await InstancesService.getEntityInstanceById(instanceId);
     const categoryId = await getCategoryIdFromTemplateId(templateId);
     const permissionsArrOfUser = await getPermissions({ userId: req.user!.id });
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
@@ -108,11 +108,11 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
 const getRelatedCategoriesFromRelationshipInstance = async (relationshipInstance: IRelationship) => {
     const { templateId: relationshipTemplateId } = relationshipInstance;
 
-    const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationshipTemplateId);
+    const relationshipTemplate = await RelationshipsTemplateService.getRelationshipTemplateById(relationshipTemplateId);
     const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-    const { category: srcCategory } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
-    const { category: dstCategory } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
+    const { category: srcCategory } = await EntityTemplateService.getEntityTemplateById(sourceEntityId);
+    const { category: dstCategory } = await EntityTemplateService.getEntityTemplateById(destinationEntityId);
 
     return lodashUniqby([srcCategory._id, dstCategory._id], (categoryId) => categoryId);
 };
@@ -124,7 +124,7 @@ export const validateUserCanCreateRelationshipInstance = async (req: Request) =>
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Request) => {
-    const relationshipInstance = await InstanceManagerService.getRelationshipInstanceById(req.params.id);
+    const relationshipInstance = await InstancesService.getRelationshipInstanceById(req.params.id);
 
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(relationshipInstance);
 
@@ -140,7 +140,7 @@ export const validateUserCanIgnoreRules = async (req: Request) => {
     if (await isRuleManager(user.id)) return;
 
     const ignoredRulesPopulated: IRule[] = await Promise.all(
-        ignoredRules.map((ignoredRule) => RelationshipsTemplateManagerService.getRuleById(ignoredRule.ruleId)),
+        ignoredRules.map((ignoredRule) => RelationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
     );
 
     if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {

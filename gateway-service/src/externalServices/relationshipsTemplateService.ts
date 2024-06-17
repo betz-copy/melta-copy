@@ -32,7 +32,7 @@ export interface ISearchRulesBody {
     skip?: number;
 }
 
-export class RelationshipsTemplateManagerService extends DefaultExternalServiceApi {
+export class RelationshipsTemplateService extends DefaultExternalServiceApi {
     constructor(dbName: string) {
         super(dbName, { baseURL: url, timeout: requestTimeout });
     }
