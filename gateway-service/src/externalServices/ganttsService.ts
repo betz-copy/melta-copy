@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from '../config';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const {
     ganttService: { url, baseRoute, requestTimeout },
@@ -39,32 +39,33 @@ export interface ISearchGanttsBody {
     limit: number;
     step: number;
 }
+export class GanttsService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    }
 
-export class GanttsService {
-    private static ganttsServiceApi = axios.create({ baseURL: url, timeout: requestTimeout });
-
-    static async searchGantts(searchBody: ISearchGanttsBody) {
-        const { data } = await this.ganttsServiceApi.post<IMongoGantt[]>(`${baseRoute}/search`, searchBody);
+    async searchGantts(searchBody: ISearchGanttsBody) {
+        const { data } = await this.api.post<IMongoGantt[]>('/search', searchBody);
         return data;
     }
 
-    static async getGanttById(ganttId: string) {
-        const { data } = await this.ganttsServiceApi.get<IMongoGantt>(`${baseRoute}/${ganttId}`);
+    async getGanttById(ganttId: string) {
+        const { data } = await this.api.get<IMongoGantt>(`/${ganttId}`);
         return data;
     }
 
-    static async createGantt(gantt: IGantt) {
-        const { data } = await this.ganttsServiceApi.post<IMongoGantt>(baseRoute, gantt);
+    async createGantt(gantt: IGantt) {
+        const { data } = await this.api.post<IMongoGantt>('/', gantt);
         return data;
     }
 
-    static async deleteGantt(ganttId: string) {
-        const { data } = await this.ganttsServiceApi.delete<IMongoGantt>(`${baseRoute}/${ganttId}`);
+    async deleteGantt(ganttId: string) {
+        const { data } = await this.api.delete<IMongoGantt>(`/${ganttId}`);
         return data;
     }
 
-    static async updateGantt(ganttId: string, gantt: IGantt) {
-        const { data } = await this.ganttsServiceApi.put<IMongoGantt>(`${baseRoute}/${ganttId}`, gantt);
+    async updateGantt(ganttId: string, gantt: IGantt) {
+        const { data } = await this.api.put<IMongoGantt>(`/${ganttId}`, gantt);
         return data;
     }
 }

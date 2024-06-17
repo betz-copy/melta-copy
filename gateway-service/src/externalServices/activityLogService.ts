@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from '../config';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const {
     activityLogService: { url, baseRoute, requestTimeout },
@@ -35,11 +35,13 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
 
-export class ActivityLogManagerService {
-    private static ActivityLogManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
+export class ActivityLogManagerService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    }
 
-    static async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
-        const { data } = await this.ActivityLogManagerApi.post(baseRoute, activityLog);
+    async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
+        const { data } = await this.api.post('/', activityLog);
         return data;
     }
 }

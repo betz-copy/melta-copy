@@ -1,6 +1,6 @@
-import axios from 'axios';
 import config from '../config';
 import { IRule } from '../express/templates/rules/interfaces';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 
 const {
     relationshipTemplateService: { url, baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix, requestTimeout },
@@ -32,66 +32,53 @@ export interface ISearchRulesBody {
     skip?: number;
 }
 
-export class RelationshipsTemplateManagerService {
-    private static RelationshipsTemplateManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
+export class RelationshipsTemplateManagerService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: url, timeout: requestTimeout });
+    }
 
-    static async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await this.RelationshipsTemplateManagerApi.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
-
+    async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
+        const { data } = await this.api.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
         return data;
     }
 
-    static async getRelationshipTemplateById(id: string) {
-        const { data } = await this.RelationshipsTemplateManagerApi.get<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
-
+    async getRelationshipTemplateById(id: string) {
+        const { data } = await this.api.get<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
         return data;
     }
 
-    static async createRelationshipTemplate(relationship: Omit<IRelationshipTemplate, '_id'>) {
-        const { data } = await this.RelationshipsTemplateManagerApi.post<IRelationshipTemplate>(baseRelationshipsRoute, relationship);
-
+    async createRelationshipTemplate(relationship: Omit<IRelationshipTemplate, '_id'>) {
+        const { data } = await this.api.post<IRelationshipTemplate>(baseRelationshipsRoute, relationship);
         return data;
     }
 
-    static async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IRelationshipTemplate, '_id'>>) {
-        const { data } = await this.RelationshipsTemplateManagerApi.put<IRelationshipTemplate>(
-            `${baseRelationshipsRoute}/${id}`,
-            updatedRelationship,
-        );
-
+    async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IRelationshipTemplate, '_id'>>) {
+        const { data } = await this.api.put<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`, updatedRelationship);
         return data;
     }
 
-    static async deleteRelationshipTemplate(id: string) {
-        const { data } = await this.RelationshipsTemplateManagerApi.delete<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
-
+    async deleteRelationshipTemplate(id: string) {
+        const { data } = await this.api.delete<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
         return data;
     }
 
-    static async updateRuleStatusById(ruleId: string, disabled: boolean) {
-        const { data } = await this.RelationshipsTemplateManagerApi.patch<IRelationshipTemplate>(
-            `${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`,
-            { disabled },
-        );
-
+    async updateRuleStatusById(ruleId: string, disabled: boolean) {
+        const { data } = await this.api.patch<IRelationshipTemplate>(`${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`, { disabled });
         return data;
     }
 
-    static async searchRules(searchBody: ISearchRulesBody) {
-        const { data } = await this.RelationshipsTemplateManagerApi.post<IRule[]>(`${baseRulesRoute}/search`, searchBody);
-
+    async searchRules(searchBody: ISearchRulesBody) {
+        const { data } = await this.api.post<IRule[]>(`${baseRulesRoute}/search`, searchBody);
         return data;
     }
 
-    static async getRuleById(ruleId: string) {
-        const { data } = await this.RelationshipsTemplateManagerApi.get<IRule>(`${baseRulesRoute}/${ruleId}`);
-
+    async getRuleById(ruleId: string) {
+        const { data } = await this.api.get<IRule>(`${baseRulesRoute}/${ruleId}`);
         return data;
     }
 
-    static async deleteRuleById(ruleId: string) {
-        const { data } = await this.RelationshipsTemplateManagerApi.delete<IRule>(`${baseRulesRoute}/${ruleId}`);
-
+    async deleteRuleById(ruleId: string) {
+        const { data } = await this.api.delete<IRule>(`${baseRulesRoute}/${ruleId}`);
         return data;
     }
 }

@@ -10,7 +10,7 @@ const {
 
 export class UserService {
     private static userService = axios.create({
-        baseURL: `${url}`,
+        baseURL: url,
         timeout: requestTimeout,
     });
 

@@ -1,39 +1,38 @@
-import axios from 'axios';
 import { INotification } from './interfaces';
 import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const {
     notificationService: { url, baseRoute, requestTimeout },
 } = config;
 
-export class NotificationService {
-    private static notificationService = axios.create({
-        baseURL: `${url}${baseRoute}`,
-        timeout: requestTimeout,
-    });
+export class NotificationService extends DefaultExternalServiceApi {
+    constructor(dbName: string) {
+        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    }
 
-    static async getNotifications(query: object): Promise<INotification[]> {
-        const { data } = await this.notificationService.get<INotification[]>('/', { params: query });
+    async getNotifications(query: object): Promise<INotification[]> {
+        const { data } = await this.api.get<INotification[]>('/', { params: query });
         return data;
     }
 
-    static async getNotificationCount(query: object): Promise<number> {
-        const { data } = await this.notificationService.get<number>('/count', { params: query });
+    async getNotificationCount(query: object): Promise<number> {
+        const { data } = await this.api.get<number>('/count', { params: query });
         return data;
     }
 
-    static async getNotificationGroupCount(query: object) {
-        const { data } = await this.notificationService.post('/group-count', query);
+    async getNotificationGroupCount(query: object) {
+        const { data } = await this.api.post('/group-count', query);
         return data;
     }
 
-    static async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
-        const { data } = await this.notificationService.post<INotification>(`/${notificationId}/seen`, { viewerId });
+    async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
+        const { data } = await this.api.post<INotification>(`/${notificationId}/seen`, { viewerId });
         return data;
     }
 
-    static async manyNotificationsSeen(query: object): Promise<INotification[]> {
-        const { data } = await this.notificationService.post<INotification[]>(`/seen`, query);
+    async manyNotificationsSeen(query: object): Promise<INotification[]> {
+        const { data } = await this.api.post<INotification[]>(`/seen`, query);
         return data;
     }
 }
