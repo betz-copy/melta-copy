@@ -8,7 +8,6 @@ import config from '../../config/index';
 
 const {
     shragaAuthentication: { shragaURL, callbackURL, useEnrichId, accessTokenName, tokenSecret },
-    basicAuthentication: { users },
 } = config.authentication;
 
 export interface ShragaUser {
@@ -32,7 +31,7 @@ export interface ShragaUser {
     jti: string;
 }
 
-export interface IUser {
+export interface IConnectedUser {
     id: string;
 }
 
@@ -46,7 +45,7 @@ export const initPassport = () => {
                 },
                 secretOrKey: tokenSecret,
             },
-            (payload: IUser, next: VerifiedCallback) => {
+            (payload: IConnectedUser, next: VerifiedCallback) => {
                 if (payload) {
                     return next(null, payload);
                 }
@@ -67,24 +66,25 @@ export const initPassport = () => {
     // override to simple 401 without the header
     // eslint-disable-next-line no-underscore-dangle
     (BasicStrategy.prototype as any)._challenge = () => 401;
-    passport.use(
-        'basic',
-        new BasicStrategy((userId, password, done) => {
-            const allowedUser = users.find((currUser) => currUser.userId === userId && currUser.password === password);
+    // TODO-WORKSPACES: support custom users
+    // passport.use(
+    //     'basic',
+    //     new BasicStrategy((userId, password, done) => {
+    //         const allowedUser = users.find((currUser) => currUser.userId === userId && currUser.password === password);
 
-            if (!allowedUser) {
-                done(new Error('userId or password is incorrect'));
-            }
+    //         if (!allowedUser) {
+    //             done(new Error('userId or password is incorrect'));
+    //         }
 
-            done(null, { id: userId } as IUser);
-        }),
-    );
+    //         done(null, { id: userId } as IUser);
+    //     }),
+    // );
 };
 
 declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
     namespace Express {
-        export interface User extends IUser {}
+        export interface User extends IConnectedUser {}
     }
 }

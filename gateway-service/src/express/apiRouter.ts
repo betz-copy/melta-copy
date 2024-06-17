@@ -2,8 +2,7 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import { wrapMiddleware } from '../utils/express';
 import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
-import usersRouter from './users/router';
-import permissionsRouter from './permissions/router';
+import { usersRouter } from './users/router';
 import templatesRouter from './templates/router';
 import processesRouter from './processes/router';
 import instancesRouter from './instances/router';
@@ -41,8 +40,6 @@ apiRouter.use(
 apiRouter.use('/processes', processesRouter);
 
 apiRouter.use('/users', usersRouter);
-
-apiRouter.use('/permissions', permissionsRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);
 
