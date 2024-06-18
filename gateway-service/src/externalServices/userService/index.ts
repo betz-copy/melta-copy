@@ -44,6 +44,11 @@ export class UserService {
         return data;
     }
 
+    static async getUserPermissions(userId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
+        const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/find-by-user-id/${userId}`, { workspaceIds });
+        return data;
+    }
+
     static async syncUserPermissions(userId: string, permissions: any): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, { userId, permissions });
         return data;

@@ -37,11 +37,13 @@ const getDbName = async (req: Request) => {
     return workspaceId;
 };
 
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(controller: { new (dbName: string): T }) => {
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(controller: {
+    new (dbName: string, userId?: string): T;
+}) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {
             const dbName = await getDbName(req);
-            return (new controller(dbName)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+            return (new controller(dbName, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
 };

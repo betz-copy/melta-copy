@@ -39,3 +39,7 @@ export const objectContains = <T extends Object>(obj: T, subObj: any) => {
 
     return true;
 };
+
+export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof T]][] => {
+    return Object.entries(obj) as any;
+};

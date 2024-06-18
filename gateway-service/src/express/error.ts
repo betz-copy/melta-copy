@@ -71,3 +71,9 @@ export class UserNotFoundError extends ServiceError {
         super(400, 'User not found');
     }
 }
+
+export class UserNotAuthorizedError extends ServiceError {
+    constructor() {
+        super(403, 'User not authorized');
+    }
+}
