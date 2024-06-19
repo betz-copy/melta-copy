@@ -81,6 +81,8 @@ const AddEntityButton: React.FC<{
                         setExternalErrors({ files: false, unique: {} });
                     }}
                     onError={(currEntity) => {
+                        console.log({ currEntity });
+
                         setAddEntityWizardState({
                             isOpen: true,
                             initialStep: 1,
