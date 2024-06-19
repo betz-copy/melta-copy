@@ -253,7 +253,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                             </Grid>
                         )}
                         <Grid>
-                            {activeStep === 2 && (
+                            {activeStep === 2 && !processInstance.archived && (
                                 <Print
                                     processInstance={currProcessInstance}
                                     processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}

@@ -2,7 +2,6 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { SelectCheckbox } from '../SelectCheckbox';
 import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
 import { IMongoCategory } from '../../interfaces/categories';
@@ -14,7 +13,8 @@ import { isUnsupported, isVideoOrAudio } from '../FilePreview/PreviewDialog';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntityExpanded } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IRelationship } from '../../interfaces/relationships';
 
 type IOption = {
     show: boolean;
@@ -160,6 +160,30 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
+    const allRelevantConnections: {
+        [id: string]: { relationship: Pick<IRelationship, 'properties' | 'templateId'>; sourceEntity: IEntity; destinationEntity: IEntity }[];
+    }[] = [];
+
+    if (entityConnections) {
+        entityConnections.connectionsTemplates.map(({ relationshipTemplate: { _id }, isExpandedEntityRelationshipSource }) => {
+            const relevantConnections = (instance as IEntityExpanded).connections.filter((connection) => {
+                if (isExpandedEntityRelationshipSource) {
+                    return (
+                        connection.relationship.templateId === _id &&
+                        connection.sourceEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
+                    );
+                }
+
+                return (
+                    connection.relationship.templateId === _id &&
+                    connection.destinationEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
+                );
+            });
+            if (relevantConnections.length > 0) allRelevantConnections.push({ [_id]: relevantConnections });
+            return relevantConnections;
+        });
+    }
+
     return (
         <Dialog open={open} onClose={handleClose} onClick={(e) => e.stopPropagation()}>
             <DialogTitle paddingLeft="4px">
@@ -175,7 +199,7 @@ const PrintOptionsDialog: React.FC<{
             <DialogContent style={{ width: '500px', height: '240px' }}>
                 <Grid container direction="column" spacing={1} alignItems="center">
                     <Grid item>
-                        {entityConnections && entityConnections.connectionsTemplates && (
+                        {entityConnections && allRelevantConnections.length > 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseRelationship')}
                                 options={entityConnections.connectionsTemplates}

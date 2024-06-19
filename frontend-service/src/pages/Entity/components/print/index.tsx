@@ -29,7 +29,7 @@ const Print: React.FC<{
     const [files, setFiles] = React.useState<IFile[]>([]);
     const [selectedFiles, setSelectedFiles] = React.useState(files);
 
-    const [selectedConnections, setSelectedConnections] = React.useState(connectionsTemplates);
+    const [selectedConnections, setSelectedConnections] = React.useState([]);
     const [showDate, setShowDate] = React.useState(true);
     const [showDisabled, setShowDisabled] = React.useState(true);
     const [showEntityDates, setShowEntityDates] = React.useState(true);

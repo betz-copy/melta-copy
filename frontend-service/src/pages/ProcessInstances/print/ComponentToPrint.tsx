@@ -84,7 +84,7 @@ const ComponentToPrint = React.forwardRef<
                             </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" justifyItems="flex-start">
-                            <Grid>
+                            <Grid minWidth="200px">
                                 <ProcessStatus instance={processInstance} isPrinting />
                             </Grid>
                         </Box>
@@ -107,7 +107,7 @@ const ComponentToPrint = React.forwardRef<
                                         {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
                                     </Typography>
                                 </Box>
-                                <Grid>
+                                <Grid minWidth="200px">
                                     <ProcessStatus instance={stepInstance} isPrinting />
                                 </Grid>
                             </Box>

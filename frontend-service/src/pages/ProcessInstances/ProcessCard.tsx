@@ -287,14 +287,16 @@ const ProcessCard: React.FC<{
                                                         )
                                                     }
                                                 />
-                                                <Print
-                                                    processInstance={currProcessInstance}
-                                                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
-                                                    mutateAsync={mutateAsync}
-                                                    setCurrProcessInstance={setCurrProcessInstance}
-                                                    setIsProcessChanged={setIsProcessChanged}
-                                                    isProcessCard
-                                                />
+                                                {!processInstance.archived && (
+                                                    <Print
+                                                        processInstance={currProcessInstance}
+                                                        processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                                        mutateAsync={mutateAsync}
+                                                        setCurrProcessInstance={setCurrProcessInstance}
+                                                        setIsProcessChanged={setIsProcessChanged}
+                                                        isProcessCard
+                                                    />
+                                                )}
                                             </Menu>
                                         </>
                                     )}
