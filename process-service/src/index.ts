@@ -3,9 +3,9 @@ import * as apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
-import ElasticClient from './utils/elastic/index';
+import initializeElasticsearch from './utils/elastic/initializeElasticSearch';
 
-const { mongo, service, logs, elasticClient } = config;
+const { mongo, service, logs } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -15,7 +15,7 @@ if (logs.enableApm) {
     });
 }
 
-export const initializeMongo = async () => {
+const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
     await mongoose.connect(mongo.url, {
@@ -26,26 +26,6 @@ export const initializeMongo = async () => {
     });
 
     logger.info('Mongo connection established');
-};
-
-const createProcessSearchIndex = async () => {
-    try {
-        const client = ElasticClient.getClient();
-        const isIndexExists = await client.indices.exists({ index: elasticClient.index });
-        if (!isIndexExists) await client.indices.create({ index: elasticClient.index });
-    } catch (error) {
-        logger.error('Error checking or creating index:', error);
-    }
-};
-
-export const initializeElasticsearch = async () => {
-    logger.info('Connecting to elastic...');
-
-    await ElasticClient.initialize(elasticClient.url);
-
-    await createProcessSearchIndex();
-
-    logger.info('elastic connection established');
 };
 
 const main = async () => {
@@ -61,3 +41,5 @@ const main = async () => {
 };
 
 main().catch((err) => logger.error(err));
+
+export default initializeMongo;

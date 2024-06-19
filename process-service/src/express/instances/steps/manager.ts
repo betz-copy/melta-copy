@@ -59,6 +59,7 @@ export default class StepInstanceManager {
 
             const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
             await updateDocumentOnElastic(updatedProcess);
+
             return updatedStep;
         }
 
@@ -75,6 +76,7 @@ export default class StepInstanceManager {
                 .lean();
             const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
             await updateDocumentOnElastic(updatedProcess);
+
             return updatedStep;
         }
 

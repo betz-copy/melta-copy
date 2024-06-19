@@ -56,12 +56,14 @@ class ProcessInstanceManager {
 
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
-            const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
-            return _id;
+            const [populatedProcess] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
+            console.log({ populatedProcess });
+            return populatedProcess._id;
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
         await createDocumentOnElastic(populatedProcess);
+
         return populatedProcess;
     }
 
@@ -73,6 +75,7 @@ class ProcessInstanceManager {
             return ProcessInstanceModel.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
         });
         await deleteDocumentOnElastic(deletedProcess._id);
+
         return { ...deletedProcess, steps: processSteps };
     }
 
@@ -109,6 +112,7 @@ class ProcessInstanceManager {
                 .lean();
         });
         await updateDocumentOnElastic(updatedProcess);
+
         return updatedProcess;
     }
 
@@ -153,8 +157,9 @@ class ProcessInstanceManager {
             const processIds: string[] = await processGlobalSearch(searchText);
             if (processIds.length > 0) {
                 query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
-            } else query._id = undefined;
+            }
         }
+
         return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()

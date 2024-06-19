@@ -49,7 +49,7 @@ const config = {
         },
     },
     elasticClient: {
-        url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asString(),
+        url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('process-global-search').asString(),
     },
 };
