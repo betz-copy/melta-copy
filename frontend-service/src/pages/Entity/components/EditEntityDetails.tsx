@@ -80,7 +80,7 @@ const EditEntityDetails: React.FC<{
                 if (err.response?.status === 413) errorTooBig = true;
                 const errorMetadata = err.response?.data?.metadata;
 
-                if (errorMetadata && errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+                if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                     const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
                     constraintPropsDisplayNames.forEach((uniqueProp) => {

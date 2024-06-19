@@ -93,8 +93,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
         if (err.response?.status === 413) errorTooBig = true;
         const errorMetadata = err.response?.data?.metadata;
-
-        if (errorMetadata && errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
+        if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
             const constraintPropsDisplayNames = properties.map((prop) => template.properties.properties[prop].title);
             constraintPropsDisplayNames.forEach((uniqueProp) => {
@@ -156,7 +155,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             success: {
                                 render() {
                                     return (
-                                        <>
+                                        <Grid display="flex" alignItems="center">
                                             <span>
                                                 {`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}
                                             </span>
@@ -169,18 +168,18 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             : `/entity/${values.properties._id}`,
                                                     );
                                                 }}
-                                                sx={{ marginRight: '10px' }}
+                                                sx={{ marginRight: '5px' }}
                                             >
                                                 {i18next.t('entityPage.linkToEntityPage')}
                                             </Button>
-                                        </>
+                                        </Grid>
                                     );
                                 },
                             },
                             error: {
                                 render() {
                                     return (
-                                        <>
+                                        <Grid display="flex" alignItems="center">
                                             <span>{i18next.t(`wizard.entity.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}</span>
                                             <Button
                                                 variant="text"
@@ -189,11 +188,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     if (isEditMode) onError({ templateId: values.template._id, properties: values.properties });
                                                     else onError(values);
                                                 }}
-                                                sx={{ marginRight: '10px' }}
+                                                sx={{ marginRight: '5px' }}
                                             >
                                                 {i18next.t('entityPage.error')}
                                             </Button>
-                                        </>
+                                        </Grid>
                                     );
                                 },
                             },
