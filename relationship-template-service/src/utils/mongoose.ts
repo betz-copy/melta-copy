@@ -15,11 +15,10 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
     } finally {
         const { err: endSessionErr } = await trycatch(() => session.endSession());
         if (endSessionErr) {
-            logger.error('failed to end session. possible resource leak', endSessionErr);
+            logger.error('failed to end session. possible resource leak', { error: endSessionErr });
         }
     }
 };
-
 
 export const transformObjectIdKeysToString = (doc: any) => {
     _forEach(doc, (val, key) => {
@@ -27,14 +26,13 @@ export const transformObjectIdKeysToString = (doc: any) => {
             doc[key] = val.toString();
         }
     });
-}
+};
 
 export const transformResultDocsObjectIdKeysToString = (res: any | any[]) => {
     if (Array.isArray(res)) {
-        res.forEach(doc => transformObjectIdKeysToString(doc))
+        res.forEach((doc) => transformObjectIdKeysToString(doc));
         return;
     }
 
     transformObjectIdKeysToString(res);
-    return;
-}
+};

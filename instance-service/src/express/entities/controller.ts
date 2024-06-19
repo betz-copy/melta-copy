@@ -27,13 +27,7 @@ class EntityController {
 
     static async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        res.json(
-            await EntityManager.getExpandedGraphById(
-                req.params.id,
-                req.body,
-                entityTemplatesMap,
-            ),
-        );
+        res.json(await EntityManager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap));
     }
 
     static async deleteEntityById(req: Request, res: Response) {
@@ -58,10 +52,9 @@ class EntityController {
         res.json(await EntityManager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
-    static async getIsFieldUsed(req:  RequestWithQuery<{ fieldValue: string, fieldName: string, type: string}>, res: Response) {
-        const { fieldValue, fieldName, type } = req.query; 
+    static async getIsFieldUsed(req: RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>, res: Response) {
+        const { fieldValue, fieldName, type } = req.query;
         res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
-
     }
 
     static async getConstraintsOfTemplate(req: Request, res: Response) {

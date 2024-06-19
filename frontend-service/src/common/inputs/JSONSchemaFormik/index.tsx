@@ -109,6 +109,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
+                        'ui:classNames': 'other-field',
                         'ui:options': {
                             inputType: 'text',
                             disabled: true,
@@ -119,6 +120,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.type === 'array' && propertySchema.items!.enum) {
                     return {
                         'ui:widget': 'SelectWidget',
+                        'ui:classNames': 'other-field',
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
