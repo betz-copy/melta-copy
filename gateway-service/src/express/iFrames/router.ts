@@ -11,7 +11,7 @@ import {
     searchIFramesSchema,
     updateIFrameSchema,
 } from './validator.schema';
-import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanUpdateIFrame } from './middlewares';
+import { validateUserCanDeleteIFrame, validateUserCanUpdateIFrame } from './middlewares';
 
 const iFramesRouter: Router = Router();
 
@@ -40,7 +40,7 @@ iFramesRouter.get('/externalSite/:iFrameId', ValidateRequest(getExternalSiteById
 iFramesRouter.post(
     '/',
     ValidateRequest(createIFrameSchema),
-    wrapMiddleware(validateUserCanCreateIFrame),
+    // wrapMiddleware(validateUserCanCreateIFrame),
     wrapController(IFramesController.createIFrame),
 );
 iFramesRouter.delete(
