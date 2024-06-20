@@ -32,16 +32,15 @@ const initializeRabbit = async () => {
 };
 
 const initializeMongo = async () => {
-    logger.info('Connecting to Mongo...');
+    try {
+        logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-        useFindAndModify: false,
-        useCreateIndex: true,
-    } as mongoose.ConnectOptions);
+        await mongoose.connect(mongo.url);
 
-    logger.info('Mongo connection established');
+        logger.info('Mongo connection established');
+    } catch (err) {
+        console.log({ err });
+    }
 };
 
 const main = async () => {

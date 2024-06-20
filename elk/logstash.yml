@@ -1,4 +1,2 @@
 http.host: 0.0.0.0
-pipeline.workers: 2
-xpack.monitoring.elasticsearch.hosts:
-- http://elastic:9200
+xpack.monitoring.elasticsearch.hosts: ['http://elastic:9200']

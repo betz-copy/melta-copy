@@ -11,6 +11,7 @@ import ActivityLogRouter from './activityLog/router';
 import notificationsRouter from './notifications/router';
 import RulesBreachesRouter from './ruleBreaches/router';
 import GanttsRouter from './gantts/router';
+import iFramesRouter from './iFrames/router';
 import config from '../config';
 import flowCubeRouter from './flowCube/router';
 
@@ -53,5 +54,7 @@ apiRouter.use('/notifications', notificationsRouter);
 apiRouter.use('/rule-breaches', RulesBreachesRouter);
 
 apiRouter.use('/gantts', GanttsRouter);
+
+apiRouter.use('/iFrames', iFramesRouter);
 
 export default apiRouter;

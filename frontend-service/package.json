@@ -1,3 +1,4 @@
+
 {
   "scripts": {
     "analyze": "npm run build && source-map-explorer 'build/static/js/*.js' --html analyzedBuild.html",

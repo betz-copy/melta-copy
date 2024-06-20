@@ -1,5 +1,4 @@
 import { Router } from 'express';
-// import { createProxyMiddleware } from 'http-proxy-middleware';
 import IFramesController from './controller';
 import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import { wrapController, wrapMiddleware } from '../../utils/express';
