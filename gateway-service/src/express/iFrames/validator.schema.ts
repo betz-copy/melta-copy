@@ -5,17 +5,18 @@ const iFrameSchema = Joi.object({
     name: Joi.string().required(),
     url: Joi.string().uri().required(),
     categoryIds: Joi.array().items(Joi.string()).required(),
+    description: Joi.string(),
+    apiToken: Joi.string(),
     height: Joi.number().default(100),
     width: Joi.number().default(100),
+    icon: Joi.object(),
     placeInSideBar: Joi.boolean(),
 });
 
 // GET /api/iFrames/externalSite/:iFrameId
 export const getExternalSiteByIdSchema = Joi.object({
     query: {},
-    body: {
-        // token: Joi.any(),
-    },
+    body: {},
     params: {
         iFrameId: MongoIdSchema.required(),
     },

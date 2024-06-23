@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { MongoIdSchema, ColorSchema,variableNameValidation } from '../../utils/joi';
+import { MongoIdSchema, ColorSchema, variableNameValidation } from '../../utils/joi';
 
 // GET /api/categories/:categoryId
 export const getCategoryByIdSchema = Joi.object({

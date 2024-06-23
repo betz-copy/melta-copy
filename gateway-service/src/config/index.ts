@@ -96,7 +96,6 @@ const config = {
     ganttService: {
         url: env.get('GANTT_SERVICE_URL').required().asString(),
         baseRoute: env.get('GANTT_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
-        iFramesBaseRoute: env.get('IFRAME_SERVICE_BASE_ROUTE').default('/api/iFrames').asString(),
         requestTimeout: env.get('GANTT_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     previewService: {

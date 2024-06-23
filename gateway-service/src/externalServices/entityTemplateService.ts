@@ -17,6 +17,12 @@ export interface IMongoCategory extends ICategory {
     createdAt: string;
     updatedAt: string;
 }
+export interface ISearchCategoriesBody {
+    search?: string;
+    ids?: string[];
+    limit?: number;
+    skip?: number;
+}
 
 export interface IEntitySingleProperty {
     title: string;
@@ -84,6 +90,12 @@ export class EntityTemplateManagerService {
     private static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // categories
+    static async searchCategories(body: ISearchCategoriesBody = {}) {
+        const { data } = await this.EntityTemplateManagerApi.post<IMongoCategory[]>(`${baseCategoriesRoute}/search`, body);
+
+        return data;
+    }
+
     static async getAllCategories() {
         const { data } = await this.EntityTemplateManagerApi.get<IMongoCategory[]>(baseCategoriesRoute);
 

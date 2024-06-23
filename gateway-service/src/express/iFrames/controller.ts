@@ -13,14 +13,11 @@ class IFrameController {
             params: { iFrameId },
             // permissionsOfUserId,
         } = req as RequestWithPermissionsOfUserId;
-        console.log('jfdjvdkfvkfdvkbfd');
 
         res.json(await IFrameManager.getIFrameById(iFrameId)); // , permissionsOfUserId));
     }
 
     static async getExternalSiteById(req: Request, res: Response) {
-        console.log('shdyfvfbvjvfdvbjdvjsdvcjdvjsdvjsdvcjsdvjsdvjsdsjdvcsjdvsjvsjd');
-
         res.send(await IFrameManager.getExternalSiteById(req.params.iFrameId));
     }
 
