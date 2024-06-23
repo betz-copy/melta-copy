@@ -9,9 +9,9 @@ import { StepComponentProps } from '..';
 import { RelationshipTemplateWizardValues } from '.';
 import { AddIconWithText } from '../../AddIconWithText';
 import { generateInterface } from '../../../utils/jsonSchemToInterface-ts';
-import { CodeEditor1 } from '../../inputs/CodeEditor';
+import { CodeEditor } from '../../inputs/CodeEditor';
 
-export const CodeEditor: React.FC<StepComponentProps<RelationshipTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
+export const CodeEditor1: React.FC<StepComponentProps<RelationshipTemplateWizardValues>> = ({ values, touched, errors, setFieldValue }) => {
     const monacoRef = useRef(null);
     const constrainedInstanceRef = useRef(null);
     const [viewAction, setViewAction] = useState(false);
@@ -80,7 +80,7 @@ export const CodeEditor: React.FC<StepComponentProps<RelationshipTemplateWizardV
                                 scrollbar: { handleMouseWheel: true },
                             }}
                         /> */}
-                        <CodeEditor1
+                        <CodeEditor
                             style={{ height: '250px', width: '800px' }}
                             language="typescript"
                             onChange={(_e, value) => setFieldValue('action', value || '')}

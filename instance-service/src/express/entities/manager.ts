@@ -172,11 +172,7 @@ export class EntityManager {
         return node;
     }
 
-    static async getExpandedGraphById(
-        id: string,
-        reqBody: IGetExpandedEntityBody,
-        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-    ) {
+    static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
         const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
@@ -226,18 +222,19 @@ export class EntityManager {
         }
     }
 
-    static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string){
+    static async getIsFieldUsed(id: string, fieldValue: string, fieldName: string, type: string) {
         let node;
-        if(type === "array"){
+        if (type === 'array') {
             node = await Neo4jClient.readTransaction(
                 `MATCH (e: \`${id}\`) WHERE '${fieldValue}' IN e.${fieldName} RETURN e`,
                 normalizeReturnedEntity('singleResponse'),
-            );       
+            );
+        } else {
+            node = await Neo4jClient.readTransaction(
+                `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
+                normalizeReturnedEntity('singleResponse'),
+            );
         }
-        else {node = await Neo4jClient.readTransaction(
-            `MATCH (e: \`${id}\`) WHERE e.${fieldName} = '${fieldValue}' RETURN e`,
-            normalizeReturnedEntity('singleResponse'),
-        );    }    
         return node;
     }
 
@@ -444,22 +441,22 @@ export class EntityManager {
     static async updateEnumFieldValue(id: string, newValue: string, oldValue: string, field: any) {
         let node;
         try {
-            if(field.type === "array"){
+            if (field.type === 'array') {
                 node = await Neo4jClient.writeTransaction(
                     `MATCH (e: \`${id}\`)
                     SET e.${field.name} = [val IN e.${field.name} WHERE val <> '${oldValue}'] + ['${newValue}']
                     RETURN e`,
-                    normalizeReturnedEntity('singleResponse')
+                    normalizeReturnedEntity('singleResponse'),
                 );
-                               
-            }
-            else { node = await Neo4jClient.writeTransaction(
-                `MATCH (e: \`${id}\`)
+            } else {
+                node = await Neo4jClient.writeTransaction(
+                    `MATCH (e: \`${id}\`)
                 WHERE e.${field.name} = '${oldValue}'
                 SET e.${field.name} = '${newValue}'
                 RETURN e`,
-                normalizeReturnedEntity('singleResponse'),
-            );}
+                    normalizeReturnedEntity('singleResponse'),
+                );
+            }
             return node;
         } catch (error) {
             if (error instanceof NotFoundError) {

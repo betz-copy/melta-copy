@@ -203,6 +203,11 @@ export default {
         disabledEntityTemplate: 'תבנית לא פעילה',
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
+        entityAction: {
+            copyCode: 'העתק קוד',
+            successCopyCode: 'הקוד הועתק בהצלחה',
+            cantUseImport:'אין להשתמש ב'
+        },
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',

@@ -1,4 +1,5 @@
-import { AST, TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import { TSESTreeOptions } from '@typescript-eslint/typescript-estree';
+import * as ts from 'typescript';
 
 export const options: TSESTreeOptions = {
     comment: true,
@@ -27,7 +28,7 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     uniqueItems?: true;
-    actions?: { originalCode: string; codeAST: AST<typeof options> }[];
+    actions?: { originalCode: string; codeAST: ts.SourceFile }[];
 }
 
 export interface IProperties {

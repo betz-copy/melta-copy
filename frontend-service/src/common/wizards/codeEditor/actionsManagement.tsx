@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
-import { Box, Card, CardContent, CardHeader, IconButton } from '@mui/material';
-import { Clear } from '@mui/icons-material';
-import i18next from 'i18next';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
-import { CodeEditor1 } from '../../inputs/CodeEditor';
-import { AddIconWithText } from '../../AddIconWithText';
+import { CodeEditor } from '../../inputs/CodeEditor';
 import { generateInterface } from '../../../utils/jsonSchemToInterface-ts';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { Box } from '@mui/material';
 
 const ActionManagement: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated | null;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
-}> = ({ entityTemplate, onChange }) => {
-    const [viewAction, setViewAction] = useState(true);
-
+    onValidate?: (markers: editor.IMarker[]) => void;
+    forbidden?: boolean;
+}> = ({ entityTemplate, onChange, onValidate, forbidden = false }) => {
     const entityName = entityTemplate?.name;
     const entityProperties = entityTemplate?.properties.properties;
 
@@ -47,45 +44,31 @@ const ActionManagement: React.FC<{
         '',
         '    }',
         '}',
+        '',
+        `function onUpdateEntity(${entityName}: ${entityName}): { updated_${entityName}?: ${entityName}; } {`,
+        '    return {',
+        '',
+        '    }',
+        '}',
+        '',
+        `function onDeleteEntity(${entityName}: ${entityName}): { updated_${entityName}?: ${entityName}; } {`,
+        '    return {',
+        '',
+        '    }',
+        '}',
     ].join('\n');
 
     return (
         <Box>
-            {viewAction ? (
-                <Card variant="outlined" sx={{ overflowX: 'auto', backgroundColor: 'white' }}>
-                    <CardHeader
-                        action={
-                            <IconButton onClick={() => setViewAction(false)}>
-                                <Clear />
-                            </IconButton>
-                        }
-                    />
-                    <CardContent>
-                        <CodeEditor1
-                            style={{ height: '250px', width: '800px' }}
-                            language="typescript"
-                            onChange={onChange}
-                            onMount={handleEditorDidMount}
-                            defaultValue={defaultValue}
-                        />
-                    </CardContent>
-                </Card>
-            ) : (
-                <AddIconWithText
-                    textStyle={{
-                        display: 'flex',
-                        flexWrap: 'wrap',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        marginTop: '5px',
-                    }}
-                    iconStyle={{ marginLeft: '11px' }}
-                    text={i18next.t('wizard.relationshipTemplate.addAction')}
-                    onClick={() => {
-                        setViewAction(!viewAction);
-                    }}
-                />
-            )}
+            <CodeEditor
+                style={{ height: '795px', width: '100%' }}
+                language="typescript"
+                onChange={onChange}
+                onMount={handleEditorDidMount}
+                defaultValue={defaultValue}
+                onValidate={onValidate}
+            />
+            {forbidden && <div style={{ color: 'red' }}>אין להשתמש בimport</div>}
         </Box>
     );
 };

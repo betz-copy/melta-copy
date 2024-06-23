@@ -14,7 +14,7 @@ import {
 
 const entityTemplateRouter: Router = Router();
 
-entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateControFller.searchEntityTemplates));
+entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), wrapController(EntityTemplateController.searchEntityTemplates));
 
 entityTemplateRouter.get(
     '/:templateId',
