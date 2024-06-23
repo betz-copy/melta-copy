@@ -40,6 +40,4 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => logger.error(err));
-
-export default initializeMongo;
+main().catch((error) => logger.error('Main error: ', { error }));

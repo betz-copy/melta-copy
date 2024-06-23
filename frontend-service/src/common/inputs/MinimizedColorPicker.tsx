@@ -38,6 +38,7 @@ export const MinimizedColorPicker: React.FC<IMinimizedColorPickerProps> = ({
                     onClose={() => setOpen(false)}
                     {...restOfColorPickerProps}
                     style={{ padding: '1rem' }}
+                    doneIcon
                 />
             </Popover>
         </>

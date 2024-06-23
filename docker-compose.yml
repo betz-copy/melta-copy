@@ -33,6 +33,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
 
   relationship-template-service:
     build: ./relationship-template-service
@@ -127,6 +128,7 @@ services:
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      RABBIT_URL: ${RABBIT_URL}
 
   gateway-service:
     build: ./gateway-service

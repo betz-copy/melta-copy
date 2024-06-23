@@ -26,6 +26,7 @@ const EntityComponentToPrint: React.FC<{
                     showPreviewPropertiesOnly
                     mode="normal"
                     textWrap
+                    isPrintingMode
                 />
             </Box>
 

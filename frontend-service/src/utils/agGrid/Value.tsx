@@ -6,14 +6,14 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
+import { isStartWithHebrewLetter } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
     color?: string;
-    isNumberField?: boolean;
     calculateTime?: boolean;
-}> = ({ hideValue, value, color, isNumberField, calculateTime }) => {
+}> = ({ hideValue, value, color, calculateTime }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -45,12 +45,14 @@ const Value: React.FC<{
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
-    else innerContent = <VerifyLink>{value} </VerifyLink>;
+    else innerContent = value;
 
     let popoverText;
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
+
+    const textDirection = containsHtmlTags ? true : isStartWithHebrewLetter(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -62,11 +64,11 @@ const Value: React.FC<{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    direction: isNumberField ? 'rtl' : undefined,
+                    direction: textDirection ? 'ltr' : 'rtl',
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                {innerContent}
+                <VerifyLink>{innerContent}</VerifyLink>
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>
@@ -96,6 +98,7 @@ const Value: React.FC<{
                         whiteSpace: containsHtmlTags ? 'normal' : 'pre-wrap',
                         fontWeight: 200,
                         fontSize: '15px',
+                        direction: textDirection ? 'rtl' : 'ltr',
                     }}
                 >
                     {popoverText}

@@ -17,7 +17,7 @@ const AreYouSureDialog: React.FC<{
             {body && <DialogContent>{body}</DialogContent>}
             <DialogActions>
                 <Button onClick={onNo ?? handleClose}>{i18next.t('areYouSureDialog.no')}</Button>
-                <Button onClick={onYes} autoFocus disabled={isLoading}>
+                <Button onClick={onYes} disabled={isLoading}>
                     {i18next.t('areYouSureDialog.yes')}
                     {isLoading && <CircularProgress size={20} />}
                 </Button>

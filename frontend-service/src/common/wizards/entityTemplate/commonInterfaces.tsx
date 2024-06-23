@@ -4,14 +4,16 @@ export interface CommonFormInputProperties {
     type: string;
     id: string;
     options: string[];
-    optionColors?: Record<string, string | undefined>;
+    optionColors?: Record<string, string>;
     pattern: string;
     patternCustomErrorMessage: string;
-    dateNotification?: string | null;
+    dateNotification?: number | null;
+    isDailyAlert?: boolean | null;
     calculateTime?: boolean | null;
     serialStarter?: number;
     required?: boolean;
     preview?: boolean;
     hide?: boolean;
-    unique?: boolean;
+    uniqueCheckbox?: boolean;
+    groupName?: string;
 }
