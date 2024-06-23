@@ -4,8 +4,8 @@ import config from '../../config';
 import { ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import ProcessInstanceModel from '../../express/instances/processes/model';
 import initializeElasticsearch from './initializeElasticSearch';
-import initializeMongo from '../..';
 import logger from '../logger/logsLogger';
+import initializeMongo from '../..';
 
 async function getAllProcesses(): Promise<LeanDocument<ProcessInstanceDocument[]>> {
     return ProcessInstanceModel.find().lean().populate(config.processFields.steps);

@@ -41,3 +41,5 @@ const main = async () => {
 };
 
 main().catch((error) => logger.error('Main error: ', { error }));
+
+export default initializeMongo;
