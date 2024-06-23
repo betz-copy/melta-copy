@@ -18,7 +18,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
-    IsNewPropertyWithNameOfDeletedProperty?: boolean;
+    isNewPropertyWithNameOfDeletedProperty?: boolean;
 }
 
 export interface IEntityTemplate {

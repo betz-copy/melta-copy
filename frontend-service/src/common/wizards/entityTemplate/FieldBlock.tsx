@@ -255,13 +255,11 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                 open={showAreUSureDialogForRemoveProperty}
                 handleClose={() => setShowAreUSureDialogForRemoveProperty(false)}
                 title={i18next.t('systemManagement.deleteField')}
-                body={
-                    <Typography>{`${i18next.t('systemManagement.warningOnDeleteField')}
+                body={`${i18next.t('systemManagement.warningOnDeleteField')}
                     ${selectedIndexToRemove > -1 && displayValuesRef.current[selectedIndexToRemove].title}
                     ${i18next.t('systemManagement.continueWarningOnDeleteField')} ${
-                        (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
-                    }`}</Typography>
-                }
+                    (initialValues as unknown as IMongoEntityTemplatePopulated).displayName
+                }`}
                 onYes={onDeleteSure}
             />
         </FieldBlockAccordion>

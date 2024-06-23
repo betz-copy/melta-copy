@@ -469,6 +469,11 @@ export class TemplatesManager {
         });
     }
 
+    private static async checkPropertyInUsed(templateId: string, properties: string[]) {
+        await TemplatesManager.isPropertyOfTemplateInUsedInGantts(templateId, properties);
+        await TemplatesManager.isPropertyOfTemplateInUsedInRules(templateId, properties);
+    }
+
     private static async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
         const promises: Promise<void | AxiosResponse>[] = [];
         const { searchEntitiesChunkSize } = config.service;
@@ -524,7 +529,7 @@ export class TemplatesManager {
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if (!newValue || ('IsNewPropertyWithNameOfDeletedProperty' in newValue && newValue.IsNewPropertyWithNameOfDeletedProperty)) {
+                if (!newValue || ('isNewPropertyWithNameOfDeletedProperty' in newValue && newValue.isNewPropertyWithNameOfDeletedProperty)) {
                     removedProperties[key] = value.type === 'string';
                     if (value.format === 'fileId' || value.items?.format === 'fileId') removedFilesProperties[key] = value.items?.format === 'fileId';
                 } else {
@@ -564,9 +569,7 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        await TemplatesManager.isPropertyOfTemplateInUsedInGantts(id, Object.keys(removedProperties));
-
-        await TemplatesManager.isPropertyOfTemplateInUsedInRules(id, Object.keys(removedProperties));
+        await TemplatesManager.checkPropertyInUsed(id, Object.keys(removedProperties));
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
             id,
@@ -579,9 +582,9 @@ export class TemplatesManager {
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
         Object.entries(restOfTemplatePropertiesObject.properties).forEach(([key, value]) => {
-            if ('IsNewPropertyWithNameOfDeletedProperty' in value) {
+            if ('isNewPropertyWithNameOfDeletedProperty' in value) {
                 const updatedProperty = { ...value };
-                delete updatedProperty.IsNewPropertyWithNameOfDeletedProperty;
+                delete updatedProperty.isNewPropertyWithNameOfDeletedProperty;
                 restOfTemplatePropertiesObject.properties[key] = updatedProperty;
             }
         });

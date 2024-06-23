@@ -808,7 +808,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                         </Box>
                                         <MeltaTooltip
-                                            disableHoverListener={!initialValue?.unique || !initialValue?.required}
+                                            disableHoverListener={!(initialValue?.required || initialValue?.unique)}
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
                                             <Grid>

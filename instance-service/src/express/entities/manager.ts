@@ -666,15 +666,10 @@ export class EntityManager {
             `MATCH (e: \`${templateId}\`)
             WITH collect(e) AS nodes
             CALL apoc.create.removeProperties(nodes, $properties) YIELD node
-            WITH node, keys(node) AS nodeKeys
-            WHERE size(nodeKeys) = $essentialPropertiesLength AND all(key IN nodeKeys WHERE key IN $essentialProperties)
-            DETACH DELETE node
             RETURN node`,
             normalizeReturnedEntity('multipleResponses'),
             {
                 properties: propertiesToRemove,
-                essentialProperties: ['_id', 'createdAt', 'disabled', 'updatedAt'],
-                essentialPropertiesLength: 4,
             },
         );
     }
