@@ -8,7 +8,7 @@ import { BlueTitle } from '../../../common/BlueTitle';
 import { IFile } from '../../../interfaces/preview';
 import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/processTemplate';
-import ProcessStatus from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
+import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
@@ -70,24 +70,31 @@ const ComponentToPrint = React.forwardRef<
                         <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
                     </Grid>
                     <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
-                        <Box display="flex" alignItems="center" justifyItems="flex-end">
-                            <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                                {processInstance.name}
-                            </Typography>
-
-                            <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                                /
-                            </Typography>
-
-                            <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                                {processTemplate.displayName}
-                            </Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" justifyItems="flex-start">
-                            <Grid minWidth="200px">
-                                <ProcessStatus instance={processInstance} isPrinting />
+                        <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
+                            <Grid item xs zeroMinWidth>
+                                <Box display="flex" alignItems="center" flexWrap="wrap">
+                                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                                        {processInstance.name}
+                                    </Typography>
+                                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                                        /
+                                    </Typography>
+                                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                                        {processTemplate.displayName}
+                                    </Typography>
+                                </Box>
                             </Grid>
-                        </Box>
+                            <Grid item container xs="auto" alignItems="center" spacing={1}>
+                                {processInstance.reviewedAt && (
+                                    <Grid item>
+                                        <ReviewedAtProcessStatus instance={processInstance} isPrinting />
+                                    </Grid>
+                                )}
+                                <Grid item>
+                                    <ProcessStatus instance={processInstance} isPrinting />
+                                </Grid>
+                            </Grid>
+                        </Grid>
                     </Box>
                     <ProcessComponentToPrint processInstance={processInstance} mutateAsync={mutateAsync} />
                 </Grid>
@@ -96,19 +103,30 @@ const ComponentToPrint = React.forwardRef<
                     return (
                         <Grid style={{ pageBreakInside: 'avoid' }} key={`${stepInstance._id}-${stepTemplate._id}`} marginTop={5}>
                             <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
-                                <Box display="flex" alignItems="center" justifyItems="flex-end">
-                                    <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
-                                        {stepTemplate.displayName}
-                                    </Typography>
-                                    <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
-                                        /
-                                    </Typography>
-                                    <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
-                                        {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
-                                    </Typography>
-                                </Box>
-                                <Grid minWidth="200px">
-                                    <ProcessStatus instance={stepInstance} isPrinting />
+                                <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
+                                    <Grid item xs zeroMinWidth>
+                                        <Box display="flex" alignItems="center" flexWrap="wrap">
+                                            <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                                                {stepTemplate.displayName}
+                                            </Typography>
+                                            <Typography variant="h4" fontSize="30px" color="#d3d8df" marginLeft="5px" marginRight="5px">
+                                                /
+                                            </Typography>
+                                            <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                                                {`${i18next.t('wizard.processTemplate.level')} ${index + 1}`}
+                                            </Typography>
+                                        </Box>
+                                    </Grid>
+                                    <Grid item container xs="auto" alignItems="center" spacing={1}>
+                                        {stepInstance.reviewedAt && (
+                                            <Grid item>
+                                                <ReviewedAtProcessStatus instance={stepInstance} isPrinting />
+                                            </Grid>
+                                        )}
+                                        <Grid item>
+                                            <ProcessStatus instance={stepInstance} isPrinting />
+                                        </Grid>
+                                    </Grid>
                                 </Grid>
                             </Box>
                             <StepComponentToPrint

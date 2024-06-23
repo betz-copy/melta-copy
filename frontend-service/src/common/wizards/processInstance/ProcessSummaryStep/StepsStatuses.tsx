@@ -29,7 +29,6 @@ const StepStatus: React.FC<{
                 style={{
                     minHeight: 270,
                     minWidth: !isPrinting ? 235 : undefined,
-                    maxWidth: isPrinting ? 200 : undefined,
                     pageBreakInside: 'avoid',
                 }}
             >

@@ -79,6 +79,35 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text
     );
 };
 
+export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated }> = ({
+    isPrinting,
+    instance,
+}) => {
+    const currentUser = useSelector((state: RootState) => state.user) as IUser;
+
+    return (
+        <Grid item container justifyContent="center">
+            <Grid item>
+                <Typography fontSize={isPrinting ? '12px' : '14px'} style={{ textAlign: 'center' }}>
+                    {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
+                </Typography>
+                <Typography fontSize={isPrinting ? '14px' : '16px'}>{getLongDate(instance.reviewedAt!)} </Typography>
+            </Grid>
+            {(instance as IMongoStepInstancePopulated).reviewer && (
+                <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: isPrinting ? '14px' : undefined }}>
+                        {` ${
+                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
+                                ? i18next.t('wizard.processInstance.summary.byYou')
+                                : `${i18next.t('wizard.processInstance.summary.by')} ${(instance as IMongoStepInstancePopulated).reviewer!.fullName}`
+                        }`}
+                    </span>
+                </Grid>
+            )}
+        </Grid>
+    );
+};
+
 interface ProcessStatusProps {
     title?: string;
     instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
@@ -91,8 +120,6 @@ interface ProcessStatusProps {
 }
 
 const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, isPrinting }) => {
-    const currentUser = useSelector((state: RootState) => state.user) as IUser;
-
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
         editStatus!.setFieldValue('status', newStatusToSet);
@@ -174,29 +201,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                     </>
                 )}
             </Grid>
-            {instance.reviewedAt && (
-                <Grid item container justifyContent="center">
-                    <Grid item>
-                        <Typography fontSize={isPrinting && !title ? '12px' : '14px'} style={{ textAlign: 'center' }}>
-                            {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
-                        </Typography>
-                        <Typography fontSize={isPrinting && !title ? '14px' : '16px'}>{getLongDate(instance.reviewedAt)} </Typography>
-                    </Grid>
-                    {(instance as IMongoStepInstancePopulated).reviewer && (
-                        <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
-                            <span style={{ fontWeight: 'bold', fontSize: isPrinting && !title ? '14px' : undefined }}>
-                                {` ${
-                                    currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
-                                        ? i18next.t('wizard.processInstance.summary.byYou')
-                                        : `${i18next.t('wizard.processInstance.summary.by')} ${
-                                              (instance as IMongoStepInstancePopulated).reviewer!.fullName
-                                          }`
-                                }`}
-                            </span>
-                        </Grid>
-                    )}
-                </Grid>
-            )}
+            {instance.reviewedAt && !isPrinting && title && <ReviewedAtProcessStatus instance={instance} />}
         </Grid>
     );
 };

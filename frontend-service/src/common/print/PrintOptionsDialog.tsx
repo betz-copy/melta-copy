@@ -13,8 +13,7 @@ import { isUnsupported, isVideoOrAudio } from '../FilePreview/PreviewDialog';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IRelationship } from '../../interfaces/relationships';
+import { IEntityExpanded } from '../../interfaces/entities';
 
 type IOption = {
     show: boolean;
@@ -160,8 +159,14 @@ const PrintOptionsDialog: React.FC<{
         setIsLoading(Object.values(filesLoadingStatus).some((loading) => loading));
     }, [filesLoadingStatus]);
 
-    const allRelevantConnections: {
-        [id: string]: { relationship: Pick<IRelationship, 'properties' | 'templateId'>; sourceEntity: IEntity; destinationEntity: IEntity }[];
+    const allRelevantConnections: string[] = [];
+
+    let filteredCategoriesWithConnectionsTemplates: {
+        category: IMongoCategory;
+        connectionsTemplates: {
+            relationshipTemplate: IMongoRelationshipTemplatePopulated;
+            isExpandedEntityRelationshipSource: boolean;
+        }[];
     }[] = [];
 
     if (entityConnections) {
@@ -179,9 +184,23 @@ const PrintOptionsDialog: React.FC<{
                     connection.destinationEntity.properties._id === (instance as IEntityExpanded).entity.properties._id
                 );
             });
-            if (relevantConnections.length > 0) allRelevantConnections.push({ [_id]: relevantConnections });
+
+            if (relevantConnections.length > 0) allRelevantConnections.push(_id);
             return relevantConnections;
         });
+
+        filteredCategoriesWithConnectionsTemplates = entityConnections.categoriesWithConnectionsTemplates
+            .map((categoryWithConnection) => {
+                const filteredConnectionsTemplates = categoryWithConnection.connectionsTemplates.filter((connection) =>
+                    allRelevantConnections.includes(connection.relationshipTemplate._id),
+                );
+
+                return {
+                    ...categoryWithConnection,
+                    connectionsTemplates: filteredConnectionsTemplates,
+                };
+            })
+            .filter((categoryWithConnection) => categoryWithConnection.connectionsTemplates.length > 0);
     }
 
     return (
@@ -202,7 +221,9 @@ const PrintOptionsDialog: React.FC<{
                         {entityConnections && allRelevantConnections.length > 0 && (
                             <SelectCheckbox
                                 title={i18next.t('entityPage.print.chooseRelationship')}
-                                options={entityConnections.connectionsTemplates}
+                                options={entityConnections.connectionsTemplates.filter((connection) =>
+                                    allRelevantConnections.some((key) => key === connection.relationshipTemplate._id),
+                                )}
                                 isDraggableDisabled
                                 selectedOptions={entityConnections.selectedConnections}
                                 setSelectedOptions={entityConnections.setSelectedConnections}
@@ -229,7 +250,7 @@ const PrintOptionsDialog: React.FC<{
                                 }}
                                 groupsProps={{
                                     useGroups: true,
-                                    groups: entityConnections.categoriesWithConnectionsTemplates,
+                                    groups: filteredCategoriesWithConnectionsTemplates,
                                     getGroupId: ({ category: { _id } }) => _id,
                                     getGroupLabel: ({ category: { displayName } }) => displayName,
                                     getGroupOfOption: (option, groups) =>
