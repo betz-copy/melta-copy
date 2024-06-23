@@ -1,11 +1,11 @@
 import * as apm from 'elastic-apm-node';
-
+import menash from 'menashmq';
 import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio';
 import logger from './utils/logger/logsLogger';
 
-const { logs } = config;
+const { logs, rabbit } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -15,7 +15,21 @@ if (logs.enableApm) {
     });
 }
 
+const initializeRabbit = async () => {
+    logger.info('Connecting to Rabbit...');
+
+    await menash.connect(rabbit.url, rabbit.retryOptions);
+
+    logger.info('Rabbit connected');
+
+    await menash.declareQueue(rabbit.previewQueue);
+
+    logger.info('Rabbit initialized');
+};
+
 const main = async () => {
+    await initializeRabbit();
+
     const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL, transportAgent } = config.minio;
     await minioClient.initialize(endPoint, port, accessKey, secretKey, transportAgent, bucketName, useSSL);
 
@@ -29,7 +43,7 @@ const main = async () => {
     logger.info(`Server started on port: ${serverPort}`);
 };
 
-main().catch((err) => {
-    logger.error(err);
+main().catch((error) => {
+    logger.error('Main error: ', { error });
     process.exit(1);
 });

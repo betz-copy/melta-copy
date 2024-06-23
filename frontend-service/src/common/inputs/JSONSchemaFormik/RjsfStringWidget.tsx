@@ -1,11 +1,29 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
+import { getDisplayLabel, WidgetProps, RJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
 import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
+export const isStartWithHebrewLetter = (value: string) => {
+    const uniqueCharsPattern = /^[^a-zA-Z\u0590-\u05FF]+/g;
+    const cleanedStr = value.replace(uniqueCharsPattern, '');
+    const isHebrewLetter = /^[\u0590-\u05FF]/.test(cleanedStr.charAt(0));
+
+    return isHebrewLetter;
+};
+
+export const getTextDirection = (value: string, schema: RJSFSchema): string => {
+    if (schema.type === 'string' && value) {
+        return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
+    }
+
+    if (schema.serialCurrent === undefined) {
+        return schema.type === 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
+    }
+    return 'ltr';
+};
 const RjsfTextWidget = ({
     id,
     placeholder,
@@ -38,7 +56,6 @@ const RjsfTextWidget = ({
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;
 
-    const isLTR = schema.serialCurrent === undefined ? schema.type === 'number' || Boolean(schema.pattern) : false;
     const isTextArea = containsHTMLTags(value);
     let finalValue;
 
@@ -72,7 +89,7 @@ const RjsfTextWidget = ({
             onWheel={(e) => {
                 if (inputType === 'number') (e.target as HTMLElement).blur(); // disable number input scroll to change value when focused, but blurring it
             }}
-            dir={isLTR ? 'ltr' : 'rtl'}
+            dir={getTextDirection(value, schema)}
         />
     );
 };

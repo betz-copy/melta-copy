@@ -39,17 +39,17 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => {
-    logger.error(err);
+main().catch((error) => {
+    logger.error('Main error: ', { error });
     process.exit(1);
 });
 
 process
     .on('unhandledRejection', (reason, p) => {
-        logger.error('Unhandled Rejection at Promise', p, reason);
+        logger.error('Unhandled Rejection at Promise', { error: { p, reason } });
         process.exit(1);
     })
-    .on('uncaughtException', (err) => {
-        logger.error('Uncaught Exception thrown', err);
+    .on('uncaughtException', (error) => {
+        logger.error('Uncaught Exception thrown', { error });
         process.exit(1);
     });

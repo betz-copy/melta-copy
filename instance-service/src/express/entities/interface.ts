@@ -19,6 +19,7 @@ export interface IUniqueConstraint {
     type: 'UNIQUE';
     constraintName: string;
     templateId: string;
+    uniqueGroupName: string;
     properties: string[];
 }
 
@@ -31,10 +32,15 @@ export interface IRequiredConstraint {
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
+export interface IUniqueConstraintOfTemplate {
+    groupName: string;
+    properties: string[];
+}
+
 export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityWithDirectRelationships {

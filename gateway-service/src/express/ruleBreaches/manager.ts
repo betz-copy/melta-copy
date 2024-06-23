@@ -47,7 +47,7 @@ import {
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import UsersManager from '../users/manager';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { rabbitCreateNotification } from '../../utils/createNotification';
+import { rabbitCreateNotification } from '../../utils/notifications/createNotification';
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,

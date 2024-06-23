@@ -38,7 +38,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
+            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -46,6 +47,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
+            isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
         };
 
@@ -63,21 +65,20 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
+            uniqueConstraints,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
-
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
         properties: {},
@@ -99,10 +100,10 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            isDailyAlert,
             calculateTime,
             serialStarter,
             hide,
-            unique,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -131,8 +132,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                dateNotification: dateNotification as string | undefined,
+                dateNotification: dateNotification as number | undefined,
                 calculateTime: calculateTime ?? undefined,
+                isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
             };
@@ -141,7 +143,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
             if (required) schema.required.push(name);
             if (hide) schema.hide.push(name);
-            if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
             if (type === 'enum' || type === 'enumArray') {
@@ -179,7 +180,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
         if (required) schema.required.push(name);
     });
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
         ...restOfProperties,
@@ -192,7 +192,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints,
+        uniqueConstraints: restOfProperties.uniqueConstraints || [],
     };
 };
 
