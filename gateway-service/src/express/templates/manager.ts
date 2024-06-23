@@ -34,6 +34,7 @@ import { IPermissionsOfUser } from '../permissions/interfaces';
 import { GanttsService, IMongoGantt } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import logger from '../../utils/logger/logsLogger';
+import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 
 const {
     categoryHasTemplates,
@@ -271,7 +272,7 @@ export class TemplatesManager {
     private static populateTemplateConstraints(
         entityTemplate: IMongoEntityTemplatePopulated,
         requiredConstraints: string[],
-        uniqueConstraints: string[][],
+        uniqueConstraints: IUniqueConstraintOfTemplate[],
     ): IMongoEntityTemplateWithConstraintsPopulated {
         return {
             ...entityTemplate,

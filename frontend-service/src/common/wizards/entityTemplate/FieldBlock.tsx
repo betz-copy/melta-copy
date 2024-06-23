@@ -12,6 +12,7 @@ import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -22,6 +23,8 @@ export const FieldBlockAccordion = styled(Accordion)({
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
@@ -44,6 +47,8 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
     propertiesType,
     values,
+    uniqueConstraints,
+    setUniqueConstraints,
     initialValues,
     setFieldValue,
     areThereAnyInstances,
@@ -67,7 +72,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         required: false,
         preview: false,
         hide: false,
-        unique: false,
+        groupName: undefined,
+        uniqueCheckbox: false,
         options: [],
         optionColors: {},
         pattern: '',
@@ -155,7 +161,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         }
 
         displayValuesCopy[index] = value;
-
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
@@ -223,6 +228,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         key={property.id}
                                                         setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
                                                         setValues={setDisplayValueWrapper(index)}
+                                                        uniqueConstraints={uniqueConstraints}
+                                                        setUniqueConstraints={setUniqueConstraints}
                                                     />
                                                 );
                                             }

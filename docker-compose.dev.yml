@@ -5,20 +5,20 @@ services:
   #*   Service infrastructure dependencies:   #
   #-------------------------------------------#
   mongo:
-    image: mongo:5.0.11
+    image: mongo:4.4.1
     restart: always
-    entrypoint: ['/usr/bin/mongod', '--bind_ip_all', '--replSet', 'rs0']
+    entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
     ports:
       - 27017:27017
 
   mongosetup:
-    image: mongo:5.0.11
+    image: mongo:4.4.1
     depends_on:
       - mongo
     volumes:
       - ./scripts:/scripts
     restart: "no"
-    entrypoint: [ "bash", "/scripts/setup_mongo.sh"]
+    entrypoint: ["bash", "/scripts/setup_mongo.sh"]
 
   rabbit:
     image: rabbitmq:3-management
@@ -26,20 +26,20 @@ services:
       - 5672:5672
       - 15672:15672
     restart: always
-  
-  redis: 
+
+  redis:
     image: redis:latest
     ports:
-       - 6379:6379
+      - 6379:6379
     restart: always
 
   minio:
     image: minio/minio
-    ports: 
+    ports:
       - "9000:9000"
       - "9001:9001"
       - "4000:4000"
-    environment: 
+    environment:
       MINIO_ROOT_USER: "minioadmin"
       MINIO_ROOT_PASSWORD: "minioadmin"
     command: "minio server --console-address :4000 /data"
@@ -48,19 +48,25 @@ services:
   neo4j:
     build:
       context: ./instance-service
-      dockerfile: Dockerfile-neo4j                          
+      dockerfile: Dockerfile-neo4j
     environment:
       - NEO4J_AUTH=neo4j/test
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=512m
     ports:
       - "7474:7474"
       - "7687:7687"
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   # ELK
   elastic:
-    image: elasticsearch:7.9.1
+    image: elasticsearch:8.11.2
     container_name: elastic
     volumes:
       - elastic_data:/usr/share/elasticsearch/data/
@@ -70,42 +76,40 @@ services:
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
       - xpack.security.enabled=false
-      - xpack.monitoring.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - 9200:9200
     restart: always
-  
-  apm-server:
-    image: docker.elastic.co/apm/apm-server:7.9.1
-    container_name: apm-server
-    user: root
-    depends_on:
-      - elastic
-    ports:
-      - 8200:8200
-    volumes:
-      - ./elk/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
-    environment:
-      - output.elasticsearch.hosts=["elastic:9200"]
-    restart: always
-  
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+
   logstash:
-    image: logstash:7.9.1
+    image: logstash:8.11.2
     container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xmx512m -Xms512m
+      - PIPELINE_WORKERS=2
+      - BATCH_SIZE=50
     ports:
-      - '5044:5044'
-      - '9600:9600'
+      - "5044:5044"
+      - "9600:9600"
     volumes:
       - ./elk/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
       - ./elk/logstash.yml:/usr/share/logstash/config/logstash.yml
       - logstash_data:/usr/share/logstash/data
     depends_on:
       - elastic
-  
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+
   kibana:
-    image: kibana:7.9.1
+    image: kibana:8.11.2
     container_name: kibana
     volumes:
       - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
@@ -115,9 +119,13 @@ services:
     depends_on:
       - elastic
     restart: always
-  
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
+
   filebeat:
-    image: docker.elastic.co/beats/filebeat:7.9.1
+    image: docker.elastic.co/beats/filebeat:8.5.1
     container_name: filebeat
     user: root
     volumes:
@@ -138,7 +146,7 @@ services:
       STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
       PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
-      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,626e4e5be8e4d7001101b794,5ebbd53f64fe6f2b1c5777ae
+      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,5e5689514203fc40043591ae,6618026a26928782bb9c16ca
     depends_on:
       - neo4j
       - entity-template-service
@@ -180,7 +188,7 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
-  
+
   storage-service:
     ports:
       - 8006:8000
@@ -194,7 +202,7 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
-  
+
   nginx:
     ports:
       - 80:80
@@ -216,14 +224,14 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
-  
+
   process-service:
     ports:
       - 8008:8000
     restart: always
     volumes:
       - logs:/usr/src/app/logs
-  
+
   gantt-service:
     ports:
       - 8009:8000
@@ -232,7 +240,7 @@ services:
       - logs:/usr/src/app/logs
 
   mailer-service:
-    depends_on: 
+    depends_on:
       - redis
     ports:
       - 8010:8000
@@ -243,7 +251,7 @@ services:
       - 8011:8000
     restart: always
     volumes:
-      - logs:/usr/src/app/logs  
+      - logs:/usr/src/app/logs
 
 volumes:
   elastic_data:

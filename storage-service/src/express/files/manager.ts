@@ -40,7 +40,7 @@ export class FilesManager {
         try {
             await minioClient.removeFile(pdfFileName);
         } catch (error) {
-            logger.error('Error removing preview file:', error);
+            logger.error('Error removing preview file:', { error });
         }
         return minioClient.removeFile(filePath);
     }
@@ -66,14 +66,14 @@ export class FilesManager {
                 try {
                     await minioClient.removeFile(pdfFileName);
                 } catch (error) {
-                    logger.error('Error removing preview file:', error);
+                    logger.error('Error removing preview file:', { error });
                 }
             }
         });
 
         return Promise.all(removalPromises)
             .then(() => minioClient.removeFiles(filePaths))
-            .catch((error) => logger.error('Error removing files:', error));
+            .catch((error) => logger.error('Error removing files:', { error }));
     }
 
     static async getFilesData(filePaths: string[]): Promise<Buffer[]> {

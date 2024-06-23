@@ -13,7 +13,7 @@ import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { IConstraint } from '../../../interfaces/entities';
+import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 const { errorCodes } = environment;
 
@@ -31,9 +31,11 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     preview: boolean;
     hide: boolean;
     id: string;
-    unique: boolean;
+    uniqueCheckbox?: boolean;
+    groupName?: string;
     optionColors: Record<string, string>;
-    dateNotification: string | null | undefined;
+    dateNotification: number | null | undefined;
+    isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
     deleted?: boolean | undefined;
@@ -45,6 +47,7 @@ export interface EntityTemplateWizardValues
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
 }
 
@@ -83,10 +86,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         properties: [],
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        uniqueConstraints: [],
     },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+
     const { isLoading, mutateAsync } = useMutation(
         (enitiyTemplate: EntityTemplateWizardValues) =>
             isEditMode

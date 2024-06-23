@@ -45,8 +45,8 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
         keyword: 'dateNotification',
-        type: 'string',
     });
+    ajv.addKeyword({ keyword: 'isDailyAlert' });
     ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({
         keyword: 'serialStarter',
@@ -90,12 +90,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     isEditMode = false,
 }) => {
     useEffect(() => {
+        // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const hasOtherField = innerDiv.querySelector('.other-field');
-            innerDiv.classList.add(hasOtherField ? 'has-other-field-child' : 'has-text-area-child');
+            const hasTextAreaField = innerDiv.querySelector('.text-area');
+            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
         });
     }, [values.template]);
 
@@ -128,9 +129,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:classNames': 'text-area',
                     };
                 }
-                return {
-                    'ui:classNames': 'other-field',
-                };
+                return {};
             })}
             onChange={({ formData }) => {
                 setValues(formData);

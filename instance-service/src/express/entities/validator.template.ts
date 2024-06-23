@@ -10,7 +10,15 @@ import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { trycatch } from '../../utils/lib';
-import { IFilterOfField, IFilterOfTemplate, ISearchFilter, ISearchBatchBody, ISearchEntitiesOfTemplateBody, IGetExpandedEntityBody } from './interface';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    ISearchFilter,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraintOfTemplate,
+    IGetExpandedEntityBody,
+} from './interface';
 import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
@@ -24,9 +32,10 @@ addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
-    type: 'string',
+    type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
@@ -114,7 +123,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
     const propertiesKeys = Object.keys(properties.properties);
 
-    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
 
     requiredConstraints.forEach((constraintProp) => {
         const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
@@ -123,7 +132,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
         }
     });
     uniqueConstraints.forEach((constraintProps) => {
-        const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
+        const unknownPropertyInConstraint = constraintProps.properties.find((property) => !propertiesKeys.includes(property));
         if (unknownPropertyInConstraint) {
             throw new ValidationError(
                 `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
@@ -132,7 +141,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     });
 
     uniqueConstraints.forEach((uniqueConstraint) => {
-        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
+        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.properties.find((property) => !requiredConstraints.includes(property));
 
         if (uniqueConstraintPropertyThatIsNotInRequired) {
             // because neo4j 4.0 supports unique constraints but makes them required too
@@ -353,9 +362,9 @@ export const validateFilterBatchBody = async (req: Request) => {
     const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
         entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
     );
-    Object.entries(searchBody).forEach(([templateId, {filter}]) => {
-        if(filter){
-            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter` )
+    Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+        if (filter) {
+            validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
         }
     });
     addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);

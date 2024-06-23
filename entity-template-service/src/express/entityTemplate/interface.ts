@@ -5,7 +5,8 @@ export interface IEntitySingleProperty {
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: 'day' | 'week' | 'twoWeeks';
+    dateNotification?: number;
+    isDailyAlert?: boolean;
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;

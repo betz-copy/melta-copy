@@ -25,6 +25,7 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
@@ -71,6 +72,7 @@ export class EntityManager {
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',
                 templateId: label,
+                uniqueGroupName: '',
                 properties,
             };
 
@@ -468,17 +470,23 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
+        console.log({ constraintName });
+
+        const [constraintTypePrefix, ...parts] = constraintName.split(config.constraintsNameDelimiter);
 
         switch (constraintTypePrefix) {
-            case config.requiredConstraintsPrefixName: {
-                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
+            case config.requiredConstraint: {
+                const [constraintTemplateId, property] = parts;
+                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
             }
-            case config.uniqueConstraintsPrefixName: {
-                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
+            case config.uniqueConstraint: {
+                // if field isnt part of unique group -> constraintName has only two parts (groupName === '')
+                const [groupName, constraintTemplateId, propertiesStr] = parts.length === 3 ? parts : ['', ...parts];
+                const properties = propertiesStr.split(',');
+                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
             }
             default:
-                throw new Error('unknown constraint type for template (checked by constraint name)');
+                throw new Error('Unknown constraint type for template (checked by constraint name)');
         }
     }
 
@@ -487,7 +495,10 @@ export class EntityManager {
             (acc, curr) => ({
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
+                uniqueConstraints:
+                    curr.type === 'UNIQUE'
+                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
+                        : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -581,18 +592,20 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraintsProps: string[][],
+        uniqueConstraints: IUniqueConstraintOfTemplate[],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) => ({
             type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
-                config.constraintsNameDelimiter
-            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
+            constraintName:
+                constraintGroup.groupName === ''
+                    ? `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`
+                    : `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${constraintGroup.groupName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`,
             templateId,
-            properties: uniqueConstraintProps,
+            uniqueGroupName: constraintGroup.groupName,
+            properties: constraintGroup.properties,
         }));
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
@@ -606,7 +619,7 @@ export class EntityManager {
         );
 
         const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
-            const propsPart = constraint.properties.map((prop) => `n.${prop}`).join(', ');
+            const propsPart = constraint.properties.map((prop) => `n.${prop}`);
 
             await transaction
                 .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
@@ -620,7 +633,10 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 

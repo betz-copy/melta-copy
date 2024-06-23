@@ -5,7 +5,8 @@ interface IEntitySingleProperty {
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: string;
+    dateNotification?: number;
+    isDailyAlert?: boolean;
     calculateTime?: boolean;
 }
 

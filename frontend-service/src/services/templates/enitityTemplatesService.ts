@@ -37,7 +37,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
+            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
@@ -45,6 +46,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
+            isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
         };
 
@@ -62,21 +64,20 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
+            uniqueConstraints,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
     // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
-
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
         properties: {},
@@ -99,11 +100,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            isDailyAlert,
             calculateTime,
             serialStarter,
             hide,
-            unique,
-            deleted,
+            deleted
         }) => {
             if (!deleted) {
                 let propertyType: IEntitySingleProperty['type'];
@@ -123,21 +124,22 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                         propertyType = 'string';
                 }
 
-                schema.properties[name] = {
-                    title,
-                    type: propertyType,
-                    format: stringFormats.includes(type) ? type : undefined,
-                    enum: type === 'enum' ? options : undefined,
-                    items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
-                    minItems: type === 'enumArray' ? 1 : undefined,
-                    uniqueItems: type === 'enumArray' ? true : undefined,
-                    pattern: type === 'pattern' ? pattern : undefined,
-                    patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                    dateNotification: dateNotification as string | undefined,
-                    calculateTime: calculateTime ?? undefined,
-                    serialStarter: type === 'serialNumber' ? serialStarter : undefined,
-                    serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
-                };
+            schema.properties[name] = {
+                title,
+                type: propertyType,
+                format: stringFormats.includes(type) ? type : undefined,
+                enum: type === 'enum' ? options : undefined,
+                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
+                minItems: type === 'enumArray' ? 1 : undefined,
+                uniqueItems: type === 'enumArray' ? true : undefined,
+                pattern: type === 'pattern' ? pattern : undefined,
+                patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
+                dateNotification: dateNotification as number | undefined,
+                calculateTime: calculateTime ?? undefined,
+                isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
+                serialStarter: type === 'serialNumber' ? serialStarter : undefined,
+                serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+            };
 
                 if (isEditMode) {
                     schema.properties[name] = {
@@ -150,16 +152,15 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
 
                 if (required) schema.required.push(name);
                 if (hide) schema.hide.push(name);
-                if (unique) uniqueConstraint.push(name);
                 if (preview) propertiesPreview.push(name);
                 if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
                 if (type === 'enum' || type === 'enumArray') {
                     Object.entries(optionColors).forEach(([option, color]) => {
                         if (!color) return;
-
+    
                         if (!enumPropertiesColors) enumPropertiesColors = {};
                         if (!enumPropertiesColors[name]) enumPropertiesColors[name] = {};
-
+    
                         enumPropertiesColors[name][option] = color;
                     });
                 }
@@ -200,8 +201,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         }
     });
 
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
-
     return {
         ...restOfProperties,
         properties: schema,
@@ -213,7 +212,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints,
+        uniqueConstraints: restOfProperties.uniqueConstraints || [],
     };
 };
 

@@ -16,7 +16,7 @@ import { ErrorToast } from '../../ErrorToast';
 
 const processStringFormats = [...stringFormats, 'entityReference'];
 const validPropertyTypes = [...basePropertyTypes, ...processStringFormats, ...arrayTypes, 'enum', 'serialNumber', 'pattern'];
-const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks'];
+const dateNotificationTypes: string[] = ['day', 'week', 'twoWeeks', 'month', 'threeMonths', 'halfYear'];
 export const propertiesBaseSchema = Yup.object({
     name: Yup.string()
         .notOneOf(['createdAt', 'updatedAt', 'disable'], i18next.t('validation.fieldExist'))
@@ -35,6 +35,7 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
+    groupName: Yup.string().when('uniqueCheckbox', { is: true, then: (schema) => schema.required(i18next.t('validation.mustSelectUniqueGroup')) }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({
@@ -48,7 +49,7 @@ const addFieldsSchema = Yup.object({
             propertiesBaseSchema.shape({
                 required: Yup.boolean().required(i18next.t('validation.required')),
                 preview: Yup.boolean().required(i18next.t('validation.required')),
-                dateNotification: Yup.string().nullable().oneOf(dateNotificationTypes, i18next.t('validation.mustBeOneOfList')),
+                dateNotification: Yup.number().nullable().oneOf([1, 7, 14, 30, 90, 180], i18next.t('validation.mustBeOneOfList')),
                 serialStarter: Yup.number()
                     .typeError(i18next.t('validation.invalidNumberField'))
                     .when('type', {
@@ -74,6 +75,7 @@ const addFieldsSchema = Yup.object({
 
 const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
+    setValues,
     touched,
     errors,
     setFieldValue,
@@ -94,7 +96,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             onError: (error: AxiosError) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
-
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -137,6 +138,16 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                         <FieldBlock
                                             propertiesType={itemId}
                                             values={values}
+                                            uniqueConstraints={values.uniqueConstraints}
+                                            setUniqueConstraints={(newUniqueConstraints) => {
+                                                setValues((prev) => ({
+                                                    ...prev,
+                                                    uniqueConstraints:
+                                                        typeof newUniqueConstraints === 'function'
+                                                            ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                            : newUniqueConstraints,
+                                                }));
+                                            }}
                                             initialValues={initialValues}
                                             setFieldValue={setFieldValue}
                                             areThereAnyInstances={areThereAnyInstances}
