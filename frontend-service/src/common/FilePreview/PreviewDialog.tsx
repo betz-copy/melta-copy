@@ -26,10 +26,10 @@ type PreviewProps = {
     contentType: 'image' | 'video' | 'audio' | 'unsupported' | 'pdf' | 'document';
 };
 
-const isImage = (type: string) => type === 'image';
-const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
-const isUnsupported = (type: string) => type === 'unsupported';
-const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
+export const isImage = (type: string) => type === 'image';
+export const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
+export const isUnsupported = (type: string) => type === 'unsupported';
+export const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
 
 const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setOpen, fileName }) => {
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
@@ -205,11 +205,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             },
                         }}
                     >
-                        <IconButton
-                            onClick={() => {
-                                setOpen(false);
-                            }}
-                        >
+                        <IconButton onClick={() => setOpen(false)}>
                             <CloseIcon />
                         </IconButton>
 
@@ -243,7 +239,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             />
 
                             <div style={{ color: 'white' }}>
-                                {numOfPages} / {currentPageRef.current}{' '}
+                                {numOfPages} / {currentPageRef.current}
                             </div>
                         </FlexBox>
                     )}

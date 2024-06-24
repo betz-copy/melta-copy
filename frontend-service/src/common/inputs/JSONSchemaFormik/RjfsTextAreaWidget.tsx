@@ -8,6 +8,8 @@ import { createTheme } from '@mui/material/styles';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
+    const { toPrint } = options;
+
     const initialValue = () => {
         if (value) {
             const checkHasHTMLTags = containsHTMLTags(value);
@@ -86,6 +88,8 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
     };
 
     Object.assign(theme, muiRteTheme);
+
+    if (toPrint) return null;
 
     return (
         <ThemeProvider theme={theme}>

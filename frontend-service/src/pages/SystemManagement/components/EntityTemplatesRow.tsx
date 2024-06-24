@@ -515,6 +515,7 @@ const EntityTemplatesRow: React.FC = () => {
                         getOptionLabel={(category) => category.displayName}
                         size="small"
                         isDraggableDisabled
+                        horizontalOrigin={181}
                     />
                 </Grid>
                 <Grid item>

@@ -34,7 +34,6 @@
     width: 100%;
 }
 
-.MuiPickersToolbar-penIconButton
-{
+.MuiPickersToolbar-penIconButton {
     right: 265px !important;
 }

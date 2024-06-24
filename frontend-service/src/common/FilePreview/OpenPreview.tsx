@@ -1,4 +1,4 @@
-import { Grid, IconButton, Typography } from '@mui/material';
+import { Box, Grid, IconButton, Link, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
@@ -6,41 +6,59 @@ import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } 
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 
+const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<void>; img?: ReactNode; showText?: boolean }> = ({
+    fileName,
+    onClick,
+    img,
+    showText,
+}) => (
+    <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+        <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
+            {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
+            {showText && (
+                <Typography
+                    sx={{
+                        marginRight: '5px',
+                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                        textOverflow: 'ellipsis',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '100%',
+                    }}
+                >
+                    {getFileNameWithoutExtension(fileName)}
+                </Typography>
+            )}
+        </IconButton>
+    </Grid>
+);
+
 const OpenPreview: React.FC<{
     fileId: string;
     img?: ReactNode;
     showText?: boolean;
-}> = ({ fileId, img, showText = true }) => {
+    download?: boolean;
+}> = ({ fileId, img, showText = true, download }) => {
     const fileName = getFileName(fileId);
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 
-    return (
-        <Grid sx={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-            <IconButton
-                onClick={async () => {
-                    setOpen(true);
-                }}
-                sx={{ borderRadius: 10, maxWidth: '100%' }}
-            >
-                {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
+    const handleButtonClick = async () => {
+        setOpen(true);
+    };
 
-                {showText && (
-                    <Typography
-                        sx={{
-                            marginRight: '5px',
-                            fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                            textOverflow: 'ellipsis',
-                            overflow: 'hidden',
-                            whiteSpace: 'nowrap',
-                            maxWidth: '100%',
-                        }}
-                    >
-                        {getFileNameWithoutExtension(fileName)}
-                    </Typography>
-                )}
-            </IconButton>
-            {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
+    return (
+        <Grid>
+            {download ? (
+                <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
+                    <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
+                </Link>
+            ) : (
+                <Box>
+                    <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} />
+                    {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
+                </Box>
+            )}
         </Grid>
     );
 };

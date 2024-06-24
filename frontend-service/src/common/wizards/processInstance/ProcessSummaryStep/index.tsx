@@ -9,29 +9,35 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 export interface ProcessSummaryProp {
     processInstance: IMongoProcessInstancePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
+    isPrinting: boolean;
 }
 
-const ProcessSummary: React.FC<ProcessSummaryProp> = ({ processInstance, processTemplate }) => {
+const ProcessSummary = React.forwardRef<HTMLDivElement, ProcessSummaryProp>(({ processInstance, processTemplate, isPrinting }) => {
     return (
         <Box
             sx={{
                 width: '100%',
-                paddingRight: '60px',
-                paddingLeft: '30px',
-                overflowY: 'auto',
+                paddingX: '30px',
+                paddingTop: isPrinting ? '30px' : undefined,
+                overflowY: isPrinting ? 'visible' : 'auto',
             }}
+            style={{ direction: 'rtl' }}
         >
-            <Grid container justifyContent="space-around" direction="column">
+            <Grid container alignItems="space-around" direction="column">
                 <Grid item xs={3}>
-                    <ProcessStatus title={i18next.t('wizard.processInstance.summary.processStatus')} instance={processInstance} />
+                    <ProcessStatus
+                        title={i18next.t('wizard.processInstance.summary.processStatus')}
+                        instance={processInstance}
+                        isPrinting={isPrinting}
+                    />
                 </Grid>
 
                 <Grid item xs={3}>
-                    <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} />
+                    <StepsStatuses processInstance={processInstance} processTemplate={processTemplate} isPrinting={isPrinting} />
                 </Grid>
             </Grid>
         </Box>
     );
-};
+});
 
 export default ProcessSummary;
