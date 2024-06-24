@@ -1,9 +1,9 @@
 import { menash } from 'menashmq';
-import config from '../config';
+import config from '../../config';
 // eslint-disable-next-line import/extensions
-import { createMail } from './mailNotifications';
-import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
-import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
+import { createMail } from '../mailNotifications';
+import { INotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
+import { IMailNotificationMetadataPopulated } from '../mailNotifications/interfaces';
 
 const { rabbit } = config;
 

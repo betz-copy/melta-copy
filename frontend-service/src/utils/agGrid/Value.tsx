@@ -6,14 +6,14 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
+import { isStartWithHebrewLetter } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
     color?: string;
-    isNumberField?: boolean;
     calculateTime?: boolean;
-}> = ({ hideValue, value, color, isNumberField, calculateTime }) => {
+}> = ({ hideValue, value, color, calculateTime }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -52,6 +52,8 @@ const Value: React.FC<{
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
 
+    const textDirection = containsHtmlTags ? true : isStartWithHebrewLetter(value);
+
     return (
         <Grid container justifyContent="space-between" alignItems="center">
             <Grid
@@ -62,7 +64,7 @@ const Value: React.FC<{
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
-                    direction: isNumberField ? 'rtl' : undefined,
+                    direction: textDirection ? 'ltr' : 'rtl',
                 }}
                 onDoubleClick={handleDoubleClick}
             >
@@ -96,6 +98,7 @@ const Value: React.FC<{
                         whiteSpace: containsHtmlTags ? 'normal' : 'pre-wrap',
                         fontWeight: 200,
                         fontSize: '15px',
+                        direction: textDirection ? 'rtl' : 'ltr',
                     }}
                 >
                     {popoverText}

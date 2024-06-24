@@ -27,7 +27,7 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: 'day' | 'week' | 'twoWeeks';
+    dateNotification?: number;
 }
 
 export interface IEntityTemplate {
