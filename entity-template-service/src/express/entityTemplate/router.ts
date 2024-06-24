@@ -32,7 +32,7 @@ entityTemplateRouter.delete(
 
 entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), wrapController(EntityTemplateController.updateEntityTemplate));
 
-entityTemplateRouter.put(
+entityTemplateRouter.patch(
     '/:templateId/actions',
     ValidateRequest(updateEntityTemplateActionSchema),
     wrapController(EntityTemplateController.updateEntityTemplateAction),

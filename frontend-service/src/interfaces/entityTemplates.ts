@@ -39,7 +39,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
-    actions?: { originalCode: string; codeAST: AST }[];
+    actions?: string;
     uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 

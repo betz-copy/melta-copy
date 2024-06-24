@@ -13,7 +13,6 @@ import { AxiosError } from 'axios';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
-import * as fs from 'fs';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 
 const options: TSESTreeOptions = {
@@ -31,17 +30,13 @@ const CodeEditorDialog: React.FC<{
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
 }> = ({ open, handleClose, entityTemplate }) => {
-    const [code, setcode] = useState('');
+    const [code, setcode] = useState(entityTemplate?.actions);
     const [errors, setErrors] = useState(false);
     const [importUsing, setImportUsing] = useState(false);
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
-            return updateActionToEntity(
-                entityTemplate?._id!,
-                ts.createSourceFile('temp.tsx', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX).text,
-                ts.createSourceFile('temp.tsx', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX),
-            );
+            return updateActionToEntity(entityTemplate?._id!, code!);
         },
         {
             onError: (err: AxiosError) => {
@@ -95,7 +90,7 @@ const CodeEditorDialog: React.FC<{
     const saveAction = async () => {
         const sourceFile = ts.createSourceFile('temp.tsx', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
         traverseAstAndValidate(sourceFile);
-        // await mutateAsync();
+        await mutateAsync();
     };
 
     const mainColor = (theme) => theme.palette.primary.main;
@@ -135,7 +130,7 @@ const CodeEditorDialog: React.FC<{
                 </IconButton>
             </DialogTitle>
             <DialogContent>
-                <ActionManagement entityTemplate={entityTemplate} onChange={onChange} onValidate={onValidate} forbidden={importUsing} />
+                <ActionManagement entityTemplate={entityTemplate} onChange={onChange} onValidate={onValidate} forbidden={importUsing} value={entityTemplate?.actions}/>
             </DialogContent>
             <DialogActions>
                 <Grid item>
@@ -157,3 +152,25 @@ const CodeEditorDialog: React.FC<{
 };
 
 export { CodeEditorDialog };
+// function onCreateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent; } {
+//     const updated_travelAgent = { ...travelAgent, age: travelAgent.age }
+//     return {
+//         updated_travelAgent: {
+//             ...travelAgent, age: travelAgent.age
+//         }
+//     }
+// }
+// function onCreateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
+//     const updated_travelAgent: travelAgent = {
+//         ...travelAgent,
+//         age: travelAgent.age,
+//     };
+//     return { updated_travelAgent };
+// }
+// function onUpdateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
+//     return {};
+// }
+
+// function onDeleteEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
+//     return {};
+// }

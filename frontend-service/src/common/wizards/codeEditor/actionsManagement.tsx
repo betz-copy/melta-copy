@@ -11,7 +11,8 @@ const ActionManagement: React.FC<{
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
     onValidate?: (markers: editor.IMarker[]) => void;
     forbidden?: boolean;
-}> = ({ entityTemplate, onChange, onValidate, forbidden = false }) => {
+    value?: string;
+}> = ({ entityTemplate, onChange, onValidate, forbidden = false, value }) => {
     const entityName = entityTemplate?.name;
     const entityProperties = entityTemplate?.properties.properties;
 
@@ -67,6 +68,7 @@ const ActionManagement: React.FC<{
                 onMount={handleEditorDidMount}
                 defaultValue={defaultValue}
                 onValidate={onValidate}
+                value={value}
             />
             {forbidden && <div style={{ color: 'red' }}>אין להשתמש בimport</div>}
         </Box>

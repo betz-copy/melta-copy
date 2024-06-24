@@ -688,6 +688,10 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);
     }
 
+    static async updateEntityTemplateAction(id: string, actions: string) {
+        return EntityTemplateManagerService.updateEntityTemplateAction(id, actions);
+    }
+
     // relationship templates
     private static async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
         const { err: getEntityErr } = await trycatch(() => EntityTemplateManagerService.getEntityTemplateById(entityTemplateId));

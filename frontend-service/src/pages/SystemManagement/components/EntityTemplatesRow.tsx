@@ -161,7 +161,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
                                 }}
                                 onAddActionsClick={() => {
-                                    // setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
                                     setAddActionsDialogState({ isWizardOpen: true, entityTemplate });
                                 }}
                             />

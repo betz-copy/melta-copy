@@ -1,5 +1,5 @@
 import { TSESTreeOptions } from '@typescript-eslint/typescript-estree';
-import * as ts from 'typescript';
+// import * as ts from 'typescript';
 
 export const options: TSESTreeOptions = {
     comment: true,
@@ -29,7 +29,6 @@ export interface IEntitySingleProperty {
     };
     minItems?: 1;
     uniqueItems?: true;
-    actions?: { originalCode: string; codeAST: ts.SourceFile }[];
 }
 
 export interface IProperties {
@@ -51,4 +50,5 @@ export interface IEntityTemplate {
     enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;
     iconFileId: string | null;
+    actions?: string;
 }

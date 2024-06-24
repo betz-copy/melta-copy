@@ -87,7 +87,7 @@ export const updateEntityTemplateStatusSchema = Joi.object({
 // PUT /api/entities/templates/:templateId/actions
 export const updateEntityTemplateActionSchema = Joi.object({
     body: {
-        actions: Joi.object().required(),
+        actions: Joi.string().required(),
     },
     query: {},
     params: {

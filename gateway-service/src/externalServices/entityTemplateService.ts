@@ -150,6 +150,17 @@ export class EntityTemplateManagerService {
         return data;
     }
 
+    static async updateEntityTemplateAction(entityTemplateId: string, actions: string) {
+        const { data } = await this.EntityTemplateManagerApi.patch<IMongoEntityTemplatePopulated>(
+            `${baseEntitiesRoute}/${entityTemplateId}/actions`,
+            {
+                actions,
+            },
+        );
+
+        return data;
+    }
+
     static async deleteEntityTemplate(entityTemplateId: string) {
         const { data } = await this.EntityTemplateManagerApi.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
 

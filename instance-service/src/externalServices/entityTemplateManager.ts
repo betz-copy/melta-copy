@@ -39,6 +39,7 @@ export interface IEntityTemplate {
     propertiesOrder: string[];
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
+    actions?: string;
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate {

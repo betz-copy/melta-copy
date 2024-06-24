@@ -282,8 +282,8 @@ const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: Com
     return data;
 };
 
-const updateActionToEntity = async (entityTemplateId: string, originalCode: string, AST: ts.SourceFile) => {
-    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/actions`, { originalCode, AST });
+const updateActionToEntity = async (entityTemplateId: string, actions: string) => {
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/actions`, { actions });
     return data;
 };
 
