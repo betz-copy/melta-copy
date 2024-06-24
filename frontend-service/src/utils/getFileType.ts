@@ -1,4 +1,6 @@
 import { environment } from '../globals';
+import { IFile } from '../interfaces/preview';
+import { getFileName } from './getFileName';
 
 export const getFileExtension = (name: string) => {
     return name.match(/\.([^.]*)$/)?.pop() || '';
@@ -20,4 +22,14 @@ export const getPreviewContentType = (name: string) => {
     if (image.includes(extension)) return 'image';
     if (document.includes(extension)) return 'document';
     return 'unsupported';
+};
+
+export const getFile = (id: string) => {
+    const name = getFileName(id);
+    return {
+        id,
+        name,
+        contentType: getPreviewContentType(name),
+        targetExtension: getFileExtension(name),
+    } as IFile;
 };

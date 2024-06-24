@@ -68,17 +68,21 @@ const RjsfTextWidget = ({
             {...textFieldProps}
             color="primary"
             variant={variant}
+            fullWidth
             id={id}
             placeholder={placeholder}
             label={displayLabel ? label || schema.title : false}
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
-            inputProps={{
-                readOnly: readonly,
-            }}
             InputLabelProps={{
                 shrink: readonly || undefined,
+            }}
+            inputProps={{
+                readOnly: readonly,
+                style: {
+                    textOverflow: 'ellipsis',
+                },
             }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}

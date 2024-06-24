@@ -83,7 +83,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
-    horizontalOriginProp?: number;
+    horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
 }>;
 
@@ -458,7 +458,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
-    horizontalOriginProp,
+    horizontalOrigin = 172,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
@@ -473,12 +473,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
-    let horizontalOrigin = horizontalOriginProp ?? 172;
-    if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
-        horizontalOrigin = 181;
-    } else if (title === i18next.t('systemManagement.sourceTemplates')) {
-        horizontalOrigin = 177;
-    }
     // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
