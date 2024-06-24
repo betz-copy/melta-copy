@@ -38,10 +38,10 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePo
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
-    entity: IEntity;
+    entity: IEntity | EntityWizardValues;
     onSuccessUpdate?: (data: IEntity) => void;
     onCancelUpdate: () => void;
-    onError: (entity: IEntity | EntityWizardValues) => void;
+    onError: (entity: EntityWizardValues) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     externalErrors: {
         files: boolean;
@@ -138,22 +138,16 @@ const CreateOrEditEntityDetails: React.FC<{
         onError: (err: AxiosError, { template }: EntityWizardValues) => handleMutationError(err, template),
     });
 
-    const cleanFileProperties = (fileProps) => {
-        const cleanedProps = {};
-        for (const key in fileProps) {
-            if (Array.isArray(fileProps[key])) {
-                cleanedProps[key] = fileProps[key].map((item) => (typeof item === 'string' ? item : item.name));
-            } else {
-                cleanedProps[key] = fileProps[key];
-            }
-        }
-        return cleanedProps;
-    };
-
     const navigate = useNavigate();
     return (
         <Formik
-            initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
+            initialValues={{
+                properties: fieldProperties,
+                attachmentsProperties: (entity as EntityWizardValues)?.attachmentsProperties
+                    ? (entity as EntityWizardValues)?.attachmentsProperties
+                    : fileProperties,
+                template: entityTemplate,
+            }}
             onSubmit={async (values) => {
                 const mutationPromise = isEditMode ? updateMutation({ newEntityData: values }) : createMutation(values);
                 toast.dismiss();
@@ -198,10 +192,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 variant="text"
                                                 onClick={() => {
                                                     setExternalErrors({ files: errorTooBig, unique: uniqueError });
-                                                    onError({
-                                                        properties: { ...values.properties, ...cleanFileProperties(values.attachmentsProperties) },
-                                                        templateId: values.template._id,
-                                                    });
+                                                    onError(values);
                                                 }}
                                                 sx={{ marginRight: '5px' }}
                                             >

@@ -22,6 +22,7 @@ import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { EntityWizardValues } from '../dialogs/entity';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -69,6 +70,7 @@ const TemplateTable = forwardRef<
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
+        expandedEntity?: EntityWizardValues;
     }>({
         isOpen: false,
     });
@@ -189,11 +191,11 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    entity={editDialog.entity!}
+                    entity={editDialog.expandedEntity ? editDialog.expandedEntity : editDialog.entity!}
                     onError={(currEntity) => {
                         setEditDialog({
                             isOpen: true,
-                            entity: currEntity as IEntity,
+                            expandedEntity: currEntity,
                         });
                     }}
                     onSuccessUpdate={(entity) => {

@@ -70,7 +70,7 @@ const AddEntityButton: React.FC<{
                     entity={
                         addEntityWizardState.initialValues
                             ? addEntityWizardState.initialValues
-                            : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, templateId: '' }
+                            : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, template: {} }
                     }
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
@@ -84,7 +84,7 @@ const AddEntityButton: React.FC<{
                         setAddEntityWizardState({
                             isOpen: true,
                             initialStep: 1,
-                            initialValues: currEntity as EntityWizardValues,
+                            initialValues: currEntity,
                         });
                     }}
                     externalErrors={externalErrors}
