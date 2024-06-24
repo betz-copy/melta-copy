@@ -28,7 +28,9 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
 }) => {
-    const [filesName, setFilesName] = useState<string[]>(value ? value.map((file) => getFileName(file.name)) : []);
+    const [filesName, setFilesName] = useState<string[]>(
+        value ? value.map((file) => (getFileName(file.name).length > 3 ? getFileName(file.name) : file.name)) : [],
+    );
 
     return (
         <Box

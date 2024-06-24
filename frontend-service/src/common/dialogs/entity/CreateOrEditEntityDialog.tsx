@@ -38,7 +38,7 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePo
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
-    entity: IEntity | EntityWizardValues;
+    entity: IEntity;
     onSuccessUpdate?: (data: IEntity) => void;
     onCancelUpdate: () => void;
     onError: (entity: IEntity | EntityWizardValues) => void;
@@ -64,8 +64,6 @@ const CreateOrEditEntityDetails: React.FC<{
     externalErrors,
     setExternalErrors,
 }) => {
-    console.log({ entity });
-
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -90,23 +88,8 @@ const CreateOrEditEntityDetails: React.FC<{
             fileIdsProperties[key] = { name: value };
         }
     });
-    console.log({ fileIdsProperties });
 
-    let fileProperties;
-    if ('attachmentsProperties' in entity)
-        fileProperties = {
-            ...fileIdsProperties,
-            ...Object.entries(entity.attachmentsProperties)
-                .filter(([_key, value]) => value !== undefined)
-                .reduce((acc, [key, value]) => {
-                    acc[key] = Array.isArray(value) ? value.map((file) => file.name) : value?.name;
-                    return acc;
-                }, {} as Record<string, string | string[]>),
-        };
-    else fileProperties = fileIdsProperties;
-
-    console.log({ fileProperties });
-    console.log({ fieldProperties });
+    const fileProperties = fileIdsProperties;
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
         if (err.response?.status === 413) errorTooBig = true;
@@ -155,6 +138,18 @@ const CreateOrEditEntityDetails: React.FC<{
         onError: (err: AxiosError, { template }: EntityWizardValues) => handleMutationError(err, template),
     });
 
+    const cleanFileProperties = (fileProps) => {
+        const cleanedProps = {};
+        for (const key in fileProps) {
+            if (Array.isArray(fileProps[key])) {
+                cleanedProps[key] = fileProps[key].map((item) => (typeof item === 'string' ? item : item.name));
+            } else {
+                cleanedProps[key] = fileProps[key];
+            }
+        }
+        return cleanedProps;
+    };
+
     const navigate = useNavigate();
     return (
         <Formik
@@ -162,16 +157,6 @@ const CreateOrEditEntityDetails: React.FC<{
             onSubmit={async (values) => {
                 const mutationPromise = isEditMode ? updateMutation({ newEntityData: values }) : createMutation(values);
                 toast.dismiss();
-
-                console.log({ values });
-                console.log('Object.values(values.attachmentsProperties)', Object.values(values.attachmentsProperties));
-
-                console.log({
-                    ...Object.values(values.attachmentsProperties).map((attachmentsProperty) => {
-                        console.log({ attachmentsProperty });
-                        return attachmentsProperty.name;
-                    }),
-                });
 
                 await new Promise<void>((resolve) => {
                     toast.promise(
@@ -213,7 +198,10 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 variant="text"
                                                 onClick={() => {
                                                     setExternalErrors({ files: errorTooBig, unique: uniqueError });
-                                                    onError(values);
+                                                    onError({
+                                                        properties: { ...values.properties, ...cleanFileProperties(values.attachmentsProperties) },
+                                                        templateId: values.template._id,
+                                                    });
                                                 }}
                                                 sx={{ marginRight: '5px' }}
                                             >
