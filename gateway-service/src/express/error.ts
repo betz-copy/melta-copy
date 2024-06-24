@@ -55,7 +55,7 @@ export const errorMiddleware = async (error: Error, _req: express.Request, res: 
             message: 'internal server error',
         });
 
-        logger.error('Request failed with error: ', error);
+        logger.error('Request failed with error: ', { error });
     }
 
     next();

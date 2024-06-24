@@ -35,6 +35,7 @@ export const propertiesBaseSchema = Yup.object({
         is: 'pattern',
         then: (schema) => schema.required(i18next.t('validation.required')),
     }),
+    groupName: Yup.string().when('uniqueCheckbox', { is: true, then: (schema) => schema.required(i18next.t('validation.mustSelectUniqueGroup')) }),
 });
 
 export const attachmentPropertiesBaseSchema = Yup.object({
@@ -67,6 +68,7 @@ const addFieldsSchema = Yup.object({
 
 const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEditMode' | 'setBlock'>> = ({
     values,
+    setValues,
     touched,
     errors,
     setFieldValue,
@@ -87,7 +89,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             onError: (error: AxiosError) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
-
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);
             },
         },
@@ -130,6 +131,16 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                         <FieldBlock
                                             propertiesType={itemId}
                                             values={values}
+                                            uniqueConstraints={values.uniqueConstraints}
+                                            setUniqueConstraints={(newUniqueConstraints) => {
+                                                setValues((prev) => ({
+                                                    ...prev,
+                                                    uniqueConstraints:
+                                                        typeof newUniqueConstraints === 'function'
+                                                            ? newUniqueConstraints(prev.uniqueConstraints!)
+                                                            : newUniqueConstraints,
+                                                }));
+                                            }}
                                             initialValues={initialValues}
                                             setFieldValue={setFieldValue}
                                             areThereAnyInstances={areThereAnyInstances}

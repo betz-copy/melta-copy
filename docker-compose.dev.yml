@@ -53,14 +53,20 @@ services:
       - NEO4J_AUTH=neo4j/test
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
+      - NEO4J_dbms_memory_heap_initial__size=512m
+      - NEO4J_dbms_memory_heap_max__size=512m
     ports:
       - "7474:7474"
       - "7687:7687"
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   # ELK
   elastic:
-    image: elasticsearch:7.9.1
+    image: elasticsearch:8.11.2
     container_name: elastic
     volumes:
       - elastic_data:/usr/share/elasticsearch/data/
@@ -70,9 +76,9 @@ services:
       - http.host=0.0.0.0
       - transport.host=0.0.0.0
       - xpack.security.enabled=false
-      - xpack.monitoring.enabled=false
       - cluster.name=elasticsearch
       - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
     ports:
       - 9200:9200
     restart: always
@@ -81,23 +87,13 @@ services:
         limits:
           memory: 1024m
 
-  apm-server:
-    image: docker.elastic.co/apm/apm-server:7.9.1
-    container_name: apm-server
-    user: root
-    depends_on:
-      - elastic
-    ports:
-      - 8200:8200
-    volumes:
-      - ./elk/apm-server.yml:/usr/share/apm-server/apm-server.yml:ro
-    environment:
-      - output.elasticsearch.hosts=["elastic:9200"]
-    restart: always
-
   logstash:
-    image: logstash:7.9.1
+    image: logstash:8.11.2
     container_name: logstash
+    environment:
+      - LS_JAVA_OPTS=-Xmx512m -Xms512m
+      - PIPELINE_WORKERS=2
+      - BATCH_SIZE=50
     ports:
       - "5044:5044"
       - "9600:9600"
@@ -107,9 +103,13 @@ services:
       - logstash_data:/usr/share/logstash/data
     depends_on:
       - elastic
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   kibana:
-    image: kibana:7.9.1
+    image: kibana:8.11.2
     container_name: kibana
     volumes:
       - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
@@ -119,9 +119,13 @@ services:
     depends_on:
       - elastic
     restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1024m
 
   filebeat:
-    image: docker.elastic.co/beats/filebeat:7.9.1
+    image: docker.elastic.co/beats/filebeat:8.5.1
     container_name: filebeat
     user: root
     volumes:

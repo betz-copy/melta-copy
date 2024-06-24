@@ -1,4 +1,5 @@
 import { IMongoCategory } from './categories';
+import { IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
     title: string;
@@ -14,6 +15,7 @@ export interface IEntitySingleProperty {
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
+    uniqueCheckbox?: boolean;
     dateNotification?: number;
     isDailyAlert?: boolean;
     calculateTime?: boolean;
@@ -37,7 +39,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

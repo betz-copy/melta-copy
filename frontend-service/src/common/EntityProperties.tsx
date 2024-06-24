@@ -13,8 +13,8 @@ import { MeltaTooltip } from './MeltaTooltip';
 import { VerifyLink } from './VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import { IFile } from '../interfaces/preview';
 import { environment } from '../globals';
+import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -96,7 +96,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
-
     return (
         <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -133,7 +132,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue &&
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-
+                const textDirection =
+                    propertySchema.format !== 'text-area'
+                        ? getTextDirection(propertyValue, {
+                              type: propertySchema.type,
+                              serialCurrent: propertySchema.serialCurrent,
+                          })
+                        : 'rtl';
                 return (
                     <Grid
                         key={propertyKey}
@@ -192,6 +197,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             overflow: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
+                                            direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
                                         <VerifyLink>{innerContent}</VerifyLink>
