@@ -218,6 +218,17 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+    },
+    draftSaveDialog: {
+        exitTitle: 'בחרת לצאת ללא שמירת השינויים',
+        exitDescription: 'האם ברצונך לשמור את השינויים?',
+        notSavedTitle: 'בחרת לצאת ללא יצירת היישות',
+        notSavedDescription:
+            'קיימת טיוטא של היישות אשר נשמרת על העמדה שלך בלבד!\nעל מנת ליצור את היישות ולהוסיפה לטבלה יש למלא את כל שדות החובה.\nניתן להשלים פעולה זו במועד מאוחר יותר',
+        exit: 'יציאה',
+        save: 'שמירה',
+        saveAsDraft: 'שמירה כטיוטא',
+        backToEdit: 'חזרה לעריכה',
         enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
     },
     userAutocomplete: {

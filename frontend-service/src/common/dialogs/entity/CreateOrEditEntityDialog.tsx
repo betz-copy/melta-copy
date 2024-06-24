@@ -1,27 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
+import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { toast } from 'react-toastify';
 import { EntityWizardValues } from '.';
-import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
-import { BlueTitle } from '../../BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from './toastConstraintValidationError';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
-import { ChooseTemplate } from './ChooseTemplate';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { BlueTitle } from '../../BlueTitle';
+import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { ChooseTemplate } from './ChooseTemplate';
+import { toastConstraintValidationError } from './toastConstraintValidationError';
+import { AreYouSureDialog } from '../AreYouSureDialog';
+import { DraftSaveDialog } from './draftWarningDialog';
 
 const { errorCodes } = environment;
 
@@ -50,6 +52,9 @@ const CreateOrEditEntityDetails: React.FC<{
         rawBrokenRules?: IRuleBreach['brokenRules'];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
+
+    const [isAreYouSureDialogOpen, setIsAreYouSureDialogOpen] = useState(false);
+    const [isSaveDraftDialogOpen, setIsSaveDraftDialogOpen] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -94,8 +99,8 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
-    const navigate = useNavigate();
 
+    const navigate = useNavigate();
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         (entityToCreate: EntityWizardValues) => createEntityRequest(entityToCreate),
         {
@@ -220,28 +225,37 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <Grid item container xs={12}>
                                             <Grid container flexDirection="column">
                                                 <Box width="100%">
-                                                    <Grid item container justifyContent="space-between">
-                                                        <BlueTitle
-                                                            title={`${isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')} ${
-                                                                values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                                                            }`}
-                                                            component="h6"
-                                                            variant="h6"
-                                                            style={{ fontWeight: '600', fontSize: '20px' }}
-                                                        />
+                                                    <Grid item container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
+                                                        <Grid item>
+                                                            <BlueTitle
+                                                                title={`${
+                                                                    isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')
+                                                                } ${values.template?.displayName || i18next.t('wizard.entity.createNewEntity')}`}
+                                                                component="h6"
+                                                                variant="h6"
+                                                                style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
+                                                            />
+                                                        </Grid>
+                                                        {/* omer TODO: change this to display the last  time this was saved in the local storage, only if saved at all */}
+                                                        {!entityTemplate._id && (
+                                                            <Grid item container xs={8} justifyContent="right">
+                                                                <Typography color="#53566E" marginTop="0.5rem">
+                                                                    lmfao
+                                                                </Typography>
+                                                            </Grid>
+                                                        )}
                                                         <Grid item>
                                                             <IconButton
                                                                 aria-label="close"
-                                                                onClick={() => onCancelUpdate()}
+                                                                onClick={() => setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen)}
                                                                 sx={{
-                                                                    color: (theme) => theme.palette.grey[500],
+                                                                    color: (theme) => theme.palette.primary.main,
                                                                 }}
                                                             >
                                                                 <CloseIcon />
                                                             </IconButton>
                                                         </Grid>
                                                     </Grid>
-
                                                     {!entityTemplate._id && (
                                                         <Grid item marginTop="20px">
                                                             <ChooseTemplate
@@ -254,7 +268,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     )}
                                                 </Box>
                                                 <Box width="95%" maxWidth="95%" paddingLeft="20px">
-                                                    <Grid marginTop="20px" marginBottom="20px">
+                                                    <Grid marginTop="20px" style={{ overflowY: 'scroll', maxHeight: '37rem' }}>
                                                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                                                     </Grid>
                                                     {templateFileKeys.length > 0 && (
@@ -264,47 +278,93 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             </Grid>
                                                         </Grid>
                                                     )}
-
                                                     <Grid marginTop="20px" marginBottom="20px">
                                                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                                                     </Grid>
                                                 </Box>
                                             </Grid>
                                         </Grid>
+                                        {/* TODO color from theme */}
+                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
                                             item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
-                                            padding="25px 15px 0px 15px"
+                                            alignItems="center"
+                                            paddingTop="25px"
                                         >
-                                            <Grid item>
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    variant="outlined"
-                                                    startIcon={<ClearIcon />}
-                                                    onClick={() => onCancelUpdate()}
-                                                >
-                                                    {i18next.t('entityPage.cancel')}
-                                                </Button>
+                                            {/* omer TODO: change this to only show if entity template has export file/s */}
+                                            <Grid item container>
+                                                <Autocomplete
+                                                    id="template"
+                                                    options={[1, 2, 3, 4]}
+                                                    onChange={(_e, value) => setFieldValue('template', value || '')}
+                                                    renderInput={(params) => (
+                                                        <TextField
+                                                            {...params}
+                                                            size="medium"
+                                                            error={Boolean(touched.template && errors.template)}
+                                                            fullWidth
+                                                            sx={{
+                                                                '& .MuiInputBase-root': {
+                                                                    borderRadius: '10px',
+                                                                    width: 300,
+                                                                },
+                                                                '& fieldset': {
+                                                                    borderColor: '#CCCFE5',
+                                                                    color: '#CCCFE5',
+                                                                },
+                                                                '& label': {
+                                                                    color: '#9398C2',
+                                                                },
+                                                            }}
+                                                            helperText={
+                                                                (touched.template && errors.template?._id) ||
+                                                                errors.template?.displayName ||
+                                                                errors.template?.properties
+                                                            }
+                                                            name="template"
+                                                            variant="outlined"
+                                                            label={i18next.t('entityTemplate')}
+                                                        />
+                                                    )}
+                                                />
                                             </Grid>
                                             <Grid item>
                                                 <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    type="submit"
+                                                    sx={{
+                                                        borderRadius: '7px',
+                                                        bgcolor: '#EBEFFA',
+                                                        color: (theme) => theme.palette.primary.main,
+                                                        ':hover': { color: 'white' },
+                                                    }}
                                                     variant="contained"
-                                                    startIcon={
-                                                        isUpdateLoading || isCreateLoading ? (
-                                                            <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                        ) : (
-                                                            <DoneIcon />
-                                                        )
-                                                    }
-                                                    disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                    startIcon={<ClearIcon />}
+                                                    onClick={() => onCancelUpdate()}
                                                 >
-                                                    {i18next.t('entityPage.save')}
+                                                    {i18next.t('test')}
                                                 </Button>
+                                            </Grid>
+                                            <Grid item container justifyContent="space-between">
+                                                <Grid item container flexDirection="row" justifyContent="right">
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        type="submit"
+                                                        variant="contained"
+                                                        startIcon={
+                                                            isUpdateLoading || isCreateLoading ? (
+                                                                <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                            ) : (
+                                                                <DoneIcon />
+                                                            )
+                                                        }
+                                                        disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                    >
+                                                        {i18next.t('entityPage.save')}
+                                                    </Button>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
                                     </Grid>
@@ -333,6 +393,34 @@ const CreateOrEditEntityDetails: React.FC<{
                                 }
                             />
                         )}
+                        <DraftSaveDialog
+                            open={isAreYouSureDialogOpen}
+                            handleClose={() => {
+                                setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen);
+                            }}
+                            onYes={() => {
+                                setIsSaveDraftDialogOpen(!isSaveDraftDialogOpen);
+                                setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen);
+                                // omer TODO create draft in local storage THROUGH HERE
+                            }}
+                            title={i18next.t('draftSaveDialog.exitTitle')}
+                            body={<Typography>{i18next.t('draftSaveDialog.exitDescription')}</Typography>}
+                            noButtonTitle={i18next.t('draftSaveDialog.exit')}
+                            yesButtonTitle={i18next.t('draftSaveDialog.save')}
+                        />
+                        <DraftSaveDialog
+                            open={isSaveDraftDialogOpen}
+                            handleClose={() => {
+                                setIsSaveDraftDialogOpen(!isSaveDraftDialogOpen);
+                            }}
+                            onYes={() => {
+                                // omer TODO this
+                            }}
+                            title={i18next.t('draftSaveDialog.notSavedTitle')}
+                            body={<Typography>{i18next.t('draftSaveDialog.notSavedDescription')}</Typography>}
+                            noButtonTitle={i18next.t('draftSaveDialog.backToEdit')}
+                            yesButtonTitle={i18next.t('draftSaveDialog.saveAsDraft')}
+                        />
                     </>
                 );
             }}
