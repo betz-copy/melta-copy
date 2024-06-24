@@ -1,7 +1,7 @@
 import { createTheme, ThemeOptions } from '@mui/material';
 
 const basicTheme: ThemeOptions = {
-    direction: 'rtl',
+    direction: 'ltr',
     typography: {
         fontFamily: 'Rubik',
     },

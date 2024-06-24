@@ -16,7 +16,7 @@ export const environment = {
         processTemplates: '/processes/templates',
         processes: '/processes/instances',
         gantts: '/gantts',
-        iFrame: '/iFrame',
+        iFrames: '/iFrame',
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',

@@ -43,7 +43,7 @@ const IFrameSchema = new mongoose.Schema(
 );
 
 const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: mongoose.CallbackError) => void) => {
-    if (error.name === 'MongoError' && error.code === 11000) {
+    if (error.name === 'MongoServerError' && error.code === 11000) {
         next(new ServiceError(400, 'iFrame with the same name already exists'));
     } else {
         next(error);
