@@ -100,7 +100,9 @@ const CreateOrEditEntityDetails: React.FC<{
             constraintPropsDisplayNames.forEach((uniqueProp) => {
                 uniqueError = {
                     ...uniqueError,
-                    [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                    [uniqueProp]: `${i18next.t(
+                        `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                    )} ${constraintPropsDisplayNames}`,
                 };
             });
         }
