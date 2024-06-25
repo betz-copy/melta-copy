@@ -26,7 +26,12 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
 };
 
 export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
-    const dynamicInterface = {};
+    const dynamicInterface: Record<string, string> = {
+        'readonly _id': 'string',
+        'readonly createdDate': 'string',
+        'readonly updatedAt': 'string',
+        'readonly disabled': 'string',
+    };
 
     Object.entries(entity).forEach(([propertyName, propertyValues]) => {
         const { type } = propertyValues;
@@ -54,5 +59,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     });
 
     interfaceDefinition += '}';
+    console.log(interfaceDefinition);
+
     return interfaceDefinition;
 };

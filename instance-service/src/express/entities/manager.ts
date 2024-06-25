@@ -4,6 +4,8 @@ import pickBy from 'lodash.pickby';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
+import * as vm from 'vm';
+import * as ts from 'typescript';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -90,7 +92,7 @@ export class EntityManager {
     static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const { templateId, properties } = entity;
 
-        return Neo4jClient.writeTransaction(
+        const createdEntity: IEntity = await Neo4jClient.writeTransaction(
             `CREATE (e: \`${templateId}\` $properties) RETURN e`,
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
@@ -100,6 +102,27 @@ export class EntityManager {
                 },
             },
         ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+
+        if (entityTemplate.actions) {
+            const jsCode = ts.transpile(entityTemplate.actions);
+
+            const context = vm.createContext({
+                entity: createdEntity.properties,
+            });
+
+            try {
+                vm.runInContext(jsCode, context);
+
+                const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('onCreateEntity(entity)', context);
+                result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, []));
+
+                console.log('Result of onCreate:', result);
+            } catch (err) {
+                console.error('Error executing VM code:', err);
+            }
+        }
+
+        return createdEntity;
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {

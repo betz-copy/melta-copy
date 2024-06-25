@@ -5,10 +5,10 @@ import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
 import { AST, TSESTreeOptions, parse, parseAndGenerateServices } from '@typescript-eslint/typescript-estree';
 // import os from 'os';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionManagement } from '../../../../common/wizards/codeEditor/actionsManagement';
 import * as ts from 'typescript';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
@@ -25,25 +25,32 @@ const options: TSESTreeOptions = {
     jsx: true,
 };
 
-const CodeEditorDialog: React.FC<{
-    open: boolean;
-    handleClose: () => void;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
-}> = ({ open, handleClose, entityTemplate }) => {
-    const [code, setcode] = useState(entityTemplate?.actions);
+const CodeEditorDialog: React.FC<{ open: boolean; handleClose: () => void; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({
+    open,
+    handleClose,
+    entityTemplate,
+}) => {
+    const queryClient = useQueryClient();
+
+    if (!entityTemplate) return <></>;
+
+    const [code, setcode] = useState(entityTemplate.actions);
     const [errors, setErrors] = useState(false);
     const [importUsing, setImportUsing] = useState(false);
 
     const { mutateAsync, isLoading } = useMutation(
         () => {
-            return updateActionToEntity(entityTemplate?._id!, code!);
+            return updateActionToEntity(entityTemplate._id!, code!);
         },
         {
             onError: (err: AxiosError) => {
-                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
             },
             onSuccess: () => {
-                toast.success(i18next.t('execActionWithRuleBreach.succeededToCreateRequest'));
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions: code }),
+                );
+                toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
                 handleClose();
             },
         },
@@ -130,7 +137,13 @@ const CodeEditorDialog: React.FC<{
                 </IconButton>
             </DialogTitle>
             <DialogContent>
-                <ActionManagement entityTemplate={entityTemplate} onChange={onChange} onValidate={onValidate} forbidden={importUsing} value={entityTemplate?.actions}/>
+                <ActionManagement
+                    entityTemplate={entityTemplate}
+                    onChange={onChange}
+                    onValidate={onValidate}
+                    forbidden={importUsing}
+                    value={entityTemplate.actions}
+                />
             </DialogContent>
             <DialogActions>
                 <Grid item>
