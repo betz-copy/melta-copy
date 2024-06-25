@@ -17,6 +17,8 @@ import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 // import { CreateGanttDialog } from './CreateIFramesDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { ResizeBox } from '../../common/EntitiesPage/ResizeBox';
+import { BorderRadius } from '../../utils/icons/boxIcons';
+import IFramesHeadline from './Headline';
 
 // const { infiniteScrollPageCount } = environment.iFrameSettings;
 
@@ -38,128 +40,134 @@ const IFramesPage: React.FC<IIFramesPageProps> = ({ setTitle }) => {
     const [gridHeight, setGridHeight] = useState<number>(80 * 5);
 
     return (
-        // <>
-        //     <Grid container direction="column" padding="0 4rem">
-        //         <Grid container item justifyContent="space-between" padding="0.5rem">
-        //             <Box>
-        //                 <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
-        //             </Box>
-        //             {myPermissions.templatesManagementId && (
-        //                 <IconButton onClick={() => setIFrameDialogOpen(true)}>
-        //                     <AddCircleIcon color="primary" fontSize="large" />
-        //                 </IconButton>
-        //             )}
-        //         </Grid>
-
-        //         {/* <ViewingBox minHeight="82vh"> */}
-        //         <InfiniteScroll<IFrame>
-        //             queryKey={queryKey}
-        //             queryFunction={async ({ pageParam }) => searchIFrames({ limit: 10, step: pageParam, search })}
-        //             onQueryError={(error) => {
-        //                 // eslint-disable-next-line no-console
-        //                 console.log('failed loading iFrames: ', error);
-        //                 toast.error(i18next.t('iFrames.searchFailed'));
-        //             }}
-        //             emptyText={i18next.t('iFrames.noIFramesFound')}
-        //             useContainer={false}
-        //         >
-        //             {(iFrame) => <IFramesCard iFrame={iFrame} />}
-        //         </InfiniteScroll>
-        //         {/* </ViewingBox> */}
-        //     </Grid>
-
-        //     {/* <CreateIFrameDialog
-        //         open={ganttDialogOpen}
-        //         onClose={() => {
-        //             setIFrameDialogOpen(false);
-        //             queryClient.invalidateQueries(queryKey);
-        //         }}
-        //     /> */}
-        // </>
-
-        // <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={100}>
-        //     <Grid>
-        //         <Iframe
-        //             url="http://www.youtube.com/embed/xDMP3i36naA"
-        //             position="absolute"
-        //             width="100%"
-        //             id="myId"
-        //             className="myClassname"
-        //             height="100%"
-        //             // styles={{ height: '25px' }}
-        //         />
-        //     </Grid>
-        // </ResizeBox>
         <div dir="ltr">
             <PanelGroup direction="vertical" style={{ height: '1000px' }}>
                 <Panel>
-                    <PanelGroup direction="horizontal">
+                    <PanelGroup direction="horizontal" style={{ padding: '10px' }}>
                         <Panel
                             className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
-                            style={{ backgroundColor: 'blue' }}
+                            style={{ padding: '10px' }}
                             defaultSize={33}
                             minSize={20}
                         >
-                            <Iframe
-                                url="http://www.youtube.com/embed/xDMP3i36naA"
-                                width="100%"
-                                id="myId"
-                                className="myClassname"
-                                height="100%"
-                                // styles={{ height: '25px' }}
-                            />
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    // borderStyle: 'solid',
+                                    '&:hover': {
+                                        border: 0,
+                                        boxShadow: '-6px 6px 7px 0px #1E277540',
+                                    },
+                                }}
+                            >
+                                <IFramesHeadline iFrame={{ name: 'shirel' }} />
+                                <Iframe
+                                    url="/"
+                                    width="100%"
+                                    height="100%"
+                                    styles={{
+                                        maxHeight: '100%',
+                                        overflow: 'auto',
+                                        //  borderRadius: 'inherit'
+                                    }}
+                                />
+                            </Box>
                         </Panel>
                         <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />
                         <Panel
                             className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
                             defaultSize={67}
                             minSize={20}
-                            style={{ backgroundColor: 'red' }}
+                            style={{ padding: '10px' }}
                         >
-                            <Iframe
-                                url="http://www.youtube.com/embed/xDMP3i36naA"
-                                width="100%"
-                                id="myId"
-                                className="myClassname"
-                                height="100%"
-                                // styles={{ height: '25px' }}
-                            />
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    // borderStyle: 'solid',
+                                    '&:hover': {
+                                        border: 0,
+                                        boxShadow: '-6px 6px 7px 0px #1E277540',
+                                    },
+                                }}
+                            >
+                                <Iframe
+                                    url="http://www.youtube.com/embed/xDMP3i36naA"
+                                    width="100%"
+                                    id="myId"
+                                    height="100%"
+                                    styles={{ borderRadius: 'inherit' }}
+                                />
+                            </Box>
                         </Panel>
                     </PanelGroup>
                 </Panel>
                 <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />
                 <Panel>
-                    <PanelGroup direction="horizontal">
+                    <PanelGroup direction="horizontal" style={{ padding: '10px' }}>
                         <Panel
                             className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
-                            style={{ backgroundColor: 'green' }}
+                            style={{ padding: '10px' }}
                             defaultSize={33}
                             minSize={20}
                         >
-                            <Iframe
-                                url="http://www.youtube.com/embed/xDMP3i36naA"
-                                width="100%"
-                                id="myId"
-                                className="myClassname"
-                                height="100%"
-                                // styles={{ height: '25px' }}
-                            />
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    // borderStyle: 'solid',
+                                    '&:hover': {
+                                        border: 0,
+                                        boxShadow: '-6px 6px 7px 0px #1E277540',
+                                    },
+                                }}
+                            >
+                                <Iframe
+                                    url="http://www.youtube.com/embed/xDMP3i36naA"
+                                    width="100%"
+                                    id="myId"
+                                    height="100%"
+                                    styles={{ borderRadius: 'inherit' }}
+                                />
+                            </Box>
                         </Panel>
                         <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />
                         <Panel
                             className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
                             defaultSize={67}
                             minSize={20}
-                            style={{ backgroundColor: 'pink' }}
+                            style={{ padding: '10px' }}
                         >
-                            <Iframe
-                                url="http://www.youtube.com/embed/xDMP3i36naA"
-                                width="100%"
-                                id="myId"
-                                className="myClassname"
-                                height="100%"
-                                // styles={{ height: '25px' }}
-                            />
+                            <Box
+                                sx={{
+                                    width: '100%',
+                                    height: '100%',
+                                    borderRadius: 3,
+                                    overflow: 'hidden',
+                                    // borderStyle: 'solid',
+                                    '&:hover': {
+                                        border: 0,
+                                        boxShadow: '-6px 6px 7px 0px #1E277540',
+                                    },
+                                }}
+                            >
+                                <Iframe
+                                    url="http://www.youtube.com/embed/xDMP3i36naA"
+                                    width="100%"
+                                    id="myId"
+                                    height="100%"
+                                    styles={{ borderRadius: 'inherit' }}
+                                />
+                            </Box>
                         </Panel>
                     </PanelGroup>
                 </Panel>

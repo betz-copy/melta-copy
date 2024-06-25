@@ -9,7 +9,11 @@ export interface IFrame {
     icon: object;
     placeInSideBar?: boolean;
 }
-
+export interface IMongoIFrame extends IFrame {
+    _id: string;
+    createdAt: string;
+    updatedAt: string;
+}
 export interface ISearchIFramesBody {
     search?: string;
     limit: number;
