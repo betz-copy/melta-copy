@@ -35,27 +35,27 @@ const ActionManagement: React.FC<{
 
         // editorDefs.setPosition(new monaco.Position(3, 5));
 
-        const entityInterface = generateInterface(entityProperties!, entityName!);
-        monaco.languages.typescript.typescriptDefaults.addExtraLib(entityInterface, 'ts:entity/x.d.ts');
+        // const entityInterface = generateInterface(entityProperties!, entityName!);
+        // monaco.languages.typescript.typescriptDefaults.addExtraLib(entityInterface, 'ts:entity/x.d.ts');
     };
 
     const defaultValue = [
-        `function onCreateEntity(${entityName}: ${entityName}): { updated_${entityName}?: ${entityName}; } {`,
-        '    return {',
+        `${generateInterface(entityProperties!, entityName!)}`,
         '',
-        '    }',
+        'function updateEntity(entityId: string, properties: Record<string, any>): void {',
+        '  // updates entity in data base',
         '}',
         '',
-        `function onUpdateEntity(${entityName}: ${entityName}): { updated_${entityName}?: ${entityName}; } {`,
-        '    return {',
+        `function onCreateEntity(${entityName}: ${entityName}): void {`,
         '',
-        '    }',
         '}',
         '',
-        `function onDeleteEntity(${entityName}: ${entityName}): { updated_${entityName}?: ${entityName}; } {`,
-        '    return {',
+        `function onUpdateEntity(${entityName}: ${entityName}): void {`,
         '',
-        '    }',
+        '}',
+        '',
+        `function onDeleteEntity(${entityName}: ${entityName}): void {`,
+        '',
         '}',
     ].join('\n');
 

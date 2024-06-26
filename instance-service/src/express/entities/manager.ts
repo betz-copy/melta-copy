@@ -105,16 +105,18 @@ export class EntityManager {
 
         if (entityTemplate.actions) {
             const jsCode = ts.transpile(entityTemplate.actions);
-
             const context = vm.createContext({
                 entity: createdEntity.properties,
             });
 
             try {
-                vm.runInContext(jsCode, context);
+                // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
+                vm.runInContext(jsCode, context, { timeout: 10000 });
 
-                const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('onCreateEntity(entity)', context);
-                result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, []));
+                const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+                await Promise.all(
+                    result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [])),
+                );
 
                 console.log('Result of onCreate:', result);
             } catch (err) {
@@ -333,7 +335,6 @@ export class EntityManager {
                 sourceEntityTemplateId,
             );
         });
-
         const ruleFailuresForEachConnection = await Promise.all(ruleFailuresForEachConnectionPromises);
         const ruleFailures = ruleFailuresForEachConnection.flat();
 
