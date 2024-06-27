@@ -1,8 +1,10 @@
-import axios from 'axios';
-import config from '../config';
+import config from '../../config';
+import { TemplatesManagerService } from '.';
 
 const {
-    entityTemplateService: { url, getByIdRoute, searchRoute, timeout },
+    templateService: {
+        entities: { getByIdRoute, searchRoute },
+    },
 } = config;
 export interface IEntitySingleProperty {
     title: string;
@@ -55,18 +57,16 @@ export interface ISearchEntityTemplatesBody {
     skip?: number;
 }
 
-export class EntityTemplateManagerService {
-    static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout });
-
+export class EntityTemplateManagerService extends TemplatesManagerService {
     // entity templates
     static async getEntityTemplateById(id: string) {
-        const { data } = await this.EntityTemplateManagerApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
 
         return data;
     }
 
     static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.EntityTemplateManagerApi.post<IMongoEntityTemplate[]>(searchRoute, body);
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoEntityTemplate[]>(searchRoute, body);
 
         return data;
     }

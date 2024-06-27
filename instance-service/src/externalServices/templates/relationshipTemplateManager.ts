@@ -1,10 +1,12 @@
-import axios from 'axios';
+import config from '../../config';
+import { IMongoRule } from '../../express/rules/interfaces';
+import { TemplatesManagerService } from '.';
 
-import config from '../config';
-import { IMongoRule } from '../express/rules/interfaces';
-
-const { relationshipTemplateService: relationshipManager } = config;
-const { url, getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute, timeout } = relationshipManager;
+const {
+    templateService: {
+        relationships: { getRelationshipByIdRoute, searchTemplatesRoute, searchRulesRoute },
+    },
+} = config;
 
 export interface IRelationshipTemplate {
     name: string;
@@ -38,28 +40,21 @@ export interface ISearchRulesBody {
     skip?: number;
 }
 
-export class RelationshipsTemplateManagerService {
-    static RelationshipsTemplateManagerAxiosApi = axios.create({ baseURL: url, timeout });
-
+export class RelationshipsTemplateManagerService extends TemplatesManagerService {
     static async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.post<IMongoRelationshipTemplate[]>(
-            searchTemplatesRoute,
-            searchBody,
-        );
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
 
         return data;
     }
 
     static async getRelationshipTemplateById(id: string) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.get<IMongoRelationshipTemplate>(
-            `${getRelationshipByIdRoute}/${id}`,
-        );
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoRelationshipTemplate>(`${getRelationshipByIdRoute}/${id}`);
 
         return data;
     }
 
     static async searchRules(searchBody: Omit<ISearchRulesBody, 'disabled'>) {
-        const { data } = await RelationshipsTemplateManagerService.RelationshipsTemplateManagerAxiosApi.post<IMongoRule[]>(searchRulesRoute, {
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoRule[]>(searchRulesRoute, {
             ...searchBody,
             disabled: false,
         });

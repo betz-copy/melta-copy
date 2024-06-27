@@ -22,24 +22,22 @@ const config = {
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
         entities: {
             getByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
             searchRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
         },
-        timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
-    },
-    relationshipTemplateService: {
-        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
-        getRelationshipByIdRoute: env
-            .get('RELATIONSHIP_TEMPLATE_SERVICE_GET_RELATIONSHIP_BY_ID_ROUTE')
-            .default('/api/templates/relationships')
-            .asString(),
-        searchRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
-        searchTemplatesRoute: env
-            .get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_TEMPLATES_ROUTE')
-            .default('/api/templates/relationships/search')
-            .asString(),
-        timeout: env.get('RELATIONSHIP_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+        relationships: {
+            getRelationshipByIdRoute: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_GET_RELATIONSHIP_BY_ID_ROUTE')
+                .default('/api/templates/relationships')
+                .asString(),
+            searchRulesRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
+            searchTemplatesRoute: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_SEARCH_TEMPLATES_ROUTE')
+                .default('/api/templates/relationships/search')
+                .asString(),
+        },
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
