@@ -27,7 +27,7 @@ const config = {
         timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
     relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
         getRelationshipByIdRoute: env
             .get('RELATIONSHIP_TEMPLATE_SERVICE_GET_RELATIONSHIP_BY_ID_ROUTE')
             .default('/api/templates/relationships')

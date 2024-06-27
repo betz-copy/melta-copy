@@ -22,9 +22,9 @@ const config = {
         apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
-        label: env.get('LOG_LABEL').default('relationship-template').asString(),
+        label: env.get('LOG_LABEL').default('template').asString(),
         extraDefault: {
-            serviceName: env.get('LOG_SERVICE_NAME').default('relationship-template-service').asString(),
+            serviceName: env.get('LOG_SERVICE_NAME').default('template-service').asString(),
             environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
         },
         fileSettings: {

@@ -36,7 +36,7 @@ const config = {
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
         baseRelationshipsRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/templates/relationships').asString(),
         baseRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RULES_ROUTE').default('/api/templates/rules').asString(),
         updateRuleStatusByIdRouteSuffix: env.get('RELATIONSHIP_TEMPLATE_SERVICE_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX').default('/status').asString(),

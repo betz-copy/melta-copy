@@ -12,7 +12,7 @@ const config = {
         categoriesCollectionName: env.get('MONGO_CATEGORIES_COLLECTION_NAME').required().asString(),
     },
     relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
         baseRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates/relationships').asString(),
         searchRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/search').asString(),
     },

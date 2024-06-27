@@ -28,7 +28,7 @@ const config = {
         characters: env.get('ABC_CHARACTERS').default('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').asString(),
     },
     relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
         isAliveRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
         createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
