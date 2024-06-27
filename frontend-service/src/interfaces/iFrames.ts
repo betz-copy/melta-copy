@@ -19,3 +19,4 @@ export interface ISearchIFramesBody {
     limit: number;
     step: number;
 }
+// export type IFrameMap = Map<string, IMongoIFrame>;

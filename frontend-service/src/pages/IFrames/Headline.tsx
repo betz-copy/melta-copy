@@ -2,11 +2,13 @@ import React, { Dispatch, SetStateAction, useState } from 'react';
 import { Grid, IconButton, Menu, Typography, useTheme } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import { AxiosError } from 'axios';
+import { toast } from 'react-toastify';
 import { TopBarGrid } from '../../common/TopBar';
 import { BlueTitle } from '../../common/BlueTitle';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
@@ -22,11 +24,14 @@ import { AddProcessButton } from '../ProcessInstances/AddProcessButton';
 import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
 import { MenuButton } from '../../common/MenuButton';
 import { CardMenu } from '../SystemManagement/components/CardMenu';
+import { ErrorToast } from '../../common/ErrorToast';
+import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
+import { deleteIFrame } from '../../services/iFramesService';
 
 const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     const theme = useTheme();
-
     const queryClient = useQueryClient();
+
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     // const handleCloseMenu = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -38,6 +43,8 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     //     setAnchorEl(event.currentTarget);
     // };
     const [isHovered, setIsHovered] = useState(false);
+
+    // const iFrames = queryClient.getQueryData<IFrameMap>('getIFrames')!;
 
     const [deleteIFrameDialogState, setDeleteIFrameDialogState] = useState<{
         isDialogOpen: boolean;
@@ -55,11 +62,25 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
         iFrame: null,
     });
 
+    // const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
+    //     onSuccess: (_data, id) => {
+    //         queryClient.setQueryData<IFrameMap>('getIFrames', (data) => {
+    //             data!.delete(id);
+    //             return data!;
+    //         });
+
+    //         setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
+    //         toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
+    //     },
+    //     onError: (err: AxiosError) => {
+    //         toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
+    //     },
+    // });
     return (
         <TopBarGrid
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            sx={{ height: '3.6rem' }}
+            sx={{ height: '3rem', margin: 0, padding: 0 }}
             container
             justifyContent="space-between"
             alignItems="center"
@@ -75,8 +96,12 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',
                                 textAlign: 'right',
+                                padding: 20,
+                                // width: '20%',
                             }}
                             fontSize="20px"
+                            // overflow="hidden"
+                            // textOverflow="ellipsis"
                         >
                             {iFrame.name}
                         </Typography>
@@ -100,6 +125,18 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                     </Grid>
                 </Grid>
             </Grid>
+            {/* <CategoryWizard
+                open={categoryWizardDialogState.isWizardOpen}
+                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
+                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
+                isEditMode={Boolean(categoryWizardDialogState.category)}
+            /> */}
+            {/* <AreYouSureDialog
+                open={deleteIFrameDialogState.isDialogOpen}
+                handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
+                onYes={() => mutateAsync(deleteIFrameDialogState.iFrameId!)}
+                isLoading={isLoading}
+            /> */}
         </TopBarGrid>
     );
 };

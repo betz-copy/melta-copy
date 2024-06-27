@@ -33,7 +33,7 @@ const RuleManagement = lazy(() => import('./pages/RuleManagement'));
 const Gantts = lazy(() => import('./pages/Gantts'));
 const GanttPage = lazy(() => import('./pages/Gantts/GanttPage'));
 const IFrames = lazy(() => import('./pages/IFrames'));
-// const IFramePage = lazy(() => import('./pages/IFrames/IFramesPage'));
+// const IFramePage = lazy(() => import('./pages/IFrames/IFramePage'));
 const ProcessInstancesPage = lazy(() => import('./pages/ProcessInstances'));
 const Unavailable = lazy(() => import('./pages/Unavailable'));
 const ErrorPage = lazy(() => import('./pages/ErrorPage'));
@@ -159,7 +159,7 @@ const Main = () => {
                                         </>
                                     }
                                 />
-                                {/* <Route path="/iFrames/:iFrameId" element={<IFramePage />} /> */}
+                                {/* <Route path="/iFrames/:iFrameId" element={<IFramePage iFrame={undefined} />} /> */}
                                 <Route
                                     path="/gantts"
                                     element={

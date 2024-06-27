@@ -333,6 +333,10 @@ export default {
             chooseIcon: 'בחירת אייקון',
             chooseColor: 'בחירת צבע',
         },
+        iFrame: {
+            deletedSuccessfully: 'קטגוריה נמחקה בהצלחה',
+            failedToDelete: 'נכשל למחוק קטגוריה',
+        },
         entityTemplate: {
             title: 'יצירת תבנית ישות',
             createdSuccessfully: 'תבנית ישות נוצרה בהצלחה',
