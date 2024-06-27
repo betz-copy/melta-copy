@@ -3,7 +3,11 @@ import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { trycatch } from './utils';
 
-const { url, createRelationshipTemplateRoute, isAliveRoute } = config.relationshipTemplateService;
+const {
+    url,
+    relationships: { createRelationshipTemplateRoute },
+    isAliveRoute,
+} = config.templateService;
 
 export interface IRelationshipTemplate {
     name: string;

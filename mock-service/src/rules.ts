@@ -4,7 +4,10 @@ import { IMongoEntityTemplate } from './entityTemplates';
 import { rulesCreator } from './mocks/rules';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 
-const { url, createRuleRoute } = config.relationshipTemplateService;
+const {
+    url,
+    relationships: { createRuleRoute },
+} = config.templateService;
 
 export const createRules = async (entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
     const fliesOnId = relationshipTemplates.find(({ name }) => name === 'fliesOn')!._id;

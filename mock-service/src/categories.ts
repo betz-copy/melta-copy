@@ -1,7 +1,10 @@
 import axios from 'axios';
 import config from './config';
 
-const { url, createCategoryRoute } = config.entityTemplateService;
+const {
+    url,
+    entities: { createCategoryRoute },
+} = config.templateService;
 
 export interface ICategory {
     name: string;

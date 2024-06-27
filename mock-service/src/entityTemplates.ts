@@ -3,7 +3,11 @@ import { IMongoCategory } from './categories';
 import config from './config';
 import { trycatch } from './utils';
 
-const { url, createEntityTemplateRoute, isAliveRoute } = config.entityTemplateService;
+const {
+    url,
+    entities: { createEntityTemplateRoute },
+    isAliveRoute,
+} = config.templateService;
 
 export interface IEntitySingleProperty {
     title: string;
