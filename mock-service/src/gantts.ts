@@ -1,9 +1,9 @@
 import axios from 'axios';
 import config from './config';
-import { IMongoEntityTemplate } from './entityTemplates';
+import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
 import { getRandomGantts } from './mocks/gantts/generate';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
 
 const { url, baseRoute, isAliveRoute } = config.ganttService;

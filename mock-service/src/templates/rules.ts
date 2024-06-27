@@ -1,7 +1,7 @@
 import axios from 'axios';
-import config from './config';
+import config from '../config';
 import { IMongoEntityTemplate } from './entityTemplates';
-import { rulesCreator } from './mocks/rules';
+import { rulesCreator } from '../mocks/rules';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 
 const {

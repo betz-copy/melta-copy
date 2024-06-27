@@ -11,7 +11,7 @@ const config = {
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
-        isAliveRoute: env.get('CATEGORY_IS_ALIVE_ROUTE').default('/isAlive').asString(),
+        isAliveRoute: env.get('TEMPLATES_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
         entities: {
             createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/templates/entities').asString(),
             createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('/api/templates/categories').asString(),

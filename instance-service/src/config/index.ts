@@ -20,11 +20,13 @@ const config = {
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        getByIdRoute: env.get('ENTITY_TEMPLATE_SERVICE_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
-        searchRoute: env.get('ENTITY_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
-        timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        entities: {
+            getByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+            searchRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
+        },
+        timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
     relationshipTemplateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

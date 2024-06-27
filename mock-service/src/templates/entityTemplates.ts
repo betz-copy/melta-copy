@@ -1,12 +1,10 @@
 import axios from 'axios';
 import { IMongoCategory } from './categories';
-import config from './config';
-import { trycatch } from './utils';
+import config from '../config';
 
 const {
     url,
     entities: { createEntityTemplateRoute },
-    isAliveRoute,
 } = config.templateService;
 
 export interface IEntitySingleProperty {
@@ -65,10 +63,4 @@ export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemp
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
-};
-
-export const isEntityTemplateServiceAlive = async () => {
-    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
-
-    return { result, err };
 };
