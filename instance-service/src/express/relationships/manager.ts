@@ -15,7 +15,7 @@ import { runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship, throwIfA
 import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
-import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {

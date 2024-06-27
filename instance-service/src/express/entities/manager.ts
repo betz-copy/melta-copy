@@ -33,8 +33,8 @@ import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfA
 import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/entityTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';

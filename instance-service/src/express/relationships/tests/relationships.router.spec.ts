@@ -7,9 +7,9 @@ import config from '../../../config';
 import { IEntity } from '../../entities/interface';
 import { IRelationship } from '../interface';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/relationshipTemplateManager';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -26,8 +26,7 @@ const defaultEntity = {
 const { neo4j } = config;
 
 describe('Relationship router', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     let app: Express;
 
@@ -65,9 +64,9 @@ describe('Relationship router', () => {
             updatedAt: mockDateStr,
         };
 
-        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [defaultRelationshipTemplate]);
-        mockEntityTemplatesRoutes(mockEntityTemplateManager, [defaultEntityTemplate]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRelationshipTemplatesRoutes(mockTemplateManager, [defaultRelationshipTemplate]);
+        mockEntityTemplatesRoutes(mockTemplateManager, [defaultEntityTemplate]);
 
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
     });
@@ -134,7 +133,7 @@ describe('Relationship router', () => {
             const secondEntity = await request(app).post('/api/instances/entities').send(defaultEntity);
 
             // Mock rel template response
-            mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+            mockRelationshipTemplatesRoutes(mockTemplateManager, [
                 {
                     _id: relTemplateId,
                     name: 'relTest',
