@@ -149,7 +149,6 @@ services:
       PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,5e5689514203fc40043591ae,6618026a26928782bb9c16ca
     depends_on:
       - neo4j
-      - entity-template-service
       - template-service
       - storage-service
       - instance-service
@@ -161,12 +160,6 @@ services:
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#
-  entity-template-service:
-    ports:
-      - 8001:8000
-    restart: always
-    volumes:
-      - logs:/usr/src/app/logs
 
   template-service:
     ports:
