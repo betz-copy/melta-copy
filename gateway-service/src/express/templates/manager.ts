@@ -9,9 +9,9 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
-} from '../../externalServices/entityTemplateService';
+} from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';

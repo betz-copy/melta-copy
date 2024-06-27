@@ -9,7 +9,11 @@ import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/inst
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IExportEntitiesBody } from './interfaces';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { EntityTemplateManagerService, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import {
+    EntityTemplateManagerService,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+} from '../../externalServices/templates/entityTemplateService';
 import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogService';
 import { trycatch } from '../../utils';
 import {

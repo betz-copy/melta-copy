@@ -29,19 +29,23 @@ const config = {
             users: env.get('BASIC_AUTHENTICATION_USERS').required().asJsonArray() as Array<{ userId: string; password: string }>,
         },
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
-        baseCategoriesRoute: env.get('ENTITY_TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        entities: {
+            baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
+            baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+        },
+        relationships: {
+            baseRelationshipsRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_BASE_ROUTE').default('/api/templates/relationships').asString(),
+            baseRulesRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_RULES_BASE_ROUTE').default('/api/templates/rules').asString(),
+            updateRuleStatusByIdRouteSuffix: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX')
+                .default('/status')
+                .asString(),
+        },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-    relationshipTemplateService: {
-        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
-        baseRelationshipsRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/templates/relationships').asString(),
-        baseRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RULES_ROUTE').default('/api/templates/rules').asString(),
-        updateRuleStatusByIdRouteSuffix: env.get('RELATIONSHIP_TEMPLATE_SERVICE_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX').default('/status').asString(),
-        requestTimeout: env.get('RELATIONSHIP_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-    },
+
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),
