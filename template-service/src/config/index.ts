@@ -25,11 +25,6 @@ const config = {
         },
         updateSearchIndexQueueName: env.get('UPDATE_SEARCH_INDEX_QUEUE_NAME').default('search-queue').asString(),
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
-        requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-    },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableApm: env.get('ENABLE_APM').default('true').asBool(),
