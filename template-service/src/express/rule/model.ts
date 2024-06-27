@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { IRule } from './interfaces';
+import { IMongoRule } from './interfaces';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 import config from '../../config';
 
@@ -51,6 +51,6 @@ RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelet
     transformResultDocsObjectIdKeysToString(res);
 });
 
-const RuleModel = mongoose.model<IRule & mongoose.Document>(config.mongo.ruleCollectionName, RuleTemplateSchema);
+const RuleModel = mongoose.model<IMongoRule>(config.mongo.ruleCollectionName, RuleTemplateSchema);
 
 export default RuleModel;

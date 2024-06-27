@@ -43,6 +43,8 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
 
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
+export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
+
 export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
 
 export default ValidateRequest;

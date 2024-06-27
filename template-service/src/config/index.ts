@@ -6,10 +6,24 @@ const config = {
         port: env.get('PORT').required().asPortNumber(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
+    notifications: {
+        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
+    },
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         relationshipTemplatesCollectionName: env.get('MONGO_RELATIONSHIP_TEMPLATES_COLLECTION_NAME').required().asString(),
         ruleCollectionName: env.get('MONGO_RULES_COLLECTION_NAME').required().asString(),
+        entityTemplatesCollectionName: env.get('MONGO_ENTITY_TEMPLATES_COLLECTION_NAME').required().asString(),
+        categoriesCollectionName: env.get('MONGO_CATEGORIES_COLLECTION_NAME').required().asString(),
+    },
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        updateSearchIndexQueueName: env.get('UPDATE_SEARCH_INDEX_QUEUE_NAME').default('search-queue').asString(),
     },
     entityTemplateService: {
         url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),

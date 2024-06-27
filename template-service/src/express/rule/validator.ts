@@ -4,10 +4,11 @@ import { Request } from 'express';
 import * as assert from 'assert';
 import { IRule, IRelevantTemplates, IRegularFunction } from './interfaces';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { EntityTemplateManagerService, IEntitySingleProperty, IEntityTemplatePopulated } from '../externalServices/entityTemplateManager';
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '../entityTemplate/interface';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
 import { IConstant, isConstant } from './interfaces/argument';
 import { defaultValidationOptions, joiValidate } from '../../utils/joi';
+import EntityTemplateManager from '../entityTemplate/manager';
 
 const joiValidateNoConvert = (schema: Joi.AnySchema<any>, data: any) => joiValidate(schema, data, { ...defaultValidationOptions, convert: false });
 
@@ -361,13 +362,13 @@ const validateAndGetRelevantTemplates = async (rule: IRule): Promise<IRelevantTe
     const doesUnpinnedIdIsOtherEntityTemplate = rule.unpinnedEntityTemplateId === otherEntityTemplateId;
     assert(doesUnpinnedIdIsOtherEntityTemplate, "rule's unpinnedEntityTemplateId is not the other entity template id in relationshipTemplate");
 
-    const pinnedEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(rule.pinnedEntityTemplateId);
+    const pinnedEntityTemplate = await EntityTemplateManager.getTemplateById(rule.pinnedEntityTemplateId);
 
     const unpinnedEntityTemplateId =
         relationshipTemplateOfRule.sourceEntityId === rule.pinnedEntityTemplateId
             ? relationshipTemplateOfRule.destinationEntityId
             : relationshipTemplateOfRule.sourceEntityId;
-    const unpinnedEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(unpinnedEntityTemplateId);
+    const unpinnedEntityTemplate = await EntityTemplateManager.getTemplateById(unpinnedEntityTemplateId);
 
     const relationshipTemplatesOfPinnedEntityAsSource = (await RelationshipTemplateManager.searchTemplates({
         sourceEntityIds: [pinnedEntityTemplate._id],
@@ -382,14 +383,14 @@ const validateAndGetRelevantTemplates = async (rule: IRule): Promise<IRelevantTe
     })) as IMongoRelationshipTemplate[];
 
     const connectionsTemplatesOfPinnedEntityAsSourcePromises = relationshipTemplatesOfPinnedEntityAsSource.map(async (relationshipTemplate) => {
-        const destinationEntity = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
+        const destinationEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.destinationEntityId);
         return { relationshipTemplate, otherEntityTemplate: destinationEntity };
     });
     const connectionsTemplatesOfPinnedEntityAsSource = await Promise.all(connectionsTemplatesOfPinnedEntityAsSourcePromises);
 
     const connectionsTemplatesOfPinnedEntityAsDestinationPromises = relationshipTemplatesOfPinnedEntityAsDestination.map(
         async (relationshipTemplate) => {
-            const sourceEntity = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
+            const sourceEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.sourceEntityId);
             return { relationshipTemplate, otherEntityTemplate: sourceEntity };
         },
     );

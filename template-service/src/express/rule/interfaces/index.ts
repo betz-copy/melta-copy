@@ -1,4 +1,5 @@
-import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateManager';
+import { Document } from 'mongoose';
+import { IEntityTemplatePopulated } from '../../entityTemplate/interface';
 import { IMongoRelationshipTemplate } from '../../relationshipTemplate/interface';
 import { IArgument } from './argument';
 import { IFormula } from './formula';
@@ -84,6 +85,10 @@ export interface IRule {
     unpinnedEntityTemplateId: string; // just to allow for searches
     formula: IFormula;
     disabled: boolean;
+}
+
+export interface IMongoRule extends IRule, Document<string> {
+    _id: string;
 }
 
 export interface IRelevantTemplates {
