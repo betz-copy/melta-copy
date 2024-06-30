@@ -41,6 +41,9 @@ import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
+import { generateInterface } from '../../utils/actions/generateInterfaceFromJsonSchema';
+import logger from '../../utils/logger/logsLogger';
+// import { generateInterface } from '../../utils/generateInterfaceFromJsonSchema';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -92,40 +95,117 @@ export class EntityManager {
     static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const { templateId, properties } = entity;
 
-        const createdEntity: IEntity = await Neo4jClient.writeTransaction(
-            `CREATE (e: \`${templateId}\` $properties) RETURN e`,
-            normalizeReturnedEntity('singleResponseNotNullable'),
-            {
-                properties: {
-                    ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const createdEntity: IEntity = await runInTransactionAndNormalize(
+                transaction,
+                `CREATE (e: \`${templateId}\` $properties) RETURN e`,
+                normalizeReturnedEntity('singleResponseNotNullable'),
+                {
+                    properties: {
+                        ...generateDefaultProperties(),
+                        ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
+                    },
                 },
-            },
-        ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+            ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
 
-        if (entityTemplate.actions) {
-            const jsCode = ts.transpile(entityTemplate.actions);
-            const context = vm.createContext({
-                entity: createdEntity.properties,
-            });
+            if (entityTemplate.actions) {
+                const updateEntityFunction = [
+                    `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+                    'const actions: any[] = [];',
+                    'function updateEntity(entityId: string, properties: Record<string, any>): void {',
+                    '  actions.push({ entityId, properties });',
+                    '}',
+                ].join('\n');
 
-            try {
-                // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
-                vm.runInContext(jsCode, context, { timeout: 10000 });
+                const getActionsFunction = [
+                    'function getActions(user: user){',
+                    `  onCreateEntity(${entityTemplate.name}:${entityTemplate.name})`,
+                    '    return actions',
+                    '}',
+                ].join('\n');
 
-                const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
-                await Promise.all(
-                    result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [])),
-                );
+                const code = `${updateEntityFunction}\n${entityTemplate.actions}\n${getActionsFunction}`;
+                const jsCode = ts.transpile(code);
 
-                console.log('Result of onCreate:', result);
-            } catch (err) {
-                console.error('Error executing VM code:', err);
+                const context = vm.createContext({
+                    entity: createdEntity.properties,
+                });
+                try {
+                    // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
+                    vm.runInContext(jsCode, context, { timeout: 10000 });
+
+                    const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+                    console.log({ result });
+
+                    await Promise.all(
+                        result.map((updatedEntity) =>
+                            this.updateEntityByIdInnerTrans(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [], transaction),
+                        ),
+                    );
+
+                    console.log('Result of onCreate:', result);
+                } catch (err) {
+                    console.error('Error executing VM code:', err);
+                }
             }
-        }
-
-        return createdEntity;
+            return createdEntity;
+        }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
+
+    // static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    //     const { templateId, properties } = entity;
+
+    //     const createdEntity: IEntity = await Neo4jClient.writeTransaction(
+    //         `CREATE (e: \`${templateId}\` $properties) RETURN e`,
+    //         normalizeReturnedEntity('singleResponseNotNullable'),
+    //         {
+    //             properties: {
+    //                 ...generateDefaultProperties(),
+    //                 ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
+    //             },
+    //         },
+    //     ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+
+    //     if (entityTemplate.actions) {
+    //         const updateEntityFunction = [
+    //             `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+    //             'const actions: any[] = [];',
+    //             'function updateEntity(entityId: string, properties: Record<string, any>): void {',
+    //             '  actions.push({ entityId, properties });',
+    //             '}',
+    //         ].join('\n');
+
+    //         const getActionsFunction = [
+    //             `function getActions(${entityTemplate.name}:${entityTemplate.name}){`,
+    //             `  onCreateEntity(${entityTemplate.name})`,
+    //             '    return actions',
+    //             '}',
+    //         ].join('\n');
+
+    //         const code = `${updateEntityFunction}\n${entityTemplate.actions}\n${getActionsFunction}`;
+
+    //         const jsCode = ts.transpile(code);
+    //         const context = vm.createContext({
+    //             entity: createdEntity.properties,
+    //         });
+
+    //         try {
+    //             // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
+    //             vm.runInContext(jsCode, context, { timeout: 10000 });
+
+    //             const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+    //             await Promise.all(
+    //                 result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [])),
+    //             );
+
+    //             console.log('Result of onCreate:', result);
+    //         } catch (err) {
+    //             console.error('Error executing VM code:', err);
+    //         }
+    //     }
+
+    //     return createdEntity;
+    // }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
@@ -414,6 +494,60 @@ export class EntityManager {
         return updatedProperties;
     }
 
+    static async updateEntityByIdInnerTrans(
+        id: string,
+        entityProperties: Record<string, any>,
+        entityTemplate: IMongoEntityTemplate,
+        ignoredRules: IBrokenRule[],
+        transaction: Transaction,
+    ) {
+        const entity = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e {_id: '${id}'}) RETURN e`,
+            normalizeReturnedEntity('singleResponse'),
+        );
+
+        if (!entity) {
+            throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+        }
+
+        if (entity.properties.disabled) {
+            throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+        }
+
+        // if (entityTemplate.actions) {
+        // const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+        // this.updateEntityById();
+        // }
+
+        const updatedProperties = EntityManager.getUpdatedProperties(
+            entity,
+            { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+            entityTemplate,
+        );
+        const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+        const updatedEntity = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e {_id: '${id}'})
+             WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
+             SET e = $props 
+             SET e.createdAt = createdAt
+             SET e.disabled = disabled
+             RETURN e`,
+            normalizeReturnedEntity('singleResponseNotNullable'),
+            {
+                props: {
+                    ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                    updatedAt: getNeo4jDateTime(),
+                    _id: id,
+                },
+            },
+        );
+        const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+        throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+        return updatedEntity;
+    }
+
     static async updateEntityById(
         id: string,
         entityProperties: Record<string, any>,
@@ -421,46 +555,72 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const entity = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (e {_id: '${id}'}) RETURN e`,
-                normalizeReturnedEntity('singleResponse'),
-            );
+            const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction);
 
-            if (!entity) {
-                throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+            if (updatedInstance && entityTemplate.actions) {
+                const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+
+                try {
+                    await Promise.all(
+                        result.map((updatedEntity) =>
+                            this.updateEntityByIdInnerTrans(
+                                updatedEntity.entityId,
+                                updatedEntity.properties,
+                                entityTemplate,
+                                ignoredRules,
+                                transaction,
+                            ),
+                        ),
+                    );
+                } catch (error) {
+                    logger.error(`error updating instances ${error}`);
+                }
             }
+            // const entity = await runInTransactionAndNormalize(
+            //     transaction,
+            //     `MATCH (e {_id: '${id}'}) RETURN e`,
+            //     normalizeReturnedEntity('singleResponse'),
+            // );
 
-            if (entity.properties.disabled) {
-                throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-            }
+            // if (!entity) {
+            //     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
+            // }
 
-            const updatedProperties = EntityManager.getUpdatedProperties(
-                entity,
-                { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
-                entityTemplate,
-            );
-            const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
-            const updatedEntity = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (e {_id: '${id}'})
-                 WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
-                 SET e = $props 
-                 SET e.createdAt = createdAt
-                 SET e.disabled = disabled
-                 RETURN e`,
-                normalizeReturnedEntity('singleResponseNotNullable'),
-                {
-                    props: {
-                        ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
-                        updatedAt: getNeo4jDateTime(),
-                        _id: id,
-                    },
-                },
-            );
-            const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
-            return updatedEntity;
+            // if (entity.properties.disabled) {
+            //     throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+            // }
+
+            // // if (entityTemplate.actions) {
+            // //     const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+            // //     this.updateEntityById();
+            // // }
+
+            // const updatedProperties = EntityManager.getUpdatedProperties(
+            //     entity,
+            //     { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+            //     entityTemplate,
+            // );
+            // const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
+            // const updatedEntity = await runInTransactionAndNormalize(
+            //     transaction,
+            //     `MATCH (e {_id: '${id}'})
+            //      WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
+            //      SET e = $props
+            //      SET e.createdAt = createdAt
+            //      SET e.disabled = disabled
+            //      RETURN e`,
+            //     normalizeReturnedEntity('singleResponseNotNullable'),
+            //     {
+            //         props: {
+            //             ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+            //             updatedAt: getNeo4jDateTime(),
+            //             _id: id,
+            //         },
+            //     },
+            // );
+            // const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+            // throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+            // return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
@@ -494,8 +654,6 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        console.log({ constraintName });
-
         const [constraintTypePrefix, ...parts] = constraintName.split(config.constraintsNameDelimiter);
 
         switch (constraintTypePrefix) {
