@@ -44,7 +44,6 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         </IconButton>
                     )}
                 </Grid>
-                <iframe src="/iFrames/externalSite/666ad14b19ac9e0012c6be20" title="h" />
                 <ViewingBox minHeight="82vh">
                     <InfiniteScroll<IGantt>
                         queryKey={queryKey}

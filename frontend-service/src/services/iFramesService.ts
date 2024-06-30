@@ -1,30 +1,30 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { IFrame, ISearchIFramesBody } from '../interfaces/iFrames';
+import { IFrame, IMongoIFrame, ISearchIFramesBody } from '../interfaces/iFrames';
 
 const { iFrames } = environment.api;
 
 export const searchIFrames = async (query: ISearchIFramesBody) => {
-    const { data } = await axios.post<IFrame[]>(`${iFrames}/search`, query);
+    const { data } = await axios.post<IMongoIFrame[]>(`${iFrames}/search`, query);
     return data;
 };
 
 export const getIFrameById = async (id: string) => {
-    const { data } = await axios.get<IFrame>(`${iFrames}/${id}`);
+    const { data } = await axios.get<IMongoIFrame>(`${iFrames}/${id}`);
     return data;
 };
 
 export const createIFrame = async (iFrame: IFrame) => {
-    const { data } = await axios.post<IFrame>(iFrames, iFrame);
+    const { data } = await axios.post<IMongoIFrame>(iFrames, iFrame);
     return data;
 };
 
 export const deleteIFrame = async (iFrameId: string) => {
-    const { data } = await axios.delete<IFrame>(`${iFrames}/${iFrameId}`);
+    const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`);
     return data;
 };
 
 export const updateIFrame = async (id: string, iFrame: IFrame) => {
-    const { data } = await axios.put<IFrame>(`${iFrames}/${id}`, iFrame);
+    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, iFrame);
     return data;
 };
