@@ -43,53 +43,48 @@ export default class StepInstanceManager {
     }
 
     static async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
+        let updatedStep;
         const currProcess = await ProcessInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
         if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
 
         if (!statusReview) {
-            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
+            updatedStep = await StepInstanceModel.findByIdAndUpdate(
                 id,
                 { properties, comments },
                 {
                     new: true,
                 },
             );
-
-            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            await updateDocumentOnElastic(updatedProcess);
-
-            return updatedStep;
+        } else {
+            const currStep = await StepInstanceManager.getStepById(id);
+            const updatedProcessStatus = ProcessInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
+            if (currProcess.status === updatedProcessStatus) {
+                updatedStep = await StepInstanceModel.findByIdAndUpdate(
+                    id,
+                    { properties, comments, ...statusReview, reviewedAt: new Date() },
+                    { new: true },
+                )
+                    .orFail(new NotFoundError('step', id))
+                    .lean();
+            } else {
+                updatedStep = await transaction(async (session) => {
+                    await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
+                    return StepInstanceModel.findByIdAndUpdate(
+                        id,
+                        { properties, comments, ...statusReview, reviewedAt: new Date() },
+                        { new: true, session },
+                    )
+                        .orFail(new NotFoundError('step', id))
+                        .lean();
+                });
+            }
         }
-
-        const currStep = await StepInstanceManager.getStepById(id);
-        const updatedProcessStatus = ProcessInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
-
-        if (currProcess.status === updatedProcessStatus) {
-            const updatedStep = await StepInstanceModel.findByIdAndUpdate(
-                id,
-                { properties, comments, ...statusReview, reviewedAt: new Date() },
-                { new: true },
-            )
-                .orFail(new NotFoundError('step', id))
-                .lean();
-            const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-            await updateDocumentOnElastic(updatedProcess);
-
-            return updatedStep;
-        }
-
-        const updatedStep = await transaction(async (session) => {
-            await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
-            return StepInstanceModel.findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
-                .orFail(new NotFoundError('step', id))
-                .lean();
-        });
-
         const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
-
         await updateDocumentOnElastic(updatedProcess);
+        console.log({ updatedProcess }, { updatedStep });
+
         return updatedStep;
     }
 

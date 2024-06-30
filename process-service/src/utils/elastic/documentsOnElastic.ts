@@ -6,51 +6,51 @@ import { ServiceError } from '../../express/error';
 import config from '../../config';
 
 const { elasticClient } = config;
-// const createProcessTextChain = (process: object) => {
-//     let values = '';
-//     // eslint-disable-next-line no-restricted-syntax
-//     for (const [key, value] of Object.entries(process)) {
-//         // eslint-disable-next-line no-continue
-//         if (['_id', 'templateId', 'reviewers'].includes(key)) continue;
-
-//         if (typeof value === 'object') {
-//             values += createProcessTextChain(value);
-//         } else if (Array.isArray(value)) {
-//             // eslint-disable-next-line no-loop-func
-//             value.forEach((item) => {
-//                 values += createProcessTextChain(item);
-//             });
-//         } else {
-//             values += `${value} `;
-//         }
-//     }
-
-//     return values;
-// };
 const createProcessTextChain = (process: object) => {
-    const excludedKeys = new Set(['_id', 'templateId', 'reviewers']);
+    let values = '';
+    // eslint-disable-next-line no-restricted-syntax
+    for (const [key, value] of Object.entries(process)) {
+        // eslint-disable-next-line no-continue
+        if (['_id', 'templateId', 'reviewers'].includes(key)) continue;
 
-    const processValue = (value) => {
         if (typeof value === 'object') {
-            // eslint-disable-next-line no-use-before-define
-            return processObject(value);
+            values += createProcessTextChain(value);
+        } else if (Array.isArray(value)) {
+            // eslint-disable-next-line no-loop-func
+            value.forEach((item) => {
+                values += createProcessTextChain(item);
+            });
+        } else {
+            values += `${value} `;
         }
-        return `${value} `;
-    };
+    }
 
-    const processObject = (obj) => {
-        if (Array.isArray(obj)) {
-            return obj.map(processValue).join('');
-        }
-
-        return Object.entries(obj)
-            .filter(([key]) => !excludedKeys.has(key))
-            .map(([, value]) => processValue(value))
-            .join('');
-    };
-
-    return processObject(process);
+    return values;
 };
+// const createProcessTextChain = (process: object) => {
+//     const excludedKeys = new Set(['_id', 'templateId', 'reviewers']);
+
+//     const processValue = (value) => {
+//         if (typeof value === 'object') {
+//             // eslint-disable-next-line no-use-before-define
+//             return processObject(value);
+//         }
+//         return `${value} `;
+//     };
+
+//     const processObject = (obj) => {
+//         if (Array.isArray(obj)) {
+//             return obj.map(processValue).join('');
+//         }
+
+//         return Object.entries(obj)
+//             .filter(([key]) => !excludedKeys.has(key))
+//             .map(([, value]) => processValue(value))
+//             .join('');
+//     };
+
+//     return processObject(process);
+// };
 
 const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | LeanDocument<ProcessInstanceDocument>) => {
     try {

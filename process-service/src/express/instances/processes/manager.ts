@@ -56,9 +56,8 @@ class ProcessInstanceManager {
 
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
-            const [populatedProcess] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
-            console.log({ populatedProcess });
-            return populatedProcess._id;
+            const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
+            return _id;
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
