@@ -1,10 +1,12 @@
-import { connection, ClientSession, Types, Model, FilterQuery } from 'mongoose';
+import { connection, ClientSession, Types, Model, FilterQuery, startSession } from 'mongoose';
 import { ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import { StepInstanceDocument } from '../../express/instances/steps/interface';
 import ProcessTemplateModel from '../../express/templates/processes/model';
 import { IMongoProcessTemplatePopulated, ProcessTemplateDocument } from '../../express/templates/processes/interface';
 import config from '../../config';
 import ProcessInstanceModel from '../../express/instances/processes/model';
+import { trycatch } from '..';
+import logger from '../logger/logsLogger';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;
@@ -14,6 +16,26 @@ export const transaction = async <T, Func extends (session: ClientSession) => Pr
     });
 
     return ret;
+};
+
+// eslint-disable-next-line no-undef
+export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
+    const session = await startSession();
+
+    try {
+        let ret;
+
+        await session.withTransaction(async () => {
+            ret = await func(session);
+        });
+
+        return ret;
+    } finally {
+        const { err: endSessionErr } = await trycatch(() => session.endSession());
+        if (endSessionErr) {
+            logger.error('failed to end session. possible resource leak', { error: endSessionErr });
+        }
+    }
 };
 
 export const getTemplateAggregation = async (
