@@ -163,6 +163,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportChangeToRequiredWithInstances
                                             supportArrayFields
                                             supportEditEnum
+                                            supportUnique
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />
                                     </Grid>
