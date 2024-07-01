@@ -3,8 +3,6 @@ import React, { useState } from 'react';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
-import { AST, TSESTreeOptions, parse, parseAndGenerateServices } from '@typescript-eslint/typescript-estree';
-// import os from 'os';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ActionManagement } from '../../../../common/wizards/codeEditor/actionsManagement';
 import * as ts from 'typescript';
@@ -14,90 +12,78 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
+import { generateInterface } from '../../../../utils/jsonSchemToInterface-ts';
 
-const options: TSESTreeOptions = {
-    comment: true,
-    tokens: true,
-    loc: true,
-    range: true,
-    errorOnUnknownASTType: true,
-    errorOnTypeScriptSyntacticAndSemanticIssues: true,
-    jsx: true,
-};
+const CodeEditorDialog: React.FC<{
+    open: boolean;
+    handleClose: () => void;
+    entityTemplate: IMongoEntityTemplatePopulated | null;
+}> = ({ open, handleClose, entityTemplate }) => {
+    if (!entityTemplate) return null;
 
-const CodeEditorDialog: React.FC<{ open: boolean; handleClose: () => void; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({
-    open,
-    handleClose,
-    entityTemplate,
-}) => {
     const queryClient = useQueryClient();
 
-    if (!entityTemplate) return <></>;
+    const [code, setCode] = useState(entityTemplate.actions ?? '');
+    const [validationErrors, setValidationErrors] = useState(false);
+    const [isImportUsing, setIsImportUsing] = useState(false);
 
-    const [code, setcode] = useState(entityTemplate.actions);
-    const [errors, setErrors] = useState(false);
-    const [importUsing, setImportUsing] = useState(false);
+    const defaultCode = [
+        `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+        '',
+        'function updateEntity(entityId: string, properties: Record<string, any>): void {',
+        '  // updates entity in data base',
+        '}',
+    ].join('\n');
 
     const { mutateAsync, isLoading } = useMutation(
-        () => {
-            return updateActionToEntity(entityTemplate._id!, code!);
+        (codeForSave: string) => {
+            return updateActionToEntity(entityTemplate._id, codeForSave);
         },
         {
             onError: (err: AxiosError) => {
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
             },
-            onSuccess: () => {
+            onSuccess: (data) => {
+                const { actions } = data;
+
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
-                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions: code }),
+                    entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                 );
                 toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
                 handleClose();
             },
         },
     );
+
     const traverseAstAndValidate = (node: ts.Node) => {
-        const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity', 'onDeleteEntity'];
-        const countNumOfOccurrences: Record<string, number> = {};
-
         const traverseAstRecursive = (node: ts.Node) => {
-            if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node)) {
-                const functionName = node.name?.getText();
-                if (functionName && nameOfFunctionMustBe.includes(functionName)) {
-                    countNumOfOccurrences[functionName] = (countNumOfOccurrences[functionName] || 0) + 1;
-                }
-            }
-
             if (ts.isImportDeclaration(node)) {
-                setImportUsing(true);
-                console.log("mustn't import!!");
-            }
+                setIsImportUsing(true);
+            } else setIsImportUsing(false);
 
             ts.forEachChild(node, traverseAstRecursive);
         };
 
         traverseAstRecursive(node);
-
-        nameOfFunctionMustBe.forEach((functionName) => {
-            const numOfOccurrences = countNumOfOccurrences[functionName];
-            if (!numOfOccurrences || numOfOccurrences !== 1) setImportUsing(true);
-        });
     };
 
     const onChange = (value: string | undefined, _event: editor.IModelContentChangedEvent) => {
-        setcode(value!);
+        setCode(value ?? '');
+        const sourceFile = ts.createSourceFile('temp.tsx', value ?? '', ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+        traverseAstAndValidate(sourceFile);
     };
 
     const onValidate = (markers: editor.IMarker[]) => {
-        const UndefinedVariableErrorCode = '2304';
-        // const importErrorCode = '2792';
-        const hasErrorMarkers = markers.some((marker) => marker.code === UndefinedVariableErrorCode);
-        setErrors(hasErrorMarkers);
+        const unUsedPropertyErrorCode = '6133';
+        const marker = markers.filter((marker) => marker.code !== unUsedPropertyErrorCode);
+        const hasErrorMarkers = marker.length > 0;
+
+        setValidationErrors(hasErrorMarkers);
     };
 
     const saveAction = async () => {
-        const sourceFile = ts.createSourceFile('temp.tsx', code, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-        traverseAstAndValidate(sourceFile);
-        await mutateAsync();
+        // clean interface and function updateEntity and then save it in db
+        await mutateAsync(code.slice(defaultCode.length + 1));
     };
 
     const mainColor = (theme) => theme.palette.primary.main;
@@ -141,8 +127,8 @@ const CodeEditorDialog: React.FC<{ open: boolean; handleClose: () => void; entit
                     entityTemplate={entityTemplate}
                     onChange={onChange}
                     onValidate={onValidate}
-                    forbidden={importUsing}
-                    value={entityTemplate.actions}
+                    forbidden={isImportUsing}
+                    value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
                 />
             </DialogContent>
             <DialogActions>
@@ -150,7 +136,7 @@ const CodeEditorDialog: React.FC<{ open: boolean; handleClose: () => void; entit
                     <Button
                         type="submit"
                         variant="contained"
-                        disabled={isLoading || errors || importUsing}
+                        disabled={isLoading || validationErrors || isImportUsing}
                         sx={{ borderRadius: '10px' }}
                         onClick={saveAction}
                     >
@@ -165,25 +151,3 @@ const CodeEditorDialog: React.FC<{ open: boolean; handleClose: () => void; entit
 };
 
 export { CodeEditorDialog };
-// function onCreateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent; } {
-//     const updated_travelAgent = { ...travelAgent, age: travelAgent.age }
-//     return {
-//         updated_travelAgent: {
-//             ...travelAgent, age: travelAgent.age
-//         }
-//     }
-// }
-// function onCreateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
-//     const updated_travelAgent: travelAgent = {
-//         ...travelAgent,
-//         age: travelAgent.age,
-//     };
-//     return { updated_travelAgent };
-// }
-// function onUpdateEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
-//     return {};
-// }
-
-// function onDeleteEntity(travelAgent: travelAgent): { updated_travelAgent?: travelAgent } {
-//     return {};
-// }

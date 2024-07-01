@@ -211,6 +211,7 @@ export default {
             cantUseImport: 'אין להשתמש ב',
             successUpdateAction: 'הוספת פעולה לישות בוצעה בהצלחה',
             failedUpdateAction: 'הוספת פעולה לישות נכשלה',
+            cantImport: 'אין אפשרות להשתמש ב',
         },
     },
     error: {

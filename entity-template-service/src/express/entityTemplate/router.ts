@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import EntityTemplateController from './controller';
-import { wrapController } from '../../utils/express';
+import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
     searchEntityTemplatesSchema,
@@ -11,6 +11,7 @@ import {
     updateEntityTemplateStatusSchema,
     updateEntityTemplateActionSchema,
 } from './validator.schema';
+import { validateActionAst } from './validator.template';
 
 const entityTemplateRouter: Router = Router();
 
@@ -35,6 +36,7 @@ entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSch
 entityTemplateRouter.patch(
     '/:templateId/actions',
     ValidateRequest(updateEntityTemplateActionSchema),
+    wrapMiddleware(validateActionAst),
     wrapController(EntityTemplateController.updateEntityTemplateAction),
 );
 

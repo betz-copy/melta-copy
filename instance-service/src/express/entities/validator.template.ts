@@ -60,14 +60,21 @@ export const getEntityTemplateByIdOrThrowValidationError = async (templateId: st
     return entityTemplate;
 };
 
-export const validateEntity = async (req: Request) => {
-    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
+export const validateEntity = async (templateId: string, properties: Record<string, any>) => {
+    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(templateId);
     const validateFunction = ajv.compile(entityTemplate.properties);
-    const valid = validateFunction(req.body.properties);
+    const valid = validateFunction(properties);
 
     if (!valid) {
         throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
     }
+};
+
+export const validateEntityRequest = async (req: Request) => {
+    const { templateId, properties } = req.body;
+
+    await validateEntity(templateId, properties);
+    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(templateId);
 
     addPropertyToRequest(req, 'entityTemplate', entityTemplate);
 };

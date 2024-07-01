@@ -3,7 +3,7 @@ import EntityController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import {
-    validateEntity,
+    validateEntityRequest,
     validateConstraintsOfTemplate,
     validateSearchBatchBody,
     validateSearchEntitiesOfTemplateBody,
@@ -70,14 +70,19 @@ entityRouter.post(
     wrapController(EntityController.getExpandedGraphById),
 );
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
+entityRouter.post(
+    '/',
+    ValidateRequest(createEntityRequestSchema),
+    wrapMiddleware(validateEntityRequest),
+    wrapController(EntityController.createEntity),
+);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));
 entityRouter.put(
     '/:id',
     ValidateRequest(updateEntityByIdRequestSchema),
-    wrapMiddleware(validateEntity),
+    wrapMiddleware(validateEntityRequest),
     wrapController(EntityController.updateEntityById),
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));

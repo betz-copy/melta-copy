@@ -103,7 +103,11 @@ templatesRouter.patch(
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.deleteEntityEnumFieldValue),
 );
-templatesRouter.patch('/entities/:id/actions', wrapController(TemplatesController.updateEntityTemplateAction));
+templatesRouter.patch(
+    '/entities/:id/actions',
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.updateEntityTemplateAction),
+);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
