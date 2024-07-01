@@ -27,37 +27,13 @@ const createProcessTextChain = (process: object) => {
 
     return values;
 };
-// const createProcessTextChain = (process: object) => {
-//     const excludedKeys = new Set(['_id', 'templateId', 'reviewers']);
-
-//     const processValue = (value) => {
-//         if (typeof value === 'object') {
-//             // eslint-disable-next-line no-use-before-define
-//             return processObject(value);
-//         }
-//         return `${value} `;
-//     };
-
-//     const processObject = (obj) => {
-//         if (Array.isArray(obj)) {
-//             return obj.map(processValue).join('');
-//         }
-
-//         return Object.entries(obj)
-//             .filter(([key]) => !excludedKeys.has(key))
-//             .map(([, value]) => processValue(value))
-//             .join('');
-//     };
-
-//     return processObject(process);
-// };
 
 const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | LeanDocument<ProcessInstanceDocument>) => {
     try {
-        const elkClient = ElasticClient.getClient();
+        const clientInstance: ElasticClient = ElasticClient.getInstance();
+        const elkClient = clientInstance.getClient();
 
         const valuesString = createProcessTextChain(process);
-        console.log({ valuesString });
 
         await elkClient.index({
             index: elasticClient.index,
@@ -67,13 +43,14 @@ const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated |
             },
         });
     } catch (error) {
-        logger.log(error);
+        logger.error({ error });
     }
 };
 
 const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & Document<any, any, any>> | IMongoProcessInstancePopulated) => {
     try {
-        const elkClient = ElasticClient.getClient();
+        const clientInstance: ElasticClient = ElasticClient.getInstance();
+        const elkClient = clientInstance.getClient();
 
         const exists = await elkClient.exists({
             index: elasticClient.index,
@@ -92,26 +69,28 @@ const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & 
             },
         });
     } catch (err) {
-        logger.log({ err });
+        logger.error({ err });
     }
 };
 
 const deleteDocumentOnElastic = async (processId: string) => {
     try {
-        const elkClient = ElasticClient.getClient();
+        const clientInstance: ElasticClient = ElasticClient.getInstance();
+        const elkClient = clientInstance.getClient();
 
         await elkClient.delete({
             index: elasticClient.index,
             id: processId,
         });
     } catch (error) {
-        logger.log(error);
+        logger.error({ error });
     }
 };
 
 const processSearchOnELastic = async (searchText: string) => {
     try {
-        const elkClient = ElasticClient.getClient();
+        const clientInstance: ElasticClient = ElasticClient.getInstance();
+        const elkClient = clientInstance.getClient();
         const processes = await elkClient.search({
             index: elasticClient.index,
             query: {

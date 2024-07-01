@@ -83,7 +83,6 @@ export default class StepInstanceManager {
         }
         const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
         await updateDocumentOnElastic(updatedProcess);
-        console.log({ updatedProcess }, { updatedStep });
 
         return updatedStep;
     }
