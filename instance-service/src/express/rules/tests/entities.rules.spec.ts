@@ -13,8 +13,8 @@ import { trycatch } from '../../../utils/lib';
 import { ServiceError } from '../../error';
 import { IBrokenRule } from '../interfaces';
 import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.template';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 
@@ -85,8 +85,7 @@ const updateEntityAndExpectToSucceed = async (
 };
 
 describe('Entity manager test rules', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
@@ -109,9 +108,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -294,9 +293,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -466,9 +465,9 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {

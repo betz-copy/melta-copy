@@ -1,11 +1,11 @@
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuidv4 } from 'uuid';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../entityTemplateManager';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/entityTemplateManager';
 import { IMongoRule } from '../../express/rules/interfaces';
 import config from '../../config';
-import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../relationshipTemplateManager';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/relationshipTemplateManager';
 
-const { relationshipTemplateService: relationshipManager, entityTemplateService: entityTemplateManager } = config;
+const { url, relationships, entities } = config.templateService;
 
 const generateMongoId = () => uuidv4(); // not really ObjectId of mongo, but good enough
 export const generateTemplates = () => {
@@ -368,30 +368,23 @@ export const generateTemplates = () => {
     };
 };
 
-export const mockEntityTemplatesRoutes = (mockEntityTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
+export const mockEntityTemplatesRoutes = (mockTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
     entityTemplates.forEach((entityTemplate) => {
-        mockEntityTemplateManager
-            .onGet(`${entityTemplateManager.url}${entityTemplateManager.getByIdRoute}/${entityTemplate._id}`)
-            .reply(200, entityTemplate);
+        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(200, entityTemplate);
     });
 
-    mockEntityTemplateManager.onPost(`${entityTemplateManager.url}${entityTemplateManager.searchRoute}`).reply(({ data }) => {
+    mockTemplateManager.onPost(`${url}${entities.searchRoute}`).reply(({ data }) => {
         const { ids } = JSON.parse(data) as Required<Pick<ISearchEntityTemplatesBody, 'ids'>>; // assuming only search by ids
         return [200, entityTemplates.filter(({ _id }) => ids.includes(_id))];
     });
 };
 
-export const mockRelationshipTemplatesRoutes = (
-    mockRelationshipTemplateManager: MockAdapter,
-    relationshipTemplates: IMongoRelationshipTemplate[],
-) => {
+export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter, relationshipTemplates: IMongoRelationshipTemplate[]) => {
     relationshipTemplates.forEach((relationshipTemplate) => {
-        mockRelationshipTemplateManager
-            .onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relationshipTemplate._id}`)
-            .reply(200, relationshipTemplate);
+        mockTemplateManager.onGet(`${url}${relationships.getRelationshipByIdRoute}/${relationshipTemplate._id}`).reply(200, relationshipTemplate);
     });
 
-    mockRelationshipTemplateManager.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`).reply(({ data }) => {
+    mockTemplateManager.onPost(`${url}${relationships.searchTemplatesRoute}`).reply(({ data }) => {
         const { sourceEntityIds, destinationEntityIds } = JSON.parse(data) as Pick<
             ISearchRelationshipTemplatesBody,
             'sourceEntityIds' | 'destinationEntityIds'
@@ -408,7 +401,7 @@ export const mockRelationshipTemplatesRoutes = (
 };
 
 export const mockRulesRoutes = (
-    mockRelationshipTemplateManager: MockAdapter,
+    mockTemplateManager: MockAdapter,
     rules: IMongoRule[],
     entityTemplateIds: string[],
     relationshipTemplateIds: string[],
@@ -416,8 +409,8 @@ export const mockRulesRoutes = (
     relationshipTemplateIds.forEach((currRelationshipTemplateId) => {
         const rulesByRelationshipId = rules.filter(({ relationshipTemplateId }) => currRelationshipTemplateId === relationshipTemplateId);
 
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+        mockTemplateManager
+            .onPost(`${url}${relationships.searchRulesRoute}`, {
                 disabled: false,
                 relationshipTemplateIds: [currRelationshipTemplateId],
             })
@@ -427,8 +420,8 @@ export const mockRulesRoutes = (
     entityTemplateIds.forEach((entityTemplateId) => {
         const rulesByPinnedEntityTemplate = rules.filter(({ pinnedEntityTemplateId }) => entityTemplateId === pinnedEntityTemplateId);
 
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+        mockTemplateManager
+            .onPost(`${url}${relationships.searchRulesRoute}`, {
                 disabled: false,
                 pinnedEntityTemplateIds: [entityTemplateId],
             })
@@ -438,8 +431,8 @@ export const mockRulesRoutes = (
     entityTemplateIds.forEach((entityTemplateId) => {
         const rulesByUnpinnedEntityTemplate = rules.filter(({ unpinnedEntityTemplateId }) => entityTemplateId === unpinnedEntityTemplateId);
 
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+        mockTemplateManager
+            .onPost(`${url}${relationships.searchRulesRoute}`, {
                 disabled: false,
                 unpinnedEntityTemplateIds: [entityTemplateId],
             })

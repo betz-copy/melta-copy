@@ -139,7 +139,7 @@ services:
     build: ./mock-service
     environment:
       ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
-      RELATIONSHIP_TEMPLATE_SERVICE_URL: ${RELATIONSHIP_TEMPLATE_SERVICE_URL}
+      TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
       PERMISSION_SERVICE_URL: ${PERMISSION_SERVICE_URL}
       PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
@@ -149,8 +149,7 @@ services:
       PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,5e5689514203fc40043591ae,6618026a26928782bb9c16ca
     depends_on:
       - neo4j
-      - entity-template-service
-      - relationship-template-service
+      - template-service
       - storage-service
       - instance-service
       - permission-service
@@ -161,14 +160,8 @@ services:
   #-------------------------------------------#
   #        microservices:                     #
   #-------------------------------------------#
-  entity-template-service:
-    ports:
-      - 8001:8000
-    restart: always
-    volumes:
-      - logs:/usr/src/app/logs
 
-  relationship-template-service:
+  template-service:
     ports:
       - 8002:8000
     restart: always
