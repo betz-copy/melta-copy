@@ -154,11 +154,8 @@ class ProcessInstanceManager {
         }
         if (searchText) {
             const processIds: string[] = await processGlobalSearch(searchText);
-            if (processIds.length > 0) {
-                query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
-            }
+            query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
         }
-
         return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()

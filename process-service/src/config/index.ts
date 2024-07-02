@@ -48,7 +48,7 @@ const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
-    elasticClient: {
+    elastic: {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('process-global-search').asString(),
     },

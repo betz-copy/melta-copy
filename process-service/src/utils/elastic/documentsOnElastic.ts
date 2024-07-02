@@ -5,24 +5,25 @@ import ElasticClient from './index';
 import { ServiceError } from '../../express/error';
 import config from '../../config';
 
-const { elasticClient } = config;
+const { elastic } = config;
+
 const createProcessTextChain = (process: object) => {
     let values = '';
     // eslint-disable-next-line no-restricted-syntax
     for (const [key, value] of Object.entries(process)) {
         // eslint-disable-next-line no-continue
         if (['_id', 'templateId', 'reviewers'].includes(key)) continue;
-
-        if (typeof value === 'object') {
-            values += createProcessTextChain(value);
-        } else if (Array.isArray(value)) {
-            // eslint-disable-next-line no-loop-func
-            value.forEach((item) => {
-                values += createProcessTextChain(item);
-            });
-        } else {
-            values += `${value} `;
-        }
+        if (value !== null)
+            if (typeof value === 'object') {
+                values += createProcessTextChain(value);
+            } else if (Array.isArray(value)) {
+                // eslint-disable-next-line no-loop-func
+                value.forEach((item) => {
+                    values += createProcessTextChain(item);
+                });
+            } else {
+                values += `${value} `;
+            }
     }
 
     return values;
@@ -36,9 +37,10 @@ const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated |
         const valuesString = createProcessTextChain(process);
 
         await elkClient.index({
-            index: elasticClient.index,
+            index: elastic.index,
             id: process._id,
             body: {
+                name: process.name,
                 processTextChain: valuesString.trim(),
             },
         });
@@ -53,17 +55,19 @@ const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & 
         const elkClient = clientInstance.getClient();
 
         const exists = await elkClient.exists({
-            index: elasticClient.index,
+            index: elastic.index,
             id: process._id,
         });
         if (!exists) throw new ServiceError(404, 'process not exist');
 
         const valuesString = createProcessTextChain(process);
+
         await elkClient.update({
-            index: elasticClient.index,
+            index: elastic.index,
             id: process._id,
             body: {
                 doc: {
+                    name: process.name,
                     processTextChain: valuesString.trim(),
                 },
             },
@@ -79,7 +83,7 @@ const deleteDocumentOnElastic = async (processId: string) => {
         const elkClient = clientInstance.getClient();
 
         await elkClient.delete({
-            index: elasticClient.index,
+            index: elastic.index,
             id: processId,
         });
     } catch (error) {
@@ -87,37 +91,43 @@ const deleteDocumentOnElastic = async (processId: string) => {
     }
 };
 
-const processSearchOnELastic = async (searchText: string) => {
+const processGlobalSearch = async (searchText: string) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
         const elkClient = clientInstance.getClient();
         const processes = await elkClient.search({
-            index: elasticClient.index,
-            query: {
-                bool: {
-                    should: [
-                        {
-                            match: {
-                                processTextChain: {
-                                    query: searchText,
-                                    minimum_should_match: '75%',
+            index: elastic.index,
+            body: {
+                query: {
+                    bool: {
+                        should: [
+                            {
+                                wildcard: {
+                                    name: {
+                                        value: `*${searchText}*`,
+                                        boost: 2,
+                                    },
                                 },
                             },
-                        },
-                        {
-                            wildcard: {
-                                processTextChain: `*${searchText}*`,
+                            {
+                                wildcard: {
+                                    processTextChain: {
+                                        value: `*${searchText}*`,
+                                        boost: 1,
+                                    },
+                                },
                             },
-                        },
-                    ],
+                        ],
+                    },
                 },
             },
         });
 
         return processes.hits.hits.map(({ _id }) => _id);
     } catch (error) {
+        console.error('Error searching in Elasticsearch:', error);
         return [];
     }
 };
 
-export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processSearchOnELastic as processGlobalSearch };
+export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processGlobalSearch };
