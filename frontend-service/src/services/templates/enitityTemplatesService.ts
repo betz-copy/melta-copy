@@ -5,7 +5,6 @@ import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
-import * as ts from 'typescript';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];

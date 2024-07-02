@@ -1,15 +1,3 @@
-import { TSESTreeOptions } from '@typescript-eslint/typescript-estree';
-// import * as ts from 'typescript';
-
-export const options: TSESTreeOptions = {
-    comment: true,
-    tokens: true,
-    loc: true,
-    range: true,
-    errorOnUnknownASTType: true,
-    errorOnTypeScriptSyntacticAndSemanticIssues: true,
-    jsx: true,
-};
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';

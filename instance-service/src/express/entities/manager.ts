@@ -4,7 +4,6 @@ import pickBy from 'lodash.pickby';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
-
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -40,10 +39,8 @@ import { addStringFieldsAndNormalizeDateValues, validateEntity } from './validat
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-// import { generateInterface } from '../../utils/actions/generateInterfaceFromJsonSchema';
 import logger from '../../utils/logger/logsLogger';
 import { executeScript } from '../../utils/actions/executeScript';
-// import { generateInterface } from '../../utils/generateInterfaceFromJsonSchema';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -114,7 +111,6 @@ export class EntityManager {
                     createdEntity,
                     'onCreateEntity',
                 );
-
 
                 await Promise.all(
                     result.map(async (updatedEntity) => {
@@ -506,11 +502,6 @@ export class EntityManager {
         if (entity.properties.disabled) {
             throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
         }
-
-        // if (entityTemplate.actions) {
-        // const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
-        // this.updateEntityById();
-        // }
 
         const updatedProperties = EntityManager.getUpdatedProperties(
             entity,

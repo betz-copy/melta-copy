@@ -132,8 +132,6 @@ export class RelationshipManager {
         ignoredRules: IBrokenRule[],
     ) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
-        console.log(templateId, properties, sourceEntityId, destinationEntityId);
-        console.log(relationshipTemplate);
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const countOfExistingRelationships = await runInTransactionAndNormalize(

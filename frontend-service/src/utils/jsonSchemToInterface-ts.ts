@@ -4,7 +4,7 @@ const generateFromString = (propertyValues: IEntitySingleProperty) => {
     const { format } = propertyValues;
 
     if (propertyValues.enum) {
-        return propertyValues.enum?.map((option) => option).join(' | ');
+        return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
     }
     if (format === 'date' || format === 'date-time') {
         return 'Date';
@@ -21,7 +21,7 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     if (items?.format === 'fileId') {
         return 'string[]';
     }
-    const arrayOptions = items?.enum?.map((option) => option).join(' | ');
+    const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
     return `(${arrayOptions})[]`;
 };
 
