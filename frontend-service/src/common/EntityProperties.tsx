@@ -194,7 +194,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'auto',
+                                            overflowX: 'hidden',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                             direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
