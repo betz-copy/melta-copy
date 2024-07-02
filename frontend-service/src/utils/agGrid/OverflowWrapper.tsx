@@ -62,15 +62,15 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
             {visibleItems.map((item, index) => (
-                <Grid ref={itemRefs.current[index]} item key={getItemKey(item)}>
+                <Grid ref={itemRefs.current[index]} item key={`${getItemKey(item)}/${index}`}>
                     {renderItem(item)}
                 </Grid>
             ))}
             {overflowItems.length > 0 && (
                 <Grid item style={{ cursor: 'pointer' }}>
                     <MeltaTooltip
-                        title={overflowItems.map((item) => (
-                            <Typography key={getItemKey(item)} style={{ margin: '5px' }}>
+                        title={overflowItems.map((item, index) => (
+                            <Typography key={`${getItemKey(item)}/${index}`} style={{ margin: '5px' }}>
                                 {item}
                             </Typography>
                         ))}

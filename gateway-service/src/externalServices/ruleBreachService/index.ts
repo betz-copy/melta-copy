@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
+import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreach, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
 
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
@@ -50,6 +50,11 @@ export class RuleBreachService {
 
     static async getRuleBreachAlertById(ruleBreachAlertId: string): Promise<IRuleBreachAlert> {
         const { data } = await this.ruleBreachService.get<IRuleBreachAlert>(`/alerts/${ruleBreachAlertId}`);
+        return data;
+    }
+
+    static async getManyRuleBreaches(ruleBreachIds: string[]): Promise<IRuleBreach[]> {
+        const { data } = await this.ruleBreachService.post<IRuleBreach[]>(`/requests/getManys`, { ruleBreachIds });
         return data;
     }
 

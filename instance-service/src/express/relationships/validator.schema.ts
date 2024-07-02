@@ -16,7 +16,10 @@ export const runBulkOfActionsInMultipleTransactionsSchema = Joi.object({
     query: {
         dryRun: Joi.boolean().required(),
     },
-    body: Joi.array().items(Joi.array().items(Joi.object())),
+    body: {
+        actionsGroups: Joi.array().items(Joi.array().items(Joi.object())),
+        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+    },
     params: {},
 });
 

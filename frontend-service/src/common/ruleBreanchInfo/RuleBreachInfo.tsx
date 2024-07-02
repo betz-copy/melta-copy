@@ -33,7 +33,7 @@ const RuleBreachInfo: React.FC<{
             {actions.map((action, index) => {
                 return (
                     // eslint-disable-next-line react/no-array-index-key
-                    <Grid item container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} spacing={2}>
+                    <Grid item container key={index} borderBottom={actions.length > 1 ? 0.2 : 0} borderColor="#d3d3d3" spacing={2}>
                         {actions.length > 1 && (
                             <Grid item>
                                 <Typography sx={{ textDecoration: 'underline' }}>{index + 1}</Typography>

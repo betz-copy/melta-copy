@@ -21,6 +21,10 @@ export class RuleBreachRequestsManager {
         return { rows, lastRowIndex };
     }
 
+    public static async getManyRuleBreachRequests(ids: string[]) {
+        return RuleBreachRequestsModel.find({ _id: { $in: ids } });
+    }
+
     public static async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>,
     ): Promise<IRuleBreachRequest> {

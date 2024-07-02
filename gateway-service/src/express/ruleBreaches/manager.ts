@@ -13,7 +13,7 @@ import { InstancesManager } from '../instances/manager';
 import {
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
-    IRuleBreachRequestNotificationMetadata,
+    // IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
 } from '../../externalServices/notificationService/interfaces';
@@ -52,7 +52,7 @@ import { rabbitCreateNotification } from '../../utils/notifications/createNotifi
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
+    // IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
 
@@ -66,22 +66,29 @@ export class RuleBreachesManager {
     ): Promise<IRuleBreachRequestPopulated<IActionMetadataPopulated>> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>, files);
         // TODO - here
+
+        console.log('create rule breach!!');
+        console.log({ ruleBreachRequestData: JSON.stringify(ruleBreachRequestData) });
         const { result, err } = await trycatch(async () => {
             const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest<T>({
                 ...ruleBreachRequestData,
                 originUserId: userId,
             });
+
+            console.log({ ruleBreachRequest });
             const request = await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequest._id);
 
-            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
-                NotificationType.ruleBreachRequest,
-                { requestId: ruleBreachRequest._id },
-                { request },
-                [userId],
-            );
+            // await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
+            //     NotificationType.ruleBreachRequest,
+            //     { requestId: ruleBreachRequest._id },
+            //     { request },
+            //     [userId],
+            // );
 
             return request;
         });
+
+        console.log({ err: (err as any)?.response?.data });
 
         if (err || !result) {
             await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequestData as unknown as Partial<IRuleBreach>);
@@ -89,6 +96,16 @@ export class RuleBreachesManager {
         }
 
         return result;
+    }
+
+    static async getManyRuleBreachRequests(body: { rulesBreachIds: string[] }) {
+        const ruleBreaches = await RuleBreachService.getManyRuleBreaches(body.rulesBreachIds);
+        
+        const populatedRuleBreachesPromises = ruleBreaches.map((ruleBreach) => {
+            return RuleBreachesManager.getRuleBreachRequestById(ruleBreach._id);
+        });
+
+        return Promise.all(populatedRuleBreachesPromises);
     }
 
     static async createRuleBreachAlert<T>(
@@ -127,57 +144,61 @@ export class RuleBreachesManager {
     }
 
     static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
+        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId); // here
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
-        ruleBreachRequest.actions.forEach(async (action) => {
-            try {
-                // TODO - use the new route of run bulk of actions
-                if (isCreateRelationshipRuleBreach(action.actionType))
-                    await RuleBreachesManager.createRelationship(
-                        ruleBreachRequest.originUserId,
-                        {
-                            actionMetadata: action.actionMetadata as ICreateRelationshipMetadata,
-                            actionType: action.actionType,
-                        },
-                        ruleBreachRequest.brokenRules,
-                    );
-                else if (isDeleteRelationshipRuleBreach(action.actionType))
-                    await RuleBreachesManager.deleteRelationship(
-                        ruleBreachRequest.originUserId,
-                        {
-                            actionMetadata: action.actionMetadata as IDeleteRelationshipMetadata,
-                            actionType: action.actionType,
-                        },
-                        ruleBreachRequest.brokenRules,
-                    );
-                else if (isUpdateEntityRuleBreach(action.actionType))
-                    await RuleBreachesManager.updateEntity(
-                        ruleBreachRequest.originUserId,
-                        {
-                            actionMetadata: action.actionMetadata as IUpdateEntityMetadata,
-                            actionType: action.actionType,
-                        },
-                        ruleBreachRequest._id,
-                        ruleBreachRequest.brokenRules,
-                    );
-                else if (isUpdateEntityStatusRuleBreach(action.actionType))
-                    await RuleBreachesManager.updateEntityStatus(
-                        ruleBreachRequest.originUserId,
-                        {
-                            actionMetadata: action.actionMetadata as IUpdateEntityStatusMetadata,
-                            actionType: action.actionType,
-                        },
-                        ruleBreachRequest.brokenRules,
-                    );
-            } catch (error: any) {
-                if (error.metadata.errorCode === errorCodes.ruleBlock) {
-                    await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
+        if (ruleBreachRequest.actions.length > 1) {
+            // TODO - use the new route of run bulk of actions
+            console.log('run bulk of action of rule breach');
+        }
+        else {
+                try {
+                    if (isCreateRelationshipRuleBreach(ruleBreachRequest.actions[0].actionType))
+                        await RuleBreachesManager.createRelationship(
+                            ruleBreachRequest.originUserId,
+                            {
+                                actionMetadata: ruleBreachRequest.actions[0].actionMetadata as ICreateRelationshipMetadata,
+                                actionType: ruleBreachRequest.actions[0].actionType,
+                            },
+                            ruleBreachRequest.brokenRules,
+                        );
+                    else if (isDeleteRelationshipRuleBreach(ruleBreachRequest.actions[0].actionType))
+                        await RuleBreachesManager.deleteRelationship(
+                            ruleBreachRequest.originUserId,
+                            {
+                                actionMetadata: ruleBreachRequest.actions[0].actionMetadata as IDeleteRelationshipMetadata,
+                                actionType: ruleBreachRequest.actions[0].actionType,
+                            },
+                            ruleBreachRequest.brokenRules,
+                        );
+                    else if (isUpdateEntityRuleBreach(ruleBreachRequest.actions[0].actionType))
+                        await RuleBreachesManager.updateEntity(
+                            ruleBreachRequest.originUserId,
+                            {
+                                actionMetadata: ruleBreachRequest.actions[0].actionMetadata as IUpdateEntityMetadata,
+                                actionType: ruleBreachRequest.actions[0].actionType,
+                            },
+                            ruleBreachRequest._id,
+                            ruleBreachRequest.brokenRules,
+                        );
+                    else if (isUpdateEntityStatusRuleBreach(ruleBreachRequest.actions[0].actionType))
+                        await RuleBreachesManager.updateEntityStatus(
+                            ruleBreachRequest.originUserId,
+                            {
+                                actionMetadata: ruleBreachRequest.actions[0].actionMetadata as IUpdateEntityStatusMetadata,
+                                actionType: ruleBreachRequest.actions[0].actionType,
+                            },
+                            ruleBreachRequest.brokenRules,
+                        );
+                } catch (error: any) {
+                    if (error.metadata.errorCode === errorCodes.ruleBlock) {
+                        await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
+                    }
+    
+                    throw error;
                 }
-
-                throw error;
-            }
-        });
+            
+        }
 
         const updatedRuleBreachRequest = await RuleBreachService.updateRuleBreachRequestStatus(
             ruleBreachRequestId,

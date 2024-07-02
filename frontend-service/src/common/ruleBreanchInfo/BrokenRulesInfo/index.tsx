@@ -25,13 +25,13 @@ export const BrokenRulesInfo: React.FC<{
             </Grid>
             <Grid item>
                 <List dense={isCompact}>
-                    {brokenRules.map((brokenRule) => {
+                    {brokenRules.map((brokenRule, index) => {
                         const ruleTemplate = rules.get(brokenRule.ruleId)!;
                         return isCompact ? (
-                            <BrokenRuleCompact key={brokenRule.ruleId} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
+                            <BrokenRuleCompact key={`${brokenRule.ruleId}/${index}`} brokenRule={brokenRule} ruleTemplate={ruleTemplate} />
                         ) : (
                             <BrokenRuleFull
-                                key={brokenRule.ruleId}
+                                key={`${brokenRule.ruleId}/${index}`}
                                 brokenRule={brokenRule}
                                 ruleTemplate={ruleTemplate}
                                 actionMetadata={actionMetadata}

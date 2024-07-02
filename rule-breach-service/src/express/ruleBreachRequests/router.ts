@@ -21,6 +21,12 @@ RuleBreachRequestsRouter.post(
 );
 
 RuleBreachRequestsRouter.post(
+    '/getManys',
+    // ValidateRequest(createRuleBreachRequestRequestSchema),
+    wrapController(RuleBreachRequestsController.getManyRuleBreachRequests),
+);
+
+RuleBreachRequestsRouter.post(
     '/',
     ValidateRequest(createRuleBreachRequestRequestSchema),
     wrapController(RuleBreachRequestsController.createRuleBreachRequest),

@@ -12,7 +12,7 @@ import {
 } from '../../utils/neo4j/lib';
 import { ActionType, IAction, IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
-import { runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship, throwIfActionCausedBrokenRules } from '../rules/lib';
+import { runRulesOnRelationshipsOfPinnedEntity, runRulesOnRelationship, throwIfActionCausedBrokenRules, areAllBrokenRulesIgnored } from '../rules/lib';
 import { IBrokenRule, IRuleFailureWithCauses } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
@@ -202,7 +202,7 @@ export class RelationshipManager {
         return relationshipToReturn;
     }
 
-    static async runBulkOfActionsInTransaction(actions: IAction[], transaction: Transaction) {
+    static async runBulkOfActionsInTransaction(actions: IAction[], ignoredRules: IBrokenRule[], transaction: Transaction) {
         const results: (IEntity | IRelationship | IBrokenRule[])[] = [];
         const brokenRules: IBrokenRule[] = [];
 
@@ -240,15 +240,26 @@ export class RelationshipManager {
             }
         }
 
+        console.log({ignoredRules});
+
+        // TODO
+        if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
+        //     throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {
+        //         errorCode: config.errorCodes.ruleBlock,
+        //         brokenRules,
+        //     });
+            console.log('not all rules are ignored...');
+        }
+
         return brokenRules;
     }
 
-    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], dryRun: boolean) {
+    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean) {
         const transactionsPromises = actionsGroups.map((actionsGroup) =>
             Neo4jClient.performComplexTransaction(
                 'writeTransaction',
                 async (transaction) => {
-                    return RelationshipManager.runBulkOfActionsInTransaction(actionsGroup, transaction);
+                    return RelationshipManager.runBulkOfActionsInTransaction(actionsGroup, ignoredRules, transaction);
                 },
                 dryRun,
             ),
