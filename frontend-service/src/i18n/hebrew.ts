@@ -89,6 +89,8 @@ export default {
         deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
         updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
         atLeastOneItem: 'חייב להיות ערך אחד לפחות',
+        preview: 'תצוגה מקדימה',
+        download: 'הורדת הקובץ',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',

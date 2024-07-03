@@ -1,4 +1,10 @@
-import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon } from '@mui/icons-material';
+import {
+    Clear as ClearIcon,
+    Close as CloseIcon,
+    Done as DoneIcon,
+    FileDownloadOutlined as FileDownloadOutlinedIcon,
+    Visibility as VisibilityIcon,
+} from '@mui/icons-material';
 import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
@@ -21,9 +27,8 @@ import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileI
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
-import { toastConstraintValidationError } from './toastConstraintValidationError';
-import { AreYouSureDialog } from '../AreYouSureDialog';
 import { DraftSaveDialog } from './draftWarningDialog';
+import { toastConstraintValidationError } from './toastConstraintValidationError';
 
 const { errorCodes } = environment;
 
@@ -53,7 +58,7 @@ const CreateOrEditEntityDetails: React.FC<{
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 
-    const [isAreYouSureDialogOpen, setIsAreYouSureDialogOpen] = useState(false);
+    const [isSaveChangesDialogOpen, setIsSaveChangesDialogOpen] = useState(false);
     const [isSaveDraftDialogOpen, setIsSaveDraftDialogOpen] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -237,17 +242,22 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             />
                                                         </Grid>
                                                         {/* omer TODO: change this to display the last  time this was saved in the local storage, only if saved at all */}
-                                                        {!entityTemplate._id && (
+                                                        {entity.properties._id && (
                                                             <Grid item container xs={8} justifyContent="right">
                                                                 <Typography color="#53566E" marginTop="0.5rem">
-                                                                    lmfao
+                                                                    lmfao change to saved
                                                                 </Typography>
                                                             </Grid>
                                                         )}
                                                         <Grid item>
                                                             <IconButton
                                                                 aria-label="close"
-                                                                onClick={() => setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen)}
+                                                                onClick={() =>
+                                                                    // eslint-disable-next-line no-unused-expressions
+                                                                    Object.keys(touched.properties ?? {}).length
+                                                                        ? setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen)
+                                                                        : onCancelUpdate()
+                                                                }
                                                                 sx={{
                                                                     color: (theme) => theme.palette.primary.main,
                                                                 }}
@@ -294,60 +304,95 @@ const CreateOrEditEntityDetails: React.FC<{
                                             justifyContent="space-between"
                                             alignItems="center"
                                             paddingTop="25px"
+                                            width="100%"
                                         >
                                             {/* omer TODO: change this to only show if entity template has export file/s */}
-                                            <Grid item container>
-                                                <Autocomplete
-                                                    id="template"
-                                                    options={[1, 2, 3, 4]}
-                                                    onChange={(_e, value) => setFieldValue('template', value || '')}
-                                                    renderInput={(params) => (
-                                                        <TextField
-                                                            {...params}
-                                                            size="medium"
-                                                            error={Boolean(touched.template && errors.template)}
-                                                            fullWidth
-                                                            sx={{
-                                                                '& .MuiInputBase-root': {
-                                                                    borderRadius: '10px',
-                                                                    width: 300,
-                                                                },
-                                                                '& fieldset': {
-                                                                    borderColor: '#CCCFE5',
-                                                                    color: '#CCCFE5',
-                                                                },
-                                                                '& label': {
-                                                                    color: '#9398C2',
-                                                                },
-                                                            }}
-                                                            helperText={
-                                                                (touched.template && errors.template?._id) ||
-                                                                errors.template?.displayName ||
-                                                                errors.template?.properties
-                                                            }
-                                                            name="template"
-                                                            variant="outlined"
-                                                            label={i18next.t('entityTemplate')}
+                                            {true ? (
+                                                <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
+                                                    <Grid item>
+                                                        <Autocomplete
+                                                            id="template"
+                                                            // omer TODO: change this to display options from the entity
+                                                            options={[1, 2, 3, 4]}
+                                                            onChange={(_e, value) => setFieldValue('template', value || '')}
+                                                            renderInput={(params) => (
+                                                                <TextField
+                                                                    {...params}
+                                                                    size="medium"
+                                                                    error={Boolean(touched.template && errors.template)}
+                                                                    fullWidth
+                                                                    sx={{
+                                                                        '& .MuiInputBase-root': {
+                                                                            borderRadius: '10px',
+                                                                            width: 300,
+                                                                        },
+                                                                        '& fieldset': {
+                                                                            borderColor: '#CCCFE5',
+                                                                            color: '#CCCFE5',
+                                                                        },
+                                                                        '& label': {
+                                                                            color: '#9398C2',
+                                                                        },
+                                                                    }}
+                                                                    helperText={
+                                                                        (touched.template && errors.template?._id) ||
+                                                                        errors.template?.displayName ||
+                                                                        errors.template?.properties
+                                                                    }
+                                                                    name="template"
+                                                                    variant="outlined"
+                                                                    label={i18next.t('entityTemplate')}
+                                                                />
+                                                            )}
                                                         />
-                                                    )}
-                                                />
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    sx={{
-                                                        borderRadius: '7px',
-                                                        bgcolor: '#EBEFFA',
-                                                        color: (theme) => theme.palette.primary.main,
-                                                        ':hover': { color: 'white' },
-                                                    }}
-                                                    variant="contained"
-                                                    startIcon={<ClearIcon />}
-                                                    onClick={() => onCancelUpdate()}
-                                                >
-                                                    {i18next.t('test')}
-                                                </Button>
-                                            </Grid>
-                                            <Grid item container justifyContent="space-between">
+                                                    </Grid>
+                                                    <Grid item>
+                                                        <Button
+                                                            sx={{
+                                                                borderRadius: '7px',
+                                                                bgcolor: '#EBEFFA',
+                                                                color: (theme) => theme.palette.primary.main,
+                                                                ':hover': { color: 'white' },
+                                                                // whiteSpace: 'nowrap',
+                                                                textWrap: 'nowrap',
+                                                            }}
+                                                            variant="contained"
+                                                            startIcon={<VisibilityIcon />}
+                                                            onClick={() => onCancelUpdate()}
+                                                        >
+                                                            {i18next.t('entityPage.preview')}
+                                                        </Button>
+                                                    </Grid>
+                                                    <Grid item>
+                                                        <Button
+                                                            sx={{
+                                                                borderRadius: '7px',
+                                                                bgcolor: '#EBEFFA',
+                                                                color: (theme) => theme.palette.primary.main,
+                                                                ':hover': { color: 'white' },
+                                                                textWrap: 'nowrap',
+                                                            }}
+                                                            variant="contained"
+                                                            startIcon={<FileDownloadOutlinedIcon />}
+                                                            onClick={() => onCancelUpdate()}
+                                                        >
+                                                            {i18next.t('entityPage.download')}
+                                                        </Button>
+                                                    </Grid>
+                                                </Grid>
+                                            ) : (
+                                                <Grid item xs={6}>
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        variant="outlined"
+                                                        startIcon={<ClearIcon />}
+                                                        onClick={() => onCancelUpdate()}
+                                                    >
+                                                        {i18next.t('entityPage.cancel')}
+                                                    </Button>
+                                                </Grid>
+                                            )}
+                                            <Grid item xs={6} container justifyContent="space-between">
                                                 <Grid item container flexDirection="row" justifyContent="right">
                                                     <Button
                                                         style={{ borderRadius: '7px' }}
@@ -394,13 +439,17 @@ const CreateOrEditEntityDetails: React.FC<{
                             />
                         )}
                         <DraftSaveDialog
-                            open={isAreYouSureDialogOpen}
+                            open={isSaveChangesDialogOpen}
                             handleClose={() => {
-                                setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen);
+                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
+                            }}
+                            onNo={() => {
+                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
+                                onCancelUpdate();
                             }}
                             onYes={() => {
                                 setIsSaveDraftDialogOpen(!isSaveDraftDialogOpen);
-                                setIsAreYouSureDialogOpen(!isAreYouSureDialogOpen);
+                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
                                 // omer TODO create draft in local storage THROUGH HERE
                             }}
                             title={i18next.t('draftSaveDialog.exitTitle')}
