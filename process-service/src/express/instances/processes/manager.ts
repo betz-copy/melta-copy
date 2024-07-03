@@ -142,7 +142,8 @@ class ProcessInstanceManager {
         ...restOfQuery
     }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
-
+        let processes;
+        let processIds: string[] = [];
         if (archived !== undefined) query.archived = archived;
         if (templateIds) query.templateId = { $in: templateIds };
         if (startDate) query.startDate = { $gte: startDate };
@@ -152,14 +153,21 @@ class ProcessInstanceManager {
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
         }
+
         if (searchText) {
-            const processIds: string[] = await processGlobalSearch(searchText);
+            processIds = await processGlobalSearch(searchText);
             query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
         }
-        return ProcessInstanceModel.find(query, {}, { limit, skip, sort: { createdAt: -1 } })
+
+        // eslint-disable-next-line prefer-const
+        processes = await ProcessInstanceModel.find(query, {}, processIds ? { limit, skip, sort: { createdAt: -1 } } : {})
             .populate(config.processFields.steps)
             .lean()
             .exec();
+        if (processIds) {
+            processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
+        }
+        return processes;
     }
 
     static async updateStatus(id: string, status: Status, session?: ClientSession) {
