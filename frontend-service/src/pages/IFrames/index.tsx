@@ -1,15 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { Box } from '@mui/material';
+import { Box, Tab, Tabs } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import ResizablePanel from './Resizable';
 import IFramePage from './IFramePage';
 import { searchIFrames } from '../../services/iFramesService';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { IFrame } from '../../interfaces/iFrames';
-import { toast } from 'react-toastify';
+import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
+import { ViewingBox } from '../SystemManagement/components/ViewingBox';
+// import { toast } from 'react-toastify';
 
 // const { infiniteScrollPageCount } = environment.iFrameSettings;
 
@@ -41,60 +42,48 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
         // { src: '', name: 'Iframe 9' },
         // { src: '/', name: 'Iframe 10' },
     ];
+    // const y = searchIFrames({ limit: 10, step: 10 });
+    // console.log({ y });
+    const all = useQuery(queryKey, async () => searchIFrames({})).data;
+    console.log({ all });
 
+    const framess: IMongoIFrame[] = [];
     const iFramesRows: any = [];
     for (let i = 0; i < iframeData.length; i += 2) {
         iFramesRows.push(iframeData.slice(i, i + 2));
     }
     return (
-        <InfiniteScroll<IFrame>
-            queryKey={queryKey}
-            queryFunction={async ({ pageParam }) => searchIFrames({ limit: 10, step: pageParam, search })}
-            onQueryError={(error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed loading iFrames: ', error);
-                toast.error(i18next.t('iFrames.searchFailed'));
-            }}
-            emptyText={i18next.t('iFrames.noIFramesFound')}
-            useContainer={false}
-        >
-            {(iFrame) => (
-                <div dir="ltr" style={{ maxHeight: '1000px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap' }}>
-                    <PanelGroup direction="vertical" style={{ height: '1000px' }}>
-                        {iFramesRows.map((iFrameRow, rowIndex) => (
-                            <>
-                                <Panel>
-                                    <PanelGroup direction="horizontal" style={{ padding: '10px' }} key={rowIndex}>
-                                        {iFrameRow.map((iframe, colIndex: any) => (
-                                            // eslint-disable-next-line react/no-array-index-key
-                                            <ResizablePanel key={colIndex}>
-                                                <Box
-                                                    sx={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        borderRadius: 3,
-                                                        overflow: 'hidden',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        '&:hover': {
-                                                            border: 0,
-                                                            boxShadow: '-6px 6px 7px 0px #1E277540',
-                                                        },
-                                                    }}
-                                                >
-                                                    <IFramePage iFrame={iframe} />
-                                                </Box>
-                                            </ResizablePanel>
-                                        ))}
-                                    </PanelGroup>
-                                </Panel>
-                                {rowIndex < iFramesRows.length - 1 && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />}
-                            </>
-                        ))}
-                    </PanelGroup>
-                </div>
-            )}
-        </InfiniteScroll>
+        <div dir="ltr" style={{ maxHeight: '1000px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap' }}>
+            {/* <Tabs
+                value="{value}"
+                onChange={() => {}}
+                variant="scrollable"
+                scrollButtons
+                allowScrollButtonsMobile
+                aria-label="scrollable force tabs example"
+            >
+                <Tab label="Item One" />
+                <Tab label="Item Two" />
+                <Tab label="Item Three" />
+                <Tab label="Item Four" />
+                <Tab label="Item Five" />
+                <Tab label="Item Six" />
+                <Tab label="Item Seven" />
+
+                <Tab label="1 Seven" />
+                <Tab label="2 Seven" />
+                <Tab label="3 Seven" />
+                <Tab label="4 Seven" />
+                <Tab label="5 Seven" />
+                <Tab label="6 Seven" />
+                <Tab label="7 Seven" />
+                <Tab label="8 Seven" />
+                <Tab label="9 Seven" />
+                <Tab label="00 Seven" />
+                <Tab label="0000 Seven" />
+                <Tab label="Ite0000m Seven" />
+            </Tabs> */}
+        </div>
     );
 };
 

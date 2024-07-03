@@ -334,8 +334,8 @@ export default {
             chooseColor: 'בחירת צבע',
         },
         iFrame: {
-            deletedSuccessfully: 'קטגוריה נמחקה בהצלחה',
-            failedToDelete: 'נכשל למחוק קטגוריה',
+            deletedSuccessfully: 'נמחק בהצלחה',
+            failedToDelete: 'נכשל במחיקה',
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',

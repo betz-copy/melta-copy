@@ -21,7 +21,7 @@ import DateRange from '../../common/inputs/DateRange';
 import { environment } from '../../globals';
 import ProcessTemplatesSelectCheckbox from '../ProcessInstances/ProcessTemplatesCheckbox';
 import { AddProcessButton } from '../ProcessInstances/AddProcessButton';
-import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
+import { IFrame, IFrameMap, IMongoIFrame } from '../../interfaces/iFrames';
 import { MenuButton } from '../../common/MenuButton';
 import { CardMenu } from '../SystemManagement/components/CardMenu';
 import { ErrorToast } from '../../common/ErrorToast';
@@ -61,21 +61,20 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
         isWizardOpen: false,
         iFrame: null,
     });
+    const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
+        onSuccess: (_data, id) => {
+            // queryClient.setQueryData<IFrameMap>('getIFrames', (data) => {
+            //     data!.delete(id);
+            //     return data!;
+            // });
 
-    // const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
-    //     onSuccess: (_data, id) => {
-    //         queryClient.setQueryData<IFrameMap>('getIFrames', (data) => {
-    //             data!.delete(id);
-    //             return data!;
-    //         });
-
-    //         setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
-    //         toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
-    //     },
-    //     onError: (err: AxiosError) => {
-    //         toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
-    //     },
-    // });
+            setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
+            toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
+        },
+        onError: (err: AxiosError) => {
+            toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
+        },
+    });
     return (
         <TopBarGrid
             onMouseEnter={() => setIsHovered(true)}
@@ -131,12 +130,12 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                 initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
                 isEditMode={Boolean(categoryWizardDialogState.category)}
             /> */}
-            {/* <AreYouSureDialog
+            <AreYouSureDialog
                 open={deleteIFrameDialogState.isDialogOpen}
                 handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
                 onYes={() => mutateAsync(deleteIFrameDialogState.iFrameId!)}
                 isLoading={isLoading}
-            /> */}
+            />
         </TopBarGrid>
     );
 };

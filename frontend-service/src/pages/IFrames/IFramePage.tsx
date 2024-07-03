@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import IFramesHeadline from './Headline';
-import { IMongoIFrame } from '../../interfaces/iFrames';
-import { getIFrameById, updateIFrame } from '../../services/iFramesService';
 import { CircularProgress } from '@mui/material';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { ErrorToast } from '../../common/ErrorToast';
-// import { useQueryClient } from 'react-query';
+import IFramesHeadline from './Headline';
+import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
+import { getIFrameById, updateIFrame } from '../../services/iFramesService';
 
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
@@ -24,10 +19,11 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
     // const [sideBarOpen, setSideBarOpen] = useLocalStorage(iFrameSettings.isSidebarOpenLocalStorageKey, true);
 
     // const [edit, setEdit] = useState<boolean>(false);
+    console.log({ iFrameId });
 
     const queryKey = ['getIFrame', iFrameId];
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const iFrameData = iFrameId ? useQuery(queryKey, () => getIFrameById(iFrameId!)) : iFrame!;
+    const iFrameData = iFrameId ? useQuery(queryKey, async () => getIFrameById(iFrameId!)).data : iFrame!;
     console.log({ iFrameData });
 
     // const { mutateAsync: updateIFrameMutateAsync, isLoading: isUpdateIFrameLoading } = useMutation(
@@ -57,10 +53,10 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
 
     return (
         <>
-            <IFramesHeadline iFrame={iFrameData} />
+            <IFramesHeadline iFrame={iFrameData!} />
             <Iframe
-                url={iFrameData.url}
-                title={iFrameData.name}
+                url={iFrameData!.url}
+                title={iFrameData!.name}
                 width="100%"
                 height="100%"
                 styles={{

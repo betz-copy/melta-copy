@@ -16,7 +16,8 @@ export interface IMongoIFrame extends IFrame {
 }
 export interface ISearchIFramesBody {
     search?: string;
-    limit: number;
-    step: number;
+    limit?: number;
+    step?: number;
 }
-// export type IFrameMap = Map<string, IMongoIFrame>;
+
+export type IFrameMap = Map<string, IMongoIFrame>;
