@@ -23,7 +23,6 @@ export type WizardBaseType<T extends object> = {
     initialValues?: T;
     initalStep?: number;
     isEditMode?: boolean;
-    actionStepper?: boolean;
 };
 
 export type StepsType<T extends object> = {

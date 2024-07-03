@@ -9,9 +9,7 @@ const generateFromString = (propertyValues: IEntitySingleProperty) => {
     if (format === 'date' || format === 'date-time') {
         return 'Date';
     }
-    // if (format === 'relationshipReference') {
 
-    // }
     return 'string';
 };
 
@@ -51,15 +49,11 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
         }
     });
 
-    // return `interface ${interfaceName} ${JSON.stringify(dynamicInterface, null, 2)};`;
     let interfaceDefinition = `interface ${interfaceName} {\n`;
-
     Object.entries(dynamicInterface).forEach(([propertyName, propertyType]) => {
         interfaceDefinition += `  ${propertyName}: ${propertyType};\n`;
     });
-
     interfaceDefinition += '}';
-    console.log(interfaceDefinition);
 
     return interfaceDefinition;
 };

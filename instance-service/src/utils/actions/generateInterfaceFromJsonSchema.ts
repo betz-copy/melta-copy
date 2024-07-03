@@ -4,14 +4,11 @@ const generateFromString = (propertyValues: IEntitySingleProperty) => {
     const { format } = propertyValues;
 
     if (propertyValues.enum) {
-        return propertyValues.enum?.map((option) => option).join(' | ');
+        return propertyValues.enum?.map((option) => `${option}`).join(' | ');
     }
     if (format === 'date' || format === 'date-time') {
         return 'Date';
     }
-    // if (format === 'relationshipReference') {
-
-    // }
     return 'string';
 };
 
@@ -21,7 +18,7 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     if (items?.format === 'fileId') {
         return 'string[]';
     }
-    const arrayOptions = items?.enum?.map((option) => option).join(' | ');
+    const arrayOptions = items?.enum?.map((option) => `${option}`).join(' | ');
     return `(${arrayOptions})[]`;
 };
 
@@ -51,7 +48,6 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
         }
     });
 
-    // return `interface ${interfaceName} ${JSON.stringify(dynamicInterface, null, 2)};`;
     let interfaceDefinition = `interface ${interfaceName} {\n`;
 
     Object.entries(dynamicInterface).forEach(([propertyName, propertyType]) => {

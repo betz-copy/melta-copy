@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
-import { CodeEditor } from '../../inputs/CodeEditor';
-import { generateInterface } from '../../../utils/jsonSchemToInterface-ts';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { CodeEditor } from '../../../../common/inputs/CodeEditor';
+import { generateInterface } from '../../../../utils/jsonSchemToInterface-ts';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { Box, Typography } from '@mui/material';
 import { constrainedEditor } from 'constrained-editor-plugin';
 import i18next from 'i18next';

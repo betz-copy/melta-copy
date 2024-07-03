@@ -2,8 +2,6 @@
 import { AxiosError } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
-import * as ts from 'typescript';
-// import * as fs from 'fs';
 import {
     EntityTemplateManagerService,
     ICategory,
@@ -134,7 +132,6 @@ export class TemplatesManager {
     }
 
     // all
-
     static async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allCategories = await TemplatesManager.getAllCategories();
 

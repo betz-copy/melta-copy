@@ -1,16 +1,13 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { TextField, Box, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
-import { Editor } from '@monaco-editor/react';
-import { constrainedEditor } from 'constrained-editor-plugin';
 import { RelationshipTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
-import { AddIconWithText } from '../../AddIconWithText';
 
 const createRelationshipTemplateNameSchema = {
     name: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
@@ -34,7 +31,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
-    const [viewAction, setViewAction] = useState(false);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
     const entityTemplatesArray = Array.from(entityTemplates!.values());
@@ -115,37 +111,6 @@ const CreateRelationshipTemplateName: React.FC<StepComponentProps<RelationshipTe
                     )}
                 />
             </Box>
-            {/* <AddIconWithText
-                textStyle={{ display: 'flex', alignItems: 'center', fontSize: '14px', marginTop: '5px' }}
-                iconStyle={{ marginLeft: '11px' }}
-                text="הוספת פעולה"
-                onClick={() => setViewAction(!viewAction)}
-            /> */}
-            {/* {viewAction && (
-                <TextField
-                    InputProps={{
-                        // eslint-disable-next-line react/no-unstable-nested-components
-                        inputComponent: () => (
-                            <Editor
-                                height="250px"
-                                // theme="light"
-                                onChange={onChange}
-                                defaultLanguage="typescript"
-                                defaultValue="function onCreateRelationship(wallet: wallet, transference: transference, createdRelId: string): { updated_wallet?: wallet; updated_transference?: transference } {
-                                    return {
-                                
-                                    };
-                                }"
-                                onMount={handleEditorDidMount}
-                            />
-                        ),
-                    }}
-                    fullWidth
-                    margin="dense"
-                    variant="outlined"
-                    label="action"
-                />
-            )} */}
         </>
     );
 };
