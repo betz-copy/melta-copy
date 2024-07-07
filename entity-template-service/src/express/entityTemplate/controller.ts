@@ -33,7 +33,9 @@ class EntityTemplateController {
 
     static async updateEntityTemplateAction(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await EntityTemplateManager.updateEntityTemplateAction(id, req.body.actions));
+        // eslint-disable-next-line dot-notation
+        const actionToSave = req['actions'];
+        res.json(await EntityTemplateManager.updateEntityTemplateAction(id, actionToSave));
     }
 }
 

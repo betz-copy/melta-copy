@@ -1,10 +1,10 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ActionManagement } from '../../../../common/wizards/codeEditor/actionsManagement';
+import { ActionManagement } from './actionsManagement';
 import * as ts from 'typescript';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
@@ -23,9 +23,9 @@ const CodeEditorDialog: React.FC<{
 
     const queryClient = useQueryClient();
 
-    const [code, setCode] = useState(entityTemplate.actions ?? '');
     const [validationErrors, setValidationErrors] = useState(false);
     const [isImportUsing, setIsImportUsing] = useState(false);
+    const [editorValue, setEditorValue] = useState('');
 
     const defaultCode = [
         `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
@@ -36,8 +36,8 @@ const CodeEditorDialog: React.FC<{
     ].join('\n');
 
     const { mutateAsync, isLoading } = useMutation(
-        (codeForSave: string) => {
-            return updateActionToEntity(entityTemplate._id, codeForSave);
+        () => {
+            return updateActionToEntity(entityTemplate._id, editorValue);
         },
         {
             onError: (err: AxiosError) => {
@@ -56,34 +56,37 @@ const CodeEditorDialog: React.FC<{
     );
 
     const traverseAstAndValidate = (node: ts.Node) => {
+        let foundImports = false;
+
         const traverseAstRecursive = (node: ts.Node) => {
             if (ts.isImportDeclaration(node)) {
-                setIsImportUsing(true);
-            } else setIsImportUsing(false);
-
+                foundImports = true;
+            }
             ts.forEachChild(node, traverseAstRecursive);
         };
 
         traverseAstRecursive(node);
+
+        return foundImports;
     };
 
     const onChange = (value: string | undefined, _event: editor.IModelContentChangedEvent) => {
-        setCode(value ?? '');
-        const sourceFile = ts.createSourceFile('temp.tsx', value ?? '', ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
-        traverseAstAndValidate(sourceFile);
+        setEditorValue(value ?? '');
+        const sourceFile = ts.createSourceFile('temp.tsx', value ?? '', ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const isImportUsing = traverseAstAndValidate(sourceFile);
+        setIsImportUsing(isImportUsing);
     };
 
     const onValidate = (markers: editor.IMarker[]) => {
-        const unUsedPropertyErrorCode = '6133';
-        const marker = markers.filter((marker) => marker.code !== unUsedPropertyErrorCode);
+        const unusedPropertyErrorCode = '6133';
+        const marker = markers.filter((marker) => marker.code !== unusedPropertyErrorCode);
         const hasErrorMarkers = marker.length > 0;
 
         setValidationErrors(hasErrorMarkers);
     };
 
     const saveAction = async () => {
-        // clean interface and function updateEntity and then save it in db
-        await mutateAsync(code.slice(defaultCode.length + 1));
+        await mutateAsync();
     };
 
     const mainColor = (theme) => theme.palette.primary.main;
@@ -99,7 +102,7 @@ const CodeEditorDialog: React.FC<{
                         popoverText={i18next.t('systemManagement.entityAction.copyCode')}
                         iconButtonProps={{
                             onClick: () => {
-                                navigator.clipboard.writeText(code);
+                                navigator.clipboard.writeText(editorValue);
                                 toast.success(i18next.t('systemManagement.entityAction.successCopyCode'));
                             },
                         }}
@@ -129,6 +132,7 @@ const CodeEditorDialog: React.FC<{
                     onValidate={onValidate}
                     forbidden={isImportUsing}
                     value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
+                    setEditorContent={setEditorValue}
                 />
             </DialogContent>
             <DialogActions>

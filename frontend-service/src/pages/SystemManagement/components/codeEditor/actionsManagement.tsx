@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
 import { CodeEditor } from '../../../../common/inputs/CodeEditor';
@@ -8,13 +8,16 @@ import { Box, Typography } from '@mui/material';
 import { constrainedEditor } from 'constrained-editor-plugin';
 import i18next from 'i18next';
 
-const ActionManagement: React.FC<{
+interface ActionManagementProps {
     entityTemplate: IMongoEntityTemplatePopulated | null;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
     onValidate?: (markers: editor.IMarker[]) => void;
     forbidden?: boolean;
     value?: string;
-}> = ({ entityTemplate, onChange, onValidate, forbidden = false, value }) => {
+    setEditorContent: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const ActionManagement: React.FC<ActionManagementProps> = ({ entityTemplate, onChange, onValidate, forbidden = false, value, setEditorContent }) => {
     const entityName = entityTemplate?.name;
     const entityProperties = entityTemplate?.properties.properties;
     const monacoRef = useRef<editor.IStandaloneCodeEditor | null>(null);
@@ -24,6 +27,8 @@ const ActionManagement: React.FC<{
         // eslint-disable-next-line no-param-reassign
         editorDefs.getDomNode()!.style.direction = 'ltr';
         monacoRef.current = editorDefs;
+        setEditorContent(monacoRef.current.getValue());
+
         const constrainedInstance = constrainedEditor(monaco);
         const model = editorDefs.getModel();
         const readonlyProperties = 4;

@@ -3,6 +3,7 @@ import * as vm from 'vm';
 import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { generateInterface } from './generateInterfaceFromJsonSchema';
 import { IEntity } from '../../express/entities/interface';
+import { ServiceError } from '../../express/error';
 
 export const executeScript = (
     entityTemplate: IMongoEntityTemplate,
@@ -36,7 +37,6 @@ export const executeScript = (
         const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
         return result;
     } catch (error) {
-        console.error('Error executing VM code:', error);
+        throw new ServiceError(400, `Error executing VM code: ${error}`);
     }
-    return [];
 };
