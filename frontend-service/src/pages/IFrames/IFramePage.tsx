@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { CircularProgress } from '@mui/material';
+import { CircularProgress, Grid } from '@mui/material';
 import IFramesHeadline from './Headline';
 import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
 import { getIFrameById, updateIFrame } from '../../services/iFramesService';
@@ -13,19 +13,20 @@ interface IFramePageProps {
 
 const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
     const { iFrameId } = useParams();
-    const queryClient = useQueryClient();
-
-    // const navigate = useNavigate();
-    // const [sideBarOpen, setSideBarOpen] = useLocalStorage(iFrameSettings.isSidebarOpenLocalStorageKey, true);
+    // const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     // const [edit, setEdit] = useState<boolean>(false);
-    console.log({ iFrameId });
-
-    const queryKey = ['getIFrame', iFrameId];
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const iFrameData = iFrameId ? useQuery(queryKey, async () => getIFrameById(iFrameId!)).data : iFrame!;
-    console.log({ iFrameData });
-
+    // const queryKey = ['getIFrame', iFrameId ];
+    // const iFrameData = iFrameId ? useQuery(queryKey, async () => getIFrameById(iFrameId!)).data : iFrame!;
+    const { data: iFrameData, isLoading } = useQuery(['getIFrame', iFrameId], async () => getIFrameById(iFrameId!), {
+        initialData: iFrame,
+        retry: false,
+        onError: (err) => {
+            console.log(err);
+            navigate('/404');
+        },
+    });
     // const { mutateAsync: updateIFrameMutateAsync, isLoading: isUpdateIFrameLoading } = useMutation(
     //     (params: Parameters<typeof updateIFrame>) => updateIFrame(...params),
     //     {
@@ -49,24 +50,28 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
     //     },
     // });
 
-    if (!iFrame) return <CircularProgress />;
+    if (isLoading) {
+        return (
+            <Grid container justifyContent="center">
+                <CircularProgress />
+            </Grid>
+        );
+    }
 
     return (
-        <>
+        <Grid
+            dir="rtl"
+            style={{
+                position: 'absolute',
+                left: 1,
+                right: 80,
+                bottom: 47,
+                top: 0,
+            }}
+        >
             <IFramesHeadline iFrame={iFrameData!} />
-            <Iframe
-                url={iFrameData!.url}
-                title={iFrameData!.name}
-                width="100%"
-                height="100%"
-                styles={{
-                    // maxHeight: '500px',
-                    // overflow: 'auto',
-                    borderBottomLeftRadius: 'inherit',
-                    borderBottomRightRadius: 'inherit',
-                }}
-            />
-        </>
+            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" />
+        </Grid>
     );
 };
 export default IFramePage;

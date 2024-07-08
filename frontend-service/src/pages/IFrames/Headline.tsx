@@ -1,36 +1,29 @@
-import React, { Dispatch, SetStateAction, useState } from 'react';
-import { Grid, IconButton, Menu, Typography, useTheme } from '@mui/material';
-import { Add as AddIcon } from '@mui/icons-material';
+import React, { useState } from 'react';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
-import MoreVertSharpIcon from '@mui/icons-material/MoreVertSharp';
 import DeleteIcon from '@mui/icons-material/Delete';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
+import EditIcon from '@mui/icons-material/Edit';
+import { useNavigate } from 'react-router-dom';
+import { Hive as HiveIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
-import { BlueTitle } from '../../common/BlueTitle';
-import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-// import ProcessTemplatesSelectCheckbox from './ProcessTemplatesCheckbox';
-// import { AddProcessButton } from './AddProcessButton';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-// import './ProcessesList.css';
-import DateRange from '../../common/inputs/DateRange';
-import { environment } from '../../globals';
-import ProcessTemplatesSelectCheckbox from '../ProcessInstances/ProcessTemplatesCheckbox';
-import { AddProcessButton } from '../ProcessInstances/AddProcessButton';
-import { IFrame, IFrameMap, IMongoIFrame } from '../../interfaces/iFrames';
-import { MenuButton } from '../../common/MenuButton';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 import { CardMenu } from '../SystemManagement/components/CardMenu';
 import { ErrorToast } from '../../common/ErrorToast';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { deleteIFrame } from '../../services/iFramesService';
+import { deleteIFrame, iFrameObjectToIFrameForm } from '../../services/iFramesService';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { CustomIcon } from '../../common/CustomIcon';
+import { IFrameWizard } from '../../common/wizards/iFrame';
 
-const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
+const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }> = ({ iFrame, isIFramePage = true }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -63,12 +56,8 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (_data, id) => {
-            // queryClient.setQueryData<IFrameMap>('getIFrames', (data) => {
-            //     data!.delete(id);
-            //     return data!;
-            // });
-
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
+            navigate('/iFrames');
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
         onError: (err: AxiosError) => {
@@ -87,28 +76,37 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
         >
             <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                 <Grid container wrap="nowrap" alignItems="start">
-                    <Grid item>
-                        <Grid>{iFrame.icon}</Grid>
-                        <Typography
-                            style={{
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
-                                overflow: 'hidden',
-                                textAlign: 'right',
-                                padding: 20,
-                                // width: '20%',
-                            }}
-                            fontSize="20px"
-                            // overflow="hidden"
-                            // textOverflow="ellipsis"
-                        >
-                            {iFrame.name}
-                        </Typography>
+                    <Grid container item sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Grid item sx={{ paddingLeft: '20px', display: 'flex' }}>
+                            {iFrame.iconFileId ? (
+                                <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
+                            ) : (
+                                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
+                            )}
+                        </Grid>
+                        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography
+                                style={{
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap',
+                                    overflow: 'hidden',
+                                    textAlign: 'right',
+                                    padding: 20,
+                                    fontWeight: 'bold',
+                                    // width: '20%',
+                                }}
+                                fontSize="20px"
+                                // overflow="hidden"
+                                // textOverflow="ellipsis"
+                            >
+                                {iFrame.name}
+                            </Typography>
+                        </Grid>
                     </Grid>
                 </Grid>
                 <Grid container wrap="nowrap" justifyContent="flex-end">
-                    <Grid item>
-                        {isHovered && (
+                    <Grid item style={{ padding: '20px' }}>
+                        {isHovered && !isIFramePage ? (
                             <Grid container wrap="nowrap" gap="15px">
                                 <Grid item>
                                     <CardMenu
@@ -116,20 +114,39 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                                         onDeleteClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}
                                     />
                                 </Grid>
+
                                 <Grid>
                                     <OpenInFullIcon style={{ color: 'grey' }} />
+                                </Grid>
+                            </Grid>
+                        ) : (
+                            <Grid sx={{ display: 'flex' }}>
+                                <Grid>
+                                    <MeltaTooltip title={i18next.t('actions.delete')}>
+                                        <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
+                                            <DeleteIcon color="primary" />
+                                        </IconButton>
+                                    </MeltaTooltip>
+                                </Grid>
+                                <Grid>
+                                    <MeltaTooltip title={i18next.t('actions.edit')}>
+                                        <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
+                                            <EditIcon color="primary" />
+                                        </IconButton>
+                                    </MeltaTooltip>
                                 </Grid>
                             </Grid>
                         )}
                     </Grid>
                 </Grid>
             </Grid>
-            {/* <CategoryWizard
-                open={categoryWizardDialogState.isWizardOpen}
-                handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}
-                initialValues={categoryObjectToCategoryForm(categoryWizardDialogState.category)}
-                isEditMode={Boolean(categoryWizardDialogState.category)}
-            /> */}
+
+            <IFrameWizard
+                open={iFrameWizardDialogState.isWizardOpen}
+                handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}
+                initialValues={iFrameObjectToIFrameForm(iFrameWizardDialogState.iFrame)}
+                isEditMode={Boolean(iFrameWizardDialogState.iFrame)}
+            />
             <AreYouSureDialog
                 open={deleteIFrameDialogState.isDialogOpen}
                 handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}

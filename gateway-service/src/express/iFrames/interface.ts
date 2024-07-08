@@ -6,9 +6,7 @@ export interface IFrame {
     categoryIds: string[];
     description?: string;
     apiToken?: string;
-    height?: number;
-    width?: number;
-    icon: object;
+    iconFileId: string | null;
     placeInSideBar?: boolean;
 }
 

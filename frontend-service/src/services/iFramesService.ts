@@ -1,36 +1,75 @@
+import { mapValues } from 'lodash';
 import axios from '../axios';
+import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { environment } from '../globals';
-import { IFrame, IMongoIFrame, ISearchIFramesBody } from '../interfaces/iFrames';
+import { IMongoIFrame, ISearchIFramesBody } from '../interfaces/iFrames';
+import { getFileName } from '../utils/getFileName';
 
 const { iFrames } = environment.api;
 
-export const searchIFrames = async (query: ISearchIFramesBody) => {
+const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValues | undefined => {
+    if (!iFrame) return undefined;
+    const { iconFileId, ...restOfIFrame } = iFrame;
+
+    if (iconFileId) {
+        const file: Partial<File> = { name: iconFileId };
+        return { ...restOfIFrame, icon: { file, name: getFileName(iconFileId) } };
+    }
+
+    return restOfIFrame;
+};
+
+const searchIFrames = async (query: ISearchIFramesBody) => {
     const { data } = await axios.post<IMongoIFrame[]>(`${iFrames}/search`, query);
-    console.log({ data });
 
     return data;
 };
 
-export const getIFrameById = async (id: string) => {
+const getIFrameById = async (id: string) => {
     const { data } = await axios.get<IMongoIFrame>(`${iFrames}/${id}`);
+
+    return data;
+};
+
+const createIFrame = async (newIFrame: IFrameWizardValues) => {
+    const { data } = await axios.post<IMongoIFrame>(iFrames, newIFrame);
+
+    return data;
+};
+
+const deleteIFrame = async (iFrameId: string) => {
+    const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`);
+
+    return data;
+};
+
+const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
+    const formData = new FormData();
+    console.log('hiiiiiiiiiiiiiiiiiiiiiiiiiiii', { updatedIFrame });
+
+    const { name, url, categoryIds, description, apiToken, placeInSideBar } = updatedIFrame;
+    if (updatedIFrame.icon) {
+        if (updatedIFrame.icon.file instanceof File) {
+            formData.append('file', updatedIFrame.icon.file);
+        } else {
+            formData.append('iconFileId', updatedIFrame.icon.file.name!);
+        }
+    }
+
+    formData.append('name', name);
+    formData.append('url', url);
+    const transformedCategoriesIdObj = mapValues(categoryIds);
+
+    if (categoryIds) formData.append('categoryIds', JSON.stringify(transformedCategoriesIdObj));
+    if (description) formData.append('description', description);
+    if (apiToken) formData.append('apiToken', apiToken);
+    if (placeInSideBar) formData.append('placeInSideBar', placeInSideBar.toString());
+
+    console.log(...formData);
+    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
     console.log({ data });
 
     return data;
 };
 
-export const createIFrame = async (iFrame: IFrame) => {
-    const { data } = await axios.post<IMongoIFrame>(iFrames, iFrame);
-    return data;
-};
-
-export const deleteIFrame = async (iFrameId: string) => {
-    console.log({ iFrameId });
-
-    const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`);
-    return data;
-};
-
-export const updateIFrame = async (id: string, iFrame: IFrame) => {
-    const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, iFrame);
-    return data;
-};
+export { iFrameObjectToIFrameForm, searchIFrames, getIFrameById, createIFrame, deleteIFrame, updateIFrame };

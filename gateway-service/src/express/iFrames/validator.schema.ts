@@ -1,15 +1,13 @@
 import * as Joi from 'joi';
-import { MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
 
 const iFrameSchema = Joi.object({
     name: Joi.string().required(),
-    url: Joi.string().uri().required(),
-    categoryIds: Joi.array().items(Joi.string()).required(),
+    url: Joi.string().required(),
+    categoryIds: ExtendedJoi.stringToObject(),
     description: Joi.string(),
     apiToken: Joi.string(),
-    height: Joi.number().default(100),
-    width: Joi.number().default(100),
-    icon: Joi.object(),
+    iconFileId: Joi.string().allow(null),
     placeInSideBar: Joi.boolean(),
 });
 
@@ -47,13 +45,14 @@ export const deleteIFrameSchema = Joi.object({
     },
 });
 
-// PUT /api/categories
+// PUT /api/iFrames
 export const updateIFrameSchema = Joi.object({
     query: {},
     body: iFrameSchema,
     params: {
         iFrameId: MongoIdSchema.required(),
     },
+    file: iconFileSchema,
 });
 
 // POST /api/iFrames/search

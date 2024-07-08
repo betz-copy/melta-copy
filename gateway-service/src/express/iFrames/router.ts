@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import multer from 'multer';
 import IFramesController from './controller';
 import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import { wrapController, wrapMiddleware } from '../../utils/express';
@@ -9,25 +10,16 @@ import {
     getExternalSiteByIdSchema,
     getIFrameByIdSchema,
     searchIFramesSchema,
-    updateIFrameSchema,
+    // updateIFrameSchema,
 } from './validator.schema';
-import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame, validateUserCanUpdateIFrame } from './middlewares';
+import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame } from './middlewares';
+import config from '../../config';
 
 export const iFramesRouter: Router = Router();
 
-// const testUrl =
-//     'https://devtankhq-public.opensmartmonitor.devtank.co.uk/d/QrMxJyO4k/office-environment?orgId=1&refresh=15m&from=now-24h&to=now&kiosk=tv?blueprint=undefined&';
-
-// const IFramesManagerProxy = createProxyMiddleware({
-//     target: testUrl,
-//     changeOrigin: true,
-//     // onProxyReq: (proxyReq, req, res) => {
-//     //     fixRequestBody(proxyReq, req);
-//     //     proxyReq.setHeader('Authorization', `Bearer ${apiToken}`);
-//     //     proxyReq.setHeader('Content-Type', 'application/json');
-//     // },
-//     proxyTimeout: 1000,
-// });
+const {
+    service: { uploadsFolderPath },
+} = config;
 
 iFramesRouter.get(
     '/:iFrameId',
@@ -55,9 +47,10 @@ iFramesRouter.post(
 
 iFramesRouter.put(
     '/:iFrameId',
-    ValidateRequest(updateIFrameSchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapMiddleware(validateUserCanUpdateIFrame),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(), //  .single('file'),
+    // ValidateRequest(updateIFrameSchema),
+    // wrapMiddleware(validateUserIsTemplatesManager),
+    // wrapMiddleware(validateUserCanUpdateIFrame),
     wrapController(IFramesController.updateIFrame),
 );
 iFramesRouter.delete(

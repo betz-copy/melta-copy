@@ -24,16 +24,8 @@ const IFrameSchema = new mongoose.Schema(
         apiToken: {
             type: String,
         },
-        height: {
-            type: Number,
-            default: 100,
-        },
-        width: {
-            type: Number,
-            default: 100,
-        },
-        icon: {
-            type: Object,
+        iconFileId: {
+            type: String,
         },
         placeInSideBar: {
             type: Boolean,

@@ -30,7 +30,9 @@ class IFrameController {
     }
 
     static async updateIFrame(req: Request, res: Response) {
-        res.json(await IFrameManager.updateIFrame(req.params.iFrameId, req.body));
+        console.log('shirelllll ', req.body);
+
+        res.json(await IFrameManager.updateIFrame(req.params.iFrameId, req.body, req.file));
     }
 }
 

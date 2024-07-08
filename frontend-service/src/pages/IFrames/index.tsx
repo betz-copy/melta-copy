@@ -1,8 +1,10 @@
+/* eslint-disable array-callback-return */
 import React, { useEffect, useState } from 'react';
-import { Box, Tab, Tabs } from '@mui/material';
+import { Box, Tabs } from '@mui/material';
 import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { toast } from 'react-toastify';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import ResizablePanel from './Resizable';
 import IFramePage from './IFramePage';
@@ -44,16 +46,50 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
     ];
     // const y = searchIFrames({ limit: 10, step: 10 });
     // console.log({ y });
-    const all = useQuery(queryKey, async () => searchIFrames({})).data;
-    console.log({ all });
+    // const allIFrames = useQuery(queryKey, async () => searchIFrames({})).data;
+    // console.log({ allIFrames });
 
-    const framess: IMongoIFrame[] = [];
-    const iFramesRows: any = [];
-    for (let i = 0; i < iframeData.length; i += 2) {
-        iFramesRows.push(iframeData.slice(i, i + 2));
-    }
+    // // const framess: IMongoIFrame[] = [];
+    // const iFramesRows: any = [];
+    // for (let i = 0; i < allIFrames!.length; i += 2) {
+    //     iFramesRows.push(allIFrames!.slice(i, i + 2));
+    // }
+    // console.log({ iFramesRows });
+
+    const allIFrames = useQuery(queryKey, async () => searchIFrames({})).data;
+    console.log({ allIFrames });
+
+    // const itemsPerPage = 6;
+    // const totalPages = Math.ceil(allIFrames!.length / itemsPerPage);
+
+    // const paginatedIFrames: any[] = [];
+    // for (let page = 0; page < totalPages; page++) {
+    //     const pageIFrames = allIFrames!.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
+    //     console.log({ pageIFrames });
+
+    //     const iFramesRows: any[] = [];
+    //     for (let i = 0; i < pageIFrames.length; i += 2) {
+    //         iFramesRows.push(pageIFrames.slice(i, i + 2));
+    //     }
+    //     paginatedIFrames.push(iFramesRows);
+    // }
+
+    // console.log({ paginatedIFrames });
+
     return (
         <div dir="ltr" style={{ maxHeight: '1000px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap' }}>
+            {/* {
+                // eslint-disable-next-line array-callback-return
+                paginatedIFrames.map((pages: any[]) => {
+                    // eslint-disable-next-line array-callback-return
+                    pages.map((rows) => {
+                        // eslint-disable-next-line array-callback-return
+                        rows.map((iFrame: IMongoIFrame) => {
+                            <div>{iFrame.name}</div>;
+                        });
+                    });
+                })
+            } */}
             {/* <Tabs
                 value="{value}"
                 onChange={() => {}}
@@ -61,28 +97,32 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
                 scrollButtons
                 allowScrollButtonsMobile
                 aria-label="scrollable force tabs example"
-            >
-                <Tab label="Item One" />
-                <Tab label="Item Two" />
-                <Tab label="Item Three" />
-                <Tab label="Item Four" />
-                <Tab label="Item Five" />
-                <Tab label="Item Six" />
-                <Tab label="Item Seven" />
-
-                <Tab label="1 Seven" />
-                <Tab label="2 Seven" />
-                <Tab label="3 Seven" />
-                <Tab label="4 Seven" />
-                <Tab label="5 Seven" />
-                <Tab label="6 Seven" />
-                <Tab label="7 Seven" />
-                <Tab label="8 Seven" />
-                <Tab label="9 Seven" />
-                <Tab label="00 Seven" />
-                <Tab label="0000 Seven" />
-                <Tab label="Ite0000m Seven" />
-            </Tabs> */}
+            > */}
+            {allIFrames?.map((iFrame) => {
+                // <Panel>
+                //     <ResizablePanel>
+                <Box
+                    sx={{
+                        width: '100%',
+                        height: '100%',
+                        borderRadius: 3,
+                        overflow: 'hidden',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        '&:hover': {
+                            border: 0,
+                            boxShadow: '-6px 6px 7px 0px #1E277540',
+                        },
+                    }}
+                >
+                    {iFrame.name}
+                    {/* <IFramePage iFrame={iFrame} /> */}
+                </Box>;
+                //     </ResizablePanel>
+                //     ;
+                // </Panel>;
+            })}
+            {/* </Tabs> */}
         </div>
     );
 };

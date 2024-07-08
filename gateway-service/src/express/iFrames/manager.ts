@@ -1,9 +1,11 @@
 import { FilterQuery } from 'mongoose';
-import { IFrame, IFramesService, ISearchIFramesBody } from '../../externalServices/iFramesService';
+import { IFramesService, ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import IFrameModel from './model';
-import { IFrameDocument } from './interface';
+import { IFrame, IFrameDocument } from './interface';
 import { IPermissionsOfUser } from '../permissions/interfaces';
+import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { removeTmpFile } from '../../utils/fs';
 
 export class IFrameManager {
     // private static filterIFrameWithPermissions(iFrame: IMongoIFrame, allowedEntityTemplates: IMongoEntityTemplatePopulated[]) {
@@ -37,8 +39,8 @@ export class IFrameManager {
         return iFrames;
     }
 
-    static getIFrameById(iframeId: string) {
-        return IFrameModel.findById(iframeId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+    static getIFrameById(iFrameId: string) {
+        return IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
     static async getExternalSiteById(iFrameId: string) {
@@ -46,19 +48,59 @@ export class IFrameManager {
         return IFramesService.getExternalSiteById(iFrame.url);
     }
 
-    static async createIFrame(iframe: IFrame) {
-        return IFrameModel.create(iframe);
+    static async createIFrame(iFrame: IFrame) {
+        return IFrameModel.create(iFrame);
     }
 
-    static deleteIFrame(iframeId: string) {
-        return IFrameModel.findByIdAndDelete(iframeId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+    static deleteIFrame(iFrameId: string) {
+        return IFrameModel.findByIdAndDelete(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
-    static async updateIFrame(iframeId: string, iframe: IFrame) {
-        return IFrameModel.findByIdAndUpdate(iframeId, iframe, { new: true, overwrite: true })
+    static async update(
+        id: string,
+        updatedIFrame: Partial<IFrame> & {
+            file?: string;
+        },
+    ) {
+        return IFrameModel.findByIdAndUpdate(id, updatedIFrame, { new: true, overwrite: true })
             .orFail(new ServiceError(404, 'IFrame not found'))
             .lean()
             .exec();
+    }
+
+    static async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
+        const { iconFileId } = await IFrameManager.getIFrameById(iFrameId);
+        console.log('gggggg', { updatedData });
+        let updatedIFrame;
+         if (updatedData.categoryIds) {
+             try {
+                 updatedData.categoryIds = JSON.parse(updatedData.categoryIds);
+             } catch (e) {
+                 console.error('Failed to parse categoryIds:', e);
+             }
+         }
+        if (file) {
+            console.log('1');
+
+            if (iconFileId) {
+                await deleteFile(iconFileId);
+            }
+
+            const newFileId = await uploadFile(file);
+            await removeTmpFile(file.path);
+
+            updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: newFileId });
+        } else if (iconFileId && !updatedData.iconFileId) {
+            await deleteFile(iconFileId);
+            console.log('2');
+
+            updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: null });
+        } else updatedIFrame = await IFrameManager.update(iFrameId, updatedData);
+        console.log('3');
+
+        console.log({ updatedIFrame });
+
+        return updatedIFrame;
     }
 }
 
