@@ -12,8 +12,8 @@ import {
     mockRelationshipTemplatesRoutes,
     mockRulesRoutes,
 } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/relationshipTemplateManager';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 
@@ -121,8 +121,7 @@ const deleteRelationshipAndExpectToSucceed = async (
 };
 
 describe('Relationship manager test rules', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
@@ -146,9 +145,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -278,9 +277,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -432,9 +431,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -495,9 +494,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -642,9 +641,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
@@ -778,9 +777,9 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [warnOnEveryFlightOnActiveZone];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {

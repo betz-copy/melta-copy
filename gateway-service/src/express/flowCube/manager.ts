@@ -1,5 +1,5 @@
 import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
 

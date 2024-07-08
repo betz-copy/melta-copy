@@ -81,6 +81,7 @@ export interface FieldEditCardProps {
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
+    supportUnique?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -104,6 +105,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     templateId,
     supportArrayFields,
     supportEditEnum,
+    supportUnique,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -146,8 +148,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const hide = `properties[${index}].hide`;
 
     const unique =
-        value.type !== 'serialNumber' && uniqueConstraints!.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
-    const uniqueConstraintGroupName = uniqueConstraints!.find((constraint) => constraint.properties.includes(value.name))?.groupName!;
+        value.type !== 'serialNumber' &&
+        uniqueConstraints &&
+        uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
+    const uniqueConstraintGroupName = uniqueConstraints
+        ? uniqueConstraints.find((constraint) => constraint.properties.includes(value.name))?.groupName
+        : '';
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
@@ -925,7 +931,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {unique !== undefined && setValues && value.type !== 'serialNumber' && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'serialNumber' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch

@@ -1,6 +1,6 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IConnection } from '../../externalServices/instanceService/interfaces/rules';
 import { InstanceManagerService } from '../../externalServices/instanceService';
