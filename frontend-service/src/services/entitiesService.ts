@@ -67,7 +67,7 @@ export const createEntityRequest = async (entity: EntityWizardValues) => {
     });
     formData.append('properties', JSON.stringify(entity.properties));
     formData.append('templateId', entity.template._id);
-    const { data } = await axios.post<IEntity>(entities, formData);
+    const { data } = await axios.post<{ createdEntity: IEntity; updatedEntities: IEntity[] }>(entities, formData);
     return data;
 };
 

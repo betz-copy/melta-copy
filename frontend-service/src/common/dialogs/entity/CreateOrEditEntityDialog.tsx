@@ -102,8 +102,8 @@ const CreateOrEditEntityDetails: React.FC<{
             onSuccess: (newEntity) => {
                 toast.success(i18next.t('wizard.entity.createdSuccessfully'));
                 onCancelUpdate();
-                if (onSuccessCreate) onSuccessCreate(newEntity);
-                else navigate(`/entity/${newEntity.properties._id}`);
+                if (onSuccessCreate) onSuccessCreate(newEntity.createdEntity);
+                else navigate(`/entity/${newEntity.createdEntity.properties._id}`);
             },
             onError: (err: AxiosError, { template }: EntityWizardValues) => {
                 const errorMetadata = err.response?.data?.metadata;

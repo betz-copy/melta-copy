@@ -1,5 +1,5 @@
 import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';

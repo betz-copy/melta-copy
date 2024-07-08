@@ -135,6 +135,72 @@ export class InstancesManager {
         return Object.entries(entityProperties).filter(([key]) => fileProperties.includes(key));
     }
 
+    static async updateServicesOnupdateInstanceById(
+        id: string,
+        userId: string,
+        updatedInstance: IEntity,
+        ignoredRules: IBrokenRule[],
+        uploadedFilesAndProperties?: any,
+        createAlert: boolean = true,
+        action: boolean = false,
+    ) {
+        const updatedFields: Record<string, any> = {};
+        const activityLogUpdatedFields: IUpdatedFields[] = [];
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(updatedInstance.templateId);
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+
+        const fields = Object.keys(entityTemplate.properties.properties);
+        for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            const propertyTemplate = entityTemplate.properties.properties[field];
+
+            let newValue: any;
+            if ((propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') && !action) {
+                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+            } else {
+                newValue = updatedInstance.properties[field];
+            }
+            if (
+                newValue !== undefined &&
+                Array.isArray(currentEntity.properties[field]) &&
+                newValue.length === currentEntity.properties[field].length &&
+                newValue.every((element, index) => element === currentEntity.properties[field][index])
+            )
+                continue;
+            if (currentEntity.properties[field] === newValue) continue;
+
+            updatedFields[field] = newValue ?? null;
+            activityLogUpdatedFields.push({
+                fieldName: field,
+                oldValue: currentEntity.properties[field] ?? null,
+                newValue: newValue ?? null,
+            });
+        }
+
+        if (createAlert && ignoredRules.length) {
+            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
+                {
+                    brokenRules: ignoredRules,
+                    actionType: ActionTypes.UpdateEntity,
+                    actionMetadata: {
+                        entityId: id,
+                        before: currentEntity.properties,
+                        updatedFields,
+                    },
+                },
+                userId,
+            );
+        }
+
+        await ActivityLogManagerService.createActivityLog({
+            action: 'UPDATE_ENTITY',
+            metadata: { updatedFields: activityLogUpdatedFields },
+            entityId: id,
+            timestamp: new Date(),
+            userId,
+        });
+    }
+
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
         const { props: fileProperties } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
@@ -166,17 +232,32 @@ export class InstancesManager {
                 },
             });
         }
-
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData);
+        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData);
+        const { createdEntity, updatedEntities } = createInstanceOutput;
 
         await ActivityLogManagerService.createActivityLog({
             action: 'CREATE_ENTITY',
-            entityId: entity.properties._id,
+            entityId: createdEntity.properties._id,
             metadata: {},
             timestamp: new Date(),
             userId: user.id,
         });
-        return entity;
+
+        if (updatedEntities.length)
+            await Promise.all(
+                updatedEntities.map(async (updatedEntity) => {
+                    // await ActivityLogManagerService.createActivityLog({
+                    //     action: 'UPDATE_ENTITY',
+                    //     entityId: updatedEntity.properties._id,
+                    //     metadata: {},
+                    //     timestamp: new Date(),
+                    //     userId: user.id,
+                    // });
+                    await this.updateServicesOnupdateInstanceById(updatedEntity.properties._id, user.id, updatedEntity, [], undefined, true, true);
+                }),
+            );
+
+        return createInstanceOutput;
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
@@ -296,59 +377,7 @@ export class InstancesManager {
             logger.error(`failed to delete files of instanceId ${id}`),
         );
 
-        const updatedFields: Record<string, any> = {};
-        const activityLogUpdatedFields: IUpdatedFields[] = [];
-
-        const fields = Object.keys(entityTemplate.properties.properties);
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const propertyTemplate = entityTemplate.properties.properties[field];
-
-            let newValue: any;
-            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
-            } else {
-                newValue = updatedInstance.properties[field];
-            }
-            if (
-                newValue !== undefined &&
-                Array.isArray(currentEntity.properties[field]) &&
-                newValue.length === currentEntity.properties[field].length &&
-                newValue.every((element, index) => element === currentEntity.properties[field][index])
-            )
-                continue;
-            if (currentEntity.properties[field] === newValue) continue;
-
-            updatedFields[field] = newValue ?? null;
-            activityLogUpdatedFields.push({
-                fieldName: field,
-                oldValue: currentEntity.properties[field] ?? null,
-                newValue: newValue ?? null,
-            });
-        }
-
-        if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
-                {
-                    brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
-                },
-                userId,
-            );
-        }
-
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: updatedInstanceData.properties._id,
-            timestamp: new Date(),
-            userId,
-        });
+        await this.updateServicesOnupdateInstanceById(id, userId, updatedInstance, ignoredRules, uploadedFilesAndProperties, createAlert);
         return updatedInstance;
     }
 

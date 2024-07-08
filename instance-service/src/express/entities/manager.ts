@@ -35,12 +35,11 @@ import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } 
 import config from '../../config';
 import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
-import { addStringFieldsAndNormalizeDateValues, validateEntity } from './validator.template';
+import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-import logger from '../../utils/logger/logsLogger';
-import { executeScript } from '../../utils/actions/executeScript';
+import { executeScriptInTransaction } from '../../utils/actions/executeScript';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -89,8 +88,12 @@ export class EntityManager {
         }
     }
 
-    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    static async createEntity(
+        entity: IEntity,
+        entityTemplate: IMongoEntityTemplate,
+    ): Promise<{ createdEntity: IEntity; updatedEntities: IEntity[] }> {
         const { templateId, properties } = entity;
+        const updatedEntities: IEntity[] = [];
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const createdEntity: IEntity = await runInTransactionAndNormalize(
@@ -103,80 +106,23 @@ export class EntityManager {
                         ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
                     },
                 },
-            ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
+            );
 
             if (entityTemplate.actions) {
-                const result: { entityId: string; properties: Record<string, any> }[] = executeScript(
+                const updatedEntitiesInActionExecution = await executeScriptInTransaction(
                     entityTemplate,
                     createdEntity,
                     'onCreateEntity',
+                    transaction,
+                    [],
                 );
-
-                await Promise.all(
-                    result.map(async (updatedEntity) => {
-                        await validateEntity(entityTemplate._id, updatedEntity.properties);
-                        await this.updateEntityByIdInnerTrans(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [], transaction);
-                    }),
-                );
+                updatedEntities.push(...updatedEntitiesInActionExecution);
+                return { createdEntity, updatedEntities };
             }
-            return createdEntity;
+
+            return { createdEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
     }
-
-    // static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
-    //     const { templateId, properties } = entity;
-
-    //     const createdEntity: IEntity = await Neo4jClient.writeTransaction(
-    //         `CREATE (e: \`${templateId}\` $properties) RETURN e`,
-    //         normalizeReturnedEntity('singleResponseNotNullable'),
-    //         {
-    //             properties: {
-    //                 ...generateDefaultProperties(),
-    //                 ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
-    //             },
-    //         },
-    //     ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
-
-    //     if (entityTemplate.actions) {
-    //         const updateEntityFunction = [
-    //             `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
-    //             'const actions: any[] = [];',
-    //             'function updateEntity(entityId: string, properties: Record<string, any>): void {',
-    //             '  actions.push({ entityId, properties });',
-    //             '}',
-    //         ].join('\n');
-
-    //         const getActionsFunction = [
-    //             `function getActions(${entityTemplate.name}:${entityTemplate.name}){`,
-    //             `  onCreateEntity(${entityTemplate.name})`,
-    //             '    return actions',
-    //             '}',
-    //         ].join('\n');
-
-    //         const code = `${updateEntityFunction}\n${entityTemplate.actions}\n${getActionsFunction}`;
-
-    //         const jsCode = ts.transpile(code);
-    //         const context = vm.createContext({
-    //             entity: createdEntity.properties,
-    //         });
-
-    //         try {
-    //             // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
-    //             vm.runInContext(jsCode, context, { timeout: 10000 });
-
-    //             const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
-    //             await Promise.all(
-    //                 result.map((updatedEntity) => this.updateEntityById(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [])),
-    //             );
-
-    //             console.log('Result of onCreate:', result);
-    //         } catch (err) {
-    //             console.error('Error executing VM code:', err);
-    //         }
-    //     }
-
-    //     return createdEntity;
-    // }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
@@ -280,8 +226,8 @@ export class EntityManager {
     static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             try {
-                const entity = await this.getEntityById(id);
-                const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+                // const entity = await this.getEntityById(id);
+                // const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
                 const node = await runInTransactionAndNormalize(
                     transaction,
@@ -293,17 +239,17 @@ export class EntityManager {
                     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
                 }
 
-                const result = executeScript(entityTemplate, entity, 'onDeleteEntity');
-                try {
-                    await Promise.all(
-                        result.map(async (updatedEntity) => {
-                            await validateEntity(entityTemplate._id, updatedEntity.properties);
-                            this.updateEntityByIdInnerTrans(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [], transaction);
-                        }),
-                    );
-                } catch (error) {
-                    logger.error(`error updating instances ${error}`);
-                }
+                // const result = executeScript(entityTemplate, entity, 'onDeleteEntity');
+                // try {
+                //     await Promise.all(
+                //         result.map(async (updatedEntity) => {
+                //             await validateEntity(entityTemplate._id, updatedEntity.properties);
+                //             this.updateEntityByIdInnerTrans(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [], transaction);
+                //         }),
+                //     );
+                // } catch (error) {
+                //     logger.error(`error updating instances ${error}`);
+                // }
                 return id;
             } catch (error) {
                 if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
@@ -489,6 +435,8 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
         transaction: Transaction,
     ) {
+        console.log(id, entityProperties);
+
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -541,73 +489,11 @@ export class EntityManager {
             const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction);
 
             if (updatedInstance && entityTemplate.actions) {
-                const result: { entityId: string; properties: Record<string, any> }[] = executeScript(
-                    entityTemplate,
-                    updatedInstance,
-                    'onUpdateEntity',
-                );
-
-                try {
-                    await Promise.all(
-                        result.map((updatedEntity) =>
-                            this.updateEntityByIdInnerTrans(
-                                updatedEntity.entityId,
-                                updatedEntity.properties,
-                                entityTemplate,
-                                ignoredRules,
-                                transaction,
-                            ),
-                        ),
-                    );
-                } catch (error) {
-                    logger.error(`error updating instances ${error}`);
-                }
+                const entitiesToUpdate = executeScriptInTransaction(entityTemplate, updatedInstance, 'onUpdateEntity', transaction, ignoredRules);
+                return entitiesToUpdate;
             }
-            // const entity = await runInTransactionAndNormalize(
-            //     transaction,
-            //     `MATCH (e {_id: '${id}'}) RETURN e`,
-            //     normalizeReturnedEntity('singleResponse'),
-            // );
 
-            // if (!entity) {
-            //     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-            // }
-
-            // if (entity.properties.disabled) {
-            //     throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-            // }
-
-            // // if (entityTemplate.actions) {
-            // //     const result: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
-            // //     this.updateEntityById();
-            // // }
-
-            // const updatedProperties = EntityManager.getUpdatedProperties(
-            //     entity,
-            //     { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
-            //     entityTemplate,
-            // );
-            // const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
-            // const updatedEntity = await runInTransactionAndNormalize(
-            //     transaction,
-            //     `MATCH (e {_id: '${id}'})
-            //      WITH e.createdAt AS createdAt, e.disabled AS disabled, e AS e
-            //      SET e = $props
-            //      SET e.createdAt = createdAt
-            //      SET e.disabled = disabled
-            //      RETURN e`,
-            //     normalizeReturnedEntity('singleResponseNotNullable'),
-            //     {
-            //         props: {
-            //             ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
-            //             updatedAt: getNeo4jDateTime(),
-            //             _id: id,
-            //         },
-            //     },
-            // );
-            // const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-            // throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
-            return updatedInstance;
+            return [updatedInstance];
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 

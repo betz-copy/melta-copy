@@ -35,8 +35,7 @@ export class InstanceManagerService {
     }
 
     static async createEntityInstance(entity: IEntity) {
-        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity);
-
+        const { data } = await this.InstanceManagerApi.post<{ createdEntity: IEntity; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}`, entity);
         return data;
     }
 
