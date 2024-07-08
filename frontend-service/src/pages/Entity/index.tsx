@@ -98,6 +98,7 @@ const ConnectionsTable: React.FC<{
 }) => {
     const queryClient = useQueryClient();
 
+    const [isExpand, setIsExpand] = useState(false);
     const [isFiltered, setIsFiltered] = useState(false);
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntityExpanded['connections'][number]>>(null);
 
@@ -172,7 +173,28 @@ const ConnectionsTable: React.FC<{
                 </Grid>
 
                 <Grid item container justifyContent="space-between" alignItems="center">
-                    <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                    <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('entitiesTableOfTemplate.columns')}
+                            iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
+                            style={{ borderRadius: '5px' }}
+                        >
+                            <img src="/icons/columns-settings.svg" />
+                        </IconButtonWithPopover>
+                        <IconButtonWithPopover
+                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
+                            iconButtonProps={{
+                                onClick: () => {
+                                    setIsExpand(!isExpand);
+                                },
+                                size: 'small',
+                            }}
+                            style={{ borderRadius: '5px' }}
+                        >
+                            {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
+                        </IconButtonWithPopover>
+                        <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
+                    </Grid>
                     <IconButtonWithPopover
                         style={{ borderRadius: '10px' }}
                         popoverText={isEditButtonsDisabled ? disabledButtonText : i18next.t('ruleManagement.create-relationship')}
@@ -223,7 +245,8 @@ const ConnectionsTable: React.FC<{
                         }
                         return connection.destinationEntity.properties;
                     }}
-                    rowModelType="clientSide"
+                    // rowModelType="clientSide"
+                    rowModelType={isExpand ? 'infinite' : 'clientSide'}
                     rowData={expandedEntity.connections.filter((connection) => {
                         if (connection.relationship.templateId !== relationshipTemplate._id) return false;
 

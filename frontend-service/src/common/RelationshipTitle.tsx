@@ -13,7 +13,7 @@ const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ tit
             <Typography
                 variant="h6"
                 marginLeft="10px"
-                fontSize="16px"
+                fontSize="14px"
                 noWrap
                 style={{
                     textOverflow: 'ellipsis',

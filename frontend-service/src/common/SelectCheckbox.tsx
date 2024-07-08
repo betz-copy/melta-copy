@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState } from 'react';
+import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState, ReactElement } from 'react';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
@@ -19,20 +19,40 @@ import {
     InputAdornment,
     useTheme,
 } from '@mui/material';
-import { IoIosArrowDown, IoIosArrowBack } from 'react-icons/io';
+import { IoIosArrowDown, IoIosArrowBack, IoIosArrowUp } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { RootState } from '../store';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 
-export const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string; order: number }> = ({
-    checked,
-    indeterminate,
-    label,
-}) => {
+export const MenuItemContent: React.FC<{
+    checked: boolean;
+    indeterminate?: boolean;
+    label: string;
+    order: number;
+    isDraggable?: boolean;
+    group?: boolean;
+    insideGroup?: boolean;
+}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
     return (
         <>
+            {!group && (
+                <Grid
+                    style={{
+                        width: '24px',
+                        height: '24px',
+                        gap: '2px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        marginRight: insideGroup ? '30px' : '10px',
+                    }}
+                >
+                    {isDraggable && <img src="/icons/draggable-icon.svg" />}
+                </Grid>
+            )}
             <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             <ListItemText
                 primary={
@@ -72,6 +92,7 @@ export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
 
 export type SelectCheckboxProps<Option extends any, Group extends any = any> = PropsWithChildren<{
     title: string;
+    img?: ReactElement;
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
@@ -103,6 +124,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionLabel,
     isDraggableDisabled,
     menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
+    insideGroup,
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -112,6 +134,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     isDraggableDisabled: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     menuItemSx?: SxProps<Theme>;
+    insideGroup?: boolean;
 }) => {
     const isOptionChecked = (option: Option) => selectedOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 
@@ -162,22 +185,16 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
+                                            padding: '0px',
                                         }}
                                     >
-                                        <Grid
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                gap: '2px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignContent: 'center',
-                                                justifyContent: 'center',
-                                            }}
-                                        >
-                                            {!isDraggableDisabled && <img src="/icons/draggable-icon.svg" />}
-                                        </Grid>
-                                        <MenuItemContent checked={isOptionChecked(option)} label={getOptionLabel(option)} order={index + 1} />
+                                        <MenuItemContent
+                                            checked={isOptionChecked(option)}
+                                            label={getOptionLabel(option)}
+                                            order={index + 1}
+                                            isDraggable={!isDraggableDisabled}
+                                            insideGroup={insideGroup}
+                                        />
                                     </MenuItem>
                                 )}
                             </Draggable>
@@ -239,11 +256,14 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                 return (
                     <Fragment key={groupId}>
                         <Box display="flex" flex="row">
-                            <Button style={{ width: '10px' }} onClick={() => setOpenMap((prev) => ({ ...prev, [groupId]: !isOpen }))}>
+                            <Button
+                                sx={{ minWidth: 'auto', marginLeft: '4px' }}
+                                onClick={() => setOpenMap((prev) => ({ ...prev, [groupId]: !isOpen }))}
+                            >
                                 {isOpen ? <IoIosArrowDown /> : <IoIosArrowBack />}
                             </Button>
                             <MenuItem
-                                sx={{ width: '100%', height: '24px', padding: '0px', my: '5px' }}
+                                sx={{ padding: '0px', width: '100%', height: '24px', my: '7px' }}
                                 onClick={() => {
                                     setSelectedOptions((prevSelectedOptions) => {
                                         const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
@@ -276,6 +296,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                     indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < filteredOptionsOfGroup.length}
                                     label={getGroupLabel(group)}
                                     order={index}
+                                    group
                                 />
                             </MenuItem>
                         </Box>
@@ -288,6 +309,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                 getOptionLabel={getOptionLabel}
                                 isDraggableDisabled={isDraggableDisabled}
                                 setOptions={setOptions}
+                                insideGroup
                             />
                         )}
                         {index < groups.length - 1 && (
@@ -337,10 +359,11 @@ export const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extend
     return { optionsFiltered, groupsFiltered };
 };
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar: boolean | undefined }> = ({
+export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({
     value,
     onChange,
     toTopBar,
+    templatesSelectGrid,
 }) => {
     const theme = useTheme();
     // must wrap with TextField with Grid. no idea why, but it works :O
@@ -363,7 +386,8 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                         }
                     }}
                     sx={{
-                        background: toTopBar ? '#FFFFFF' : '#EBEFFA',
+                        background: toTopBar || templatesSelectGrid ? '#FFFFFF' : '#EBEFFA',
+                        boxShadow: templatesSelectGrid ? '-2px 2px 6px 0px #1E27754D' : '',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
@@ -425,7 +449,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
-            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
+            sx={{ width: '100%', height: '24px', padding: '0px', my: '10px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
@@ -447,6 +471,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
 
 const SelectCheckbox = <Option extends any, Group extends any>({
     title,
+    img,
     options,
     selectedOptions,
     setSelectedOptions,
@@ -458,7 +483,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
-    horizontalOrigin = 172,
+    horizontalOrigin = 154,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
@@ -481,12 +506,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
-                renderValue={() => title}
+                renderValue={() => <Box>{title}</Box>}
                 MenuProps={{
                     PaperProps: {
                         style: {
                             height: toTopBar ? '180px' : '333px',
-                            minWidth: '219px',
+                            width: '219px',
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                             borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
@@ -509,6 +534,16 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         horizontal: horizontalOrigin,
                     },
                 }}
+                IconComponent={() => (
+                    <Box
+                        display="flex"
+                        alignContent="center"
+                        alignItems="center"
+                        sx={{ width: '16px', height: '12px', gap: '10px', marginRight: '14px' }}
+                    >
+                        {img ? img : isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                    </Box>
+                )}
                 size={size}
                 onOpen={() => {
                     setMiniFilterValue('');

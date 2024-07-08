@@ -138,13 +138,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
+                                img={<img src="/icons/select-checkbox.svg" />}
                                 options={notificationsMoreData[selectedGroup]}
                                 selectedOptions={notificationsToShowCheckbox}
                                 setSelectedOptions={setNotificationsToShowCheckbox}
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOriginProp={openCalenders ? 70 : 101}
+                                horizontalOrigin={openCalenders ? 70 : 101}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',

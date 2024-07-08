@@ -151,6 +151,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     isFiltered: () => boolean;
     getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
+    showSideBar: () => void;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -213,6 +214,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 updateRowDataClientSide(data: Data) {
                     gridRef.current?.api.forEachNode((rowNode) => {
+                        console.log({ data });
+                        console.log({ rowNode });
+
                         if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                             rowNode.updateData(data);
                         }
@@ -227,6 +231,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 getSortModel() {
                     return getSortModel();
+                },
+                showSideBar() {
+                    const sideBarOpen = gridRef.current?.api.isToolPanelShowing();
+                    gridRef.current?.api.setSideBarVisible(!sideBarOpen);
+                    if (sideBarOpen) gridRef.current?.api.closeToolPanel();
+                    else gridRef.current?.api.openToolPanel('columns');
                 },
             };
         });
@@ -398,6 +408,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressCsvExport
                     suppressContextMenu
                     onGridReady={(params) => {
+                        gridRef.current?.api.setSideBarVisible(false);
                         params.api.setFilterModel({
                             ...defaultFilterModel,
                             ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),

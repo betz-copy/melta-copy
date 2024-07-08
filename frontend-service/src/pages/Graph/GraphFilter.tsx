@@ -245,7 +245,20 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     item
                     sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', height: '40px' }} // Set a fixed height
                 >
-                    <Typography style={{ padding: '10px' }}>{i18next.t('graph.filterEntity')}</Typography>
+                    <Typography
+                        style={{
+                            color: '#1E2775',
+                            fontWeight: '500',
+                            fontFamily: 'Rubik',
+                            fontSize: '14px',
+                            padding: '15px',
+                            marginRight: '7px',
+                        }}
+                        component="body"
+                        variant="body1"
+                    >
+                        {i18next.t('graph.filterEntity')}
+                    </Typography>
                     <Button
                         sx={{
                             backgroundColor: 'transparent',
@@ -253,7 +266,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 backgroundColor: 'transparent',
                                 color: 'black',
                             },
-                            color: 'grey',
+                            color: '#1E2775',
                         }}
                         onClick={handleFilterErasion}
                     >
@@ -263,9 +276,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 <Box display={fullView ? undefined : 'none'}>
                     {!selectedTemplate && (
                         <Autocomplete
-                            popupIcon={<IoIosArrowDown />}
+                            popupIcon={<IoIosArrowDown color="#1E2775" size="20px" />}
                             size="small"
-                            style={{ width: '80%', margin: 'auto', paddingBottom: '10px' }}
+                            style={{ width: '195px', margin: 'auto', paddingBottom: '10px' }}
                             value={null}
                             onChange={(_event, newValue) => handleSelectTemplate(newValue)}
                             options={options}
@@ -286,7 +299,12 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                                 {selectedTemplate.iconFileId && <CustomIcon iconUrl={selectedTemplate.iconFileId} height="24px" width="24px" />}
                             </Grid>
                             <Grid item>
-                                <Typography variant="subtitle1">{selectedTemplate.displayName}</Typography>
+                                <Typography
+                                    variant="subtitle1"
+                                    style={{ fontFamily: 'Rubik', fontSize: '14px', color: '#53566E', fontWeight: '400' }}
+                                >
+                                    {selectedTemplate.displayName}
+                                </Typography>
                             </Grid>
                             <Grid item>
                                 {isHovered && (
@@ -302,9 +320,9 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             <Box display={fullView ? undefined : 'none'}>
                 {selectedTemplate && (
                     <Grid item sx={{ height: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                        <Divider sx={{ width: '70%', margin: 'auto', borderBottomWidth: '2px' }} />
+                        <Divider sx={{ width: '195px', margin: 'auto', border: '1px 0px 0px 0px' }} />
                         <Autocomplete
-                            popupIcon={<IoIosArrowDown />}
+                            popupIcon={<IoIosArrowDown color="#1E2775" size="20px" />}
                             size="small"
                             style={{ width: '80%', margin: 'auto', paddingBottom: '10px' }}
                             value={selectedProperty}

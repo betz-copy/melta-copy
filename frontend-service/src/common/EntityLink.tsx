@@ -41,7 +41,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
 
     return (
         <MeltaTooltip title={tooltip}>
-            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
+            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold', fontSize: '14px' }}>
                 {linkText}
             </NavLink>
         </MeltaTooltip>
