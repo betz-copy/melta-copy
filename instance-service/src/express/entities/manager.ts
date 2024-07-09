@@ -39,7 +39,7 @@ import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-import { executeScriptInTransaction } from '../../utils/actions/executeScript';
+import { executeActionAndUpdateRelevantEntities } from '../../utils/actions/executeScript';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -109,7 +109,7 @@ export class EntityManager {
             );
 
             if (entityTemplate.actions) {
-                const updatedEntitiesInActionExecution = await executeScriptInTransaction(
+                const updatedEntitiesInActionExecution = await executeActionAndUpdateRelevantEntities(
                     entityTemplate,
                     createdEntity,
                     'onCreateEntity',
@@ -489,7 +489,13 @@ export class EntityManager {
             const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction);
 
             if (updatedInstance && entityTemplate.actions) {
-                const entitiesToUpdate = executeScriptInTransaction(entityTemplate, updatedInstance, 'onUpdateEntity', transaction, ignoredRules);
+                const entitiesToUpdate = executeActionAndUpdateRelevantEntities(
+                    entityTemplate,
+                    updatedInstance,
+                    'onUpdateEntity',
+                    transaction,
+                    ignoredRules,
+                );
                 return entitiesToUpdate;
             }
 

@@ -31,7 +31,19 @@ const prepareCodeForActionExecution = (entityTemplate: IMongoEntityTemplate, cru
     return jsCode;
 };
 
-export const executeScriptInTransaction = async (
+const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
+    try {
+        const context = vm.createContext({ entity: entity.properties });
+        // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
+        vm.runInContext(jsCode, context, { timeout: 10000 });
+        const executionOutput: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+        return executionOutput;
+    } catch (error) {
+        throw new ServiceError(400, `Error executing VM code: ${error}`);
+    }
+};
+
+export const executeActionAndUpdateRelevantEntities = async (
     entityTemplate: IMongoEntityTemplate,
     entity: IEntity,
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
@@ -39,37 +51,28 @@ export const executeScriptInTransaction = async (
     ignoredRules: IBrokenRule[],
 ): Promise<IEntity[]> => {
     const jsCode = prepareCodeForActionExecution(entityTemplate, crudAction);
+    const executionOutput: { entityId: string; properties: Record<string, any> }[] = executeActionCodeInVM(entity, jsCode);
+    const updatedEntities: IEntity[] = [];
 
-    const context = vm.createContext({ entity: entity.properties });
+    await Promise.all(
+        executionOutput.map(async (entityToUpdate) => {
+            if (entityToUpdate.entityId === undefined) {
+                throw new ServiceError(400, 'cant create new entity by code');
+            }
 
-    try {
-        // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
-        vm.runInContext(jsCode, context, { timeout: 10000 });
-        const executionOutput: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
-        const updatedEntities: IEntity[] = [];
+            await validateEntity(entityTemplate._id, entityToUpdate.properties);
 
-        await Promise.all(
-            executionOutput.map(async (entityToUpdate) => {
-                if (entityToUpdate.entityId === undefined) {
-                    throw new ServiceError(400, 'cant create new entity by code');
-                }
+            const updatedEntity = await EntityManager.updateEntityByIdInnerTrans(
+                entityToUpdate.entityId,
+                entityToUpdate.properties,
+                entityTemplate,
+                ignoredRules,
+                transaction,
+            );
 
-                await validateEntity(entityTemplate._id, entityToUpdate.properties);
+            updatedEntities.push(updatedEntity);
+        }),
+    );
 
-                const updatedEntity = await EntityManager.updateEntityByIdInnerTrans(
-                    entityToUpdate.entityId,
-                    entityToUpdate.properties,
-                    entityTemplate,
-                    ignoredRules,
-                    transaction,
-                );
-
-                updatedEntities.push(updatedEntity);
-            }),
-        );
-
-        return updatedEntities;
-    } catch (error) {
-        throw new ServiceError(400, `Error executing VM code: ${error}`);
-    }
+    return updatedEntities;
 };
