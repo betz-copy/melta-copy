@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/entityTemplateManager';
 import { EntityManager } from './manager';
 
 class EntityController {

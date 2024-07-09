@@ -1,4 +1,4 @@
-import { IMongoCategory } from '../categories';
+import { IMongoCategory } from '../templates/categories';
 import { IPermission } from '../permissionsApi';
 import config from '../config/index';
 

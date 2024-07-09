@@ -4,8 +4,8 @@ import { Transaction } from 'neo4j-driver';
 import { IBrokenRule, IMongoRule, IRuleFailure, IRuleFailureWithCauses } from './interfaces';
 import { generateNeo4jRuleQueryAgainstPair, generateNeo4jRuleQueryAgainstPinnedEntity } from './generateRuleNeo4jQuery';
 import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { normalizeRuleResultAgainstPair, normalizeRuleFailuresAgainstPinnedEntity, runInTransactionAndNormalize } from '../../utils/neo4j/lib';
 import { ServiceError } from '../error';
 

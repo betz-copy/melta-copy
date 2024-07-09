@@ -1,5 +1,5 @@
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/relationshipTemplateManager';
 import { IEntity } from '../../entities/interface';
 import { IRelationship } from '../../relationships/interface';
 import { IArgument } from './argument';

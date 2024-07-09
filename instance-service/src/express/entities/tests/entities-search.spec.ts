@@ -3,11 +3,11 @@ import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
 import Neo4jClient from '../../../utils/neo4j';
 import RedisClient from '../../../utils/redis';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
 import config from '../../../config';
 import EntityManager from '../manager';
 import { IEntity, ISearchBatchBody } from '../interface';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import Server from '../../server';
 import {
     generateTemplates,
@@ -75,8 +75,7 @@ const entityTemplate: IMongoEntityTemplate = {
 };
 
 describe('e2e search entities batch tests', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     let app: Express;
 
@@ -85,20 +84,20 @@ describe('e2e search entities batch tests', () => {
         app = Server.createExpressApp();
 
         // Mock get template router - for validation middleware
-        mockEntityTemplatesRoutes(mockEntityTemplateManager, [
+        mockEntityTemplatesRoutes(mockTemplateManager, [
             entityTemplate,
             travelAgentEntityTemplate,
             flightEntityTemplate,
             tripEntityTemplate,
             airportEntityTemplate,
         ]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+        mockRelationshipTemplatesRoutes(mockTemplateManager, [
             flightsOnRelationshipTemplate,
             tripConnectedToFlightRelationshipTemplate,
             departureFromRelationshipTemplate,
         ]);
         mockRulesRoutes(
-            mockRelationshipTemplateManager,
+            mockTemplateManager,
             [],
             [entityTemplate._id, travelAgentEntityTemplate._id, flightEntityTemplate._id, tripEntityTemplate._id, airportEntityTemplate._id],
             [flightsOnRelationshipTemplate._id, tripConnectedToFlightRelationshipTemplate._id, departureFromRelationshipTemplate._id],

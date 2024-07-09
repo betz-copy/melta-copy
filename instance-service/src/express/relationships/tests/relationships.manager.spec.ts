@@ -4,9 +4,9 @@ import RelationshipManager from '../manager';
 import config from '../../../config';
 import { IRelationship } from '../interface';
 import EntityManager from '../../entities/manager';
-import { getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
 
 const { neo4j } = config;
 
@@ -49,7 +49,7 @@ const entityTemplate: IMongoEntityTemplate = {
 };
 
 describe('Relationship manager', () => {
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     let firstEntity: IEntity;
     let entityId: string;
@@ -63,8 +63,8 @@ describe('Relationship manager', () => {
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
-        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [relationshipTemplate]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRelationshipTemplatesRoutes(mockTemplateManager, [relationshipTemplate]);
     });
 
     afterAll(async () => {

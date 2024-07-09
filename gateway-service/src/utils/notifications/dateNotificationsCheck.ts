@@ -3,7 +3,7 @@ import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../../
 import { rabbitCreateNotification } from './createNotification';
 import { IDateAboutToExpireMetadataPopulated } from '../../externalServices/notificationService/interfaces/populated';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IFilterDatesRange } from '../../externalServices/instanceService/interfaces/entities';
 import { getPermissions } from '../../externalServices/permissionsService';
 import logger from '../logger/logsLogger';
