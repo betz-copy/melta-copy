@@ -10,6 +10,8 @@ services:
     entrypoint: ["/usr/bin/mongod", "--bind_ip_all", "--replSet", "rs0"]
     ports:
       - 27017:27017
+    networks:
+      - network
 
   mongosetup:
     image: mongo:4.4.1
@@ -19,6 +21,8 @@ services:
       - ./scripts:/scripts
     restart: "no"
     entrypoint: ["bash", "/scripts/setup_mongo.sh"]
+    networks:
+      - network
 
   rabbit:
     image: rabbitmq:3-management
@@ -26,12 +30,16 @@ services:
       - 5672:5672
       - 15672:15672
     restart: always
+    networks:
+      - network
 
   redis:
     image: redis:latest
     ports:
       - 6379:6379
     restart: always
+    networks:
+      - network
 
   minio:
     image: minio/minio
@@ -44,6 +52,8 @@ services:
       MINIO_ROOT_PASSWORD: "minioadmin"
     command: "minio server --console-address :4000 /data"
     restart: always
+    networks:
+      - network
 
   neo4j:
     build:
@@ -63,6 +73,8 @@ services:
       resources:
         limits:
           memory: 1024m
+    networks:
+      - network
 
   # ELK
   elastic:
@@ -86,6 +98,8 @@ services:
       resources:
         limits:
           memory: 1024m
+    networks:
+      - network
 
   logstash:
     image: logstash:8.11.2
@@ -107,6 +121,8 @@ services:
       resources:
         limits:
           memory: 1024m
+    networks:
+      - network
 
   kibana:
     image: kibana:8.11.2
@@ -123,6 +139,8 @@ services:
       resources:
         limits:
           memory: 1024m
+    networks:
+      - network
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.5.1
@@ -134,6 +152,8 @@ services:
     depends_on:
       - logstash
     command: filebeat -e -strict.perms=false
+    networks:
+      - network
 
   mock-service:
     build: ./mock-service
@@ -157,6 +177,8 @@ services:
       - process-service
       - gantt-service
     restart: on-failure
+    networks:
+      - network
 
   #-------------------------------------------#
   #        microservices:                     #
@@ -167,6 +189,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   relationship-template-service:
     ports:
@@ -174,6 +198,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   gateway-service:
     ports:
@@ -181,6 +207,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   permission-service:
     ports:
@@ -188,6 +216,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   storage-service:
     ports:
@@ -195,6 +225,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   instance-service:
     ports:
@@ -202,6 +234,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   nginx:
     ports:
@@ -209,21 +243,36 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   global-search-service:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   notification-service:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
+
+  activity-log-service:
+    restart: always
+    volumes:
+      - logs:/usr/src/app/logs
+    networks:
+      - network
 
   rule-breach-service:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   process-service:
     ports:
@@ -231,6 +280,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   gantt-service:
     ports:
@@ -238,6 +289,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
   mailer-service:
     depends_on:
@@ -245,6 +298,8 @@ services:
     ports:
       - 8010:8000
     restart: always
+    networks:
+      - network
 
   preview-service:
     ports:
@@ -252,9 +307,16 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+    networks:
+      - network
 
 volumes:
   elastic_data:
   logstash_data:
   kibana_data:
   logs: {}
+
+networks:
+  network:
+    driver: bridge
+    name: infra-network
