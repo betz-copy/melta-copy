@@ -3,15 +3,29 @@ import { mongoIdSchema } from '.';
 import { ActionTypes } from '../../interfaces/actionMetadata';
 import { validateActionMetadata } from '../validateActionMetadata';
 
-export const brokenRulesSchema = joi
-    .array()
-    .items(
-        joi.object({
-            ruleId: mongoIdSchema.required(),
-            relationshipIds: joi.array().items(joi.string()).required(),
+const causesOfInstanceSchema = joi.object({
+    instance: joi.object({
+        entityId: joi.string().required(),
+        aggregatedRelationship: joi.object({
+            relationshipId: joi.string().required(),
+            otherEntityId: joi.string().required(),
         }),
-    )
-    .min(1);
+    }).required(),
+    properties: joi.array().items(joi.string()).required(),
+});
+
+export const brokenRuleSchema = joi.object({
+    ruleId: mongoIdSchema.required(),
+    failures: joi
+        .array()
+        .items({
+            entityId: joi.string().required(),
+            causes: joi.array().items(causesOfInstanceSchema).required(),
+        })
+        .required(),
+});
+
+export const brokenRulesSchema = joi.array().items(brokenRuleSchema).min(1);
 
 export const ruleBreachSchema = joi.object({
     originUserId: mongoIdSchema.required(),

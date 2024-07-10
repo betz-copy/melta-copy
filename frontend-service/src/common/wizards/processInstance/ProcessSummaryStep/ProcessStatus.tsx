@@ -1,11 +1,13 @@
 import React from 'react';
 import i18next from 'i18next';
 import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
-import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
+import {
+    AccessTimeFilled as AccessTimeFilledIcon,
+    CancelOutlined as CancelOutlinedIcon,
+    Cancel as CancelIcon,
+    CheckCircleOutline as CheckCircleOutlineIcon,
+    CheckCircle as CheckCircleIcon,
+} from '@mui/icons-material';
 import { FormikProps } from 'formik';
 import { useSelector } from 'react-redux';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
@@ -24,7 +26,7 @@ interface StatusDisplayProps {
     fontSize?: number;
 }
 
-const getColor = (status: Status) => {
+export const getColor = (status: Status) => {
     switch (status) {
         case Status.Approved:
             return StatusColorsNames.Approved;
@@ -59,7 +61,7 @@ const StatusButton: React.FC<StatusButtonProps> = ({ status, currentStatus, hand
     );
 };
 
-const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
+export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontSize = 40 }) => {
     const color = getColor(status);
     return (
         <Grid item>
@@ -77,33 +79,80 @@ const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text, fontS
     );
 };
 
+export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated }> = ({
+    isPrinting,
+    instance,
+}) => {
+    const currentUser = useSelector((state: RootState) => state.user) as IUser;
+
+    return (
+        <Grid item container justifyContent="center">
+            <Grid item>
+                <Typography fontSize={isPrinting ? '12px' : '14px'} style={{ textAlign: 'center' }}>
+                    {`${i18next.t('wizard.processInstance.summary.statusChangedBy')} ${i18next.t('wizard.processInstance.summary.onDate')}:`}
+                </Typography>
+                <Typography fontSize={isPrinting ? '14px' : '16px'}>{getLongDate(instance.reviewedAt!)} </Typography>
+            </Grid>
+            {(instance as IMongoStepInstancePopulated).reviewer && (
+                <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: isPrinting ? '14px' : undefined }}>
+                        {` ${
+                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
+                                ? i18next.t('wizard.processInstance.summary.byYou')
+                                : `${i18next.t('wizard.processInstance.summary.by')} ${(instance as IMongoStepInstancePopulated).reviewer!.fullName}`
+                        }`}
+                    </span>
+                </Grid>
+            )}
+        </Grid>
+    );
+};
+
 interface ProcessStatusProps {
-    title: string;
+    title?: string;
     instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
         isEditMode: boolean;
         values: FormikProps<ProcessStepValues>['values'];
     };
+    isPrinting?: boolean;
 }
 
-const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus }) => {
-    const currentUser = useSelector((state: RootState) => state.user) as IUser;
+const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStatus, isPrinting }) => {
     const handleSetStatus = (newStatus: Status) => {
         const newStatusToSet = newStatus !== editStatus!.values.status ? newStatus : Status.Pending;
         editStatus!.setFieldValue('status', newStatusToSet);
     };
     return (
-        <Grid container flexDirection="column" alignItems="stretch" spacing={2}>
-            <Grid item container justifyContent="center">
-                <BlueTitle
-                    title={title}
-                    component="h4"
-                    variant={editStatus ? 'h5' : 'h4'}
-                    style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
-                />
-            </Grid>
-            <Grid item container alignItems="center" justifyContent="center" spacing={3}>
+        <Grid container flexDirection="column" alignItems="stretch" spacing={title ? 2 : 0}>
+            {title && (
+                <Grid item container flexDirection="row">
+                    <Grid item container flexDirection="column" alignItems="center">
+                        <Grid item>
+                            <BlueTitle
+                                title={title}
+                                component="h4"
+                                variant={editStatus ? 'h5' : 'h4'}
+                                style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
+                            />
+                        </Grid>
+
+                        {isPrinting && (
+                            <Grid item>
+                                <BlueTitle
+                                    title={'name' in instance ? instance.name : ''}
+                                    component="h4"
+                                    variant="h4"
+                                    style={{ fontWeight: 600, opacity: 0.9, marginBottom: 7 }}
+                                />
+                            </Grid>
+                        )}
+                    </Grid>
+                </Grid>
+            )}
+
+            <Grid item container alignItems="center" justifyContent="center" spacing={title ? 3 : 0}>
                 {editStatus?.isEditMode ? (
                     <>
                         <StatusButton
@@ -152,29 +201,7 @@ const ProcessStatus: React.FC<ProcessStatusProps> = ({ title, instance, editStat
                     </>
                 )}
             </Grid>
-            {instance.reviewedAt && (
-                <Grid item container justifyContent="center">
-                    <Grid item>
-                        <span>{i18next.t('wizard.processInstance.summary.statusChangedBy')}</span>
-                        <span style={{ margin: '0px' }}>{` ${i18next.t('wizard.processInstance.summary.onDate')}: ${getLongDate(
-                            instance.reviewedAt,
-                        )} `}</span>
-                    </Grid>
-                    {(instance as IMongoStepInstancePopulated).reviewer && (
-                        <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
-                            <span style={{ fontWeight: 'bold' }}>
-                                {` ${
-                                    currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
-                                        ? i18next.t('wizard.processInstance.summary.byYou')
-                                        : `${i18next.t('wizard.processInstance.summary.by')} ${
-                                              (instance as IMongoStepInstancePopulated).reviewer!.fullName
-                                          }`
-                                }`}
-                            </span>
-                        </Grid>
-                    )}
-                </Grid>
-            )}
+            {instance.reviewedAt && !isPrinting && title && <ReviewedAtProcessStatus instance={instance} />}
         </Grid>
     );
 };

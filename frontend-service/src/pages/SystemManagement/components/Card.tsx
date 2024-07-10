@@ -38,11 +38,7 @@ export const ViewingCard: React.FC<{
                         setOpen(!!expendedCard);
                     }}
                 >
-                    {!open && (
-                        <Grid container>
-                            <Grid item>{title}</Grid>
-                        </Grid>
-                    )}
+                    {!open && title}
                 </CardContent>
 
                 <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>

@@ -19,7 +19,7 @@ const CameraView: React.FC<ICameraViewProps> = ({ videoRef, setVideoRef, stream,
 
     const initializeMedia = () => {
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-            toast(i18next.t('camera.somethingWentWrong'));
+            toast.error(i18next.t('camera.somethingWentWrong'));
             return;
         }
 
@@ -29,7 +29,7 @@ const CameraView: React.FC<ICameraViewProps> = ({ videoRef, setVideoRef, stream,
         const context = canvas.getContext('2d');
 
         if (!context) {
-            toast(i18next.t('camera.somethingWentWrong'));
+            toast.error(i18next.t('camera.somethingWentWrong'));
         }
 
         context!.drawImage(videoRef!, 0, 0, canvas.width, canvas.height);
@@ -40,7 +40,7 @@ const CameraView: React.FC<ICameraViewProps> = ({ videoRef, setVideoRef, stream,
         if (dataURL && dataURL !== 'data:,') {
             setImgURL(dataURL);
         } else {
-            toast(i18next.t('camera.somethingWentWrong'));
+            toast.error(i18next.t('camera.somethingWentWrong'));
         }
         setStream(null);
     };

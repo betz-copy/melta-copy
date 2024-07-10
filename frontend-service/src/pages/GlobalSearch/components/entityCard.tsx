@@ -465,12 +465,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}
-                    entity={entity}
+                    entityToUpdate={entity}
                     onSuccessUpdate={() => {
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         refetchQuery?.();
                     }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
             </Dialog>
         </Card>

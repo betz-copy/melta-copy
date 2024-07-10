@@ -3,20 +3,25 @@ import axios from 'axios';
 import config from '../../config';
 import { IEntityTemplate, ISearchEntityTemplatesBody } from './interfaces';
 
-const { entityTemplateService: templateManager } = config;
-const { url, baseRoute, searchTemplatesRoute, timeout } = templateManager;
+const {
+    templateService: {
+        url,
+        entities: { baseRoute, searchTemplatesRoute },
+        timeout,
+    },
+} = config;
 
-export class EntityTemplateManagerService {
-    private static EntityTemplateManagerApi = axios.create({ baseURL: url, timeout });
+export class TemplateManagerService {
+    private static TemplateManagerApi = axios.create({ baseURL: url, timeout });
 
     static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.EntityTemplateManagerApi.post<IEntityTemplate[]>(`${baseRoute}${searchTemplatesRoute}`, body);
+        const { data } = await this.TemplateManagerApi.post<IEntityTemplate[]>(`${baseRoute}${searchTemplatesRoute}`, body);
 
         return data;
     }
 
     static async getEntityTemplateById(id: string) {
-        const { data } = await this.EntityTemplateManagerApi.get<IEntityTemplate>(`${baseRoute}/${id}`);
+        const { data } = await this.TemplateManagerApi.get<IEntityTemplate>(`${baseRoute}/${id}`);
 
         return data;
     }

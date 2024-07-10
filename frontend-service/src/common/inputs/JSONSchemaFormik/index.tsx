@@ -77,6 +77,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    toPrint?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -88,14 +89,16 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    toPrint = false,
 }) => {
     useEffect(() => {
+        // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const hasOtherField = innerDiv.querySelector('.other-field');
-            innerDiv.classList.add(hasOtherField ? 'has-other-field-child' : 'has-text-area-child');
+            const hasTextAreaField = innerDiv.querySelector('.text-area');
+            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
         });
     }, [values.template]);
 
@@ -109,7 +112,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
-                        'ui:classNames': 'other-field',
                         'ui:options': {
                             inputType: 'text',
                             disabled: true,
@@ -120,7 +122,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.type === 'array' && propertySchema.items!.enum) {
                     return {
                         'ui:widget': 'SelectWidget',
-                        'ui:classNames': 'other-field',
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
@@ -128,11 +129,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TextAreaWidget',
                         'ui:classNames': 'text-area',
+                        'ui:options': { toPrint },
                     };
                 }
-                return {
-                    'ui:classNames': 'other-field',
-                };
+                return {};
             })}
             onChange={({ formData }) => {
                 setValues(formData);
@@ -161,7 +161,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextAreaWidget: RjfsTextAreaWidget,
             }}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
     );
 };

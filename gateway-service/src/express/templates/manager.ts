@@ -9,9 +9,9 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
-} from '../../externalServices/entityTemplateService';
+} from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
@@ -73,55 +73,58 @@ export class TemplatesManager {
     }
 
     private static async getAllowedRules(
+        allowedEntityTemplatesIds: string[],
         allowedRelationshipsTemplates: IRelationshipTemplate[],
         allowedEntityTemplatesIdsByOneRelationship: string[],
     ) {
         const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
 
-        const rulesByAllowedRelationshipTemplates = await RelationshipsTemplateManagerService.searchRules({
-            relationshipTemplateIds: allowedRelationshipsTemplatesIds,
+        const rulesByAllowedEntityTemplates = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: allowedEntityTemplatesIds,
         });
 
         /*
-         * you need rules of pinned entity templates of "by one relationship"
-         * because you can break the rule if it has aggregation on the pinned entity (pinned.conncections.allowedEntityToEdit)
+         * you need rules of entity templates of "by one relationship"
+         * because you can break the rule if it has aggregation on the entity (entity.conncections.allowedEntityToEdit)
          * for example, say you have permissions only for people.
          * so you receive templates
          * 1. template of person - because you have direct permission
          * 2. template of flight - because there's relationship person<=>flight
-         * 3!!!. template of trip - because there's a rule of flight<=>trip,
-         *    and flight is the pinned entity in the rule, and the rule might contain aggregation of "flight.flightsOn.person",
+         * 3!!!. template of trip - because there's a rule of flight that checks connected trip,
+         *    and flight is the entity of the rule, and the rule might contain aggregation of "flight.flightsOn.person",
          *    and rule might break on person change
          */
-        const rulesPinnedByEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
-            pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
+        const rulesOfEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
         });
 
-        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedRelationshipTemplates, ...rulesPinnedByEntityTemplatesByOneRelationship], '_id');
+        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedEntityTemplates, ...rulesOfEntityTemplatesByOneRelationship], '_id');
 
-        const allowedRelationshipTemplatesIdsBecauseOfRules = allowedRules
-            .map(({ relationshipTemplateId }) => relationshipTemplateId)
-            .filter((relationshipTemplateId) => !allowedRelationshipsTemplatesIds.includes(relationshipTemplateId));
+        const parametersOfRulesOfEntityTemplatesByOneRelationship = rulesOfEntityTemplatesByOneRelationship.flatMap(({ formula }) =>
+            getParametersOfFormula(formula),
+        );
+
+        const allowedRelationshipTemplatesIdsBecauseOfRules = parametersOfRulesOfEntityTemplatesByOneRelationship
+            .filter(
+                ({ variable }) =>
+                    variable.aggregatedRelationship &&
+                    !allowedRelationshipsTemplatesIds.includes(variable.aggregatedRelationship.relationshipTemplateId),
+            )
+            .map(({ variable }) => variable.aggregatedRelationship!.relationshipTemplateId);
 
         const allowedRelationshipTemplatesBecauseOfRules = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
-            ids: allowedRelationshipTemplatesIdsBecauseOfRules,
+            ids: [...new Set(allowedRelationshipTemplatesIdsBecauseOfRules)],
         });
 
-        const unpinnedEntityTemplatesIdsOfAllowedRules = allowedRelationshipTemplatesBecauseOfRules.map((relationshipTemplate) => {
-            const rule = allowedRules.find(({ relationshipTemplateId }) => relationshipTemplateId === relationshipTemplate._id)!;
-            const unpinnedEntityTemplateId =
-                relationshipTemplate.sourceEntityId === rule.pinnedEntityTemplateId
-                    ? relationshipTemplate.destinationEntityId
-                    : relationshipTemplate.sourceEntityId;
-            return unpinnedEntityTemplateId;
-        });
-
-        const unknownUnpinnedEntityTemplatesIdsOfAllowedRules = unpinnedEntityTemplatesIdsOfAllowedRules.filter((entityTemplateId) => {
-            return !allowedEntityTemplatesIdsByOneRelationship.includes(entityTemplateId);
-        });
+        const allowedEntityTemplatesIdsBecauseOfRules = parametersOfRulesOfEntityTemplatesByOneRelationship
+            .filter(
+                ({ variable }) =>
+                    variable.aggregatedRelationship && !allowedEntityTemplatesIds.includes(variable.aggregatedRelationship.otherEntityTemplateId),
+            )
+            .map(({ variable }) => variable.aggregatedRelationship!.otherEntityTemplateId);
 
         const allowedEntityTemplatesBecauseOfRules = await EntityTemplateManagerService.searchEntityTemplates({
-            ids: unknownUnpinnedEntityTemplatesIdsOfAllowedRules,
+            ids: allowedEntityTemplatesIdsBecauseOfRules,
         });
 
         return {
@@ -160,7 +163,11 @@ export class TemplatesManager {
         });
 
         const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } =
-            await TemplatesManager.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship);
+            await TemplatesManager.getAllowedRules(
+                allowedEntityTemplatesIds,
+                allowedRelationshipsTemplates,
+                allowedEntityTemplatesIdsByOneRelationship,
+            );
 
         const allAllowedEntityTemplates = [
             ...allowedEntityTemplates,
@@ -664,8 +671,8 @@ export class TemplatesManager {
 
     static getDependentRelationshipTemplates(formula: IFormula) {
         const parameters = getParametersOfFormula(formula);
-        const variablesWithAggregation = parameters.filter(({ variableName }) => variableName.split('.').length === 3);
-        const relationshipTemplates = variablesWithAggregation.map(({ variableName }) => variableName.split('.')[1]);
+        const variablesWithAggregation = parameters.filter(({ variable }) => variable.aggregatedRelationship);
+        const relationshipTemplates = variablesWithAggregation.map(({ variable }) => variable.aggregatedRelationship!.relationshipTemplateId);
 
         return [...new Set(relationshipTemplates)];
     }
@@ -679,9 +686,8 @@ export class TemplatesManager {
         const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-        const relationshipRelatedRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
-        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [sourceEntityId] });
-        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [destinationEntityId] });
+        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ entityTemplateIds: [sourceEntityId] });
+        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ entityTemplateIds: [destinationEntityId] });
 
         const dependentRelationshipsToSource = sourceRelatedRules.map(({ formula }) => {
             return TemplatesManager.getDependentRelationshipTemplates(formula);
@@ -692,7 +698,7 @@ export class TemplatesManager {
 
         const dependentRelationships = [...new Set(...dependentRelationshipsToSource, ...dependentRelationshipsToDestination)];
 
-        if (relationshipRelatedRules.length !== 0 || dependentRelationships.includes(templateId)) {
+        if (dependentRelationships.includes(templateId)) {
             throw new ServiceError(400, 'relationship template still has rules', { errorCode: relationshipTemplateHasRules });
         }
 

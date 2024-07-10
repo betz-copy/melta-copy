@@ -21,13 +21,15 @@ const StepStatus: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
     open: boolean;
     handleClick: () => void;
-}> = ({ stepInstance, processTemplate, open, handleClick }) => {
+    isPrinting: boolean;
+}> = ({ stepInstance, processTemplate, open, handleClick, isPrinting }) => {
     return (
         <div style={{ paddingTop: '10px' }}>
             <StyledCard
                 style={{
                     minHeight: 270,
-                    minWidth: 235,
+                    minWidth: !isPrinting ? 235 : undefined,
+                    pageBreakInside: 'avoid',
                 }}
             >
                 <CardHeader
@@ -54,26 +56,26 @@ const StepStatus: React.FC<{
                                 </div>
                             </MeltaTooltip>
 
-                            <>
-                                {stepInstance.reviewedAt ? (
-                                    <div style={{ paddingBottom: 30 }}>
-                                        <Typography textAlign="center" fontSize="14px">
-                                            {i18next.t('wizard.processInstance.summary.statusChangedBy')}
-                                        </Typography>
-                                        <Typography textAlign="center" fontSize="13px">{`${i18next.t(
-                                            'wizard.processInstance.summary.onDate',
-                                        )}: ${getLongDate(stepInstance.reviewedAt)} `}</Typography>
-                                        <Typography textAlign="center" fontSize="15px" fontWeight="bold">{`${i18next.t(
-                                            'wizard.processInstance.summary.by',
-                                        )}: ${stepInstance.reviewer?.fullName}`}</Typography>
-                                    </div>
-                                ) : (
-                                    <div style={{ paddingBottom: 70 }}>
-                                        <Typography textAlign="center" fontWeight="bold">
-                                            {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
-                                        </Typography>
-                                    </div>
-                                )}
+                            {stepInstance.reviewedAt ? (
+                                <div style={{ paddingBottom: 30 }}>
+                                    <Typography textAlign="center" fontSize="14px">
+                                        {i18next.t('wizard.processInstance.summary.statusChangedBy')}
+                                    </Typography>
+                                    <Typography textAlign="center" fontSize="13px">{`${i18next.t(
+                                        'wizard.processInstance.summary.onDate',
+                                    )}: ${getLongDate(stepInstance.reviewedAt)} `}</Typography>
+                                    <Typography textAlign="center" fontSize="15px" fontWeight="bold">{`${i18next.t(
+                                        'wizard.processInstance.summary.by',
+                                    )}: ${stepInstance.reviewer?.fullName}`}</Typography>
+                                </div>
+                            ) : (
+                                <div style={{ paddingBottom: 70 }}>
+                                    <Typography textAlign="center" fontWeight="bold">
+                                        {i18next.t('wizard.processInstance.summary.StepStatusNotYetBeeUpdated')}
+                                    </Typography>
+                                </div>
+                            )}
+                            {!isPrinting && (
                                 <Grid item>
                                     {stepInstance.comments && (
                                         <>
@@ -102,7 +104,7 @@ const StepStatus: React.FC<{
                                         </>
                                     )}
                                 </Grid>
-                            </>
+                            )}
                         </CardContent>
                     </Grid>
                 </Grid>
@@ -111,10 +113,11 @@ const StepStatus: React.FC<{
     );
 };
 
-const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated; processTemplate: IMongoProcessTemplatePopulated }> = ({
-    processInstance,
-    processTemplate,
-}) => {
+const StepsStatuses: React.FC<{
+    processInstance: IMongoProcessInstancePopulated;
+    processTemplate: IMongoProcessTemplatePopulated;
+    isPrinting: boolean;
+}> = ({ processInstance, processTemplate, isPrinting }) => {
     const [openStep, setOpenStep] = useState(-1);
 
     // Count the steps by their status
@@ -150,6 +153,7 @@ const StepsStatuses: React.FC<{ processInstance: IMongoProcessInstancePopulated;
                                 stepInstance={stepInstance}
                                 open={openStep === index}
                                 handleClick={() => setOpenStep(openStep === index ? -1 : index)}
+                                isPrinting={isPrinting}
                             />
                         </Grid>
                     ))}

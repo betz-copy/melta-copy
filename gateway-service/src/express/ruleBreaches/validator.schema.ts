@@ -1,9 +1,28 @@
 import joi from 'joi';
 import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 
+const causesOfInstanceSchema = joi.object({
+    instance: joi
+        .object({
+            entityId: joi.string().required(),
+            aggregatedRelationship: joi.object({
+                relationshipId: joi.string().required(),
+                otherEntityId: joi.string().required(),
+            }),
+        })
+        .required(),
+    properties: joi.array().items(joi.string()).required(),
+});
+
 export const brokenRuleSchema = joi.object({
     ruleId: MongoIdSchema.required(),
-    relationshipIds: joi.array().items(joi.string()).required(),
+    failures: joi
+        .array()
+        .items({
+            entityId: joi.string().required(),
+            causes: joi.array().items(causesOfInstanceSchema).required(),
+        })
+        .required(),
 });
 
 const ruleBreachSchema = joi.object({

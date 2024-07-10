@@ -12,8 +12,9 @@ import {
     mockRelationshipTemplatesRoutes,
     mockRulesRoutes,
 } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoRelationshipTemplate } from '../../../externalServices/relationshipTemplateManager';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
+import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
 
@@ -21,7 +22,6 @@ const {
     airportEntityTemplate,
     allEntityTemplateIds,
     allEntityTemplates,
-    allRelationshipTemplateIds,
     allRelationshipTemplates,
     departureFromRelationshipTemplate,
     flightEntityTemplate,
@@ -29,9 +29,10 @@ const {
     noOverlappingFlightsInTrip,
     oneTravelAgentPerFlight,
     travelAgentEntityTemplate,
+    tripConnectedToAirportRelationshipTemplate,
     tripConnectedToFlightRelationshipTemplate,
     tripEntityTemplate,
-    warnOnEveryFlightOnActiveZone,
+    warnOnEveryFlightDepartureFromAirportWithActiveTrip,
 } = generateTemplates();
 
 const createRelationshipAndExpectRuleBlock = async (
@@ -58,12 +59,12 @@ const createRelationshipAndExpectRuleBlock = async (
             brokenRules: [
                 {
                     ruleId: brokenRule.ruleId,
-                    relationshipIds: expect.any(Array),
+                    brokenRules: expect.any(Array),
                 },
             ],
         }),
     );
-    expect((err as any).metadata.brokenRules[0].relationshipIds.sort()).toStrictEqual(brokenRule.relationshipIds.sort());
+    expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 
 const createRelationshipAndExpectToSucceed = async (
@@ -103,7 +104,7 @@ const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brok
             ],
         }),
     );
-    expect((err as any).metadata.brokenRules[0].relationshipIds.sort()).toStrictEqual(brokenRule.relationshipIds.sort());
+    expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 
 const deleteRelationshipAndExpectToSucceed = async (
@@ -121,8 +122,7 @@ const deleteRelationshipAndExpectToSucceed = async (
 };
 
 describe('Relationship manager test rules', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
@@ -141,74 +141,59 @@ describe('Relationship manager test rules', () => {
             let airport: IEntity;
 
             let firstRelationshipId: string;
-            let secondRelationshipId: string;
 
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
                 firstTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name1',
-                            lastName: 'Name1',
-                            agentId: '1',
-                        },
+                        firstName: 'Name1',
+                        lastName: 'Name1',
+                        agentId: '1',
                     },
                     travelAgentEntityTemplate,
+                    [],
                 );
 
                 secondTravelAgent = await EntityManager.createEntity(
-                    {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name2',
-                            lastName: 'Name2',
-                            agentId: '2',
-                        },
-                    },
+                    { firstName: 'Name2', lastName: 'Name2', agentId: '2' },
                     travelAgentEntityTemplate,
+                    [],
                 );
 
                 flight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
+                        flightNumber: '1',
+                        departureDate: new Date().toISOString(),
+                        landingDate: new Date().toISOString(),
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 trip = await EntityManager.createEntity(
                     {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                        },
+                        name: 'My trip',
+                        destination: 'New York',
                     },
                     tripEntityTemplate,
+                    [],
                 );
 
                 airport = await EntityManager.createEntity(
                     {
-                        templateId: airportEntityTemplate._id,
-                        properties: {
-                            airportName: 'New York Airport',
-                            airportId: '1234',
-                            country: 'New York',
-                        },
+                        airportName: 'New York Airport',
+                        airportId: '1234',
+                        country: 'New York',
                     },
                     airportEntityTemplate,
+                    [],
                 );
             });
 
@@ -233,32 +218,117 @@ describe('Relationship manager test rules', () => {
             it('Should fail to create a new relationship because one already exists', async () => {
                 await createRelationshipAndExpectRuleBlock(secondTravelAgent, flight, flightsOnRelationshipTemplate, {
                     ruleId: oneTravelAgentPerFlight._id,
-                    relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
+                    failures: [
+                        {
+                            entityId: flight.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: flight.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: firstRelationshipId,
+                                            otherEntityId: firstTravelAgent.properties._id,
+                                        },
+                                    },
+                                    properties: [],
+                                },
+                                {
+                                    instance: {
+                                        entityId: flight.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: secondTravelAgent.properties._id,
+                                        },
+                                    },
+                                    properties: [],
+                                },
+                            ],
+                        },
+                    ],
                 });
             });
 
             it('Should ignore failed rule and create relationship', async () => {
-                const relationship = await createRelationshipAndExpectToSucceed(secondTravelAgent, flight, flightsOnRelationshipTemplate, [
+                await createRelationshipAndExpectToSucceed(secondTravelAgent, flight, flightsOnRelationshipTemplate, [
                     {
-                        relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
                         ruleId: oneTravelAgentPerFlight._id,
+                        failures: [
+                            {
+                                entityId: flight.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: flight.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstRelationshipId,
+                                                otherEntityId: firstTravelAgent.properties._id,
+                                            },
+                                        },
+                                        properties: [],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: flight.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: secondTravelAgent.properties._id,
+                                            },
+                                        },
+                                        properties: [],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 ]);
-
-                secondRelationshipId = relationship.properties._id;
             });
 
-            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
-            // but in the future maybe should fail them, because they failed with a "different" reason (2 travelAgents AND trip name is not "justForTesting")
-            it.skip('Should fail to create relationship between trip and flight, because dependent in rule', async () => {
+            it('Should fail to create relationship between trip and flight, because dependent in rule', async () => {
                 await createRelationshipAndExpectRuleBlock(flight, trip, tripConnectedToFlightRelationshipTemplate, {
                     ruleId: oneTravelAgentPerFlight._id,
-                    relationshipIds: [firstRelationshipId, secondRelationshipId],
+                    failures: [
+                        {
+                            entityId: flight.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: flight.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: trip.properties._id,
+                                        },
+                                    },
+                                    properties: ['name'],
+                                },
+                            ],
+                        },
+                    ],
                 });
             });
-            // TODO: test only temporary for hotfix
-            it('Should create relationship between trip and flight, because dependent in rule but not directly', async () => {
-                await createRelationshipAndExpectToSucceed(flight, trip, tripConnectedToFlightRelationshipTemplate);
+
+            it('Should ignore failed rule and create relationship between trip and flight', async () => {
+                await createRelationshipAndExpectToSucceed(flight, trip, tripConnectedToFlightRelationshipTemplate, [
+                    {
+                        ruleId: oneTravelAgentPerFlight._id,
+                        failures: [
+                            {
+                                entityId: flight.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: flight.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: trip.properties._id,
+                                            },
+                                        },
+                                        properties: ['name'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
             });
 
             it('Should create relationship between airport and flight, because not dependent rule', async () => {
@@ -269,78 +339,80 @@ describe('Relationship manager test rules', () => {
         describe('Rule 2 - No Overlapping Flights In Trip', () => {
             let trip: IEntity;
             let firstFlight: IEntity;
-            let secondFlightNotOverlapping: IEntity;
+            let secondFlight: IEntity;
             let thirdFlightOverlapping: IEntity;
             let fourthFlightNotOverlapping: IEntity;
+            let fifthFlightOverlapping: IEntity;
 
             let firstRelationshipId: string;
+            let secondRelationshipId: string;
 
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
                 trip = await EntityManager.createEntity(
                     {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                        },
+                        name: 'My trip',
+                        destination: 'New York',
                     },
                     tripEntityTemplate,
+                    [],
                 );
 
                 firstFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: '2022-04-01T17:00:00.000Z',
-                            landingDate: '2022-04-01T19:00:00.000Z',
-                        },
+                        flightNumber: '1',
+                        departureDate: '2022-04-01T17:00:00.000Z',
+                        landingDate: '2022-04-01T19:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
-                secondFlightNotOverlapping = await EntityManager.createEntity(
+                secondFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '2',
-                            departureDate: '2022-04-20T17:00:00.000Z',
-                            landingDate: '2022-04-20T19:00:00.000Z',
-                        },
+                        flightNumber: '2',
+                        departureDate: '2022-04-20T17:00:00.000Z',
+                        landingDate: '2022-04-20T19:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 thirdFlightOverlapping = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '3',
-                            departureDate: '2022-04-01T08:00:00.000Z',
-                            landingDate: '2022-04-01T08:30:00.000Z',
-                        },
+                        flightNumber: '3',
+                        departureDate: '2022-04-01T08:00:00.000Z',
+                        landingDate: '2022-04-01T08:30:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 fourthFlightNotOverlapping = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '4',
-                            departureDate: '2022-04-29T17:00:00.000Z',
-                            landingDate: '2022-04-29T19:00:00.000Z',
-                        },
+                        flightNumber: '4',
+                        departureDate: '2022-04-29T17:00:00.000Z',
+                        landingDate: '2022-04-29T19:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
+                );
+
+                fifthFlightOverlapping = await EntityManager.createEntity(
+                    {
+                        flightNumber: '5',
+                        departureDate: '2022-04-20T08:00:00.000Z',
+                        landingDate: '2022-04-20T08:30:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
                 );
             });
 
@@ -348,136 +420,446 @@ describe('Relationship manager test rules', () => {
                 await Neo4jClient.writeTransaction(
                     `MATCH (e1 { _id: "${trip.properties._id}" })
                     MATCH (e2 { _id: "${firstFlight.properties._id}" })
-                    MATCH (e3 { _id: "${secondFlightNotOverlapping.properties._id}" })
+                    MATCH (e3 { _id: "${secondFlight.properties._id}" })
                     MATCH (e4 { _id: "${thirdFlightOverlapping.properties._id}" })
-                    DETACH DELETE e1,e2,e3,e4`,
+                    MATCH (e5 { _id: "${fourthFlightNotOverlapping.properties._id}" })
+                    MATCH (e6 { _id: "${fifthFlightOverlapping.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4,e5,e6`,
                     () => {},
                 );
             });
 
             it('Should create a new first relationship', async () => {
-                const relationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: firstFlight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
-                );
-
-                expect(relationship.templateId).toStrictEqual(tripConnectedToFlightRelationshipTemplate._id);
-                expect(relationship.sourceEntityId).toStrictEqual(firstFlight.properties._id);
-                expect(relationship.destinationEntityId).toStrictEqual(trip.properties._id);
+                const relationship = await createRelationshipAndExpectToSucceed(firstFlight, trip, tripConnectedToFlightRelationshipTemplate);
 
                 firstRelationshipId = relationship.properties._id;
             });
             it('Should create a new second relationship because not overlapping', async () => {
-                const relationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: secondFlightNotOverlapping.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
-                );
+                const relationship = await createRelationshipAndExpectToSucceed(secondFlight, trip, tripConnectedToFlightRelationshipTemplate);
 
-                expect(relationship.templateId).toStrictEqual(tripConnectedToFlightRelationshipTemplate._id);
-                expect(relationship.sourceEntityId).toStrictEqual(secondFlightNotOverlapping.properties._id);
-                expect(relationship.destinationEntityId).toStrictEqual(trip.properties._id);
+                secondRelationshipId = relationship.properties._id;
             });
 
-            it('Should fail to create a new relationship because overlapping', async () => {
+            it('Should fail to create a new relationship of thirdFlight because overlapping', async () => {
                 await createRelationshipAndExpectRuleBlock(thirdFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, {
                     ruleId: noOverlappingFlightsInTrip._id,
-                    relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
+                    failures: [
+                        {
+                            entityId: trip.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: trip.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: firstRelationshipId,
+                                            otherEntityId: firstFlight.properties._id,
+                                        },
+                                    },
+                                    properties: ['_id', 'departureDate'],
+                                },
+                                {
+                                    instance: {
+                                        entityId: trip.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: thirdFlightOverlapping.properties._id,
+                                        },
+                                    },
+                                    properties: ['_id', 'departureDate'],
+                                },
+                            ],
+                        },
+                    ],
                 });
             });
 
-            it('Should ignore failed rule and create relationship', async () => {
+            it('Should ignore failed rule and create relationship of thirdFlight', async () => {
                 await createRelationshipAndExpectToSucceed(thirdFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, [
                     {
                         ruleId: noOverlappingFlightsInTrip._id,
-                        relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
+                        failures: [
+                            {
+                                entityId: trip.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: thirdFlightOverlapping.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 ]);
             });
 
             it('Should create a new fourth relationship because not overlapping', async () => {
-                const relationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: fourthFlightNotOverlapping.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
-                );
+                await createRelationshipAndExpectToSucceed(fourthFlightNotOverlapping, trip, tripConnectedToFlightRelationshipTemplate);
+            });
 
-                expect(relationship.templateId).toStrictEqual(tripConnectedToFlightRelationshipTemplate._id);
-                expect(relationship.sourceEntityId).toStrictEqual(fourthFlightNotOverlapping.properties._id);
-                expect(relationship.destinationEntityId).toStrictEqual(trip.properties._id);
+            it('Should fail to create a new relationship of fifthFlight because overlapping', async () => {
+                await createRelationshipAndExpectRuleBlock(fifthFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, {
+                    ruleId: noOverlappingFlightsInTrip._id,
+                    failures: [
+                        {
+                            entityId: trip.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: trip.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: secondRelationshipId,
+                                            otherEntityId: secondFlight.properties._id,
+                                        },
+                                    },
+                                    properties: ['_id', 'departureDate'],
+                                },
+                                {
+                                    instance: {
+                                        entityId: trip.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: fifthFlightOverlapping.properties._id,
+                                        },
+                                    },
+                                    properties: ['_id', 'departureDate'],
+                                },
+                            ],
+                        },
+                    ],
+                });
+            });
+
+            it('Should ignore failed rule and create relationship of fifthFlight', async () => {
+                await createRelationshipAndExpectToSucceed(fifthFlightOverlapping, trip, tripConnectedToFlightRelationshipTemplate, [
+                    {
+                        ruleId: noOverlappingFlightsInTrip._id,
+                        failures: [
+                            {
+                                entityId: trip.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondRelationshipId,
+                                                otherEntityId: secondFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: fifthFlightOverlapping.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
             });
         });
 
-        // todo: remove, rule is not relevant anymore
-        describe('Rule 3 - Warn On Every Flight On Active Zone', () => {
-            let flight: IEntity;
-            let trip: IEntity;
+        describe('Rule 3 - Warn On Every Flight Departure From Airport With Active Trip', () => {
+            let airport: IEntity;
+            let firstTrip: IEntity;
+            let secondTrip: IEntity;
+            let firstFlight: IEntity;
+            let secondFlight: IEntity;
+            let thirdFlight: IEntity;
+
+            let secondTripConnectedToAirportRelationshipId: string;
+            let firstFlightDepartureFromAirportRelationshipId: string;
 
             beforeAll(async () => {
-                const rules = [warnOnEveryFlightOnActiveZone];
+                const rules = [warnOnEveryFlightDepartureFromAirportWithActiveTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
-            });
-
-            beforeAll(async () => {
-                trip = await EntityManager.createEntity(
-                    {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                            active: true,
-                        },
-                    },
-                    tripEntityTemplate,
-                );
-
-                flight = await EntityManager.createEntity(
-                    {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
-                    },
-                    flightEntityTemplate,
-                );
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             afterAll(async () => {
                 await Neo4jClient.writeTransaction(
-                    `MATCH (e1 { _id: "${flight.properties._id}" })
-                    MATCH (e2 { _id: "${trip.properties._id}" })
-                    DETACH DELETE e1,e2`,
+                    `MATCH (e1 { _id: "${airport.properties._id}" })
+                    MATCH (e2 { _id: "${firstTrip.properties._id}" })
+                    MATCH (e3 { _id: "${secondTrip.properties._id}" })
+                    MATCH (e4 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e5 { _id: "${secondFlight.properties._id}" })
+                    MATCH (e6 { _id: "${thirdFlight.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4,e5,e6`,
                     () => {},
                 );
             });
 
-            it('Should fail to create a new relationship (because needs to warn on every flight)', async () => {
-                await createRelationshipAndExpectRuleBlock(flight, trip, tripConnectedToFlightRelationshipTemplate, {
-                    ruleId: warnOnEveryFlightOnActiveZone._id,
-                    relationshipIds: [config.createdRelationshipIdInBrokenRules],
+            beforeAll(async () => {
+                airport = await EntityManager.createEntity(
+                    {
+                        airportName: 'New York Airport',
+                        airportId: '1234',
+                        country: 'New York',
+                    },
+                    airportEntityTemplate,
+                    [],
+                );
+                firstTrip = await EntityManager.createEntity(
+                    {
+                        name: 'My trip1',
+                        destination: 'New York',
+                        startDate: '2022-05-01',
+                        endDate: '2022-05-01',
+                        active: false,
+                    },
+                    tripEntityTemplate,
+                    [],
+                );
+                secondTrip = await EntityManager.createEntity(
+                    {
+                        name: 'My trip2',
+                        destination: 'New York',
+                        startDate: '2022-05-02',
+                        endDate: '2022-05-02',
+                        active: false,
+                    },
+                    tripEntityTemplate,
+                    [],
+                );
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '1',
+                        departureDate: '2022-05-01T17:00:00.000Z',
+                        landingDate: '2022-05-01T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                );
+                secondFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '2',
+                        departureDate: '2022-05-02T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                );
+                thirdFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '3',
+                        departureDate: '2022-05-02T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                );
+            });
+
+            it('Should create relationship of firstFlight', async () => {
+                const firstFlightDepartureFromAirportRelationship = await createRelationshipAndExpectToSucceed(
+                    firstFlight,
+                    airport,
+                    departureFromRelationshipTemplate,
+                );
+                firstFlightDepartureFromAirportRelationshipId = firstFlightDepartureFromAirportRelationship.properties._id;
+            });
+
+            it('Should fail to create relationship of firstTrip because overlaps with firstFlight', async () => {
+                await createRelationshipAndExpectRuleBlock(airport, firstTrip, tripConnectedToAirportRelationshipTemplate, {
+                    ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                    failures: [
+                        {
+                            entityId: airport.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                            otherEntityId: firstFlight.properties._id,
+                                        },
+                                    },
+                                    properties: ['departureDate', 'landingDate'],
+                                },
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: firstTrip.properties._id,
+                                        },
+                                    },
+                                    properties: ['startDate', 'endDate'],
+                                },
+                            ],
+                        },
+                    ],
                 });
             });
+
+            it('Should ignore failed rule and create relationship of firstTrip', async () => {
+                await createRelationshipAndExpectToSucceed(airport, firstTrip, tripConnectedToAirportRelationshipTemplate, [
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate', 'landingDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: firstTrip.properties._id,
+                                            },
+                                        },
+                                        properties: ['startDate', 'endDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
+            });
+
+            it('Should create relationship of secondTrip', async () => {
+                const secondTripConnectedToAirportRelationship = await createRelationshipAndExpectToSucceed(
+                    airport,
+                    secondTrip,
+                    tripConnectedToAirportRelationshipTemplate,
+                );
+                secondTripConnectedToAirportRelationshipId = secondTripConnectedToAirportRelationship.properties._id;
+            });
+
+            it('Should fail to create relationship of secondFlight because overlaps with secondTrip', async () => {
+                await createRelationshipAndExpectRuleBlock(secondFlight, airport, departureFromRelationshipTemplate, {
+                    ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                    failures: [
+                        {
+                            entityId: airport.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: secondFlight.properties._id,
+                                        },
+                                    },
+                                    properties: ['departureDate', 'landingDate'],
+                                },
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: secondTripConnectedToAirportRelationshipId,
+                                            otherEntityId: secondTrip.properties._id,
+                                        },
+                                    },
+                                    properties: ['startDate', 'endDate'],
+                                },
+                            ],
+                        },
+                    ],
+                });
+            });
+
+            it('Should ignore failed rule and create relationship of secondFlight', async () => {
+                await createRelationshipAndExpectToSucceed(secondFlight, airport, departureFromRelationshipTemplate, [
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                otherEntityId: secondFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate', 'landingDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondTripConnectedToAirportRelationshipId,
+                                                otherEntityId: secondTrip.properties._id,
+                                            },
+                                        },
+                                        properties: ['startDate', 'endDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                ]);
+            });
+
+            it('Should fail to create relationship of thirdFlight because overlaps with secondTrip', async () => {
+                await createRelationshipAndExpectRuleBlock(thirdFlight, airport, departureFromRelationshipTemplate, {
+                    ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                    failures: [
+                        {
+                            entityId: airport.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: config.createdRelationshipIdInBrokenRules,
+                                            otherEntityId: thirdFlight.properties._id,
+                                        },
+                                    },
+                                    properties: ['departureDate', 'landingDate'],
+                                },
+                                {
+                                    instance: {
+                                        entityId: airport.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: secondTripConnectedToAirportRelationshipId,
+                                            otherEntityId: secondTrip.properties._id,
+                                        },
+                                    },
+                                    properties: ['startDate', 'endDate'],
+                                },
+                            ],
+                        },
+                    ],
+                });
+            }, 500000);
         });
     });
 
@@ -495,58 +877,50 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
                 firstTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name1',
-                            lastName: 'Name1',
-                            agentId: '1',
-                        },
+                        firstName: 'Name1',
+                        lastName: 'Name1',
+                        agentId: '1',
                     },
                     travelAgentEntityTemplate,
+                    [],
                 );
 
                 secondTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name2',
-                            lastName: 'Name2',
-                            agentId: '2',
-                        },
+                        firstName: 'Name2',
+                        lastName: 'Name2',
+                        agentId: '2',
                     },
                     travelAgentEntityTemplate,
+                    [],
                 );
 
                 thirdTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name3',
-                            lastName: 'Name3',
-                            agentId: '3',
-                        },
+                        firstName: 'Name3',
+                        lastName: 'Name3',
+                        agentId: '3',
                     },
                     travelAgentEntityTemplate,
+                    [],
                 );
 
                 flight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
+                        flightNumber: '1',
+                        departureDate: new Date().toISOString(),
+                        landingDate: new Date().toISOString(),
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -569,7 +943,38 @@ describe('Relationship manager test rules', () => {
                         destinationEntityId: flight.properties._id,
                     },
                     flightsOnRelationshipTemplate,
-                    [{ ruleId: oneTravelAgentPerFlight._id, relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId] }],
+                    [
+                        {
+                            ruleId: oneTravelAgentPerFlight._id,
+                            failures: [
+                                {
+                                    entityId: flight.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstRelationshipId,
+                                                    otherEntityId: firstTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: secondTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
                 );
                 secondRelationshipId = secondRelationship.properties._id;
 
@@ -584,7 +989,43 @@ describe('Relationship manager test rules', () => {
                     [
                         {
                             ruleId: oneTravelAgentPerFlight._id,
-                            relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId, secondRelationshipId],
+                            failures: [
+                                {
+                                    entityId: flight.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstRelationshipId,
+                                                    otherEntityId: firstTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: secondRelationshipId,
+                                                    otherEntityId: secondTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: thirdTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                 );
@@ -602,33 +1043,79 @@ describe('Relationship manager test rules', () => {
                 );
             });
 
-            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
-            // but in the future maybe should fail them, because they failed with a "different" reason (only 2 flights and not 3)
-            it.skip('Should fail to delete third relationship because still rule fails', async () => {
+            it('Should fail to delete third relationship because still rule fails in a different way', async () => {
                 await deleteRelationshipAndExpectRuleBlock(thirdRelationshipId, {
                     ruleId: oneTravelAgentPerFlight._id,
-                    relationshipIds: [firstRelationshipId, secondRelationshipId],
+                    failures: [
+                        {
+                            entityId: flight.properties._id,
+                            causes: [
+                                {
+                                    instance: {
+                                        entityId: flight.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: firstRelationshipId,
+                                            otherEntityId: firstTravelAgent.properties._id,
+                                        },
+                                    },
+                                    properties: [],
+                                },
+                                {
+                                    instance: {
+                                        entityId: flight.properties._id,
+                                        aggregatedRelationship: {
+                                            relationshipId: secondRelationshipId,
+                                            otherEntityId: secondTravelAgent.properties._id,
+                                        },
+                                    },
+                                    properties: [],
+                                },
+                            ],
+                        },
+                    ],
                 });
             });
 
-            // todo: currently we dont fail it, because it considers travelAgent1+2 as "old" brokenRules.
-            // but in the future maybe should fail them, because they failed with a "different" reason (only 2 flights and not 3)
-            it.skip('Should ignore failed rule and delete third relationship', async () => {
+            it('Should ignore failed rule and delete third relationship', async () => {
                 await deleteRelationshipAndExpectToSucceed(thirdRelationshipId, flightsOnRelationshipTemplate._id, thirdTravelAgent, flight, [
                     {
                         ruleId: oneTravelAgentPerFlight._id,
-                        relationshipIds: [firstRelationshipId, secondRelationshipId],
+                        failures: [
+                            {
+                                entityId: flight.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: flight.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstRelationshipId,
+                                                otherEntityId: firstTravelAgent.properties._id,
+                                            },
+                                        },
+                                        properties: [],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: flight.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondRelationshipId,
+                                                otherEntityId: secondTravelAgent.properties._id,
+                                            },
+                                        },
+                                        properties: [],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 ]);
             });
-            it('Should delete third relationship because rule passes', async () => {
-                await deleteRelationshipAndExpectToSucceed(thirdRelationshipId, flightsOnRelationshipTemplate._id, thirdTravelAgent, flight, []);
-            });
 
             it('Should delete second relationship because rule passes', async () => {
-                await deleteRelationshipAndExpectToSucceed(secondRelationshipId, flightsOnRelationshipTemplate._id, secondTravelAgent, flight, []);
+                await deleteRelationshipAndExpectToSucceed(secondRelationshipId, flightsOnRelationshipTemplate._id, secondTravelAgent, flight);
             });
         });
+
         describe('Rule 2 - No Overlapping Flights In Trip', () => {
             let trip: IEntity;
             let firstFlight: IEntity;
@@ -642,57 +1129,49 @@ describe('Relationship manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             beforeAll(async () => {
                 trip = await EntityManager.createEntity(
                     {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                        },
+                        name: 'My trip',
+                        destination: 'New York',
                     },
                     tripEntityTemplate,
+                    [],
                 );
 
                 firstFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: '2022-04-01T17:00:00.000Z',
-                            landingDate: '2022-04-01T19:00:00.000Z',
-                        },
+                        flightNumber: '1',
+                        departureDate: '2022-04-01T17:00:00.000Z',
+                        landingDate: '2022-04-01T19:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 secondFlightNotOverlapping = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '2',
-                            departureDate: '2022-04-20T17:00:00.000Z',
-                            landingDate: '2022-04-20T19:00:00.000Z',
-                        },
+                        flightNumber: '2',
+                        departureDate: '2022-04-20T17:00:00.000Z',
+                        landingDate: '2022-04-20T19:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 thirdFlightOverlapping = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '3',
-                            departureDate: '2022-04-01T08:00:00.000Z',
-                            landingDate: '2022-04-01T08:30:00.000Z',
-                        },
+                        flightNumber: '3',
+                        departureDate: '2022-04-01T08:00:00.000Z',
+                        landingDate: '2022-04-01T08:30:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -730,7 +1209,33 @@ describe('Relationship manager test rules', () => {
                     [
                         {
                             ruleId: noOverlappingFlightsInTrip._id,
-                            relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
+                            failures: [
+                                {
+                                    entityId: trip.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: trip.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstRelationshipId,
+                                                    otherEntityId: firstFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['_id', 'departureDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: trip.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: thirdFlightOverlapping.properties._id,
+                                                },
+                                            },
+                                            properties: ['_id', 'departureDate'],
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                 );
@@ -767,111 +1272,212 @@ describe('Relationship manager test rules', () => {
                 );
             });
         });
-        describe('Rule 3 - Warn On Every Flight On Active Zone', () => {
-            let trip: IEntity;
+
+        describe('Rule 3 - Warn On Every Flight Departure From Airport With Active Trip', () => {
+            let airport: IEntity;
+            let firstTrip: IEntity;
+            let secondTrip: IEntity;
             let firstFlight: IEntity;
             let secondFlight: IEntity;
 
-            let firstRelationshipId: string;
-            let secondRelationshipId: string;
+            let firstTripConnectedToAirportRelationshipId: string;
+            let secondFlightDepartureFromAirportRelationshipId: string;
 
             beforeAll(async () => {
-                const rules = [warnOnEveryFlightOnActiveZone];
+                const rules = [warnOnEveryFlightDepartureFromAirportWithActiveTrip];
 
-                mockRulesRoutes(mockRelationshipTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, allRelationshipTemplates);
-                mockEntityTemplatesRoutes(mockEntityTemplateManager, allEntityTemplates);
-            });
-
-            beforeAll(async () => {
-                trip = await EntityManager.createEntity(
-                    {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                            active: true,
-                        },
-                    },
-                    tripEntityTemplate,
-                );
-
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
-                    },
-                    flightEntityTemplate,
-                );
-
-                secondFlight = await EntityManager.createEntity(
-                    {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '2',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
-                    },
-                    flightEntityTemplate,
-                );
-
-                const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: firstFlight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [
-                        {
-                            ruleId: warnOnEveryFlightOnActiveZone._id,
-                            relationshipIds: [config.createdRelationshipIdInBrokenRules],
-                        },
-                    ],
-                );
-                firstRelationshipId = firstRelationship.properties._id;
-
-                const secondRelationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: secondFlight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [
-                        {
-                            ruleId: warnOnEveryFlightOnActiveZone._id,
-                            relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId],
-                        },
-                    ],
-                );
-                secondRelationshipId = secondRelationship.properties._id;
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
             afterAll(async () => {
                 await Neo4jClient.writeTransaction(
-                    `MATCH (e1 { _id: "${trip.properties._id}" })
-                    MATCH (e2 { _id: "${firstFlight.properties._id}" })
-                    MATCH (e3 { _id: "${secondFlight.properties._id}" })
-                    DETACH DELETE e1,e2,e3`,
+                    `MATCH (e1 { _id: "${airport.properties._id}" })
+                    MATCH (e2 { _id: "${firstTrip.properties._id}" })
+                    MATCH (e3 { _id: "${secondTrip.properties._id}" })
+                    MATCH (e4 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e5 { _id: "${secondFlight.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4,e5`,
                     () => {},
                 );
             });
 
-            it('Should delete second relationship because not related to existing other overlapping', async () => {
-                await deleteRelationshipAndExpectToSucceed(
-                    secondRelationshipId,
-                    tripConnectedToFlightRelationshipTemplate._id,
-                    secondFlight,
-                    trip,
+            beforeAll(async () => {
+                airport = await EntityManager.createEntity(
+                    {
+                        airportName: 'New York Airport',
+                        airportId: '1234',
+                        country: 'New York',
+                    },
+                    airportEntityTemplate,
                     [],
+                );
+                firstTrip = await EntityManager.createEntity(
+                    {
+                        name: 'My trip1',
+                        destination: 'New York',
+                        startDate: '2022-05-01',
+                        endDate: '2022-05-01',
+                        active: false,
+                    },
+                    tripEntityTemplate,
+                    [],
+                );
+                secondTrip = await EntityManager.createEntity(
+                    {
+                        name: 'My trip2',
+                        destination: 'New York',
+                        startDate: '2022-05-02',
+                        endDate: '2022-05-02',
+                        active: false,
+                    },
+                    tripEntityTemplate,
+                    [],
+                );
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '1',
+                        departureDate: '2022-05-01T17:00:00.000Z',
+                        landingDate: '2022-05-01T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                );
+                secondFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '2',
+                        departureDate: '2022-05-02T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                );
+
+                const firstTripConnectedToAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: tripConnectedToAirportRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: airport.properties._id,
+                        destinationEntityId: firstTrip.properties._id,
+                    },
+                    tripConnectedToAirportRelationshipTemplate,
+                    [],
+                );
+                firstTripConnectedToAirportRelationshipId = firstTripConnectedToAirportRelationship.properties._id;
+
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: departureFromRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: firstFlight.properties._id,
+                        destinationEntityId: airport.properties._id,
+                    },
+                    departureFromRelationshipTemplate,
+                    [
+                        {
+                            ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                            failures: [
+                                {
+                                    entityId: airport.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: firstFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['departureDate', 'landingDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstTripConnectedToAirportRelationshipId,
+                                                    otherEntityId: firstTrip.properties._id,
+                                                },
+                                            },
+                                            properties: ['startDate', 'endDate'],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                );
+
+                const secondFlightDepartureFromAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: departureFromRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: secondFlight.properties._id,
+                        destinationEntityId: airport.properties._id,
+                    },
+                    departureFromRelationshipTemplate,
+                    [],
+                );
+                secondFlightDepartureFromAirportRelationshipId = secondFlightDepartureFromAirportRelationship.properties._id;
+
+                await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: tripConnectedToAirportRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: airport.properties._id,
+                        destinationEntityId: secondTrip.properties._id,
+                    },
+                    tripConnectedToAirportRelationshipTemplate,
+                    [
+                        {
+                            ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                            failures: [
+                                {
+                                    entityId: airport.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: secondFlightDepartureFromAirportRelationshipId,
+                                                    otherEntityId: secondFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['departureDate', 'landingDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: secondTrip.properties._id,
+                                                },
+                                            },
+                                            properties: ['startDate', 'endDate'],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                );
+            }, 500000);
+
+            it('Should delete firstTrip relationship because only old causes exist', async () => {
+                await deleteRelationshipAndExpectToSucceed(
+                    firstTripConnectedToAirportRelationshipId,
+                    tripConnectedToAirportRelationshipTemplate._id,
+                    airport,
+                    firstTrip,
+                );
+            });
+
+            it('Should delete secondFlight relationship because now no overlapping exist', async () => {
+                await deleteRelationshipAndExpectToSucceed(
+                    secondFlightDepartureFromAirportRelationshipId,
+                    departureFromRelationshipTemplate._id,
+                    secondFlight,
+                    airport,
                 );
             });
         });

@@ -13,26 +13,18 @@ import {
     Typography,
 } from '@mui/material';
 import i18next from 'i18next';
-import type { Dictionary } from 'lodash';
 import React from 'react';
 import { toast } from 'react-toastify';
-import { IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { EntityWizardValues } from '..';
 import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 
-interface IFormValues {
-    properties: IEntity['properties'];
-    attachmentsProperties: Dictionary<any>;
-    template: IMongoEntityTemplatePopulated;
-}
-
-export type Draft = IFormValues & { uniqueId: string; lastSavedAt: Date };
+export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date };
 
 export const DraftSaveDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     closeCreateOrEditDialog: () => void;
-    values: IFormValues;
+    values: EntityWizardValues;
     isLoading?: boolean;
     isEditMode: boolean;
     originalDrafts: DraftsState['drafts'];

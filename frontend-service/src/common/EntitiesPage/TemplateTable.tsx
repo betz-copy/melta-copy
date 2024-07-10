@@ -218,12 +218,9 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode={!draftId}
                     entityTemplate={template}
-                    entity={editDialog.entity!}
-                    onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    entityToUpdate={editDialog.entity!}
+                    onSuccessUpdate={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity)}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
             </Dialog>
         </Grid>
