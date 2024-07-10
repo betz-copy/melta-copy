@@ -142,7 +142,7 @@ class ProcessInstanceManager {
         ...restOfQuery
     }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
-        let processes;
+        let processes: IMongoProcessInstancePopulated[] = [];
         let processIds: string[] = [];
         if (archived !== undefined) query.archived = archived;
         if (templateIds) query.templateId = { $in: templateIds };
@@ -159,14 +159,13 @@ class ProcessInstanceManager {
             query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
         }
 
-        // eslint-disable-next-line prefer-const
         processes = await ProcessInstanceModel.find(query, {}, processIds ? { limit, skip, sort: { createdAt: -1 } } : {})
             .populate(config.processFields.steps)
-            .lean()
-            .exec();
-        if (processIds) {
-            processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
-        }
+            .orFail(new ServiceError(500, 'No processes found'))
+            .lean();
+
+        if (processIds) processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
+
         return processes;
     }
 

@@ -24,7 +24,7 @@ class ElasticClient {
             });
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
-            logger.error('Error initializing ElasticSearch client:', error);
+            logger.error('Error initializing ElasticSearch client:', { error });
             throw error;
         }
     }

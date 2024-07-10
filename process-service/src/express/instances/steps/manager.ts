@@ -43,7 +43,7 @@ export default class StepInstanceManager {
     }
 
     static async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
-        let updatedStep;
+        let updatedStep: IMongoStepInstance;
         const currProcess = await ProcessInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
@@ -56,30 +56,24 @@ export default class StepInstanceManager {
                 {
                     new: true,
                 },
-            );
+            )
+                .orFail(new NotFoundError('step', id))
+                .lean();
         } else {
             const currStep = await StepInstanceManager.getStepById(id);
             const updatedProcessStatus = ProcessInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
-            if (currProcess.status === updatedProcessStatus) {
-                updatedStep = await StepInstanceModel.findByIdAndUpdate(
+
+            updatedStep = await transaction(async (session) => {
+                if (currProcess.status !== updatedProcessStatus) await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
+
+                return StepInstanceModel.findByIdAndUpdate(
                     id,
                     { properties, comments, ...statusReview, reviewedAt: new Date() },
-                    { new: true },
+                    { new: true, session },
                 )
                     .orFail(new NotFoundError('step', id))
                     .lean();
-            } else {
-                updatedStep = await transaction(async (session) => {
-                    await ProcessInstanceManager.updateStatus(processId, updatedProcessStatus, session);
-                    return StepInstanceModel.findByIdAndUpdate(
-                        id,
-                        { properties, comments, ...statusReview, reviewedAt: new Date() },
-                        { new: true, session },
-                    )
-                        .orFail(new NotFoundError('step', id))
-                        .lean();
-                });
-            }
+            });
         }
         const updatedProcess = await ProcessInstanceManager.getProcessById(processId, true);
         await updateDocumentOnElastic(updatedProcess);
