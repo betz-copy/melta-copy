@@ -245,15 +245,20 @@ const ConnectionsTable: React.FC<{
                                   destinationEntity: IEntity;
                               },
                     ) => {
-                        console.log({ connection });
+                        console.log('getRowId', { connection });
 
-                        // if ('relationship' in connection) connection.relationship.properties._id;
-                        // return expandedEntity.connections.find(
-                        //     (connection) =>
-                        //         connection.destinationEntity.properties._id === (connection as IEntity).properties._id ||
-                        //         connection.sourceEntity.properties._id === (connection as IEntity).properties._id,
-                        // );
-                        return connection.relationship.properties._id;
+                        if ('relationship' in connection) {
+                            return connection.relationship.properties._id;
+                        }
+
+                        const foundConnection = expandedEntity.connections.find(
+                            (conn) =>
+                                conn.destinationEntity?.properties?._id === (connection as IEntity).properties?._id ||
+                                conn.sourceEntity?.properties?._id === (connection as IEntity).properties?._id,
+                        );
+                        console.log({ foundConnection });
+
+                        return foundConnection ? foundConnection.destinationEntity.properties._id : undefined;
                     }}
                     getEntityPropertiesData={(
                         connection:
@@ -264,6 +269,8 @@ const ConnectionsTable: React.FC<{
                                   destinationEntity: IEntity;
                               },
                     ) => {
+                        console.log('getEntityPropertiesData', { connection });
+
                         if ('relationship' in connection) {
                             if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
                                 return connection.sourceEntity.properties;
