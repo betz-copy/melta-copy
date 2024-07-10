@@ -28,7 +28,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
-const getDbName = async (req: Request) => {
+export const getDbName = async (req: Request) => {
     const workspaceId = req.headers[workspaceHeaderName];
 
     if (typeof workspaceId !== 'string') throw new InvalidWorkspaceHeaderError();
@@ -38,7 +38,7 @@ const getDbName = async (req: Request) => {
 };
 
 export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(controller: {
-    new (dbName: string, userId?: string): T;
+    new (dbName: string, userId: string): T;
 }) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {

@@ -15,7 +15,6 @@ import {
     validateUserCanReadEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
-import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import { InstancesController } from './controller';
 import {
     createEntityInstanceSchema,
@@ -28,6 +27,7 @@ import {
     updateEntityStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
+import { Authorizer } from '../../utils/authorizer';
 
 const { instanceService } = config;
 
@@ -40,6 +40,7 @@ const InstanceManagerProxy = createWorkspacesProxyMiddleware({
 const InstancesRouter: Router = Router();
 
 const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 // entities (Instances)
 InstancesRouter.post(
@@ -99,7 +100,7 @@ InstancesRouter.patch(
 );
 
 // relationships (Instances)
-InstancesRouter.get('/relationships/count', wrapMiddleware(validateUserIsTemplatesManager), InstanceManagerProxy);
+InstancesRouter.get('/relationships/count', AuthorizerControllerMiddleware('userCanReadTemplates'), InstanceManagerProxy);
 InstancesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipSchema),

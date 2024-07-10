@@ -31,7 +31,7 @@ export class PermissionsManager {
         userId: string,
         permissionsCompact: ICompactNullablePermissions | ICompactPermissions,
     ): Promise<ICompactPermissions> {
-        UsersManager.getUserById(userId); // Validate user exists
+        await UsersManager.getUserById(userId); // Validate user exists
 
         const updatedWorkspacesIds: string[] = [];
 

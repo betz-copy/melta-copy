@@ -1,8 +1,10 @@
 import { Request } from 'express';
+import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IGantt, GanttsService } from '../../externalServices/ganttsService';
+import { UserService } from '../../externalServices/userService';
+import { getDbName } from '../../utils/express';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
-import PermissionsManager from '../permissions/manager';
 
 const validateHasPermissionsToGanttItems = async (gantt: IGantt, allowedEntityTemplateIds: string[]) => {
     const unauthorizedTemplates = gantt.items
@@ -16,33 +18,51 @@ const validateHasPermissionsToGanttItems = async (gantt: IGantt, allowedEntityTe
     }
 };
 
-export const validateUserHasPermissionsToGantt = async (userId: string, newGantt: IGantt | undefined, existingGanttId: string | undefined) => {
-    const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
+export const validateUserHasPermissionsToGantt = async (
+    entityTemplateService: EntityTemplateService,
+    ganttsService: GanttsService,
+    userId: string,
+    newGantt: IGantt | undefined,
+    existingGanttId: string | undefined,
+) => {
+    const userPermissions = await UserService.getUserPermissions(userId);
 
     if (!userPermissions.templatesManagementId) {
         throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete gantts` });
     }
 
-    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
+    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(entityTemplateService, userPermissions);
     const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
     if (newGantt) {
         await validateHasPermissionsToGanttItems(newGantt, allowedEntityTemplateIds);
     }
     if (existingGanttId) {
-        const existingGantt = await GanttsService.getGanttById(existingGanttId);
+        const existingGantt = await ganttsService.getGanttById(existingGanttId);
         await validateHasPermissionsToGanttItems(existingGantt, allowedEntityTemplateIds);
     }
 };
 
 export const validateUserCanCreateGantt = async (req: Request) => {
-    await validateUserHasPermissionsToGantt(req.user!.id, req.body, undefined);
+    const dbName = await getDbName(req);
+    const entityTemplateService = new EntityTemplateService(dbName);
+    const ganttsService = new GanttsService(dbName);
+
+    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, req.body, undefined);
 };
 
 export const validateUserCanUpdateGantt = async (req: Request) => {
-    await validateUserHasPermissionsToGantt(req.user!.id, req.body, req.params.ganttId);
+    const dbName = await getDbName(req);
+    const entityTemplateService = new EntityTemplateService(dbName);
+    const ganttsService = new GanttsService(dbName);
+
+    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, req.body, req.params.ganttId);
 };
 
 export const validateUserCanDeleteGantt = async (req: Request) => {
-    await validateUserHasPermissionsToGantt(req.user!.id, undefined, req.params.ganttId);
+    const dbName = await getDbName(req);
+    const entityTemplateService = new EntityTemplateService(dbName);
+    const ganttsService = new GanttsService(dbName);
+
+    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, undefined, req.params.ganttId);
 };

@@ -13,7 +13,6 @@ import { StorageService } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
-import PermissionsManager from '../permissions/manager';
 import config from '../../config';
 import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
@@ -22,8 +21,6 @@ import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraintsPopulated } from './interfaces';
 import { ProcessService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { isProcessManager } from '../../externalServices/permissionsService';
-import { IPermissionsOfUser } from '../permissions/interfaces';
 import DefaultManagerProxy from '../../utils/express/manager';
 
 const {
@@ -144,17 +141,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // all
     async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allCategories = await this.getAllCategories();
+        const [allCategories, allowedEntityTemplates] = await Promise.all([
+            this.getAllCategories(),
+            this.getAllowedEntitiesTemplates(permissionsOfUserId),
+        ]);
 
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
-        const allowedRelationshipsTemplatesBySource = await this.relationshipTemplateService.searchRelationshipTemplates({
-            sourceEntityIds: allowedEntityTemplatesIds,
-        });
-        const allowedRelationshipsTemplatesByDestination = await this.relationshipTemplateService.searchRelationshipTemplates({
-            destinationEntityIds: allowedEntityTemplatesIds,
-        });
+        const [allowedRelationshipsTemplatesBySource, allowedRelationshipsTemplatesByDestination] = await Promise.all([
+            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: allowedEntityTemplatesIds }),
+            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: allowedEntityTemplatesIds }),
+        ]);
+
         const allowedRelationshipsTemplates = lodashUniqby(
             [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
             '_id',
@@ -166,28 +164,28 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             allowedEntityTemplatesIds,
         );
 
-        const allowedEntityTemplatesByOneRelationship = await this.entityTemplateService.searchEntityTemplates({
-            ids: allowedEntityTemplatesIdsByOneRelationship,
-        });
+        const [
+            allowedEntityTemplatesByOneRelationship,
+            { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules },
+            processTemplatesBeforePopulate,
+        ] = await Promise.all([
+            this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
+            this.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
+            this.processService.searchProcessTemplates((await isProcessManager(userId)) ? {} : { reviewerId: userId }),
+        ]);
 
-        const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } = await this.getAllowedRules(
-            allowedRelationshipsTemplates,
-            allowedEntityTemplatesIdsByOneRelationship,
-        );
-
-        const allAllowedEntityTemplates = [
-            ...allowedEntityTemplates,
-            ...allowedEntityTemplatesByOneRelationship,
-            ...allowedEntityTemplatesBecauseOfRules,
-        ];
-
-        const allAllowedEntityTemplatesWithConstraints = await this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
-        const processTemplatesBeforePopulate = await this.processService.searchProcessTemplates(
-            (await isProcessManager(userId)) ? {} : { reviewerId: userId },
-        );
-        const processTemplates = await Promise.all(
-            processTemplatesBeforePopulate.map((processTemplate) => ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
-        );
+        const [allAllowedEntityTemplatesWithConstraints, processTemplates] = await Promise.all([
+            this.getAndPopulateAllTemplatesConstraints([
+                ...allowedEntityTemplates,
+                ...allowedEntityTemplatesByOneRelationship,
+                ...allowedEntityTemplatesBecauseOfRules,
+            ]),
+            Promise.all(
+                processTemplatesBeforePopulate.map((processTemplate) =>
+                    ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate),
+                ),
+            ),
+        ]);
 
         return {
             categories: allCategories,
@@ -202,12 +200,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
-        const allowedRelationshipsTemplatesBySource = await this.relationshipTemplateService.searchRelationshipTemplates({
-            sourceEntityIds: allowedEntityTemplatesIds,
-        });
-        const allowedRelationshipsTemplatesByDestination = await this.relationshipTemplateService.searchRelationshipTemplates({
-            destinationEntityIds: allowedEntityTemplatesIds,
-        });
+        const [allowedRelationshipsTemplatesBySource, allowedRelationshipsTemplatesByDestination] = await Promise.all([
+            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: allowedEntityTemplatesIds }),
+            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: allowedEntityTemplatesIds }),
+        ]);
 
         const allowedEntityTemplatesIdsByOneRelationship = TemplatesManager.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             allowedRelationshipsTemplatesBySource,

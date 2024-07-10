@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import multer = require('multer');
+import multer from 'multer';
 import config from '../../config';
-import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
+import { Authorizer } from '../../utils/authorizer';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { validateUserHasAtLeastSomePermissions, validateUserIsRulesManager } from '../permissions/validateAuthorizationMiddleware';
 import RuleBreachesController from './controller';
 import {
     approveRuleBreachRequestRequestSchema,
@@ -19,61 +19,62 @@ import {
 const RulesBreachesRouter: Router = Router();
 
 const RulesBreachesControllerMiddleware = createWorkspacesController(RuleBreachesController);
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 RulesBreachesRouter.post(
     '/requests',
     multer({ dest: config.service.uploadsFolderPath }).any(),
     ValidateRequest(createRuleBreachRequestRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('createRuleBreachRequest'),
 );
 
 RulesBreachesRouter.post(
     '/requests/:ruleBreachRequestId/approve',
     ValidateRequest(approveRuleBreachRequestRequestSchema),
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('approveRuleBreachRequest'),
 );
 
 RulesBreachesRouter.post(
     '/requests/:ruleBreachRequestId/deny',
     ValidateRequest(denyRuleBreachRequestRequestSchema),
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware('userCanWriteRules'),
     RulesBreachesControllerMiddleware('denyRuleBreachRequest'),
 );
 
 RulesBreachesRouter.post(
     '/requests/:ruleBreachRequestId/cancel',
     ValidateRequest(cancelRuleBreachRequestRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('cancelRuleBreachRequest'),
 );
 
 RulesBreachesRouter.post(
     '/requests/search',
     ValidateRequest(searchRuleBreachRequestsRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('searchRuleBreachRequests'),
 );
 
 RulesBreachesRouter.post(
     '/alerts/search',
     ValidateRequest(searchRuleBreachAlertsRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('searchRuleBreachAlerts'),
 );
 
 RulesBreachesRouter.get(
     '/requests/:ruleBreachRequestId',
     ValidateRequest(getRuleBreachRequestByIdRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('getRuleBreachRequestsById'),
 );
 
 RulesBreachesRouter.get(
     '/alerts/:ruleBreachAlertId',
     ValidateRequest(getRuleBreachAlertByIdRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('getRuleBreachAlertsById'),
 );
 

@@ -1,13 +1,12 @@
-/* eslint-disable no-param-reassign */
 import { Request } from 'express';
-import { ServiceError, UserNotAuthorizedError } from '../express/error';
-import { IUser } from '../externalServices/userService/interfaces/users';
-import { ICompact, IPermission, ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
-import DefaultController from './express/controller';
-import { UserService } from '../externalServices/userService';
-import { WorkspaceService } from '../express/workspaces/service';
 import { typedObjectEntries } from '.';
+import { UserNotAuthorizedError } from '../express/error';
+import { WorkspaceService } from '../express/workspaces/service';
+import { UserService } from '../externalServices/userService';
 import { PermissionScope, PermissionType } from '../externalServices/userService/interfaces/permissions';
+import { ICompact, IPermission, ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
+import { wrapMiddleware } from './express';
+import DefaultController from './express/controller';
 
 export class Authorizer extends DefaultController {
     private workspaceId: string;
@@ -18,14 +17,16 @@ export class Authorizer extends DefaultController {
         super(undefined);
         this.workspaceId = dbname;
 
-        this.workspacePermissions = Authorizer.getWorkspacePermissions(dbname, userId);
+        Authorizer.getWorkspacePermissions(dbname, userId).then((permissions) => {
+            this.workspacePermissions = permissions;
+        });
     }
 
     private static async getWorkspacePermissions(workspaceId: string, userId: string): Promise<ISubCompactPermissions> {
-        const workspace = await WorkspaceService.getById(this.workspaceId);
+        const workspace = await WorkspaceService.getById(workspaceId);
 
         const workspaceHierarchyIds = workspace.path.split('/');
-        workspaceHierarchyIds.push(this.workspaceId);
+        workspaceHierarchyIds.push(workspaceId);
 
         const permissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
 
@@ -74,35 +75,59 @@ export class Authorizer extends DefaultController {
         return original;
     }
 
-    // private async authorizeUser(userId: string, authPermissions: ISubCompactPermissions) {
-    //     const workspace = await WorkspaceService.getById(this.workspaceId);
+    private async authorizeUser(userId: string, authPermissions: ISubCompactPermissions) {
+        const workspace = await WorkspaceService.getById(this.workspaceId);
 
-    //     const workspaceHierarchyIds = workspace.path.split('/');
-    //     workspaceHierarchyIds.push(this.workspaceId);
+        const workspaceHierarchyIds = workspace.path.split('/');
+        workspaceHierarchyIds.push(this.workspaceId);
 
-    //     const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
+        const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
 
-    //     typedObjectEntries(authPermissions).forEach(([type, permission]) => {
-    //         if (!userPermissions[this.workspaceId][type]) throw new UserNotAuthorizedError();
-    //     });
-    // }
+        typedObjectEntries(authPermissions).forEach(([type, permission]) => {
+            if (!userPermissions[this.workspaceId][type]) throw new UserNotAuthorizedError();
+        });
+    }
 
-    // private async authirizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
+    // private async authorizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
 
-    // async userHasSomePermissions(req: Request) {
-    //     const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
-    //     if (!userWorkspacePermissions) throw new UserNotAuthorizedError();
-    // }
+    async userHasSomePermissions(req: Request) {
+        const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
+        if (!userWorkspacePermissions) throw new UserNotAuthorizedError();
+    }
 
-    // private wrapAuthMiddleware(authPermissions: ISubCompactPermissions) {
-    //     return async (req: Request) => this.authorizeUser(req.user!.id, authPermissions);
-    // }
+    private async wrapAuthMiddleware(authPermissions: ISubCompactPermissions) {
+        return wrapMiddleware((req) => this.authorizeUser(req.user!.id, authPermissions));
+    }
 
-    // userCanWriteProcesses = this.wrapAuthMiddleware({ [PermissionType.processes]: { scope: PermissionScope.write } });
+    async userCanWriteProcesses() {
+        this.wrapAuthMiddleware({ [PermissionType.processes]: { scope: PermissionScope.write } });
+    }
 
-    // userCanWriteTemplates = this.wrapAuthMiddleware({ [PermissionType.templates]: { scope: PermissionScope.write } });
+    async userCanReadProcesses() {
+        this.wrapAuthMiddleware({ [PermissionType.processes]: { scope: PermissionScope.read } });
+    }
 
-    // userCanWritePermissions = this.wrapAuthMiddleware({ [PermissionType.permissions]: { scope: PermissionScope.write } });
+    async userCanWriteTemplates() {
+        this.wrapAuthMiddleware({ [PermissionType.templates]: { scope: PermissionScope.write } });
+    }
 
-    // userCanWriteTemplatesRules = this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.write } });
+    async userCanReadTemplates() {
+        this.wrapAuthMiddleware({ [PermissionType.templates]: { scope: PermissionScope.read } });
+    }
+
+    async userCanWritePermissions() {
+        this.wrapAuthMiddleware({ [PermissionType.permissions]: { scope: PermissionScope.write } });
+    }
+
+    async userCanReadPermissions() {
+        this.wrapAuthMiddleware({ [PermissionType.permissions]: { scope: PermissionScope.read } });
+    }
+
+    async userCanWriteRules() {
+        this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.write } });
+    }
+
+    async userCanReadRules() {
+        this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.read } });
+    }
 }

@@ -17,7 +17,6 @@ import {
     Status,
 } from '../../../externalServices/processService/interfaces/processInstance';
 import config from '../../../config';
-import { isProcessManager } from '../../../externalServices/permissionsService';
 import DefaultManagerProxy from '../../../utils/express/manager';
 
 const { internalSearchPullLimit } = config.processService;

@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { createWorkspacesProxyMiddleware, wrapMiddleware } from '../utils/express';
-import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
+import { createWorkspacesController, createWorkspacesProxyMiddleware } from '../utils/express';
 import { usersRouter } from './users/router';
 import templatesRouter from './templates/router';
 import processesRouter from './processes/router';
@@ -12,6 +11,9 @@ import RulesBreachesRouter from './ruleBreaches/router';
 import GanttsRouter from './gantts/router';
 import { workspaceRouter } from './workspaces/router';
 import config from '../config';
+import { Authorizer } from '../utils/authorizer';
+
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 const apiRouter = Router();
 
@@ -27,13 +29,13 @@ apiRouter.use('/instances', instancesRouter);
 
 apiRouter.use(
     '/files',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     createWorkspacesProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(
     '/preview',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody }),
 );
 

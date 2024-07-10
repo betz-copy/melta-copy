@@ -2,11 +2,6 @@ import { Router } from 'express';
 import { fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
-import {
-    validateUserHasAtLeastSomePermissions,
-    validateUserIsRulesManager,
-    validateUserIsTemplatesManager,
-} from '../permissions/validateAuthorizationMiddleware';
 import TemplatesController from './controller';
 import {
     validateUserCanCreateEntityTemplateUnderCategory,
@@ -31,6 +26,7 @@ import {
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
+import { Authorizer } from '../../utils/authorizer';
 
 const {
     entityTemplateService: entityTemplateManager,
@@ -53,30 +49,31 @@ const RelationshipTemplatesManagerProxy = createWorkspacesProxyMiddleware({
 const templatesRouter: Router = Router();
 
 const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 // all needed categories
-templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions), templatesControllerMiddleware('getAllAllowedTemplates'));
+templatesRouter.get('/all', AuthorizerControllerMiddleware('userHasSomePermissions'), templatesControllerMiddleware('getAllAllowedTemplates'));
 
 // categories
-templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), EntityTemplatesManagerProxy);
+templatesRouter.get('/categories', AuthorizerControllerMiddleware('userHasSomePermissions'), EntityTemplatesManagerProxy);
 templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
+    AuthorizerControllerMiddleware('userCanWriteTemplates'),
     templatesControllerMiddleware('createCategory'),
 );
 templatesRouter.put(
     '/categories/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
+    AuthorizerControllerMiddleware('userCanWriteTemplates'),
     templatesControllerMiddleware('updateCategory'),
 );
 templatesRouter.delete(
     '/categories/:id',
     ValidateRequest(deleteCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
+    AuthorizerControllerMiddleware('userCanWriteTemplates'),
     templatesControllerMiddleware('deleteCategory'),
 );
 
@@ -128,19 +125,19 @@ templatesRouter.delete(
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware('userCanWriteRules'), RelationshipTemplatesManagerProxy);
 templatesRouter.patch(
     '/rules/:ruleId/status',
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware('userCanWriteRules'),
     ValidateRequest(updateRuleStatusByIdRequestSchema),
     templatesControllerMiddleware('updateRuleStatusById'),
 );
 templatesRouter.delete(
     '/rules/:ruleId',
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware('userCanWriteRules'),
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware('deleteRuleById'),
 );
-templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.post('/rules', AuthorizerControllerMiddleware('userCanWriteRules'), RelationshipTemplatesManagerProxy);
 
 export default templatesRouter;

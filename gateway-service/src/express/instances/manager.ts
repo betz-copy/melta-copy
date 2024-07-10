@@ -35,11 +35,17 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private storageService: StorageService;
 
+    private ruleBreachesManager: RuleBreachesManager;
+
+    private instancesManager: InstancesManager;
+
     constructor(dbName: string) {
         super(new InstancesService(dbName));
         this.entityTemplateService = new EntityTemplateService(dbName);
         this.activityLogService = new ActivityLogService(dbName);
         this.storageService = new StorageService(dbName);
+        this.ruleBreachesManager = new RuleBreachesManager(dbName);
+        this.instancesManager = new InstancesManager(dbName);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -127,7 +133,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 filter,
                 sort,
             });
-            const rows = await fixFileProperties(
+            const rows = fixFileProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );
@@ -214,10 +220,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const entity = await this.service.updateEntityStatus(id, disabledStatus, ignoredRules).catch(InstancesManager.handleBrokenRulesError);
+        const entity = await this.service
+            .updateEntityStatus(id, disabledStatus, ignoredRules)
+            .catch((err) => this.instancesManager.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
+            await this.ruleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
                 {
                     brokenRules: ignoredRules,
                     actionType: ActionTypes.UpdateStatus,
@@ -301,7 +309,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 ignoredRules,
             )
-            .catch(InstancesManager.handleBrokenRulesError);
+            .catch((err) => this.instancesManager.handleBrokenRulesError(err));
         await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             console.log(`failed to delete files of instanceId ${id}`),
         );
@@ -338,7 +346,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
+            await this.ruleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
                 {
                     brokenRules: ignoredRules,
                     actionType: ActionTypes.UpdateEntity,
@@ -393,10 +401,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
         const createdRelationship = await this.service
             .createRelationshipInstance(relationship, ignoredRules)
-            .catch(InstancesManager.handleBrokenRulesError);
+            .catch((err) => this.instancesManager.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
+            await this.ruleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
                 {
                     brokenRules: ignoredRules,
                     actionType: ActionTypes.CreateRelationship,
@@ -437,10 +445,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
         const relationship = await this.service
             .deleteRelationshipInstance(relationshipId, ignoredRules)
-            .catch(InstancesManager.handleBrokenRulesError);
+            .catch((err) => this.instancesManager.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
+            await this.ruleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
                 {
                     brokenRules: ignoredRules,
                     actionType: ActionTypes.DeleteRelationship,
@@ -479,13 +487,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return relationship;
     }
 
-    static async handleBrokenRulesError(error: any): Promise<never> {
+    async handleBrokenRulesError(error: any): Promise<never> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules } = error.response.data.metadata;
 
             throw new ServiceError(400, error.message, {
                 errorCode: errorCodes.ruleBlock,
-                brokenRules: await RuleBreachesManager.populateBrokenRules(brokenRules),
+                brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
             });
         }

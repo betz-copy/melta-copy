@@ -3,17 +3,18 @@ import { GanttController } from './controller';
 import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
-import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCanUpdateGantt } from './middlewares';
+import { Authorizer } from '../../utils/authorizer';
 
 const GanttsRouter: Router = Router();
 
 const GanttsControllerMiddleware = createWorkspacesController(GanttController);
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 GanttsRouter.get(
     '/:ganttId',
     ValidateRequest(getGanttByIdSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     GanttsControllerMiddleware('getGanttById'),
 );
 GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), GanttsControllerMiddleware('createGantt'));
@@ -32,7 +33,7 @@ GanttsRouter.put(
 GanttsRouter.post(
     '/search',
     ValidateRequest(searchGanttsSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     GanttsControllerMiddleware('searchGantts'),
 );
 

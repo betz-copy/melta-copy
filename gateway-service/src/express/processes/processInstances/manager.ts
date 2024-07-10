@@ -22,14 +22,12 @@ import {
     IProcessStatusUpdateNotificationMetadata,
     NotificationType,
 } from '../../../externalServices/notificationService/interfaces';
-import { getPermissions, isProcessManager } from '../../../externalServices/permissionsService';
 import { filteredMap } from '../../../utils';
 import { IGenericStepPopulated } from '../../../externalServices/processService/interfaces';
 import { IMongoStepInstance } from '../../../externalServices/processService/interfaces/stepInstance';
 import { InstancesService } from '../../../externalServices/instanceService';
 import { EntityNotExist, NotFoundError } from '../error';
 import { EntityTemplateService } from '../../../externalServices/entityTemplateService';
-import PermissionsManager from '../../permissions/manager';
 import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { RabbitManager } from '../../../utils/rabbit';
@@ -41,6 +39,7 @@ import {
 } from '../../../externalServices/notificationService/interfaces/populated';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
 import DefaultManagerProxy from '../../../utils/express/manager';
+import { UserService } from '../../../externalServices/userService';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -75,7 +74,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (entityProperties.length === 0) return properties;
 
-        const userPermissionPromise = PermissionsManager.getPermissionsOfUserId(userId);
+        const userPermissionPromise = await UserService.getUserPermissions(userId);
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
@@ -477,7 +476,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     private static getReviewerStepIds(steps: IGenericStepPopulated[], userId: string) {
         return filteredMap(steps, (step) => ({
-            include: step.reviewers.some(({ id }) => id === userId),
+            include: step.reviewers.some(({ _id }) => _id === userId),
             value: step._id,
         }));
     }
@@ -491,7 +490,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         }
 
         steps.forEach(({ reviewers }) => {
-            reviewers.forEach(({ id }) => reviewersIds.add(id));
+            reviewers.forEach(({ _id }) => reviewersIds.add(_id));
         });
 
         return Array.from(reviewersIds);

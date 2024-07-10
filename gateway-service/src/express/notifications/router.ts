@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
+import { Authorizer } from '../../utils/authorizer';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import NotificationsController from './controller';
 import {
     getMyNotificationCountRequestSchema,
@@ -14,38 +14,39 @@ import {
 const notificationsRouter: Router = Router();
 
 const NotificationsControllerMiddleware = createWorkspacesController(NotificationsController);
+const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 notificationsRouter.get(
     '/my',
     ValidateRequest(getMyNotificationsRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     NotificationsControllerMiddleware('getMyNotifications'),
 );
 
 notificationsRouter.get(
     '/my/count',
     ValidateRequest(getMyNotificationCountRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     NotificationsControllerMiddleware('getMyNotificationCount'),
 );
 notificationsRouter.post(
     '/my/group-count',
     ValidateRequest(getMyNotificationGroupCountRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     NotificationsControllerMiddleware('getMyNotificationGroupCount'),
 );
 
 notificationsRouter.post(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     NotificationsControllerMiddleware('notificationsSeen'),
 );
 
 notificationsRouter.post(
     '/seen',
     ValidateRequest(manyNotificationSeenRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     NotificationsControllerMiddleware('manyNotificationsSeen'),
 );
 

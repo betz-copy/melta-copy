@@ -7,7 +7,7 @@ import {
     IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '.';
-import { IUser } from '../../../express/users/interface';
+import { IUser } from '../../userService/interfaces/users';
 import { IEntity } from '../../instanceService/interfaces/entities';
 import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 

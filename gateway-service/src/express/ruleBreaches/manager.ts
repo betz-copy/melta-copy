@@ -4,7 +4,6 @@ import { EntityTemplateService } from '../../externalServices/entityTemplateServ
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IConnection } from '../../externalServices/instanceService/interfaces/rules';
 import { InstancesService } from '../../externalServices/instanceService';
-import { getPermissions, isRuleManager } from '../../externalServices/permissionsService';
 import { StorageService } from '../../externalServices/storageService';
 import { filteredMap, trycatch } from '../../utils';
 import { ServiceError } from '../error';
