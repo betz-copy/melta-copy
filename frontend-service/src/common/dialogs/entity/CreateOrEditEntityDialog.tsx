@@ -222,7 +222,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched }) => {
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -393,7 +393,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     variant="contained"
                                                     onClick={() => (Object.keys(errors || {}).length > 0 ? '' : onCancelUpdate())}
                                                     startIcon={<DoneIcon />}
-                                                    // disabled={!dirty}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>
@@ -415,7 +414,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 }
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={entity}
+                                currEntity={entity as IEntity}
                                 updateEntityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setUpdateWithRuleBreachDialogState((prevState) => ({
