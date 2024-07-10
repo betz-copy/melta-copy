@@ -70,17 +70,9 @@ export class IFrameManager {
 
     static async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
         const { iconFileId } = await IFrameManager.getIFrameById(iFrameId);
-        console.log('gggggg', { updatedData });
         let updatedIFrame;
-         if (updatedData.categoryIds) {
-             try {
-                 updatedData.categoryIds = JSON.parse(updatedData.categoryIds);
-             } catch (e) {
-                 console.error('Failed to parse categoryIds:', e);
-             }
-         }
+
         if (file) {
-            console.log('1');
 
             if (iconFileId) {
                 await deleteFile(iconFileId);
@@ -92,13 +84,9 @@ export class IFrameManager {
             updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: newFileId });
         } else if (iconFileId && !updatedData.iconFileId) {
             await deleteFile(iconFileId);
-            console.log('2');
 
             updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: null });
         } else updatedIFrame = await IFrameManager.update(iFrameId, updatedData);
-        console.log('3');
-
-        console.log({ updatedIFrame });
 
         return updatedIFrame;
     }

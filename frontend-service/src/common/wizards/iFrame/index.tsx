@@ -12,7 +12,7 @@ import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateCategoryName, createCategoryNameSchema } from '../category/CreateCategoryName';
 import { ChooseIcon } from '../entityTemplate/ChooseIcon';
-import { CreateIFrameDetails } from './CreateIFrameDetails';
+import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 // import { ChooseIcon } from '../entityTemplate/ChooseIcon';
 // import { ChooseColor } from '../category/ChooseColor';
 
@@ -23,7 +23,7 @@ const steps: StepsType<IFrameWizardValues> = [
     {
         label: i18next.t('wizard.iFrame.editDetails'),
         component: (props) => <CreateIFrameDetails {...props} />,
-        validationSchema: createCategoryNameSchema,
+        // validationSchema: createIFrameDetailsSchema,
     },
     // {
     //     label: i18next.t('wizard.iFrame.settingPermissions'),
@@ -48,6 +48,8 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
     initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', apiToken: '', placeInSideBar: false },
     isEditMode = false,
 }) => {
+    console.log({ initialValues });
+
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (iFrame: IFrameWizardValues) =>

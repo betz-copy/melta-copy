@@ -10,7 +10,7 @@ import {
     getExternalSiteByIdSchema,
     getIFrameByIdSchema,
     searchIFramesSchema,
-    // updateIFrameSchema,
+    updateIFrameSchema,
 } from './validator.schema';
 import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame } from './middlewares';
 import config from '../../config';
@@ -48,7 +48,7 @@ iFramesRouter.post(
 iFramesRouter.put(
     '/:iFrameId',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(), //  .single('file'),
-    // ValidateRequest(updateIFrameSchema),
+    ValidateRequest(updateIFrameSchema),
     // wrapMiddleware(validateUserIsTemplatesManager),
     // wrapMiddleware(validateUserCanUpdateIFrame),
     wrapController(IFramesController.updateIFrame),
