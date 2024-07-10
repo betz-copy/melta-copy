@@ -28,7 +28,6 @@ const createProcessTextChain = (process: object) => {
 
     return values;
 };
-
 const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | LeanDocument<ProcessInstanceDocument>) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
