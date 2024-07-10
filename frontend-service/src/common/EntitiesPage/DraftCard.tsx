@@ -25,7 +25,12 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
         () =>
             Object.values(displayProperties ?? [])
                 .filter(Boolean)
-                .map((displayProperty) => displayProperty.toString().substring(0, 50))
+                .map((displayProperty) =>
+                    displayProperty
+                        .toString()
+                        .replace(/(<([^>]+)>)/gi, '')
+                        .substring(0, 50),
+                )
                 .join(' / ')
                 .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
         [displayProperties],

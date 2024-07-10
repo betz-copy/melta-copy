@@ -20,7 +20,7 @@ import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores
 
 export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date; entityId?: string };
 
-export const DraftSaveDialog: React.FC<{
+export const DraftWarningDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     closeCreateOrEditDialog: () => void;

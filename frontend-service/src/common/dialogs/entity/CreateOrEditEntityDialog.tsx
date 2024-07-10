@@ -11,6 +11,7 @@ import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
+import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
@@ -32,7 +33,7 @@ import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileI
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
-import { DraftSaveDialog } from './draftWarningDialog';
+import { DraftWarningDialog } from './draftWarningDialog';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
 
 const { errorCodes } = environment;
@@ -63,7 +64,7 @@ const CreateOrEditEntityDetails: React.FC<{
         newEntityData?: EntityWizardValues;
     }>({ isOpen: false });
 
-    const [isSaveChangesDialogOpen, setIsSaveChangesDialogOpen] = useState(false);
+    const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -173,6 +174,11 @@ const CreateOrEditEntityDetails: React.FC<{
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
     );
 
+    const normalizeFormValues = (formValues: EntityWizardValues) => ({
+        ...formValues,
+        properties: Object.fromEntries(Object.entries(formValues.properties).filter(([_, v]) => v != null)),
+    });
+
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
@@ -192,7 +198,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, initialValues: formInitialValues }) => {
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -245,10 +251,17 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
+                const betterDirty = useMemo(
+                    () => !isEqual(normalizeFormValues(values), normalizeFormValues(formInitialValues)),
+                    [values, formInitialValues],
+                );
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
+                    if (!betterDirty) return;
                     createOrUpdateDraftDebounced(values, draftId);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
-                }, [values, draftId]);
+                }, [betterDirty, values, draftId]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -332,13 +345,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
                                                         <Grid item>
                                                             <IconButton
-                                                                aria-label="close"
-                                                                onClick={() =>
-                                                                    // eslint-disable-next-line no-unused-expressions
-                                                                    Object.keys(touched.properties ?? {}).length
-                                                                        ? setIsSaveChangesDialogOpen(true)
-                                                                        : handleClose()
-                                                                }
+                                                                onClick={() => (betterDirty ? setIsDraftDialogOpen(true) : handleClose())}
                                                                 sx={{
                                                                     color: (theme) => theme.palette.primary.main,
                                                                 }}
@@ -529,9 +536,9 @@ const CreateOrEditEntityDetails: React.FC<{
                             />
                         )}
 
-                        <DraftSaveDialog
-                            open={isSaveChangesDialogOpen}
-                            handleClose={() => setIsSaveChangesDialogOpen(false)}
+                        <DraftWarningDialog
+                            open={isDraftDialogOpen}
+                            handleClose={() => setIsDraftDialogOpen(false)}
                             closeCreateOrEditDialog={handleClose}
                             values={{ ...values, entityId: entityToUpdate?.properties._id }}
                             isEditMode={isEditMode}
