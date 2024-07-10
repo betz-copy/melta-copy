@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { Grid, Card, CardContent, Box, Divider, Button, IconButton } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
@@ -15,14 +15,32 @@ import { EntityWizardValues } from '.';
 import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { IRelationshipPopulated } from '../../../interfaces/relationships';
 
 const { errorCodes } = environment;
+
+export type IUpdateWithRuleBreachDialogState = {
+    isOpen: boolean;
+    brokenRules?:
+        | {
+              ruleId: string;
+              relationships: (string | IRelationshipPopulated | null)[];
+          }[]
+        | undefined;
+    rawBrokenRules?:
+        | {
+              ruleId: string;
+              relationshipIds: string[];
+          }[]
+        | undefined;
+    updateEntityFormData?: EntityWizardValues | undefined;
+};
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
     const templateFilesProperties = pickBy(
@@ -53,6 +71,8 @@ const CreateOrEditEntityDetails: React.FC<{
             unique: {};
         }>
     >;
+    updateWithRuleBreachDialogState?: IUpdateWithRuleBreachDialogState;
+    setUpdateWithRuleBreachDialogState?: React.Dispatch<React.SetStateAction<IUpdateWithRuleBreachDialogState>>;
 }> = ({
     isEditMode = false,
     entityTemplate,
@@ -63,14 +83,9 @@ const CreateOrEditEntityDetails: React.FC<{
     onError,
     externalErrors,
     setExternalErrors,
+    updateWithRuleBreachDialogState,
+    setUpdateWithRuleBreachDialogState,
 }) => {
-    const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
-        isOpen: boolean;
-        brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
-        updateEntityFormData?: EntityWizardValues;
-    }>({ isOpen: false });
-
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let newEntity = entity;
     let errorTooBig = externalErrors.files;
@@ -120,7 +135,7 @@ const CreateOrEditEntityDetails: React.FC<{
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = handleMutationError(err, entityTemplate);
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    setUpdateWithRuleBreachDialogState({
+                    setUpdateWithRuleBreachDialogState!({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,
                         rawBrokenRules: errorMetadata.rawBrokenRules,
@@ -402,7 +417,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 </CardContent>
                             </Card>
                         </Form>
-                        {updateWithRuleBreachDialogState.isOpen && (
+                        {updateWithRuleBreachDialogState && setUpdateWithRuleBreachDialogState && updateWithRuleBreachDialogState.isOpen && (
                             <UpdateEntityWithRuleBreachDialog
                                 isLoadingUpdateEntity={isUpdateLoading}
                                 handleClose={() => setUpdateWithRuleBreachDialogState({ isOpen: false })}
@@ -414,7 +429,10 @@ const CreateOrEditEntityDetails: React.FC<{
                                 }
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={entity as IEntity}
+                                currEntity={{
+                                    templateId: 'template' in entity ? entity.template._id : entity.templateId,
+                                    properties: (entity as EntityWizardValues).properties,
+                                }}
                                 updateEntityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setUpdateWithRuleBreachDialogState((prevState) => ({

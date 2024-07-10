@@ -20,7 +20,7 @@ import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails, IUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { EntityWizardValues } from '../dialogs/entity';
 
@@ -74,6 +74,7 @@ const TemplateTable = forwardRef<
     }>({
         isOpen: false,
     });
+    const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<IUpdateWithRuleBreachDialogState>({ isOpen: false });
     const [isExpand, setIsExpand] = useState(false);
 
     const entityTemplateColor = getEntityTemplateColor(template);
@@ -209,6 +210,8 @@ const TemplateTable = forwardRef<
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
+                    updateWithRuleBreachDialogState={updateWithRuleBreachDialogState}
+                    setUpdateWithRuleBreachDialogState={setUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </Grid>
