@@ -5,6 +5,7 @@ import { Box } from '@mui/material';
 import pickBy from 'lodash.pickby';
 import isEqual from 'lodash.isequal';
 import {
+    BodyScrollEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
@@ -138,6 +139,7 @@ const getRowModelProps = <Data extends any = IEntity>(
             cacheBlockSize,
             maxBlocksInCache,
             pagination: true,
+            // suppressServerSideInfiniteScroll: true,
             paginationPageSize,
         };
     }
@@ -179,6 +181,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveSorting: boolean;
         shouldSaveColumnOrder: boolean;
         shouldSavePagination: boolean;
+        shouldSaveScrollPosition: boolean;
         pageType?: string;
     };
     onFilter?: () => void;
@@ -223,8 +226,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
-        const saveColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnsOrder = saveColumnsOrder ? JSON.parse(saveColumnsOrder) : {};
+        const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
+        const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
@@ -341,7 +344,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.columnApi.getColumnState();
             const newcolumnsOrder = columnState.reduce((acc, column, index) => {
-                // eslint-disable-next-line no-param-reassign
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
@@ -356,8 +358,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 params.column &&
                 (params.source === 'autosizeColumns' || params.source === 'uiColumnDragged' || params.source === 'uiColumnResized')
             ) {
-                const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-                const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
+                const currColumnWidthsParsed = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
                 localStorage.setItem(
                     `columnWidths-${saveStorageProps.pageType}-${template._id}`,
                     JSON.stringify({ ...currColumnWidthsParsed, [params.column.getColId()]: params.column.getActualWidth() }),
@@ -379,6 +380,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (params.api && params.newPage) {
                 const currentPage = params.api.paginationGetCurrentPage();
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
+            }
+        };
+
+        const onBodyScroll = (params: BodyScrollEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveScrollPosition) return;
+            if (params.api.getVerticalPixelRange().top > 0 && rowModelType === 'infinite') {
+                sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
             }
         };
 
@@ -426,6 +434,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     onColumnMoved={onColumnMoved}
                     onColumnResized={onColumnResized}
                     onPaginationChanged={onPaginationChanged}
+                    onBodyScroll={rowModelType === 'infinite' ? onBodyScroll : undefined}
                     onSortChanged={onSortChanged}
                     enableRtl
                     enableCellTextSelection
@@ -471,10 +480,34 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     onFirstDataRendered={(params) => {
-                        const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
+                        const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
+
                         if (savedPage !== null) {
                             const pageToNavigate = JSON.parse(savedPage);
                             params.api.paginationGoToPage(pageToNavigate);
+                        }
+
+                        if (rowModelType === 'infinite') {
+                            const savedRowIndex = sessionStorage.getItem(`scrollPosition-${template._id}`);
+
+                            if (savedRowIndex != null) {
+                                const lastScrollPosition = JSON.parse(savedRowIndex);
+
+                                const rowIndex = Math.floor(lastScrollPosition / rowHeight);
+                                setTimeout(() => {
+                                    params.api.ensureIndexVisible(rowIndex, 'top');
+                                    const displayedRow = params.api.getDisplayedRowAtIndex(rowIndex);
+                                    if (displayedRow?.rowTop != null) {
+                                        const gridBody = document.querySelector('.ag-body-viewport');
+                                        if (gridBody) {
+                                            gridBody.scrollTo({
+                                                top: lastScrollPosition,
+                                                behavior: 'smooth',
+                                            });
+                                        }
+                                    }
+                                }, 0);
+                            }
                         }
                     }}
                     defaultColDef={{

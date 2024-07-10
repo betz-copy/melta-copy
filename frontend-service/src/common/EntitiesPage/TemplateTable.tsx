@@ -1,4 +1,4 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
@@ -45,10 +45,21 @@ const TemplateTable = forwardRef<
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
+    const loadExpandState = () => {
+        const savedExpandState = sessionStorage.getItem(`isExpand-${template._id}`);
+        return savedExpandState === 'true';
+    };
+
+    const [isExpand, setIsExpand] = useState(loadExpandState());
+
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
         getSortModel: () => entitiesTableRef.current?.getSortModel(),
     }));
+
+    const handleExpandClick = () => {
+        setIsExpand(!isExpand);
+    };
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -81,8 +92,6 @@ const TemplateTable = forwardRef<
     }>({
         isOpen: false,
     });
-    const [isExpand, setIsExpand] = useState(false);
-
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const queryClient = useQueryClient();
@@ -92,6 +101,9 @@ const TemplateTable = forwardRef<
     const drafts = useDraftsStore((state) => state.drafts);
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
+    useEffect(() => {
+        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
+    }, [isExpand, template._id]);
 
     return (
         <Grid container minWidth="fit-content">
@@ -126,7 +138,7 @@ const TemplateTable = forwardRef<
             </Grid>
 
             <Grid container flexDirection="row" alignItems="center">
-                <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                <Grid container item flexGrow={1} width={0} alignItems="center">
                     <IconButtonWithPopover
                         popoverText={i18next.t('entitiesTableOfTemplate.columns')}
                         iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
@@ -137,9 +149,7 @@ const TemplateTable = forwardRef<
                     <IconButtonWithPopover
                         popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                         iconButtonProps={{
-                            onClick: () => {
-                                setIsExpand(!isExpand);
-                            },
+                            onClick: handleExpandClick,
                             size: 'small',
                         }}
                         style={{ borderRadius: '5px' }}
@@ -212,6 +222,7 @@ const TemplateTable = forwardRef<
                         shouldSaveSorting: true,
                         shouldSaveColumnOrder: true,
                         shouldSavePagination: true,
+                        shouldSaveScrollPosition: true,
                         pageType: page,
                     }}
                     editRowButtonProps={{
