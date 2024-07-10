@@ -1,6 +1,9 @@
 import { pipeline } from 'stream';
 import { promisify } from 'util';
 import isEqual from 'lodash.isequal';
+import isEqualWith from 'lodash.isequalwith';
+import isObject from 'lodash.isobject';
+import pickBy from 'lodash.pickby';
 
 // eslint-disable-next-line import/prefer-default-export
 export const promisePipe = promisify(pipeline);
@@ -19,4 +22,33 @@ export const trycatch = async <Func extends (...args: any[]) => any>(func: Func,
 
 export const arraysEqualsNonOrdered = (arr1: string[], arr2: string[]) => {
     return isEqual(arr1.sort(), arr2.sort());
+};
+
+type IsEqualCustomizer = Parameters<typeof isEqualWith>[2];
+const isEqualCustomizerStripUndefined: IsEqualCustomizer = (a, b) => {
+    // returning undefined means to do default behaviour of isEqual
+    if (Array.isArray(a) || Array.isArray(b)) return undefined;
+    if (!isObject(a) || !isObject(b)) return undefined;
+
+    let doesIncludeUndefined = false;
+    const aStrippedOfUndefined = pickBy(a, (value) => {
+        if (value !== undefined) return true;
+
+        doesIncludeUndefined = true;
+        return false;
+    });
+    const bStrippedOfUndefined = pickBy(b, (value) => {
+        if (value !== undefined) return true;
+
+        doesIncludeUndefined = true;
+        return false;
+    });
+
+    if (!doesIncludeUndefined) return undefined;
+
+    return isEqualWith(aStrippedOfUndefined, bStrippedOfUndefined, isEqualCustomizerStripUndefined);
+};
+
+export const isEqualStripUndefined = (a: any, b: any) => {
+    return isEqualWith(a, b, isEqualCustomizerStripUndefined);
 };

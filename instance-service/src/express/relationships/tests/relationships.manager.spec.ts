@@ -6,7 +6,7 @@ import { IRelationship } from '../interface';
 import EntityManager from '../../entities/manager';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 
 const { neo4j } = config;
 
@@ -14,10 +14,6 @@ const unknownId = '555555555555555555555555';
 const defaultRelationshipTemplateId = '444444444444444444444444';
 const defaultEntityTemplateId = '333333333333333333333333';
 const defaultProperties = { testProp: 'testProp' };
-const defaultEntity = {
-    templateId: defaultEntityTemplateId,
-    properties: defaultProperties,
-};
 const relationshipTemplate = {
     _id: defaultRelationshipTemplateId,
     name: 'rel',
@@ -63,7 +59,7 @@ describe('Relationship manager', () => {
     beforeAll(async () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
-        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId]);
         mockRelationshipTemplatesRoutes(mockTemplateManager, [relationshipTemplate]);
     });
 
@@ -77,12 +73,12 @@ describe('Relationship manager', () => {
     });
 
     beforeEach(async () => {
-        firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
+        firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
         entityId = firstEntity.properties._id;
 
         // Create second entities
-        secondEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
+        secondEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
         secondEntityId = secondEntity.properties._id;
 
@@ -178,13 +174,11 @@ describe('Relationship manager', () => {
     });
 
     describe('Relationships connections', () => {
-        it('Should get relationships connections ( [{node, relationship, node}] ) - by ids', async () => {
-            const connections = await RelationshipManager.getRelationshipsConnectionsById([relId]);
+        it('Should get relationships by ids', async () => {
+            const connections = await RelationshipManager.getRelationshipsByIds([relId]);
 
             expect(connections.length).toStrictEqual(1);
-            expect(connections[0].sourceEntity).toEqual(expect.objectContaining(firstEntity));
-            expect(connections[0].relationship).toEqual(expect.objectContaining(relationshipInstance));
-            expect(connections[0].destinationEntity).toEqual(expect.objectContaining(secondEntity));
+            expect(connections[0]).toEqual(expect.objectContaining(relationshipInstance));
         });
     });
 });

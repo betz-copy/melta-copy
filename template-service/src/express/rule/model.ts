@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 import { IMongoRule } from './interfaces';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
@@ -20,15 +20,7 @@ const RuleTemplateSchema = new mongoose.Schema(
             enum: ['WARNING', 'ENFORCEMENT'],
             required: true,
         },
-        relationshipTemplateId: {
-            type: String,
-            required: true,
-        },
-        pinnedEntityTemplateId: {
-            type: String,
-            required: true,
-        }, // sourceEntityTemplate or destinationEntityTemplate
-        unpinnedEntityTemplateId: {
+        entityTemplateId: {
             type: String,
             required: true,
         },

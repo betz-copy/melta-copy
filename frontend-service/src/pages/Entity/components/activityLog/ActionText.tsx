@@ -83,6 +83,32 @@ const RelationshipMetadataActionText: React.FC<{
     );
 };
 
+const DuplicateEntityMetadataActionText: React.FC<{
+    actionMetadata: { entityIdDuplicatedFrom: string };
+    entityTemplate: IMongoEntityTemplatePopulated;
+}> = ({ actionMetadata, entityTemplate }) => {
+    const theme = useTheme();
+    const navigate = useNavigate();
+
+    return (
+        <Grid item minWidth="190px">
+            <StyledTypography variant="body2" component="span">
+                {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
+                <StyledTypography
+                    component="span"
+                    display="inline"
+                    variant="body2"
+                    onClick={() => navigate(`/entity/${actionMetadata.entityIdDuplicatedFrom}`)}
+                    style={{ color: theme.palette.primary.main, cursor: 'pointer' }}
+                    borderBottom="1px solid"
+                >
+                    {entityTemplate.displayName}
+                </StyledTypography>
+            </StyledTypography>
+        </Grid>
+    );
+};
+
 const ellipsisStyle: React.CSSProperties = {
     marginLeft: '10px',
     overflow: 'hidden',
@@ -175,6 +201,10 @@ const ActionText: React.FC<{
                 actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] }}
             />
         );
+
+    if (action === 'DUPLICATE_ENTITY')
+        return <DuplicateEntityMetadataActionText entityTemplate={entityTemplate} actionMetadata={metadata as { entityIdDuplicatedFrom: string }} />;
+
     return <EmptyMetadataActionText action={action} />;
 };
 

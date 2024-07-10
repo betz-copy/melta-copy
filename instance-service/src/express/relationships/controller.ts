@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/relationshipTemplateManager';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipManager } from './manager';
 
 class RelationshipController {
@@ -18,8 +18,8 @@ class RelationshipController {
         res.json(await RelationshipManager.getRelationshipsCountByTemplateId(req.query.templateId as unknown as string));
     }
 
-    static async getRelationshipsConnectionsById(req: Request, res: Response) {
-        res.json(await RelationshipManager.getRelationshipsConnectionsById(req.body.ids));
+    static async getRelationshipsByIds(req: Request, res: Response) {
+        res.json(await RelationshipManager.getRelationshipsByIds(req.body.ids));
     }
 
     static async deleteRelationshipById(req: Request, res: Response) {

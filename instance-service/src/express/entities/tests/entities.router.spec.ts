@@ -7,7 +7,7 @@ import { formatDate } from '../../../utils/neo4j/lib';
 import config from '../../../config';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -71,7 +71,7 @@ describe('Entity router', () => {
         // Mock get template router - for validation middleware
         mockEntityTemplatesRoutes(mockTemplateManager, [defaultTemplate]);
 
-        mockRulesRoutes(mockTemplateManager, [], [defaultTemplateId], [defaultRelationshipTemplateId]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultTemplateId]);
     });
 
     afterAll(async () => {

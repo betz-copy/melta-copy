@@ -1,14 +1,11 @@
 import React from 'react';
 import { Box, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
 
-export const BrokenRuleCompact: React.FC<{ brokenRule: IRuleBreachPopulated['brokenRules'][number]; ruleTemplate: IMongoRule }> = ({
-    brokenRule,
-    ruleTemplate,
-}) => {
+export const BrokenRuleCompact: React.FC<{ brokenRule: IBrokenRulePopulated; ruleTemplate: IMongoRule }> = ({ brokenRule, ruleTemplate }) => {
     return (
         <ListItem key={brokenRule.ruleId}>
             <ListItemIcon>

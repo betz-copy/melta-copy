@@ -30,16 +30,8 @@ export class RuleManager {
         return RuleModel.create({ ...rule, disabled: false });
     }
 
-    static searchRules(searchBody: {
-        search?: string;
-        relationshipTemplateIds?: string[];
-        pinnedEntityTemplateIds?: string[];
-        unpinnedEntityTemplateIds?: string[];
-        disabled?: boolean;
-        limit: number;
-        skip: number;
-    }) {
-        const { search, relationshipTemplateIds, pinnedEntityTemplateIds, unpinnedEntityTemplateIds, disabled, limit, skip } = searchBody;
+    static searchRules(searchBody: { search?: string; entityTemplateIds?: string[]; disabled?: boolean; limit: number; skip: number }) {
+        const { search, entityTemplateIds, disabled, limit, skip } = searchBody;
         const query: FilterQuery<IRule & Document<any, any, any>> = {};
 
         if (disabled !== undefined) {
@@ -50,16 +42,8 @@ export class RuleManager {
             query.name = { $regex: escapeRegExp(search) };
         }
 
-        if (relationshipTemplateIds) {
-            query.relationshipTemplateId = { $in: relationshipTemplateIds };
-        }
-
-        if (pinnedEntityTemplateIds) {
-            query.pinnedEntityTemplateId = { $in: pinnedEntityTemplateIds };
-        }
-
-        if (unpinnedEntityTemplateIds) {
-            query.unpinnedEntityTemplateId = { $in: unpinnedEntityTemplateIds };
+        if (entityTemplateIds) {
+            query.entityTemplateId = { $in: entityTemplateIds };
         }
 
         return RuleModel.find(query).limit(limit).skip(skip).lean().exec();

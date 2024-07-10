@@ -1,4 +1,4 @@
-import { IFunction } from './index';
+import { IFunction } from './function';
 
 export type IConstant = {
     isConstant: true;
@@ -10,9 +10,18 @@ export const isConstant = (constant: any): constant is IConstant => {
     return constant.isConstant;
 };
 
+export interface IVariable {
+    entityTemplateId: string;
+    aggregatedRelationship?: {
+        relationshipTemplateId: string;
+        otherEntityTemplateId: string;
+        variableNameSuffix?: string; // suffix to be added to variableName, if want to use aggregation inside aggregation with the same aggregatedRelationship, and differ between the two.
+    };
+}
+
 export interface IPropertyOfVariable {
     isPropertyOfVariable: true;
-    variableName: string;
+    variable: IVariable;
     property: string;
 }
 
