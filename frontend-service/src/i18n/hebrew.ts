@@ -238,6 +238,7 @@ export default {
         saveAsDraft: 'שמירה כטיוטה',
         backToEdit: 'חזרה לעריכה',
         draft: 'טיוטה',
+        editDraft: 'שחזור מקריסה',
         enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
         emptyDraft: 'טיוטה ריקה',
         lastSavedAt: 'נשמר לאחרונה ב-{{date}}',

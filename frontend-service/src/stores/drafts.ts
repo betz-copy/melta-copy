@@ -1,6 +1,7 @@
+import cloneDeep from 'lodash.clonedeep';
+import { v4 as uuid } from 'uuid';
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { v4 as uuid } from 'uuid';
 import type { Draft } from '../common/dialogs/entity/draftWarningDialog';
 
 interface DraftIdState {
@@ -22,7 +23,7 @@ export interface DraftsState {
 }
 
 const getDraftsCopy = (drafts: DraftsState['drafts'], categoryId: string, templateId: string): DraftsState['drafts'] => {
-    const draftsCopy = { ...drafts };
+    const draftsCopy = cloneDeep(drafts);
 
     if (!(categoryId in draftsCopy)) {
         draftsCopy[categoryId] = {};

@@ -1,4 +1,4 @@
-import { Delete as DeleteIcon, Edit as EditIcon, MoreVertOutlined as OptionsIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Edit as EditIcon, MoreVertOutlined as OptionsIcon, Restore } from '@mui/icons-material';
 import { Box, Card, Grid, IconButton, Menu, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
@@ -46,8 +46,17 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                     margin: '0.5rem 1rem 0.5rem 0.2rem',
                 }}
             >
-                <Box sx={{ width: '5rem' }}>
-                    <Typography variant="subtitle2">{i18next.t('draftSaveDialog.draft')}</Typography>
+                <Box sx={{ width: '12rem' }}>
+                    <Box display="flex" alignItems="center" gap="0.25rem">
+                        {draft.entityId && (
+                            <MeltaTooltip title={i18next.t('draftSaveDialog.editDraft')}>
+                                <Restore />
+                            </MeltaTooltip>
+                        )}
+
+                        <Typography variant="subtitle2">{i18next.t('draftSaveDialog.draft')}</Typography>
+                    </Box>
+
                     <MeltaTooltip title={draftProperties}>
                         <Typography noWrap>{draftProperties}</Typography>
                     </MeltaTooltip>

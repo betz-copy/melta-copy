@@ -91,7 +91,6 @@ const TemplateTable = forwardRef<
 
     const drafts = useDraftsStore((state) => state.drafts);
 
-    const draftId = useDraftIdStore((state) => state.draftId);
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
     return (
@@ -163,17 +162,29 @@ const TemplateTable = forwardRef<
             </Grid>
 
             <Grid container direction="row" width="90vw" wrap="nowrap" sx={{ overflowX: 'auto', marginBottom: '0.5rem' }}>
-                {drafts[template.category._id]?.[template._id]?.map((draft) => (
-                    <Grid item key={draft.uniqueId}>
-                        <DraftCard
-                            draft={draft}
-                            openEditDialog={() => {
-                                setDraftId(draft.uniqueId);
-                                setEditDialog({ isOpen: true, entity: { templateId: draft.template._id, properties: draft.properties } });
-                            }}
-                        />
-                    </Grid>
-                ))}
+                {drafts[template.category._id]?.[template._id]
+                    ?.sort((a, b) => {
+                        if (a.entityId && !b.entityId) return -1;
+                        if (!a.entityId && b.entityId) return 1;
+                        return 0;
+                    })
+                    .map((draft) => (
+                        <Grid item key={draft.uniqueId}>
+                            <DraftCard
+                                draft={draft}
+                                openEditDialog={() => {
+                                    setDraftId(draft.uniqueId);
+                                    setEditDialog({
+                                        isOpen: true,
+                                        entity: {
+                                            templateId: draft.template._id,
+                                            properties: { ...draft.properties, _id: draft.entityId!, createdAt: '', updatedAt: '', disabled: false },
+                                        },
+                                    });
+                                }}
+                            />
+                        </Grid>
+                    ))}
             </Grid>
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
@@ -198,6 +209,7 @@ const TemplateTable = forwardRef<
                     }}
                     editRowButtonProps={{
                         onClick: (currEntity) => {
+                            setDraftId('');
                             setEditDialog({
                                 isOpen: true,
                                 entity: currEntity,
@@ -216,7 +228,7 @@ const TemplateTable = forwardRef<
             {/* omer TODO: change to template.fileExportField ? 'xl' : 'md' */}
             <Dialog open={editDialog.isOpen} maxWidth={true ? 'xl' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode={!draftId}
+                    isEditMode
                     entityTemplate={template}
                     entityToUpdate={editDialog.entity!}
                     onSuccessUpdate={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity)}

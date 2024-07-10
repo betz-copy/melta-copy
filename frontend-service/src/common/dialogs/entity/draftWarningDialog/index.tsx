@@ -18,18 +18,17 @@ import { toast } from 'react-toastify';
 import { EntityWizardValues } from '..';
 import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores/drafts';
 
-export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date };
+export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date; entityId?: string };
 
 export const DraftSaveDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     closeCreateOrEditDialog: () => void;
-    values: EntityWizardValues;
+    values: EntityWizardValues & { entityId?: string };
     isLoading?: boolean;
     isEditMode: boolean;
     originalDrafts: DraftsState['drafts'];
-    intervalRef: React.MutableRefObject<ReturnType<typeof setInterval>>;
-}> = ({ open, handleClose, closeCreateOrEditDialog, values, isLoading = false, isEditMode, originalDrafts, intervalRef }) => {
+}> = ({ open, handleClose, closeCreateOrEditDialog, values, isLoading = false, isEditMode, originalDrafts }) => {
     const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft);
     const setAllDrafts = useDraftsStore((state) => state.setAllDrafts);
 
@@ -60,7 +59,6 @@ export const DraftSaveDialog: React.FC<{
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
                                     if (!isEditMode) {
-                                        clearInterval(intervalRef.current);
                                         setAllDrafts(originalDrafts);
                                         closeCreateOrEditDialog();
                                     }
@@ -85,6 +83,8 @@ export const DraftSaveDialog: React.FC<{
                                             createOrUpdateDraft(values.template.category._id, values.template._id, values);
                                             toast.success(i18next.t('draftSaveDialog.success.create'));
                                         }
+                                    } else {
+                                        setAllDrafts(originalDrafts);
                                     }
 
                                     handleClose();

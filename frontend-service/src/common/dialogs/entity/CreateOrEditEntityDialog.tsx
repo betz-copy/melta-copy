@@ -9,9 +9,10 @@ import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import _ from 'lodash';
+import cloneDeep from 'lodash.clonedeep';
+import debounce from 'lodash.debounce';
 import pickBy from 'lodash.pickby';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
@@ -165,14 +166,12 @@ const CreateOrEditEntityDetails: React.FC<{
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const originalDrafts = useMemo(() => _.cloneDeep(drafts), []);
+    const originalDrafts = useMemo(() => cloneDeep(drafts), []);
 
     const currentDraft = useMemo(
-        () => drafts[entityTemplate.category._id]?.[entityTemplate._id].find(({ uniqueId }) => uniqueId === draftId),
+        () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
     );
-
-    const intervalRef = useRef<ReturnType<typeof setInterval>>(0 as unknown as ReturnType<typeof setInterval>);
 
     return (
         <Formik<EntityWizardValues>
@@ -224,28 +223,32 @@ const CreateOrEditEntityDetails: React.FC<{
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [values.template]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                useEffect(() => {
-                    if (!dirty) return;
+                // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
+                const createOrUpdateDraftDebounced = useCallback(
+                    debounce((newValues: EntityWizardValues, newDraftId: string) => {
+                        let uniqueDraftId = newDraftId;
 
-                    intervalRef.current = setInterval(() => {
-                        let uniqueDraftId = draftId;
-
-                        if (!draftId) {
+                        if (!newDraftId) {
                             const createdDraftId = uuid();
                             setDraftId(createdDraftId);
                             uniqueDraftId = createdDraftId;
                         }
 
-                        createOrUpdateDraft(values.template.category._id, values.template._id, values, uniqueDraftId);
-                    }, environment.draftAutoSaveInterval);
+                        createOrUpdateDraft(
+                            newValues.template.category._id,
+                            newValues.template._id,
+                            { ...newValues, entityId: entityToUpdate?.properties._id },
+                            uniqueDraftId,
+                        );
+                    }, environment.draftAutoSaveDebounce),
+                    [],
+                );
 
-                    // eslint-disable-next-line consistent-return
-                    return () => {
-                        clearInterval(intervalRef.current);
-                    };
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    createOrUpdateDraftDebounced(values, draftId);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
-                }, [dirty, values, draftId]);
+                }, [values, draftId]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -530,10 +533,9 @@ const CreateOrEditEntityDetails: React.FC<{
                             open={isSaveChangesDialogOpen}
                             handleClose={() => setIsSaveChangesDialogOpen(false)}
                             closeCreateOrEditDialog={handleClose}
-                            values={values}
+                            values={{ ...values, entityId: entityToUpdate?.properties._id }}
                             isEditMode={isEditMode}
                             originalDrafts={originalDrafts}
-                            intervalRef={intervalRef}
                         />
                     </>
                 );
