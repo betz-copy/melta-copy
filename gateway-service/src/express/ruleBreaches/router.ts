@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer = require('multer');
 import config from '../../config';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { wrapController, wrapMiddleware, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { validateUserHasAtLeastSomePermissions, validateUserIsRulesManager } from '../permissions/validateAuthorizationMiddleware';
 import RuleBreachesController from './controller';
@@ -20,7 +20,7 @@ const RulesBreachesRouter: Router = Router();
 
 RulesBreachesRouter.post(
     '/requests',
-    multer({ dest: config.service.uploadsFolderPath }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath }).any()),
     ValidateRequest(createRuleBreachRequestRequestSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(RuleBreachesController.createRuleBreachRequest),

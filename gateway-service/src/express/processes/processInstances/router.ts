@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../../config';
-import { wrapController, wrapMiddleware } from '../../../utils/express';
+import { wrapController, wrapMiddleware, wrapMulter } from '../../../utils/express';
 
 import InstancesController from './controller';
 import {
@@ -20,7 +20,7 @@ const InstancesRouter: Router = Router();
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), wrapController(InstancesController.getProcessInstance));
 InstancesRouter.post(
     '/',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(createProcessInstanceSchema),
     wrapMiddleware(validateUserIsProcessesManager),
     wrapController(InstancesController.createProcessInstance),
@@ -28,7 +28,7 @@ InstancesRouter.post(
 InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), wrapController(InstancesController.searchProcessInstances));
 InstancesRouter.put(
     '/:id',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateProcessInstanceSchema),
     wrapMiddleware(validateUserIsProcessesManager),
     wrapController(InstancesController.updateProcessInstance),

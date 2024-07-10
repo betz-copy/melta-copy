@@ -50,11 +50,13 @@ const DuplicateEntity: React.FC<{}> = () => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-                    const constraintPropsDisplayNames = properties.map((prop) => entityTemplate.properties.properties[prop].title);
+                    const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
                     constraintPropsDisplayNames.forEach((uniqueProp) => {
                         setUniqueError({
                             ...uniqueError,
-                            [uniqueProp]: `${i18next.t('wizard.entity.someEntityAlreadyHasTheSameField')} ${uniqueProp}`,
+                            [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                            )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
                         });
                     });
                     return;

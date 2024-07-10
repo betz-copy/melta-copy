@@ -96,13 +96,13 @@ const CreateOrEditEntityDetails: React.FC<{
         const errorMetadata = err.response?.data?.metadata;
         if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-            const constraintPropsDisplayNames = properties.map((prop) => template.properties.properties[prop].title);
+            const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
             constraintPropsDisplayNames.forEach((uniqueProp) => {
                 uniqueError = {
                     ...uniqueError,
-                    [uniqueProp]: `${i18next.t(
+                    [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
                         `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                    )} ${constraintPropsDisplayNames}`,
+                    )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
                 };
             });
         }
@@ -141,6 +141,67 @@ const CreateOrEditEntityDetails: React.FC<{
     });
 
     const navigate = useNavigate();
+
+    const mutationPromiseToastify = async (values: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
+        const mutationPromise = isEditMode ? updateMutation({ newEntityData: values, ignoredRules }) : createMutation(values);
+        toast.dismiss();
+
+        await new Promise<void>((resolve) => {
+            toast.promise(
+                mutationPromise,
+                {
+                    pending: `${i18next.t(`actions.${isEditMode ? 'update' : 'create'}`)} ${
+                        entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
+                    }`,
+                    success: {
+                        render() {
+                            return (
+                                <Grid display="flex" alignItems="center">
+                                    <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}</span>
+                                    <Button
+                                        variant="text"
+                                        onClick={() => {
+                                            navigate(
+                                                !values.properties._id || values.properties._id.length === 0
+                                                    ? `/entity/${newEntity.properties._id}`
+                                                    : `/entity/${values.properties._id}`,
+                                            );
+                                        }}
+                                        sx={{ marginRight: '5px' }}
+                                    >
+                                        {i18next.t('entityPage.linkToEntityPage')}
+                                    </Button>
+                                </Grid>
+                            );
+                        },
+                    },
+                    error: {
+                        render() {
+                            return (
+                                <Grid display="flex" alignItems="center">
+                                    <span>{i18next.t(`wizard.entity.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}</span>
+                                    <Button
+                                        variant="text"
+                                        onClick={() => {
+                                            setExternalErrors({ files: errorTooBig, unique: uniqueError });
+                                            onError(values);
+                                        }}
+                                        sx={{ marginRight: '5px' }}
+                                    >
+                                        {i18next.t('entityPage.error')}
+                                    </Button>
+                                </Grid>
+                            );
+                        },
+                    },
+                },
+                {
+                    autoClose: false,
+                },
+            );
+            mutationPromise.finally(resolve);
+        });
+    };
     return (
         <Formik
             initialValues={{
@@ -150,68 +211,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     : fileProperties,
                 template: entityTemplate,
             }}
-            onSubmit={async (values) => {
-                const mutationPromise = isEditMode ? updateMutation({ newEntityData: values }) : createMutation(values);
-                toast.dismiss();
-
-                await new Promise<void>((resolve) => {
-                    toast.promise(
-                        mutationPromise,
-                        {
-                            pending: `${i18next.t(`actions.${isEditMode ? 'update' : 'create'}`)} ${
-                                entityTemplate.displayName.length > 0 ? entityTemplate.displayName : i18next.t('entity')
-                            }`,
-                            success: {
-                                render() {
-                                    return (
-                                        <Grid display="flex" alignItems="center">
-                                            <span>
-                                                {`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}
-                                            </span>
-                                            <Button
-                                                variant="text"
-                                                onClick={() => {
-                                                    navigate(
-                                                        !values.properties._id || values.properties._id.length === 0
-                                                            ? `/entity/${newEntity.properties._id}`
-                                                            : `/entity/${values.properties._id}`,
-                                                    );
-                                                }}
-                                                sx={{ marginRight: '5px' }}
-                                            >
-                                                {i18next.t('entityPage.linkToEntityPage')}
-                                            </Button>
-                                        </Grid>
-                                    );
-                                },
-                            },
-                            error: {
-                                render() {
-                                    return (
-                                        <Grid display="flex" alignItems="center">
-                                            <span>{i18next.t(`wizard.entity.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}</span>
-                                            <Button
-                                                variant="text"
-                                                onClick={() => {
-                                                    setExternalErrors({ files: errorTooBig, unique: uniqueError });
-                                                    onError(values);
-                                                }}
-                                                sx={{ marginRight: '5px' }}
-                                            >
-                                                {i18next.t('entityPage.error')}
-                                            </Button>
-                                        </Grid>
-                                    );
-                                },
-                            },
-                        },
-                        {
-                            autoClose: false,
-                        },
-                    );
-                    mutationPromise.finally(resolve);
-                });
-            }}
+            onSubmit={(values) => mutationPromiseToastify(values)}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
@@ -393,7 +393,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     variant="contained"
                                                     onClick={() => (Object.keys(errors || {}).length > 0 ? '' : onCancelUpdate())}
                                                     startIcon={<DoneIcon />}
-                                                    disabled={!dirty}
+                                                    // disabled={!dirty}
                                                 >
                                                     {i18next.t('entityPage.save')}
                                                 </Button>
@@ -407,12 +407,12 @@ const CreateOrEditEntityDetails: React.FC<{
                             <UpdateEntityWithRuleBreachDialog
                                 isLoadingUpdateEntity={isUpdateLoading}
                                 handleClose={() => setUpdateWithRuleBreachDialogState({ isOpen: false })}
-                                onUpdateEntity={() => {
-                                    return updateMutation({
-                                        newEntityData: updateWithRuleBreachDialogState.updateEntityFormData!,
-                                        ignoredRules: updateWithRuleBreachDialogState.rawBrokenRules!,
-                                    });
-                                }}
+                                onUpdateEntity={() =>
+                                    mutationPromiseToastify(
+                                        updateWithRuleBreachDialogState.updateEntityFormData!,
+                                        updateWithRuleBreachDialogState.rawBrokenRules!,
+                                    )
+                                }
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
                                 currEntity={entity}

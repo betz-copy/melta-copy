@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { wrapController, wrapMiddleware } from '../../../utils/express';
+import { wrapController, wrapMiddleware, wrapMulter } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
 import config from '../../../config';
 import ValidateRequest from '../../../utils/joi';
@@ -23,7 +23,7 @@ const TemplatesRouter: Router = Router();
 TemplatesRouter.get('/:id', ValidateRequest(getTemplateByIdSchema), wrapController(ProcessTemplatesController.getTemplateById));
 TemplatesRouter.post(
     '/',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(createProcessTemplateSchema),
     wrapMiddleware(validateUserIsProcessesManager),
     wrapController(ProcessTemplatesController.createProcessTemplate),
@@ -37,7 +37,7 @@ TemplatesRouter.delete(
 );
 TemplatesRouter.put(
     '/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateProcessTemplateSchema),
     wrapMiddleware(validateUserIsProcessesManager),
     wrapController(ProcessTemplatesController.updateProcessTemplate),

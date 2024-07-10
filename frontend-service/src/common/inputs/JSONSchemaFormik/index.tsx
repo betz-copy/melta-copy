@@ -121,7 +121,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
     const ajvExtraUniqueErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => touched[key]);
-    
+
     let mergedErrors: ErrorSchema<{}>;
     if (isDialog) {
         const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);

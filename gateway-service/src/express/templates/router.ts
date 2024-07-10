@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { wrapController, wrapMiddleware, wrapMulter } from '../../utils/express';
 import {
     validateUserHasAtLeastSomePermissions,
     validateUserIsRulesManager,
@@ -62,14 +62,14 @@ templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions
 templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(createCategorySchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.createCategory),
 );
 templatesRouter.put(
     '/categories/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(updateCategorySchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.updateCategory),
@@ -96,7 +96,7 @@ templatesRouter.patch(
 );
 templatesRouter.post(
     '/entities',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
     wrapController(TemplatesController.createEntityTemplate, {
@@ -108,7 +108,7 @@ templatesRouter.post(
 );
 templatesRouter.put(
     '/entities/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityTemplate, {
