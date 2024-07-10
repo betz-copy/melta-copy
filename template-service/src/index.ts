@@ -1,6 +1,6 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import axios from 'axios';
-import * as apm from 'elastic-apm-node';
+import apm from 'elastic-apm-node';
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';

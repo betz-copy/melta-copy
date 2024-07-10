@@ -34,12 +34,12 @@ const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<v
 );
 
 const OpenPreview: React.FC<{
-    fileId: string;
+    fileId: string | File;
     img?: ReactNode;
     showText?: boolean;
     download?: boolean;
 }> = ({ fileId, img, showText = true, download }) => {
-    const fileName = getFileName(fileId);
+    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 

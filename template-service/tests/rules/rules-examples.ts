@@ -1,4 +1,4 @@
-import { IRelationshipTemplateRule } from '../../src/express/rule/interfaces';
+import { IRule } from '../../src/express/rule/interfaces';
 import { IMongoRelationshipTemplate } from '../../src/express/relationshipTemplate/interface';
 import { ICategory, IEntityTemplatePopulated } from '../../src/express/externalServices/entityTemplateManager';
 
@@ -42,6 +42,7 @@ export const travelAgentEntityTemplate: IEntityTemplatePopulated = {
         required: ['firstName', 'lastName', 'agentId'],
     },
     propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['firstName', 'lastName', 'age'],
     disabled: false,
     iconFileId: null,
@@ -85,6 +86,7 @@ export const flightEntityTemplate: IEntityTemplatePopulated = {
         required: ['flightNumber', 'departureDate', 'landingDate'],
     },
     propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['flightNumber', 'from', 'to'],
     disabled: false,
     iconFileId: null,
@@ -135,6 +137,7 @@ export const tripEntityTemplate: IEntityTemplatePopulated = {
         required: ['name', 'destination'],
     },
     propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
+    propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
     disabled: false,
     iconFileId: null,
@@ -151,12 +154,11 @@ export const tripConnectedToFlightRelationshipTemplate: IMongoRelationshipTempla
 };
 
 // rule 1
-export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
+export const oneTravelAgentPerFlight: IRule = {
     name: 'סוכן נסיעות אחד על טיסה',
     description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
     actionOnFail: 'WARNING',
-    relationshipTemplateId: flightsOnRelationshipTemplate._id,
-    pinnedEntityTemplateId: flightEntityTemplate._id,
+    entityTemplateId: flightEntityTemplate._id,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',
@@ -166,9 +168,15 @@ export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
                 operatorBool: 'equals',
                 lhsArgument: {
                     isCountAggFunction: true,
-                    variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
+                    variable: {
+                        entityTemplateId: flightEntityTemplate._id,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: flightsOnRelationshipTemplate._id,
+                            otherEntityTemplateId: travelAgentEntityTemplate._id,
+                        },
+                    },
                 },
-                rhsArgument: { isConstant: true, value: 0 },
+                rhsArgument: { isConstant: true, type: 'number', value: 0 },
             },
         ],
     },
@@ -176,12 +184,12 @@ export const oneTravelAgentPerFlight: IRelationshipTemplateRule = {
 };
 
 // rule 2
-export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
+export const noOverlappingFlightsInTrip: IRule = {
     name: 'טיסה אחת ביום לטיול',
     description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
     actionOnFail: 'WARNING',
-    relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
-    pinnedEntityTemplateId: tripEntityTemplate._id,
+    disabled: false,
+    entityTemplateId: tripEntityTemplate._id,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',
@@ -189,34 +197,108 @@ export const noOverlappingFlightsInTrip: IRelationshipTemplateRule = {
             {
                 isAggregationGroup: true,
                 aggregation: 'EVERY',
-                variableNameOfAggregation: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
+                variableOfAggregation: {
+                    entityTemplateId: tripEntityTemplate._id,
+                    aggregatedRelationship: {
+                        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                        otherEntityTemplateId: flightEntityTemplate._id,
+                    },
+                },
                 ruleOfGroup: 'AND',
                 subFormulas: [
                     {
-                        isEquation: true,
-                        operatorBool: 'notEqual',
-                        // todo: make function of: date(dateTimeVariable)
-                        lhsArgument: {
-                            isPropertyOfVariable: true,
-                            variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                            property: 'landingDate',
+                        isAggregationGroup: true,
+                        aggregation: 'EVERY',
+                        variableOfAggregation: {
+                            entityTemplateId: tripEntityTemplate._id,
+                            aggregatedRelationship: {
+                                relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                otherEntityTemplateId: flightEntityTemplate._id,
+                                variableNameSuffix: '2',
+                            },
                         },
-                        rhsArgument: { isPropertyOfVariable: true, variableName: flightEntityTemplate._id, property: 'landingDate' },
+                        ruleOfGroup: 'OR',
+                        subFormulas: [
+                            {
+                                isEquation: true,
+                                operatorBool: 'notEqual',
+                                lhsArgument: {
+                                    isRegularFunction: true,
+                                    functionType: 'toDate',
+                                    arguments: [
+                                        {
+                                            isPropertyOfVariable: true,
+                                            variable: {
+                                                entityTemplateId: tripEntityTemplate._id,
+                                                aggregatedRelationship: {
+                                                    relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                    otherEntityTemplateId: flightEntityTemplate._id,
+                                                },
+                                            },
+                                            property: 'departureDate',
+                                        },
+                                    ],
+                                },
+                                rhsArgument: {
+                                    isRegularFunction: true,
+                                    functionType: 'toDate',
+                                    arguments: [
+                                        {
+                                            isPropertyOfVariable: true,
+                                            variable: {
+                                                entityTemplateId: tripEntityTemplate._id,
+                                                aggregatedRelationship: {
+                                                    relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                    otherEntityTemplateId: flightEntityTemplate._id,
+                                                    variableNameSuffix: '2',
+                                                },
+                                            },
+                                            property: 'departureDate',
+                                        },
+                                    ],
+                                },
+                            },
+                            {
+                                isEquation: true,
+                                operatorBool: 'equals',
+                                lhsArgument: {
+                                    isPropertyOfVariable: true,
+                                    variable: {
+                                        entityTemplateId: tripEntityTemplate._id,
+                                        aggregatedRelationship: {
+                                            relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                            otherEntityTemplateId: flightEntityTemplate._id,
+                                        },
+                                    },
+                                    property: '_id',
+                                },
+                                rhsArgument: {
+                                    isPropertyOfVariable: true,
+                                    variable: {
+                                        entityTemplateId: tripEntityTemplate._id,
+                                        aggregatedRelationship: {
+                                            relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                            otherEntityTemplateId: flightEntityTemplate._id,
+                                            variableNameSuffix: '2',
+                                        },
+                                    },
+                                    property: '_id',
+                                },
+                            },
+                        ],
                     },
                 ],
             },
         ],
     },
-    disabled: false,
 };
 
 // rule 3
-export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
-    name: 'התראה על טיסות בסבב פעיל',
-    description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
+export const warnOnEveryFlightOnActiveZone: IRule = {
+    name: 'התראה על טיסות בטיול פעיל',
+    description: 'התראה על כל טיסה חדשה שמחוברת לטיול פעיל',
     actionOnFail: 'WARNING',
-    relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
-    pinnedEntityTemplateId: tripEntityTemplate._id,
+    entityTemplateId: tripEntityTemplate._id,
     formula: {
         isGroup: true,
         ruleOfGroup: 'AND',
@@ -224,8 +306,8 @@ export const warnOnEveryFlightOnActiveZone: IRelationshipTemplateRule = {
             {
                 isEquation: true,
                 operatorBool: 'equals',
-                lhsArgument: { isPropertyOfVariable: true, variableName: tripEntityTemplate._id, property: 'name' },
-                rhsArgument: { isConstant: true, value: 'false' },
+                lhsArgument: { isPropertyOfVariable: true, variable: { entityTemplateId: tripEntityTemplate._id }, property: 'name' },
+                rhsArgument: { isConstant: true, type: 'string', value: 'false' },
             },
         ],
     },

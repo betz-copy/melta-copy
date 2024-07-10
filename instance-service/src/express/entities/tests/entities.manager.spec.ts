@@ -4,7 +4,7 @@ import config from '../../../config';
 import EntityManager from '../manager';
 import RelationshipManager from '../../relationships/manager';
 import { IEntity } from '../interface';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockEntityTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 
@@ -13,10 +13,6 @@ const { neo4j } = config;
 const defaultTemplateId = '111111111111111111111111';
 const defaultRelationshipTemplateId = '222222222222222222222222';
 const defaultProperties = { testProp: 'testProp' };
-const defaultEntity = {
-    templateId: defaultTemplateId,
-    properties: defaultProperties,
-};
 const relationshipTemplate = {
     _id: defaultRelationshipTemplateId,
     name: 'rel',
@@ -54,7 +50,7 @@ describe('Entity manager', () => {
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
         mockEntityTemplatesRoutes(mockTemplateManager, [entityTemplate]);
-        mockRulesRoutes(mockTemplateManager, [], [defaultTemplateId], [defaultRelationshipTemplateId]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultTemplateId]);
     });
 
     afterAll(async () => {
@@ -68,7 +64,7 @@ describe('Entity manager', () => {
 
     describe('Create entity', () => {
         it('Should create new entity', async () => {
-            const res = await EntityManager.createEntity(defaultEntity, entityTemplate);
+            const res = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);
@@ -85,7 +81,7 @@ describe('Entity manager', () => {
         };
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity({ templateId: defaultTemplateId, properties: defaultProperties }, entityTemplate);
+            const { properties } = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
             id = properties._id;
         });
@@ -121,7 +117,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultEntity, entityTemplate);
+            const { properties } = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
             id = properties._id;
         });
@@ -148,7 +144,7 @@ describe('Entity manager', () => {
         mapTemplate.set(defaultTemplateId, entityTemplate);
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
+            firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
             id = firstEntity.properties._id;
         });
@@ -182,10 +178,7 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity(
-                    { templateId: defaultTemplateId, properties: secondEntityProperties },
-                    entityTemplate,
-                );
+                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, []);
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -242,10 +235,7 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity(
-                    { templateId: defaultTemplateId, properties: secondEntityProperties },
-                    entityTemplate,
-                );
+                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, []);
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -260,10 +250,7 @@ describe('Entity manager', () => {
                 );
 
                 // Create third entity
-                const thirdEntity = await EntityManager.createEntity(
-                    { templateId: defaultTemplateId, properties: thirdEntityProperties },
-                    entityTemplate,
-                );
+                const thirdEntity = await EntityManager.createEntity(thirdEntityProperties, entityTemplate, []);
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -317,7 +304,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultEntity, entityTemplate);
+            firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
 
             id = firstEntity.properties._id;
         });
@@ -333,10 +320,7 @@ describe('Entity manager', () => {
                 // Create second entity
                 const secondEntityProperties = { testProp: 'testProp' };
 
-                const secondEntity = await EntityManager.createEntity(
-                    { templateId: defaultTemplateId, properties: secondEntityProperties },
-                    entityTemplate,
-                );
+                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, []);
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(

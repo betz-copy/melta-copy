@@ -27,8 +27,7 @@ export interface ISearchRelationshipTemplatesBody {
 
 export interface ISearchRulesBody {
     search?: string;
-    relationshipTemplateIds?: string[];
-    pinnedEntityTemplateIds?: string[];
+    entityTemplateIds?: string[];
     disabled?: boolean;
     limit?: number;
     skip?: number;

@@ -25,7 +25,7 @@ class Neo4jClient {
     }
 
     async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
-        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true, ...configuration });
         this.database = database;
 
         await this.verifyConnectivity();

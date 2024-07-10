@@ -1,4 +1,4 @@
-import { ValueSource } from 'react-awesome-query-builder';
+import { ValueSource } from '@react-awesome-query-builder/mui';
 
 export type ValueType = 'text' | 'number' | 'date' | 'datetime' | 'boolean' | 'dateDuration' | 'dateTimeDuration';
 export type FunctionObject = {

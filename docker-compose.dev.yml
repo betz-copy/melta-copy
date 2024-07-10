@@ -201,6 +201,9 @@ services:
     volumes:
       - logs:/usr/src/app/logs
 
+  activity-log-service:
+    restart: always
+
   notification-service:
     restart: always
     volumes:

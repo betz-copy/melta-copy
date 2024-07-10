@@ -1,6 +1,6 @@
-import { JsonItem, JsonTree, Utils as QbUtils } from 'react-awesome-query-builder';
+import { JsonItem, JsonTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
 import axios from '../../axios';
-import { RelationshipTemplateRuleWizardValues } from '../../common/wizards/rule';
+import { RuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IMongoRule, IRule } from '../../interfaces/rules';
@@ -9,7 +9,7 @@ import { RuleSerializer } from '../../utils/rules/serializer';
 
 const { rules } = environment.api;
 
-const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTemplateMap): RelationshipTemplateRuleWizardValues | undefined => {
+const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTemplateMap): RuleWizardValues | undefined => {
     if (!rule) return undefined;
     const { formula, ...restOfRule } = rule;
 
@@ -26,7 +26,7 @@ const updateDisabledRuleRequest = async (ruleId: string, disabled: boolean) => {
     return data;
 };
 
-const createRuleRequest = async (newRule: RelationshipTemplateRuleWizardValues) => {
+const createRuleRequest = async (newRule: RuleWizardValues) => {
     const { data } = await axios.post<IMongoRule>(rules, {
         ...newRule,
         formula: RuleParser.jsonTreeToFormula(QbUtils.getTree(newRule.formula) as JsonItem),
@@ -34,7 +34,7 @@ const createRuleRequest = async (newRule: RelationshipTemplateRuleWizardValues) 
     return data;
 };
 
-const updateRuleRequest = async (ruleId: string, updatedRule: RelationshipTemplateRuleWizardValues) => {
+const updateRuleRequest = async (ruleId: string, updatedRule: RuleWizardValues) => {
     const { data } = await axios.put<IMongoRule>(`${rules}/${ruleId}`, {
         name: updatedRule.name,
         description: updatedRule.description,

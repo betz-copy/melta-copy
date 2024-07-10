@@ -4,7 +4,7 @@ import { IFile } from '../interfaces/preview';
 import { getFilePreviewRequest } from '../services/previewService';
 
 export const useFilePreview = (
-    fileId: IFile['id'],
+    fileId: IFile['id'] | File,
     contentType: IFile['contentType'],
     setNoSuchKeyError: React.Dispatch<React.SetStateAction<boolean>>,
 ) => {
@@ -14,7 +14,11 @@ export const useFilePreview = (
             if (contentType === 'unsupported') {
                 return contentType;
             }
-            return getFilePreviewRequest(fileId, contentType);
+
+            if (typeof fileId === 'string') {
+                return getFilePreviewRequest(fileId, contentType);
+            }
+            return URL.createObjectURL(fileId);
         },
         {
             refetchOnWindowFocus: false,
