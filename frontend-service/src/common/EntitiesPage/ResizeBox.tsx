@@ -10,6 +10,8 @@ interface ResizeBoxProps {
 }
 
 const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeight, children }) => {
+    console.log({ children });
+
     const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {

@@ -75,6 +75,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 params.fail();
                 return;
             }
+            console.log({ data });
 
             params.success({ rowData: data.entities.map(({ entity }) => entity), rowCount: data.count });
         },
@@ -89,6 +90,8 @@ const getRowModelProps = <Data extends any = IEntity>(
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
+    console.log({ rowData });
+
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }

@@ -236,18 +236,47 @@ const ConnectionsTable: React.FC<{
                         },
                         disabledButton: isEditButtonsDisabled,
                     }}
-                    getRowId={(connection) => {
+                    getRowId={(
+                        connection:
+                            | IEntity
+                            | {
+                                  relationship: Pick<IRelationship, 'properties' | 'templateId'>;
+                                  sourceEntity: IEntity;
+                                  destinationEntity: IEntity;
+                              },
+                    ) => {
+                        console.log({ connection });
+
+                        // if ('relationship' in connection) connection.relationship.properties._id;
+                        // return expandedEntity.connections.find(
+                        //     (connection) =>
+                        //         connection.destinationEntity.properties._id === (connection as IEntity).properties._id ||
+                        //         connection.sourceEntity.properties._id === (connection as IEntity).properties._id,
+                        // );
                         return connection.relationship.properties._id;
                     }}
-                    getEntityPropertiesData={(connection) => {
-                        if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
-                            return connection.sourceEntity.properties;
+                    getEntityPropertiesData={(
+                        connection:
+                            | IEntity
+                            | {
+                                  relationship: Pick<IRelationship, 'properties' | 'templateId'>;
+                                  sourceEntity: IEntity;
+                                  destinationEntity: IEntity;
+                              },
+                    ) => {
+                        if ('relationship' in connection) {
+                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
+                                return connection.sourceEntity.properties;
+                            }
+                            return connection.destinationEntity.properties;
                         }
-                        return connection.destinationEntity.properties;
+                        return connection.properties;
                     }}
                     // rowModelType="clientSide"
                     rowModelType={isExpand ? 'infinite' : 'clientSide'}
                     rowData={expandedEntity.connections.filter((connection) => {
+                        console.log('hic', { connection });
+
                         if (connection.relationship.templateId !== relationshipTemplate._id) return false;
 
                         if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === connection.sourceEntity.properties._id)

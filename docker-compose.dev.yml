@@ -53,16 +53,10 @@ services:
       - NEO4J_AUTH=neo4j/test
       - NEO4J_dbms_security_procedures_unrestricted=apoc.*
       - NEO4J_ACCEPT_LICENSE_AGREEMENT=yes
-      - NEO4J_dbms_memory_heap_initial__size=512m
-      - NEO4J_dbms_memory_heap_max__size=512m
     ports:
       - "7474:7474"
       - "7687:7687"
     restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1024m
 
   # ELK
   elastic:
