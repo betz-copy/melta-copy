@@ -14,7 +14,7 @@ export const isStartWithHebrewLetter = (value: string) => {
     return isHebrewLetter;
 };
 
-export const getTextDirection = (value: string, schema: RJSFSchema): string => {
+export const getTextDirection = (value: string, schema: RJSFSchema): React.CSSProperties['direction'] => {
     if (schema.type === 'string' && value) {
         return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
     }

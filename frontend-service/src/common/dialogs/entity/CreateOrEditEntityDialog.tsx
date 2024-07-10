@@ -9,11 +9,13 @@ import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
+import _ from 'lodash';
 import pickBy from 'lodash.pickby';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
+import { v4 as uuid } from 'uuid';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
@@ -21,6 +23,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import UpdateEntityWithRuleBreachDialog from '../../../pages/Entity/components/UpdateEntityWithRuleBreachDialog';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -59,7 +62,6 @@ const CreateOrEditEntityDetails: React.FC<{
     }>({ isOpen: false });
 
     const [isSaveChangesDialogOpen, setIsSaveChangesDialogOpen] = useState(false);
-    const [isSaveDraftDialogOpen, setIsSaveDraftDialogOpen] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -126,12 +128,32 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
+
+    const drafts = useDraftsStore((state) => state.drafts);
+    const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft);
+    const deleteDraft = useDraftsStore((state) => state.deleteDraft);
+
+    const draftId = useDraftIdStore((state) => state.draftId);
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
+    const originalDrafts = useMemo(() => _.cloneDeep(drafts), []);
+
+    const currentDraft = useMemo(
+        () => drafts[entityTemplate.category._id]?.[entityTemplate._id].find(({ uniqueId }) => uniqueId === draftId),
+        [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
+    );
+
+    const intervalRef = useRef<ReturnType<typeof setInterval>>(0 as unknown as ReturnType<typeof setInterval>);
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties, template: entityTemplate }}
             onSubmit={async (values) => {
                 if (isEditMode) updateMutation({ newEntityData: values });
                 else createMutation(values);
+
+                if (!draftId) return;
+                deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId);
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
@@ -146,7 +168,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
-                const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
+                const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -170,7 +192,31 @@ const CreateOrEditEntityDetails: React.FC<{
                             }
                         });
                     }
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [values.template]);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    if (!dirty) return;
+
+                    intervalRef.current = setInterval(() => {
+                        let uniqueDraftId = draftId;
+
+                        if (!draftId) {
+                            const createdDraftId = uuid();
+                            setDraftId(createdDraftId);
+                            uniqueDraftId = createdDraftId;
+                        }
+
+                        createOrUpdateDraft(values.template.category._id, values.template._id, values, uniqueDraftId);
+                    }, environment.draftAutoSaveInterval);
+
+                    // eslint-disable-next-line consistent-return
+                    return () => {
+                        clearInterval(intervalRef.current);
+                    };
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                }, [dirty, values, draftId]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -241,21 +287,24 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
                                                             />
                                                         </Grid>
-                                                        {/* omer TODO: change this to display the last  time this was saved in the local storage, only if saved at all */}
-                                                        {entity.properties._id && (
+
+                                                        {currentDraft && (
                                                             <Grid item container xs={8} justifyContent="right">
                                                                 <Typography color="#53566E" marginTop="0.5rem">
-                                                                    lmfao change to saved
+                                                                    {i18next.t('draftSaveDialog.lastSavedAt', {
+                                                                        date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
+                                                                    })}
                                                                 </Typography>
                                                             </Grid>
                                                         )}
+
                                                         <Grid item>
                                                             <IconButton
                                                                 aria-label="close"
                                                                 onClick={() =>
                                                                     // eslint-disable-next-line no-unused-expressions
                                                                     Object.keys(touched.properties ?? {}).length
-                                                                        ? setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen)
+                                                                        ? setIsSaveChangesDialogOpen(true)
                                                                         : onCancelUpdate()
                                                                 }
                                                                 sx={{
@@ -416,6 +465,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 </CardContent>
                             </Card>
                         </Form>
+
                         {updateWithRuleBreachDialogState.isOpen && (
                             <UpdateEntityWithRuleBreachDialog
                                 isLoadingUpdateEntity={isUpdateLoading}
@@ -438,37 +488,15 @@ const CreateOrEditEntityDetails: React.FC<{
                                 }
                             />
                         )}
+
                         <DraftSaveDialog
                             open={isSaveChangesDialogOpen}
-                            handleClose={() => {
-                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
-                            }}
-                            onNo={() => {
-                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
-                                onCancelUpdate();
-                            }}
-                            onYes={() => {
-                                setIsSaveDraftDialogOpen(!isSaveDraftDialogOpen);
-                                setIsSaveChangesDialogOpen(!isSaveChangesDialogOpen);
-                                // omer TODO create draft in local storage THROUGH HERE
-                            }}
-                            title={i18next.t('draftSaveDialog.exitTitle')}
-                            body={<Typography>{i18next.t('draftSaveDialog.exitDescription')}</Typography>}
-                            noButtonTitle={i18next.t('draftSaveDialog.exit')}
-                            yesButtonTitle={i18next.t('draftSaveDialog.save')}
-                        />
-                        <DraftSaveDialog
-                            open={isSaveDraftDialogOpen}
-                            handleClose={() => {
-                                setIsSaveDraftDialogOpen(!isSaveDraftDialogOpen);
-                            }}
-                            onYes={() => {
-                                // omer TODO this
-                            }}
-                            title={i18next.t('draftSaveDialog.notSavedTitle')}
-                            body={<Typography>{i18next.t('draftSaveDialog.notSavedDescription')}</Typography>}
-                            noButtonTitle={i18next.t('draftSaveDialog.backToEdit')}
-                            yesButtonTitle={i18next.t('draftSaveDialog.saveAsDraft')}
+                            handleClose={() => setIsSaveChangesDialogOpen(false)}
+                            closeCreateOrEditDialog={onCancelUpdate}
+                            values={values}
+                            isEditMode={isEditMode}
+                            originalDrafts={originalDrafts}
+                            intervalRef={intervalRef}
                         />
                     </>
                 );

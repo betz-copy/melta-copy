@@ -3,20 +3,21 @@ import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterAttachmentsAndEntitiesRefFromPropertiesSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'],
+    schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
 ): IMongoEntityTemplatePopulated['properties'] => {
     return {
         ...schema,
         properties: pickBy(
-            schema.properties,
+            schema?.properties,
             (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId',
         ),
-        required: schema.required.filter(
-            (requiredKey) =>
-                schema.properties[requiredKey].format !== 'fileId' &&
-                schema.properties[requiredKey].format !== 'entityReference' &&
-                schema.properties[requiredKey].items?.format !== 'fileId',
-        ),
+        required:
+            schema?.required?.filter(
+                (requiredKey) =>
+                    schema.properties[requiredKey].format !== 'fileId' &&
+                    schema.properties[requiredKey].format !== 'entityReference' &&
+                    schema.properties[requiredKey].items?.format !== 'fileId',
+            ) ?? [],
     };
 };
 
