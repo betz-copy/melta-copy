@@ -20,6 +20,8 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
+const userId = config.permissionsService.managersKrtoffelIds[0];
+
 export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     format('fileId', (_value) => fileId);
     const promises = entityTemplates
@@ -29,6 +31,7 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
                     axios.post(url + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
+                        userId,
                     }),
                 ),
             );
@@ -62,6 +65,7 @@ export const createRelationshipInstances = async (
                                 sourceEntityId,
                                 destinationEntityId,
                                 templateId: relationshipTemplate._id,
+                                userId,
                             },
                         }),
                     );

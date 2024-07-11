@@ -144,6 +144,7 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
                 filter: searchFilterSchema,
             })
             .default({}),
+        userId: Joi.string().required(),
     },
     params: {
         id: Joi.string().required(),
