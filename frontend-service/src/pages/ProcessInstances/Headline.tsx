@@ -73,7 +73,7 @@ const ProcessInstancesHeadline: React.FC<{
                                 onSetStartDate(null);
                                 onSetEndDate(null);
                             }}
-                            sx={{ borderRadius: 10 }}
+                            sx={{ borderRadius: 10, height: '35px', width: '35px' }}
                         >
                             <FilterAltOffIcon />
                         </IconButton>
@@ -83,7 +83,7 @@ const ProcessInstancesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.processesManagementId && (
-                    <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px' }}>
+                    <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px', height: '35px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>
                             {i18next.t('processInstancesPage.addProcess')}

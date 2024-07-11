@@ -1,7 +1,7 @@
 import config from '../config';
 import Neo4jClient from '../utils/neo4j';
 import RedisClient from '../utils/redis';
-import { EntityTemplateManagerService } from '../externalServices/entityTemplateManager';
+import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
 
 const {
@@ -84,7 +84,7 @@ const getTemplatePropertiesIndex = (template: IEntityTemplate) => {
 };
 
 export const upsertGlobalSearchIndex = async () => {
-    const templates = await EntityTemplateManagerService.searchEntityTemplates();
+    const templates = await TemplateManagerService.searchEntityTemplates();
 
     const templateIds = templates.map((template) => template._id);
     const allTemplatesProperties = new Set<string>();
@@ -103,7 +103,7 @@ export const upsertGlobalSearchIndex = async () => {
 };
 
 export const upsertChangedTemplateSearchIndex = async (changedTemplateId: string) => {
-    const changedTemplate = await EntityTemplateManagerService.getEntityTemplateById(changedTemplateId);
+    const changedTemplate = await TemplateManagerService.getEntityTemplateById(changedTemplateId);
 
     await upsertSearchIndex(
         `${templateSearchKeyNamePrefix}${changedTemplateId}`,

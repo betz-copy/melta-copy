@@ -34,8 +34,8 @@ import {
     IProcessStatusUpdateMailNotificationMetadataPopulated,
 } from './interfaces';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 
 const { mailTitle } = mailConfig;
 const {

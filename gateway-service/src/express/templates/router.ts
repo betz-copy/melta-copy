@@ -35,25 +35,16 @@ import {
 import { IMongoEntityTemplateWithConstraints } from './interfaces';
 
 const {
-    entityTemplateService: entityTemplateManager,
-    relationshipTemplateService: relationshipTemplateManager,
+    templateService: { url, requestTimeout },
     service: { uploadsFolderPath },
 } = config;
 
-const EntityTemplatesManagerProxy = createProxyMiddleware({
-    target: entityTemplateManager.url,
+const TemplatesServiceProxy = createProxyMiddleware({
+    target: url,
     onProxyReq: (proxyReq, req, _res) => {
         fixRequestBody(proxyReq, req);
     },
-    proxyTimeout: entityTemplateManager.requestTimeout,
-});
-
-const RelationshipTemplatesManagerProxy = createProxyMiddleware({
-    target: relationshipTemplateManager.url,
-    onProxyReq: (proxyReq, req, _res) => {
-        fixRequestBody(proxyReq, req);
-    },
-    proxyTimeout: relationshipTemplateManager.requestTimeout,
+    proxyTimeout: requestTimeout,
 });
 
 const fixDeleteResponseData = (data: IMongoEntityTemplateWithConstraints) => {
@@ -68,7 +59,7 @@ const templatesRouter: Router = Router();
 templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions), wrapController(TemplatesController.getAllAllowedTemplates));
 
 // categories
-templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), EntityTemplatesManagerProxy);
+templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
@@ -190,7 +181,7 @@ templatesRouter.delete(
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.patch(
     '/rules/:ruleId/status',
     wrapMiddleware(validateUserIsRulesManager),
@@ -203,6 +194,6 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     wrapController(TemplatesController.deleteRuleById),
 );
-templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 
 export default templatesRouter;

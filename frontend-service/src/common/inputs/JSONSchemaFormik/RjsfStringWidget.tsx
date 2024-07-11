@@ -3,7 +3,7 @@
 import React from 'react';
 import { getDisplayLabel, WidgetProps, RJSFSchema } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { TextField } from '@mui/material';
+import { Direction, TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 export const isStartWithHebrewLetter = (value: string) => {
@@ -14,7 +14,7 @@ export const isStartWithHebrewLetter = (value: string) => {
     return isHebrewLetter;
 };
 
-export const getTextDirection = (value: string, schema: RJSFSchema): string => {
+export const getTextDirection = (value: string, schema: RJSFSchema): Direction => {
     if (schema.type === 'string' && value) {
         return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
     }
@@ -68,17 +68,21 @@ const RjsfTextWidget = ({
             {...textFieldProps}
             color="primary"
             variant={variant}
+            fullWidth
             id={id}
             placeholder={placeholder}
             label={displayLabel ? label || schema.title : false}
             autoFocus={autofocus}
             required={required}
             disabled={disabled}
-            inputProps={{
-                readOnly: readonly,
-            }}
             InputLabelProps={{
                 shrink: readonly || undefined,
+            }}
+            inputProps={{
+                readOnly: readonly,
+                style: {
+                    textOverflow: 'ellipsis',
+                },
             }}
             type={(options.inputType ?? inputType) as string}
             value={finalValue}

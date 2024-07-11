@@ -94,6 +94,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     return (
         <ViewingCard
+            width={250}
             title={
                 <Grid
                     container
@@ -542,6 +543,7 @@ const EntityTemplatesRow: React.FC = () => {
                         getOptionLabel={(category) => category.displayName}
                         size="small"
                         isDraggableDisabled
+                        horizontalOrigin={181}
                     />
                 </Grid>
                 <Grid item>

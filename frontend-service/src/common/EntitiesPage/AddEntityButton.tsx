@@ -65,16 +65,8 @@ const AddEntityButton: React.FC<{
                             disabled: false,
                         }
                     }
-                    entity={{
-                        properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' },
-                        templateId: '',
-                    }}
                     onSuccessUpdate={() => {}}
-                    onCancelUpdate={() =>
-                        setAddEntityWizardState({
-                            isOpen: false,
-                        })
-                    }
+                    handleClose={() => setAddEntityWizardState({ isOpen: false })}
                     onSuccessCreate={onSuccessCreate}
                 />
             </Dialog>

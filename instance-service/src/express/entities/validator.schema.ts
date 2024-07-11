@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ignoredRuleSchema } from '../rules/ignoredRuleSchema';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
 
 const { searchEntitiesMaxLimit } = config;
@@ -18,6 +18,17 @@ export const getEntityByIdRequestSchema = Joi.object({
 const commonFormInputSchema = Joi.object({
     name: Joi.string().required(),
     type: Joi.string().required(),
+});
+
+/**
+ * POST /api/instances/entities/ids
+ */
+export const getEntitiesByIdsRequestSchema = Joi.object({
+    query: {},
+    body: {
+        ids: Joi.array().items(Joi.string()).required(),
+    },
+    params: {},
 });
 
 /**
@@ -81,6 +92,7 @@ export const createEntityRequestSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
         properties: Joi.object().required(),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {},
@@ -195,7 +207,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
 export const updateEntityStatusByIdRequestSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {
@@ -210,7 +222,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {

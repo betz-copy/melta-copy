@@ -6,8 +6,9 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { ComponentToPrint } from './ComponentToPrint';
-import { PrintOptionsDialog } from './PrintOptionsDialog';
+import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
 import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { IFile } from '../../../../interfaces/preview';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -19,19 +20,26 @@ const Print: React.FC<{
     }[];
 }> = ({ entityTemplate, expandedEntity, categoriesWithConnectionsTemplates, connectionsTemplates }) => {
     const [openModal, setOpenModal] = React.useState(false);
+
     const handleOpen = () => setOpenModal(true);
     const handleClose = () => setOpenModal(false);
 
     const componentRef = React.useRef(null);
+
+    const [files, setFiles] = React.useState<IFile[]>([]);
+    const [selectedFiles, setSelectedFiles] = React.useState(files);
+
+    const [selectedConnections, setSelectedConnections] = React.useState<IConnectionTemplateOfExpandedEntity[]>([]);
+    const [showDate, setShowDate] = React.useState(true);
+    const [showDisabled, setShowDisabled] = React.useState(true);
+    const [showEntityDates, setShowEntityDates] = React.useState(true);
+    const [showPreviewPropertiesOnly, setShowPreviewPropertiesOnly] = React.useState(false);
+    const [filesLoadingStatus, setFilesLoadingStatus] = React.useState({});
+
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
     });
-
-    const [selected, setSelected] = React.useState(connectionsTemplates);
-    const [showDate, setShowDate] = React.useState(true);
-    const [showDisabled, setShowDisabled] = React.useState(true);
-    const [showEntityDates, setShowEntityDates] = React.useState(true);
 
     const getPageMargins = () => {
         // eslint-disable-next-line quotes
@@ -45,26 +53,48 @@ const Print: React.FC<{
             </IconButtonWithPopover>
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
-
                 <ComponentToPrint
                     ref={componentRef}
                     entityTemplate={entityTemplate}
                     expandedEntity={expandedEntity}
-                    connectionsTemplatesToPrint={selected}
-                    options={{ showDate, showDisabled, showEntityDates }}
+                    connectionsTemplatesToPrint={selectedConnections}
+                    filesToPrint={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
+                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
                 />
             </div>
-            <PrintOptionsDialog
-                open={openModal}
-                expandedEntity={expandedEntity}
-                connectionsTemplates={connectionsTemplates}
-                handleClose={handleClose}
-                selected={selected}
-                setSelected={setSelected}
-                categoriesWithConnectionsTemplates={categoriesWithConnectionsTemplates}
-                onClick={handlePrint}
-                options={{ setShowDate, showDate, showDisabled, setShowDisabled, showEntityDates, setShowEntityDates }}
-            />
+            {openModal && (
+                <PrintOptionsDialog
+                    open={openModal}
+                    entityConnections={{
+                        connectionsTemplates,
+                        selectedConnections,
+                        setSelectedConnections,
+                        categoriesWithConnectionsTemplates,
+                    }}
+                    instance={expandedEntity}
+                    template={entityTemplate}
+                    handleClose={handleClose}
+                    files={files}
+                    setFiles={setFiles}
+                    selectedFiles={selectedFiles}
+                    setSelectedFiles={setSelectedFiles}
+                    filesLoadingStatus={filesLoadingStatus}
+                    setFilesLoadingStatus={setFilesLoadingStatus}
+                    onClick={handlePrint}
+                    options={{
+                        date: { show: showDate, set: setShowDate, label: 'entityPage.print.showDate' },
+                        disabled: { show: showDisabled, set: setShowDisabled, label: 'entityPage.print.showDisabled' },
+                        entityDates: { show: showEntityDates, set: setShowEntityDates, label: 'entityPage.print.showEntityDates' },
+                        previewPropertiesOnly: {
+                            show: showPreviewPropertiesOnly,
+                            set: setShowPreviewPropertiesOnly,
+                            label: 'entityPage.print.showOnlyPreviewProperties',
+                        },
+                    }}
+                />
+            )}
         </>
     );
 };

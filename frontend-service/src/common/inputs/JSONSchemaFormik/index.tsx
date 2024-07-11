@@ -77,6 +77,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    toPrint?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -88,6 +89,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    toPrint = false,
 }) => {
     useEffect(() => {
         // define 100% width to text-area field
@@ -127,6 +129,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TextAreaWidget',
                         'ui:classNames': 'text-area',
+                        'ui:options': { toPrint },
                     };
                 }
                 return {};
@@ -158,7 +161,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextAreaWidget: RjfsTextAreaWidget,
             }}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
     );
 };

@@ -28,7 +28,7 @@ import { IGenericStepPopulated } from '../../../externalServices/processService/
 import { IMongoStepInstance } from '../../../externalServices/processService/interfaces/stepInstance';
 import { InstanceManagerService } from '../../../externalServices/instanceService';
 import { EntityNotExist, NotFoundError } from '../error';
-import { EntityTemplateManagerService } from '../../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService } from '../../../externalServices/templates/entityTemplateService';
 import PermissionsManager from '../../permissions/manager';
 import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';

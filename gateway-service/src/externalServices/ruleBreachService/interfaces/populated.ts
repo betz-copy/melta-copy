@@ -1,7 +1,9 @@
 import {
     IBrokenRule,
+    ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDeleteRelationshipMetadata,
+    IDuplicateEntityMetadata,
     IRuleBreach,
     IUpdateEntityMetadata,
     IUpdateEntityStatusMetadata,
@@ -9,7 +11,6 @@ import {
 } from '.';
 import { IUser } from '../../../express/users/interface';
 import { IEntity } from '../../instanceService/interfaces/entities';
-import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity | null;
@@ -19,6 +20,11 @@ export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelati
 export interface IDeleteRelationshipMetadataPopulated extends Omit<IDeleteRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity | null;
     destinationEntity: IEntity | null;
+}
+
+export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
+export interface IDuplicateEntityMetadataPopulated extends Omit<IDuplicateEntityMetadata, 'entityIdToDuplicate'> {
+    entityToDuplicate: IEntity | null;
 }
 
 export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
@@ -32,12 +38,32 @@ export interface IUpdateEntityStatusMetadataPopulated extends Omit<IUpdateEntity
 export type IActionMetadataPopulated =
     | ICreateRelationshipMetadataPopulated
     | IDeleteRelationshipMetadataPopulated
+    | ICreateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
     | IUpdateEntityStatusMetadataPopulated;
 
-export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'relationshipIds'> {
+export type IEntityForBrokenRules = IEntity | 'created-entity-id' | null;
+export type IRelationshipForBrokenRules = IEntity | 'created-relationship-id' | null;
+
+export interface ICauseInstancePopulated {
+    entity: IEntityForBrokenRules;
+    aggregatedRelationship?: {
+        relationship: IRelationshipForBrokenRules;
+        otherEntity: IEntityForBrokenRules;
+    };
+}
+
+export interface ICausesOfInstancePopulated {
+    instance: ICauseInstancePopulated;
+    properties: string[];
+}
+
+export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'failures'> {
     ruleId: string;
-    relationships: (IRelationshipPopulated | 'created-relationship-id' | null)[];
+    failures: Array<{
+        entity: IEntityForBrokenRules;
+        causes: ICausesOfInstancePopulated[];
+    }>;
 }
 
 export interface IRuleBreachPopulated<T = IActionMetadataPopulated> extends Omit<IRuleBreach<T>, 'originUserId' | 'brokenRules'> {

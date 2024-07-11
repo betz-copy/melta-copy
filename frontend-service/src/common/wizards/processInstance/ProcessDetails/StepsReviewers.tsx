@@ -37,7 +37,11 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
         <Grid item xs={10} marginBottom={1}>
             <Card
                 ref={cardRef}
-                sx={{ height: isEditMode || !processInstance ? '30vh' : '25vh', minHeight: '150px', backgroundColor: darkMode ? '#303030' : 'white' }}
+                sx={{
+                    height: isEditMode || !processInstance ? '30vh' : '25vh',
+                    minHeight: '150px',
+                    backgroundColor: darkMode ? '#303030' : 'white',
+                }}
             >
                 <CardHeader
                     avatar={
@@ -128,6 +132,7 @@ const StepsReviewers: React.FC<IDetailsStepProp> = ({ detailsFormikData, isEditM
                     ))}
                 </Grid>
             </CardContent>
+
             <Grid item container sx={{ justifyContent: 'space-between', alignItems: 'flex-start', padding: 1 }}>
                 <Grid item>
                     <Fab onClick={onBack} color="primary" variant="extended">

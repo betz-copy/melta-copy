@@ -8,7 +8,8 @@ import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { trycatch } from '../../utils/lib';
 import {
     IFilterOfField,
@@ -19,7 +20,8 @@ import {
     IUniqueConstraintOfTemplate,
     IGetExpandedEntityBody,
 } from './interface';
-import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
 const { neo4j } = config;

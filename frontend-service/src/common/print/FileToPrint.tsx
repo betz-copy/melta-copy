@@ -1,0 +1,71 @@
+import React, { useRef, useState } from 'react';
+import { Box, Grid } from '@mui/material';
+import { Document, Page, pdfjs } from 'react-pdf';
+import FlexBox from '../FlexBox';
+import { IFile } from '../../interfaces/preview';
+import { useFilePreview } from '../../utils/useFilePreview';
+
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
+
+const FileToPrint: React.FC<{
+    file: IFile;
+    onPreviewLoadingFinished: (error?: boolean) => void;
+}> = ({ file, onPreviewLoadingFinished }) => {
+    const [numOfPages, setNumOfPages] = useState(0);
+    const fileRef = useRef<HTMLDivElement>(null);
+    const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(false);
+
+    const { data, isFetching: isPreviewLoading } = useFilePreview(file.id, file.contentType, setNoSuchKeyError);
+    const onLoadSuccess = ({ numPages }: { numPages: number }) => {
+        setNumOfPages(numPages);
+    };
+
+    React.useEffect(() => {
+        if (file.contentType === 'image' && isPreviewLoading === false) {
+            onPreviewLoadingFinished();
+        }
+    }, [isPreviewLoading === true]);
+
+    React.useEffect(() => {
+        if (noSuchKeyError) onPreviewLoadingFinished(true);
+    }, [noSuchKeyError === true]);
+
+    return (
+        <Grid item ref={fileRef}>
+            {file.contentType === 'image' ? (
+                <Box
+                    sx={{
+                        overflow: 'auto',
+                        margin: 'auto',
+                        height: '100%',
+                        width: '100%',
+                        display: 'flex',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                    }}
+                >
+                    <img src={data} alt={file.name} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                </Box>
+            ) : (
+                <Document file={data} onLoadSuccess={onLoadSuccess} onLoadError={() => null}>
+                    <FlexBox direction="column" gap={5}>
+                        {Array.from({ length: numOfPages }, (_, i) => (
+                            <div key={`page-${i + 1}`} style={{ marginBottom: '20px', background: 'white', position: 'relative' }}>
+                                <Page
+                                    width={750}
+                                    pageNumber={i + 1}
+                                    onRenderSuccess={() => {
+                                        if (numOfPages !== 0 && i + 1 === numOfPages && isPreviewLoading === false) onPreviewLoadingFinished();
+                                    }}
+                                    renderTextLayer={false}
+                                />
+                            </div>
+                        ))}
+                    </FlexBox>
+                </Document>
+            )}
+        </Grid>
+    );
+};
+
+export { FileToPrint };

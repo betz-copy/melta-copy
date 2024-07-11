@@ -44,6 +44,6 @@ export const deleteFiles = (paths: string[]) => {
 };
 
 export const duplicateFiles = async (paths: string[]) => {
-    const { data } = await axios.post(`${url}/${duplicateFilesRoute}`, { paths });
+    const { data } = await axios.post<{ path: string }[]>(`${url}/${duplicateFilesRoute}`, { paths });
     return data;
 };
