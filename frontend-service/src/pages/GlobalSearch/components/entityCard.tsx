@@ -198,6 +198,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 action: () => {
                                     if (!userHasWritePermissions) return;
                                     setEditDialog({ isOpen: true, entity });
+                                    setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                                 },
                                 popoverText: i18next.t(
                                     !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
@@ -478,12 +479,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onError={(currEntity) => {
+                    onError={(currEntity) =>
                         setEditDialog({
                             isOpen: true,
                             entity: currEntity as IEntity,
-                        });
-                    }}
+                        })
+                    }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}

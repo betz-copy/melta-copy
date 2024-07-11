@@ -179,6 +179,7 @@ const TemplateTable = forwardRef<
                                 isOpen: true,
                                 entity: currEntity,
                             });
+                            setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         },
                         popoverText: i18next.t(
                             !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
@@ -195,12 +196,8 @@ const TemplateTable = forwardRef<
                     isEditMode
                     entityTemplate={template}
                     entityToUpdate={editDialog.expandedEntity ? editDialog.expandedEntity : editDialog.entity!}
-                    onError={(currEntity) => {
-                        setEditDialog({
-                            isOpen: true,
-                            expandedEntity: currEntity,
-                        });
-                    }}
+                    entity={editDialog.entity}
+                    onError={(currEntity) => setEditDialog((prev) => ({ ...prev, isOpen: true, expandedEntity: currEntity }))}
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));

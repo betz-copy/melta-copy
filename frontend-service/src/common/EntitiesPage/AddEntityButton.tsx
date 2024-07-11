@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import { Dialog } from '@mui/material';
 import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
 
 const AddEntityButton: React.FC<{
@@ -16,6 +16,9 @@ const AddEntityButton: React.FC<{
     onSuccessCreate?: (entity: IEntity) => void;
 }> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
+        isOpen: false,
+    });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
     });
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
@@ -31,6 +34,7 @@ const AddEntityButton: React.FC<{
                     onClick: () => {
                         setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                         setExternalErrors({ files: false, unique: {} });
+                        setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                     },
                     style,
                 }}
@@ -76,16 +80,18 @@ const AddEntityButton: React.FC<{
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onError={(currEntity) => {
+                    onError={(currEntity) =>
                         setAddEntityWizardState({
                             isOpen: true,
                             initialStep: 1,
                             initialValues: currEntity,
-                        });
-                    }}
+                        })
+                    }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     onSuccessCreate={onSuccessCreate}
+                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </>
