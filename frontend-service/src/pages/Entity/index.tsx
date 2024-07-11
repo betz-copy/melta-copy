@@ -245,8 +245,6 @@ const ConnectionsTable: React.FC<{
                                   destinationEntity: IEntity;
                               },
                     ) => {
-                        console.log('getRowId', { connection });
-
                         if ('relationship' in connection) {
                             return connection.relationship.properties._id;
                         }
@@ -256,9 +254,7 @@ const ConnectionsTable: React.FC<{
                                 conn.destinationEntity?.properties?._id === (connection as IEntity).properties?._id ||
                                 conn.sourceEntity?.properties?._id === (connection as IEntity).properties?._id,
                         );
-                        console.log({ foundConnection });
-
-                        return foundConnection ? foundConnection.destinationEntity.properties._id : undefined;
+                        return foundConnection ? foundConnection.relationship.properties._id : (connection as IEntity).properties._id;
                     }}
                     getEntityPropertiesData={(
                         connection:
@@ -269,8 +265,6 @@ const ConnectionsTable: React.FC<{
                                   destinationEntity: IEntity;
                               },
                     ) => {
-                        console.log('getEntityPropertiesData', { connection });
-
                         if ('relationship' in connection) {
                             if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
                                 return connection.sourceEntity.properties;
@@ -279,11 +273,8 @@ const ConnectionsTable: React.FC<{
                         }
                         return connection.properties;
                     }}
-                    // rowModelType="clientSide"
                     rowModelType={isExpand ? 'infinite' : 'clientSide'}
                     rowData={expandedEntity.connections.filter((connection) => {
-                        console.log('hic', { connection });
-
                         if (connection.relationship.templateId !== relationshipTemplate._id) return false;
 
                         if (isExpandedEntityRelationshipSource && expandedEntity.entity.properties._id === connection.sourceEntity.properties._id)
@@ -310,6 +301,7 @@ const ConnectionsTable: React.FC<{
                     }}
                     onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
                     hasPermissionToCategory={hasPermissionToCategory}
+                    mainEntity={expandedEntity}
                 />
             </Box>
             <CreateRelationshipDialog

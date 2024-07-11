@@ -31,7 +31,7 @@ import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
 import { trycatch } from '../../utils/trycatch';
@@ -41,6 +41,7 @@ import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import '../../css/resizeTable.css';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import { IRelationship } from '../../interfaces/relationships';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -60,6 +61,8 @@ export const getDatasource = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
+    rowData?: Data[],
+    mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
     return {
         async getRows(params: IServerSideGetRowsParams<Data>) {
@@ -75,9 +78,22 @@ export const getDatasource = <Data extends any = IEntity>(
                 params.fail();
                 return;
             }
-            console.log({ data });
 
-            params.success({ rowData: data.entities.map(({ entity }) => entity), rowCount: data.count });
+            let filteredRowData: IEntity[] = data.entities.map(({ entity }) => entity);
+            if (rowData && mainEntity) {
+                const rowDataIds =
+                    rowData.map((connection) => {
+                        if (connection.destinationEntity.properties._id === mainEntity.entity.properties._id)
+                            return connection.sourceEntity.properties._id;
+                        return connection.destinationEntity.properties._id;
+                    }) ?? [];
+                filteredRowData = filteredRowData.filter((entity) => rowDataIds.includes(entity.properties._id));
+            }
+
+            params.success({
+                rowData: filteredRowData,
+                rowCount: filteredRowData.length,
+            });
         },
     };
 };
@@ -89,9 +105,8 @@ const getRowModelProps = <Data extends any = IEntity>(
     paginationPageSize: number,
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
+    mainEntity?: IEntityExpanded,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
-    console.log({ rowData });
-
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
@@ -99,7 +114,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
-            serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
+            serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail, rowData, mainEntity),
             cacheBlockSize: 50,
             maxBlocksInCache: 10,
             pagination: true,
@@ -110,7 +125,7 @@ const getRowModelProps = <Data extends any = IEntity>(
         // the serverSide includes advanced infinite row model
         rowModelType: 'serverSide',
         pagination: false,
-        serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail),
+        serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail, rowData, mainEntity),
         cacheBlockSize: 50,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
@@ -144,6 +159,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         pageType?: string;
     };
     onFilter?: () => void;
+    mainEntity?: IEntityExpanded;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -177,6 +193,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
+            mainEntity,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -217,9 +234,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 updateRowDataClientSide(data: Data) {
                     gridRef.current?.api.forEachNode((rowNode) => {
-                        console.log({ data });
-                        console.log({ rowNode });
-
                         if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
                             rowNode.updateData(data);
                         }
@@ -270,9 +284,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
             [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
+
         const getStyles = () => ({
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
