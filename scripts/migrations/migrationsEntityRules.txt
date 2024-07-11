@@ -1,0 +1,4 @@
+1. IRule + IFormula - without relationshipId, unpinnedEntityTemplateId. need to rebuild with extra aggregation
+
+2. IBrokenRule - has entityId+causes (instead of only relationshipId). need to rebuild per rule
+

@@ -1,4 +1,4 @@
-import * as express from 'express';
+import express from 'express';
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {

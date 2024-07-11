@@ -43,16 +43,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
     return (
         <ViewingCard
+            width={250}
             title={
-                <Grid
-                    container
-                    direction="row"
-                    justifyContent="space-between"
-                    minWidth="232px"
-                    alignItems="center"
-                    paddingLeft="20px"
-                    flexWrap="nowrap"
-                >
+                <Grid container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />

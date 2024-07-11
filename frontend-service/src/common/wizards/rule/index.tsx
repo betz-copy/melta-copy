@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import { Utils as QbUtils, ImmutableTree } from 'react-awesome-query-builder';
+import { Utils as QbUtils, ImmutableTree } from '@react-awesome-query-builder/mui';
 
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRule, createRuleSchema } from './CreateRule';
@@ -13,11 +13,11 @@ import { IRule, IRuleMap } from '../../../interfaces/rules';
 import { createRuleRequest, updateRuleRequest } from '../../../services/templates/rulesService';
 import { CreateFormula, formulaValidation } from './CreateFormula';
 
-export interface RelationshipTemplateRuleWizardValues extends Omit<IRule, 'formula'> {
+export interface RuleWizardValues extends Omit<IRule, 'formula'> {
     formula: ImmutableTree;
 }
 
-const steps: StepsType<RelationshipTemplateRuleWizardValues> = [
+const steps: StepsType<RuleWizardValues> = [
     {
         label: i18next.t('wizard.rule.ruleMetadata'),
         component: (props, { isEditMode }) => <CreateRule {...props} isEditMode={isEditMode} />,
@@ -30,7 +30,7 @@ const steps: StepsType<RelationshipTemplateRuleWizardValues> = [
     },
 ];
 
-const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>> = ({
+const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
@@ -38,9 +38,7 @@ const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>>
         name: '',
         description: '',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: '',
-        pinnedEntityTemplateId: '',
-        unpinnedEntityTemplateId: '',
+        entityTemplateId: '',
         formula: QbUtils.loadTree({ id: QbUtils.uuid(), type: 'group' }),
         disabled: false,
     },
@@ -48,10 +46,8 @@ const RuleWizard: React.FC<WizardBaseType<RelationshipTemplateRuleWizardValues>>
 }) => {
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
-        (rule: RelationshipTemplateRuleWizardValues) =>
-            isEditMode === true
-                ? updateRuleRequest((initialValues as RelationshipTemplateRuleWizardValues & { _id: string })._id, rule)
-                : createRuleRequest(rule),
+        (rule: RuleWizardValues) =>
+            isEditMode ? updateRuleRequest((initialValues as RuleWizardValues & { _id: string })._id, rule) : createRuleRequest(rule),
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));

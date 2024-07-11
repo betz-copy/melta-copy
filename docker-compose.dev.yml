@@ -132,7 +132,6 @@ services:
   mock-service:
     build: ./mock-service
     environment:
-      ENTITY_TEMPLATE_SERVICE_URL: ${ENTITY_TEMPLATE_SERVICE_URL}
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
       PERMISSION_SERVICE_URL: ${PERMISSION_SERVICE_URL}
@@ -201,6 +200,9 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+
+  activity-log-service:
+    restart: always
 
   notification-service:
     restart: always

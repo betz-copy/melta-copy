@@ -1,3 +1,4 @@
+import type { Property } from 'csstype';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -59,6 +60,8 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    propertiesToHighlight?: string[];
+    propertiesToHighlightColor?: CSSProperties['color'];
     removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
@@ -67,12 +70,28 @@ interface IEntityPropertiesProps {
     isPrintingMode?: boolean;
 }
 
+const getPropertyColor = (
+    propertyKey: string,
+    propertiesToHighlight: string[] | undefined,
+    highlightColor: Property.Color | undefined,
+    mode: 'normal' | 'white',
+    normalColor: Property.Color,
+) => {
+    if (propertiesToHighlight?.includes(propertyKey)) {
+        return highlightColor;
+    }
+
+    return mode === 'white' ? 'white' : normalColor;
+};
+
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
     properties,
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    propertiesToHighlight,
+    propertiesToHighlightColor,
     removeFiles = false,
     style,
     innerStyle,
@@ -81,12 +100,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     isPrintingMode = false,
 }) => {
     let propertiesOrderedToShow: string[];
-    if (overridePropertiesToShow) propertiesOrderedToShow = overridePropertiesToShow;
-    else if (showPreviewPropertiesOnly) {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
-        );
+    if (overridePropertiesToShow) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
+    } else if (showPreviewPropertiesOnly) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>
@@ -112,6 +129,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema,
                 );
 
+                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
+
                 let innerContent;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
                 else if (containsHtmlTags)
@@ -133,7 +153,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
-                    propertySchema.format !== 'text-area'
+                    // todo: make getTextDirection handle all possible value and reuse everywhere
+                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId'
                         ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,
@@ -164,7 +185,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textAlign: 'right',
                                         }}
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#9398C2'}
+                                        color={propertyTitleColor}
                                         fontWeight={mode === 'white' ? '800' : ''}
                                     >
                                         {propertySchema.title}:
@@ -190,7 +211,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 >
                                     <Typography
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#53566E'}
+                                        color={propertyValueColor}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',

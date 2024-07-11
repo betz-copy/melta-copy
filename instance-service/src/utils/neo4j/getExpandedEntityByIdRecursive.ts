@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
 import { IEntityExpanded, IGetExpandedEntityBody } from '../../express/entities/interface';
-import { IMongoEntityTemplate } from '../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 import Neo4jClient from '.';
 import { normalizeReturnedRelAndEntities } from './lib';

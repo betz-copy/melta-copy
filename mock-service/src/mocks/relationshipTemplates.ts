@@ -18,7 +18,7 @@ export const relationshipTemplates = [
         destinationEntityId: { name: 'flight' },
     },
     {
-        name: 'departueFrom',
+        name: 'departureFrom',
         displayName: 'ממריא מ',
         sourceEntityId: { name: 'flight' },
         destinationEntityId: { name: 'airport' },
@@ -39,6 +39,12 @@ export const relationshipTemplates = [
         name: 'flightInTrip',
         displayName: 'טיסה משוייכת לטיול',
         sourceEntityId: { name: 'flight' },
+        destinationEntityId: { name: 'trip' },
+    },
+    {
+        name: 'tripConnectedToAirport',
+        displayName: 'טיסה משוייכת לשדה תעופה',
+        sourceEntityId: { name: 'airport' },
         destinationEntityId: { name: 'trip' },
     },
 ];

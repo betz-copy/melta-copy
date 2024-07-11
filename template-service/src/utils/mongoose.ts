@@ -1,5 +1,5 @@
 import { ClientSession, startSession, Types } from 'mongoose';
-import * as _forEach from 'lodash.foreach';
+import _forEach from 'lodash.foreach';
 import { trycatch } from '.';
 import logger from './logger/logsLogger';
 
@@ -23,6 +23,7 @@ export const withTransaction = async <Func extends (session: ClientSession) => P
 export const transformObjectIdKeysToString = (doc: any) => {
     _forEach(doc, (val, key) => {
         if (val instanceof Types.ObjectId) {
+            // eslint-disable-next-line no-param-reassign
             doc[key] = val.toString();
         }
     });

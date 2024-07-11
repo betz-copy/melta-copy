@@ -20,7 +20,16 @@ export const createActivityRequestSchema = Joi.object({
         entityId: Joi.string().required(),
         userId: Joi.string().required(),
         action: Joi.string()
-            .valid('DELETE_RELATIONSHIP', 'CREATE_RELATIONSHIP', 'UPDATE_ENTITY', 'CREATE_ENTITY', 'DISABLE_ENTITY', 'ACTIVATE_ENTITY', 'VIEW_ENTITY')
+            .valid(
+                'DELETE_RELATIONSHIP',
+                'CREATE_RELATIONSHIP',
+                'UPDATE_ENTITY',
+                'CREATE_ENTITY',
+                'DUPLICATE_ENTITY',
+                'DISABLE_ENTITY',
+                'ACTIVATE_ENTITY',
+                'VIEW_ENTITY',
+            )
             .required(),
         metadata: Joi.when('action', {
             switch: [
@@ -31,6 +40,12 @@ export const createActivityRequestSchema = Joi.object({
                         entityId: Joi.string().required(),
                         relationshipTemplateId: Joi.string().required(),
                     }),
+                },
+                {
+                    is: Joi.valid('DUPLICATE_ENTITY'),
+                    then: Joi.object({
+                        entityIdDuplicatedFrom: Joi.string().required(),
+                    }).required(),
                 },
                 {
                     is: Joi.valid('UPDATE_ENTITY'),

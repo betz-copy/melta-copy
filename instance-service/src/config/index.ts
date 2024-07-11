@@ -51,6 +51,7 @@ const config = {
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
     },
+    createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
@@ -59,6 +60,8 @@ const config = {
 
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
+    cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
+    cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableApm: env.get('ENABLE_APM').default('true').asBool(),

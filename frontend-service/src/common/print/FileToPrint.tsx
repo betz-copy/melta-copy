@@ -1,7 +1,6 @@
 import React, { useRef, useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { isImage } from '../FilePreview/PreviewDialog';
 import FlexBox from '../FlexBox';
 import { IFile } from '../../interfaces/preview';
 import { useFilePreview } from '../../utils/useFilePreview';
@@ -22,7 +21,7 @@ const FileToPrint: React.FC<{
     };
 
     React.useEffect(() => {
-        if (isImage(file.contentType) && isPreviewLoading === false) {
+        if (file.contentType === 'image' && isPreviewLoading === false) {
             onPreviewLoadingFinished();
         }
     }, [isPreviewLoading === true]);
@@ -33,7 +32,7 @@ const FileToPrint: React.FC<{
 
     return (
         <Grid item ref={fileRef}>
-            {isImage(file.contentType) ? (
+            {file.contentType === 'image' ? (
                 <Box
                     sx={{
                         overflow: 'auto',
