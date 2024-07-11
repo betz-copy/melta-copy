@@ -362,7 +362,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 src="/icons/no-file.svg"
                                 style={{
                                     height: '167px',
-                                    zIndex: 2,
                                 }}
                             />
                         </Grid>
