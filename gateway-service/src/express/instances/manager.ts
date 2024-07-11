@@ -191,7 +191,7 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules).catch(
+        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -209,13 +209,13 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'CREATE_ENTITY',
-            entityId: entity.properties._id,
-            metadata: {},
-            timestamp: new Date(),
-            userId,
-        });
+        // await ActivityLogManagerService.createActivityLog({
+        //     action: 'CREATE_ENTITY',
+        //     entityId: entity.properties._id,
+        //     metadata: {},
+        //     timestamp: new Date(),
+        //     userId,
+        // });
         return entity;
     }
 
@@ -244,7 +244,7 @@ export class InstancesManager {
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules).catch(
+        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -345,7 +345,7 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules).catch(
+        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -365,6 +365,7 @@ export class InstancesManager {
         }
 
         await ActivityLogManagerService.createActivityLog({
+            // TODO: Handle duplicate or create in instance-service
             action: 'DUPLICATE_ENTITY',
             entityId: entity.properties._id,
             metadata: {
@@ -414,6 +415,7 @@ export class InstancesManager {
                 properties: { ...uploadedFilesAndProperties },
             },
             ignoredRules,
+            userId,
         ).catch(InstancesManager.handleBrokenRulesError);
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             logger.error(`failed to delete files of instanceId ${id}`),
@@ -502,7 +504,7 @@ export class InstancesManager {
     }
 
     static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules).catch(
+        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -546,7 +548,7 @@ export class InstancesManager {
     }
 
     static async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules).catch(
+        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 

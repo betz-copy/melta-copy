@@ -93,6 +93,7 @@ export const createEntityRequestSchema = Joi.object({
         templateId: Joi.string().required(),
         properties: Joi.object().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        userId: Joi.string().required(),
     },
     query: {},
     params: {},
@@ -208,6 +209,7 @@ export const updateEntityStatusByIdRequestSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        userId: Joi.string().required(),
     },
     query: {},
     params: {
@@ -223,6 +225,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        userId: Joi.string().required(),
     },
     query: {},
     params: {

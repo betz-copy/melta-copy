@@ -73,12 +73,12 @@ describe('Relationship manager', () => {
     });
 
     beforeEach(async () => {
-        firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
+        firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
 
         entityId = firstEntity.properties._id;
 
         // Create second entities
-        secondEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, []);
+        secondEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
 
         secondEntityId = secondEntity.properties._id;
 
@@ -92,6 +92,7 @@ describe('Relationship manager', () => {
             },
             relationshipTemplate,
             [],
+            neo4j.mockUserId,
         );
 
         relId = relationshipInstance.properties._id;
@@ -123,6 +124,7 @@ describe('Relationship manager', () => {
                     },
                     relationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 ),
             ).rejects.toThrowError(`[NEO4J] relationship already exists between requested entities.`);
         });
@@ -161,13 +163,13 @@ describe('Relationship manager', () => {
 
     describe('Delete relationship', () => {
         it('Should delete an existing relationship', async () => {
-            const relationship = await RelationshipManager.deleteRelationshipById(relId, []);
+            const relationship = await RelationshipManager.deleteRelationshipById(relId, [], neo4j.mockUserId);
 
             expect(relationship).toEqual(expect.objectContaining(relationshipInstance));
         });
 
         it('Should fail to delete an existing relationship', async () => {
-            await expect(() => RelationshipManager.deleteRelationshipById(unknownId, [])).rejects.toThrowError(
+            await expect(() => RelationshipManager.deleteRelationshipById(unknownId, [], neo4j.mockUserId)).rejects.toThrowError(
                 `[NEO4J] relationship "${unknownId}" not found`,
             );
         });
