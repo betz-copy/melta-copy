@@ -54,18 +54,21 @@ export class InstancesManager {
             }
         });
 
+        const updatedProps = { ...props };
+
         Object.keys(filesToUpload).forEach((key) => {
             if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
-                    props[key] = [...props[key], ...filesToUpload[key]];
+                    updatedProps[key] = [...props[key], ...filesToUpload[key]];
                 } else {
-                    props[key] = [props[key], ...filesToUpload[key]];
+                    updatedProps[key] = [props[key], ...filesToUpload[key]];
                 }
             } else if (props) {
-                props[key] = filesToUpload[key];
+                updatedProps[key] = filesToUpload[key];
             }
         });
-        return { props, files: filesToUpload };
+
+        return { props: updatedProps, files: filesToUpload };
     }
 
     static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -144,15 +147,22 @@ export class InstancesManager {
         createAlert: boolean = true,
         action: boolean = false,
     ) {
+        console.log('hiii');
+
+        console.log({ updatedInstance }, { id });
+
         const updatedFields: Record<string, any> = {};
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(updatedInstance.templateId);
+
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+        console.log({ entityTemplate }, { currentEntity });
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
             const field = fields[i];
             const propertyTemplate = entityTemplate.properties.properties[field];
+            console.log({ field }, { propertyTemplate });
 
             let newValue: any;
             if ((propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') && !action) {
@@ -168,6 +178,8 @@ export class InstancesManager {
             )
                 continue;
             if (currentEntity.properties[field] === newValue) continue;
+
+            console.log({ newValue });
 
             updatedFields[field] = newValue ?? null;
             activityLogUpdatedFields.push({
@@ -191,14 +203,15 @@ export class InstancesManager {
                 userId,
             );
         }
+        console.log({ activityLogUpdatedFields });
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: id,
-            timestamp: new Date(),
-            userId,
-        });
+        // await ActivityLogManagerService.createActivityLog({
+        //     action: 'UPDATE_ENTITY',
+        //     metadata: { updatedFields: activityLogUpdatedFields },
+        //     entityId: id,
+        //     timestamp: new Date(),
+        //     userId,
+        // });
     }
 
     static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
@@ -234,6 +247,11 @@ export class InstancesManager {
         }
         const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData);
         const { createdEntity, updatedEntities } = createInstanceOutput;
+        console.log(
+            'hiii',
+            { createdEntity },
+            updatedEntities.map((updatedd) => updatedd.properties),
+        );
 
         await ActivityLogManagerService.createActivityLog({
             action: 'CREATE_ENTITY',
