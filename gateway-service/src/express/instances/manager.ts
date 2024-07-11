@@ -14,7 +14,6 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
-import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogService';
 import { trycatch } from '../../utils';
 import {
     ActionTypes,
@@ -209,13 +208,6 @@ export class InstancesManager {
             );
         }
 
-        // await ActivityLogManagerService.createActivityLog({
-        //     action: 'CREATE_ENTITY',
-        //     entityId: entity.properties._id,
-        //     metadata: {},
-        //     timestamp: new Date(),
-        //     userId,
-        // });
         return entity;
     }
 
@@ -262,13 +254,6 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: disabledStatus ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
-            metadata: {},
-            entityId: id,
-            timestamp: new Date(),
-            userId,
-        });
         return entity;
     }
 
@@ -364,27 +349,7 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            // TODO: Handle duplicate or create in instance-service
-            action: 'DUPLICATE_ENTITY',
-            entityId: entity.properties._id,
-            metadata: {
-                entityIdDuplicatedFrom: id,
-            },
-            timestamp: new Date(),
-            userId,
-        });
         return entity;
-    }
-
-    static async viewEntityInstance(id: string, userId: string) {
-        await ActivityLogManagerService.createActivityLog({
-            action: 'VIEW_ENTITY',
-            entityId: id,
-            metadata: {},
-            timestamp: new Date(),
-            userId,
-        });
     }
 
     static async updateEntityInstance(
@@ -422,7 +387,6 @@ export class InstancesManager {
         );
 
         const updatedFields: Record<string, any> = {};
-        const activityLogUpdatedFields: IUpdatedFields[] = [];
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -445,11 +409,6 @@ export class InstancesManager {
             if (currentEntity.properties[field] === newValue) continue;
 
             updatedFields[field] = newValue ?? null;
-            activityLogUpdatedFields.push({
-                fieldName: field,
-                oldValue: currentEntity.properties[field] ?? null,
-                newValue: newValue ?? null,
-            });
         }
 
         if (createAlert && ignoredRules.length) {
@@ -467,13 +426,6 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: updatedInstance.properties._id,
-            timestamp: new Date(),
-            userId,
-        });
         return updatedInstance;
     }
 
@@ -523,27 +475,6 @@ export class InstancesManager {
             );
         }
 
-        const updatedFields = {
-            action: 'CREATE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: createdRelationship.templateId,
-                relationshipId: createdRelationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
-        });
-
         return createdRelationship;
     }
 
@@ -567,27 +498,6 @@ export class InstancesManager {
                 userId,
             );
         }
-
-        const updatedFields = {
-            action: 'DELETE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: relationship.templateId,
-                relationshipId: relationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.sourceEntityId },
-        });
 
         return relationship;
     }
