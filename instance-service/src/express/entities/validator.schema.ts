@@ -94,6 +94,7 @@ export const createEntityRequestSchema = Joi.object({
         properties: Joi.object().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
+        duplicatedFromId: Joi.string().optional(),
     },
     query: {},
     params: {},

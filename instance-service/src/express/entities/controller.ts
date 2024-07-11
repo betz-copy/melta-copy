@@ -8,7 +8,7 @@ class EntityController {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
 
         res.json(
-            await EntityManager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.populdatedFromId),
+            await EntityManager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
         );
     }
 
