@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
-import { IRelationship } from '../../express/relationships/interface';
+import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 

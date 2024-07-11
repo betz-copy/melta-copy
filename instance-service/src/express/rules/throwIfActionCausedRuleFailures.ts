@@ -11,13 +11,19 @@ import { filteredMap } from '../../utils/filteredMap';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
 
-const { createdEntityIdInBrokenRules, createdRelationshipIdInBrokenRules } = config;
+
+const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
+    const index = actionsResults.findIndex((actionResult) => {
+        actionResult.createdRelationshipId === relationshipId;
+    });
+
+    return index === -1 ?  relationshipId : `$${index}._id`;
+} 
 
 const getCauseFormattedForBrokenRules = (
     cause: ICausesOfInstance,
-    options: { createdRelationshipId?: string; createdEntityId?: string },
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
 ): ICausesOfInstance => {
-    const { createdEntityId, createdRelationshipId } = options;
     const {
         instance: { entityId, aggregatedRelationship },
         ...restOfCause
@@ -27,28 +33,37 @@ const getCauseFormattedForBrokenRules = (
     if (aggregatedRelationship) {
         const { relationshipId, otherEntityId } = aggregatedRelationship;
         formattedAggregatedRelationship = {
-            relationshipId: relationshipId === createdRelationshipId ? createdRelationshipIdInBrokenRules : relationshipId,
-            otherEntityId: otherEntityId === createdEntityId ? createdEntityIdInBrokenRules : otherEntityId, // no way createdEntity would be as otherEntityId, but just in case
+            relationshipId: getRelationshipIdFormattedForBrokenRules(actionsResults, relationshipId),
+            otherEntityId: getEntityIdFormattedForBrokenRules(actionsResults, otherEntityId), // no way createdEntity would be as otherEntityId, but just in case
         };
     }
 
     return {
         ...restOfCause,
         instance: {
-            entityId: entityId === createdEntityId ? createdEntityIdInBrokenRules : entityId,
+            entityId: getEntityIdFormattedForBrokenRules(actionsResults, entityId),
             aggregatedRelationship: formattedAggregatedRelationship,
         },
     };
 };
 
-const getBrokenRuleFormatted = (brokenRule: IBrokenRule, options: { createdRelationshipId?: string; createdEntityId?: string }): IBrokenRule => {
+
+const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
+    const index = actionsResults.findIndex((actionResult) => {
+        actionResult.createdEntityId === entityId;
+    });
+
+    return index === -1 ?  entityId : `$${index}._id`;
+}
+
+const getBrokenRuleFormatted = (brokenRule: IBrokenRule, actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[]): IBrokenRule => {
     const { ruleId, failures } = brokenRule;
 
     return {
         ruleId,
         failures: failures.map(({ entityId, causes }) => ({
-            entityId: entityId === options.createdEntityId ? createdEntityIdInBrokenRules : entityId,
-            causes: causes.map((cause) => getCauseFormattedForBrokenRules(cause, options)),
+            entityId: getEntityIdFormattedForBrokenRules(actionsResults, entityId),
+            causes: causes.map((cause) => getCauseFormattedForBrokenRules(cause, actionsResults)),
         })),
     };
 };
@@ -87,7 +102,7 @@ export const throwIfActionCausedRuleFailures = (
     ignoredRules: IBrokenRule[],
     ruleFailuresBeforeAction: IRuleFailure[],
     ruleFailuresAfterAction: IRuleFailure[],
-    actionOptions: { createdRelationshipId?: string; createdEntityId?: string },
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; }[],
 ) => {
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
@@ -112,7 +127,7 @@ export const throwIfActionCausedRuleFailures = (
             ruleId,
             failures: ruleFailuresOfRuleId.map(({ entityId, causes }) => ({ entityId, causes })),
         }))
-        .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionOptions));
+        .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionsResults));
 
     if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
         throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {

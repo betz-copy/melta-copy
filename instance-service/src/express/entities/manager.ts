@@ -114,7 +114,7 @@ export class EntityManager {
             );
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
-            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
+            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction,  [{ createdEntityId: createdEntity.properties._id}]);
 
             return createdEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction      
@@ -194,6 +194,20 @@ export class EntityManager {
 
     static async getEntitiesByIds(ids: string[]) {
         return Neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
+    }
+    
+    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
+        await Neo4jClient.readTransaction(
+            `MATCH (p {_id:'${id}'})
+             CALL apoc.path.expandConfig(p, {
+                labelFilter: '${templateIds.join('|')}',
+                minLevel: 0,
+                maxLevel: ${numOfConnections}
+             })
+             YIELD path
+             RETURN apoc.path.elements(path)`,
+            normalizeReturnedRelAndEntities(disabled),
+        );
     }
 
     static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
@@ -296,7 +310,7 @@ export class EntityManager {
 
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
             return updatedEntity;
         });
@@ -417,7 +431,7 @@ export class EntityManager {
             );
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction

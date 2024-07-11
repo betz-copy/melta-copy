@@ -66,7 +66,7 @@ export class RuleBreachesManager {
         ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
-    ): Promise<IRuleBreachRequestPopulated<IActionMetadataPopulated>> {
+    ): Promise<IRuleBreachRequestPopulated> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData, files);
         // TODO - here
 
@@ -115,7 +115,7 @@ export class RuleBreachesManager {
         ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
-    ): Promise<IRuleBreachAlertPopulated<IActionMetadataPopulated>> {
+    ): Promise<IRuleBreachAlertPopulated> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachAlertData, files);
 
         const { result, err } = await trycatch(async () => {

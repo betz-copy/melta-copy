@@ -9,18 +9,22 @@ import {
     normalizeReturnedDeletedRelationship,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import { ActionType, IAction, IRelationship } from './interface';
+import { EntitiesIdsRulesReasonsMap, IRelationship } from './interfaces';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interfaces/action';
 import { NotFoundError, ServiceError } from '../error';
 import EntityManager from '../entities/manager';
 import { IEntity } from '../entities/interface';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
-import { areAllBrokenRulesIgnored, throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
+import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
-import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
+import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import groupBy from 'lodash.groupby';
+import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -47,6 +51,26 @@ export class RelationshipManager {
     static async getRelationshipsCountByTemplateId(templateId: string) {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
+
+    /**
+     *
+     * search many rules
+     *
+     * map rules by entity
+     *
+     * const [
+     *  {
+     *      entity,
+     *      ruleReason:
+     *          { type: 'dependentViaAggregation', dependentRelationshipTemplateId: string, updatedProperties?: string[] }
+     *          | { type: 'dependentOnEntity', updatedProperties?: string[] }
+     *  }
+     * ]
+     *
+     * const [
+     *  {entity, relevantRules: []}
+     * ]
+     */
 
     static runRulesOnEntityDependentViaAggregation = async (
         transaction: Transaction,
@@ -89,7 +113,12 @@ export class RelationshipManager {
         return ruleFailures.flat();
     }
 
-    static async validateCreateRelationshipDuplicate(transaction: Transaction, templateId: string, sourceEntityId: string, destinationEntityId: string) {
+    static async validateCreateRelationshipDuplicate(
+        transaction: Transaction,
+        templateId: string,
+        sourceEntityId: string,
+        destinationEntityId: string,
+    ) {
         const countOfExistingRelationships = await runInTransactionAndNormalize(
             transaction,
             `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
@@ -143,15 +172,17 @@ export class RelationshipManager {
                 destinationEntityId,
             );
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {
-                createdRelationshipId: createdRelationship.properties._id,
-            });
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [
+                {
+                    createdRelationshipId: createdRelationship.properties._id,
+                },
+            ]);
 
             return createdRelationship;
         });
     }
 
-    static getRelationshipByResults(relationship: IRelationship, results: (IEntity | IRelationship | IBrokenRule[])[]) {
+    static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
         if (relationship.destinationEntityId.startsWith('$')) {
             relationshipToReturn.destinationEntityId = (results[relationship.destinationEntityId[1]] as IEntity).properties._id;
@@ -163,70 +194,262 @@ export class RelationshipManager {
         return relationshipToReturn;
     }
 
-    static async runBulkOfActionsInTransaction(actions: IAction[], ignoredRules: IBrokenRule[], transaction: Transaction) {
-        const results: (IEntity | IRelationship | IBrokenRule[])[] = [];
-        const brokenRules: IBrokenRule[] = [];
+    static getEntitiesIdsRulesReasonsBefore = (actions: IAction[], relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>) => {
+        const entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap = new Map();
 
-        // TODO - run broken rules before and after
+        const entitiesTemplatesIdsOfRules = new Set<string>();
 
-        for (let i = 0; i < actions.length; i += 1) {
-            const action = actions[i];
-            if (action.actionType === ActionType.CREATE_ENTITY) {
-                const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById((action.metadata.entity as IEntity).templateId);
-                try {
-                    results.push(await EntityManager.createEntityInTransaction(transaction, action.metadata.entity as IEntity, entityTemplate));
-                } catch (error) {
-                    if (error instanceof ServiceError && (error.metadata as any).errorCode === config.errorCodes.ruleBlock) {
-                        results.push((error.metadata as any).brokenRules as IBrokenRule[]);
-                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[]));
-                    }
-                }
-            } else {
-                const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(
-                    (action.metadata.relationship as IRelationship).templateId,
-                );
-                try {
-                    results.push(
-                        await RelationshipManager.createRelationshipInTransaction(
-                            transaction,
-                            RelationshipManager.getRelationshipByResults(action.metadata.relationship as IRelationship, results),
-                            relationshipTemplate,
-                            [],
+        actions.forEach((action) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                entitiesTemplatesIdsOfRules.add((action.actionMetadata as ICreateEntityMetadata).templateId);
+            } else if (action.actionType === ActionTypes.CreateRelationship) {
+                const actionMetadata = action.actionMetadata as ICreateRelationshipMetadata;
+
+                const relationshipTemplate = relationshipsTemplatesByIds.get(actionMetadata.relationshipTemplateId)!;
+
+                const entitiesDatas = [
+                    {
+                        entityId: actionMetadata.sourceEntityId,
+                        entityTemplateId: relationshipTemplate.sourceEntityId,
+                    },
+                    {
+                        entityId: actionMetadata.destinationEntityId,
+                        entityTemplateId: relationshipTemplate.destinationEntityId,
+                    },
+                ].filter(({ entityId }) => {
+                    return !entityId.startsWith('$'); // then it's entity that will be created in prev actions, so cant run rule on entity that doesnt exist
+                });
+
+                entitiesDatas.forEach((entityData) => {
+                    entitiesTemplatesIdsOfRules.add(entityData.entityTemplateId);
+                    const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData) || [];
+                    reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
+
+                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData, reasons);
+                });
+            }
+        });
+
+        return { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules };
+    };
+
+    static getEntitiesIdsRulesReasonsAfter = (
+        actions: IAction[],
+        results: (IEntity | IRelationship)[],
+        relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>,
+    ) => {
+        const entitiesIdsRulesReasonsMapAfterRunActions: EntitiesIdsRulesReasonsMap = new Map();
+        actions.forEach((action, i) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                const entity = results[i] as IEntity;
+
+                const entityData = {
+                    entityId: entity.properties._id,
+                    entityTemplateId: entity.templateId,
+                };
+
+                const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData) || [];
+                reasons.push({ type: 'dependentOnEntity' });
+
+                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData, reasons);
+            } else if (action.actionType === ActionTypes.CreateRelationship) {
+                const relationship = results[i] as IRelationship;
+
+                const relationshipTemplate = relationshipsTemplatesByIds.get(relationship.templateId)!;
+
+                const entitiesDatas = [
+                    {
+                        entityId: relationship.sourceEntityId,
+                        entityTemplateId: relationshipTemplate.sourceEntityId,
+                    },
+                    {
+                        entityId: relationship.destinationEntityId,
+                        entityTemplateId: relationshipTemplate.destinationEntityId,
+                    },
+                ];
+
+                entitiesDatas.forEach((entityData) => {
+                    const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData) || [];
+                    reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: relationship.templateId });
+
+                    entitiesIdsRulesReasonsMapAfterRunActions.set(entityData, reasons);
+                });
+            }
+        });
+
+        return entitiesIdsRulesReasonsMapAfterRunActions;
+    };
+
+    static getRelevantRulesOfEntities = (
+        entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap,
+        rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
+    ) => {
+        // sort relevant rules by each entity
+        const entitiesRelevantRulesMap = new Map<
+            {
+                entityId: string;
+                entityTemplateId: string;
+            },
+            IMongoRule[]
+        >();
+
+        entitiesIdsRulesReasonsMapBeforeRunActions.forEach((reasons, entityData) => {
+            const relevantRules: IMongoRule[] = [];
+
+            reasons.forEach((reason) => {
+                if (reason.type === 'dependentOnEntity') {
+                    relevantRules.push(
+                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityData.entityTemplateId] || [], entityData.entityTemplateId),
+                    );
+                } else if (reason.type === 'dependentViaAggregation') {
+                    relevantRules.push(
+                        ...filterDependentRulesViaAggregation(
+                            rulesByEntityTemplateIds[entityData.entityTemplateId] || [],
+                            reason.dependentRelationshipTemplateId,
+                            reason.updatedProperties,
                         ),
                     );
-                } catch (error) {
-                    if (error instanceof ServiceError && (error.metadata as any).errorCode === config.errorCodes.ruleBlock) {
-                        results.push((error.metadata as any).brokenRules as IBrokenRule[]);
-                        brokenRules.push(...((error.metadata as any).brokenRules as IBrokenRule[])); // TODO - broken rules array foreach action
-                    }
                 }
+            });
+
+            entitiesRelevantRulesMap.set(entityData, relevantRules);
+        });
+
+        return entitiesRelevantRulesMap;
+    };
+
+    static async runRulesOnEntitiesWithRuleReasons(
+        transaction: Transaction,
+        entitiesIdsRulesReasonsMap: EntitiesIdsRulesReasonsMap,
+        rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
+    ) {
+        const entitiesRelevantRulesMap = RelationshipManager.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
+
+        const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
+        entitiesRelevantRulesMap.forEach((relevantRules, entityData) => {
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityData.entityId, relevantRules));
+        });
+
+        const ruleFailures = (await Promise.all(ruleFailuresPromises)).flat();
+
+        return ruleFailures;
+    }
+
+    static async runBulkOfActionsInTransaction(transaction: Transaction, actions: IAction[], entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) { 
+        const results: (IEntity | IRelationship)[] = [];
+        for (const action of actions) {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
+                results.push(
+                    await EntityManager.createEntityInTransaction(
+                        transaction,
+                        actionMetadata,
+                        entitiesTemplatesByIds.get(actionMetadata.templateId)!,
+                    ),
+                );
+            } else {
+                const actionMetadata = action.actionMetadata as ICreateRelationshipMetadata;
+                const relationship: IRelationship = {
+                    templateId: actionMetadata.relationshipTemplateId,
+                    sourceEntityId: actionMetadata.sourceEntityId,
+                    destinationEntityId: actionMetadata.destinationEntityId,
+                    properties: {},
+                };
+                const fixedRelationship = RelationshipManager.getRelationshipByPrevResults(relationship, results);
+
+                await RelationshipManager.validateCreateRelationshipDuplicate(
+                    transaction,
+                    fixedRelationship.templateId,
+                    fixedRelationship.sourceEntityId,
+                    fixedRelationship.destinationEntityId,
+                );
+
+                results.push(await RelationshipManager.createRelationshipInTransaction(transaction, fixedRelationship));
             }
         }
 
-        console.log({ignoredRules});
+        return results;
+    }
 
-        // TODO
-        if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-        //     throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {
-        //         errorCode: config.errorCodes.ruleBlock,
-        //         brokenRules,
-        //     });
-            console.log('not all rules are ignored...');
-        }
+    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean) {
+        return Neo4jClient.performComplexTransaction(
+            'writeTransaction',
+            async (transaction) => {
+                // collecting all relationshipTemplatesIds
+                const entityTemplateIds: string[] = [];
+                const relationshipTemplateIds: string[] = [];
 
-        return brokenRules;
+                actions.forEach((action) => {
+                    if (action.actionType === ActionTypes.CreateRelationship) {
+                        relationshipTemplateIds.push((action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId);
+                    }
+                });
+
+                // get all entityTemplates group by entityTemplateId
+                const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: entityTemplateIds });
+                const relationshipTemplates = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: relationshipTemplateIds });
+
+                const entitiesTemplatesByIds = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+                const relationshipsTemplatesByIds = new Map(
+                    relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
+                );
+
+                // TODO - run broken rules before and after
+
+                // collecting all the entitiesIds and their rules for preparation to search their related rules
+                const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } =
+                    RelationshipManager.getEntitiesIdsRulesReasonsBefore(actions, relationshipsTemplatesByIds);
+
+                // search rules of entities
+                const rulesOfEntities = await RelationshipsTemplateManagerService.searchRules({
+                    entityTemplateIds: [...entitiesTemplatesIdsOfRules],
+                });
+
+                const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
+
+                const ruleFailuresBeforeAll = await RelationshipManager.runRulesOnEntitiesWithRuleReasons(
+                    transaction,
+                    entitiesIdsRulesReasonsMapBeforeRunActions,
+                    rulesByEntityTemplateIds,
+                );
+
+                const results = await RelationshipManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds);
+
+                const entitiesIdsRulesReasonsMapAfterRunActions = RelationshipManager.getEntitiesIdsRulesReasonsAfter(
+                    actions,
+                    results,
+                    relationshipsTemplatesByIds,
+                );
+
+                const ruleFailuresAfterAll = await RelationshipManager.runRulesOnEntitiesWithRuleReasons(
+                    transaction,
+                    entitiesIdsRulesReasonsMapAfterRunActions,
+                    rulesByEntityTemplateIds,
+                );
+
+                throwIfActionCausedRuleFailures(
+                    ignoredRules,
+                    ruleFailuresBeforeAll,
+                    ruleFailuresAfterAll,
+                    actions.map((action) => {
+                        if (action.actionType === ActionTypes.CreateEntity)
+                            return { createdEntityId: (action.actionMetadata as ICreateEntityMetadata).properties._id };
+                        if (action.actionType === ActionTypes.CreateRelationship)
+                            return { createdRelationshipId: (action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId };
+                        return {};
+                    }),
+                );
+
+                return results;
+            },
+            dryRun,
+        );
     }
 
     static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean) {
-        const transactionsPromises = actionsGroups.map((actionsGroup) =>
-            Neo4jClient.performComplexTransaction(
-                'writeTransaction',
-                async (transaction) => {
-                    return RelationshipManager.runBulkOfActionsInTransaction(actionsGroup, ignoredRules, transaction);
-                },
-                dryRun,
-            ),
-        );
+        const transactionsPromises = actionsGroups.map((actionsGroup) => {
+            return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun);
+        });
 
         return Promise.all(transactionsPromises);
     }
@@ -272,7 +495,7 @@ export class RelationshipManager {
                 relationship.destinationEntityId,
             );
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
             return relationship;
         });
