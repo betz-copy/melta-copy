@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ignoredRuleSchema } from '../rules/ignoredRuleSchema';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 /**
  * GET /api/instances/relationships/:id
@@ -45,7 +45,7 @@ export const createRelationshipRequestSchema = Joi.object({
             sourceEntityId: Joi.string().required(),
             destinationEntityId: Joi.string().required(),
         },
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {},
@@ -57,7 +57,7 @@ export const createRelationshipRequestSchema = Joi.object({
 export const deleteRelationshipByIdRequestSchema = Joi.object({
     query: {},
     body: {
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     params: {
         id: Joi.string().required(),
@@ -77,7 +77,7 @@ export const updateRelationshipByIdRequestSchema = Joi.object({
     },
 });
 
-export const getRelationshipsConnectionsByIdRequestSchema = Joi.object({
+export const getRelationshipsByIdsRequestSchema = Joi.object({
     body: {
         ids: Joi.array().items(Joi.string()).required(),
     },

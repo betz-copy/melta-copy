@@ -6,8 +6,8 @@ import {
     deleteRelationshipByIdRequestSchema,
     updateRelationshipByIdRequestSchema,
     getRelationshipsCountRequestSchema,
-    getRelationshipsConnectionsByIdRequestSchema,
     runBulkOfActionsInMultipleTransactionsSchema,
+    getRelationshipsByIdsRequestSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
 import RelationshipController from './controller';
@@ -15,11 +15,7 @@ import { validateRelationship } from './validator.template';
 
 const relationshipRouter: Router = Router();
 
-relationshipRouter.post(
-    '/connections',
-    ValidateRequest(getRelationshipsConnectionsByIdRequestSchema),
-    wrapController(RelationshipController.getRelationshipsConnectionsById),
-);
+relationshipRouter.post('/ids', ValidateRequest(getRelationshipsByIdsRequestSchema), wrapController(RelationshipController.getRelationshipsByIds));
 relationshipRouter.get(
     '/count',
     ValidateRequest(getRelationshipsCountRequestSchema),

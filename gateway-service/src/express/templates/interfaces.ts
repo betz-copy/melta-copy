@@ -3,25 +3,26 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-} from '../../externalServices/entityTemplateService';
+} from '../../externalServices/templates/entityTemplateService';
+import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IMongoEntityTemplateWithConstraints extends IMongoEntityTemplate {
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IEntityTemplateWithConstraintsPopulated extends IEntityTemplatePopulated {
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 
 export interface IMongoEntityTemplateWithConstraintsPopulated extends IMongoEntityTemplatePopulated {
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
     properties: IEntityTemplate['properties'] & { required: string[] };
 }
 

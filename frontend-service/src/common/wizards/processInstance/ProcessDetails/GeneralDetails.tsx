@@ -20,20 +20,45 @@ import { EntityReference } from '../EntityReference';
 import { ProcessStepValues } from '../ProcessSteps';
 import { initDetailsValues } from './detailsFormik';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { TextAreaProperty } from '../ProcessSteps/processStep';
+import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
-export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched }) => {
+export const SchemaForm = ({ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }) => {
+    const schema = pickProcessFieldsPropertiesSchema(values.template.details);
+    const textAreaSchema = Object.entries(schema.properties)
+        .filter(([_key, property]) => property.format === 'text-area')
+        .map(([key, property]) => ({
+            key,
+            title: property.title,
+        }));
+
+    const textAreaValues = textAreaSchema.flatMap((property) => {
+        if (values.details[property.key]) {
+            const value = renderHTML(values.details[property.key]);
+            return [{ ...property, value }];
+        }
+        return [{ ...property }];
+    });
+
     return (
         <Box paddingTop={0.5} paddingLeft={1}>
-            <BlueTitle title={i18next.t('wizard.entityTemplate.properties')} component="h6" variant="h6" />
+            <BlueTitle
+                title={i18next.t('wizard.entityTemplate.properties')}
+                style={{ marginTop: toPrint ? '30px' : undefined }}
+                component="h6"
+                variant="h6"
+            />
             <JSONSchemaFormik
-                schema={pickProcessFieldsPropertiesSchema(values.template.details)}
+                schema={schema}
                 values={{ ...values, properties: values.details }}
                 setValues={(propertiesValues) => setFieldValue('details', propertiesValues)}
                 errors={errors.details ?? {}}
                 touched={touched.details ?? {}}
                 setFieldTouched={(field) => setFieldTouched(`details.${field}`)}
                 readonly={viewMode}
+                toPrint={toPrint}
             />
+            {toPrint && textAreaValues.length > 0 && textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
         </Box>
     );
 };
@@ -48,6 +73,7 @@ type FileAttachmentsProps = {
     required?: string[];
     touched: FormikProps<ProcessDetailsValues>['touched'];
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    toPrint?: boolean;
 };
 
 const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
@@ -98,7 +124,7 @@ const FileAttachmentsEdit: React.FC<FileAttachmentsProps> = ({
     </>
 );
 
-export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values }) => {
+export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFileProperties, values, toPrint }) => {
     return (
         <>
             {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
@@ -109,9 +135,9 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
                 );
                 if (values.detailsAttachments[fieldName]) {
                     if (Array.isArray(values.detailsAttachments[fieldName])) {
-                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} />);
+                        attachments = values.detailsAttachments[fieldName].map((v) => <OpenPreview key={v} fileId={v.name} download={toPrint} />);
                     } else {
-                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} />;
+                        attachments = <OpenPreview fileId={values.detailsAttachments[fieldName].name} download={toPrint} />;
                     }
                 }
                 return (
@@ -131,7 +157,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     );
 };
 
-const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched }) => {
+const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched, toPrint }) => {
     return (
         <Box>
             <BlueTitle title={i18next.t('wizard.entityTemplate.attachments')} component="h6" variant="h6" style={{ marginBottom: '22px' }} />
@@ -151,13 +177,14 @@ const FileAttachments = ({ viewMode, templateFileProperties, values, errors, tou
                     values={values}
                     touched={touched}
                     setFieldTouched={setFieldTouched}
+                    toPrint={toPrint}
                 />
             )}
         </Box>
     );
 };
 
-const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode }) => {
+const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext, processInstance, isEditMode, toPrint }) => {
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
@@ -200,8 +227,8 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: '56vh', overflowY: 'auto' }}>
-                <Grid container direction="column" paddingLeft={4} justifyContent="space-around">
+            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }}>
+                <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
                             <Grid item container justifyContent="flex-start">
@@ -282,9 +309,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                 InputLabelProps={{
                                                     shrink: viewMode || undefined,
                                                 }}
-                                                onChange={(e) => {
-                                                    setFieldValue('name', e.target.value);
-                                                }}
+                                                onChange={(e) => setFieldValue('name', e.target.value)}
                                                 helperText={touched.name ? errors.name : ''}
                                                 error={touched.name && Boolean(errors.name)}
                                                 onBlur={handleBlur}
@@ -378,12 +403,12 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                         item
                                         sx={{
                                             overflowY: 'auto',
-                                            paddingLeft: 3,
+                                            paddingLeft: toPrint ? 0 : 3,
                                         }}
-                                        xs={7}
+                                        xs={toPrint ? 15 : 7}
                                     >
                                         {Object.keys(pickProcessFieldsPropertiesSchema(values.template.details).properties).length !== 0 && (
-                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched }} />
+                                            <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
                                         )}
                                         {Object.keys(templateFileProperties!).length !== 0 && (
                                             <FileAttachments
@@ -397,6 +422,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                                                     touched,
                                                     handleBlur,
                                                     setFieldTouched,
+                                                    toPrint,
                                                 }}
                                             />
                                         )}
@@ -444,22 +470,24 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                     </Grid>
                 </Grid>
             </CardContent>
-            <CardActions dir="ltr">
-                <Grid item>
-                    {values.template && (
-                        <Fab
-                            onClick={() => {
-                                onNext();
-                            }}
-                            variant="extended"
-                            color="primary"
-                        >
-                            <NavigateBeforeIcon />
-                            {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
-                        </Fab>
-                    )}
-                </Grid>
-            </CardActions>
+            {!toPrint && (
+                <CardActions dir="ltr">
+                    <Grid item>
+                        {values.template && (
+                            <Fab
+                                onClick={() => {
+                                    onNext();
+                                }}
+                                variant="extended"
+                                color="primary"
+                            >
+                                <NavigateBeforeIcon />
+                                {i18next.t(viewMode ? 'wizard.processInstance.showStepsReviewers' : 'wizard.processInstance.moveToStepsReviewers')}
+                            </Fab>
+                        )}
+                    </Grid>
+                </CardActions>
+            )}
         </Card>
     );
 };

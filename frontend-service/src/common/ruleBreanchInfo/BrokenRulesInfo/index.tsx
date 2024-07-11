@@ -6,13 +6,14 @@ import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';
 import { IRuleMap } from '../../../interfaces/rules';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 
 export const BrokenRulesInfo: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
+    actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
-}> = ({ brokenRules, actionMetadata, isCompact }) => {
+}> = ({ brokenRules, actionType, actionMetadata, isCompact }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
@@ -34,6 +35,7 @@ export const BrokenRulesInfo: React.FC<{
                                 key={`${brokenRule.ruleId}/${index}`}
                                 brokenRule={brokenRule}
                                 ruleTemplate={ruleTemplate}
+                                actionType={actionType}
                                 actionMetadata={actionMetadata}
                             />
                         );

@@ -3,8 +3,8 @@ import axios from 'axios';
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
-import { IMongoEntityTemplate } from './entityTemplates';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoEntityTemplate } from './templates/entityTemplates';
+import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
 
 const limit = pLimit(config.requestLimit);

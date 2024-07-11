@@ -3,11 +3,11 @@ import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
 import Neo4jClient from '../../../utils/neo4j';
 import RedisClient from '../../../utils/redis';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../../config';
 import EntityManager from '../manager';
 import { IEntity, ISearchBatchBody } from '../interface';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import Server from '../../server';
 import {
     generateTemplates,
@@ -75,8 +75,7 @@ const entityTemplate: IMongoEntityTemplate = {
 };
 
 describe('e2e search entities batch tests', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     let app: Express;
 
@@ -85,23 +84,22 @@ describe('e2e search entities batch tests', () => {
         app = Server.createExpressApp();
 
         // Mock get template router - for validation middleware
-        mockEntityTemplatesRoutes(mockEntityTemplateManager, [
+        mockEntityTemplatesRoutes(mockTemplateManager, [
             entityTemplate,
             travelAgentEntityTemplate,
             flightEntityTemplate,
             tripEntityTemplate,
             airportEntityTemplate,
         ]);
-        mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+        mockRelationshipTemplatesRoutes(mockTemplateManager, [
             flightsOnRelationshipTemplate,
             tripConnectedToFlightRelationshipTemplate,
             departureFromRelationshipTemplate,
         ]);
         mockRulesRoutes(
-            mockRelationshipTemplateManager,
+            mockTemplateManager,
             [],
             [entityTemplate._id, travelAgentEntityTemplate._id, flightEntityTemplate._id, tripEntityTemplate._id, airportEntityTemplate._id],
-            [flightsOnRelationshipTemplate._id, tripConnectedToFlightRelationshipTemplate._id, departureFromRelationshipTemplate._id],
         );
     });
 
@@ -138,33 +136,15 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            flight1 = await EntityManager.createEntity(
-                { templateId: flightEntityTemplate._id, properties: { flightNumber: '1' } },
-                flightEntityTemplate,
-            );
-            flight2 = await EntityManager.createEntity(
-                { templateId: flightEntityTemplate._id, properties: { flightNumber: '2' } },
-                flightEntityTemplate,
-            );
-            travelAgent1 = await EntityManager.createEntity(
-                { templateId: travelAgentEntityTemplate._id, properties: { firstName: 'Name1' } },
-                travelAgentEntityTemplate,
-            );
-            travelAgent2 = await EntityManager.createEntity(
-                { templateId: travelAgentEntityTemplate._id, properties: { firstName: 'Name2' } },
-                travelAgentEntityTemplate,
-            );
-            travelAgent3 = await EntityManager.createEntity(
-                { templateId: travelAgentEntityTemplate._id, properties: { firstName: 'Name3' } },
-                travelAgentEntityTemplate,
-            );
-            trip1 = await EntityManager.createEntity({ templateId: tripEntityTemplate._id, properties: { name: 'My trip1' } }, tripEntityTemplate);
-            trip2 = await EntityManager.createEntity({ templateId: tripEntityTemplate._id, properties: { name: 'My trip2' } }, tripEntityTemplate);
-            trip3 = await EntityManager.createEntity({ templateId: tripEntityTemplate._id, properties: { name: 'My trip3' } }, tripEntityTemplate);
-            airport1 = await EntityManager.createEntity(
-                { templateId: airportEntityTemplate._id, properties: { airportName: 'My Airport1' } },
-                airportEntityTemplate,
-            );
+            flight1 = await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, []);
+            flight2 = await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, []);
+            travelAgent1 = await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, []);
+            travelAgent2 = await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, []);
+            travelAgent3 = await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, []);
+            trip1 = await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, []);
+            trip2 = await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, []);
+            trip3 = await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, []);
+            airport1 = await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, []);
 
             travelAgent1Toflight1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -481,9 +461,9 @@ describe('e2e search entities batch tests', () => {
             },
         ])('basic check filter $type field', ({ field, value1, value2, value3 }) => {
             beforeEach(async () => {
-                await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { [field]: value1 } }, entityTemplate);
-                await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { [field]: value2 } }, entityTemplate);
-                await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { [field]: value3 } }, entityTemplate);
+                await EntityManager.createEntity({ [field]: value1 }, entityTemplate, []);
+                await EntityManager.createEntity({ [field]: value2 }, entityTemplate, []);
+                await EntityManager.createEntity({ [field]: value3 }, entityTemplate, []);
             });
 
             it('$eq', async () => {
@@ -699,9 +679,9 @@ describe('e2e search entities batch tests', () => {
             const entityWithDangerousChars: IEntity = { templateId: defaultTemplateId, properties: { name: 'Dangerous \' " / \\' } };
 
             beforeEach(async () => {
-                await EntityManager.createEntity(entityWithName, entityTemplate);
-                await EntityManager.createEntity(entityWithAnotherName, entityTemplate);
-                await EntityManager.createEntity(entityWithDangerousChars, entityTemplate);
+                await EntityManager.createEntity(entityWithName.properties, entityTemplate, []);
+                await EntityManager.createEntity(entityWithAnotherName.properties, entityTemplate, []);
+                await EntityManager.createEntity(entityWithDangerousChars.properties, entityTemplate, []);
             });
 
             it('$eq escape dangerous characters', async () => {
@@ -777,10 +757,10 @@ describe('e2e search entities batch tests', () => {
 
         it('check $or', async () => {
             await Promise.all([
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 1, name: '111' } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 2, name: '222' } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 3, name: '333' } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 4, name: '444' } }, entityTemplate),
+                EntityManager.createEntity({ num: 1, name: '111' }, entityTemplate, []),
+                EntityManager.createEntity({ num: 2, name: '222' }, entityTemplate, []),
+                EntityManager.createEntity({ num: 3, name: '333' }, entityTemplate, []),
+                EntityManager.createEntity({ num: 4, name: '444' }, entityTemplate, []),
             ]);
 
             const searchBody: ISearchBatchBody = {
@@ -845,15 +825,9 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            await EntityManager.createEntity(
-                { templateId: defaultTemplateId, properties: { name: 'Name', age: 1, lastName: 'lastName' } },
-                entityTemplate,
-            );
-            await EntityManager.createEntity({ templateId: defaultTemplateId, properties: { name: 'AnotherName', age: 2 } }, entityTemplate);
-            await EntityManager.createEntity(
-                { templateId: defaultTemplateId, properties: { name: 'Name with lucene-special-chars (((', age: 3 } },
-                entityTemplate,
-            );
+            await EntityManager.createEntity({ name: 'Name', age: 1, lastName: 'lastName' }, entityTemplate, []);
+            await EntityManager.createEntity({ name: 'AnotherName', age: 2 }, entityTemplate, []);
+            await EntityManager.createEntity({ name: 'Name with lucene-special-chars (((', age: 3 }, entityTemplate, []);
         });
 
         it('check simple search query', async () => {
@@ -994,10 +968,10 @@ describe('e2e search entities batch tests', () => {
     describe('check skip and limit', () => {
         beforeEach(async () => {
             await Promise.all([
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 1 } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 2 } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 3 } }, entityTemplate),
-                EntityManager.createEntity({ templateId: defaultTemplateId, properties: { num: 4 } }, entityTemplate),
+                EntityManager.createEntity({ num: 1 }, entityTemplate, []),
+                EntityManager.createEntity({ num: 2 }, entityTemplate, []),
+                EntityManager.createEntity({ num: 3 }, entityTemplate, []),
+                EntityManager.createEntity({ num: 4 }, entityTemplate, []),
             ]);
         });
 

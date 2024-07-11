@@ -1,9 +1,8 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
-import { IConnection } from './interfaces/rules';
 
 const {
     instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
@@ -34,8 +33,13 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async createEntityInstance(entity: IEntity) {
-        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity);
+    static async getEntityInstancesByIds(ids: string[]) {
+        const { data } = await this.InstanceManagerApi.post<IEntity[]>(`${baseEntitiesRoute}/ids`, { ids });
+        return data;
+    }
+
+    static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[]) {
+        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, { ...entity, ignoredRules });
 
         return data;
     }
@@ -92,8 +96,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getRelationshipsConnectionsByIds(relationshipIds: string[]) {
-        const { data } = await this.InstanceManagerApi.post<IConnection[]>(`${baseRelationshipsRoute}/connections`, {
+    static async getRelationshipsByIds(relationshipIds: string[]) {
+        const { data } = await this.InstanceManagerApi.post<IRelationship[]>(`${baseRelationshipsRoute}/ids`, {
             ids: relationshipIds,
         });
 
@@ -112,7 +116,10 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
         const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
 
         return data;

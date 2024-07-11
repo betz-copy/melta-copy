@@ -25,7 +25,7 @@ class Neo4jClient {
     }
 
     async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
-        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true, ...configuration });
         this.database = database;
 
         await this.verifyConnectivity();
@@ -60,9 +60,9 @@ class Neo4jClient {
 
             return result;
         } finally {
-            const { err } = await trycatch(() => session.close());
-            if (err) {
-                logger.error('Failed to close session. Possible leak, Error:', err);
+            const { err: error } = await trycatch(() => session.close());
+            if (error) {
+                logger.error('Failed to close session. Possible leak, Error:', { error });
             }
         }
     }
@@ -80,10 +80,10 @@ class Neo4jClient {
 
             return normalizeResultFunction(result);
         } finally {
-            const { err } = await trycatch(() => session.close());
+            const { err: error } = await trycatch(() => session.close());
 
-            if (err) {
-                logger.error('Failed to close session. Possible leak, Error:', err);
+            if (error) {
+                logger.error('Failed to close session. Possible leak, Error:', { error });
             }
         }
     }
@@ -101,7 +101,11 @@ class Neo4jClient {
     async verifyConnectivity() {
         const { connectionRetries, connectionRetryDelay } = config.neo4j;
 
-        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: logger.info });
+        await retry(() => this.driver.verifyConnectivity(), {
+            retries: connectionRetries,
+            delay: connectionRetryDelay,
+            logger: logger.info.bind(logger),
+        });
     }
 }
 

@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityManager } from './manager';
 
 class EntityController {
     static async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await EntityManager.createEntity(req.body, entityTemplate));
+
+        res.json(await EntityManager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules));
     }
 
     static async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -25,15 +26,13 @@ class EntityController {
         res.json(await EntityManager.getEntityById(req.params.id));
     }
 
+    static async getEntitiesByIds(req: Request, res: Response) {
+        res.json(await EntityManager.getEntitiesByIds(req.body.ids));
+    }
+
     static async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        res.json(
-            await EntityManager.getExpandedGraphById(
-                req.params.id,
-                req.body,
-                entityTemplatesMap,
-            ),
-        );
+        res.json(await EntityManager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap));
     }
 
     static async deleteEntityById(req: Request, res: Response) {
@@ -58,10 +57,9 @@ class EntityController {
         res.json(await EntityManager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
-    static async getIsFieldUsed(req:  RequestWithQuery<{ fieldValue: string, fieldName: string, type: string}>, res: Response) {
-        const { fieldValue, fieldName, type } = req.query; 
+    static async getIsFieldUsed(req: RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>, res: Response) {
+        const { fieldValue, fieldName, type } = req.query;
         res.json(await EntityManager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
-
     }
 
     static async getConstraintsOfTemplate(req: Request, res: Response) {

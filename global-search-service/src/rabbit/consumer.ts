@@ -32,8 +32,8 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
             default:
                 throw new Error('invalid action type (should be caught in joi valiton)');
         }
-    } catch (err) {
-        logger.error('Failed to update search index', err);
+    } catch (error) {
+        logger.error('Failed to update search index', { error });
         msg.nack(false);
 
         return;

@@ -7,14 +7,14 @@ import mapValues from 'lodash.mapvalues';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
-    getNeo4jDateTime,
     normalizeReturnedRelAndEntities,
     normalizeReturnedEntity,
     normalizeResponseCount,
-    normalizeRelAndEntitiesForRule,
+    normalizeNeighboursOfEntityForRule,
     normalizeGetDbConstraints,
     runInTransactionAndNormalize,
     normalizeSearchWithRelationships,
+    getNeo4jDateTime,
 } from '../../utils/neo4j/lib';
 import {
     IConstraint,
@@ -25,19 +25,23 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
-import { runRulesOnRelationship, runRulesOnRelationshipsOfPinnedEntity, throwIfActionCausedBrokenRules } from '../rules/lib';
-import { IBrokenRule, IConnection, IRuleFailureWithCauses } from '../rules/interfaces';
-import { filterDependentRulesOnProperties, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
+import { runRulesOnEntity } from '../rules/runRulesOnEntity';
+import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
+import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
+import { filterDependentRulesOnEntity } from '../rules/getParametersOfFormula';
 import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import RelationshipManager from '../relationships/manager';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -71,6 +75,7 @@ export class EntityManager {
             const uniqueConstraint: Omit<IUniqueConstraint, 'constraintName'> = {
                 type: 'UNIQUE',
                 templateId: label,
+                uniqueGroupName: '',
                 properties,
             };
 
@@ -85,28 +90,36 @@ export class EntityManager {
         }
     }
 
-    static async createEntityOnTransaction(transaction: Transaction, entity: IEntity, entityTemplate: IMongoEntityTemplate) {
-        const { templateId, properties } = entity;
-
+    static async createEntityInTransaction(transaction: Transaction, entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
         return runInTransactionAndNormalize(
             transaction,
-            `CREATE (e: \`${templateId}\` $properties) RETURN e`,
+            `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(properties, entityTemplate),
+                    ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
                 },
-            },
-        ).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation);
-    }
+            }
+        );
+    }        
 
-    static async createEntity(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    static async createEntity(entityProperties: Record<string, any>, entityTemplate: IMongoEntityTemplate, ignoredRules: IBrokenRule[]) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            return EntityManager.createEntityOnTransaction(transaction, entity, entityTemplate);
-        });
-    }
+            const createdEntity = await EntityManager.createEntityInTransaction(
+                transaction,
+                entityProperties,
+                entityTemplate
 
+            );
+            const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
+
+            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
+
+            return createdEntity;
+        }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction      
+    }
+ 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
 
@@ -177,6 +190,10 @@ export class EntityManager {
         }
 
         return node;
+    }
+
+    static async getEntitiesByIds(ids: string[]) {
+        return Neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
     static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
@@ -279,103 +296,62 @@ export class EntityManager {
 
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
 
             return updatedEntity;
         });
     }
 
-    private static runRulesOnAllRelationshipsOfUpdatedEntity = async (
-        transaction: Transaction,
-        connectionsOfEntity: IConnection[],
-        entity: IEntity,
-        updatedProperties: string[],
-    ): Promise<IRuleFailureWithCauses[]> => {
-        const rulesOfEntityWhenPinned = await RelationshipsTemplateManagerService.searchRules({
-            pinnedEntityTemplateIds: [entity.templateId],
+    private static runRulesOnEntity = async (transaction: Transaction, entity: IEntity, updatedProperties?: string[]): Promise<IRuleFailure[]> => {
+        const rulesOfEntity = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: [entity.templateId],
         });
-        const rulesOfEntityWhenUnpinned = await RelationshipsTemplateManagerService.searchRules({
-            unpinnedEntityTemplateIds: [entity.templateId],
-        });
-        const rulesOfEntity = [...rulesOfEntityWhenPinned, ...rulesOfEntityWhenUnpinned];
-        const relevantRulesOfEntity = filterDependentRulesOnProperties(rulesOfEntity, entity.templateId, updatedProperties);
+        const relevantRulesOfEntity = filterDependentRulesOnEntity(rulesOfEntity, entity.templateId, updatedProperties);
 
-        const ruleFailuresForEachConnectionPromises = connectionsOfEntity.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
-            const relevantRulesOfRelationship = relevantRulesOfEntity.filter(
-                ({ relationshipTemplateId }) => relationshipTemplateId === relationship.templateId,
-            );
-
-            const sourceEntityTemplateId = entity.properties._id === relationship.sourceEntityId ? entity.templateId : neighbourOfEntity.templateId;
-            return runRulesOnRelationship(
-                transaction,
-                relevantRulesOfRelationship,
-                relationship.sourceEntityId,
-                relationship.destinationEntityId,
-                relationship.properties._id,
-                sourceEntityTemplateId,
-            );
-        });
-
-        const ruleFailuresForEachConnection = await Promise.all(ruleFailuresForEachConnectionPromises);
-        const ruleFailures = ruleFailuresForEachConnection.flat();
-
-        return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: false }));
+        return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity);
     };
 
-    private static runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation = async (
+    private static runRulesOnNeighboursOfUpdatedEntity = async (
         transaction: Transaction,
-        connectionsOfDependent: IConnection[],
-        dependentEntity: IEntity,
+        updatedEntity: IEntity,
         updatedProperties: string[],
-    ): Promise<IRuleFailureWithCauses[]> => {
-        const ruleFailuresForEachConnectionPromises = connectionsOfDependent.map(async ({ relationship, destinationEntity: neighbourOfEntity }) => {
-            const rulesOfPinnedEntity = await RelationshipsTemplateManagerService.searchRules({
-                pinnedEntityTemplateIds: [neighbourOfEntity.templateId],
-            });
+    ): Promise<IRuleFailure[]> => {
+        const neighboursOfUpdatedEntity = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e {_id: '${updatedEntity.properties._id}'})-[r]-(neighbour) RETURN type(r) as rTemplate, neighbour`,
+            normalizeNeighboursOfEntityForRule,
+        );
 
-            const rulesDependentViaAggregation = filterDependentRulesViaAggregation(rulesOfPinnedEntity, relationship.templateId, updatedProperties);
-
-            return runRulesOnRelationshipsOfPinnedEntity(
+        const ruleFailuresForEachNeighbourPromises = neighboursOfUpdatedEntity.map(async ({ relationshipTemplate, neighbourOfEntity }) => {
+            return RelationshipManager.runRulesOnEntityDependentViaAggregation(
                 transaction,
                 neighbourOfEntity.properties._id,
-                rulesDependentViaAggregation,
-                dependentEntity.properties._id,
+                neighbourOfEntity.templateId,
+                relationshipTemplate,
+                updatedProperties,
             );
         });
 
-        const ruleFailuresForEachConnection = await Promise.all(ruleFailuresForEachConnectionPromises);
-        const ruleFailures = ruleFailuresForEachConnection.flat();
+        const ruleFailuresForEachNeighbour = await Promise.all(ruleFailuresForEachNeighbourPromises);
+        const ruleFailures = ruleFailuresForEachNeighbour.flat();
 
-        return ruleFailures.map((ruleFailure) => ({ ...ruleFailure, isTriggeredViaAggregation: true }));
+        return ruleFailures;
     };
 
     private static async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
-        const connectionsOfEntity = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (s {_id: '${updatedEntity.properties._id}'})-[r]-(d)  RETURN s, r, d`,
-            normalizeRelAndEntitiesForRule,
-        );
+        const ruleFailuresOfUpdatedEntityPromise = EntityManager.runRulesOnEntity(transaction, updatedEntity, updatedProperties);
 
-        const ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise = EntityManager.runRulesOnAllRelationshipsOfUpdatedEntity(
+        const ruleFailuresOnNeighboursOfEntityPromise = EntityManager.runRulesOnNeighboursOfUpdatedEntity(
             transaction,
-            connectionsOfEntity,
             updatedEntity,
             updatedProperties,
         );
 
-        const ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise =
-            EntityManager.runRulesOnRelationshipsOfNeighboursOfEntityDependentViaAggregation(
-                transaction,
-                connectionsOfEntity,
-                updatedEntity,
-                updatedProperties,
-            );
-
-        const [ruleFailuresOnAllRelationshipsOfUpdatedEntity, ruleFailuresOnRelationshipsOfNeighboursOfEntity] = await Promise.all([
-            ruleFailuresOnAllRelationshipsOfUpdatedEntityPromise,
-            ruleFailuresOnRelationshipsOfNeighboursOfEntityPromise,
+        const [ruleFailuresOfUpdatedEntity, ruleFailuresOfNeighboursOfEntity] = await Promise.all([
+            ruleFailuresOfUpdatedEntityPromise,
+            ruleFailuresOnNeighboursOfEntityPromise,
         ]);
-        const ruleFailures = [...ruleFailuresOnAllRelationshipsOfUpdatedEntity, ...ruleFailuresOnRelationshipsOfNeighboursOfEntity];
+        const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighboursOfEntity];
 
         return ruleFailures;
     }
@@ -440,7 +416,9 @@ export class EntityManager {
                 },
             );
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-            throwIfActionCausedBrokenRules(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction);
+
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+
             return updatedEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
@@ -475,17 +453,21 @@ export class EntityManager {
     }
 
     private static getConstraintFromName(constraintName: string): IConstraint {
-        const [constraintTypePrefix, constraintTemplateId, ...properties] = constraintName.split(config.constraintsNameDelimiter);
+        const [constraintTypePrefix, ...parts] = constraintName.split(config.constraintsNameDelimiter);
 
         switch (constraintTypePrefix) {
-            case config.requiredConstraintsPrefixName: {
-                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property: properties[0] };
+            case config.requiredConstraint: {
+                const [constraintTemplateId, property] = parts;
+                return { constraintName, type: 'REQUIRED', templateId: constraintTemplateId, property };
             }
-            case config.uniqueConstraintsPrefixName: {
-                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, properties };
+            case config.uniqueConstraint: {
+                // if field isnt part of unique group -> constraintName has only two parts (groupName === '')
+                const [groupName, constraintTemplateId, propertiesStr] = parts.length === 3 ? parts : ['', ...parts];
+                const properties = propertiesStr.split(',');
+                return { constraintName, type: 'UNIQUE', templateId: constraintTemplateId, uniqueGroupName: groupName, properties };
             }
             default:
-                throw new Error('unknown constraint type for template (checked by constraint name)');
+                throw new Error('Unknown constraint type for template (checked by constraint name)');
         }
     }
 
@@ -494,7 +476,10 @@ export class EntityManager {
             (acc, curr) => ({
                 ...acc,
                 requiredConstraints: curr.type === 'REQUIRED' ? [...acc.requiredConstraints, curr.property] : acc.requiredConstraints,
-                uniqueConstraints: curr.type === 'UNIQUE' ? [...acc.uniqueConstraints, curr.properties] : acc.uniqueConstraints,
+                uniqueConstraints:
+                    curr.type === 'UNIQUE'
+                        ? [...acc.uniqueConstraints, { groupName: curr.uniqueGroupName, properties: curr.properties }]
+                        : acc.uniqueConstraints,
             }),
             {
                 templateId,
@@ -588,18 +573,20 @@ export class EntityManager {
     private static async updateUniqueConstraintsOfTemplate(
         transaction: Transaction,
         templateId: string,
-        uniqueConstraintsProps: string[][],
+        uniqueConstraints: IUniqueConstraintOfTemplate[],
         existingUniqueConstraints: IUniqueConstraint[],
     ) {
         const existingUniqueConstraintsOfTemplate = existingUniqueConstraints.filter((constraint) => constraint.templateId === templateId);
 
-        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraintsProps.map((uniqueConstraintProps) => ({
+        const newUniqueConstraints: IUniqueConstraint[] = uniqueConstraints.flatMap((constraintGroup) => ({
             type: 'UNIQUE',
-            constraintName: `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${
-                config.constraintsNameDelimiter
-            }${uniqueConstraintProps.join(config.constraintsNameDelimiter)}`,
+            constraintName:
+                constraintGroup.groupName === ''
+                    ? `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`
+                    : `${config.uniqueConstraintsPrefixName}${config.constraintsNameDelimiter}${constraintGroup.groupName}${config.constraintsNameDelimiter}${templateId}${config.constraintsNameDelimiter}${constraintGroup.properties}`,
             templateId,
-            properties: uniqueConstraintProps,
+            uniqueGroupName: constraintGroup.groupName,
+            properties: constraintGroup.properties,
         }));
 
         const uniqueConstraintsToCreate = differenceWith(newUniqueConstraints, existingUniqueConstraintsOfTemplate, (constraintA, constraintB) =>
@@ -613,7 +600,7 @@ export class EntityManager {
         );
 
         const createUniqueConstraintsPromises = uniqueConstraintsToCreate.map(async (constraint) => {
-            const propsPart = constraint.properties.map((prop) => `n.${prop}`).join(', ');
+            const propsPart = constraint.properties.map((prop) => `n.${prop}`);
 
             await transaction
                 .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
@@ -627,7 +614,10 @@ export class EntityManager {
         await Promise.all([...createUniqueConstraintsPromises, ...deleteConstraintsPromises]);
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
 

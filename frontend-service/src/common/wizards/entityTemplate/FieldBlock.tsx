@@ -10,6 +10,7 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -20,6 +21,8 @@ export const FieldBlockAccordion = styled(Accordion)({
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
@@ -35,12 +38,15 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
     supportEditEnum?: boolean;
+    supportUnique?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
     propertiesType,
     values,
+    uniqueConstraints,
+    setUniqueConstraints,
     initialValues,
     setFieldValue,
     areThereAnyInstances,
@@ -55,6 +61,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportChangeToRequiredWithInstances,
     supportArrayFields,
     supportEditEnum,
+    supportUnique,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -63,7 +70,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         required: false,
         preview: false,
         hide: false,
-        unique: false,
+        groupName: undefined,
+        uniqueCheckbox: false,
         options: [],
         optionColors: {},
         pattern: '',
@@ -136,7 +144,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         }
 
         displayValuesCopy[index] = value;
-
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
@@ -194,6 +201,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 templateId: (values as any)._id,
                                                 supportArrayFields,
                                                 supportEditEnum,
+                                                supportUnique,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
@@ -203,6 +211,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         key={property.id}
                                                         setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
                                                         setValues={setDisplayValueWrapper(index)}
+                                                        uniqueConstraints={uniqueConstraints}
+                                                        setUniqueConstraints={setUniqueConstraints}
                                                     />
                                                 );
                                             }

@@ -1,16 +1,18 @@
-import { isAggregationGroup, isCountAggFunction, isEquation, isGroup, isRegularFunction } from './interfaces';
-import { IArgument, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
+import { IArgument, IVariable, isPropertyOfVariable } from './interfaces/formula/argument';
+import { isEquation } from './interfaces/formula/equation';
+import { isCountAggFunction, isRegularFunction } from './interfaces/formula/function';
+import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
-export const getParametersOfArgument = (argument: IArgument) => {
+export const getParametersOfArgument = (argument: IArgument): Array<{ variable: IVariable; property?: string }> => {
     if (isPropertyOfVariable(argument)) {
-        const { variableName, property } = argument;
-        return [{ variableName, property }];
+        const { variable, property } = argument;
+        return [{ variable, property }];
     }
 
     if (isCountAggFunction(argument)) {
-        const { variableName } = argument;
-        return [{ variableName }];
+        const { variable } = argument;
+        return [{ variable }];
     }
 
     if (isRegularFunction(argument)) {
@@ -21,7 +23,7 @@ export const getParametersOfArgument = (argument: IArgument) => {
     return [];
 };
 
-export const getParametersOfFormula = (formula: IFormula) => {
+export const getParametersOfFormula = (formula: IFormula): Array<{ variable: IVariable; property?: string }> => {
     if (isEquation(formula)) {
         const { lhsArgument, rhsArgument } = formula;
 

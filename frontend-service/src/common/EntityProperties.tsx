@@ -1,11 +1,13 @@
+import type { Property } from 'csstype';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useSelector } from 'react-redux';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
@@ -13,7 +15,7 @@ import { VerifyLink } from './VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
-import { RootState } from '../store';
+import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -24,6 +26,7 @@ export const formatToString = (
     valueType: 'string' | 'number' | 'boolean' | 'array',
     format?: string,
     keyEnumColors?: Record<string, string>,
+    isPrintingMode?: boolean,
     propertySchema?: IEntitySingleProperty,
 ) => {
     if (value === null || value === undefined) return '-';
@@ -35,7 +38,7 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreview fileId={value} />;
+        if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
@@ -57,6 +60,8 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    propertiesToHighlight?: string[];
+    propertiesToHighlightColor?: CSSProperties['color'];
     removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
@@ -65,12 +70,28 @@ interface IEntityPropertiesProps {
     isPrintingMode?: boolean;
 }
 
+const getPropertyColor = (
+    propertyKey: string,
+    propertiesToHighlight: string[] | undefined,
+    highlightColor: Property.Color | undefined,
+    mode: 'normal' | 'white',
+    normalColor: Property.Color,
+) => {
+    if (propertiesToHighlight?.includes(propertyKey)) {
+        return highlightColor;
+    }
+
+    return mode === 'white' ? 'white' : normalColor;
+};
+
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
     properties,
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    propertiesToHighlight,
+    propertiesToHighlightColor,
     removeFiles = false,
     style,
     innerStyle,
@@ -80,7 +101,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
-        propertiesOrderedToShow = overridePropertiesToShow;
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
@@ -89,11 +110,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
                 entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
-    } else {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder;
-    }
-    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
+    } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
 
+    const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
     return (
         <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
             {propertiesOrderedToShow.map((propertyKey) => {
@@ -106,8 +125,12 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertySchema.type,
                     propertySchema.format,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                    isPrintingMode,
                     propertySchema,
                 );
+
+                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
                 let innerContent;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
@@ -129,7 +152,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue &&
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
-
+                const textDirection =
+                    // todo: make getTextDirection handle all possible value and reuse everywhere
+                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId'
+                        ? getTextDirection(propertyValue, {
+                              type: propertySchema.type,
+                              serialCurrent: propertySchema.serialCurrent,
+                          })
+                        : 'rtl';
                 return (
                     <Grid
                         key={propertyKey}
@@ -155,7 +185,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textAlign: 'right',
                                         }}
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#9398C2'}
+                                        color={propertyTitleColor}
                                         fontWeight={mode === 'white' ? '800' : ''}
                                     >
                                         {propertySchema.title}:
@@ -181,14 +211,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 >
                                     <Typography
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#53566E'}
+                                        color={propertyValueColor}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowX: 'hidden',
-                                            overflowY: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
+                                            direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
                                         <VerifyLink>{innerContent}</VerifyLink>

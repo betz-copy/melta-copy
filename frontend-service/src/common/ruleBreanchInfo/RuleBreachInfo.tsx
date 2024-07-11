@@ -52,7 +52,7 @@ const RuleBreachInfo: React.FC<{
                 );
             })}
             <Grid item>
-                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actions[0].actionMetadata} isCompact={isCompact} />
+                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actions[0].actionMetadata} actionType={actions[0].actionType} isCompact={isCompact} />
             </Grid>
         </Grid>
     );

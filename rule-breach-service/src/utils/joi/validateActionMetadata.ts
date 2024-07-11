@@ -3,6 +3,8 @@ import * as joi from 'joi';
 import { IAction } from '../interfaces/ruleBreach';
 import { ActionTypes } from '../interfaces/actionMetadata';
 import {
+    createEntityMetadataSchema,
+    duplicateEntityMetadataSchema,
     createRelationshipMetadataSchema,
     deleteRelationshipMetadataSchema,
     updateEntityMetadataSchema,
@@ -19,6 +21,12 @@ export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
             break;
         case ActionTypes.DeleteRelationship:
             schema = deleteRelationshipMetadataSchema;
+            break;
+        case ActionTypes.CreateEntity:
+            schema = createEntityMetadataSchema;
+            break;
+        case ActionTypes.DuplicateEntity:
+            schema = duplicateEntityMetadataSchema;
             break;
         case ActionTypes.UpdateEntity:
             schema = updateEntityMetadataSchema;

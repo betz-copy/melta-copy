@@ -8,7 +8,8 @@ import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
 import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { trycatch } from '../../utils/lib';
 import {
     IFilterOfField,
@@ -16,9 +17,11 @@ import {
     ISearchFilter,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
+    IUniqueConstraintOfTemplate,
     IGetExpandedEntityBody,
 } from './interface';
-import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 
 const { neo4j } = config;
@@ -122,7 +125,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
     const propertiesKeys = Object.keys(properties.properties);
 
-    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
+    const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
 
     requiredConstraints.forEach((constraintProp) => {
         const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
@@ -131,7 +134,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
         }
     });
     uniqueConstraints.forEach((constraintProps) => {
-        const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
+        const unknownPropertyInConstraint = constraintProps.properties.find((property) => !propertiesKeys.includes(property));
         if (unknownPropertyInConstraint) {
             throw new ValidationError(
                 `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
@@ -140,7 +143,7 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
     });
 
     uniqueConstraints.forEach((uniqueConstraint) => {
-        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
+        const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.properties.find((property) => !requiredConstraints.includes(property));
 
         if (uniqueConstraintPropertyThatIsNotInRequired) {
             // because neo4j 4.0 supports unique constraints but makes them required too

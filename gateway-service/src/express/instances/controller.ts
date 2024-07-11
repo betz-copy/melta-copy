@@ -5,7 +5,8 @@ import { InstancesManager } from './manager';
 
 class InstancesController {
     static async createEntityInstance(req: Request, res: Response) {
-        res.json(await InstancesManager.createEntityInstance(req.body, req.files as Express.Multer.File[], req.user!));
+        const { ignoredRules, ...instanceData } = req.body;
+        res.json(await InstancesManager.createEntityInstance(instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id));
     }
 
     static async exportEntities(req: Request, res: Response) {
@@ -25,7 +26,16 @@ class InstancesController {
     }
 
     static async duplicateEntityInstance(req: Request, res: Response) {
-        res.json(await InstancesManager.duplicateEntityInstance(req.params.id, req.body, req.files as Express.Multer.File[], req.user!));
+        const { ignoredRules, ...instanceData } = req.body;
+        res.json(
+            await InstancesManager.duplicateEntityInstance(
+                req.params.id,
+                instanceData,
+                req.files as Express.Multer.File[],
+                ignoredRules,
+                req.user!.id,
+            ),
+        );
     }
 
     static async viewEntityInstance(req: Request) {

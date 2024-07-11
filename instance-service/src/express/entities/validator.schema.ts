@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ignoredRuleSchema } from '../rules/ignoredRuleSchema';
+import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 import config from '../../config';
 
 const { searchEntitiesMaxLimit } = config;
@@ -15,10 +15,20 @@ export const getEntityByIdRequestSchema = Joi.object({
     },
 });
 
-
 const commonFormInputSchema = Joi.object({
     name: Joi.string().required(),
     type: Joi.string().required(),
+});
+
+/**
+ * POST /api/instances/entities/ids
+ */
+export const getEntitiesByIdsRequestSchema = Joi.object({
+    query: {},
+    body: {
+        ids: Joi.array().items(Joi.string()).required(),
+    },
+    params: {},
 });
 
 /**
@@ -36,8 +46,6 @@ export const updateEnumFieldRequestSchema = Joi.object({
     },
 });
 
-
-
 /**
  * GET /api/instances/entities/get-is-field-used/:id
  */
@@ -52,7 +60,6 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
         fieldName: Joi.string().required(),
     },
 });
-
 
 /**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
@@ -85,6 +92,7 @@ export const createEntityRequestSchema = Joi.object({
     body: {
         templateId: Joi.string().required(),
         properties: Joi.object().required(),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {},
@@ -120,7 +128,6 @@ const searchFilterSchema = Joi.object({
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
 
-
 /**
  * POST /api/instances/entities/expanded/:id
  */
@@ -130,10 +137,12 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
         disabled: Joi.boolean().default(null),
         templateIds: Joi.array().items(Joi.string()).required(),
         numberOfConnections: Joi.number().default(0),
-        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),        
-        filters: Joi.object().pattern(Joi.string(), {
-            filter: searchFilterSchema,
-        }).default({}),
+        expandedParams: Joi.object().pattern(Joi.string(), Joi.number().min(1)).default({}),
+        filters: Joi.object()
+            .pattern(Joi.string(), {
+                filter: searchFilterSchema,
+            })
+            .default({}),
     },
     params: {
         id: Joi.string().required(),
@@ -198,7 +207,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
 export const updateEntityStatusByIdRequestSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {
@@ -213,7 +222,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
     body: {
         properties: Joi.object().required(),
         templateId: Joi.string().required(),
-        ignoredRules: Joi.array().items(ignoredRuleSchema).default([]),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
     params: {
@@ -238,7 +247,9 @@ export const getAllConstraintsRequestSchema = Joi.object({
 export const updateConstraintsOfTemplateRequestSchema = Joi.object({
     body: Joi.object({
         requiredConstraints: Joi.array().items(Joi.string()).required(),
-        uniqueConstraints: Joi.array().items(Joi.array().items(Joi.string())).required(),
+        uniqueConstraints: Joi.array()
+            .items(Joi.object({ groupName: Joi.string().allow(''), properties: Joi.array().items(Joi.string()) }))
+            .required(),
     }),
     query: {},
     params: {
