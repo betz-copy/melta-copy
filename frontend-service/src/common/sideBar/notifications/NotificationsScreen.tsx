@@ -144,7 +144,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOriginProp={openCalenders ? 70 : 101}
+                                horizontalOrigin={openCalenders ? 70 : 101}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
