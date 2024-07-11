@@ -54,7 +54,7 @@ const Main = () => {
     const { setIsOpen, setCurrentStep } = useTour();
 
     const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
-    const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
+    const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: false, threshold: 300 });
 
     const queryClient = useQueryClient();
 
@@ -66,6 +66,31 @@ const Main = () => {
     const toggleDrawer = () => {
         setOpen(!open);
     };
+
+    const handleScroll = () => {
+        if (pageScrollTarget) {
+            sessionStorage.setItem(`scrollPosition-${location.pathname}`, pageScrollTarget.scrollTop.toString());
+        }
+    };
+
+    useEffect(() => {
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition-${location.pathname}`);
+        console.log({ savedScrollPosition });
+
+        if (savedScrollPosition && pageScrollTarget) {
+            pageScrollTarget.scrollTo(0, parseInt(savedScrollPosition, 10));
+        }
+
+        if (pageScrollTarget) {
+            pageScrollTarget.addEventListener('scroll', handleScroll);
+        }
+
+        return () => {
+            if (pageScrollTarget) {
+                pageScrollTarget.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, [pageScrollTarget, location.pathname]);
 
     // TODO - implement when dark mode will be supported
     // const handleToggleTheme = () => {
