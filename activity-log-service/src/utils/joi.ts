@@ -44,6 +44,4 @@ export const basicValidateRequest = (schema: Joi.ObjectSchema<any>, value: any, 
     return newValue;
 };
 
-export const mongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
-
 export default ValidateRequest;
