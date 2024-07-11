@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 import { IRelationshipTemplate } from './interface';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';

@@ -1,6 +1,6 @@
 // import * as mockingooseNoTypes from 'mockingoose';
 import { Query, Document } from 'mongoose';
-import * as request from 'supertest';
+import request from 'supertest';
 import { Express } from 'express';
 import Server from '../src/express/server';
 import * as entityTemplateManager from '../src/entityTemplateManager';

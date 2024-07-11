@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { MongoIdSchema } from '../../utils/joi';
 
 // GET /api/templates/rules/:ruleId
@@ -16,9 +16,7 @@ export const createRuleRequestSchema = Joi.object({
         name: Joi.string().required(),
         description: Joi.string().required(),
         actionOnFail: Joi.string().valid('WARNING', 'ENFORCEMENT').required(),
-        relationshipTemplateId: MongoIdSchema.required(),
-        pinnedEntityTemplateId: MongoIdSchema.required(),
-        unpinnedEntityTemplateId: MongoIdSchema.required(),
+        entityTemplateId: MongoIdSchema.required(),
         formula: Joi.object().required(),
         disabled: Joi.boolean().default(false),
     },
@@ -33,9 +31,7 @@ export const updateRuleByIdRequestSchema = Joi.object({
         description: Joi.string(),
         // todo: (extra feature) allow update stuff that could break, only if no alerts/requests created yet
         // actionOnFail: Joi.string().valid('WARNING', 'ENFORCEMENT'),
-        // relationshipTemplateId: MongoIdSchema,
-        // pinnedEntityTemplateId: MongoIdSchema,
-        // unpinnedEntityTemplateId: MongoIdSchema,
+        // entityTemplateId: MongoIdSchema,
         // formula: Joi.object(),
     },
     query: {},
@@ -68,9 +64,7 @@ export const deleteRuleByIdRequestSchema = Joi.object({
 export const searchRulesRequestSchema = Joi.object({
     body: {
         search: Joi.string(),
-        relationshipTemplateIds: Joi.array().items(MongoIdSchema),
-        pinnedEntityTemplateIds: Joi.array().items(MongoIdSchema),
-        unpinnedEntityTemplateIds: Joi.array().items(MongoIdSchema),
+        entityTemplateIds: Joi.array().items(MongoIdSchema),
         disabled: Joi.boolean(),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),

@@ -1,21 +1,24 @@
-import { IMongoRule, isAggregationGroup, isCountAggFunction, isEquation, isGroup, isRegularFunction } from './interfaces';
-import { IArgument, isPropertyOfVariable } from './interfaces/argument';
-import { IFormula } from './interfaces/formula';
+import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
+import { IArgument, IVariable, isPropertyOfVariable } from '../../externalServices/templates/interfaces/rules/formula/argument';
+import { isCountAggFunction, isRegularFunction } from '../../externalServices/templates/interfaces/rules/formula/function';
+import { isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
+import { isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
 
 interface IParameterOfFormula {
-    variableName: string;
+    variable: IVariable;
     property?: string;
 }
 
 const getParametersOfArgument = (argument: IArgument): IParameterOfFormula[] => {
     if (isPropertyOfVariable(argument)) {
-        const { variableName, property } = argument;
-        return [{ variableName, property }];
+        const { variable, property } = argument;
+        return [{ variable, property }];
     }
 
     if (isCountAggFunction(argument)) {
-        const { variableName } = argument;
-        return [{ variableName }];
+        const { variable } = argument;
+        return [{ variable }];
     }
 
     if (isRegularFunction(argument)) {
@@ -33,63 +36,64 @@ const getParametersOfFormula = (formula: IFormula): IParameterOfFormula[] => {
         return [...getParametersOfArgument(lhsArgument), ...getParametersOfArgument(rhsArgument)];
     }
 
-    if (isGroup(formula) || isAggregationGroup(formula)) {
+    if (isGroup(formula)) {
         return formula.subFormulas.flatMap(getParametersOfFormula);
+    }
+
+    if (isAggregationGroup(formula)) {
+        return [{ variable: formula.variableOfAggregation }, ...formula.subFormulas.flatMap(getParametersOfFormula)];
     }
 
     throw new Error('formula not supported');
 };
 
-const isRuleDependentOnPropertiesViaAggregation = (rule: IMongoRule, relationshipTemplateId: string, updatedProperties: string[]) => {
+const isRuleDependentViaAggregation = (rule: IMongoRule, relationshipTemplateId: string, updatedProperties?: string[]) => {
     const parameters = getParametersOfFormula(rule.formula);
 
-    return parameters.some(({ variableName, property }) => {
-        if (!property) {
+    return parameters.some(({ variable, property }) => {
+        if (!variable.aggregatedRelationship) {
             return false;
         }
 
-        const isVariableAggregation = variableName.split('.').length === 3;
+        if (updatedProperties) {
+            if (!property) {
+                return false;
+            }
 
-        if (isVariableAggregation) {
-            return relationshipTemplateId === variableName.split('.')[1] && updatedProperties.includes(property);
+            return relationshipTemplateId === variable.aggregatedRelationship.relationshipTemplateId && updatedProperties.includes(property);
         }
 
-        return false;
-    });
-};
-
-const isRuleDependentOnRelationshipViaAggregation = (rule: IMongoRule, relationshipTemplateId: string) => {
-    const parameters = getParametersOfFormula(rule.formula);
-
-    return parameters.some(({ variableName }) => {
-        const isVariableAggregation = variableName.split('.').length === 3;
-
-        return isVariableAggregation && relationshipTemplateId === variableName.split('.')[1];
+        return relationshipTemplateId === variable.aggregatedRelationship.relationshipTemplateId;
     });
 };
 
 export const filterDependentRulesViaAggregation = (rules: IMongoRule[], relationshipTemplateId: string, updatedProperties?: string[]) => {
     return rules.filter((rule) => {
-        if (updatedProperties) {
-            return isRuleDependentOnPropertiesViaAggregation(rule, relationshipTemplateId, updatedProperties);
-        }
-
-        return isRuleDependentOnRelationshipViaAggregation(rule, relationshipTemplateId);
+        return isRuleDependentViaAggregation(rule, relationshipTemplateId, updatedProperties);
     });
 };
 
-const isRuleDependentOnProperties = (rule: IMongoRule, entityTemplateId: string, updatedProperties: string[]) => {
+const isRuleDependentOnEntity = (rule: IMongoRule, entityTemplateId: string, updatedProperties?: string[]) => {
     const parameters = getParametersOfFormula(rule.formula);
 
-    return parameters.some(({ variableName, property }) => {
-        if (!property) {
-            return false;
+    return parameters.some(({ variable, property }) => {
+        if (updatedProperties) {
+            // check if rule dependent specificly only on updatedProperties
+            if (!property) {
+                return false;
+            }
+
+            if (variable.aggregatedRelationship) {
+                return false;
+            }
+
+            return variable.entityTemplateId === entityTemplateId && updatedProperties.includes(property);
         }
 
-        return variableName === entityTemplateId && updatedProperties.includes(property);
+        return variable.entityTemplateId === entityTemplateId;
     });
 };
 
-export const filterDependentRulesOnProperties = (rules: IMongoRule[], entityTemplateId: string, updatedProperties: string[]) => {
-    return rules.filter((rule) => isRuleDependentOnProperties(rule, entityTemplateId, updatedProperties));
+export const filterDependentRulesOnEntity = (rules: IMongoRule[], entityTemplateId: string, updatedProperties?: string[]) => {
+    return rules.filter((rule) => isRuleDependentOnEntity(rule, entityTemplateId, updatedProperties));
 };

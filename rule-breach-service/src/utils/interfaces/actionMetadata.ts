@@ -11,6 +11,17 @@ export interface IDeleteRelationshipMetadata {
     destinationEntityId: string;
 }
 
+export interface ICreateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+}
+
+export interface IDuplicateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+    entityIdToDuplicate: string;
+}
+
 export interface IUpdateEntityMetadata {
     entityId: string;
     before?: Record<string, any>;
@@ -21,11 +32,19 @@ export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
 }
-export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata | IUpdateEntityStatusMetadata;
+export type IActionMetadata =
+    | ICreateRelationshipMetadata
+    | IDeleteRelationshipMetadata
+    | ICreateEntityMetadata
+    | IDuplicateEntityMetadata
+    | IUpdateEntityMetadata
+    | IUpdateEntityStatusMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
     DeleteRelationship = 'delete-relationship',
+    CreateEntity = 'create-entity',
+    DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
 }

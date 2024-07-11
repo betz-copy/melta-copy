@@ -1,42 +1,37 @@
 import React from 'react';
-import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, FormLabel, FormHelperText } from '@mui/material';
+import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, FormLabel, FormHelperText, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { StepComponentProps } from '../index';
-import { RelationshipTemplateRuleWizardValues } from '.';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { RuleWizardValues } from '.';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { getOppositeEntityTemplate, populateRelationshipTemplate } from '../../../utils/templates';
-import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string().required(i18next.t('validation.required')),
     actionOnFail: Yup.string().oneOf(['WARNING', 'ENFORCEMENT']).required(i18next.t('validation.required')),
-    relationshipTemplateId: Yup.string().required(i18next.t('validation.required')),
-    pinnedEntityTemplateId: Yup.string().required(i18next.t('validation.required')),
+    entityTemplateId: Yup.string().required(i18next.t('validation.required')),
 };
 
-const CreateRule: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValues, 'isEditMode'>> = ({
+const CreateRule: React.FC<StepComponentProps<RuleWizardValues, 'isEditMode'>> = ({
     values,
     touched,
     errors,
     handleChange,
     setFieldValue,
+    setFieldTouched,
     isEditMode,
 }) => {
     const queryClient = useQueryClient();
 
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const { pinnedEntityTemplateId, relationshipTemplateId } = values;
+    const { entityTemplateId } = values;
 
-    const selectedRelationshipTemplate = relationshipTemplates.get(relationshipTemplateId);
-    const selectedRelationshipTemplatePopulated = selectedRelationshipTemplate
-        ? populateRelationshipTemplate(selectedRelationshipTemplate, entityTemplates)
-        : null;
+    const activeEntityTemplatesFiltered = Array.from(entityTemplates.values()).filter(({ disabled }) => !disabled);
+
+    const entityTemplate = entityTemplateId ? entityTemplates.get(entityTemplateId)! : null;
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
@@ -72,43 +67,23 @@ const CreateRule: React.FC<StepComponentProps<RelationshipTemplateRuleWizardValu
                 </FormControl>
             </Grid>
             <Grid item width="250px">
-                <RelationshipTemplateAutocomplete
-                    value={selectedRelationshipTemplatePopulated}
-                    onChange={(_e, chosenRelationshipTemplate) => setFieldValue('relationshipTemplateId', chosenRelationshipTemplate?._id ?? '')}
-                    isError={Boolean(touched.relationshipTemplateId && errors.relationshipTemplateId)}
-                    helperText={touched.relationshipTemplateId ? errors.relationshipTemplateId : ''}
-                    disabled={isEditMode}
+                <Autocomplete
+                    options={activeEntityTemplatesFiltered}
+                    onChange={(_e, value) => setFieldValue('entityTemplateId', value?._id || '')}
+                    value={entityTemplate}
+                    getOptionLabel={(option) => option.displayName}
+                    onBlur={() => setFieldTouched('entityTemplateId')}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            fullWidth
+                            error={Boolean(touched.entityTemplateId && errors.entityTemplateId)}
+                            helperText={touched.entityTemplateId ? errors.entityTemplateId : ''}
+                            variant="outlined"
+                            label={i18next.t('wizard.rule.primaryEntityTemplate')}
+                        />
+                    )}
                 />
-            </Grid>
-            <Grid item>
-                <FormControl
-                    error={touched.pinnedEntityTemplateId && Boolean(errors.pinnedEntityTemplateId)}
-                    disabled={!relationshipTemplateId || isEditMode}
-                >
-                    <FormLabel>{i18next.t('wizard.rule.pinnedEntityTemplate')}</FormLabel>
-                    <RadioGroup
-                        row
-                        name="pinnedEntityTemplateId"
-                        onChange={(_e, value) => {
-                            setFieldValue('pinnedEntityTemplateId', value);
-                            const unpinnedEntityTemplate = getOppositeEntityTemplate(value, selectedRelationshipTemplatePopulated!);
-                            setFieldValue('unpinnedEntityTemplateId', unpinnedEntityTemplate._id, false);
-                        }}
-                        value={pinnedEntityTemplateId}
-                    >
-                        <FormControlLabel
-                            value={selectedRelationshipTemplatePopulated?.sourceEntity._id}
-                            control={<Radio />}
-                            label={selectedRelationshipTemplatePopulated?.sourceEntity.displayName}
-                        />
-                        <FormControlLabel
-                            value={selectedRelationshipTemplatePopulated?.destinationEntity._id}
-                            control={<Radio />}
-                            label={selectedRelationshipTemplatePopulated?.destinationEntity.displayName}
-                        />
-                    </RadioGroup>
-                    <FormHelperText>{touched.pinnedEntityTemplateId && errors.pinnedEntityTemplateId}</FormHelperText>
-                </FormControl>
             </Grid>
         </Grid>
     );

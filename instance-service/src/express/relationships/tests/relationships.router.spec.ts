@@ -4,11 +4,10 @@ import request from 'supertest';
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import config from '../../../config';
-import { IEntity } from '../../entities/interface';
 import { IRelationship } from '../interface';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../../externalServices/templates/relationshipTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const mockDate = new Date();
@@ -64,7 +63,7 @@ describe('Relationship router', () => {
             updatedAt: mockDateStr,
         };
 
-        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId], [defaultRelationshipTemplateId]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultEntityTemplateId]);
         mockRelationshipTemplatesRoutes(mockTemplateManager, [defaultRelationshipTemplate]);
         mockEntityTemplatesRoutes(mockTemplateManager, [defaultEntityTemplate]);
 
@@ -163,10 +162,8 @@ describe('Relationship router', () => {
     });
 
     describe('Tests to perform after relationship is created', () => {
-        let firstEntity: IEntity;
         let entityId: string;
 
-        let secondEntity: IEntity;
         let secondEntityId: string;
 
         let relationshipInstance: IRelationship;
@@ -175,13 +172,11 @@ describe('Relationship router', () => {
         beforeEach(async () => {
             const { body: firstEntityBody } = await request(app).post('/api/instances/entities').send(defaultEntity);
 
-            firstEntity = firstEntityBody;
             entityId = firstEntityBody.properties._id;
 
             // Create second entities
             const { body: secondEntityBody } = await request(app).post('/api/instances/entities').send(defaultEntity);
 
-            secondEntity = secondEntityBody;
             secondEntityId = secondEntityBody.properties._id;
 
             // Create relationship between two entities
@@ -270,16 +265,14 @@ describe('Relationship router', () => {
             });
         });
 
-        describe('POST /api/instances/relationships/connections', () => {
-            it('Should get relationships connections ( [{node, relationship, node}] ) - by id', async () => {
+        describe('POST /api/instances/relationships/ids', () => {
+            it('Should get relationships - by ids', async () => {
                 const relationship = await request(app)
-                    .post(`/api/instances/relationships/connections`)
+                    .post(`/api/instances/relationships/ids`)
                     .send({ ids: [relId] });
 
                 expect(relationship.statusCode).toBe(200);
-                expect(relationship.body).toStrictEqual(
-                    expect.arrayContaining([{ sourceEntity: firstEntity, relationship: relationshipInstance, destinationEntity: secondEntity }]),
-                );
+                expect(relationship.body).toStrictEqual(expect.arrayContaining([relationshipInstance]));
             });
         });
     });

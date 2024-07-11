@@ -20,7 +20,7 @@ import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CreateOrEditEntityDetails, IUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { EntityWizardValues } from '../dialogs/entity';
 
@@ -74,7 +74,9 @@ const TemplateTable = forwardRef<
     }>({
         isOpen: false,
     });
-    const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<IUpdateWithRuleBreachDialogState>({ isOpen: false });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
     const [isExpand, setIsExpand] = useState(false);
 
     const entityTemplateColor = getEntityTemplateColor(template);
@@ -192,7 +194,7 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    entity={editDialog.expandedEntity ? editDialog.expandedEntity : editDialog.entity!}
+                    entityToUpdate={editDialog.expandedEntity ? editDialog.expandedEntity : editDialog.entity!}
                     onError={(currEntity) => {
                         setEditDialog({
                             isOpen: true,
@@ -200,18 +202,18 @@ const TemplateTable = forwardRef<
                         });
                     }}
                     onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity, false);
+                        entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onCancelUpdate={() => {
+                    handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
-                    updateWithRuleBreachDialogState={updateWithRuleBreachDialogState}
-                    setUpdateWithRuleBreachDialogState={setUpdateWithRuleBreachDialogState}
+                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </Grid>

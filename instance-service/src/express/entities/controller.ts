@@ -1,12 +1,13 @@
 import { Request, Response } from 'express';
 import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoEntityTemplate } from '../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityManager } from './manager';
 
 class EntityController {
     static async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await EntityManager.createEntity(req.body, entityTemplate));
+
+        res.json(await EntityManager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules));
     }
 
     static async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -23,6 +24,10 @@ class EntityController {
 
     static async getEntityById(req: Request, res: Response) {
         res.json(await EntityManager.getEntityById(req.params.id));
+    }
+
+    static async getEntitiesByIds(req: Request, res: Response) {
+        res.json(await EntityManager.getEntitiesByIds(req.body.ids));
     }
 
     static async getExpandedGraphById(req: Request, res: Response) {

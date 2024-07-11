@@ -86,6 +86,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 
     return (
         <ViewingCard
+            width={250}
             title={
                 <Grid
                     container

@@ -67,16 +67,12 @@ const AddEntityButton: React.FC<{
                             disabled: false,
                         }
                     }
-                    entity={
-                        addEntityWizardState.initialValues
-                            ? addEntityWizardState.initialValues
-                            : { properties: { disabled: false, _id: '', createdAt: '', updatedAt: '' }, template: {} }
-                    }
+                    entityToUpdate={addEntityWizardState.initialValues}
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onCancelUpdate={() => {
+                    handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}

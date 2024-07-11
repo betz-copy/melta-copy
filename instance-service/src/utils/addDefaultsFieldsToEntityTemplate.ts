@@ -1,4 +1,4 @@
-import { IMongoEntityTemplate } from '../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../externalServices/templates/interfaces/entityTemplates';
 
 export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate): IMongoEntityTemplate => {
     return {

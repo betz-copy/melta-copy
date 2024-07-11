@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 import {
     enumPropertiesColorsSchema,

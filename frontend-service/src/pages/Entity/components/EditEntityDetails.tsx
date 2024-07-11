@@ -15,9 +15,10 @@ import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchema
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
@@ -242,25 +243,29 @@ const EditEntityDetails: React.FC<{
                             </Card>
                         </Form>
                         {updateWithRuleBreachDialogState.isOpen && (
-                            <UpdateEntityWithRuleBreachDialog
-                                isLoadingUpdateEntity={isUpdateLoading}
-                                handleClose={() => setUpdateWithRuleBreachDialogState({ isOpen: false })}
-                                onUpdateEntity={() => {
+                            <ActionOnEntityWithRuleBreachDialog
+                                isLoadingActionOnEntity={isUpdateLoading}
+                                handleClose={() => {
+                                    setUpdateWithRuleBreachDialogState({ isOpen: false });
+                                }}
+                                doActionEntity={() => {
                                     return updateMutation({
                                         newEntityData: updateWithRuleBreachDialogState.updateEntityFormData!,
                                         ignoredRules: updateWithRuleBreachDialogState.rawBrokenRules!,
                                     });
                                 }}
+                                actionType={ActionTypes.UpdateEntity}
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
                                 currEntity={entity}
-                                updateEntityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
+                                entityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setUpdateWithRuleBreachDialogState((prevState) => ({
                                         ...prevState,
                                         brokenRules,
                                     }))
                                 }
+                                onCreateRuleBreachRequest={() => onCancelUpdate()}
                             />
                         )}
                     </>

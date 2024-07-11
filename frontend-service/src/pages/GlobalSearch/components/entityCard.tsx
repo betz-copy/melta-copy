@@ -13,7 +13,7 @@ import OpenPreview from '../../../common/FilePreview/OpenPreview';
 import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { CreateOrEditEntityDetails, IUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -78,7 +78,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
             return (property.format === 'fileId' || (property.items && property.items.format === 'fileId')) && entity.properties[propertyName];
         });
     }, [entityTemplate, entity]);
-    const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<IUpdateWithRuleBreachDialogState>({ isOpen: false });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
 
     const hasSomeFileIdPropertyTemplate = entityTemplate.propertiesOrder.some((propertyName) => {
         const property = entityTemplate.properties.properties[propertyName];
@@ -466,13 +468,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}
-                    entity={entity}
+                    entityToUpdate={entity}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                         refetchQuery?.();
                     }}
-                    onCancelUpdate={() => {
+                    handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
@@ -484,8 +486,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
-                    updateWithRuleBreachDialogState={updateWithRuleBreachDialogState}
-                    setUpdateWithRuleBreachDialogState={setUpdateWithRuleBreachDialogState}
+                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </Card>

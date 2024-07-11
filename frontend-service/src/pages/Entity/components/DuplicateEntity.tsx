@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import { useMutation } from 'react-query';
@@ -19,6 +19,9 @@ import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../ut
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
@@ -37,8 +40,15 @@ const DuplicateEntity: React.FC<{}> = () => {
     const [errorTooBig, setErrorTooBig] = React.useState(false);
     const [uniqueError, setUniqueError] = React.useState({});
 
+    const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+    }>({ isOpen: false });
+
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
-        (newEntityDate: EntityWizardValues) => duplicateEntityRequest(entity.properties._id, newEntityDate),
+        ({ newEntityDate, ignoredRules }: { newEntityDate: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
@@ -62,6 +72,14 @@ const DuplicateEntity: React.FC<{}> = () => {
                     return;
                 }
 
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    setDuplicateEntityWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                    });
+                }
+
                 toast.error(i18next.t('wizard.entity.failedToDuplicate'));
             },
         },
@@ -74,8 +92,10 @@ const DuplicateEntity: React.FC<{}> = () => {
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
-    const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
+    const { _id, createdAt, updatedAt, disabled, ...entityToDuplicateData } = entity.properties;
+
+    const fieldProperties = pickBy(entityToDuplicateData, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
+    const fileIdsProperties = pickBy(entityToDuplicateData, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
         if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
@@ -90,7 +110,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                duplicateMutation({ ...values, template: entityTemplate });
+                duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
@@ -224,6 +244,33 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 </Grid>
                             </Grid>
                         </Form>
+                        {duplicateEntityWithRuleBreachDialogState.isOpen && (
+                            <ActionOnEntityWithRuleBreachDialog
+                                isLoadingActionOnEntity={isDuplicateLoading}
+                                handleClose={() => setDuplicateEntityWithRuleBreachDialogState({ isOpen: false })}
+                                doActionEntity={() =>
+                                    duplicateMutation({
+                                        newEntityDate: { ...values, template: entityTemplate },
+                                        ignoredRules: duplicateEntityWithRuleBreachDialogState.rawBrokenRules!,
+                                    })
+                                }
+                                actionType={ActionTypes.DuplicateEntity}
+                                brokenRules={duplicateEntityWithRuleBreachDialogState.brokenRules!}
+                                rawBrokenRules={duplicateEntityWithRuleBreachDialogState.rawBrokenRules!}
+                                currEntity={entity}
+                                entityFormData={{ ...values, template: entityTemplate }}
+                                onUpdatedRuleBlock={(brokenRules) =>
+                                    setDuplicateEntityWithRuleBreachDialogState((prevState) => ({
+                                        ...prevState,
+                                        brokenRules,
+                                    }))
+                                }
+                                onCreateRuleBreachRequest={() => {
+                                    setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
+                                    navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
+                                }}
+                            />
+                        )}
                     </>
                 );
             }}
