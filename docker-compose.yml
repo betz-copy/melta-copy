@@ -37,6 +37,7 @@ services:
     build: ./instance-service
     environment:
       PORT: 8000
+      RABBIT_URL: ${RABBIT_URL}
       NEO4J_URL: ${NEO4J_URL}
       NEO4J_USERNAME: ${NEO4J_USERNAME}
       NEO4J_PASSWORD: ${NEO4J_PASSWORD}

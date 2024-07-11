@@ -58,7 +58,6 @@ InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
     wrapMiddleware(validateUserCanGetExpandedEntity),
-    wrapMiddleware(InstancesController.viewEntityInstance),
     InstanceManagerProxy,
 );
 

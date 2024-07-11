@@ -16,9 +16,19 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
+    },
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        activityLogQueue: env.get('ACTIVITY_LOG_QUEUE_NAME').default('activity-log-queue').asString(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),

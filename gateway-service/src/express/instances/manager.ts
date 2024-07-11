@@ -14,7 +14,6 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
-import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogService';
 import { trycatch } from '../../utils';
 import {
     ActionTypes,
@@ -177,72 +176,6 @@ export class InstancesManager {
         return updatedProperties;
     }
 
-    static async updateServicesOnupdateInstanceById(
-        id: string,
-        userId: string,
-        updatedInstance: IEntity,
-        ignoredRules: IBrokenRule[],
-        uploadedFilesAndProperties?: any,
-        createAlert: boolean = true,
-        action: boolean = false,
-    ) {
-        const updatedFields: Record<string, any> = {};
-        const activityLogUpdatedFields: IUpdatedFields[] = [];
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(updatedInstance.templateId);
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-
-        const fields = Object.keys(entityTemplate.properties.properties);
-        for (let i = 0; i < fields.length; i++) {
-            const field = fields[i];
-            const propertyTemplate = entityTemplate.properties.properties[field];
-
-            let newValue: any;
-            if ((propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') && !action) {
-                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
-            } else {
-                newValue = updatedInstance.properties[field];
-            }
-            if (
-                newValue !== undefined &&
-                Array.isArray(currentEntity.properties[field]) &&
-                newValue.length === currentEntity.properties[field].length &&
-                newValue.every((element, index) => element === currentEntity.properties[field][index])
-            )
-                continue;
-            if (currentEntity.properties[field] === newValue) continue;
-
-            updatedFields[field] = newValue ?? null;
-            activityLogUpdatedFields.push({
-                fieldName: field,
-                oldValue: currentEntity.properties[field] ?? null,
-                newValue: newValue ?? null,
-            });
-        }
-
-        if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
-                {
-                    brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
-                },
-                userId,
-            );
-        }
-
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: id,
-            timestamp: new Date(),
-            userId,
-        });
-    }
-
     static async createEntityInstance(
         instanceData: IEntity,
         files: Express.Multer.File[],
@@ -260,10 +193,10 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules).catch(
+        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
-        const { createdEntity, updatedEntities } = createInstanceOutput;
+        const { createdEntity } = createInstanceOutput;
 
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert<ICreateEntityMetadata>(
@@ -278,28 +211,6 @@ export class InstancesManager {
                 userId,
             );
         }
-
-        await ActivityLogManagerService.createActivityLog({
-            action: 'CREATE_ENTITY',
-            entityId: createdEntity.properties._id,
-            metadata: {},
-            timestamp: new Date(),
-            userId,
-        });
-
-        if (updatedEntities.length)
-            await Promise.all(
-                updatedEntities.map(async (updatedEntity) => {
-                    // await ActivityLogManagerService.createActivityLog({
-                    //     action: 'UPDATE_ENTITY',
-                    //     entityId: updatedEntity.properties._id,
-                    //     metadata: {},
-                    //     timestamp: new Date(),
-                    //     userId: user.id,
-                    // });
-                    await this.updateServicesOnupdateInstanceById(updatedEntity.properties._id, userId, updatedEntity, [], undefined, true, true);
-                }),
-            );
 
         return createInstanceOutput;
     }
@@ -329,7 +240,7 @@ export class InstancesManager {
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules).catch(
+        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -347,13 +258,6 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: disabledStatus ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
-            metadata: {},
-            entityId: id,
-            timestamp: new Date(),
-            userId,
-        });
         return entity;
     }
 
@@ -430,10 +334,10 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules).catch(
+        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
             InstancesManager.handleBrokenRulesError,
         );
-        const { createdEntity, updatedEntities } = createInstanceOutput;
+        const { createdEntity } = createInstanceOutput;
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert<IDuplicateEntityMetadata>(
                 {
@@ -448,33 +352,8 @@ export class InstancesManager {
                 userId,
             );
         }
-        if (updatedEntities.length)
-            await Promise.all(
-                updatedEntities.map(async (updatedEntity) => {
-                    await this.updateServicesOnupdateInstanceById(updatedEntity.properties._id, userId, updatedEntity, [], undefined, true, true);
-                }),
-            );
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'DUPLICATE_ENTITY',
-            entityId: createdEntity.properties._id,
-            metadata: {
-                entityIdDuplicatedFrom: id,
-            },
-            timestamp: new Date(),
-            userId,
-        });
         return createdEntity;
-    }
-
-    static async viewEntityInstance(id: string, userId: string) {
-        await ActivityLogManagerService.createActivityLog({
-            action: 'VIEW_ENTITY',
-            entityId: id,
-            metadata: {},
-            timestamp: new Date(),
-            userId,
-        });
     }
 
     static async updateEntityInstance(
@@ -505,13 +384,13 @@ export class InstancesManager {
                 properties: { ...uploadedFilesAndProperties },
             },
             ignoredRules,
+            userId,
         ).catch(InstancesManager.handleBrokenRulesError);
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             logger.error(`failed to delete files of instanceId ${id}`),
         );
 
         const updatedFields: Record<string, any> = {};
-        const activityLogUpdatedFields: IUpdatedFields[] = [];
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -534,11 +413,6 @@ export class InstancesManager {
             if (currentEntity.properties[field] === newValue) continue;
 
             updatedFields[field] = newValue ?? null;
-            activityLogUpdatedFields.push({
-                fieldName: field,
-                oldValue: currentEntity.properties[field] ?? null,
-                newValue: newValue ?? null,
-            });
         }
 
         if (createAlert && ignoredRules.length) {
@@ -556,13 +430,6 @@ export class InstancesManager {
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: updatedInstance.properties._id,
-            timestamp: new Date(),
-            userId,
-        });
         return updatedInstance;
     }
 
@@ -593,7 +460,7 @@ export class InstancesManager {
     }
 
     static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules).catch(
+        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -612,32 +479,11 @@ export class InstancesManager {
             );
         }
 
-        const updatedFields = {
-            action: 'CREATE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: createdRelationship.templateId,
-                relationshipId: createdRelationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
-        });
-
         return createdRelationship;
     }
 
     static async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules).catch(
+        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
@@ -656,27 +502,6 @@ export class InstancesManager {
                 userId,
             );
         }
-
-        const updatedFields = {
-            action: 'DELETE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: relationship.templateId,
-                relationshipId: relationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.sourceEntityId },
-        });
 
         return relationship;
     }

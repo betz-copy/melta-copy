@@ -1,3 +1,4 @@
+/* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
@@ -43,6 +44,8 @@ import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyT
 import RelationshipManager from '../relationships/manager';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import { executeActionAndUpdateRelevantEntities } from '../../utils/actions/executeScript';
+import { createActivityLog } from '../../externalServices/activityLog/producer';
+import { IUpdatedFields } from '../../externalServices/activityLog/interface';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -91,8 +94,14 @@ export class EntityManager {
         }
     }
 
-    static async createEntity(entityProperties: Record<string, any>, entityTemplate: IMongoEntityTemplate, ignoredRules: IBrokenRule[]) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+    static async createEntity(
+        entityProperties: Record<string, any>,
+        entityTemplate: IMongoEntityTemplate,
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        duplicatedFromId?: string,
+    ) {
+        const entity = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const updatedEntities: IEntity[] = [];
 
             const createdEntity = await runInTransactionAndNormalize(
@@ -118,12 +127,23 @@ export class EntityManager {
                     'onCreateEntity',
                     transaction,
                     ignoredRules,
+                    userId,
                 );
                 updatedEntities.push(...updatedEntitiesInActionExecution);
             }
 
             return { createdEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
+
+        await createActivityLog({
+            action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
+            entityId: entity.createdEntity.properties._id,
+            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+            timestamp: new Date(),
+            userId,
+        });
+
+        return entity;
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
@@ -202,7 +222,12 @@ export class EntityManager {
         return Neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
-    static async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+    static async getExpandedGraphById(
+        id: string,
+        reqBody: IGetExpandedEntityBody,
+        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+        userId: string,
+    ) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
         const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
@@ -226,6 +251,15 @@ export class EntityManager {
             expandedParams,
             entityTemplatesMap,
         );
+
+        await createActivityLog({
+            action: 'VIEW_ENTITY',
+            entityId: id,
+            metadata: {},
+            timestamp: new Date(),
+            userId,
+        });
+
         return filterRes;
     }
 
@@ -289,8 +323,8 @@ export class EntityManager {
         return Neo4jClient.writeTransaction(`MATCH (e: \`${templateId}\`) DETACH DELETE e`, normalizeReturnedEntity('multipleResponses'));
     }
 
-    static async updateStatusById(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+    static async updateStatusById(id: string, disabled: boolean, ignoredRules: IBrokenRule[], userId: string) {
+        const updateEntity = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const entity = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -323,6 +357,16 @@ export class EntityManager {
 
             return updatedEntity;
         });
+
+        await createActivityLog({
+            action: disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
+            metadata: {},
+            entityId: id,
+            timestamp: new Date(),
+            userId,
+        });
+
+        return updateEntity;
     }
 
     private static runRulesOnEntity = async (transaction: Transaction, entity: IEntity, updatedProperties?: string[]): Promise<IRuleFailure[]> => {
@@ -400,7 +444,10 @@ export class EntityManager {
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
         transaction: Transaction,
+        userId: string,
     ) {
+        const activityLogUpdatedFields: IUpdatedFields[] = [];
+
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -442,6 +489,41 @@ export class EntityManager {
 
         throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
 
+        const fields = Object.keys(entityTemplate.properties.properties);
+        for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            const propertyTemplate = entityTemplate.properties.properties[field];
+
+            let newValue: any;
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+                newValue = entityProperties[field] ?? updatedEntity.properties[field];
+            } else {
+                newValue = updatedEntity.properties[field];
+            }
+            if (
+                newValue !== undefined &&
+                Array.isArray(entity.properties[field]) &&
+                newValue.length === entity.properties[field].length &&
+                newValue.every((element, index) => element === entity.properties[field][index])
+            )
+                continue;
+            if (entity.properties[field] === newValue) continue;
+
+            activityLogUpdatedFields.push({
+                fieldName: field,
+                oldValue: entity.properties[field] ?? null,
+                newValue: newValue ?? null,
+            });
+        }
+
+        await createActivityLog({
+            action: 'UPDATE_ENTITY',
+            entityId: id,
+            metadata: { updatedFields: activityLogUpdatedFields },
+            timestamp: new Date(),
+            userId,
+        });
+
         return updatedEntity;
     }
 
@@ -450,9 +532,10 @@ export class EntityManager {
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
+        userId: string,
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction);
+            const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction, userId);
 
             if (updatedInstance && entityTemplate.actions) {
                 const entitiesToUpdate = executeActionAndUpdateRelevantEntities(
@@ -461,6 +544,7 @@ export class EntityManager {
                     'onUpdateEntity',
                     transaction,
                     ignoredRules,
+                    userId,
                 );
                 return entitiesToUpdate;
             }
