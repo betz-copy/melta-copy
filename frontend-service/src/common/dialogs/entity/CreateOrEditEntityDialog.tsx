@@ -76,6 +76,8 @@ const CreateOrEditEntityDetails: React.FC<{
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
 }) => {
+    console.log({ createOrUpdateWithRuleBreachDialogState });
+
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let newEntity = entityToUpdate;
     let errorTooBig = externalErrors.files;
@@ -180,7 +182,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const navigate = useNavigate();
 
     const mutationPromiseToastify = async (values: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
-        const mutationPromise = isEditMode ? updateMutation({ newEntityData: values, ignoredRules }) : createMutation(values);
+        const mutationPromise = isEditMode ? updateMutation({ newEntityData: values, ignoredRules }) : createMutation({ newEntityData: values });
         toast.dismiss();
 
         await new Promise<void>((resolve) => {
