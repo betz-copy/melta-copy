@@ -1,13 +1,13 @@
 import * as ts from 'typescript';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
 import { generateInterface } from './generateInterfaceFromJsonSchema';
 import { IEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
 import { IBrokenRule } from '../../express/rules/interfaces';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const prepareCodeForActionExecution = (entityTemplate: IMongoEntityTemplate, crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity') => {
     const updateEntityFunction = [
@@ -49,6 +49,7 @@ export const executeActionAndUpdateRelevantEntities = async (
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
     transaction: Transaction,
     ignoredRules: IBrokenRule[],
+    userId: string,
 ): Promise<IEntity[]> => {
     const jsCode = prepareCodeForActionExecution(entityTemplate, crudAction);
     const executionOutput: { entityId: string; properties: Record<string, any> }[] = executeActionCodeInVM(entity, jsCode);
@@ -68,6 +69,7 @@ export const executeActionAndUpdateRelevantEntities = async (
                 entityTemplate,
                 ignoredRules,
                 transaction,
+                userId,
             );
 
             updatedEntities.push(updatedEntity);
