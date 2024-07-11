@@ -72,3 +72,11 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 };
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
+
+export const addPropertyToRequest = (req: any, key: string, value: any) => {
+    req[key] = value;
+};
+
+export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
+    return req[key];
+};
