@@ -34,4 +34,16 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
     return wrapValidator(validator);
 };
 
+export const basicValidateRequest = (schema: Joi.ObjectSchema<any>, value: any, options: Joi.ValidationOptions = defaultValidationOptions) => {
+    const { error, value: newValue } = schema.unknown().validate(value, options);
+
+    if (error) {
+        throw error;
+    }
+
+    return newValue;
+};
+
+export const mongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+
 export default ValidateRequest;
