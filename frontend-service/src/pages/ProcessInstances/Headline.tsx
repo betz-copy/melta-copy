@@ -26,7 +26,8 @@ const ProcessInstancesHeadline: React.FC<{
     };
     startDateInput: Date | null;
     endDateInput: Date | null;
-}> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput }) => {
+    searchInput: string;
+}> = ({ onSearch, onSetStartDate, onSetEndDate, templatesSelectCheckboxProps, startDateInput, endDateInput, searchInput }) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -54,7 +55,14 @@ const ProcessInstancesHeadline: React.FC<{
                                 />
                             </Grid>
                             <Grid item>
-                                <GlobalSearchBar onSearch={onSearch} borderRadius="7px" toTopBar />
+                                <GlobalSearchBar
+                                    inputValue={searchInput}
+                                    setInputValue={onSearch}
+                                    onSearch={onSearch}
+                                    borderRadius="7px"
+                                    placeholder={i18next.t('globalSearch.searchInPage')}
+                                    toTopBar
+                                />
                             </Grid>
                         </Grid>
                     </Grid>
@@ -72,6 +80,7 @@ const ProcessInstancesHeadline: React.FC<{
                             onClick={() => {
                                 onSetStartDate(null);
                                 onSetEndDate(null);
+                                onSearch('');
                             }}
                             sx={{ borderRadius: 10 }}
                         >

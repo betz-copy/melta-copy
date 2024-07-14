@@ -119,6 +119,7 @@ const processGlobalSearch = async (searchText: string) => {
                         ],
                     },
                 },
+                size: 1000,
             },
         });
 

@@ -287,6 +287,7 @@ export default class ProcessesInstancesManager {
 
         if (!(await isProcessManager(userId))) query.reviewerId = userId;
         const processes = await ProcessManagerService.searchProcessInstances(query);
+
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
     }
 

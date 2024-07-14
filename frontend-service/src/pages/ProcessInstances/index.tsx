@@ -13,7 +13,6 @@ const ProcessInstancesPage: React.FC = () => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplatePopulated[]>(processTemplates);
 
     const [searchInput, setSearchInput] = useState('');
-
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
     const onSearch = (newSearchInput: string) => {
@@ -39,6 +38,7 @@ const ProcessInstancesPage: React.FC = () => {
                 }}
                 startDateInput={startDateInput}
                 endDateInput={endDateInput}
+                searchInput={searchInput}
             />
             <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
                 <ProcessesList

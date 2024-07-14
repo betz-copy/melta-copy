@@ -1,4 +1,4 @@
-import { FilterQuery, Document, Types, ClientSession } from 'mongoose';
+import { FilterQuery, Document, Types, ClientSession, LeanDocument } from 'mongoose';
 import ProcessInstanceModel from './model';
 import {
     CreateProcessReqBody,
@@ -142,7 +142,7 @@ class ProcessInstanceManager {
         ...restOfQuery
     }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
-        let processes: IMongoProcessInstancePopulated[] = [];
+        let processes: LeanDocument<ProcessInstanceDocument>[] = [];
         let processIds: string[] = [];
         if (archived !== undefined) query.archived = archived;
         if (templateIds) query.templateId = { $in: templateIds };
@@ -161,8 +161,8 @@ class ProcessInstanceManager {
 
         processes = await ProcessInstanceModel.find(query, {}, processIds ? { limit, skip, sort: { createdAt: -1 } } : {})
             .populate(config.processFields.steps)
-            .orFail(new ServiceError(500, 'No processes found'))
-            .lean();
+            .lean()
+            .exec();
 
         if (processIds) processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
 
