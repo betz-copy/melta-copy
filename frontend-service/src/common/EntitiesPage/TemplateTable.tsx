@@ -70,7 +70,7 @@ const TemplateTable = forwardRef<
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         entity?: IEntity;
-        expandedEntity?: EntityWizardValues;
+        wizardValues?: EntityWizardValues;
     }>({
         isOpen: false,
     });
@@ -195,9 +195,9 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    entityToUpdate={editDialog.expandedEntity ? editDialog.expandedEntity : editDialog.entity!}
-                    entity={editDialog.entity}
-                    onError={(currEntity) => setEditDialog((prev) => ({ ...prev, isOpen: true, expandedEntity: currEntity }))}
+                    initialValues={editDialog.wizardValues}
+                    entityToUpdate={editDialog.entity!}
+                    onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));

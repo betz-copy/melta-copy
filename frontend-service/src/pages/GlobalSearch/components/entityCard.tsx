@@ -26,6 +26,7 @@ import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableChec
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -135,7 +136,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const increaseIndex = () => setPreviewImageIndex(previewImageIndex + 1);
     const decreaseIndex = () => setPreviewImageIndex(previewImageIndex - 1);
 
-    const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity }>({ isOpen: false });
+    const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity; wizardValues?: EntityWizardValues }>({ isOpen: false });
     const navigate = useNavigate();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
     const first5PropsKeys: string[] = [
@@ -470,6 +471,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     isEditMode
                     entityTemplate={entityTemplate}
                     entityToUpdate={entity}
+                    initialValues={editDialog.wizardValues}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
@@ -479,10 +481,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onError={(currEntity) =>
+                    onError={(currEntityValues) =>
                         setEditDialog({
                             isOpen: true,
-                            entity: currEntity as IEntity,
+                            wizardValues: currEntityValues,
                         })
                     }
                     externalErrors={externalErrors}

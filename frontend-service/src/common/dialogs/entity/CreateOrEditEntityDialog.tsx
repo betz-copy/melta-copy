@@ -65,9 +65,7 @@ const convertIEntityToEntityWizardValues = (
 
     return {
         properties: fieldProperties,
-        attachmentsProperties: (entityToUpdate as EntityWizardValues)?.attachmentsProperties
-            ? (entityToUpdate as EntityWizardValues)?.attachmentsProperties
-            : fileProperties,
+        attachmentsProperties: fileProperties,
         template: entityTemplate,
     };
 };
@@ -75,8 +73,8 @@ const convertIEntityToEntityWizardValues = (
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
-    entityToUpdate?: IEntity | EntityWizardValues;
-    entity?: IEntity;
+    initialValues?: EntityWizardValues;
+    entityToUpdate?: IEntity;
     onSuccessUpdate?: (data: IEntity) => void;
     handleClose: () => void;
     onError: (entity: EntityWizardValues) => void;
@@ -97,7 +95,7 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode = false,
     entityTemplate,
     entityToUpdate,
-    entity,
+    initialValues: initialValuesToOverride,
     onSuccessUpdate,
     handleClose,
     onSuccessCreate,
@@ -113,7 +111,9 @@ const CreateOrEditEntityDetails: React.FC<{
     let uniqueError = externalErrors.unique;
 
     let initialValues: EntityWizardValues;
-    if (entityToUpdate) {
+    if (initialValuesToOverride) {
+        initialValues = initialValuesToOverride;
+    } else if (entityToUpdate) {
         initialValues = convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
     } else {
         initialValues = {
@@ -455,7 +455,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 actionType={isEditMode ? ActionTypes.UpdateEntity : ActionTypes.CreateEntity}
                                 brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={createOrUpdateWithRuleBreachDialogState.rawBrokenRules!}
-                                currEntity={'template' in entityToUpdate! ? entity : entityToUpdate}
+                                currEntity={entityToUpdate}
                                 entityFormData={createOrUpdateWithRuleBreachDialogState.newEntityData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setCreateOrUpdateWithRuleBreachDialogState((prevState) => ({

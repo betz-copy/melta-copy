@@ -71,7 +71,7 @@ const AddEntityButton: React.FC<{
                             disabled: false,
                         }
                     }
-                    entityToUpdate={addEntityWizardState.initialValues}
+                    initialValues={addEntityWizardState.initialValues}
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
@@ -80,11 +80,11 @@ const AddEntityButton: React.FC<{
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}
-                    onError={(currEntity) =>
+                    onError={(currEntityValues) =>
                         setAddEntityWizardState({
                             isOpen: true,
                             initialStep: 1,
-                            initialValues: currEntity,
+                            initialValues: currEntityValues,
                         })
                     }
                     externalErrors={externalErrors}
