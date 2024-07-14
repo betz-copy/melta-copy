@@ -326,6 +326,7 @@ export default {
         displayName: 'שם תצוגה',
         file: 'הוסף אייקון',
         color: 'בחר צבע',
+        date: 'בחר תאריך',
         category: {
             title: 'יצירת קטגוריה',
             createdSuccessfully: 'קטגוריה נוצרה בהצלחה',
