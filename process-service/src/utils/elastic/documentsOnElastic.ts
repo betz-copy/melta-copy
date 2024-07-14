@@ -101,19 +101,11 @@ const processGlobalSearch = async (searchText: string, skip: number, limit: numb
                     bool: {
                         should: [
                             {
-                                wildcard: {
-                                    name: {
-                                        value: `*${searchText}*`,
-                                        boost: 100,
-                                    },
-                                },
-                            },
-                            {
-                                wildcard: {
-                                    processTextChain: {
-                                        value: `*${searchText}*`,
-                                        boost: 1,
-                                    },
+                                query_string: {
+                                    query: `*${searchText}*`,
+                                    fields: ['name^100', 'processTextChain^1'],
+                                    analyze_wildcard: true,
+                                    default_operator: 'AND',
                                 },
                             },
                         ],
