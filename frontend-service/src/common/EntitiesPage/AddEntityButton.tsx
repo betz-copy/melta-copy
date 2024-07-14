@@ -15,7 +15,12 @@ const AddEntityButton: React.FC<{
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
 }> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate }) => {
-    const [addEntityWizardState, setAddEntityWizardState] = useState<{ isOpen: boolean; initialStep?: number; initialValues?: EntityWizardValues }>({
+    const [addEntityWizardState, setAddEntityWizardState] = useState<{
+        isOpen: boolean;
+        initialStep?: number;
+        initialValues?: EntityWizardValues;
+        initalCurrValues?: EntityWizardValues;
+    }>({
         isOpen: false,
     });
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
@@ -71,7 +76,7 @@ const AddEntityButton: React.FC<{
                             disabled: false,
                         }
                     }
-                    initialValues={addEntityWizardState.initialValues}
+                    initialCurrValues={addEntityWizardState.initalCurrValues}
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
@@ -81,11 +86,12 @@ const AddEntityButton: React.FC<{
                         setExternalErrors({ files: false, unique: {} });
                     }}
                     onError={(currEntityValues) =>
-                        setAddEntityWizardState({
+                        setAddEntityWizardState((prev) => ({
+                            ...prev,
                             isOpen: true,
                             initialStep: 1,
-                            initialValues: currEntityValues,
-                        })
+                            initalCurrValues: currEntityValues,
+                        }))
                     }
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}

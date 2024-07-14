@@ -471,7 +471,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     isEditMode
                     entityTemplate={entityTemplate}
                     entityToUpdate={entity}
-                    initialValues={editDialog.wizardValues}
+                    initialCurrValues={editDialog.wizardValues}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });

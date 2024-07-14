@@ -29,8 +29,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
 }) => {
     const fileId = value?.name;
-    const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
-    const [fileName, setFileName] = useState<string | undefined>(initialFileName);
+    const fileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
 
     return (
         <Box
@@ -53,13 +52,11 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 fileName={fileName}
                 onDropFile={(acceptedFile) => {
-                    setFileName(acceptedFile.name);
                     setFieldValue(fileFieldName, acceptedFile);
                     setFieldTouched(fileFieldName, true, false);
                 }}
                 onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
-                    setFileName(undefined);
                     setFieldValue(fileFieldName, undefined);
                     setFieldTouched(fileFieldName, true, false);
                 }}

@@ -73,7 +73,7 @@ const convertIEntityToEntityWizardValues = (
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
-    initialValues?: EntityWizardValues;
+    initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
     onSuccessUpdate?: (data: IEntity) => void;
     handleClose: () => void;
@@ -95,7 +95,7 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode = false,
     entityTemplate,
     entityToUpdate,
-    initialValues: initialValuesToOverride,
+    initialCurrValues,
     onSuccessUpdate,
     handleClose,
     onSuccessCreate,
@@ -111,9 +111,7 @@ const CreateOrEditEntityDetails: React.FC<{
     let uniqueError = externalErrors.unique;
 
     let initialValues: EntityWizardValues;
-    if (initialValuesToOverride) {
-        initialValues = initialValuesToOverride;
-    } else if (entityToUpdate) {
+    if (entityToUpdate) {
         initialValues = convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
     } else {
         initialValues = {
@@ -262,12 +260,16 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty }) => {
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
                 const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+
+                useEffect(() => {
+                    if (initialCurrValues) setValues(initialCurrValues);
+                }, [initialCurrValues]);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -432,6 +434,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     type="submit"
                                                     variant="contained"
                                                     onClick={() => (Object.keys(errors || {}).length > 0 ? '' : handleClose())}
+                                                    disabled={!dirty}
                                                     startIcon={<DoneIcon />}
                                                 >
                                                     {i18next.t('entityPage.save')}

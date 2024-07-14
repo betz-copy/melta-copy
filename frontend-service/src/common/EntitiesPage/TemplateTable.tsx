@@ -195,7 +195,7 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    initialValues={editDialog.wizardValues}
+                    initialCurrValues={editDialog.wizardValues}
                     entityToUpdate={editDialog.entity!}
                     onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
