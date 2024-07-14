@@ -1,10 +1,12 @@
 import { Request } from 'express';
-import * as ts from 'typescript-code';
+import * as ts from 'typescript';
+import * as fs from 'fs';
+import * as path from 'path';
 import EntityTemplateManager from './manager';
-import { IEntityTemplate } from './interface';
+import { IEntityTemplatePopulated } from './interface';
 import { generateInterface } from '../../utils/generateInterfaceFromEntityTemplateProperties';
 
-const cleanActionCode = (action: string, entityTemplate: IEntityTemplate) => {
+const cleanActionCode = (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
         `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
         '',
@@ -23,38 +25,42 @@ export const validateActionAst = async (req: Request) => {
     const entityTemplate = await EntityTemplateManager.getTemplateById(templateId);
 
     const filename = 'test.ts';
-    const sourceCode = `
-function testFunction(a: number, b: number) {
-    let x = a + b;
-    let y = z + 1; // z is not defined
-    return x + y;
-}`;
 
-    const sourceFile = ts.createSourceFile(filename, sourceCode, ts.ScriptTarget.ES5);
+    const sourceFile = ts.createSourceFile(filename, actions, ts.ScriptTarget.ES5);
 
-    const defaultCompilerHost = ts.createCompilerHost({});
+    const options: ts.CompilerOptions = {
+        target: ts.ScriptTarget.ES5,
+        module: ts.ModuleKind.CommonJS,
+        lib: ['lib.esnext.full.d.ts'],
+    };
+
+    const defaultCompilerHost = ts.createCompilerHost(options);
 
     const customCompilerHost: ts.CompilerHost = {
         getSourceFile: (name, languageVersion) => {
-            console.log(`getSourceFile ${name}`);
-
+            // console.log(`getSourceFile ${name}`);
             if (name === filename) {
                 return sourceFile;
+            }
+            if (name === defaultCompilerHost.getDefaultLibFileName(options)) {
+                const libFilePath = path.join(path.dirname(require.resolve('typescript')), 'lib', name);
+                const libFileContent = fs.readFileSync(libFilePath, 'utf8');
+                return ts.createSourceFile(name, libFileContent, languageVersion);
             }
             return defaultCompilerHost.getSourceFile(name, languageVersion);
         },
         writeFile: (_filename, _data) => {},
-        getDefaultLibFileName: () => 'lib.d.ts',
-        useCaseSensitiveFileNames: () => false,
-        getCanonicalFileName: (fileName) => fileName,
-        getCurrentDirectory: () => '',
-        getNewLine: () => '\n',
-        getDirectories: () => [],
-        fileExists: () => true,
-        readFile: () => '',
+        getDefaultLibFileName: (options1) => defaultCompilerHost.getDefaultLibFileName(options1),
+        useCaseSensitiveFileNames: () => defaultCompilerHost.useCaseSensitiveFileNames(),
+        getCanonicalFileName: (filename1) => defaultCompilerHost.getCanonicalFileName(filename1),
+        getCurrentDirectory: () => defaultCompilerHost.getCurrentDirectory(),
+        getNewLine: () => defaultCompilerHost.getNewLine(),
+        getDirectories: (path1) => (defaultCompilerHost.getDirectories ? defaultCompilerHost.getDirectories(path1) : []),
+        fileExists: (filename1) => defaultCompilerHost.fileExists(filename1),
+        readFile: (filename1) => defaultCompilerHost.readFile(filename1),
     };
 
-    const program = ts.createProgram(['test.ts'], {}, customCompilerHost);
+    const program = ts.createProgram([filename], options, customCompilerHost);
 
     const allDiagnostics = [...ts.getPreEmitDiagnostics(program), ...program.emit().diagnostics];
 
