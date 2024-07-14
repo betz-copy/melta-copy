@@ -90,7 +90,7 @@ const deleteDocumentOnElastic = async (processId: string) => {
     }
 };
 
-const processGlobalSearch = async (searchText: string) => {
+const processGlobalSearch = async (searchText: string, skip: number, limit: number) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
         const elkClient = clientInstance.getClient();
@@ -104,7 +104,7 @@ const processGlobalSearch = async (searchText: string) => {
                                 wildcard: {
                                     name: {
                                         value: `*${searchText}*`,
-                                        boost: 2,
+                                        boost: 100,
                                     },
                                 },
                             },
@@ -119,7 +119,9 @@ const processGlobalSearch = async (searchText: string) => {
                         ],
                     },
                 },
-                size: 1000,
+                sort: ['_score'],
+                from: skip,
+                size: limit,
             },
         });
 

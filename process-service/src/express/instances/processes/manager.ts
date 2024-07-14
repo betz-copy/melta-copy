@@ -155,17 +155,16 @@ class ProcessInstanceManager {
         }
 
         if (searchText) {
-            processIds = await processGlobalSearch(searchText);
+            processIds = await processGlobalSearch(searchText, skip, limit);
             query._id = { $in: processIds.map((id) => Types.ObjectId(id)) };
         }
 
-        processes = await ProcessInstanceModel.find(query, {}, processIds ? { limit, skip, sort: { createdAt: -1 } } : {})
+        processes = await ProcessInstanceModel.find(query, {}, processIds.length > 0 ? {} : { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()
             .exec();
 
         if (processIds) processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
-
         return processes;
     }
 
