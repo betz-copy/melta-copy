@@ -219,13 +219,15 @@ export class RuleBreachesManager {
     private static async createEntity(ruleBreachRequest: IRuleBreachRequest<ICreateEntityMetadata>) {
         const { templateId, properties } = ruleBreachRequest.actionMetadata;
 
-        const entity = await InstancesManager.createEntityInstance(
-            { templateId, properties },
-            [],
-            ruleBreachRequest.brokenRules,
-            ruleBreachRequest.originUserId,
-            false,
-        );
+        const entity = (
+            await InstancesManager.createEntityInstance(
+                { templateId, properties },
+                [],
+                ruleBreachRequest.brokenRules,
+                ruleBreachRequest.originUserId,
+                false,
+            )
+        ).createdEntity;
 
         await RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
             ...ruleBreachRequest.actionMetadata,
