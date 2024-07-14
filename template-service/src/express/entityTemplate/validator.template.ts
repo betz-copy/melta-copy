@@ -5,6 +5,7 @@ import * as path from 'path';
 import EntityTemplateManager from './manager';
 import { IEntityTemplatePopulated } from './interface';
 import { generateInterface } from '../../utils/generateInterfaceFromEntityTemplateProperties';
+import { ServiceError } from '../error';
 
 const cleanActionCode = (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
@@ -17,6 +18,68 @@ const cleanActionCode = (action: string, entityTemplate: IEntityTemplatePopulate
 
     return action.slice(defaultCode.length + 1);
 };
+
+function traverse(
+    node: ts.Node,
+    parentScope: Set<string>,
+    errors: string[],
+    nameOfFunctionMustBe: string[],
+    countNumOfOccurrences: Record<string, number>,
+) {
+    const currentScope = new Set(parentScope);
+
+    if (ts.isImportDeclaration(node)) {
+        const importDeclaration = node as ts.ImportDeclaration;
+        throw new ServiceError(400, `Cant use an import declaration ${importDeclaration.getText()}`);
+    }
+
+    if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
+        currentScope.add(node.name.text);
+    } else if (ts.isFunctionDeclaration(node) && node.name && ts.isIdentifier(node.name)) {
+        currentScope.add(node.name.text);
+        node.parameters.forEach((param) => {
+            if (ts.isIdentifier(param.name)) {
+                currentScope.add(param.name.text);
+            }
+        });
+    } else if (ts.isBlock(node)) {
+        node.statements.forEach((statement) => {
+            if (ts.isVariableStatement(statement)) {
+                statement.declarationList.declarations.forEach((decl) => {
+                    if (ts.isIdentifier(decl.name)) {
+                        currentScope.add(decl.name.text);
+                    }
+                });
+            }
+        });
+    } else if (ts.isInterfaceDeclaration(node)) {
+        currentScope.add(node.name.text);
+
+        node.members.forEach((member) => {
+            if (ts.isPropertySignature(member) && ts.isIdentifier(member.name)) {
+                currentScope.add(member.name.text);
+            }
+        });
+    } else if (ts.isTypeReferenceNode(node) && node.getText().includes('Record')) {
+        currentScope.add('Record');
+    }
+
+    if (ts.isIdentifier(node) && !currentScope.has(node.text)) {
+        errors.push(`Error: Undeclared variable '${node.text}' at position ${node.pos}`);
+    }
+
+    if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node)) {
+        const functionName = node.name?.getText();
+        if (functionName && nameOfFunctionMustBe.includes(functionName)) {
+            // eslint-disable-next-line no-param-reassign
+            countNumOfOccurrences[functionName] = (countNumOfOccurrences[functionName] || 0) + 1;
+        }
+    }
+
+    ts.forEachChild(node, (child) => {
+        traverse(child, currentScope, errors, nameOfFunctionMustBe, countNumOfOccurrences);
+    });
+}
 
 export const validateActionAst = async (req: Request) => {
     const { actions } = req.body;
@@ -38,7 +101,6 @@ export const validateActionAst = async (req: Request) => {
 
     const customCompilerHost: ts.CompilerHost = {
         getSourceFile: (name, languageVersion) => {
-            // console.log(`getSourceFile ${name}`);
             if (name === filename) {
                 return sourceFile;
             }
@@ -75,56 +137,18 @@ export const validateActionAst = async (req: Request) => {
             }
         }
     });
-    // const checker = program.getTypeChecker();
-    // const undefinedVariables: string[] = [];
-    // const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity', 'onDeleteEntity'];
-    // const countNumOfOccurrences: Record<string, number> = {};
 
-    // function visit(node: ts.Node, definedVariables: ts.Identifier[]) {
-    //     const newVariables: ts.Identifier[] = [];
+    const errors: string[] = [];
+    const countNumOfOccurrences: Record<string, number> = {};
+    const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity', 'onDeleteEntity'];
 
-    //     if (ts.isVariableDeclaration(node)) {
-    //         return {} as ts.Identifier;
-    //     }
-    //     if (ts.isFunctionDeclaration(node) || ts.isArrowFunction(node)) {
-    //         newVariables.push(...node.parameters);
-    //         const functionName = node.name?.getText();
-    //         if (functionName && nameOfFunctionMustBe.includes(functionName)) {
-    //             countNumOfOccurrences[functionName] = (countNumOfOccurrences[functionName] || 0) + 1;
-    //         }
-    //     }
+    traverse(sourceFile, new Set<string>(), errors, nameOfFunctionMustBe, countNumOfOccurrences);
 
-    //     if (ts.isIdentifier(node)) {
-    //         const symbol = checker.getSymbolAtLocation(node);
-    //         definedVariables.includes(node);
-    //         if (!symbol) {
-    //             undefinedVariables.push(node.getText());
-    //         }
-    //     }
-
-    //     if (ts.isImportDeclaration(node)) {
-    //         const importDeclaration = node as ts.ImportDeclaration;
-    //         throw new ServiceError(400, `Cant use an import declaration ${importDeclaration.getText()}`);
-    //     }
-
-    //     ts.forEachChild(node, (childNode) => {
-    //         const newVariablesOfChild = visit(childNode, definedVariables);
-    //         newVariables.push(newVariablesOfChild);
-    //     });
-
-    //     return undefined;
-    // }
-
-    // if (undefinedVariables.length > 0) {
-    //     throw new ServiceError(400, `cant use undefined variables or functions ${undefinedVariables.map((undefinedVar) => undefinedVar)}`);
-    // }
-
-    // nameOfFunctionMustBe.forEach((functionName) => {
-    //     const numOfOccurrences = countNumOfOccurrences[functionName];
-    //     if (!numOfOccurrences || numOfOccurrences !== 1) {
-    //         throw new ServiceError(400, `problem in function: ${functionName}`);
-    //     }
-    // });
+    if (errors.length > 0) {
+        errors.forEach((error) => console.log({ error }));
+    } else {
+        console.log('No undeclared variables found.');
+    }
 
     // eslint-disable-next-line dot-notation
     req['actions'] = cleanActionCode(actions, entityTemplate);
