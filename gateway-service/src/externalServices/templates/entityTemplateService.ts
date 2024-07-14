@@ -161,7 +161,7 @@ export class EntityTemplateManagerService extends TemplatesManagerService {
     }
 
     static async updateEntityTemplateAction(entityTemplateId: string, actions: string) {
-        const { data } = await this.EntityTemplateManagerApi.patch<IMongoEntityTemplatePopulated>(
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.patch<IMongoEntityTemplatePopulated>(
             `${baseEntitiesRoute}/${entityTemplateId}/actions`,
             {
                 actions,

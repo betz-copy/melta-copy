@@ -1,4 +1,4 @@
-import { IEntitySingleProperty } from '../../externalServices/entityTemplateManager';
+import { IEntitySingleProperty } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const generateFromString = (propertyValues: IEntitySingleProperty) => {
     const { format } = propertyValues;
