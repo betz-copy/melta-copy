@@ -214,7 +214,12 @@ const Graph: React.FC = () => {
         },
     };
     const getGraph = () => {
-        if (!graphData.nodes.length) return <CircularProgress size={80} />;
+        if (!graphData.nodes.length)
+            return (
+                <Box display="flex" justifyContent="center" alignContent="center" height="100%">
+                    <CircularProgress size={80} />
+                </Box>
+            );
 
         if (is3DGraph) {
             return (

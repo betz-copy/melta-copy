@@ -186,7 +186,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                             categories={categoriesArray}
                             size="small"
                             isDraggableDisabled
-                            horizontalOrigin={177}
                         />
                     </Grid>
                     <Grid item>
@@ -198,7 +197,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                             categories={categoriesArray}
                             size="small"
                             isDraggableDisabled
-                            horizontalOrigin={181}
                         />
                     </Grid>
                     <Grid item>

@@ -119,6 +119,13 @@ const TemplateTable = forwardRef<
             <Grid container flexDirection="row" alignItems="center">
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                     <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.columns')}
+                        iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <img src="/icons/columns-settings.svg" />
+                    </IconButtonWithPopover>
+                    <IconButtonWithPopover
                         popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                         iconButtonProps={{
                             onClick: () => {

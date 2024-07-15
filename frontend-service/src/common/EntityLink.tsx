@@ -70,7 +70,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
                     {linkText}
                 </NavLink>
             ) : (
-                <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 'bold' }}>
+                <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '14px' }}>
                     {linkText}
                 </Box>
             )}
