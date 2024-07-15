@@ -53,9 +53,6 @@ const EditEntityDetails: React.FC<{
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    let errorTooBig = externalErrors.files;
-    const [uniqueError, setUniqueError] = React.useState(externalErrors.unique);
-
     const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
     const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
@@ -75,21 +72,23 @@ const EditEntityDetails: React.FC<{
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
                 onSuccessUpdate(data);
-                setUniqueError({});
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                if (err.response?.status === 413) errorTooBig = true;
+                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
 
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                     const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
                     constraintPropsDisplayNames.forEach((uniqueProp) => {
-                        setUniqueError((prev) => ({
+                        setExternalErrors((prev) => ({
                             ...prev,
-                            [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
-                                `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                            )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            unique: {
+                                ...prev.unique,
+                                [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                    `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                                )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            },
                         }));
                     });
                     return;
@@ -103,7 +102,6 @@ const EditEntityDetails: React.FC<{
                         updateEntityFormData: newEntityDate,
                     });
                 }
-                setExternalErrors({ files: errorTooBig, unique: uniqueError });
                 toast.error(i18next.t('wizard.entity.failedToEdit'));
             },
         },
@@ -144,7 +142,7 @@ const EditEntityDetails: React.FC<{
                                                     values={values}
                                                     setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                     errors={errors.properties ?? {}}
-                                                    uniqueErrors={{ ...externalErrors.unique, ...uniqueError }}
+                                                    uniqueErrors={{ ...externalErrors.unique }}
                                                     touched={touched.properties ?? {}}
                                                     setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                     isEditMode

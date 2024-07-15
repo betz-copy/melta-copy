@@ -107,8 +107,6 @@ const CreateOrEditEntityDetails: React.FC<{
 }) => {
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let entityId = entityToUpdate?.properties._id;
-    let errorTooBig = externalErrors.files;
-    let uniqueError = externalErrors.unique;
 
     let initialValues: EntityWizardValues;
     if (entityToUpdate) {
@@ -122,18 +120,21 @@ const CreateOrEditEntityDetails: React.FC<{
     }
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
-        if (err.response?.status === 413) errorTooBig = true;
+        if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
         const errorMetadata = err.response?.data?.metadata;
         if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
             const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
             const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
             constraintPropsDisplayNames.forEach((uniqueProp) => {
-                uniqueError = {
-                    ...uniqueError,
-                    [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
-                        `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                    )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
-                };
+                setExternalErrors((prev) => ({
+                    ...prev,
+                    unique: {
+                        ...prev.unique,
+                        [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                        )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                    },
+                }));
             });
         }
         return errorMetadata;
@@ -145,7 +146,6 @@ const CreateOrEditEntityDetails: React.FC<{
         {
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
-                uniqueError = {};
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 const errorMetadata = handleMutationError(err, entityTemplate);
@@ -169,7 +169,6 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (onSuccessCreate) onSuccessCreate(currEntity);
                 if (onSuccessUpdate) onSuccessUpdate(currEntity);
                 entityId = currEntity.properties._id;
-                uniqueError = {};
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 const errorMetadata = handleMutationError(err, entityTemplate);
@@ -226,7 +225,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                     <Button
                                         variant="text"
                                         onClick={() => {
-                                            setExternalErrors({ files: errorTooBig, unique: uniqueError });
                                             onError({ ...values, properties: { ...values.properties, _id: entityId } });
                                         }}
                                         sx={{ marginRight: '5px' }}
