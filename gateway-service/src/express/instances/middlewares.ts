@@ -28,7 +28,7 @@ export const validateUserCanCreateEntityInstance = async (req: Request) => {
     return validateAuthorization(req, 'Instances', [categoryId], 'Write');
 };
 
-export const getAllowedCategoriesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
+export const getAllowedEntityTemplatesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
     const allowedCategories = userPermissions.instancesPermissions.map((permission) => permission.category);
     return EntityTemplateManagerService.searchEntityTemplates({ categoryIds: allowedCategories });
 };
@@ -36,7 +36,7 @@ export const getAllowedCategoriesForInstances = (userPermissions: Omit<IPermissi
 export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.User, templateIds: string[]) => {
     const userPermissions = await PermissionsManager.getPermissionsOfUserId(user.id);
 
-    const allowedEntityTemplates = await getAllowedCategoriesForInstances(userPermissions);
+    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(userPermissions);
     const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));

@@ -23,7 +23,7 @@ const steps: StepsType<IFrameWizardValues> = [
     {
         label: i18next.t('wizard.iFrame.editDetails'),
         component: (props) => <CreateIFrameDetails {...props} />,
-        // validationSchema: createIFrameDetailsSchema,
+        validationSchema: createIFrameDetailsSchema,
     },
     // {
     //     label: i18next.t('wizard.iFrame.settingPermissions'),

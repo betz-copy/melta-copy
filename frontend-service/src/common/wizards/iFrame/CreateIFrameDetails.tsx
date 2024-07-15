@@ -3,16 +3,15 @@ import { TextField, Grid, Checkbox, Autocomplete, Switch, FormControlLabel } fro
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
-import { variableUrlValidation } from '../../../utils/validation';
 import { IFrameWizardValues } from '.';
-import { E } from '../../../utils/icons/fa6Icons';
+import { variableUrlValidation } from '../../../utils/validation';
 
 const createIFrameDetailsSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
     description: Yup.string(),
-    // url: Yup.string().matches(variableUrlValidation, 'URL is not valid').required(i18next.t('validation.required')),
-    placeInSideBar: Yup.boolean().default(false),
-    // CategoryIds: Yup.object({
+    url: Yup.string().required(i18next.t('validation.required')), // .matches(variableUrlValidation, 'URL is not valid'),
+    placeInSideBar: Yup.boolean(), // .default(false),
+    // categoryIds: Yup.object({
     //     _id: Yup.string().required(i18next.t('validation.required')),
     //     displayName: Yup.string().required(i18next.t('validation.required')),
     // }).required(i18next.t('validation.required')),
