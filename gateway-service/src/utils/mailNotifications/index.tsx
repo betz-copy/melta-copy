@@ -6,7 +6,6 @@ import config from '../../config';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
 import {
-    IActionMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IRuleBreachAlertPopulated,
@@ -236,21 +235,21 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
 };
 
 export const getActionsInfoMessages = async (
-    ruleBreach: IRuleBreachAlertPopulated<IActionMetadataPopulated> | IRuleBreachRequestPopulated<IActionMetadataPopulated>,
+    ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated,
 ) => {
     return ruleBreach.actions.map((action) => {
         if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
             return getCreateOrDeleteRelActionInfo(
                 action.actionType,
-                action.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
             );
         }
         if (action.actionType === ActionTypes.UpdateEntity) {
-            return getUpdateEntityActionInfo(action.actionMetadata as IUpdateEntityMetadataPopulated);
+            return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
         }
 
         if (action.actionType === ActionTypes.UpdateStatus) {
-            return getUpdateEntityStatusActionInfo(action.actionMetadata as IUpdateEntityStatusMetadataPopulated);
+            return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
         }
         return null;
     });
@@ -258,9 +257,9 @@ export const getActionsInfoMessages = async (
 
 const ruleBreachBodyMassage = async (
     ruleBreach:
-        | IRuleBreachAlertPopulated<IActionMetadataPopulated>
-        | IRuleBreachRequestPopulated<IActionMetadataPopulated>
-        | IRuleBreachRequestPopulated<IActionMetadataPopulated>,
+        | IRuleBreachAlertPopulated
+        | IRuleBreachRequestPopulated
+        | IRuleBreachRequestPopulated,
     ruleBrokenData: IRule[],
 ) => {
     return (

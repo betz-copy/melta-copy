@@ -1,4 +1,5 @@
 import {
+    ActionTypes,
     IBrokenRule,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -66,9 +67,13 @@ export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'failures'> {
     }>;
 }
 
-export interface IRuleBreachPopulated extends Omit<IRuleBreach, 'originUserId' | 'brokenRules'> {
+export interface IRuleBreachPopulated extends Omit<IRuleBreach, 'originUserId' | 'brokenRules' | 'actions'> {
     originUser: IUser;
     brokenRules: IBrokenRulePopulated[];
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
 }
 
 export interface IRuleBreachAlertPopulated extends IRuleBreachPopulated {}

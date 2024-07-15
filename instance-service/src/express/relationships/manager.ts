@@ -184,11 +184,13 @@ export class RelationshipManager {
 
     static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
-        if (relationship.destinationEntityId.startsWith('$')) {
-            relationshipToReturn.destinationEntityId = (results[relationship.destinationEntityId[1]] as IEntity).properties._id;
+        if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
+            const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4));
+            relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
         }
-        if (relationship.sourceEntityId.startsWith('$')) {
-            relationshipToReturn.sourceEntityId = (results[relationship.sourceEntityId[1]] as IEntity).properties._id;
+        if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
+            const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4));
+            relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
         }
 
         return relationshipToReturn;
@@ -382,6 +384,8 @@ export class RelationshipManager {
                 actions.forEach((action) => {
                     if (action.actionType === ActionTypes.CreateRelationship) {
                         relationshipTemplateIds.push((action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId);
+                    } else if (action.actionType === ActionTypes.CreateEntity) {
+                        entityTemplateIds.push((action.actionMetadata as ICreateEntityMetadata).templateId);
                     }
                 });
 
@@ -393,8 +397,6 @@ export class RelationshipManager {
                 const relationshipsTemplatesByIds = new Map(
                     relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
                 );
-
-                // TODO - run broken rules before and after
 
                 // collecting all the entitiesIds and their rules for preparation to search their related rules
                 const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } =
@@ -451,7 +453,7 @@ export class RelationshipManager {
             return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun);
         });
 
-        return Promise.all(transactionsPromises);
+        return Promise.allSettled(transactionsPromises);
     }
 
     static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[]) {
