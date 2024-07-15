@@ -174,7 +174,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 const textAreaValues = textAreaSchema.flatMap((property) => {
                     if (values.properties[property.key]) {
                         const value = renderHTML(values.properties[property.key]);
-                        return [{ ...property }];
+                        return [{ ...property, value }];
                     }
                     return [{ ...property }];
                 });
