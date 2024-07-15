@@ -28,23 +28,18 @@ const EditEntityDetails: React.FC<{
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
-    externalErrors: {
-        files: boolean;
-        unique: {};
-    };
-    setExternalErrors: React.Dispatch<
-        React.SetStateAction<{
-            files: boolean;
-            unique: {};
-        }>
-    >;
-}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate, externalErrors, setExternalErrors }) => {
+}> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const handleClose = () => {
+        onCancelUpdate();
+        setExternalErrors({ files: false, unique: {} });
+    };
 
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
@@ -72,6 +67,7 @@ const EditEntityDetails: React.FC<{
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
                 onSuccessUpdate(data);
+                setExternalErrors({ files: false, unique: {} });
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -217,7 +213,7 @@ const EditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     variant="outlined"
                                                     startIcon={<ClearIcon />}
-                                                    onClick={() => onCancelUpdate()}
+                                                    onClick={() => handleClose()}
                                                 >
                                                     {i18next.t('entityPage.cancel')}
                                                 </Button>
@@ -263,7 +259,7 @@ const EditEntityDetails: React.FC<{
                                         brokenRules,
                                     }))
                                 }
-                                onCreateRuleBreachRequest={() => onCancelUpdate()}
+                                onCreateRuleBreachRequest={() => handleClose()}
                             />
                         )}
                     </>

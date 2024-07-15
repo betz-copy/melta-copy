@@ -43,7 +43,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     const darkMode = useSelector((state: RootState) => state.darkMode);
 
@@ -129,14 +128,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             entity: data,
                         };
                     });
-                    setExternalErrors({ files: false, unique: {} });
                 }}
-                onCancelUpdate={() => {
-                    setIsEditMode(false);
-                    setExternalErrors({ files: false, unique: {} });
-                }}
-                externalErrors={externalErrors}
-                setExternalErrors={setExternalErrors}
+                onCancelUpdate={() => setIsEditMode(false)}
             />
         );
     }

@@ -37,8 +37,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
-    const [errorTooBig, setErrorTooBig] = React.useState(false);
-    const [uniqueError, setUniqueError] = React.useState({});
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
@@ -53,20 +52,23 @@ const DuplicateEntity: React.FC<{}> = () => {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
-                setUniqueError({});
+                setExternalErrors({ files: false, unique: {} });
             },
             onError: (err: AxiosError) => {
-                if (err.response?.status === 413) setErrorTooBig(true);
+                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
                     const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
                     constraintPropsDisplayNames.forEach((uniqueProp) => {
-                        setUniqueError((prev) => ({
+                        setExternalErrors((prev) => ({
                             ...prev,
-                            [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
-                                `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                            )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            unique: {
+                                ...prev.unique,
+                                [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                    `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                                )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            },
                         }));
                     });
                     return;
@@ -147,7 +149,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}
-                                                                uniqueErrors={{ ...uniqueError }}
+                                                                uniqueErrors={{ ...externalErrors.unique }}
                                                                 touched={touched.properties ?? {}}
                                                                 setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                             />
@@ -159,10 +161,10 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     component="h6"
                                                                     variant="h6"
                                                                     style={{
-                                                                        marginBottom: errorTooBig ? '0px' : '12px',
+                                                                        marginBottom: externalErrors.files ? '0px' : '12px',
                                                                     }}
                                                                 />
-                                                                {errorTooBig && (
+                                                                {externalErrors.files && (
                                                                     <p
                                                                         id="error"
                                                                         style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
@@ -232,6 +234,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     navigate(`/entity/${entity.properties._id}`);
+                                                                    setExternalErrors({ files: false, unique: {} });
                                                                 }}
                                                             >
                                                                 {i18next.t('entityPage.cancel')}
@@ -269,6 +272,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 onCreateRuleBreachRequest={() => {
                                     setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
                                     navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
+                                    setExternalErrors({ files: false, unique: {} });
                                 }}
                             />
                         )}
