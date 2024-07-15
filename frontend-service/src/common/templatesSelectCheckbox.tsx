@@ -2,6 +2,7 @@ import React, { Dispatch } from 'react';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
+import i18next from 'i18next';
 
 const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,
@@ -31,22 +32,11 @@ const TemplatesSelectCheckbox: React.FC<{
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
-    horizontalOrigin?: number;
-}> = ({
-    title,
-    templates,
-    selectedTemplates,
-    setSelectedTemplates,
-    categories,
-    isDraggableDisabled,
-    setTemplates,
-    size,
-    toTopBar,
-    horizontalOrigin,
-}) => {
+}> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {
     return (
         <SelectCheckbox
             title={title}
+            img={title === i18next.t('entityTemplatesCheckboxLabel') ? <img src="/icons/select-checkbox.svg" /> : undefined}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
@@ -57,7 +47,6 @@ const TemplatesSelectCheckbox: React.FC<{
             setOptions={setTemplates}
             size={size}
             toTopBar={toTopBar}
-            horizontalOrigin={horizontalOrigin}
         />
     );
 };

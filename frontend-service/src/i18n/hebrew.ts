@@ -53,6 +53,7 @@ export default {
         disabledHeaderName: 'מושבת',
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
+        columns: 'עמודות',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     actions: {
@@ -169,7 +170,7 @@ export default {
     searchLabel: 'חיפוש שם תבנית',
     booleanOptions: { yes: 'כן', no: 'לא' },
     graph: {
-        filterEntity: 'סינון ישות',
+        filterEntity: 'סינון על יישות',
         navigateToEntityPage: 'עבור לעמוד הפרט',
         navigateToGraph: 'עבור לגרף',
         center: 'מרכז',
@@ -192,6 +193,8 @@ export default {
             [environment.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
         },
         filterField: 'סינון שדה',
+        additionalTemplates: 'תבניות נוספות',
+        filterTitle: 'תבניות ויישויות מוצגות',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',
