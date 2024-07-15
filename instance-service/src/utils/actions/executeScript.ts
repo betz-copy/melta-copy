@@ -63,7 +63,7 @@ export const executeActionAndUpdateRelevantEntities = async (
 
             await validateEntity(entityTemplate._id, entityToUpdate.properties);
 
-            const updatedEntity = await EntityManager.updateEntityByIdInnerTrans(
+            const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
                 entityToUpdate.entityId,
                 entityToUpdate.properties,
                 entityTemplate,

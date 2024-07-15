@@ -263,11 +263,14 @@ export class EntityManager {
         return filterRes;
     }
 
-    static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
+    static async deleteEntityById(id: string, deleteAllRelationships: boolean, userId: string) {
+        console.log({ userId });
+
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             try {
-                // const entity = await this.getEntityById(id);
-                // const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+                const updatedEntities: IEntity[] = [];
+                const entity = await this.getEntityById(id);
+                const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
                 const node = await runInTransactionAndNormalize(
                     transaction,
@@ -279,18 +282,18 @@ export class EntityManager {
                     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
                 }
 
-                // const result = executeScript(entityTemplate, entity, 'onDeleteEntity');
-                // try {
-                //     await Promise.all(
-                //         result.map(async (updatedEntity) => {
-                //             await validateEntity(entityTemplate._id, updatedEntity.properties);
-                //             this.updateEntityByIdInnerTrans(updatedEntity.entityId, updatedEntity.properties, entityTemplate, [], transaction);
-                //         }),
-                //     );
-                // } catch (error) {
-                //     logger.error(`error updating instances ${error}`);
-                // }
-                return id;
+                if (entityTemplate.actions) {
+                    const entitiesToUpdate = await executeActionAndUpdateRelevantEntities(
+                        entityTemplate,
+                        entity,
+                        'onDeleteEntity',
+                        transaction,
+                        [],
+                        userId,
+                    );
+                    updatedEntities.push(...entitiesToUpdate);
+                }
+                return { id, updatedEntities };
             } catch (error) {
                 if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
                     throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
@@ -438,7 +441,7 @@ export class EntityManager {
         return updatedProperties;
     }
 
-    static async updateEntityByIdInnerTrans(
+    static async updateEntityByIdInnerTransaction(
         id: string,
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
@@ -535,21 +538,30 @@ export class EntityManager {
         userId: string,
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const updatedInstance = await this.updateEntityByIdInnerTrans(id, entityProperties, entityTemplate, ignoredRules, transaction, userId);
+            const updatedEntities: IEntity[] = [];
 
-            if (updatedInstance && entityTemplate.actions) {
-                const entitiesToUpdate = executeActionAndUpdateRelevantEntities(
+            const updatedEntity = await this.updateEntityByIdInnerTransaction(
+                id,
+                entityProperties,
+                entityTemplate,
+                ignoredRules,
+                transaction,
+                userId,
+            );
+
+            if (updatedEntity && entityTemplate.actions) {
+                const entitiesToUpdate = await executeActionAndUpdateRelevantEntities(
                     entityTemplate,
-                    updatedInstance,
+                    updatedEntity,
                     'onUpdateEntity',
                     transaction,
                     ignoredRules,
                     userId,
                 );
-                return entitiesToUpdate;
+                updatedEntities.push(...entitiesToUpdate);
             }
 
-            return [updatedInstance];
+            return { updatedEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 

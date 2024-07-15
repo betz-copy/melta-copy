@@ -50,7 +50,11 @@ export class InstanceManagerService {
     }
 
     static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules, userId });
+        const { data } = await this.InstanceManagerApi.put<{ updatedEntity: IEntity; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`, {
+            ...entity,
+            ignoredRules,
+            userId,
+        });
 
         return data;
     }
@@ -61,8 +65,10 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async deleteEntityInstance(id: string) {
-        const { data } = await this.InstanceManagerApi.delete<string>(`${baseEntitiesRoute}/${id}`);
+    static async deleteEntityInstance(id: string, userId: string) {
+        const { data } = await this.InstanceManagerApi.delete<{ deletedEntityId: string; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`, {
+            data: { userId },
+        });
 
         return data;
     }

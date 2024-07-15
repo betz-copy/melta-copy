@@ -38,7 +38,7 @@ class EntityController {
     }
 
     static async deleteEntityById(req: Request, res: Response) {
-        res.json(await EntityManager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean));
+        res.json(await EntityManager.deleteEntityById(req.params.id, req.query.deleteAllRelationships as unknown as boolean, req.body.userId));
     }
 
     static async deleteEntitiesByTemplateId(req: Request, res: Response) {

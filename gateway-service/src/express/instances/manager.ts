@@ -193,10 +193,9 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
+        const { createdEntity, updatedEntities } = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
-        const { createdEntity } = createInstanceOutput;
 
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert<ICreateEntityMetadata>(
@@ -212,7 +211,7 @@ export class InstancesManager {
             );
         }
 
-        return createInstanceOutput;
+        return { createdEntity, updatedEntities };
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
@@ -377,7 +376,7 @@ export class InstancesManager {
             }
         });
 
-        const updatedInstance = await InstanceManagerService.updateEntityInstance(
+        const { updatedEntity, updatedEntities } = await InstanceManagerService.updateEntityInstance(
             id,
             {
                 templateId: updatedInstanceData.templateId,
@@ -399,9 +398,9 @@ export class InstancesManager {
 
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+                newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
             } else {
-                newValue = updatedInstance.properties[field];
+                newValue = updatedEntity.properties[field];
             }
             if (
                 newValue !== undefined &&
@@ -430,7 +429,7 @@ export class InstancesManager {
             );
         }
 
-        return updatedInstance;
+        return { updatedEntity, updatedEntities };
     }
 
     private static async deleteAllEntityFiles(currentEntity: IEntity) {
@@ -446,9 +445,9 @@ export class InstancesManager {
         return deleteFiles(fileIdsToRemove);
     }
 
-    static async deleteEntityInstance(id: string) {
+    static async deleteEntityInstance(id: string, userId: string) {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
+        const deletedInstance = await InstanceManagerService.deleteEntityInstance(id, userId);
 
         const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 
