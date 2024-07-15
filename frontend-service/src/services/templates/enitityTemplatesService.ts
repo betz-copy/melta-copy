@@ -37,6 +37,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
+            readOnly: value.readOnly!,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -103,6 +104,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             calculateTime,
             serialStarter,
             hide,
+            readOnly,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -128,6 +130,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                 minItems: type === 'enumArray' ? 1 : undefined,
+                readOnly: readOnly,
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -216,6 +219,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    console.log({ formData });
+    console.log({ entityTemplate });
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;

@@ -44,13 +44,14 @@ const RjsfTextWidget = ({
     formContext,
     registry,
     color,
+    propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
     const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) =>
         onChange(newValue === '' ? options.emptyValue : newValue);
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
-    const variant = readonly ? 'standard' : 'outlined';
+    const variant = readonly && schema.readOnly !== true ? 'standard' : 'outlined';
 
     const { rootSchema } = registry;
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);

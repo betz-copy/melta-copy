@@ -30,6 +30,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     required: boolean;
     preview: boolean;
     hide: boolean;
+    readOnly: boolean;
     id: string;
     uniqueCheckbox?: boolean;
     groupName?: string;

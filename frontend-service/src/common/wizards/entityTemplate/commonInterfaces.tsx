@@ -14,6 +14,7 @@ export interface CommonFormInputProperties {
     required?: boolean;
     preview?: boolean;
     hide?: boolean;
+    readOnly?: boolean;
     uniqueCheckbox?: boolean;
     groupName?: string;
 }
