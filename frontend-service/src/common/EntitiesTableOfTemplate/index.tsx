@@ -61,7 +61,7 @@ export const getDatasource = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
     quickFilterText: string | undefined,
     onFail: ((err: unknown) => void) | undefined,
-    rowData?: Data[],
+    rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
     return {
@@ -98,6 +98,12 @@ export const getDatasource = <Data extends any = IEntity>(
     };
 };
 
+export type IConnection = {
+    relationship: Pick<IRelationship, 'properties' | 'templateId'>;
+    sourceEntity: IEntity;
+    destinationEntity: IEntity;
+};
+
 const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
@@ -114,24 +120,27 @@ const getRowModelProps = <Data extends any = IEntity>(
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
-            serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail, rowData, mainEntity),
+            serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
             cacheBlockSize: 50,
             maxBlocksInCache: 10,
             pagination: true,
             paginationPageSize,
         };
     }
+
+    // 'infinite' row model type
     return {
-        // the serverSide includes advanced infinite row model
         rowModelType: 'serverSide',
         pagination: false,
-        serverSideDatasource: getDatasource(template, quickFilterText, datasourceOnFail, rowData, mainEntity),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
         cacheBlockSize: 50,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 50,
     };
 };
+
+export { getRowModelProps };
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
@@ -250,10 +259,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     return getSortModel();
                 },
                 showSideBar() {
-                    const sideBarOpen = gridRef.current?.api.isToolPanelShowing();
-                    gridRef.current?.api.setSideBarVisible(!sideBarOpen);
-                    if (sideBarOpen) gridRef.current?.api.closeToolPanel();
-                    else gridRef.current?.api.openToolPanel('columns');
+                    const gridApi = gridRef.current?.api;
+                    if (!gridApi) return;
+                    const isSideBarOpen = gridApi.isToolPanelShowing();
+                    gridApi.setSideBarVisible(!isSideBarOpen);
+                    isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
             };
         });
@@ -425,8 +435,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     }}
                     suppressCsvExport
                     suppressContextMenu
+                    onToolPanelVisibleChanged={(params) => {
+                        const gridApi = gridRef.current?.api;
+                        if (!gridApi) return;
+                        const isSideBarOpen = gridApi.isToolPanelShowing();
+                        gridApi.setSideBarVisible(isSideBarOpen);
+                    }}
                     onGridReady={(params) => {
-                        gridRef.current?.api.setSideBarVisible(false);
                         params.api.setFilterModel({
                             ...defaultFilterModel,
                             ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),
@@ -474,6 +489,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                 },
                             },
                         ],
+                        hiddenByDefault: true,
                         position: 'left',
                     }}
                     statusBar={

@@ -15,7 +15,7 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IRelationship } from '../../interfaces/relationships';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../../common/EntitiesTableOfTemplate';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import '../../css/pages.css';
@@ -236,15 +236,7 @@ const ConnectionsTable: React.FC<{
                         },
                         disabledButton: isEditButtonsDisabled,
                     }}
-                    getRowId={(
-                        connection:
-                            | IEntity
-                            | {
-                                  relationship: Pick<IRelationship, 'properties' | 'templateId'>;
-                                  sourceEntity: IEntity;
-                                  destinationEntity: IEntity;
-                              },
-                    ) => {
+                    getRowId={(connection: IEntity | IConnection) => {
                         if ('relationship' in connection) {
                             return connection.relationship.properties._id;
                         }
