@@ -12,7 +12,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { deleteFile, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -307,6 +307,7 @@ export class TemplatesManager {
     static async createEntityTemplate(
         templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
         file?: Express.Multer.File,
+        pdfTemplates?: Express.Multer.File[]
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
         let iconFileId: string | null;
@@ -317,6 +318,13 @@ export class TemplatesManager {
             iconFileId = null;
         }
 
+        let pdfTemplatesIds: string[] | null;
+        if(pdfTemplates) {
+            pdfTemplatesIds = await uploadFiles(pdfTemplates);
+        } else {
+            pdfTemplatesIds = null;
+        }
+
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
@@ -324,6 +332,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            pdfTemplatesIds
         });
 
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });

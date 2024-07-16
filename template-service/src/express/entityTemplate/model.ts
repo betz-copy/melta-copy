@@ -49,6 +49,11 @@ const EntityTemplateSchema = new mongoose.Schema(
         iconFileId: {
             type: String,
         },
+        pdfTemplatesIds: {
+            type: [String],
+            required: false,
+            default: null
+        },
     },
     {
         timestamps: true,
