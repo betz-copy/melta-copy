@@ -76,7 +76,7 @@ const CreateOrEditEntityDetails: React.FC<{
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
     onSuccessUpdate?: (data: IEntity) => void;
-    handleClose: () => void;
+    handleClose: (isSubmit?: boolean) => void;
     onError: (entity: EntityWizardValues) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     externalErrors: {
@@ -91,6 +91,7 @@ const CreateOrEditEntityDetails: React.FC<{
     >;
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
+    gotClosed: boolean;
 }> = ({
     isEditMode = false,
     entityTemplate,
@@ -104,6 +105,7 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
+    gotClosed,
 }) => {
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let entityId = entityToUpdate?.properties._id;
@@ -302,7 +304,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
-                        isDialog
+                        dialog={{ isDialog: true, gotClosed }}
                     />
                 );
 
@@ -431,7 +433,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     type="submit"
                                                     variant="contained"
-                                                    onClick={() => (Object.keys(errors || {}).length > 0 ? '' : handleClose())}
+                                                    onClick={() =>
+                                                        Object.keys(errors).length > 0
+                                                            ? ''
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose(true)), 5000)
+                                                    }
                                                     disabled={!dirty}
                                                     startIcon={<DoneIcon />}
                                                 >

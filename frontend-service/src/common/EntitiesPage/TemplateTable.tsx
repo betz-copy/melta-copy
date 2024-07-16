@@ -78,6 +78,7 @@ const TemplateTable = forwardRef<
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
+    const [gotClosed, setGotClosed] = useState(false);
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
@@ -186,7 +187,9 @@ const TemplateTable = forwardRef<
                                 isOpen: true,
                                 entity: currEntity,
                             });
+                            setExternalErrors({ files: false, unique: {} });
                             setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                            toast.dismiss();
                         },
                         popoverText: i18next.t(
                             !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
@@ -209,15 +212,17 @@ const TemplateTable = forwardRef<
                         entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
+                        setGotClosed(false);
                     }}
-                    handleClose={() => {
+                    handleClose={(isSubmit?: boolean) => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setGotClosed(isSubmit || false);
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    gotClosed={gotClosed}
                 />
             </Dialog>
         </Grid>

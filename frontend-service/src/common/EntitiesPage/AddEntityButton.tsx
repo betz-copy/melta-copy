@@ -5,6 +5,7 @@ import { EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
+import { toast } from 'react-toastify';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -27,6 +28,7 @@ const AddEntityButton: React.FC<{
         isOpen: false,
     });
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [gotClosed, setGotClosed] = useState(false);
 
     return (
         <>
@@ -40,6 +42,7 @@ const AddEntityButton: React.FC<{
                         setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                         setExternalErrors({ files: false, unique: {} });
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                        toast.dismiss();
                     },
                     style,
                 }}
@@ -80,10 +83,11 @@ const AddEntityButton: React.FC<{
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
+                        setGotClosed(false);
                     }}
-                    handleClose={() => {
+                    handleClose={(isSubmit?: boolean) => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setGotClosed(isSubmit || false);
                     }}
                     onError={(currEntityValues) =>
                         setAddEntityWizardState((prev) => ({
@@ -98,6 +102,7 @@ const AddEntityButton: React.FC<{
                     onSuccessCreate={onSuccessCreate}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
+                    gotClosed={gotClosed}
                 />
             </Dialog>
         </>
