@@ -14,18 +14,18 @@ import { IUser } from '../../../express/users/interface';
 import { IEntity } from '../../instanceService/interfaces/entities';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface IDeleteRelationshipMetadataPopulated extends Omit<IDeleteRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
 export interface IDuplicateEntityMetadataPopulated extends Omit<IDuplicateEntityMetadata, 'entityIdToDuplicate'> {
-    entityToDuplicate: IEntity | null;
+    entityToDuplicate: IEntity | string | null;
 }
 
 export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
@@ -43,8 +43,8 @@ export type IActionMetadataPopulated =
     | IUpdateEntityMetadataPopulated
     | IUpdateEntityStatusMetadataPopulated;
 
-export type IEntityForBrokenRules = IEntity | 'created-entity-id' | null;
-export type IRelationshipForBrokenRules = IEntity | 'created-relationship-id' | null;
+export type IEntityForBrokenRules = IEntity | string | null;
+export type IRelationshipForBrokenRules = IEntity | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;

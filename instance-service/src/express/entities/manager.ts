@@ -110,7 +110,6 @@ export class EntityManager {
                 transaction,
                 entityProperties,
                 entityTemplate
-
             );
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 

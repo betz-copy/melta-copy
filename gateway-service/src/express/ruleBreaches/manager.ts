@@ -71,7 +71,6 @@ export class RuleBreachesManager {
         // TODO - here
 
         console.log('create rule breach!!');
-        console.log({ ruleBreachRequestData: JSON.stringify(ruleBreachRequestData) });
         const { result, err } = await trycatch(async () => {
             const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest({
                 ...ruleBreachRequestData,
@@ -494,15 +493,15 @@ export class RuleBreachesManager {
     }
 
     private static populateEntityForBrokenRules(entityId: string, entitiesMap: Map<string, IEntity>): IEntityForBrokenRules {
-        if (entityId === 'created-entity-id') {
-            return 'created-entity-id';
+      if (entityId.startsWith('$')) {    
+            return entityId;
         }
         return entitiesMap.get(entityId) ?? null;
     }
 
     private static populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
-        if (relationshipId === 'created-relationship-id') {
-            return 'created-relationship-id';
+        if (relationshipId.startsWith('$')) {
+            return relationshipId;
         }
         return relationshipsMap.get(relationshipId) ?? null;
     }
@@ -560,8 +559,17 @@ export class RuleBreachesManager {
             });
         });
 
-        entitiyIds.delete('created-entity-id'); // no point to do getInstanceById to unexisting entity
-        relationshipIds.delete('created-relationship-id');
+        // no point to do getInstanceById to unexisting entity
+        entitiyIds.forEach(str => {
+            if (str.startsWith('$')) {
+                entitiyIds.delete(str);
+            }
+        });
+        relationshipIds.forEach(str => {
+            if (str.startsWith('$')) {
+                relationshipIds.delete(str);
+            }
+        });
 
         const entities = await InstanceManagerService.getEntityInstancesByIds(Array.from(entitiyIds));
         const relationships = await InstanceManagerService.getEntityInstancesByIds(Array.from(relationshipIds));
@@ -572,10 +580,10 @@ export class RuleBreachesManager {
         return brokenRules.map((brokenRule) => RuleBreachesManager.populateBrokenRule(brokenRule, entitiesMap, relationshipsMap));
     }
 
-    private static async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) {
+    private static async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) { // TODO
         const [sourceEntity, destinationEntity] = await Promise.all([
-            InstanceManagerService.getEntityInstanceById(sourceEntityId).catch(() => null),
-            InstanceManagerService.getEntityInstanceById(destinationEntityId).catch(() => null),
+            sourceEntityId.startsWith('$') ? sourceEntityId : InstanceManagerService.getEntityInstanceById(sourceEntityId).catch(() => null),
+            destinationEntityId.startsWith('$') ? destinationEntityId : InstanceManagerService.getEntityInstanceById(destinationEntityId).catch(() => null),
         ]);
 
         return {
@@ -613,7 +621,7 @@ export class RuleBreachesManager {
     public static async populateDuplicateEntityActionMetadata(actionMetadata: IDuplicateEntityMetadata): Promise<IDuplicateEntityMetadataPopulated> {
         const { entityIdToDuplicate, ...restOfMetadata } = actionMetadata;
 
-        const entityToDuplicate = await InstanceManagerService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
+        const entityToDuplicate = entityIdToDuplicate.startsWith('$') ? entityIdToDuplicate : await InstanceManagerService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
 
         return {
             entityToDuplicate,
@@ -667,6 +675,14 @@ export class RuleBreachesManager {
                 else if (action.actionType === ActionTypes.UpdateStatus)
                     populatedActionMetadatasPromises.push(
                         RuleBreachesManager.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
+                    );
+                else if (action.actionType === ActionTypes.CreateEntity)
+                    populatedActionMetadatasPromises.push(
+                        RuleBreachesManager.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata),
+                    );
+                else if (action.actionType === ActionTypes.DuplicateEntity)
+                    populatedActionMetadatasPromises.push(
+                        RuleBreachesManager.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
                     );
             });
         }

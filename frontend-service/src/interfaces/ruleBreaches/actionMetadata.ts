@@ -8,8 +8,8 @@ export interface ICreateRelationshipMetadata {
 
 export interface ICreateRelationshipMetadataPopulated {
     relationshipTemplateId: string;
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface IDeleteRelationshipMetadata {
@@ -22,8 +22,8 @@ export interface IDeleteRelationshipMetadata {
 export interface IDeleteRelationshipMetadataPopulated {
     relationshipId: string;
     relationshipTemplateId: string;
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface ICreateEntityMetadata {

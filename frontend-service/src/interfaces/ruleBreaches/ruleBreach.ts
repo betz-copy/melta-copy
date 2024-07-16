@@ -33,8 +33,8 @@ export interface IRuleBreach {
     createdAt: Date;
 }
 
-export type IEntityForBrokenRules = IEntity | 'created-entity-id' | null;
-export type IRelationshipForBrokenRules = IRelationship | 'created-relationship-id' | null;
+export type IEntityForBrokenRules = IEntity | string | null; // TODO - change name and use in actionInfo component and metadatas types
+export type IRelationshipForBrokenRules = IRelationship | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;

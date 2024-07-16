@@ -227,7 +227,7 @@ export class RelationshipManager {
                     const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData) || [];
                     reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
 
-                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData, reasons);
+                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData, reasons); // TODO - not key of object
                 });
             }
         });
@@ -433,11 +433,11 @@ export class RelationshipManager {
                     ignoredRules,
                     ruleFailuresBeforeAll,
                     ruleFailuresAfterAll,
-                    actions.map((action) => {
+                    actions.map((action, index) => {
                         if (action.actionType === ActionTypes.CreateEntity)
-                            return { createdEntityId: (action.actionMetadata as ICreateEntityMetadata).properties._id };
+                            return { createdEntityId: results[index].properties._id };
                         if (action.actionType === ActionTypes.CreateRelationship)
-                            return { createdRelationshipId: (action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId };
+                            return { createdRelationshipId: results[index].properties._id };
                         return {};
                     }),
                 );

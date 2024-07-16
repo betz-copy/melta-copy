@@ -97,7 +97,7 @@ const generateBrokenRules = (options?: { nullables?: boolean; actionType?: Actio
             ruleId: '61e3ea6e4d53a23e87e43c7c',
             failures: [
                 {
-                    entity: actionType === ActionTypes.CreateEntity ? 'created-entity-id' : flight,
+                    entity: actionType === ActionTypes.CreateEntity ? '$0._id' : flight,
                     causes: [
                         {
                             instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist2 } },

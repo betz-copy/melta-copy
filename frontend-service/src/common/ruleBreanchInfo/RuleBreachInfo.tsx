@@ -46,13 +46,15 @@ const RuleBreachInfo: React.FC<{
                                 actionType={action.actionType}
                                 actionMetadata={action.actionMetadata}
                                 isCompact={isCompact}
+                                actionIndex={index}
+                                actions={actions}
                             />
                         </Grid>
                     </Grid>
                 );
             })}
             <Grid item>
-                <BrokenRulesInfo brokenRules={brokenRules} actionMetadata={actions[0].actionMetadata} actionType={actions[0].actionType} isCompact={isCompact} />
+                <BrokenRulesInfo brokenRules={brokenRules} actions={actions} isCompact={isCompact} />
             </Grid>
         </Grid>
     );

@@ -174,10 +174,10 @@ export const processReviewerUpdateMail = ({
     );
 };
 
-const EntityLink: React.FC<{ entity: IEntity | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({ entity, entityTemplate }) => {
+const EntityLink: React.FC<{ entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({ entity, entityTemplate }) => {
     return (
         <a
-            href={`${meltaBaseUrl}/entity/${entity ? entity.properties._id : 'unknownEntity'}`}
+            href={`${meltaBaseUrl}/entity/${(entity && typeof entity !== 'string') ? entity.properties._id : 'unknownEntity'}`}
             target="_blank"
             style={{ color: '#225AA7', fontWeight: 'bold' }}
         >

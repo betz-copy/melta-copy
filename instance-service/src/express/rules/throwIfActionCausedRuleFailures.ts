@@ -11,14 +11,11 @@ import { filteredMap } from '../../utils/filteredMap';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
 
-
 const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
-    const index = actionsResults.findIndex((actionResult) => {
-        actionResult.createdRelationshipId === relationshipId;
-    });
+    const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);
 
-    return index === -1 ?  relationshipId : `$${index}._id`;
-} 
+    return index === -1 ? relationshipId : `$${index}._id`;
+};
 
 const getCauseFormattedForBrokenRules = (
     cause: ICausesOfInstance,
@@ -47,16 +44,16 @@ const getCauseFormattedForBrokenRules = (
     };
 };
 
-
 const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
-    const index = actionsResults.findIndex((actionResult) => {
-        actionResult.createdEntityId === entityId;
-    });
+    const index = actionsResults.findIndex((actionResult) => actionResult.createdEntityId === entityId);
 
-    return index === -1 ?  entityId : `$${index}._id`;
-}
+    return index === -1 ? entityId : `$${index}._id`;
+};
 
-const getBrokenRuleFormatted = (brokenRule: IBrokenRule, actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[]): IBrokenRule => {
+const getBrokenRuleFormatted = (
+    brokenRule: IBrokenRule,
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+): IBrokenRule => {
     const { ruleId, failures } = brokenRule;
 
     return {
@@ -102,7 +99,7 @@ export const throwIfActionCausedRuleFailures = (
     ignoredRules: IBrokenRule[],
     ruleFailuresBeforeAction: IRuleFailure[],
     ruleFailuresAfterAction: IRuleFailure[],
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
 ) => {
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {

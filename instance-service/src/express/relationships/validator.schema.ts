@@ -17,7 +17,7 @@ export const runBulkOfActionsInMultipleTransactionsSchema = Joi.object({
         dryRun: Joi.boolean().required(),
     },
     body: {
-        actionsGroups: Joi.array().items(Joi.array().items(Joi.object())),
+        actionsGroups: Joi.array().items(Joi.array().items(Joi.object())), // TODO - IAction object and check with the validateRelationship function for example, and for entity
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     params: {},
