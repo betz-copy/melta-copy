@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { IMongoIFrame } from '../../interfaces/iFrames';
+import { IFrameMap, IMongoIFrame } from '../../interfaces/iFrames';
 import { CardMenu } from '../SystemManagement/components/CardMenu';
 import { ErrorToast } from '../../common/ErrorToast';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
@@ -37,7 +37,8 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
     // };
     const [isHovered, setIsHovered] = useState(false);
 
-    // const iFrames = queryClient.getQueryData<IFrameMap>('getIFrames')!;
+    const iFrames = queryClient.getQueryData<IFrameMap>('getIFrames')!;
+    console.log({ iFrames });
 
     const [deleteIFrameDialogState, setDeleteIFrameDialogState] = useState<{
         isDialogOpen: boolean;

@@ -4,12 +4,13 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { IFrameWizardValues } from '.';
-import { variableUrlValidation } from '../../../utils/validation';
+// import { variableUrlValidation } from '../../../utils/validation';
 
 const createIFrameDetailsSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
-    description: Yup.string(),
     url: Yup.string().required(i18next.t('validation.required')), // .matches(variableUrlValidation, 'URL is not valid'),
+    description: Yup.string(),
+    apiToken: Yup.string(),
     placeInSideBar: Yup.boolean(), // .default(false),
     // categoryIds: Yup.object({
     //     _id: Yup.string().required(i18next.t('validation.required')),
@@ -18,13 +19,10 @@ const createIFrameDetailsSchema = {
 };
 
 const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
-    // const queryClient = useQueryClient();
+    // const [isInSideBar, setIsInSideBar] = React.useState(values.placeInSideBar);
+    const { placeInSideBar } = values;
+    console.log({ values }, placeInSideBar);
 
-    // const categories = queryClient.getQueryData<ICategoryMap>('getCategories');
-    // const categoriesArray = Array.from(categories!.values());
-    console.log({ values });
-
-    const [isInSideBar, setIsInSideBar] = React.useState(values.placeInSideBar);
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item>
@@ -57,26 +55,29 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     helperText={touched.name && errors.name}
                 />
             </Grid>
-            <Grid>
-                {values.placeInSideBar !== undefined && (
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                name="placeInSideBar"
-                                onChange={(event) => {
-                                    setIsInSideBar(event.target.checked);
-                                    console.log(event.target.value);
+            {/* <Grid>
+                
+                <FormControlLabel
+                    control={
+                        <Switch
+                            id="placeInSideBar"
+                            name="placeInSideBar"
+                            onChange={(event) => {
+                                // setIsInSideBar(event.target.checked);
+                                console.log('g f', event.target.checked, values.placeInSideBar);
 
-                                    handleChange({ ...values, placeInSideBar: isInSideBar });
-                                }}
-                                checked={isInSideBar}
-                                value={values.placeInSideBar}
-                            />
-                        }
-                        label={i18next.t('wizard.iFrame.placeInSideBar')}
-                    />
-                )}
-            </Grid>
+                                console.log('g ', event.target.value, typeof values.placeInSideBar);
+
+                                // ({ ...values, placeInSideBar: event.target.checked });
+                            }}
+                            checked={values.placeInSideBar}
+                            // value={values.placeInSideBar}
+                        />
+                    }
+                    label={i18next.t('wizard.iFrame.placeInSideBar')}
+                />
+                
+            </Grid> */}
             {/* <Grid item>
                 <Checkbox
                     checked={values.placeInSideBar}

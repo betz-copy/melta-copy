@@ -1,20 +1,17 @@
 import React from 'react';
-
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
-// import { CreateIFrameName, createIFrameNameSchema } from './CreateIFrameName';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
+import { IFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
-import { CreateCategoryName, createCategoryNameSchema } from '../category/CreateCategoryName';
 import { ChooseIcon } from '../entityTemplate/ChooseIcon';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
-// import { ChooseIcon } from '../entityTemplate/ChooseIcon';
-// import { ChooseColor } from '../category/ChooseColor';
+import SettingIFramesPermissions from './SettingPrmissions';
+import InstancesPermissionsCard from '../../permissionsOfUserDialog/instancesPermissionsCard';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
@@ -27,7 +24,7 @@ const steps: StepsType<IFrameWizardValues> = [
     },
     // {
     //     label: i18next.t('wizard.iFrame.settingPermissions'),
-    //     component: (props) => <SettingPrmissions {...props} />,
+    //     component: (props) => <SettingIFramesPermissions />,
     //     // validationSchema: createCategoryNameSchema,
     // },
     {
@@ -48,16 +45,19 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
     initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', apiToken: '', placeInSideBar: false },
     isEditMode = false,
 }) => {
-    console.log({ initialValues });
+    // console.log({ initialValues });
+    // const queryClient = useQueryClient();
+    // const i = queryClient.getQueryData<IFrameMap>('getIFrames');
+    // const iFramesArray = Array.from(i!.values());
+    // console.log({ i });
 
-    const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
         (iFrame: IFrameWizardValues) =>
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFame),
 
         {
             onSuccess: (data) => {
-                console.log('helooo im here');
+                console.log('shirel ', { data });
 
                 // queryClient.setQueryData<IFrameMap>('getIFrames', (iFrames) => iFrames!.set(data._id, data));
 

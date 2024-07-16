@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import { CircularProgress, Grid } from '@mui/material';
 import IFramesHeadline from './Headline';
-import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
-import { getIFrameById, updateIFrame } from '../../services/iFramesService';
+import { IMongoIFrame } from '../../interfaces/iFrames';
+import { getIFrameById } from '../../services/iFramesService';
 
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
@@ -13,12 +13,8 @@ interface IFramePageProps {
 
 const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
     const { iFrameId } = useParams();
-    // const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    // const [edit, setEdit] = useState<boolean>(false);
-    // const queryKey = ['getIFrame', iFrameId ];
-    // const iFrameData = iFrameId ? useQuery(queryKey, async () => getIFrameById(iFrameId!)).data : iFrame!;
     const { data: iFrameData, isLoading } = useQuery(['getIFrame', iFrameId], async () => getIFrameById(iFrameId!), {
         initialData: iFrame,
         retry: false,
