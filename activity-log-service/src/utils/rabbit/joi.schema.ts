@@ -1,9 +1,12 @@
 import * as Joi from 'joi';
 
+export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid MongoId');
+
 const activityLogSchema = Joi.object({
     timestamp: Joi.date().required(),
     entityId: Joi.string().required(),
-    userId: Joi.string().required(),
+    
+    : Joi.string().required(),
     action: Joi.string()
         .valid(
             'DELETE_RELATIONSHIP',
@@ -51,5 +54,12 @@ const activityLogSchema = Joi.object({
         otherwise: Joi.valid({}),
     }),
 });
+
+// DELETE_RELATIONSHIP  metadata: { relationshipId:string,relationshipTemplateId:string, entityId:string }
+// CREATE_RELATIONSHIP  metadata: { relationshipId:string,relationshipTemplateId:string, entityId:string }
+// UPDATE_ENTITY        metadata: { updatedFields:[{FieldName:string, oldValue:any, newValue:any}]}
+// CREATE_ENTITY        metadata: {}
+// DISABLE_ENTITY       metadata: {}
+// ACTIVATE_ENTITY      metadata: {}
 
 export default activityLogSchema;
