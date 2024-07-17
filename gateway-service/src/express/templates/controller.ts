@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
     constructor(workspaceId: string) {

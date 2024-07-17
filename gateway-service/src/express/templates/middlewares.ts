@@ -2,22 +2,33 @@ import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
-import { Authorizer } from '../../utils/authorizer';
+import { UserService } from '../../externalServices/userService';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { getWorkspaceId } from '../../utils/express';
+import { ServiceError } from '../error';
 
-export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) => {
+export const validateUserCanCreateEntityTemplateUnderCategory = async (req: Request) => {
     const { category } = req.body;
 
-    return validateAuthorization(req, 'Templates', [category]);
+    const [workspaceId, userPermissions] = await Promise.all([getWorkspaceId(req), UserService.getUserPermissions(req.user!.id)]);
+
+    if (!Object.keys(userPermissions[workspaceId].instances?.categories ?? {}).includes(category)) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+    }
 };
 
 export const validateUserCanUpdateOrDeleteEntityTemplate = async (req: Request) => {
     const templateId = req.params.id;
-    const entityTemplateService = new EntityTemplateService(await getWorkspaceId(req));
+    const workspaceId = await getWorkspaceId(req);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
 
     const { category } = await entityTemplateService.getEntityTemplateById(templateId);
 
-    return validateAuthorization(req, 'Templates', [category._id]);
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    if (!Object.keys(userPermissions[workspaceId].instances?.categories ?? {}).includes(category._id)) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+    }
 };
 
 export const getRelatedCategoriesFromRelationshipTemplate = async (
@@ -35,10 +46,19 @@ export const getRelatedCategoriesFromRelationshipTemplate = async (
 };
 
 export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req: Request) => {
-    const entityTemplateService = new EntityTemplateService(await getWorkspaceId(req));
+    const workspaceId = await getWorkspaceId(req);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
     const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(entityTemplateService, req.body);
 
-    return validateAuthorization(req, 'Templates', relatedCategories);
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    if (
+        !Object.entries(userPermissions[workspaceId].instances?.categories ?? {}).some(
+            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope !== PermissionScope.write,
+        )
+    ) {
+        throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+    }
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Request) => {
@@ -49,5 +69,13 @@ export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Req
     const relationshipTemplate = await relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
     const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(entityTemplateService, relationshipTemplate);
 
-    return validateAuthorization(req, 'Templates', relatedCategories);
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    if (
+        !Object.entries(userPermissions[workspaceId].instances?.categories ?? {}).some(
+            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope !== PermissionScope.write,
+        )
+    ) {
+        throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+    }
 };

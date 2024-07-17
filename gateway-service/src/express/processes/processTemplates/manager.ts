@@ -18,6 +18,8 @@ import {
 } from '../../../externalServices/processService/interfaces/processInstance';
 import config from '../../../config';
 import DefaultManagerProxy from '../../../utils/express/manager';
+import { UserService } from '../../../externalServices/userService';
+import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
 
 const { internalSearchPullLimit } = config.processService;
 
@@ -26,7 +28,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
 
     private processInstancesManager: ProcessesInstancesManager;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         super(new ProcessService(workspaceId));
         this.storageService = new StorageService(workspaceId);
         this.processInstancesManager = new ProcessesInstancesManager(workspaceId);
@@ -126,7 +128,11 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
     async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, userId: string) {
         const query: ISearchProcessTemplatesBody = { ...searchBody };
 
-        if (!(await isProcessManager(userId))) query.reviewerId = userId;
+        const userPermissions = await UserService.getUserPermissions(userId);
+
+        if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
+            query.reviewerId = userId;
+        }
 
         const processes = await this.service.searchProcessTemplates(query);
         return Promise.all(processes.map((process) => ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(process)));

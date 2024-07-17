@@ -6,6 +6,7 @@ import { IMongoStepTemplate } from './interfaces/stepTemplate';
 import { NotFoundError } from '../../express/processes/error';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { UserService } from '../userService';
+import { PermissionScope } from '../userService/interfaces/permissions';
 
 const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
@@ -29,11 +30,9 @@ export class ProcessService extends DefaultExternalServiceApi {
         if (userId) {
             const userPermissions = await UserService.getUserPermissions(userId);
 
-            // TODO-WORKSPACES
-            if (userPermissions[this.workspaceId].processes?.scope !== 'write') {
+            if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
                 query.reviewerId = userId;
             }
-            // if (userId && !(await isProcessManager(userId))) query.reviewerId = userId;
         }
 
         const [process] = await this.searchProcessTemplates(query);
@@ -63,7 +62,15 @@ export class ProcessService extends DefaultExternalServiceApi {
     // Process Instance
     async getProcessInstanceById(id: string, userId?: string): Promise<IMongoProcessInstanceWithSteps> {
         const query: ISearchProcessInstancesBody = { limit: 1, skip: 0, ids: [id] };
-        if (userId && !(await isProcessManager(userId))) query.reviewerId = userId;
+
+        if (userId) {
+            const userPermissions = await UserService.getUserPermissions(userId);
+
+            if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
+                query.reviewerId = userId;
+            }
+        }
+
         const [process] = await this.searchProcessInstances(query);
 
         if (!process) throw new NotFoundError('process', id);

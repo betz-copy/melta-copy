@@ -54,6 +54,8 @@ import {
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { UserService } from '../../externalServices/userService';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 
 const { errorCodes } = config;
 
@@ -68,7 +70,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private rabbitManager: RabbitManager;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         super(new RuleBreachService(workspaceId));
         this.storageService = new StorageService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
@@ -330,7 +332,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     async searchRuleBreachRequests(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachRequestPopulated>> {
-        const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
+        const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachRequests(updatedAgGridRequest);
 
@@ -341,7 +343,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     async searchRuleBreachAlerts(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridResult<IRuleBreachAlertPopulated>> {
-        const updatedAgGridRequest = await RuleBreachesManager.agGridSearchRuleBreachesOfUser(agGridRequest, user);
+        const updatedAgGridRequest = await this.agGridSearchRuleBreachesOfUser(agGridRequest, user);
 
         const result = await this.service.searchRuleBreachAlerts(updatedAgGridRequest);
 
@@ -354,8 +356,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
-        if (user && ruleBreachRequest.originUserId !== user.id && !(await isRuleManager(user.id))) {
-            throw new ServiceError(403, 'user does not have permissions to this rule breach request');
+        if (user && ruleBreachRequest.originUserId !== user.id) {
+            const userPermissions = await UserService.getUserPermissions(user.id);
+            if (userPermissions[this.workspaceId].rules?.scope !== PermissionScope.write) {
+                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
+            }
         }
 
         return this.populateRuleBreachRequest(ruleBreachRequest);
@@ -364,15 +369,19 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     async getRuleBreachAlertsById(ruleBreachAlertId: string, user?: Express.User): Promise<IRuleBreachAlertPopulated> {
         const ruleBreachAlert = await this.service.getRuleBreachAlertById(ruleBreachAlertId);
 
-        if (user && ruleBreachAlert.originUserId !== user.id && !(await isRuleManager(user.id))) {
-            throw new ServiceError(403, 'user does not have permissions to this rule breach alert');
+        if (user && ruleBreachAlert.originUserId !== user.id) {
+            const userPermissions = await UserService.getUserPermissions(user.id);
+            if (userPermissions[this.workspaceId].rules?.scope !== PermissionScope.write) {
+                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
+            }
         }
 
         return this.populateRuleBreachAlert(ruleBreachAlert);
     }
 
-    private static async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
-        if (await isRuleManager(user.id)) return agGridRequest;
+    private async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
+        const userPermissions = await UserService.getUserPermissions(user.id);
+        if (userPermissions[this.workspaceId].rules?.scope === PermissionScope.write) return agGridRequest;
 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
 

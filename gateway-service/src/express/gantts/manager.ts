@@ -6,6 +6,7 @@ import { IRelationshipTemplate, RelationshipsTemplateService } from '../../exter
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export class GanttManager extends DefaultManagerProxy<GanttsService> {
     private instancesService: InstancesService;
@@ -32,14 +33,14 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         };
     }
 
-    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(this.entityTemplateService, permissionsOfUserId);
 
         const gantts = await this.service.searchGantts(searchBody);
         return gantts.map((gantt) => GanttManager.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
-    async getGanttById(ganttId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(this.entityTemplateService, permissionsOfUserId);
 
         const gantt = await this.service.getGanttById(ganttId);

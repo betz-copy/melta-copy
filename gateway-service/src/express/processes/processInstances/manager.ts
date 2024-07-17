@@ -55,7 +55,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     private rabbitManager: RabbitManager;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         super(new ProcessService(workspaceId));
         this.instancesService = new InstancesService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
@@ -91,7 +91,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             updatedProperties[key] = {
                 entity,
                 userHavePermission: Boolean(
-                    userPermission.instancesPermissions.find((instance) => instance.category === entityTemplate!.category._id),
+                    Object.keys(userPermission[this.workspaceId].instances?.categories ?? {}).find(
+                        (categoryId) => categoryId === entityTemplate!.category._id,
+                    ),
                 ),
                 entityTemplate,
             } as IReferencedEntityForProcess;
@@ -315,7 +317,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const userPermissions = await UserService.getUserPermissions(userId);
 
-        if (userPermissions[workspaceId].processes?.scope !== PermissionScope.write) query.reviewerId = userId;
+        if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) query.reviewerId = userId;
 
         const processes = await this.service.searchProcessInstances(query);
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));

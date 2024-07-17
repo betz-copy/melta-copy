@@ -22,6 +22,8 @@ import { IEntityTemplateWithConstraints, IMongoEntityTemplateWithConstraints, IM
 import { ProcessService } from '../../externalServices/processService';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
     categoryHasTemplates,
@@ -140,7 +142,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // all
-    async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async getAllAllowedTemplates(userId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const [allCategories, allowedEntityTemplates] = await Promise.all([
             this.getAllCategories(),
             this.getAllowedEntitiesTemplates(permissionsOfUserId),
@@ -171,7 +173,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ] = await Promise.all([
             this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
             this.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
-            this.processService.searchProcessTemplates((await isProcessManager(userId)) ? {} : { reviewerId: userId }),
+            this.processService.searchProcessTemplates(permissionsOfUserId.processes?.scope === PermissionScope.write ? {} : { reviewerId: userId }),
         ]);
 
         const [allAllowedEntityTemplatesWithConstraints, processTemplates] = await Promise.all([
@@ -196,7 +198,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         };
     }
 
-    async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    async getAllAllowedEntityTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
@@ -547,15 +549,11 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // entities
-    async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>) {
+    async getAllowedEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const searchBody: ISearchEntityTemplatesBody = {};
 
-        const { templatesManagementId, instancesPermissions } = userPermissions;
-
-        if (!templatesManagementId) {
-            const allowedCategories = instancesPermissions.map((permission) => permission.category);
-
-            searchBody.categoryIds = allowedCategories;
+        if (!userPermissions.templates && userPermissions.instances) {
+            searchBody.categoryIds = Object.keys(userPermissions.instances.categories);
         }
 
         return this.entityTemplateService.searchEntityTemplates(searchBody);

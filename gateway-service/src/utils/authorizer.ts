@@ -8,16 +8,15 @@ import { ICompact, IPermission, ISubCompactPermissions } from '../externalServic
 import { wrapMiddleware } from './express';
 import DefaultController from './express/controller';
 
-export class Authorizer extends DefaultController {
-    private workspaceId: string;
+export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
 
+export class Authorizer extends DefaultController {
     private workspacePermissions: ISubCompactPermissions;
 
-    constructor(dbname: string, userId: string) {
+    constructor(private workspaceId: string, userId: string) {
         super(undefined);
-        this.workspaceId = dbname;
 
-        Authorizer.getWorkspacePermissions(dbname, userId).then((permissions) => {
+        Authorizer.getWorkspacePermissions(workspaceId, userId).then((permissions) => {
             this.workspacePermissions = permissions;
         });
     }
@@ -83,7 +82,7 @@ export class Authorizer extends DefaultController {
 
         const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
 
-        typedObjectEntries(authPermissions).forEach(([type, permission]) => {
+        typedObjectEntries(authPermissions).forEach(([type, _permission]) => {
             if (!userPermissions[this.workspaceId][type]) throw new UserNotAuthorizedError();
         });
     }
@@ -93,6 +92,7 @@ export class Authorizer extends DefaultController {
     async userHasSomePermissions(req: Request) {
         const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
         if (!userWorkspacePermissions) throw new UserNotAuthorizedError();
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userWorkspacePermissions;
     }
 
     private async wrapAuthMiddleware(authPermissions: ISubCompactPermissions) {

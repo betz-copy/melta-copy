@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { GanttManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export class GanttController extends DefaultController<GanttManager> {
     constructor(workspaceId: string) {

@@ -27,15 +27,15 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         this.processInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
-    private static async handleNotificationsOnUpdateStepInstance(
+    private async handleNotificationsOnUpdateStepInstance(
         process: IMongoProcessInstancePopulated,
         previousProcess: IMongoProcessInstanceWithSteps,
         updatedStep: IMongoStepInstance,
     ) {
         await Promise.allSettled([
-            ProcessesInstancesManager.sendProcessStatusUpdateNotification(process, updatedStep.status, updatedStep._id),
+            this.processInstancesManager.sendProcessStatusUpdateNotification(process, updatedStep.status, updatedStep._id),
             process.status !== previousProcess.status
-                ? ProcessesInstancesManager.sendProcessStatusUpdateNotification(process, process.status)
+                ? this.processInstancesManager.sendProcessStatusUpdateNotification(process, process.status)
                 : undefined,
         ]);
     }
@@ -76,7 +76,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             // add remove old files
             const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData);
             const updatedProcess = await this.processInstancesManager.getProcessInstance(processId, userId);
-            if (updatedStepStatus) StepsInstancesManager.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
+            if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
@@ -102,7 +102,7 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
         );
         if (updatedData.status) {
             const updatedProcess = await this.processInstancesManager.getProcessInstance(processId, userId);
-            StepsInstancesManager.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
+            this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
         return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
     }
