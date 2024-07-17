@@ -74,7 +74,7 @@ export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Om
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: PermissionScope) => {
     const instanceId = req.params.id;
-    const dbName = await getDbName(req);
+    const dbName = await getWorkspaceId(req);
     const instancesService = new InstancesService(dbName);
     const entityTemplateService = new EntityTemplateService(dbName);
 
@@ -108,7 +108,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
         permissionsOfUserId,
     } = req as RequestWithPermissionsOfUserId;
 
-    const templatesManager = new TemplatesManager(await getDbName(req));
+    const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 
     const allAllowedEntityTemplates = (await templatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
         (entityTemplate) => entityTemplate._id,
@@ -139,7 +139,7 @@ const getRelatedCategoriesFromRelationshipInstance = async (
 };
 
 export const validateUserCanCreateRelationshipInstance = async (req: Request) => {
-    const dbName = await getDbName(req);
+    const dbName = await getWorkspaceId(req);
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(
         new RelationshipsTemplateService(dbName),
         new EntityTemplateService(dbName),
@@ -150,7 +150,7 @@ export const validateUserCanCreateRelationshipInstance = async (req: Request) =>
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Request) => {
-    const dbName = await getDbName(req);
+    const dbName = await getWorkspaceId(req);
     const instancesService = new InstancesService(dbName);
     const relationshipInstance = await instancesService.getRelationshipInstanceById(req.params.id);
 
@@ -168,7 +168,7 @@ export const validateUserCanIgnoreRules = async (req: Request) => {
     const { ignoredRules } = req.body;
     const { user } = req;
 
-    const dbName = await getDbName(req);
+    const dbName = await getWorkspaceId(req);
     const relationshipsTemplateService = new RelationshipsTemplateService(dbName);
     const authorizer = new Authorizer(dbName, user?.id);
 

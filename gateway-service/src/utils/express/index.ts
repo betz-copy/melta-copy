@@ -28,7 +28,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
-export const getDbName = async (req: Request) => {
+export const getWorkspaceId = async (req: Request) => {
     const workspaceId = req.headers[workspaceHeaderName];
 
     if (typeof workspaceId !== 'string') throw new InvalidWorkspaceHeaderError();
@@ -42,7 +42,7 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
 }) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {
-            const dbName = await getDbName(req);
+            const dbName = await getWorkspaceId(req);
             return (new controller(dbName, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
@@ -54,7 +54,7 @@ export const createWorkspacesProxyMiddleware = (options: Options) => {
         onProxyReq: async (...params) => {
             const [proxyReq, req] = params;
 
-            const dbName = await getDbName(req);
+            const dbName = await getWorkspaceId(req);
             proxyReq.setHeader(dbHeaderName, dbName);
 
             if (options.onProxyReq) options.onProxyReq(...params);

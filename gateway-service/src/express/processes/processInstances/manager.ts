@@ -40,6 +40,7 @@ import {
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { UserService } from '../../../externalServices/userService';
+import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -312,7 +313,10 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     async searchProcessInstances(searchBody: ISearchProcessInstancesBody, userId: string) {
         const query: ISearchProcessInstancesBody = { ...searchBody };
 
-        if (!(await isProcessManager(userId))) query.reviewerId = userId;
+        const userPermissions = await UserService.getUserPermissions(userId);
+
+        if (userPermissions[workspaceId].processes?.scope !== PermissionScope.write) query.reviewerId = userId;
+
         const processes = await this.service.searchProcessInstances(query);
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
     }

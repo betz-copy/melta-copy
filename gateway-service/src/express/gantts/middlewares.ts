@@ -2,7 +2,8 @@ import { Request } from 'express';
 import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IGantt, GanttsService } from '../../externalServices/ganttsService';
 import { UserService } from '../../externalServices/userService';
-import { getDbName } from '../../utils/express';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { getWorkspaceId } from '../../utils/express';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
 
@@ -19,6 +20,7 @@ const validateHasPermissionsToGanttItems = async (gantt: IGantt, allowedEntityTe
 };
 
 export const validateUserHasPermissionsToGantt = async (
+    workspaceId: string,
     entityTemplateService: EntityTemplateService,
     ganttsService: GanttsService,
     userId: string,
@@ -27,7 +29,7 @@ export const validateUserHasPermissionsToGantt = async (
 ) => {
     const userPermissions = await UserService.getUserPermissions(userId);
 
-    if (!userPermissions.templatesManagementId) {
+    if (userPermissions[workspaceId].templates?.scope !== PermissionScope.write) {
         throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete gantts` });
     }
 
@@ -44,25 +46,25 @@ export const validateUserHasPermissionsToGantt = async (
 };
 
 export const validateUserCanCreateGantt = async (req: Request) => {
-    const dbName = await getDbName(req);
-    const entityTemplateService = new EntityTemplateService(dbName);
-    const ganttsService = new GanttsService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
+    const ganttsService = new GanttsService(workspaceId);
 
-    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, req.body, undefined);
+    await validateUserHasPermissionsToGantt(workspaceId, entityTemplateService, ganttsService, req.user!.id, req.body, undefined);
 };
 
 export const validateUserCanUpdateGantt = async (req: Request) => {
-    const dbName = await getDbName(req);
-    const entityTemplateService = new EntityTemplateService(dbName);
-    const ganttsService = new GanttsService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
+    const ganttsService = new GanttsService(workspaceId);
 
-    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, req.body, req.params.ganttId);
+    await validateUserHasPermissionsToGantt(workspaceId, entityTemplateService, ganttsService, req.user!.id, req.body, req.params.ganttId);
 };
 
 export const validateUserCanDeleteGantt = async (req: Request) => {
-    const dbName = await getDbName(req);
-    const entityTemplateService = new EntityTemplateService(dbName);
-    const ganttsService = new GanttsService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
+    const ganttsService = new GanttsService(workspaceId);
 
-    await validateUserHasPermissionsToGantt(entityTemplateService, ganttsService, req.user!.id, undefined, req.params.ganttId);
+    await validateUserHasPermissionsToGantt(workspaceId, entityTemplateService, ganttsService, req.user!.id, undefined, req.params.ganttId);
 };
