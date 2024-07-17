@@ -13,10 +13,3 @@ export const getActivitySchema = Joi.object({
         entityId: Joi.string().required(),
     },
 });
-
-// DELETE_RELATIONSHIP  metadata: { relationshipId:string,relationshipTemplateId:string, entityId:string }
-// CREATE_RELATIONSHIP  metadata: { relationshipId:string,relationshipTemplateId:string, entityId:string }
-// UPDATE_ENTITY        metadata: { updatedFields:[{FieldName:string, oldValue:any, newValue:any}]}
-// CREATE_ENTITY        metadata: {}
-// DISABLE_ENTITY       metadata: {}
-// ACTIVATE_ENTITY      metadata: {}
