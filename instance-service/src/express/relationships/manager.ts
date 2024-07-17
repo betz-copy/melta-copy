@@ -11,7 +11,6 @@ import {
 import { IRelationship } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
-
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
 import { filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';

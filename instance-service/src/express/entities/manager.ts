@@ -797,7 +797,6 @@ export class EntityManager {
             throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
 
             const fields = Object.keys(entityTemplate.properties.properties);
-
             for (let i = 0; i < fields.length; i++) {
                 const field = fields[i];
                 const propertyTemplate = entityTemplate.properties.properties[field];
