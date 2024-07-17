@@ -1,10 +1,11 @@
 /* eslint-disable no-plusplus */
-import axios from 'axios';
 // @ts-ignore
+import { Axios } from 'axios';
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoProcessTemplatePopulated } from './processTemplate';
+import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
@@ -87,7 +88,12 @@ const generateUniqueName = (generatedNames: Set<string>): string => {
     return name;
 };
 
-const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, generatedNames: Set<string>, chance: Chance.Chance) => {
+const createProcessInstance = (
+    axiosInstance: Axios,
+    processTemplate: IMongoProcessTemplatePopulated,
+    generatedNames: Set<string>,
+    chance: Chance.Chance,
+) => {
     const randomStartDate = new Date(chance.date()).toLocaleDateString();
     const randomEndDate = new Date(randomStartDate);
     randomEndDate.setDate(randomEndDate.getDate() + 7);
@@ -112,7 +118,7 @@ const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, 
     };
 
     return limit(() =>
-        axios
+        axiosInstance
             .post(url + processInstanceRoute, requestBody)
             .then((response) => response.data)
             .catch((error) => {
@@ -123,7 +129,14 @@ const createProcessInstance = (processTemplate: IMongoProcessTemplatePopulated, 
     );
 };
 
-export const createProcessInstances = async (processTemplates: IMongoProcessTemplatePopulated[], chance: Chance.Chance, fileId: string) => {
+export const createProcessInstances = async (
+    workspaceId: string,
+    processTemplates: IMongoProcessTemplatePopulated[],
+    chance: Chance.Chance,
+    fileId: string,
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const generatedNames = new Set<string>();
     const instanceNumbers = processTemplates.map(() => chance.integer({ min: minNumberOfProcesses, max: maxNumberOfProcesses }));
     const maxInstances = Math.max(...instanceNumbers);
@@ -133,7 +146,7 @@ export const createProcessInstances = async (processTemplates: IMongoProcessTemp
         .flatMap((_, instanceIndex) =>
             processTemplates
                 .filter((__, templateIndex) => instanceIndex < instanceNumbers[templateIndex])
-                .map((processTemplate) => createProcessInstance(processTemplate, generatedNames, chance)),
+                .map((processTemplate) => createProcessInstance(axiosInstance, processTemplate, generatedNames, chance)),
         );
 
     return Promise.all(promises);

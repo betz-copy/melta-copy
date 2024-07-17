@@ -1,11 +1,12 @@
 // @ts-ignore
+import axios from 'axios';
 import { format, generate } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { trycatch } from './utils';
-import { Axios } from './utils/axios';
+import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
@@ -20,13 +21,15 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
-export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
+export const createInstances = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     format('fileId', (_value) => fileId);
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
-                    Axios.post(url + createEntityRoute, {
+                    axiosInstance.post(url + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
                     }),
@@ -41,10 +44,13 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
 };
 
 export const createRelationshipInstances = async (
+    workspaceId: string,
     entities: { properties: { _id: string }; templateId: string }[],
     relationshipTemplates: IMongoRelationshipTemplate[],
     chance: Chance.Chance,
 ) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = relationshipTemplates
         .map((relationshipTemplate) => {
             const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
@@ -57,7 +63,7 @@ export const createRelationshipInstances = async (
 
                 return limit(async () => {
                     const { result } = await trycatch(() =>
-                        Axios.post(url + createRelationshipRoute, {
+                        axiosInstance.post(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
@@ -77,7 +83,7 @@ export const createRelationshipInstances = async (
 };
 
 export const isInstanceServiceAlive = async () => {
-    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

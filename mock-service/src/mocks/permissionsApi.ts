@@ -1,54 +1,28 @@
 import { IMongoCategory } from '../categories';
-import { IPermission } from '../permissionsApi';
 import config from '../config/index';
+import { PermissionScope } from '../interfaces/permissions';
+import { ICompactPermissions } from '../interfaces/permissions/permissions';
 
-export const getPermissionsToCreate = (categories: IMongoCategory[]) => {
-    const permissions: IPermission[] = [];
+export interface SyncUserPermissions {
+    userId: string;
+    permissions: ICompactPermissions;
+}
 
-    config.permissionsService.managersKrtoffelIds.forEach((kartoffelId) => {
-        const permissionsResourcePermission: IPermission = {
+export const getPermissionsToCreate = (workspaceId: string, categories: IMongoCategory[]): SyncUserPermissions[] => {
+    return config.permissionsService.managersKartoffelIds.map((kartoffelId) => {
+        return {
             userId: kartoffelId,
-            resourceType: 'Permissions',
-            category: 'All',
-            scopes: ['Read', 'Write'],
+            permissions: {
+                [workspaceId]: {
+                    permissions: { scope: PermissionScope.write },
+                    templates: { scope: PermissionScope.write },
+                    rules: { scope: PermissionScope.write },
+                    processes: { scope: PermissionScope.write },
+                    instances: {
+                        categories: Object.fromEntries(categories.map(({ _id }) => [_id, { entityTemplates: {}, scope: PermissionScope.write }])),
+                    },
+                },
+            },
         };
-
-        const templatesResourcePermission: IPermission = {
-            userId: kartoffelId,
-            resourceType: 'Templates',
-            category: 'All',
-            scopes: ['Read', 'Write'],
-        };
-
-        const rulesResourcePermission: IPermission = {
-            userId: kartoffelId,
-            resourceType: 'Rules',
-            category: 'All',
-            scopes: ['Read', 'Write'],
-        };
-
-        const instancesResourcePermissions: IPermission[] = categories.map(({ _id }) => ({
-            userId: kartoffelId,
-            resourceType: 'Instances',
-            category: _id,
-            scopes: ['Read', 'Write'],
-        }));
-
-        const processResourcePermission: IPermission = {
-            userId: kartoffelId,
-            resourceType: 'Processes',
-            category: 'All',
-            scopes: ['Read', 'Write'],
-        };
-
-        permissions.push(
-            permissionsResourcePermission,
-            processResourcePermission,
-            templatesResourcePermission,
-            rulesResourcePermission,
-            ...instancesResourcePermissions,
-        );
     });
-
-    return permissions;
 };

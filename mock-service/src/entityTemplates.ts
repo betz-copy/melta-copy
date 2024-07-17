@@ -1,7 +1,8 @@
+import axios from 'axios';
 import { IMongoCategory } from './categories';
 import config from './config';
 import { trycatch } from './utils';
-import { Axios } from './utils/axios';
+import { createAxiosInstance } from './utils/axios';
 
 const { url, createEntityTemplateRoute, isAliveRoute } = config.entityTemplateService;
 
@@ -49,9 +50,11 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
     _id: string;
 }
 
-export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
+export const createEntityTemplates = async (workspaceId: string, entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = entityTemplatesToCreate.map((entityTemplate) => {
-        return Axios.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
+        return axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
             ...entityTemplate,
             category: categories.find((category) => category.name === entityTemplate.category.name)?._id,
         });
@@ -63,7 +66,7 @@ export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemp
 };
 
 export const isEntityTemplateServiceAlive = async () => {
-    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

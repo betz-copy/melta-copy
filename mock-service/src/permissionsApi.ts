@@ -1,39 +1,20 @@
+import axios from 'axios';
 import config from './config';
+import { ICompactPermissions } from './interfaces/permissions/permissions';
+import { SyncUserPermissions } from './mocks/permissionsApi';
 import { trycatch } from './utils';
-import { Axios } from './utils/axios';
 
 const { url, baseRoute, isAliveRoute } = config.permissionsService;
 
-export const resourceTypeOptions = ['Templates', 'Instances', 'Permissions', 'Rules', 'Processes'] as const;
-export type ResourceType = (typeof resourceTypeOptions)[number];
-
-export const scopeOptions = ['Read', 'Write'] as const;
-export type Scope = (typeof scopeOptions)[number];
-
-export interface IPermission {
-    userId: string;
-    resourceType: ResourceType;
-    category: string;
-    scopes: Scope[];
-}
-
-export interface IMongoPermission {
-    _id: string;
-}
-
-export const createPermission = async (permission: IPermission) => {
-    const { data } = await Axios.post<IMongoPermission>(url + baseRoute, permission);
-
+export const createPermission = async (permission: SyncUserPermissions) => {
+    const { data } = await axios.post<ICompactPermissions>(`${url}${baseRoute}/compact/sync`, permission);
     return data;
 };
 
-export const createPermissionsBulk = async (permissions: IPermission[]) => {
-    const createdPermissionsPromises = permissions.map(createPermission);
-    return Promise.all(createdPermissionsPromises);
-};
+export const createUserPermissions = async (permissions: SyncUserPermissions[]) => Promise.all(permissions.map(createPermission));
 
 export const isPermissionServiceAlive = async () => {
-    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };
