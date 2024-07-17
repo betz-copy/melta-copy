@@ -6,6 +6,7 @@ import EntityTemplateManager from './manager';
 import { IEntityTemplatePopulated } from './interface';
 import { generateInterface } from '../../utils/generateInterfaceFromEntityTemplateProperties';
 import { ServiceError } from '../error';
+import { addPropertyToRequest } from '../../utils/express';
 
 const cleanActionCode = (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
@@ -150,6 +151,5 @@ export const validateActionAst = async (req: Request) => {
         console.log('No undeclared variables found.');
     }
 
-    // eslint-disable-next-line dot-notation
-    req['actions'] = cleanActionCode(actions, entityTemplate);
+    addPropertyToRequest(req, 'actions', cleanActionCode(actions, entityTemplate));
 };

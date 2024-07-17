@@ -65,7 +65,6 @@ const AddEntityButton: React.FC<{
                             disabled: false,
                         }
                     }
-                    onSuccessUpdate={() => {}}
                     handleClose={() => setAddEntityWizardState({ isOpen: false })}
                     onSuccessCreate={onSuccessCreate}
                 />

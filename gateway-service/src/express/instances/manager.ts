@@ -336,7 +336,7 @@ export class InstancesManager {
         const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
             InstancesManager.handleBrokenRulesError,
         );
-        const { createdEntity } = createInstanceOutput;
+        const { createdEntity, updatedEntities } = createInstanceOutput;
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert<IDuplicateEntityMetadata>(
                 {
@@ -352,7 +352,7 @@ export class InstancesManager {
             );
         }
 
-        return createdEntity;
+        return { createdEntity, updatedEntities };
     }
 
     static async updateEntityInstance(

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { EntityTemplateManager } from './manager';
+import { fetchPropertyFromRequest } from '../../utils/express';
 
 class EntityTemplateController {
     static async searchEntityTemplates(req: Request, res: Response) {
@@ -33,8 +34,7 @@ class EntityTemplateController {
 
     static async updateEntityTemplateAction(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        // eslint-disable-next-line dot-notation
-        const actionToSave = req['actions'];
+        const actionToSave = fetchPropertyFromRequest<string>(req, 'actions');
         res.json(await EntityTemplateManager.updateEntityTemplateAction(id, actionToSave));
     }
 }

@@ -27,7 +27,7 @@ const { errorCodes } = environment;
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     entity: IEntity;
-    onSuccessUpdate: (data: IEntity) => void;
+    onSuccessUpdate?: (data: { updatedEntity: IEntity; updatedEntities: IEntity[] }) => void;
     onCancelUpdate: () => void;
 }> = ({ entityTemplate, entity, onSuccessUpdate, onCancelUpdate }) => {
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
@@ -62,7 +62,7 @@ const EditEntityDetails: React.FC<{
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
-                onSuccessUpdate(data);
+                if (onSuccessUpdate) onSuccessUpdate(data);
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 const errorMetadata = err.response?.data?.metadata;

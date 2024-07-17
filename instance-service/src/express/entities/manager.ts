@@ -264,8 +264,6 @@ export class EntityManager {
     }
 
     static async deleteEntityById(id: string, deleteAllRelationships: boolean, userId: string) {
-        console.log({ userId });
-
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             try {
                 const updatedEntities: IEntity[] = [];
@@ -291,6 +289,7 @@ export class EntityManager {
                         [],
                         userId,
                     );
+
                     updatedEntities.push(...entitiesToUpdate);
                 }
                 return { id, updatedEntities };

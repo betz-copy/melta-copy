@@ -51,7 +51,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
-                navigate(`/entity/${data?.properties._id}`);
+                navigate(`/entity/${data?.createdEntity.properties._id}`);
             },
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;

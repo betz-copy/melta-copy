@@ -41,7 +41,7 @@ const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
     entityTemplate: IMongoEntityTemplatePopulated;
     entityToUpdate?: IEntity;
-    onSuccessUpdate?: (data: IEntity) => void;
+    onSuccessUpdate?: (data: { updatedEntity: IEntity; updatedEntities: IEntity[] }) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     handleClose: () => void;
 }> = ({ isEditMode = false, entityTemplate, entityToUpdate, onSuccessUpdate, onSuccessCreate, handleClose }) => {

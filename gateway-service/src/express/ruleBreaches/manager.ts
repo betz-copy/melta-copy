@@ -250,7 +250,7 @@ export class RuleBreachesManager {
 
         await RuleBreachService.updateRuleBreachRequestActionMetadata(ruleBreachRequest._id, ruleBreachRequest.actionType, {
             ...ruleBreachRequest.actionMetadata,
-            properties: entity.properties,
+            properties: entity.createdEntity.properties,
         });
     }
 

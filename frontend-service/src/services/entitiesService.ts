@@ -133,7 +133,7 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
+    const { data } = await axios.put<{ updatedEntity: IEntity; updatedEntities: IEntity[] }>(`${entities}/${entityId}`, formData);
     return data;
 };
 
@@ -188,12 +188,12 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
 
-    const { data } = await axios.post<IEntity>(`${entities}/${entityId}/duplicate`, formData);
+    const { data } = await axios.post<{ createdEntity: IEntity; updatedEntities: IEntity[] }>(`${entities}/${entityId}/duplicate`, formData);
     return data;
 };
 
 export const deleteEntityRequest = async (entityId: string) => {
-    const { data } = await axios.delete(`${entities}/${entityId}`);
+    const { data } = await axios.delete<{ deletedEntityId: string; updatedEntities: IEntity[] }>(`${entities}/${entityId}`);
     return data;
 };
 
