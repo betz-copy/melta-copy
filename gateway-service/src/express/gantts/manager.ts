@@ -14,11 +14,11 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
     private relationshipsTemplateService: RelationshipsTemplateService;
 
-    constructor(dbName: string) {
-        super(new GanttsService(dbName));
-        this.instancesService = new InstancesService(dbName);
-        this.entityTemplateService = new EntityTemplateService(dbName);
-        this.relationshipsTemplateService = new RelationshipsTemplateService(dbName);
+    constructor(workspaceId: string) {
+        super(new GanttsService(workspaceId));
+        this.instancesService = new InstancesService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
     }
 
     private static filterGanttWithPermissions(gantt: IMongoGantt, allowedEntityTemplates: IMongoEntityTemplatePopulated[]): IMongoGantt | null {

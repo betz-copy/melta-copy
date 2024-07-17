@@ -80,8 +80,8 @@ export interface ISearchEntityTemplatesBody {
 }
 
 export class EntityTemplateService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: url, timeout: requestTimeout });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
 
     // categories

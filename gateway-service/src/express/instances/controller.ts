@@ -5,8 +5,8 @@ import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 
 export class InstancesController extends DefaultController<InstancesManager> {
-    constructor(dbName: string) {
-        super(new InstancesManager(dbName));
+    constructor(workspaceId: string) {
+        super(new InstancesManager(workspaceId));
     }
 
     async createEntityInstance(req: Request, res: Response) {

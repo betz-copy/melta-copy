@@ -46,14 +46,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private ruleBreachService: RuleBreachService;
 
-    constructor(dbName: string) {
-        super(new EntityTemplateService(dbName));
-        this.storageService = new StorageService(dbName);
-        this.relationshipTemplateService = new RelationshipsTemplateService(dbName);
-        this.entityTemplateService = new EntityTemplateService(dbName);
-        this.instancesService = new InstancesService(dbName);
-        this.processService = new ProcessService(dbName);
-        this.ruleBreachService = new RuleBreachService(dbName);
+    constructor(workspaceId: string) {
+        super(new EntityTemplateService(workspaceId));
+        this.storageService = new StorageService(workspaceId);
+        this.relationshipTemplateService = new RelationshipsTemplateService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.instancesService = new InstancesService(workspaceId);
+        this.processService = new ProcessService(workspaceId);
+        this.ruleBreachService = new RuleBreachService(workspaceId);
     }
 
     // get all entityTemplates that are one relationship (step) away  from the original users permissions

@@ -4,8 +4,8 @@ import { GanttManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 
 export class GanttController extends DefaultController<GanttManager> {
-    constructor(dbName: string) {
-        super(new GanttManager(dbName));
+    constructor(workspaceId: string) {
+        super(new GanttManager(workspaceId));
     }
 
     async searchGantts(req: Request, res: Response) {

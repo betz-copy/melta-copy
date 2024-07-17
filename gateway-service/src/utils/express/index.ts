@@ -38,12 +38,12 @@ export const getWorkspaceId = async (req: Request) => {
 };
 
 export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(controller: {
-    new (dbName: string, userId: string): T;
+    new (workspaceId: string, userId: string): T;
 }) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {
-            const dbName = await getWorkspaceId(req);
-            return (new controller(dbName, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+            const workspaceId = await getWorkspaceId(req);
+            return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
 };
@@ -54,8 +54,8 @@ export const createWorkspacesProxyMiddleware = (options: Options) => {
         onProxyReq: async (...params) => {
             const [proxyReq, req] = params;
 
-            const dbName = await getWorkspaceId(req);
-            proxyReq.setHeader(dbHeaderName, dbName);
+            const workspaceId = await getWorkspaceId(req);
+            proxyReq.setHeader(dbHeaderName, workspaceId);
 
             if (options.onProxyReq) options.onProxyReq(...params);
         },

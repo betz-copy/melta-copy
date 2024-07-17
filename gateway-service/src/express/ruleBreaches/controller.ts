@@ -3,8 +3,8 @@ import RuleBreachesManager from './manager';
 import DefaultController from '../../utils/express/controller';
 
 class RuleBreachesController extends DefaultController<RuleBreachesManager> {
-    constructor(dbName: string) {
-        super(new RuleBreachesManager(dbName));
+    constructor(workspaceId: string) {
+        super(new RuleBreachesManager(workspaceId));
     }
 
     async createRuleBreachRequest(req: Request, res: Response) {

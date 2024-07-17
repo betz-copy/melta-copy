@@ -40,8 +40,8 @@ export interface ISearchGanttsBody {
     step: number;
 }
 export class GanttsService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
     async searchGantts(searchBody: ISearchGanttsBody) {

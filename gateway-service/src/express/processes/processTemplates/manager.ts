@@ -26,10 +26,10 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
 
     private processInstancesManager: ProcessesInstancesManager;
 
-    constructor(dbName: string) {
-        super(new ProcessService(dbName));
-        this.storageService = new StorageService(dbName);
-        this.processInstancesManager = new ProcessesInstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new ProcessService(workspaceId));
+        this.storageService = new StorageService(workspaceId);
+        this.processInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
     private async uploadIcons(icons: Express.Multer.File[]) {

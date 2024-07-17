@@ -5,8 +5,8 @@ import { TemplatesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
-    constructor(dbName: string) {
-        super(new TemplatesManager(dbName));
+    constructor(workspaceId: string) {
+        super(new TemplatesManager(workspaceId));
     }
 
     // all

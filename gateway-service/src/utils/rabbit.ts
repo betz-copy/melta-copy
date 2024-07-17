@@ -9,11 +9,7 @@ const {
 } = config;
 
 export class RabbitManager {
-    dbName: string;
-
-    constructor(dbName) {
-        this.dbName = dbName;
-    }
+    constructor(private workspaceId: string) {}
 
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
@@ -21,7 +17,7 @@ export class RabbitManager {
     >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, _populatedMetaData: NotificationMetadataPopulated) {
         if (!viewers.length) return;
 
-        await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [dbHeaderName]: this.dbName } });
+        await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [dbHeaderName]: this.workspaceId } });
 
         // TODO-WORKSPACES: support mail notifications
         // const mailData = await createMail({ viewers, type, populatedMetaData });

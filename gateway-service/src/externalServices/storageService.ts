@@ -7,8 +7,8 @@ import DefaultExternalServiceApi from '../utils/express/externalService';
 const { url, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
 
 export class StorageService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: url });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: url });
     }
 
     async uploadFile(file: Express.Multer.File) {

@@ -5,14 +5,15 @@ import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance
 import { IMongoStepTemplate } from './interfaces/stepTemplate';
 import { NotFoundError } from '../../express/processes/error';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
+import { UserService } from '../userService';
 
 const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
 } = config;
 
 export class ProcessService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: url, timeout: requestTimeout });
+    constructor(private workspaceId: string) {
+        super(workspaceId, { baseURL: url, timeout: requestTimeout });
     }
 
     // processes templates
@@ -25,7 +26,15 @@ export class ProcessService extends DefaultExternalServiceApi {
     async getProcessTemplateById(id: string, userId?: string): Promise<IMongoProcessTemplateWithSteps> {
         const query: ISearchProcessTemplatesBody = { limit: 1, skip: 0, ids: [id] };
 
-        if (userId && !(await isProcessManager(userId))) query.reviewerId = userId;
+        if (userId) {
+            const userPermissions = await UserService.getUserPermissions(userId);
+
+            // TODO-WORKSPACES
+            if (userPermissions[this.workspaceId].processes?.scope !== 'write') {
+                query.reviewerId = userId;
+            }
+            // if (userId && !(await isProcessManager(userId))) query.reviewerId = userId;
+        }
 
         const [process] = await this.searchProcessTemplates(query);
         if (!process) throw new NotFoundError('process template', id);

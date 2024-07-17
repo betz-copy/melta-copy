@@ -39,13 +39,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private instancesManager: InstancesManager;
 
-    constructor(dbName: string) {
-        super(new InstancesService(dbName));
-        this.entityTemplateService = new EntityTemplateService(dbName);
-        this.activityLogService = new ActivityLogService(dbName);
-        this.storageService = new StorageService(dbName);
-        this.ruleBreachesManager = new RuleBreachesManager(dbName);
-        this.instancesManager = new InstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new InstancesService(workspaceId));
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.activityLogService = new ActivityLogService(workspaceId);
+        this.storageService = new StorageService(workspaceId);
+        this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+        this.instancesManager = new InstancesManager(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(

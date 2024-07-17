@@ -3,8 +3,8 @@ import { NotificationsManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 
 class NotificationsController extends DefaultController<NotificationsManager> {
-    constructor(dbName: string) {
-        super(new NotificationsManager(dbName));
+    constructor(workspaceId: string) {
+        super(new NotificationsManager(workspaceId));
     }
 
     async getMyNotifications(req: Request, res: Response) {

@@ -3,7 +3,7 @@ import lodashUniqby from 'lodash.uniqby';
 import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
 import { Authorizer } from '../../utils/authorizer';
-import { getDbName } from '../../utils/express';
+import { getWorkspaceId } from '../../utils/express';
 
 export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) => {
     const { category } = req.body;
@@ -13,7 +13,7 @@ export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) =
 
 export const validateUserCanUpdateOrDeleteEntityTemplate = async (req: Request) => {
     const templateId = req.params.id;
-    const entityTemplateService = new EntityTemplateService(await getDbName(req));
+    const entityTemplateService = new EntityTemplateService(await getWorkspaceId(req));
 
     const { category } = await entityTemplateService.getEntityTemplateById(templateId);
 
@@ -35,16 +35,16 @@ export const getRelatedCategoriesFromRelationshipTemplate = async (
 };
 
 export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req: Request) => {
-    const entityTemplateService = new EntityTemplateService(await getDbName(req));
+    const entityTemplateService = new EntityTemplateService(await getWorkspaceId(req));
     const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(entityTemplateService, req.body);
 
     return validateAuthorization(req, 'Templates', relatedCategories);
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Request) => {
-    const dbName = await getDbName(req);
-    const relationshipsTemplateService = new RelationshipsTemplateService(dbName);
-    const entityTemplateService = new EntityTemplateService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
 
     const relationshipTemplate = await relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
     const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(entityTemplateService, relationshipTemplate);

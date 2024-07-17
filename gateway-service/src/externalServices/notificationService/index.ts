@@ -7,8 +7,8 @@ const {
 } = config;
 
 export class NotificationService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
     async getNotifications(query: object): Promise<INotification[]> {

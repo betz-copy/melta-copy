@@ -6,8 +6,8 @@ import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreachAlert, IRuleBreac
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
 export class RuleBreachService extends DefaultExternalServiceApi {
-    constructor(dbName: string) {
-        super(dbName, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
     async createRuleBreachRequest<T>(ruleBreachRequestData: Omit<IRuleBreachRequest<T>, '_id' | 'createdAt'>): Promise<IRuleBreachRequest<T>> {

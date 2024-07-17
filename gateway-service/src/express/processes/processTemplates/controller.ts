@@ -3,8 +3,8 @@ import ProcessTemplateManager from './manager';
 import DefaultController from '../../../utils/express/controller';
 
 export default class ProcessTemplatesController extends DefaultController<ProcessTemplateManager> {
-    constructor(dbName: string) {
-        super(new ProcessTemplateManager(dbName));
+    constructor(workspaceId: string) {
+        super(new ProcessTemplateManager(workspaceId));
     }
 
     async createProcessTemplate(req: Request, res: Response) {

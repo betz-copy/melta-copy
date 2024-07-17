@@ -20,11 +20,11 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
 
     private processInstancesManager: ProcessesInstancesManager;
 
-    constructor(dbName: string) {
-        super(new ProcessService(dbName));
-        this.storageService = new StorageService(dbName);
-        this.instancesManager = new InstancesManager(dbName);
-        this.processInstancesManager = new ProcessesInstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new ProcessService(workspaceId));
+        this.storageService = new StorageService(workspaceId);
+        this.instancesManager = new InstancesManager(workspaceId);
+        this.processInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
     private static async handleNotificationsOnUpdateStepInstance(

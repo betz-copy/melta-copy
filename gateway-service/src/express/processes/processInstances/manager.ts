@@ -55,15 +55,15 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     private rabbitManager: RabbitManager;
 
-    constructor(dbName: string) {
-        super(new ProcessService(dbName));
-        this.instancesService = new InstancesService(dbName);
-        this.entityTemplateService = new EntityTemplateService(dbName);
-        this.storageService = new StorageService(dbName);
-        this.instancesManager = new InstancesManager(dbName);
-        this.stepsInstancesManager = new StepsInstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new ProcessService(workspaceId));
+        this.instancesService = new InstancesService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.storageService = new StorageService(workspaceId);
+        this.instancesManager = new InstancesManager(workspaceId);
+        this.stepsInstancesManager = new StepsInstancesManager(workspaceId);
 
-        this.rabbitManager = new RabbitManager(dbName);
+        this.rabbitManager = new RabbitManager(workspaceId);
     }
 
     async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {

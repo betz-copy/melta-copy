@@ -4,8 +4,8 @@ import { ShragaUser } from '../../../utils/express/passport';
 import DefaultController from '../../../utils/express/controller';
 
 class ProcessInstancesController extends DefaultController<InstancesManager> {
-    constructor(dbName: string) {
-        super(new InstancesManager(dbName));
+    constructor(workspaceId: string) {
+        super(new InstancesManager(workspaceId));
     }
 
     async getProcessInstance(req: Request, res: Response) {

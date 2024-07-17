@@ -68,14 +68,14 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private rabbitManager: RabbitManager;
 
-    constructor(dbName: string) {
-        super(new RuleBreachService(dbName));
-        this.storageService = new StorageService(dbName);
-        this.entityTemplateService = new EntityTemplateService(dbName);
-        this.instancesService = new InstancesService(dbName);
-        this.instancesManager = new InstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new RuleBreachService(workspaceId));
+        this.storageService = new StorageService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.instancesService = new InstancesService(workspaceId);
+        this.instancesManager = new InstancesManager(workspaceId);
 
-        this.rabbitManager = new RabbitManager(dbName);
+        this.rabbitManager = new RabbitManager(workspaceId);
     }
 
     async createRuleBreachRequest<T>(

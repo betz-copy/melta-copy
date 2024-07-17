@@ -45,11 +45,11 @@ export class NotificationsManager extends DefaultManagerProxy<NotificationServic
 
     private processesInstancesManager: ProcessesInstancesManager;
 
-    constructor(dbName: string) {
-        super(new NotificationService(dbName));
-        this.instancesService = new InstancesService(dbName);
-        this.ruleBreachesManager = new RuleBreachesManager(dbName);
-        this.processesInstancesManager = new ProcessesInstancesManager(dbName);
+    constructor(workspaceId: string) {
+        super(new NotificationService(workspaceId));
+        this.instancesService = new InstancesService(workspaceId);
+        this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+        this.processesInstancesManager = new ProcessesInstancesManager(workspaceId);
     }
 
     async getMyNotifications(user: Express.User, query): Promise<INotificationPopulated[]> {

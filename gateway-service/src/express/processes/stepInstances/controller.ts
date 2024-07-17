@@ -3,8 +3,8 @@ import StepInstanceManager from './manager';
 import DefaultController from '../../../utils/express/controller';
 
 class StepInstanceController extends DefaultController<StepInstanceManager> {
-    constructor(dbName: string) {
-        super(new StepInstanceManager(dbName));
+    constructor(workspaceId: string) {
+        super(new StepInstanceManager(workspaceId));
     }
 
     async updateStep(req: Request, res: Response) {

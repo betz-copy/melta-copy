@@ -7,10 +7,10 @@ import { RelationshipsTemplateService } from '../../externalServices/relationshi
 import { ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
-import { getDbName } from '../../utils/express';
+import { getWorkspaceId } from '../../utils/express';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
-import { Authorizer } from '../../utils/authorizer';
 import { UserService } from '../../externalServices/userService';
+import { ISubCompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 
 // entities
 const getCategoryIdFromTemplateId = async (entityTemplateService: EntityTemplateService, templateId: string) => {
@@ -23,18 +23,24 @@ const getCategoryIdFromTemplateId = async (entityTemplateService: EntityTemplate
 export const validateUserCanCreateEntityInstance = async (req: Request) => {
     const { templateId } = req.body;
 
-    const entityTemplateService = new EntityTemplateService(await getDbName(req));
+    const workspaceId = await getWorkspaceId(req);
+
+    const entityTemplateService = new EntityTemplateService(workspaceId);
 
     const categoryId = await getCategoryIdFromTemplateId(entityTemplateService, templateId);
 
-    return validateAuthorization(req, 'Instances', [categoryId], 'Write');
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    // TODO-WORKSPACES
+    if (!userPermissions[workspaceId].instances?.categories.some(({ category }) => category === categoryId)) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
+    }
+    // return validateAuthorization(req, 'Instances', [categoryId], 'Write');
 };
 
-export const getAllowedEntityTemplatesForInstances = (
-    entityTemplateService: EntityTemplateService,
-    userPermissions: Omit<IPermissionsOfUser, 'user'>,
-) => {
-    const allowedCategories = userPermissions.instancesPermissions.map((permission) => permission.category);
+export const getAllowedEntityTemplatesForInstances = (entityTemplateService: EntityTemplateService, userPermissions: ISubCompactPermissions) => {
+    if (!userPermissions.instances) return [];
+    const allowedCategories = Object.keys(userPermissions.instances.categories);
     return entityTemplateService.searchEntityTemplates({ categoryIds: allowedCategories });
 };
 
@@ -55,35 +61,39 @@ export const validateHasPermissionsToEntitiesInTemplates = async (
 };
 
 export const validateUserCanSearchEntitiesBatch = async (req: Request) => {
-    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getDbName(req)), req.user!, Object.keys(req.body.templates));
+    await validateHasPermissionsToEntitiesInTemplates(
+        new EntityTemplateService(await getWorkspaceId(req)),
+        req.user!,
+        Object.keys(req.body.templates),
+    );
 };
 
 export const validateUserCanSearchEntitiesOfTemplate = async (req: Request) => {
     const { templateId } = req.params;
 
-    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getDbName(req)), req.user!, [templateId]);
+    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getWorkspaceId(req)), req.user!, [templateId]);
 };
 
 export const validateUserCanExportEntities = async (req: Request) => {
     const { templates } = req.body;
 
-    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getDbName(req)), req.user!, Object.keys(templates));
+    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getWorkspaceId(req)), req.user!, Object.keys(templates));
 };
 
-export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };
+export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: PermissionScope) => {
     const instanceId = req.params.id;
-    const dbName = await getWorkspaceId(req);
-    const instancesService = new InstancesService(dbName);
-    const entityTemplateService = new EntityTemplateService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const instancesService = new InstancesService(workspaceId);
+    const entityTemplateService = new EntityTemplateService(workspaceId);
 
     const { templateId } = await instancesService.getEntityInstanceById(instanceId);
     const categoryId = await getCategoryIdFromTemplateId(entityTemplateService, templateId);
-    const permissionsArrOfUser = await getPermissions({ userId: req.user!.id });
-    const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
 
-    const hasPermission = permissionsOfUserId.instancesPermissions.some(
+    // TODO-WORKSPACES
+    const hasPermission = userPermissions[workspaceId].instances?.categories.some(
         ({ category, scopes }) => category === categoryId && scopes.includes(permissionType),
     );
 
@@ -91,7 +101,7 @@ const validateUserPermissionForEntityInstance = async (req: Request, permissionT
         throw new ServiceError(403, `User not authorized, does not have ${permissionType.toLowerCase()} permission on category ${categoryId}`);
     }
 
-    (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
+    (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[workspaceId];
 };
 
 export const validateUserCanWriteEntityInstance = async (req: Request) => {
@@ -139,28 +149,39 @@ const getRelatedCategoriesFromRelationshipInstance = async (
 };
 
 export const validateUserCanCreateRelationshipInstance = async (req: Request) => {
-    const dbName = await getWorkspaceId(req);
+    const workspaceId = await getWorkspaceId(req);
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(
-        new RelationshipsTemplateService(dbName),
-        new EntityTemplateService(dbName),
+        new RelationshipsTemplateService(workspaceId),
+        new EntityTemplateService(workspaceId),
         req.body.relationshipInstance,
     );
 
-    return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    if (!userPermissions[workspaceId].instances?.categories.some(({ category }) => relatedCategories.includes(category))) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on categories ${relatedCategories}` });
+    }
+    // return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
 };
 
 export const validateUserCanUpdateOrDeleteRelationshipInstance = async (req: Request) => {
-    const dbName = await getWorkspaceId(req);
-    const instancesService = new InstancesService(dbName);
+    const workspaceId = await getWorkspaceId(req);
+    const instancesService = new InstancesService(workspaceId);
     const relationshipInstance = await instancesService.getRelationshipInstanceById(req.params.id);
 
     const relatedCategories = await getRelatedCategoriesFromRelationshipInstance(
-        new RelationshipsTemplateService(dbName),
-        new EntityTemplateService(dbName),
+        new RelationshipsTemplateService(workspaceId),
+        new EntityTemplateService(workspaceId),
         relationshipInstance,
     );
 
-    return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
+    const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+    // TODO-WORKSPACES
+    if (!userPermissions[workspaceId].instances?.categories.some(({ category }) => relatedCategories.includes(category))) {
+        throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on categories ${relatedCategories}` });
+    }
+    // return validateAuthorization(req, 'Instances', relatedCategories, 'Write');
 };
 
 // rules
@@ -168,12 +189,18 @@ export const validateUserCanIgnoreRules = async (req: Request) => {
     const { ignoredRules } = req.body;
     const { user } = req;
 
-    const dbName = await getWorkspaceId(req);
-    const relationshipsTemplateService = new RelationshipsTemplateService(dbName);
-    const authorizer = new Authorizer(dbName, user?.id);
+    const workspaceId = await getWorkspaceId(req);
+    const relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
 
     if (!user) throw new Error('req.user is undefined');
-    if (await isRuleManager(user.id)) return;
+
+    const userPermissions = await UserService.getUserPermissions(user.id);
+
+    // TODO-WORKSPACES
+    if (userPermissions[workspaceId].rules?.scope !== PermissionScope.write) {
+        throw new ServiceError(403, 'user not authorized', { metadata: 'user does not have write permission on rules' });
+    }
+    // if (await isRuleManager(user.id)) return;
 
     const ignoredRulesPopulated: IRule[] = await Promise.all(
         ignoredRules.map((ignoredRule) => relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),

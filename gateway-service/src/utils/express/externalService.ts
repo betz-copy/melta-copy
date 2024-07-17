@@ -8,9 +8,9 @@ const {
 export default abstract class DefaultExternalServiceApi {
     public api: AxiosInstance;
 
-    constructor(dbName: string, axiosConfig?: AxiosRequestConfig<any> | undefined) {
+    constructor(workspaceId: string, axiosConfig?: AxiosRequestConfig<any> | undefined) {
         this.api = axios.create(axiosConfig);
         // Add the database header to axios requests
-        this.api.defaults.headers[dbHeaderName] = dbName;
+        this.api.defaults.headers[dbHeaderName] = workspaceId;
     }
 }
