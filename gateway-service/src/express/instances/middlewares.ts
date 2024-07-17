@@ -94,6 +94,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
         body: { templateIds },
         permissionsOfUserId,
     } = req as RequestWithPermissionsOfUserId;
+    req.body.userId = req.user!.id;
 
     const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
         (entityTemplate) => entityTemplate._id,

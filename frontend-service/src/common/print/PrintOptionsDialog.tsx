@@ -9,7 +9,6 @@ import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
-import { isUnsupported, isVideoOrAudio } from '../FilePreview/PreviewDialog';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
@@ -137,8 +136,12 @@ const PrintOptionsDialog: React.FC<{
 
     React.useEffect(() => {
         const currFiles = getPropertiesFiles()
-            .filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType))
-            .concat(getProcessStepsFiles().filter((file) => !isVideoOrAudio(file.contentType) && !isUnsupported(file.contentType)));
+            .filter((file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported')
+            .concat(
+                getProcessStepsFiles().filter(
+                    (file) => file.contentType !== 'video' && file.contentType !== 'audio' && file.contentType !== 'unsupported',
+                ),
+            );
         setFiles(currFiles);
         setSelectedFiles([]);
     }, [getPropertiesFiles, getProcessStepsFiles, setFiles, setSelectedFiles]);

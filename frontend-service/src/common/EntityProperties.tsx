@@ -1,3 +1,4 @@
+import type { Property } from 'csstype';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
@@ -15,19 +16,15 @@ import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../util
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
 import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import RelationshipReferenceView from './RelationshipReferenceView';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (
-    value: any,
-    valueType: 'string' | 'number' | 'boolean' | 'array',
-    format?: string,
-    keyEnumColors?: Record<string, string>,
-    isPrintingMode?: boolean,
-    propertySchema?: IEntitySingleProperty,
-) => {
+export const formatToString = (value: any, property: IEntitySingleProperty, keyEnumColors?: Record<string, string>, isPrintingMode?: boolean) => {
+    const { format, type: valueType } = property;
+
     if (value === null || value === undefined) return '-';
 
     if (valueType === 'number') {
@@ -38,10 +35,18 @@ export const formatToString = (
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
+        if (format === 'relationshipReference')
+            return (
+                <RelationshipReferenceView
+                    entity={value}
+                    relatedTemplateId={property.relationshipReference!.relatedTemplateId}
+                    relatedTemplateField={property.relationshipReference!.relatedTemplateField}
+                />
+            );
     }
     if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
-        if (propertySchema?.items?.format === 'fileId') {
+        if (property.items?.format === 'fileId') {
             return value.map((val) => <OpenPreview fileId={val} key={val} />);
         }
         return value.map((val) => (
@@ -59,6 +64,8 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    propertiesToHighlight?: string[];
+    propertiesToHighlightColor?: CSSProperties['color'];
     removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
@@ -67,12 +74,28 @@ interface IEntityPropertiesProps {
     isPrintingMode?: boolean;
 }
 
+const getPropertyColor = (
+    propertyKey: string,
+    propertiesToHighlight: string[] | undefined,
+    highlightColor: Property.Color | undefined,
+    mode: 'normal' | 'white',
+    normalColor: Property.Color,
+) => {
+    if (propertiesToHighlight?.includes(propertyKey)) {
+        return highlightColor;
+    }
+
+    return mode === 'white' ? 'white' : normalColor;
+};
+
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
     properties,
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    propertiesToHighlight,
+    propertiesToHighlightColor,
     removeFiles = false,
     style,
     innerStyle,
@@ -81,12 +104,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     isPrintingMode = false,
 }) => {
     let propertiesOrderedToShow: string[];
-    if (overridePropertiesToShow) propertiesOrderedToShow = overridePropertiesToShow;
-    else if (showPreviewPropertiesOnly) {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
-            (propertyKey) =>
-                entityTemplate.propertiesPreview!.includes(propertyKey) || entityTemplate.properties.properties[propertyKey].format === 'fileId',
-        );
+    if (overridePropertiesToShow) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
+    } else if (showPreviewPropertiesOnly) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter(
             (propertyKey) =>
@@ -105,12 +126,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const containsHtmlTags = containsHTMLTags(propertyValue);
                 const stringFormatValue = formatToString(
                     propertyValue,
-                    propertySchema.type,
-                    propertySchema.format,
+                    propertySchema,
                     (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     isPrintingMode,
-                    propertySchema,
                 );
+
+                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
                 let innerContent;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
@@ -133,7 +155,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
-                    propertySchema.format !== 'text-area'
+                    // todo: make getTextDirection handle all possible value and reuse everywhere
+                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'
                         ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,
@@ -164,7 +187,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textAlign: 'right',
                                         }}
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#9398C2'}
+                                        color={propertyTitleColor}
                                         fontWeight={mode === 'white' ? '800' : ''}
                                     >
                                         {propertySchema.title}:
@@ -184,17 +207,17 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 }}
                             >
                                 <MeltaTooltip
-                                    disableHoverListener={textWrap}
+                                    disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
                                     placement="bottom"
                                     title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >
                                     <Typography
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#53566E'}
+                                        color={propertyValueColor}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
-                                            overflow: 'auto',
+                                            overflowX: 'hidden',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                             direction: propertySchema.type === 'number' ? 'rtl' : textDirection,

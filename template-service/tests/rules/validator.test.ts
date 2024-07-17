@@ -42,14 +42,14 @@ const mockGetRelationshipTemplateByIdWithRuleExamples: typeof RelationshipTempla
 
 const mockSearchRelationshipTemplatesWithSimpleBody: typeof RelationshipTemplateManager.searchTemplates = async (searchBody) => {
     const allRelationshipsExamples = [flightsOnRelationshipTemplate, tripConnectedToFlightRelationshipTemplate];
-    const isSimpleSearchTemplatesOfPinnedAsSource = searchBody.sourceEntityIds?.length === 1;
-    const isSimpleSearchTemplatesOfPinnedAsDestination = searchBody.destinationEntityIds?.length === 1;
+    const isSimpleSearchTemplatesOfAsSource = searchBody.sourceEntityIds?.length === 1;
+    const isSimpleSearchTemplatesOfAsDestination = searchBody.destinationEntityIds?.length === 1;
 
-    if (isSimpleSearchTemplatesOfPinnedAsSource && !isSimpleSearchTemplatesOfPinnedAsDestination) {
+    if (isSimpleSearchTemplatesOfAsSource && !isSimpleSearchTemplatesOfAsDestination) {
         return allRelationshipsExamples.filter((relationshipTemplate) => searchBody.sourceEntityIds![0] === relationshipTemplate.sourceEntityId);
     }
 
-    if (isSimpleSearchTemplatesOfPinnedAsDestination && !isSimpleSearchTemplatesOfPinnedAsSource) {
+    if (isSimpleSearchTemplatesOfAsDestination && !isSimpleSearchTemplatesOfAsSource) {
         return allRelationshipsExamples.filter(
             (relationshipTemplate) => searchBody.destinationEntityIds![0] === relationshipTemplate.destinationEntityId,
         );
@@ -87,7 +87,7 @@ describe('logic of validator of rules', () => {
             description: 'mydescription',
             actionOnFail: 'WARNING',
             relationshipTemplateId: flightsOnRelationshipTemplate._id,
-            pinnedEntityTemplateId: tripEntityTemplate._id, // trip doesnt exist in rel
+            entityTemplateId: tripEntityTemplate._id, // trip doesnt exist in rel
             formula: {
                 isEquation: true,
                 operatorBool: 'equals',

@@ -13,7 +13,8 @@ import { trycatch } from '../../../utils/lib';
 import { ServiceError } from '../../error';
 import { IBrokenRule } from '../interfaces';
 import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.template';
-import { IMongoEntityTemplate } from '../../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
+import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 
 const { neo4j } = config;
@@ -21,16 +22,19 @@ const { neo4j } = config;
 const {
     allEntityTemplateIds,
     allEntityTemplates,
-    allRelationshipTemplateIds,
     allRelationshipTemplates,
+    airportEntityTemplate,
     flightEntityTemplate,
+    departureFromRelationshipTemplate,
     flightsOnRelationshipTemplate,
     noOverlappingFlightsInTrip,
     oneTravelAgentPerFlight,
     travelAgentEntityTemplate,
+    tripConnectedToAirportRelationshipTemplate,
     tripConnectedToFlightRelationshipTemplate,
     tripEntityTemplate,
-    warnOnEveryFlightOnActiveZone,
+    warnOnEveryFlightDepartureFromAirportWithActiveTrip,
+    startDateSmallerThenEndDateInTrip,
 } = generateTemplates();
 
 const updateEntityAndExpectRuleBlock = async (
@@ -40,21 +44,22 @@ const updateEntityAndExpectRuleBlock = async (
     brokenRule: IBrokenRule,
 ) => {
     const { err } = await trycatch(() =>
-        EntityManager.updateEntityById(entityId, addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate), entityTemplate, []),
+        EntityManager.updateEntityById(
+            entityId,
+            addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+            entityTemplate,
+            [],
+            neo4j.mockUserId,
+        ),
     );
 
     expect(err).toStrictEqual(
         new ServiceError(400, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
-            brokenRules: [
-                {
-                    ruleId: brokenRule.ruleId,
-                    relationshipIds: expect.any(Array),
-                },
-            ],
+            brokenRules: expect.any(Array),
         }),
     );
-    expect((err as any).metadata.brokenRules[0].relationshipIds.sort()).toStrictEqual(brokenRule.relationshipIds.sort());
+    expect(sortBrokenRules((err as any).metadata.brokenRules)).toStrictEqual(sortBrokenRules([brokenRule]));
 };
 
 const updateEntityAndExpectToSucceed = async (
@@ -68,6 +73,7 @@ const updateEntityAndExpectToSucceed = async (
         addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
         entityTemplate,
         ignoredRules,
+        neo4j.mockUserId,
     );
 
     expect(updatedEntity).toStrictEqual({
@@ -100,15 +106,13 @@ describe('Entity manager test rules', () => {
             let firstTravelAgent: IEntity;
             let secondTravelAgent: IEntity;
             let flight: IEntity;
-            let trip: IEntity;
 
             let firstRelationshipId: string;
-            let secondRelationshipId: string;
 
             beforeAll(async () => {
                 const rules = [oneTravelAgentPerFlight];
 
-                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
                 mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
@@ -116,49 +120,35 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 firstTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name1',
-                            lastName: 'Name1',
-                            agentId: '1',
-                        },
+                        firstName: 'Name1',
+                        lastName: 'Name1',
+                        agentId: '1',
                     },
                     travelAgentEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 secondTravelAgent = await EntityManager.createEntity(
                     {
-                        templateId: travelAgentEntityTemplate._id,
-                        properties: {
-                            firstName: 'Name2',
-                            lastName: 'Name2',
-                            agentId: '2',
-                        },
+                        firstName: 'Name2',
+                        lastName: 'Name2',
+                        agentId: '2',
                     },
                     travelAgentEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 flight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
+                        flightNumber: '1',
+                        departureDate: new Date().toISOString(),
+                        landingDate: new Date().toISOString(),
                     },
                     flightEntityTemplate,
-                );
-
-                trip = await EntityManager.createEntity(
-                    {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                        },
-                    },
-                    tripEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -170,10 +160,11 @@ describe('Entity manager test rules', () => {
                     },
                     flightsOnRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstRelationshipId = firstRelationship.properties._id;
 
-                const secondRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                await RelationshipManager.createRelationshipByEntityIds(
                     {
                         templateId: flightsOnRelationshipTemplate._id,
                         properties: { testProp: 'testProp' },
@@ -181,19 +172,39 @@ describe('Entity manager test rules', () => {
                         destinationEntityId: flight.properties._id,
                     },
                     flightsOnRelationshipTemplate,
-                    [{ ruleId: oneTravelAgentPerFlight._id, relationshipIds: [config.createdRelationshipIdInBrokenRules, firstRelationshipId] }],
-                );
-                secondRelationshipId = secondRelationship.properties._id;
-
-                await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: flight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
+                    [
+                        {
+                            ruleId: oneTravelAgentPerFlight._id,
+                            failures: [
+                                {
+                                    entityId: flight.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: config.createdRelationshipIdInBrokenRules,
+                                                    otherEntityId: secondTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: flight.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstRelationshipId,
+                                                    otherEntityId: firstTravelAgent.properties._id,
+                                                },
+                                            },
+                                            properties: [],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                    neo4j.mockUserId,
                 );
             });
 
@@ -202,80 +213,19 @@ describe('Entity manager test rules', () => {
                     `MATCH (e1 { _id: "${firstTravelAgent.properties._id}" })
                     MATCH (e2 { _id: "${secondTravelAgent.properties._id}" })
                     MATCH (e3 { _id: "${flight.properties._id}" })
-                    MATCH (e4 { _id: "${trip.properties._id}" })
-                    DETACH DELETE e1,e2,e3,e4`,
+                    DETACH DELETE e1,e2,e3`,
                     () => {},
                 );
             });
 
-            it('Should edit trip destination, because not dependent in rule', async () => {
+            it('Should edit travelAgent age, because not dependent in rule', async () => {
                 await updateEntityAndExpectToSucceed(
-                    trip.properties._id,
+                    firstTravelAgent.properties._id,
                     {
-                        ...trip.properties,
-                        destination: 'different destination',
+                        ...firstTravelAgent.properties,
+                        firstName: 'UpdatedName1',
                     },
-                    tripEntityTemplate,
-                );
-            });
-
-            // todo: currently we dont fail it, because we fail existing rule if dependent only if directly and not by aggregation
-            it.skip('Should fail to edit trip name, because dependent in rule', async () => {
-                await updateEntityAndExpectRuleBlock(
-                    trip.properties._id,
-                    {
-                        ...trip.properties,
-                        name: 'different name 1',
-                    },
-                    tripEntityTemplate,
-                    {
-                        ruleId: oneTravelAgentPerFlight._id,
-                        relationshipIds: [firstRelationshipId, secondRelationshipId],
-                    },
-                );
-            });
-
-            // todo: currently we dont fail it, because we fail existing rule if dependent only if directly and not by aggregation
-            it.skip('Should ignore failed rule and, update trip name', async () => {
-                await updateEntityAndExpectToSucceed(
-                    trip.properties._id,
-                    {
-                        ...trip.properties,
-                        name: 'different name 2',
-                    },
-                    tripEntityTemplate,
-                    [
-                        {
-                            ruleId: oneTravelAgentPerFlight._id,
-                            relationshipIds: [firstRelationshipId, secondRelationshipId],
-                        },
-                    ],
-                );
-            });
-
-            it('Should edit trip to "justForTesting", because now rule passes', async () => {
-                await updateEntityAndExpectToSucceed(
-                    trip.properties._id,
-                    {
-                        ...trip.properties,
-                        name: 'justForTesting',
-                    },
-                    tripEntityTemplate,
-                );
-            });
-
-            it('Should fail to edit trip name, because now rebreaks the rule', async () => {
-                await updateEntityAndExpectRuleBlock(
-                    trip.properties._id,
-                    {
-                        ...trip.properties,
-                        name: 'different name 3',
-                    },
-                    tripEntityTemplate,
-                    {
-                        ruleId: oneTravelAgentPerFlight._id,
-                        relationshipIds: [firstRelationshipId, secondRelationshipId],
-                    },
+                    travelAgentEntityTemplate,
                 );
             });
         });
@@ -293,7 +243,7 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 const rules = [noOverlappingFlightsInTrip];
 
-                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
                 mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
@@ -301,49 +251,42 @@ describe('Entity manager test rules', () => {
             beforeAll(async () => {
                 trip = await EntityManager.createEntity(
                     {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                        },
+                        name: 'My trip',
+                        destination: 'New York',
                     },
                     tripEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 firstFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: '2022-04-01T17:00:00.000Z',
-                            landingDate: '2022-04-01T19:00:00.000Z',
-                        },
+                        flightNumber: '1',
+                        departureDate: '2022-04-01T17:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 secondFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '2',
-                            departureDate: '2022-04-02T17:00:00.000Z',
-                            landingDate: '2022-04-02T19:00:00.000Z',
-                        },
+                        flightNumber: '2',
+                        departureDate: '2022-04-02T17:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 thirdFlight = await EntityManager.createEntity(
                     {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '3',
-                            departureDate: '2022-04-03T08:00:00.000Z',
-                            landingDate: '2022-04-03T08:30:00.000Z',
-                        },
+                        flightNumber: '3',
+                        departureDate: '2022-04-03T08:00:00.000Z',
                     },
                     flightEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -355,6 +298,7 @@ describe('Entity manager test rules', () => {
                     },
                     tripConnectedToFlightRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstRelationshipId = firstRelationship.properties._id;
 
@@ -367,6 +311,7 @@ describe('Entity manager test rules', () => {
                     },
                     tripConnectedToFlightRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondRelationshipId = secondRelationship.properties._id;
 
@@ -379,6 +324,7 @@ describe('Entity manager test rules', () => {
                     },
                     tripConnectedToFlightRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 thirdRelationshipId = thirdRelationship.properties._id;
             });
@@ -404,7 +350,33 @@ describe('Entity manager test rules', () => {
                     flightEntityTemplate,
                     {
                         ruleId: noOverlappingFlightsInTrip._id,
-                        relationshipIds: [firstRelationshipId, thirdRelationshipId],
+                        failures: [
+                            {
+                                entityId: trip.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: thirdRelationshipId,
+                                                otherEntityId: thirdFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 );
             });
@@ -420,7 +392,33 @@ describe('Entity manager test rules', () => {
                     [
                         {
                             ruleId: noOverlappingFlightsInTrip._id,
-                            relationshipIds: [firstRelationshipId, thirdRelationshipId],
+                            failures: [
+                                {
+                                    entityId: trip.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: trip.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstRelationshipId,
+                                                    otherEntityId: firstFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['_id', 'departureDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: trip.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: thirdRelationshipId,
+                                                    otherEntityId: thirdFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['_id', 'departureDate'],
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                 );
@@ -448,142 +446,492 @@ describe('Entity manager test rules', () => {
                     flightEntityTemplate,
                     {
                         ruleId: noOverlappingFlightsInTrip._id,
-                        relationshipIds: [secondRelationshipId],
+                        failures: [
+                            {
+                                entityId: trip.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondRelationshipId,
+                                                otherEntityId: secondFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: trip.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: thirdRelationshipId,
+                                                otherEntityId: thirdFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['_id', 'departureDate'],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 );
             });
         });
 
-        describe('Rule 3 - Warn On Every Flight On Active Zone', () => {
-            let trip: IEntity;
+        describe('Rule 3 - Warn On Every Flight Departure From Airport With Active Trip', () => {
+            let airport: IEntity;
+            let firstTrip: IEntity;
+            let secondTrip: IEntity;
             let firstFlight: IEntity;
             let secondFlight: IEntity;
 
-            let firstRelationshipId: string;
-            let secondRelationshipId: string;
+            let firstTripConnectedToAirportRelationshipId: string;
+            let secondTripConnectedToAirportRelationshipId: string;
+            let firstFlightDepartureFromAirportRelationshipId: string;
+            let secondFlightDepartureFromAirportRelationshipId: string;
 
             beforeAll(async () => {
-                const rules = [warnOnEveryFlightOnActiveZone];
+                const rules = [warnOnEveryFlightDepartureFromAirportWithActiveTrip];
 
-                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds, allRelationshipTemplateIds);
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
                 mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
                 mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
             });
 
-            beforeAll(async () => {
-                trip = await EntityManager.createEntity(
-                    {
-                        templateId: tripEntityTemplate._id,
-                        properties: {
-                            name: 'My trip',
-                            destination: 'New York',
-                            active: false,
-                        },
-                    },
-                    tripEntityTemplate,
-                );
-
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '1',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
-                    },
-                    flightEntityTemplate,
-                );
-
-                secondFlight = await EntityManager.createEntity(
-                    {
-                        templateId: flightEntityTemplate._id,
-                        properties: {
-                            flightNumber: '2',
-                            departureDate: new Date().toISOString(),
-                            landingDate: new Date().toISOString(),
-                        },
-                    },
-                    flightEntityTemplate,
-                );
-
-                const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: firstFlight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
-                );
-                firstRelationshipId = firstRelationship.properties._id;
-
-                const secondRelationship = await RelationshipManager.createRelationshipByEntityIds(
-                    {
-                        templateId: tripConnectedToFlightRelationshipTemplate._id,
-                        properties: { testProp: 'testProp' },
-                        sourceEntityId: secondFlight.properties._id,
-                        destinationEntityId: trip.properties._id,
-                    },
-                    tripConnectedToFlightRelationshipTemplate,
-                    [],
-                );
-                secondRelationshipId = secondRelationship.properties._id;
-            });
-
             afterAll(async () => {
                 await Neo4jClient.writeTransaction(
-                    `MATCH (e1 { _id: "${trip.properties._id}" })
-                    MATCH (e2 { _id: "${firstFlight.properties._id}" })
-                    MATCH (e3 { _id: "${secondFlight.properties._id}" })
-                    DETACH DELETE e1,e2,e3`,
+                    `MATCH (e1 { _id: "${airport.properties._id}" })
+                    MATCH (e2 { _id: "${firstTrip.properties._id}" })
+                    MATCH (e3 { _id: "${secondTrip.properties._id}" })
+                    MATCH (e4 { _id: "${firstFlight.properties._id}" })
+                    MATCH (e5 { _id: "${secondFlight.properties._id}" })
+                    DETACH DELETE e1,e2,e3,e4,e5`,
                     () => {},
                 );
             });
 
-            it('Should fail to trip to active, because rule will fail', async () => {
-                await updateEntityAndExpectRuleBlock(
-                    trip.properties._id,
+            beforeAll(async () => {
+                airport = await EntityManager.createEntity(
                     {
-                        ...trip.properties,
-                        active: true,
+                        airportName: 'New York Airport',
+                        airportId: '1234',
+                        country: 'New York',
+                    },
+                    airportEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                firstTrip = await EntityManager.createEntity(
+                    {
+                        name: 'My trip1',
+                        destination: 'New York',
+                        startDate: '2022-05-01',
+                        endDate: '2022-05-01',
+                        active: false,
                     },
                     tripEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                secondTrip = await EntityManager.createEntity(
                     {
-                        ruleId: warnOnEveryFlightOnActiveZone._id,
-                        relationshipIds: [firstRelationshipId, secondRelationshipId],
+                        name: 'My trip2',
+                        destination: 'New York',
+                        startDate: '2022-05-02',
+                        endDate: '2022-05-02',
+                        active: false,
+                    },
+                    tripEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                firstFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '1',
+                        departureDate: '2022-04-01T17:00:00.000Z',
+                        landingDate: '2022-04-01T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                secondFlight = await EntityManager.createEntity(
+                    {
+                        flightNumber: '2',
+                        departureDate: '2022-04-02T17:00:00.000Z',
+                        landingDate: '2022-04-02T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+
+                const firstTripConnectedToAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: tripConnectedToAirportRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: airport.properties._id,
+                        destinationEntityId: firstTrip.properties._id,
+                    },
+                    tripConnectedToAirportRelationshipTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                firstTripConnectedToAirportRelationshipId = firstTripConnectedToAirportRelationship.properties._id;
+
+                const firstFlightDepartureFromAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: departureFromRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: firstFlight.properties._id,
+                        destinationEntityId: airport.properties._id,
+                    },
+                    departureFromRelationshipTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                firstFlightDepartureFromAirportRelationshipId = firstFlightDepartureFromAirportRelationship.properties._id;
+
+                const secondFlightDepartureFromAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: departureFromRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: secondFlight.properties._id,
+                        destinationEntityId: airport.properties._id,
+                    },
+                    departureFromRelationshipTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                secondFlightDepartureFromAirportRelationshipId = secondFlightDepartureFromAirportRelationship.properties._id;
+
+                const secondTripConnectedToAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
+                    {
+                        templateId: tripConnectedToAirportRelationshipTemplate._id,
+                        properties: { testProp: 'testProp' },
+                        sourceEntityId: airport.properties._id,
+                        destinationEntityId: secondTrip.properties._id,
+                    },
+                    tripConnectedToFlightRelationshipTemplate,
+                    [],
+                    neo4j.mockUserId,
+                );
+                secondTripConnectedToAirportRelationshipId = secondTripConnectedToAirportRelationship.properties._id;
+            });
+
+            it('Should fail to update first flight date because will overlap with first trip', async () => {
+                await updateEntityAndExpectRuleBlock(
+                    firstFlight.properties._id,
+                    {
+                        ...firstFlight.properties,
+                        departureDate: '2022-05-01T17:00:00.000Z',
+                        landingDate: '2022-05-01T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate', 'landingDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstTripConnectedToAirportRelationshipId,
+                                                otherEntityId: firstTrip.properties._id,
+                                            },
+                                        },
+                                        properties: ['startDate', 'endDate'],
+                                    },
+                                ],
+                            },
+                        ],
                     },
                 );
             });
-
-            it('Should ignore failed rule and, update trip to active', async () => {
+            it('Should ignore failed rule and update first flight date', async () => {
                 await updateEntityAndExpectToSucceed(
-                    trip.properties._id,
+                    firstFlight.properties._id,
                     {
-                        ...trip.properties,
-                        active: true,
+                        ...firstFlight.properties,
+                        departureDate: '2022-05-01T17:00:00.000Z',
+                        landingDate: '2022-05-01T19:00:00.000Z',
                     },
-                    tripEntityTemplate,
+                    flightEntityTemplate,
                     [
                         {
-                            ruleId: warnOnEveryFlightOnActiveZone._id,
-                            relationshipIds: [firstRelationshipId, secondRelationshipId],
+                            ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                            failures: [
+                                {
+                                    entityId: airport.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                                    otherEntityId: firstFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['departureDate', 'landingDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: firstTripConnectedToAirportRelationshipId,
+                                                    otherEntityId: firstTrip.properties._id,
+                                                },
+                                            },
+                                            properties: ['startDate', 'endDate'],
+                                        },
+                                    ],
+                                },
+                            ],
                         },
                     ],
                 );
             });
-
-            it('Should edit trip destination, because not dependent in rule', async () => {
-                await updateEntityAndExpectToSucceed(
-                    trip.properties._id,
+            it('Should fail to update second flight date because will overlap with second trip', async () => {
+                await updateEntityAndExpectRuleBlock(
+                    secondFlight.properties._id,
                     {
-                        ...trip.properties,
-                        destination: 'different destination',
+                        ...secondFlight.properties,
+                        departureDate: '2022-05-02T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z',
                     },
-                    tripEntityTemplate,
+                    flightEntityTemplate,
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondFlightDepartureFromAirportRelationshipId,
+                                                otherEntityId: secondFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate', 'landingDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondTripConnectedToAirportRelationshipId,
+                                                otherEntityId: secondTrip.properties._id,
+                                            },
+                                        },
+                                        properties: ['startDate', 'endDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                 );
             });
+            it('Should ignore failed rule and update second flight date', async () => {
+                await updateEntityAndExpectToSucceed(
+                    secondFlight.properties._id,
+                    {
+                        ...secondFlight.properties,
+                        departureDate: '2022-05-02T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    [
+                        {
+                            ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                            failures: [
+                                {
+                                    entityId: airport.properties._id,
+                                    causes: [
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: secondFlightDepartureFromAirportRelationshipId,
+                                                    otherEntityId: secondFlight.properties._id,
+                                                },
+                                            },
+                                            properties: ['departureDate', 'landingDate'],
+                                        },
+                                        {
+                                            instance: {
+                                                entityId: airport.properties._id,
+                                                aggregatedRelationship: {
+                                                    relationshipId: secondTripConnectedToAirportRelationshipId,
+                                                    otherEntityId: secondTrip.properties._id,
+                                                },
+                                            },
+                                            properties: ['startDate', 'endDate'],
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                );
+            });
+            it('Should fail to update first flight date because still overlaps with first trip', async () => {
+                await updateEntityAndExpectRuleBlock(
+                    firstFlight.properties._id,
+                    {
+                        ...firstFlight.properties,
+                        departureDate: '2022-05-01T15:00:00.000Z', // same overlapping date, but different hour
+                        landingDate: '2022-05-01T19:00:00.000Z',
+                    },
+                    flightEntityTemplate,
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                // todo: this outcome is slightly unintuitive. you cant see against which trip you failed
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                );
+            });
+            it('Should fail to update first flight date because overlaps with first trip and second trip', async () => {
+                await updateEntityAndExpectRuleBlock(
+                    firstFlight.properties._id,
+                    {
+                        ...firstFlight.properties,
+                        departureDate: '2022-05-01T17:00:00.000Z',
+                        landingDate: '2022-05-02T19:00:00.000Z', // now overlaps with second trip too
+                    },
+                    flightEntityTemplate,
+                    {
+                        ruleId: warnOnEveryFlightDepartureFromAirportWithActiveTrip._id,
+                        failures: [
+                            {
+                                entityId: airport.properties._id,
+                                // todo: this outcome is slightly unintuitive...
+                                causes: [
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: firstFlightDepartureFromAirportRelationshipId,
+                                                otherEntityId: firstFlight.properties._id,
+                                            },
+                                        },
+                                        properties: ['departureDate', 'landingDate'],
+                                    },
+                                    {
+                                        instance: {
+                                            entityId: airport.properties._id,
+                                            aggregatedRelationship: {
+                                                relationshipId: secondTripConnectedToAirportRelationshipId,
+                                                otherEntityId: secondTrip.properties._id,
+                                            },
+                                        },
+                                        properties: ['startDate', 'endDate'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                );
+            });
+        });
+    });
+
+    describe('Create entity', () => {
+        describe('Rule 4 - Start Date Smaller Then End Date In Trip', () => {
+            beforeAll(async () => {
+                const rules = [startDateSmallerThenEndDateInTrip];
+
+                mockRulesRoutes(mockTemplateManager, rules, allEntityTemplateIds);
+                mockRelationshipTemplatesRoutes(mockTemplateManager, allRelationshipTemplates);
+                mockEntityTemplatesRoutes(mockTemplateManager, allEntityTemplates);
+            });
+
+            it('Should create trip with startDate <= endDate', async () => {
+                const tripProperties = {
+                    name: 'My trip',
+                    destination: 'New York',
+                    active: false,
+                    startDate: '2022-05-01',
+                    endDate: '2022-05-05',
+                };
+                const trip = await EntityManager.createEntity(tripProperties, tripEntityTemplate, [], neo4j.mockUserId);
+
+                expect(trip).toStrictEqual({
+                    templateId: tripEntityTemplate._id,
+                    properties: {
+                        ...tripProperties,
+                        _id: expect.any(String),
+                        disabled: expect.any(Boolean),
+                        createdAt: expect.any(String),
+                        updatedAt: expect.any(String),
+                    },
+                });
+            });
+
+            it('Should fail to create trip with startDate > endDate', async () => {
+                const { err } = await trycatch(() =>
+                    EntityManager.createEntity(
+                        {
+                            name: 'My trip',
+                            destination: 'New York',
+                            active: false,
+                            startDate: '2022-05-05',
+                            endDate: '2022-05-01',
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    ),
+                );
+
+                expect(err).toStrictEqual(
+                    new ServiceError(400, '[NEO4J] action is blocked by rules.', {
+                        errorCode: config.errorCodes.ruleBlock,
+                        brokenRules: {
+                            ruleId: startDateSmallerThenEndDateInTrip._id,
+                            failures: [{ entityId: config.createdEntityIdInBrokenRules, causes: [] }],
+                        },
+                    }),
+                );
+            }, 500000);
         });
     });
 });

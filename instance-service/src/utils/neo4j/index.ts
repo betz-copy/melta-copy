@@ -25,7 +25,7 @@ class Neo4jClient {
     }
 
     async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
-        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true, ...configuration });
         this.database = database;
 
         await this.verifyConnectivity();
@@ -92,7 +92,11 @@ class Neo4jClient {
     async verifyConnectivity() {
         const { connectionRetries, connectionRetryDelay } = config.neo4j;
 
-        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: logger.info });
+        await retry(() => this.driver.verifyConnectivity(), {
+            retries: connectionRetries,
+            delay: connectionRetryDelay,
+            logger: logger.info.bind(logger),
+        });
     }
 }
 

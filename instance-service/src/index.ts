@@ -6,6 +6,7 @@ import Neo4jClient from './utils/neo4j';
 import RedisClient from './utils/redis';
 import config from './config';
 import logger from './utils/logger/logsLogger';
+import initializeRabbit from './utils/rabbit';
 
 const { service, neo4j, redis, logs } = config;
 
@@ -27,6 +28,7 @@ const initializeRedis = async () => {
 
 const main = async () => {
     await initializeRedis();
+    await initializeRabbit();
     await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
 
     axios.defaults.maxBodyLength = service.maxRequestSize;

@@ -1,30 +1,41 @@
-import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from 'react-awesome-query-builder';
+import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import {
-    IAggregationGroup,
-    ICountAggFunction,
-    IEquation,
-    IGroup,
-    IOperatorBool,
-    IRegularFunction,
-    isAggregationGroup,
-    isCountAggFunction,
-    isEquation,
-    isGroup,
-    isRegularFunction,
-} from '../../interfaces/rules';
-import { IArgument, IConstant, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/argument';
 import { IFormula } from '../../interfaces/rules/formula';
 import { FunctionObject, ValueType } from './interfaces';
+import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/formula/argument';
+import { IEquation, IOperatorBool, isEquation } from '../../interfaces/rules/formula/equation';
+import { ICountAggFunction, IRegularFunction, isCountAggFunction, isRegularFunction } from '../../interfaces/rules/formula/function';
+import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../interfaces/rules/formula/group';
 
 export class RuleSerializer {
     private static entityTemplates: IEntityTemplateMap = new Map();
 
-    private static propertyOfVariableSerializer = (argument: IPropertyOfVariable, aggregationVariableInitials: string) => {
-        const { variableName, property } = argument;
+    private static variableSerializer = (variable: IVariable, aggregationsContext: Required<IVariable>[]) => {
+        const aggregationVariablePrefix = aggregationsContext
+            .map(
+                ({ entityTemplateId, aggregatedRelationship: { relationshipTemplateId, otherEntityTemplateId, variableNameSuffix } }) =>
+                    `${entityTemplateId}-${relationshipTemplateId}-${otherEntityTemplateId}${variableNameSuffix ? `-${variableNameSuffix}` : ''}`,
+            )
+            .join('.');
+        const prefix = aggregationVariablePrefix ? `${aggregationVariablePrefix}.` : '';
 
-        return `${aggregationVariableInitials}${variableName.replaceAll('.', '-')}-${property}`;
+        const { entityTemplateId, aggregatedRelationship } = variable;
+
+        if (!aggregatedRelationship) {
+            return `${prefix}${entityTemplateId}`;
+        }
+        const { relationshipTemplateId, otherEntityTemplateId, variableNameSuffix } = aggregatedRelationship;
+
+        const suffix = variableNameSuffix ? `-${variableNameSuffix}` : '';
+
+        return `${prefix}${entityTemplateId}-${relationshipTemplateId}-${otherEntityTemplateId}${suffix}`;
+    };
+
+    private static propertyOfVariableSerializer = (argument: IPropertyOfVariable, aggregationsContext: Required<IVariable>[]) => {
+        const { variable, property } = argument;
+
+        return `${RuleSerializer.variableSerializer(variable, aggregationsContext)}-${property}`;
     };
 
     private static operatorSerializer = (operator: IOperatorBool) => {
@@ -46,11 +57,15 @@ export class RuleSerializer {
         }
     };
 
-    private static countSerialzier = (eq: IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant }): JsonRuleGroupExt => {
+    private static countSerializer = (
+        eq: IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant },
+        aggregationsContext: Required<IVariable>[],
+    ): JsonRuleGroupExt => {
         return {
+            id: uuid(),
             type: 'rule_group',
             properties: {
-                field: eq.lhsArgument.variableName.replaceAll('.', '-'),
+                field: RuleSerializer.variableSerializer(eq.lhsArgument.variable, aggregationsContext),
                 valueType: ['number'],
                 value: [eq.rhsArgument.value],
                 valueSrc: ['value'],
@@ -59,36 +74,36 @@ export class RuleSerializer {
                 conjunction: 'AND',
                 not: false,
             },
-            children1: {},
+            children1: [],
         };
     };
 
     private static getEquationValueType = (argument: IPropertyOfVariable): ValueType => {
-        const { variableName, property: propertyName } = argument;
+        const { variable, property: propertyName } = argument;
 
         if (propertyName === '_id') return 'text';
         if (propertyName === 'disabled') return 'boolean';
         if (propertyName === 'updatedAt' || propertyName === 'createdAt') return 'datetime';
 
-        const entityTemplateId = variableName.substring(variableName.lastIndexOf('.') + 1);
+        const entityTemplateId = variable.aggregatedRelationship ? variable.aggregatedRelationship.otherEntityTemplateId : variable.entityTemplateId;
         const template = RuleSerializer.entityTemplates.get(entityTemplateId)!;
         const property = template.properties.properties[propertyName];
 
         if (property.type === 'array') throw new Error('array not supported in formulas! sorry!'); // todo: block in UI too, or support it
         if (property.type !== 'string') return property.type;
+
         if (property.format === 'date') return 'date';
         if (property.format === 'date-time') return 'datetime';
-
         return 'text';
     };
 
     private static rhsArgumentSerializer = (
         rhsArgument: IArgument,
-        aggregationVariableInitials: string,
+        aggregationsContext: Required<IVariable>[],
     ): { value: RuleProperties['value']; valueSrc: NonNullable<RuleProperties['valueSrc']> } => {
         if (isPropertyOfVariable(rhsArgument)) {
             return {
-                value: [RuleSerializer.propertyOfVariableSerializer(rhsArgument, aggregationVariableInitials)],
+                value: [RuleSerializer.propertyOfVariableSerializer(rhsArgument, aggregationsContext)],
                 valueSrc: ['field'],
             };
         }
@@ -99,7 +114,7 @@ export class RuleSerializer {
                     value: [
                         `${RuleSerializer.propertyOfVariableSerializer(
                             rhsArgument.arguments[0] as IPropertyOfVariable,
-                            aggregationVariableInitials,
+                            aggregationsContext,
                         )}-ignoreHour`,
                     ],
                     valueSrc: ['field'],
@@ -110,9 +125,9 @@ export class RuleSerializer {
             if (functionTypesAddOrSub.includes(rhsArgument.functionType)) {
                 const { functionType, arguments: funcArguments } = rhsArgument;
 
-                // connectionInitials='' because inside function, cant use subFields of connection, only root-level variables allowed
-                const dateArgumentSerialized = RuleSerializer.rhsArgumentSerializer(funcArguments[0], '');
-                const durationArgumentSerialized = RuleSerializer.rhsArgumentSerializer(funcArguments[1], '');
+                // connectionInitials='' because inside function, cant use subFields of connection, only root-level variables allowed // todo: recheck what to do here
+                const dateArgumentSerialized = RuleSerializer.rhsArgumentSerializer(funcArguments[0], aggregationsContext);
+                const durationArgumentSerialized = RuleSerializer.rhsArgumentSerializer(funcArguments[1], aggregationsContext);
 
                 const dateArgumentKey = functionType === 'addToDate' || functionType === 'subFromDate' ? 'date' : 'dateTime';
                 const functionValue: FunctionObject = {
@@ -140,9 +155,9 @@ export class RuleSerializer {
         throw new Error('rhs format not supported');
     };
 
-    private static equationSerializer = (eq: IEquation, aggregationVariableInitials: string): JsonRule | JsonRuleGroupExt => {
+    private static equationSerializer = (eq: IEquation, aggregationsContext: Required<IVariable>[]): JsonRule | JsonRuleGroupExt => {
         if (isCountAggFunction(eq.lhsArgument)) {
-            return RuleSerializer.countSerialzier(eq as IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant });
+            return RuleSerializer.countSerializer(eq as IEquation & { lhsArgument: ICountAggFunction; rhsArgument: IConstant }, aggregationsContext);
         }
 
         let rulePropertiesFromLhs: Pick<RuleProperties, 'field' | 'valueType' | 'operator'>;
@@ -151,13 +166,13 @@ export class RuleSerializer {
             const argument = eq.lhsArgument.arguments[0] as IPropertyOfVariable;
 
             rulePropertiesFromLhs = {
-                field: `${RuleSerializer.propertyOfVariableSerializer(argument, aggregationVariableInitials)}-ignoreHour`,
+                field: `${RuleSerializer.propertyOfVariableSerializer(argument, aggregationsContext)}-ignoreHour`,
                 valueType: ['date'],
                 operator: RuleSerializer.operatorSerializer(eq.operatorBool),
             };
         } else if (isPropertyOfVariable(eq.lhsArgument)) {
             rulePropertiesFromLhs = {
-                field: RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument, aggregationVariableInitials),
+                field: RuleSerializer.propertyOfVariableSerializer(eq.lhsArgument, aggregationsContext),
                 valueType: [RuleSerializer.getEquationValueType(eq.lhsArgument)],
                 operator: RuleSerializer.operatorSerializer(eq.operatorBool),
             };
@@ -166,27 +181,23 @@ export class RuleSerializer {
         }
 
         return {
+            id: uuid(),
             type: 'rule',
             properties: {
                 ...rulePropertiesFromLhs,
-                ...RuleSerializer.rhsArgumentSerializer(eq.rhsArgument, aggregationVariableInitials),
+                ...RuleSerializer.rhsArgumentSerializer(eq.rhsArgument, aggregationsContext),
             },
         };
     };
 
-    private static groupSerializer = (gr: IGroup, aggregationVariableInitials: string): JsonGroup => {
+    private static groupSerializer = (gr: IGroup, aggregationsContext: Required<IVariable>[]): JsonGroup => {
         return {
             id: uuid(),
             type: 'group',
             properties: {
                 conjunction: gr.ruleOfGroup,
             },
-            children1: Object.fromEntries(
-                gr.subFormulas.map((subFormula) => [
-                    uuid(),
-                    RuleSerializer.formulaComponentToRuleItem(subFormula, aggregationVariableInitials) as JsonItem,
-                ]),
-            ),
+            children1: gr.subFormulas.map((subFormula) => RuleSerializer.formulaComponentToRuleItem(subFormula, aggregationsContext) as JsonItem),
         };
     };
 
@@ -194,11 +205,9 @@ export class RuleSerializer {
         return operator === 'EVERY' ? 'all' : 'some';
     };
 
-    private static aggrregationGroupSerializer = (gr: IAggregationGroup): JsonRuleGroupExt => {
-        const fieldOfAggregation = gr.variableNameOfAggregation.replaceAll('.', '-');
-        const aggregationVariableInitials = `${fieldOfAggregation}.`;
-
+    private static aggrregationGroupSerializer = (gr: IAggregationGroup, aggregationsContext: Required<IVariable>[]): JsonRuleGroupExt => {
         return {
+            id: uuid(),
             type: 'rule_group',
             properties: {
                 operator: RuleSerializer.aggregationSerializer(gr.aggregation),
@@ -208,13 +217,10 @@ export class RuleSerializer {
                 valueSrc: [],
                 not: false,
                 conjunction: gr.ruleOfGroup,
-                field: fieldOfAggregation,
+                field: RuleSerializer.variableSerializer(gr.variableOfAggregation, aggregationsContext),
             },
-            children1: Object.fromEntries(
-                gr.subFormulas.map((subFormula) => [
-                    uuid(),
-                    RuleSerializer.formulaComponentToRuleItem(subFormula, aggregationVariableInitials) as JsonRule,
-                ]),
+            children1: gr.subFormulas.map(
+                (subFormula) => RuleSerializer.formulaComponentToRuleItem(subFormula, [...aggregationsContext, gr.variableOfAggregation]) as JsonRule,
             ),
         };
     };
@@ -222,20 +228,20 @@ export class RuleSerializer {
     static formulaToJsonTreeWrapper = (formula: IFormula, entityTemplates: IEntityTemplateMap): JsonItem => {
         RuleSerializer.entityTemplates = entityTemplates;
 
-        return RuleSerializer.formulaComponentToRuleItem(formula, '');
+        return RuleSerializer.formulaComponentToRuleItem(formula, []);
     };
 
-    private static formulaComponentToRuleItem = (formula: IFormula, aggregationVariableInitials: string): JsonItem => {
+    private static formulaComponentToRuleItem = (formula: IFormula, aggregationsContext: Required<IVariable>[]): JsonItem => {
         if (isEquation(formula)) {
-            return RuleSerializer.equationSerializer(formula, aggregationVariableInitials);
+            return RuleSerializer.equationSerializer(formula, aggregationsContext);
         }
 
         if (isGroup(formula)) {
-            return RuleSerializer.groupSerializer(formula, aggregationVariableInitials);
+            return RuleSerializer.groupSerializer(formula, aggregationsContext);
         }
 
         if (isAggregationGroup(formula)) {
-            return RuleSerializer.aggrregationGroupSerializer(formula);
+            return RuleSerializer.aggrregationGroupSerializer(formula, aggregationsContext);
         }
 
         throw new Error('formula type not supported');

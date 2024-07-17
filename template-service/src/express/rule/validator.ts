@@ -1,13 +1,16 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
+import isEqual from 'lodash.isequal';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
-import * as assert from 'assert';
-import { IRule, IRelevantTemplates, IRegularFunction } from './interfaces';
+import assert from 'assert';
+import { IRule, IRelevantTemplates } from './interfaces';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
 import { IEntitySingleProperty, IEntityTemplatePopulated } from '../entityTemplate/interface';
 import { IMongoRelationshipTemplate } from '../relationshipTemplate/interface';
-import { IConstant, isConstant } from './interfaces/argument';
 import { defaultValidationOptions, joiValidate } from '../../utils/joi';
+import { IAggregationGroup } from './interfaces/formula/group';
+import { IConstant, IPropertyOfVariable, IVariable, isConstant } from './interfaces/formula/argument';
+import { ICountAggFunction, IRegularFunction, ISumAggFunction } from './interfaces/formula/function';
 import EntityTemplateManager from '../entityTemplate/manager';
 
 const joiValidateNoConvert = (schema: Joi.AnySchema<any>, data: any) => joiValidate(schema, data, { ...defaultValidationOptions, convert: false });
@@ -37,6 +40,9 @@ const jsonSchemaTypeToType = ({ type, format }: IEntitySingleProperty): IConstan
             if (type === 'array') {
                 // todo: block in UI too, or support it
                 throw new Error('array not supported in formulas! sorry!');
+            }
+            if (format === 'relationshipReference') {
+                throw new Error('relationshipReference not supported in formulas! sorry!');
             }
             return type;
     }
@@ -94,82 +100,111 @@ const validateConstant = (constant: any): IConstant['type'] => {
     return constant.type;
 };
 
-const propertyOfVariableSchema = Joi.object({
-    isPropertyOfVariable: Joi.boolean().valid(true).required(),
-    variableName: Joi.string().required(),
-    property: Joi.string().required(),
-});
-const validatePropertyOfVariable = (
-    propertyOfVariable: any,
+const validateVariableOfAggregation = (
+    variable: Required<IVariable>,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
-): IConstant['type'] => {
-    joiValidateNoConvert(propertyOfVariableSchema, propertyOfVariable);
-
-    if (propertyOfVariable.variableName.indexOf('.') > -1) {
-        assert(aggregationContext, `variableName "${propertyOfVariable.variableName}" contains dot notation, but not under aggregation`);
-
-        const expectedAggregationVariableName = `${relevantTemplates.pinnedEntityTemplate._id}.${aggregationContext.relationshipTemplate._id}.${aggregationContext.otherEntityTemplate._id}`;
-        assert(
-            propertyOfVariable.variableName === expectedAggregationVariableName,
-            `aggregation variable name "${propertyOfVariable.variableName}" with dot notation must be "${expectedAggregationVariableName}"`,
-        );
-
-        return validatePropertyExistInEntityTemplate(propertyOfVariable.property, aggregationContext.otherEntityTemplate);
-    }
-
-    const variableEntityTemplate = [relevantTemplates.pinnedEntityTemplate, relevantTemplates.unpinnedEntityTemplate].find(
-        ({ _id }) => _id === propertyOfVariable.variableName,
-    );
-
-    assert(variableEntityTemplate, 'variable name must be of pinnedEntityTemplateId or unpinnedEntityTemplateId');
-
-    return validatePropertyExistInEntityTemplate(propertyOfVariable.property, variableEntityTemplate);
-};
-
-const validateVariableNameOfAggregation = (variableName: string, relevantTemplates: IRelevantTemplates) => {
-    assert(
-        variableName.split('.').length === 3,
-        'variable name of aggregation must be of format "pinnedEntityTemplateId.relationshipTemplateId.otherEntityTemplateId"',
-    );
-
-    const [_pinnedEntityTemplateId, relationshipTemplateId, _otherEntityTemplateId] = variableName.split('.');
-
-    const connectionTemplates = relevantTemplates.connectionsTemplatesOfPinnedEntityTemplate.find(
-        ({ relationshipTemplate }) => relationshipTemplate._id === relationshipTemplateId,
+    shouldExistInAggregationGroupsContext: boolean,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
+): IRelevantTemplates['connectionsTemplatesOfEntityTemplate'][number] => {
+    const connectionTemplates = relevantTemplates.connectionsTemplatesOfEntityTemplate.find(
+        ({ relationshipTemplate }) => relationshipTemplate._id === variable.aggregatedRelationship.relationshipTemplateId,
     );
 
     assert(
         connectionTemplates,
-        `relationshipTemplateId "${relationshipTemplateId}" doesnt exist for pinnedEntityTemplate "${relevantTemplates.pinnedEntityTemplate.name}" connections`,
+        `relationshipTemplateId "${variable.aggregatedRelationship.relationshipTemplateId}" doesnt exist for entityTemplate "${relevantTemplates.entityTemplate.name}" connections`,
     );
 
-    const expectedAggregationVariableName = `${relevantTemplates.pinnedEntityTemplate._id}.${connectionTemplates.relationshipTemplate._id}.${connectionTemplates.otherEntityTemplate._id}`;
     assert(
-        variableName === expectedAggregationVariableName,
-        `variable name of aggregation of relationship "${relationshipTemplateId}" must be of format "${expectedAggregationVariableName}"`,
+        !connectionTemplates.relationshipTemplate.isProperty,
+        `relationshipTemplateId "${variable.aggregatedRelationship.relationshipTemplateId}" is a relationshipReference field and not supported in rules.`,
     );
+
+    assert(
+        variable.aggregatedRelationship.otherEntityTemplateId === connectionTemplates.otherEntityTemplate._id,
+        `variable of aggregation is on relationshipTemplateId "${variable.aggregatedRelationship.relationshipTemplateId}", so otherEntityTemplateId should be "${connectionTemplates.otherEntityTemplate._id}"`,
+    );
+
+    const doesExistInAggregationGroupsContext = aggregationGroupsContext.some((variableOfAggregation) => isEqual(variableOfAggregation, variable));
+
+    if (shouldExistInAggregationGroupsContext) {
+        assert(
+            doesExistInAggregationGroupsContext,
+            `using aggregation variable (${JSON.stringify(variable)}), but not under some aggregation group with the same variable`,
+        );
+    } else {
+        assert(!doesExistInAggregationGroupsContext, `there's already aggregation group with the same variable (${JSON.stringify(variable)})`);
+    }
+
+    return connectionTemplates;
+};
+
+const variableSchema = Joi.object({
+    entityTemplateId: Joi.string().required(),
+    aggregatedRelationship: Joi.object({
+        relationshipTemplateId: Joi.string().required(),
+        otherEntityTemplateId: Joi.string().required(),
+        variableNameSuffix: Joi.string(),
+    }),
+});
+
+const propertyOfVariableSchema = Joi.object({
+    isPropertyOfVariable: Joi.boolean().valid(true).required(),
+    variable: variableSchema.required(),
+    property: Joi.string().required(),
+});
+const validatePropertyOfVariable = (
+    propertyOfVariableData: any,
+    relevantTemplates: IRelevantTemplates,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
+): IConstant['type'] => {
+    const { variable, property }: IPropertyOfVariable = joiValidateNoConvert(propertyOfVariableSchema, propertyOfVariableData);
+
+    if (variable.aggregatedRelationship) {
+        const { otherEntityTemplate } = validateVariableOfAggregation(
+            variable as Required<IVariable>,
+            relevantTemplates,
+            true,
+            aggregationGroupsContext,
+        );
+
+        return validatePropertyExistInEntityTemplate(property, otherEntityTemplate);
+    }
+
+    assert(variable.entityTemplateId === relevantTemplates.entityTemplate._id, 'variable.entityTemplateId must be the same as entityTemplateId');
+
+    return validatePropertyExistInEntityTemplate(property, relevantTemplates.entityTemplate);
 };
 
 const countAggFunctionSchema = Joi.object({
     isCountAggFunction: Joi.boolean().valid(true).required(),
-    variableName: Joi.string().required(),
+    variable: variableSchema.presence('required').required(),
 });
-const validateCountAggFunction = (countAggFunction: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidateNoConvert(countAggFunctionSchema, countAggFunction);
+const validateCountAggFunction = (
+    countAggFunctionData: any,
+    relevantTemplates: IRelevantTemplates,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
+) => {
+    const countAggFunction: ICountAggFunction = joiValidateNoConvert(countAggFunctionSchema, countAggFunctionData);
 
-    validateVariableNameOfAggregation(countAggFunction.variableName, relevantTemplates);
+    validateVariableOfAggregation(countAggFunction.variable, relevantTemplates, false, aggregationGroupsContext);
 };
 
 const sumAggFunctionSchema = Joi.object({
     isSumAggFunction: Joi.boolean().valid(true).required(),
-    variableName: Joi.string().required(),
+    variable: variableSchema.presence('required').required(),
     property: Joi.string().required(),
 });
-const validateSumAggFunction = (sumAggFunction: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidateNoConvert(sumAggFunctionSchema, sumAggFunction);
+const validateSumAggFunction = (
+    sumAggFunctionData: any,
+    relevantTemplates: IRelevantTemplates,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
+) => {
+    const sumAggFunction: ISumAggFunction = joiValidateNoConvert(sumAggFunctionSchema, sumAggFunctionData);
 
-    validateVariableNameOfAggregation(sumAggFunction.variableName, relevantTemplates);
+    const { otherEntityTemplate } = validateVariableOfAggregation(sumAggFunction.variable, relevantTemplates, false, aggregationGroupsContext);
+
+    return validatePropertyExistInEntityTemplate(sumAggFunction.property, otherEntityTemplate);
 };
 
 const regularFunctionSchema = Joi.object({
@@ -178,20 +213,22 @@ const regularFunctionSchema = Joi.object({
     arguments: Joi.array().items(Joi.object()).required(),
 });
 const validateRegularFunction = (
-    data: any,
+    regularFunctionData: any,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
 ): IConstant['type'] => {
-    joiValidateNoConvert(regularFunctionSchema, data);
-    const { arguments: funcArguments, functionType } = data as {
+    const {
+        arguments: funcArguments,
+        functionType,
+    }: {
         isRegularFunction: true;
         functionType: IRegularFunction['functionType'];
         arguments: object[];
-    };
+    } = joiValidateNoConvert(regularFunctionSchema, regularFunctionData);
 
     funcArguments.forEach((argument) => {
         // eslint-disable-next-line no-use-before-define -- circular recursive functions
-        validateArgument(argument, relevantTemplates, aggregationContext);
+        validateArgument(argument, relevantTemplates, aggregationGroupsContext);
     });
     switch (functionType) {
         case 'toDate': {
@@ -238,25 +275,23 @@ const argumentSchema = Joi.alternatives(
     Joi.object({ isRegularFunction: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'argument must be one of constant/propertyOfValue/countAggFunction/sumAggFunction/regularFunction' });
 const validateArgument = (
-    argument: any,
+    argumentData: any,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
 ): IConstant['type'] => {
-    joiValidateNoConvert(argumentSchema, argument);
+    joiValidateNoConvert(argumentSchema, argumentData);
 
-    if (argument.isConstant) return validateConstant(argument);
-    if (argument.isPropertyOfVariable) return validatePropertyOfVariable(argument, relevantTemplates, aggregationContext);
-    if (argument.isCountAggFunction) {
-        assert(!aggregationContext, 'aggregation (countAgg) inside of an aggregation is not allowed');
-        validateCountAggFunction(argument, relevantTemplates);
+    if (argumentData.isConstant) return validateConstant(argumentData);
+    if (argumentData.isPropertyOfVariable) return validatePropertyOfVariable(argumentData, relevantTemplates, aggregationGroupsContext);
+    if (argumentData.isCountAggFunction) {
+        validateCountAggFunction(argumentData, relevantTemplates, aggregationGroupsContext);
         return 'number';
     }
-    if (argument.isSumAggFunction) {
-        assert(!aggregationContext, 'aggregation (sumAgg) inside of an aggregation is not allowed');
-        validateSumAggFunction(argument, relevantTemplates);
+    if (argumentData.isSumAggFunction) {
+        validateSumAggFunction(argumentData, relevantTemplates, aggregationGroupsContext);
         return 'number';
     }
-    if (argument.isRegularFunction) return validateRegularFunction(argument, relevantTemplates, aggregationContext);
+    if (argumentData.isRegularFunction) return validateRegularFunction(argumentData, relevantTemplates, aggregationGroupsContext);
 
     throw new Error('Shouldnt reach here. argument must be one of allowed options');
 };
@@ -270,14 +305,14 @@ const equationSchema = Joi.object({
     rhsArgument: Joi.object().required(),
 });
 const validateEquation = (
-    equation: any,
+    equationData: any,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
 ) => {
-    joiValidateNoConvert(equationSchema, equation);
+    joiValidateNoConvert(equationSchema, equationData);
 
-    const lhsArgumentType = validateArgument(equation.lhsArgument, relevantTemplates, aggregationContext);
-    const rhsArgumentType = validateArgument(equation.rhsArgument, relevantTemplates, aggregationContext);
+    const lhsArgumentType = validateArgument(equationData.lhsArgument, relevantTemplates, aggregationGroupsContext);
+    const rhsArgumentType = validateArgument(equationData.rhsArgument, relevantTemplates, aggregationGroupsContext);
 
     assert(
         lhsArgumentType === rhsArgumentType,
@@ -291,38 +326,40 @@ const groupSchema = Joi.object({
     subFormulas: Joi.array().required(),
 });
 const validateGroup = (
-    group: any,
+    groupData: any,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
 ) => {
-    joiValidateNoConvert(groupSchema, group);
+    joiValidateNoConvert(groupSchema, groupData);
 
-    (group.subFormulas as Array<any>).forEach((subFormula) => {
+    (groupData.subFormulas as Array<any>).forEach((subFormula) => {
         // eslint-disable-next-line no-use-before-define -- circular recursive functions
-        return validateFormula(subFormula, relevantTemplates, aggregationContext);
+        return validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
     });
 };
 
 const aggregationGroupSchema = Joi.object({
     isAggregationGroup: Joi.boolean().valid(true).required(),
     aggregation: Joi.string().valid('EVERY', 'SOME').required(),
-    variableNameOfAggregation: Joi.string(),
+    variableOfAggregation: variableSchema.presence('required').required(),
     ruleOfGroup: Joi.string().valid('AND', 'OR').required(),
     subFormulas: Joi.array().required(),
 });
-const validateAggregationGroup = (aggregationGroup: any, relevantTemplates: IRelevantTemplates) => {
-    joiValidateNoConvert(aggregationGroupSchema, aggregationGroup);
+const validateAggregationGroup = (
+    aggregationGroupData: any,
+    relevantTemplates: IRelevantTemplates,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
+) => {
+    const aggregationGroup: Omit<IAggregationGroup, 'subFormulas'> & { subFormulas: unknown[] } = joiValidateNoConvert(
+        aggregationGroupSchema,
+        aggregationGroupData,
+    );
 
-    validateVariableNameOfAggregation(aggregationGroup.variableNameOfAggregation, relevantTemplates);
-
-    const [_pinnedEntityTemplateId, relationshipTemplateId, _otherEntityTemplateId] = aggregationGroup.variableNameOfAggregation.split('.');
-    const aggregationContext = relevantTemplates.connectionsTemplatesOfPinnedEntityTemplate.find(
-        ({ relationshipTemplate }) => relationshipTemplate._id === relationshipTemplateId,
-    )!;
+    validateVariableOfAggregation(aggregationGroup.variableOfAggregation, relevantTemplates, false, aggregationGroupsContext);
 
     (aggregationGroup.subFormulas as Array<any>).forEach((subFormula) => {
         // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
-        validateFormula(subFormula, relevantTemplates, aggregationContext);
+        validateFormula(subFormula, relevantTemplates, [...aggregationGroupsContext, aggregationGroup.variableOfAggregation]);
     });
 };
 
@@ -332,82 +369,55 @@ const formulaSchema = Joi.alternatives(
     Joi.object({ isAggregationGroup: Joi.boolean().valid(true).required() }).unknown(true),
 ).messages({ 'alternatives.match': 'formula must be one of equation/group/aggregationGroup' });
 const validateFormula = (
-    formula: any,
+    formulaData: any,
     relevantTemplates: IRelevantTemplates,
-    aggregationContext: IRelevantTemplates['connectionsTemplatesOfPinnedEntityTemplate'][number] | undefined,
+    aggregationGroupsContext: Array<IAggregationGroup['variableOfAggregation']>,
 ) => {
-    joiValidateNoConvert(formulaSchema, formula);
+    joiValidateNoConvert(formulaSchema, formulaData);
 
-    if (formula.isEquation) validateEquation(formula, relevantTemplates, aggregationContext);
-    if (formula.isGroup) validateGroup(formula, relevantTemplates, aggregationContext);
-    if (formula.isAggregationGroup) {
-        assert(!aggregationContext, 'aggregation group inside of aggregation is not allowed');
-        validateAggregationGroup(formula, relevantTemplates);
+    if (formulaData.isEquation) validateEquation(formulaData, relevantTemplates, aggregationGroupsContext);
+    if (formulaData.isGroup) validateGroup(formulaData, relevantTemplates, aggregationGroupsContext);
+    if (formulaData.isAggregationGroup) {
+        validateAggregationGroup(formulaData, relevantTemplates, aggregationGroupsContext);
     }
 };
 
 const validateAndGetRelevantTemplates = async (rule: IRule): Promise<IRelevantTemplates> => {
-    const relationshipTemplateOfRule = await RelationshipTemplateManager.getTemplateById(rule.relationshipTemplateId);
+    const entityTemplate = await EntityTemplateManager.getTemplateById(rule.entityTemplateId);
 
-    const doesPinnedIdInRelationship = [relationshipTemplateOfRule.sourceEntityId, relationshipTemplateOfRule.destinationEntityId].includes(
-        rule.pinnedEntityTemplateId,
-    );
-
-    assert(doesPinnedIdInRelationship, "rule's pinnedEntityTemplateId is not in rule's relationshipTemplate");
-
-    const otherEntityTemplateId =
-        rule.pinnedEntityTemplateId === relationshipTemplateOfRule.sourceEntityId
-            ? relationshipTemplateOfRule.destinationEntityId
-            : relationshipTemplateOfRule.sourceEntityId;
-    const doesUnpinnedIdIsOtherEntityTemplate = rule.unpinnedEntityTemplateId === otherEntityTemplateId;
-    assert(doesUnpinnedIdIsOtherEntityTemplate, "rule's unpinnedEntityTemplateId is not the other entity template id in relationshipTemplate");
-
-    const pinnedEntityTemplate = await EntityTemplateManager.getTemplateById(rule.pinnedEntityTemplateId);
-
-    const unpinnedEntityTemplateId =
-        relationshipTemplateOfRule.sourceEntityId === rule.pinnedEntityTemplateId
-            ? relationshipTemplateOfRule.destinationEntityId
-            : relationshipTemplateOfRule.sourceEntityId;
-    const unpinnedEntityTemplate = await EntityTemplateManager.getTemplateById(unpinnedEntityTemplateId);
-
-    const relationshipTemplatesOfPinnedEntityAsSource = (await RelationshipTemplateManager.searchTemplates({
-        sourceEntityIds: [pinnedEntityTemplate._id],
+    const relationshipTemplatesOfEntityAsSource = (await RelationshipTemplateManager.searchTemplates({
+        sourceEntityIds: [entityTemplate._id],
         skip: 0,
         limit: 0,
     })) as IMongoRelationshipTemplate[];
 
-    const relationshipTemplatesOfPinnedEntityAsDestination = (await RelationshipTemplateManager.searchTemplates({
-        destinationEntityIds: [pinnedEntityTemplate._id],
+    const relationshipTemplatesOfEntityAsDestination = (await RelationshipTemplateManager.searchTemplates({
+        destinationEntityIds: [entityTemplate._id],
         skip: 0,
         limit: 0,
     })) as IMongoRelationshipTemplate[];
 
-    const connectionsTemplatesOfPinnedEntityAsSourcePromises = relationshipTemplatesOfPinnedEntityAsSource.map(async (relationshipTemplate) => {
+    const connectionsTemplatesOfEntityAsSourcePromises = relationshipTemplatesOfEntityAsSource.map(async (relationshipTemplate) => {
         const destinationEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.destinationEntityId);
         return { relationshipTemplate, otherEntityTemplate: destinationEntity };
     });
-    const connectionsTemplatesOfPinnedEntityAsSource = await Promise.all(connectionsTemplatesOfPinnedEntityAsSourcePromises);
+    const connectionsTemplatesOfEntityAsSource = await Promise.all(connectionsTemplatesOfEntityAsSourcePromises);
 
-    const connectionsTemplatesOfPinnedEntityAsDestinationPromises = relationshipTemplatesOfPinnedEntityAsDestination.map(
-        async (relationshipTemplate) => {
-            const sourceEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.sourceEntityId);
-            return { relationshipTemplate, otherEntityTemplate: sourceEntity };
-        },
-    );
-    const connectionsTemplatesOfPinnedEntityAsDestination = await Promise.all(connectionsTemplatesOfPinnedEntityAsDestinationPromises);
+    const connectionsTemplatesOfEntityAsDestinationPromises = relationshipTemplatesOfEntityAsDestination.map(async (relationshipTemplate) => {
+        const sourceEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.sourceEntityId);
+        return { relationshipTemplate, otherEntityTemplate: sourceEntity };
+    });
+    const connectionsTemplatesOfEntityAsDestination = await Promise.all(connectionsTemplatesOfEntityAsDestinationPromises);
 
-    const connectionsTemplatesOfPinnedEntityTemplate = [
-        ...connectionsTemplatesOfPinnedEntityAsSource,
-        ...connectionsTemplatesOfPinnedEntityAsDestination,
-    ];
+    const connectionsTemplatesOfEntityTemplate = [...connectionsTemplatesOfEntityAsSource, ...connectionsTemplatesOfEntityAsDestination];
 
-    return { pinnedEntityTemplate, unpinnedEntityTemplate, connectionsTemplatesOfPinnedEntityTemplate };
+    return { entityTemplate, connectionsTemplatesOfEntityTemplate };
 };
 
 export const validateRuleFormula = async (rule: IRule) => {
     const relevantTemplates = await validateAndGetRelevantTemplates(rule);
 
-    validateFormula(rule.formula, relevantTemplates, undefined);
+    validateFormula(rule.formula, relevantTemplates, []);
 };
 
 export const validateRuleFormulaMiddleware = async (req: Request) => {

@@ -14,6 +14,7 @@ export interface IRelationshipTemplate {
     displayName: string;
     sourceEntityId: string;
     destinationEntityId: string;
+    isProperty: boolean;
 }
 
 export interface ISearchRelationshipTemplatesBody {
@@ -27,8 +28,7 @@ export interface ISearchRelationshipTemplatesBody {
 
 export interface ISearchRulesBody {
     search?: string;
-    relationshipTemplateIds?: string[];
-    pinnedEntityTemplateIds?: string[];
+    entityTemplateIds?: string[];
     disabled?: boolean;
     limit?: number;
     skip?: number;

@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { MongoIdSchema, variableNameValidation } from '../../utils/joi';
 import {
     enumPropertiesColorsSchema,
@@ -25,6 +25,13 @@ export const getEntityTemplateByIdSchema = Joi.object({
     query: {},
     body: {},
     params: { templateId: MongoIdSchema.required() },
+});
+
+// GET /api/entities/templates/related/:relatedTemplateId
+export const getTemplatesUsingRelationshipReferanceSchema = Joi.object({
+    query: {},
+    body: {},
+    params: { relatedTemplateId: MongoIdSchema.required() },
 });
 
 // DELETE /api/entities/templates/:templateId

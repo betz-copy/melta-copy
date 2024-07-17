@@ -1,4 +1,4 @@
-import { FilterQuery, Document } from 'mongoose';
+import { FilterQuery, Document, ClientSession } from 'mongoose';
 import RelationshipTemplateModel from './model';
 import { IRelationshipTemplate } from './interface';
 import { ServiceError } from '../error';
@@ -9,19 +9,32 @@ export class RelationshipTemplateManager {
         return RelationshipTemplateModel.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
     }
 
-    static async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
-        return RelationshipTemplateModel.findByIdAndUpdate(templateId, updatedFields, { new: true })
+    static async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>, session?: ClientSession) {
+        return RelationshipTemplateModel.findByIdAndUpdate(templateId, updatedFields, { new: true, session })
             .orFail(new ServiceError(404, 'Relationship Template not found'))
             .lean()
             .exec();
     }
 
-    static deleteTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findByIdAndDelete(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+    static deleteTemplateById(templateId: string, session?: ClientSession) {
+        return RelationshipTemplateModel.findByIdAndDelete(templateId, { session })
+            .orFail(new ServiceError(404, 'Relationship Template not found'))
+            .lean()
+            .exec();
     }
 
-    static async createTemplate(relationshipTemplate: IRelationshipTemplate) {
-        return RelationshipTemplateModel.create(relationshipTemplate);
+    static async deleteManyTemplatesByIds(templateIds: string[], session?: ClientSession) {
+        const { deletedCount } = await RelationshipTemplateModel.deleteMany({ _id: { $in: templateIds } }, { session })
+            .lean()
+            .exec();
+
+        if (deletedCount !== templateIds.length) throw new ServiceError(404, 'Some Relationship Templates not found');
+    }
+
+    static async createTemplate(relationshipTemplate: IRelationshipTemplate, session?: ClientSession) {
+        return session
+            ? RelationshipTemplateModel.create([relationshipTemplate], { session }).then((res) => res[0])
+            : RelationshipTemplateModel.create(relationshipTemplate);
     }
 
     static searchTemplates(searchBody: {

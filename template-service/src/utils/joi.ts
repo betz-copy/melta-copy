@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { wrapValidator } from './express';
 
 export const defaultValidationOptions: Joi.ValidationOptions = {
@@ -8,11 +8,13 @@ export const defaultValidationOptions: Joi.ValidationOptions = {
     convert: true,
 };
 
-export const joiValidate = (schema: Joi.AnySchema<any>, data: any, options: Joi.ValidationOptions = defaultValidationOptions): void => {
-    const { error } = schema.validate(data, options);
+export const joiValidate = <T extends any>(schema: Joi.AnySchema<any>, data: T, options: Joi.ValidationOptions = defaultValidationOptions): T => {
+    const { error, value } = schema.validate(data, options);
     if (error) {
         throw error;
     }
+
+    return value;
 };
 
 const normalizeRequest = (req: any, value: any) => {

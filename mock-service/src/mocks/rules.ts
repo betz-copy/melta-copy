@@ -1,11 +1,21 @@
-export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId: string, touristId: string, tripId: string) => [
+import { IRule } from '../templates/rules/interfaces';
+
+export const rulesCreator = (
+    fliesOnId: string,
+    flightInTripId: string,
+    departueFromId: string,
+    tripConnectedToAirportId: string,
+    flightId: string,
+    touristId: string,
+    tripId: string,
+    airportId: string,
+): IRule[] => [
     {
         name: 'סוכן נסיעות אחד על טיסה',
         description: 'סוכן נסיעות אחד בלבד על טיסה. נועד למנוע מריבות בין סוכני נסיעות, כי הם לא אוהבים אחד את השני',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: fliesOnId,
-        pinnedEntityTemplateId: flightId,
-        unpinnedEntityTemplateId: touristId,
+        disabled: false,
+        entityTemplateId: flightId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -15,7 +25,13 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
                     operatorBool: 'lessThanOrEqual',
                     lhsArgument: {
                         isCountAggFunction: true,
-                        variableName: `${flightId}.${fliesOnId}.${touristId}`,
+                        variable: {
+                            entityTemplateId: flightId,
+                            aggregatedRelationship: {
+                                relationshipTemplateId: fliesOnId,
+                                otherEntityTemplateId: touristId,
+                            },
+                        },
                     },
                     rhsArgument: { isConstant: true, type: 'number', value: 1 },
                 },
@@ -26,9 +42,8 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
         name: 'טיסה אחת ביום לטיול',
         description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: flightInTripId,
-        pinnedEntityTemplateId: tripId,
-        unpinnedEntityTemplateId: flightId,
+        disabled: false,
+        entityTemplateId: tripId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
@@ -36,38 +51,95 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
                 {
                     isAggregationGroup: true,
                     aggregation: 'EVERY',
-                    variableNameOfAggregation: `${tripId}.${flightInTripId}.${flightId}`,
-                    ruleOfGroup: 'OR',
+                    variableOfAggregation: {
+                        entityTemplateId: tripId,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: flightInTripId,
+                            otherEntityTemplateId: flightId,
+                        },
+                    },
+                    ruleOfGroup: 'AND',
                     subFormulas: [
                         {
-                            isEquation: true,
-                            operatorBool: 'notEqual',
-                            lhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [
-                                    {
-                                        isPropertyOfVariable: true,
-                                        variableName: `${tripId}.${flightInTripId}.${flightId}`,
-                                        property: 'departureDate',
+                            isAggregationGroup: true,
+                            aggregation: 'EVERY',
+                            variableOfAggregation: {
+                                entityTemplateId: tripId,
+                                aggregatedRelationship: {
+                                    relationshipTemplateId: flightInTripId,
+                                    otherEntityTemplateId: flightId,
+                                    variableNameSuffix: '2',
+                                },
+                            },
+                            ruleOfGroup: 'OR',
+                            subFormulas: [
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'notEqual',
+                                    lhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: tripId,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: flightInTripId,
+                                                        otherEntityTemplateId: flightId,
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
                                     },
-                                ],
-                            },
-                            rhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [{ isPropertyOfVariable: true, variableName: flightId, property: 'departureDate' }],
-                            },
-                        },
-                        {
-                            isEquation: true,
-                            operatorBool: 'equals',
-                            lhsArgument: {
-                                isPropertyOfVariable: true,
-                                variableName: `${tripId}.${flightInTripId}.${flightId}`,
-                                property: '_id',
-                            },
-                            rhsArgument: { isPropertyOfVariable: true, variableName: flightId, property: '_id' },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: tripId,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: flightInTripId,
+                                                        otherEntityTemplateId: flightId,
+                                                        variableNameSuffix: '2',
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'equals',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: tripId,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: flightInTripId,
+                                                otherEntityTemplateId: flightId,
+                                            },
+                                        },
+                                        property: '_id',
+                                    },
+                                    rhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: tripId,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: flightInTripId,
+                                                otherEntityTemplateId: flightId,
+                                                variableNameSuffix: '2',
+                                            },
+                                        },
+                                        property: '_id',
+                                    },
+                                },
+                            ],
                         },
                     ],
                 },
@@ -78,18 +150,103 @@ export const rulesCreator = (fliesOnId: string, flightInTripId: string, flightId
         name: 'התראה על טיסות בסבב פעיל',
         description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: flightInTripId,
-        pinnedEntityTemplateId: tripId,
-        unpinnedEntityTemplateId: flightId,
+        disabled: false,
+        entityTemplateId: airportId,
         formula: {
             isGroup: true,
             ruleOfGroup: 'AND',
             subFormulas: [
                 {
-                    isEquation: true,
-                    operatorBool: 'equals',
-                    lhsArgument: { isPropertyOfVariable: true, variableName: tripId, property: 'name' },
-                    rhsArgument: { isConstant: true, type: 'string', value: 'false' },
+                    isAggregationGroup: true,
+                    aggregation: 'EVERY',
+                    variableOfAggregation: {
+                        entityTemplateId: airportId,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: departueFromId,
+                            otherEntityTemplateId: flightId,
+                        },
+                    },
+                    ruleOfGroup: 'AND',
+                    subFormulas: [
+                        {
+                            isAggregationGroup: true,
+                            aggregation: 'EVERY',
+                            variableOfAggregation: {
+                                entityTemplateId: airportId,
+                                aggregatedRelationship: {
+                                    relationshipTemplateId: tripConnectedToAirportId,
+                                    otherEntityTemplateId: tripId,
+                                },
+                            },
+                            ruleOfGroup: 'OR',
+                            subFormulas: [
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'greaterThan',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: airportId,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToAirportId,
+                                                otherEntityTemplateId: tripId,
+                                            },
+                                        },
+                                        property: 'startDate',
+                                    },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: airportId,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: departueFromId,
+                                                        otherEntityTemplateId: flightId,
+                                                    },
+                                                },
+                                                property: 'landingDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'lessThan',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: airportId,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToAirportId,
+                                                otherEntityTemplateId: tripId,
+                                            },
+                                        },
+                                        property: 'endDate',
+                                    },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: airportId,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: departueFromId,
+                                                        otherEntityTemplateId: flightId,
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
         },
