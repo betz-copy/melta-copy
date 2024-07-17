@@ -17,6 +17,7 @@ import { filterDependentRulesViaAggregation } from '../rules/getParametersOfForm
 import config from '../../config';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { createActivityLog } from '../../externalServices/activityLog/producer';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -89,10 +90,11 @@ export class RelationshipManager {
         relationship: IRelationship,
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
+        userId: string,
     ) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+        const newRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const countOfExistingRelationships = await runInTransactionAndNormalize(
                 transaction,
                 `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
@@ -135,10 +137,32 @@ export class RelationshipManager {
 
             return createdRelationship;
         });
+
+        const updatedFields = {
+            action: 'CREATE_RELATIONSHIP' as const,
+            timestamp: new Date(),
+            userId,
+            metadata: {
+                relationshipTemplateId: newRelationship.templateId,
+                relationshipId: newRelationship.properties._id,
+            },
+        };
+        await createActivityLog({
+            ...updatedFields,
+            entityId: newRelationship.sourceEntityId,
+            metadata: { ...updatedFields.metadata, entityId: newRelationship.destinationEntityId },
+        });
+        await createActivityLog({
+            ...updatedFields,
+            entityId: newRelationship.destinationEntityId,
+            metadata: { ...updatedFields.metadata, entityId: newRelationship.sourceEntityId },
+        });
+
+        return newRelationship;
     }
 
-    static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[]) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+    static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[], userId: string) {
+        const removedRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
             const relationship = await Neo4jClient.readTransaction(
                 `MATCH (s)-[r]->(d) WHERE r._id='${id}' RETURN r, s, d`,
                 normalizeReturnedRelationship('singleResponse'),
@@ -182,6 +206,28 @@ export class RelationshipManager {
 
             return relationship;
         });
+
+        const updatedFields = {
+            action: 'DELETE_RELATIONSHIP' as const,
+            timestamp: new Date(),
+            userId,
+            metadata: {
+                relationshipTemplateId: removedRelationship.templateId,
+                relationshipId: removedRelationship.properties._id,
+            },
+        };
+        await createActivityLog({
+            ...updatedFields,
+            entityId: removedRelationship.sourceEntityId,
+            metadata: { ...updatedFields.metadata, entityId: removedRelationship.destinationEntityId },
+        });
+        await createActivityLog({
+            ...updatedFields,
+            entityId: removedRelationship.destinationEntityId,
+            metadata: { ...updatedFields.metadata, entityId: removedRelationship.sourceEntityId },
+        });
+
+        return removedRelationship;
     }
 
     static async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {

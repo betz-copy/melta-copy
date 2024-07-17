@@ -39,6 +39,7 @@
     "lodash.mapvalues": "^4.6.0",
     "lodash.pickby": "^4.6.0",
     "lodash.sortby": "^4.7.0",
+    "menashmq": "^0.1.6",
     "morgan": "^1.10.0",
     "neo4j-driver": "^4.4.10",
     "ts-retry-promise": "^0.6.1",
