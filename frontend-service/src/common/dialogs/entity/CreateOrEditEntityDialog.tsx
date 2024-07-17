@@ -183,7 +183,7 @@ const CreateOrEditEntityDetails: React.FC<{
         <Formik<EntityWizardValues>
             initialValues={initialValues}
             onSubmit={async (values) => {
-                if (isEditMode) updateMutation({ newEntityData: values });
+                if (isEditMode && values.properties._id) updateMutation({ newEntityData: values });
                 else createMutation({ newEntityData: values });
 
                 if (!draftId) return;

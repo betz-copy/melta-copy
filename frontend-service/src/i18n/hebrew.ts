@@ -389,6 +389,7 @@ export default {
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
+            exportFormats: 'פורמטים לייצוא',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',

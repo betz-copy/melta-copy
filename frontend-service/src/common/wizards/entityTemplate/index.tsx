@@ -14,6 +14,7 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { ExportFormats } from './ExportFormats';
 
 const { errorCodes } = environment;
 
@@ -48,6 +49,7 @@ export interface EntityTemplateWizardValues
     attachmentProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
+    pdfTemplatesIds?: File[];
 }
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -70,6 +72,10 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
     },
+    {
+        label: i18next.t('wizard.entityTemplate.exportFormats'),
+        component: (props) => <ExportFormats {...props} />,
+    },
 ];
 
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
@@ -86,6 +92,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
+        pdfTemplatesIds: [],
     },
     isEditMode = false,
 }) => {
