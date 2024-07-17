@@ -30,6 +30,7 @@ const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('text-area', /.*/);
+ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -41,6 +42,10 @@ ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'relationshipReference',
+    type: 'string',
 });
 ajv.addKeyword({
     keyword: 'serialCurrent',
@@ -85,6 +90,7 @@ export const formatDateForFullTextSearch = (date: Date) => {
 export const addStringFieldsAndNormalizeDateValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
+    recursiveRelationshipReference = false,
 ): Record<string, any> => {
     const normalizedEntity = {};
 
@@ -115,6 +121,19 @@ export const addStringFieldsAndNormalizeDateValues = (
             return;
         }
 
+        if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+            if (recursiveRelationshipReference) {
+                normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
+            } else {
+                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+                Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
+                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                });
+            }
+
+            return;
+        }
+
         normalizedEntity[key] = propertyValue;
     });
 
@@ -122,7 +141,9 @@ export const addStringFieldsAndNormalizeDateValues = (
 };
 
 export const validateConstraintsOfTemplate = async (req: Request) => {
-    const { properties } = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+
+    const { properties } = entityTemplate;
     const propertiesKeys = Object.keys(properties.properties);
 
     const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } = req.body;
@@ -152,6 +173,8 @@ export const validateConstraintsOfTemplate = async (req: Request) => {
             );
         }
     });
+
+    addPropertyToRequest(req, 'entityTemplate', entityTemplate);
 };
 
 const strictIsValidDateString = (dateString: string, expectedFormat: string) => {

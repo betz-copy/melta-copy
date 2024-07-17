@@ -32,6 +32,7 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,
+        isProperty: false,
     };
 };
 
@@ -50,10 +51,16 @@ const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string)
     return data;
 };
 
+const getAllRelationshipTemplatesRequest = async () => {
+    const { data } = await axios.get<IMongoRelationshipTemplate[]>(`${relationshipTemplates}/all`);
+    return data;
+};
+
 export {
     createRelationshipTemplateRequest,
     updateRelationshipTemplateRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
     relationshipTemplateFormToRelationshipTemplateObject,
+    getAllRelationshipTemplatesRequest,
 };

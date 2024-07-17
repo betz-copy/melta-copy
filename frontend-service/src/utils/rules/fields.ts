@@ -35,26 +35,28 @@ const entityTemplateToFieldsConfig = (
             type = 'datetime';
         }
 
-        fieldEntries.push([
-            `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
-            {
-                type,
-                valueSources: ['field', 'value', 'func'],
-                label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`,
-                ...options,
-            },
-        ]);
-
-        if (type === 'datetime') {
+        if (value.format !== 'relationshipReference') {
             fieldEntries.push([
-                `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}-ignoreHour`,
+                `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}`,
                 {
-                    type: 'date',
+                    type,
                     valueSources: ['field', 'value', 'func'],
-                    label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key} (ignore hour)`,
+                    label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key}`,
                     ...options,
                 },
             ]);
+
+            if (type === 'datetime') {
+                fieldEntries.push([
+                    `${keyPrefix}${entityTemplate._id}${keySuffix}-${key}-ignoreHour`,
+                    {
+                        type: 'date',
+                        valueSources: ['field', 'value', 'func'],
+                        label: `${labelPrefix}${entityTemplate.name}${variableNameSuffix}.${key} (ignore hour)`,
+                        ...options,
+                    },
+                ]);
+            }
         }
     });
 
@@ -163,7 +165,10 @@ export const getFieldsConfigOfRule = (
 
     const connectedTemplatesWithRelationship = Array.from(relationshipTemplates.values())
         .map((relationshipTemplate) => populateRelationshipTemplate(relationshipTemplate, entityTemplates))
-        .filter((relationshipTemplate) => isRelationshipConnectedToEntityTemplate(entityTemplate, relationshipTemplate))!
+        .filter(
+            (relationshipTemplate) =>
+                isRelationshipConnectedToEntityTemplate(entityTemplate, relationshipTemplate) && !relationshipTemplate.isProperty,
+        )
         .map((relationshipTemplatePopulated) => {
             const template = getOppositeEntityTemplate(entityTemplateId, relationshipTemplatePopulated);
 
