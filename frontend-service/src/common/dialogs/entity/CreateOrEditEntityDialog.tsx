@@ -72,13 +72,15 @@ const CreateOrEditEntityDetails: React.FC<{
         const fileProperties = fileIdsProperties;
 
         initialValues = {
-            properties: fieldProperties,
+            properties: { ...fieldProperties, disabled },
             attachmentsProperties: fileProperties,
             template: entityTemplate,
         };
     } else {
         initialValues = {
-            properties: {},
+            properties: {
+                disabled: false,
+            },
             attachmentsProperties: {},
             template: entityTemplate,
         };
