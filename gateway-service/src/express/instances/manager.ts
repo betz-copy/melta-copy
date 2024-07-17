@@ -28,7 +28,7 @@ import {
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
-import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
 
@@ -117,7 +117,7 @@ export class InstancesManager {
                 filter,
                 sort,
             });
-            const rows = await fixFileProperties(
+            const rows = await fixComplexProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );
@@ -396,6 +396,9 @@ export class InstancesManager {
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
                 newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+            } else if (propertyTemplate?.format === 'relationshipReference') {
+                if (updatedInstance.properties[field]?.properties) newValue = updatedInstance.properties[field].properties._id;
+                if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
             } else {
                 newValue = updatedInstance.properties[field];
             }

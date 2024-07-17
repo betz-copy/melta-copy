@@ -33,6 +33,18 @@ export class RelationshipManager {
         return relationship;
     }
 
+    static async getRelationshipByEntitiesAndTemplate(sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) {
+        const relationship = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d {_id: '${destEntityId}'}) RETURN r, s, d`,
+            normalizeReturnedRelationship('singleResponse'),
+        );
+
+        if (!relationship) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+
+        return relationship;
+    }
+
     static async getRelationshipsByIds(ids: string[]) {
         return Neo4jClient.readTransaction(
             `MATCH (s)-[r]->(d) WHERE r._id IN $ids RETURN s, r, d`,
@@ -86,56 +98,65 @@ export class RelationshipManager {
         return ruleFailures.flat();
     }
 
+    static async createRelationshipByEntityIdsInTransaction(
+        relationship: IRelationship,
+        relationshipTemplate: IMongoRelationshipTemplate,
+        ignoredRules: IBrokenRule[],
+        transaction: Transaction,
+    ) {
+        const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
+
+        const countOfExistingRelationships = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
+            normalizeResponseCount,
+        );
+
+        if (countOfExistingRelationships > 0) {
+            throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
+                errorCode: config.errorCodes.relationshipAlreadyExists,
+            });
+        }
+
+        const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+        );
+
+        const createdRelationship = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
+                 MERGE (s)-[r: \`${templateId}\`]->(d)
+                 ON CREATE SET r = $relProps
+                 RETURN r, s, d`,
+            normalizeReturnedRelationship('singleResponseNotNullable'),
+            { relProps: { ...properties, ...generateDefaultProperties() } },
+        );
+
+        const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            sourceEntityId,
+            destinationEntityId,
+        );
+
+        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {
+            createdRelationshipId: createdRelationship.properties._id,
+        });
+
+        return createdRelationship;
+    }
+
     static async createRelationshipByEntityIds(
         relationship: IRelationship,
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
-
-        const newRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const countOfExistingRelationships = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
-                normalizeResponseCount,
-            );
-
-            if (countOfExistingRelationships > 0) {
-                throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
-                    errorCode: config.errorCodes.relationshipAlreadyExists,
-                });
-            }
-
-            const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                sourceEntityId,
-                destinationEntityId,
-            );
-
-            const createdRelationship = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
-                 MERGE (s)-[r: \`${templateId}\`]->(d)
-                 ON CREATE SET r = $relProps
-                 RETURN r, s, d`,
-                normalizeReturnedRelationship('singleResponseNotNullable'),
-                { relProps: { ...properties, ...generateDefaultProperties() } },
-            );
-
-            const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                sourceEntityId,
-                destinationEntityId,
-            );
-
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {
-                createdRelationshipId: createdRelationship.properties._id,
-            });
-
-            return createdRelationship;
+        const createdRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction);
         });
 
         const updatedFields = {
@@ -143,68 +164,75 @@ export class RelationshipManager {
             timestamp: new Date(),
             userId,
             metadata: {
-                relationshipTemplateId: newRelationship.templateId,
-                relationshipId: newRelationship.properties._id,
+                relationshipTemplateId: createdRelationship.templateId,
+                relationshipId: createdRelationship.properties._id,
             },
         };
+
         await createActivityLog({
             ...updatedFields,
-            entityId: newRelationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: newRelationship.destinationEntityId },
-        });
-        await createActivityLog({
-            ...updatedFields,
-            entityId: newRelationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: newRelationship.sourceEntityId },
+            entityId: createdRelationship.sourceEntityId,
+            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
         });
 
-        return newRelationship;
+        await createActivityLog({
+            ...updatedFields,
+            entityId: createdRelationship.destinationEntityId,
+            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
+        });
+
+        return createdRelationship;
+    }
+
+    static async deleteRelationshipByIdInTransaction(id: string, ignoredRules: IBrokenRule[], transaction: Transaction) {
+        const relationship = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s)-[r]->(d) WHERE r._id='${id}' RETURN r, s, d`,
+            normalizeReturnedRelationship('singleResponse'),
+        );
+
+        if (!relationship) {
+            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+        }
+
+        const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationship.templateId);
+
+        const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            relationship.sourceEntityId,
+            relationship.destinationEntityId,
+        );
+
+        const deletedRelationship = await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s)-[r]->(d)
+             WHERE r._id='${id}' WITH *, properties(r) as rProps, type(r) as rType
+             DELETE r 
+             RETURN rProps, rType, s, d`,
+            normalizeReturnedDeletedRelationship,
+        );
+
+        // Ensure the relationship was deleted
+        if (!deletedRelationship) {
+            throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
+        }
+
+        const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
+            transaction,
+            relationshipTemplate,
+            relationship.sourceEntityId,
+            relationship.destinationEntityId,
+        );
+
+        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+
+        return relationship;
     }
 
     static async deleteRelationshipById(id: string, ignoredRules: IBrokenRule[], userId: string) {
-        const removedRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const relationship = await Neo4jClient.readTransaction(
-                `MATCH (s)-[r]->(d) WHERE r._id='${id}' RETURN r, s, d`,
-                normalizeReturnedRelationship('singleResponse'),
-            );
-
-            if (!relationship) {
-                throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
-            }
-
-            const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationship.templateId);
-
-            const ruleFailuresBeforeAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                relationship.sourceEntityId,
-                relationship.destinationEntityId,
-            );
-
-            const deletedRelationship = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (s)-[r]->(d)
-                 WHERE r._id='${id}' with *, properties(r) as rProps, type(r) as rType
-                 DELETE r 
-                 RETURN rProps, rType, s, d`,
-                normalizeReturnedDeletedRelationship,
-            );
-
-            // just to make sure wasnt deleted after first check
-            if (!deletedRelationship) {
-                throw new NotFoundError(`[NEO4J] relationship "${id}" not found`);
-            }
-
-            const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
-                transaction,
-                relationshipTemplate,
-                relationship.sourceEntityId,
-                relationship.destinationEntityId,
-            );
-
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
-
-            return relationship;
+        const removedRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', (transaction) => {
+            return this.deleteRelationshipByIdInTransaction(id, ignoredRules, transaction);
         });
 
         const updatedFields = {

@@ -73,7 +73,9 @@ class EntityController {
     }
 
     static async updateConstraintsOfTemplate(req: Request, res: Response) {
-        res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
+        const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
+        res.json(await EntityManager.updateConstraintsOfTemplate(entityTemplate, req.body.requiredConstraints, req.body.uniqueConstraints));
     }
 
     static async enumerateNewSerialNumberFields(req: Request, res: Response) {
