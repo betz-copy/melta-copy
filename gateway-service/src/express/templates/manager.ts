@@ -12,7 +12,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, uploadFile, uploadFiles } from '../../externalServices/storageService';
+import { deleteFile, downloadFile, downloadFiles, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -305,7 +305,7 @@ export class TemplatesManager {
     }
 
     static async createEntityTemplate(
-        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
+        templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'pdfTemplatesIds'>,
         file?: Express.Multer.File,
         pdfTemplates?: Express.Multer.File[]
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
@@ -319,7 +319,7 @@ export class TemplatesManager {
         }
 
         let pdfTemplatesIds: string[] | null;
-        if(pdfTemplates) {
+        if (pdfTemplates) {
             pdfTemplatesIds = await uploadFiles(pdfTemplates);
         } else {
             pdfTemplatesIds = null;
@@ -339,6 +339,18 @@ export class TemplatesManager {
 
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
+
+    static async exportEntityToPdfTemplate(
+        entityId: string, entityTemplateId?: string
+    ) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
+        if (entityTemplateId && entityTemplate.pdfTemplatesIds.includes(entityTemplateId)) {
+            return await downloadFile(entityTemplateId)
+        } else {
+            return await downloadFiles(entityTemplate.pdfTemplatesIds)
+        }
+    }
+
 
     static async throwIfEntityHasRelationships(id: string) {
         const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });

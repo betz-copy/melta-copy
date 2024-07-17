@@ -55,6 +55,7 @@ const config = {
         deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('api/files/delete-bulk').asString(),
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
+        requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),

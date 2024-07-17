@@ -10,6 +10,16 @@ export const defaultSchema = Joi.object({
     },
 });
 
+export const downloadFilesSchema = Joi.object({
+    query: {
+    },
+    body: {
+        paths: Joi.array().items(Joi.string()).required(),
+    },
+    params: {
+    },
+});
+
 // POST /api/files
 export const uploadFileRequestSchema = Joi.object({
     file: Joi.required(),

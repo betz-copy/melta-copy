@@ -2,6 +2,8 @@ import assert from 'assert';
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
+import { promisify } from 'util';
+import { promises as fsp } from 'fs';
 
 export default class TemplatesController {
     // all
@@ -28,7 +30,7 @@ export default class TemplatesController {
 
     // entityTemplates
     static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
+        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file, req.pdfTemplates));
     }
 
     static async deleteEntityTemplate(req: Request, res: Response) {
@@ -52,6 +54,17 @@ export default class TemplatesController {
         const { fieldValue, partialInput: field } = req.body;
         res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
+
+    static async exportEntityToPdfTemplate(req: Request, res: Response) {
+        const { entityId } = req.params;
+        const filePath = await TemplatesManager.exportEntityToPdfTemplate(entityId, req?.query?.entityTemplateId as string)
+        try {
+            await promisify(res.sendFile.bind(res))(filePath);
+        } finally {
+            await fsp.unlink(filePath);
+        }
+    }
+
 
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {

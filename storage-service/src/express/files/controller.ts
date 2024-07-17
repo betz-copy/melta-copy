@@ -45,6 +45,35 @@ export class FilesController {
         }
     }
 
+    static async downloadTemplatesZip(req: express.Request, res: express.Response) {
+        try {
+            const { paths } = req.body;
+            const filesData = await FilesManager.getFilesData(paths);
+
+            const archive = archiver('zip', {
+                zlib: { level: 9 },
+            });
+
+            res.setHeader('Content-Type', 'application/zip');
+            res.setHeader('Content-Disposition', `attachment; filename="filesZip${Date.now()}.zip"`);
+
+            archive.pipe(res);
+
+            for (let i = 0; i < paths.length; i++) {
+                const fileId = paths[i];
+                const fileData = filesData[i];
+                const fileName = fileId.toString().slice(32);
+                archive.append(fileData, { name: fileName });
+            }
+
+            archive.finalize();
+        } catch (error) {
+            logger.error('Error downloading zip:', { error });
+            res.status(500).send('Internal Server Error');
+        }
+    }
+
+
     static async uploadFile(req: express.Request, res: express.Response) {
         res.json(FilesManager.uploadFile(req.file));
     }
