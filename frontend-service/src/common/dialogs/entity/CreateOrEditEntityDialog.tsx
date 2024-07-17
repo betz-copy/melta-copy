@@ -27,7 +27,7 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
@@ -190,7 +190,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId);
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -203,7 +203,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     values.template || entityTemplate,
                 );
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
-                const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+                const schema = filterFieldsFromPropertiesSchema(values.template.properties);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -218,14 +218,6 @@ const CreateOrEditEntityDetails: React.FC<{
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
                         }
                     });
-
-                    if (!isEditMode) {
-                        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
-                            if (propertyValues.serialCurrent !== undefined) {
-                                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
-                            }
-                        });
-                    }
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [values.template]);
 
