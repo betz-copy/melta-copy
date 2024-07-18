@@ -65,7 +65,16 @@ export const getDatasource = <Data extends any = IEntity>(
     mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
     return {
+        // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
+            if (rowData && mainEntity) {
+                params.success({
+                    rowData: rowData,
+                    rowCount: rowData.length,
+                });
+                return;
+            }
+
             const agGridRequest = params.request;
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
@@ -73,26 +82,15 @@ export const getDatasource = <Data extends any = IEntity>(
                     agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
                 ),
             );
+
             if (err || !data) {
                 onFail?.(err);
                 params.fail();
                 return;
             }
-
-            let filteredRowData: IEntity[] = data.entities.map(({ entity }) => entity);
-            if (rowData && mainEntity) {
-                const rowDataIds =
-                    rowData.map((connection) => {
-                        if (connection.destinationEntity.properties._id === mainEntity.entity.properties._id)
-                            return connection.sourceEntity.properties._id;
-                        return connection.destinationEntity.properties._id;
-                    }) ?? [];
-                filteredRowData = filteredRowData.filter((entity) => rowDataIds.includes(entity.properties._id));
-            }
-
             params.success({
-                rowData: filteredRowData,
-                rowCount: filteredRowData.length,
+                rowData: data.entities.map(({ entity }) => entity),
+                rowCount: data.count,
             });
         },
     };
