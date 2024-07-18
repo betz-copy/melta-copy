@@ -71,15 +71,17 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
     // const currentIFrames = allIFrames!.slice(indexOfFirstCard, indexOfLastCard);
     // console.log({ currentIFrames });
     const iFramesRows: any = [];
-    for (let i = 0; i < allIFrames!.length; i += 2) {
-        iFramesRows.push(allIFrames!.slice(i, i + 2));
-    }
-    console.log({ iFramesRows });
+    useEffect(() => {
+        for (let i = 0; i < allIFrames!.length; i += 2) {
+            iFramesRows.push(allIFrames!.slice(i, i + 2));
+        }
+        console.log({ iFramesRows });
+    }, [allIFrames]);
 
     return (
         <div dir="ltr" style={{ maxHeight: '1000px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap' }}>
             <PanelGroup direction="vertical" style={{ height: '1000px' }}>
-                {iFramesRows?.map((iFrameRow, rowIndex) => (
+                {iFramesRows.map((iFrameRow, rowIndex) => (
                     <Panel>
                         <PanelGroup direction="horizontal" style={{ padding: '10px' }} key={rowIndex}>
                             {iFrameRow.map((iframe, colIndex: any) => (
