@@ -4,13 +4,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import EntityTemplateManager from './manager';
 import { IEntityTemplatePopulated } from './interface';
-import { generateInterface } from '../../utils/generateInterfaceFromEntityTemplateProperties';
+import { generateInterfaceWithRelationships } from '../../utils/generateInterfaceFromEntityTemplateProperties';
 import { ServiceError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
 
-const cleanActionCode = (action: string, entityTemplate: IEntityTemplatePopulated) => {
+const cleanActionCode = async (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
-        `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${await generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',
@@ -151,5 +151,5 @@ export const validateActionAst = async (req: Request) => {
         console.log('No undeclared variables found.');
     }
 
-    addPropertyToRequest(req, 'actions', cleanActionCode(actions, entityTemplate));
+    addPropertyToRequest(req, 'actions', await cleanActionCode(actions, entityTemplate));
 };

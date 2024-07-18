@@ -1,13 +1,21 @@
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const generateFromString = (propertyValues: IEntitySingleProperty) => {
     const { format } = propertyValues;
 
     if (propertyValues.enum) {
-        return propertyValues.enum?.map((option) => `${option}`).join(' | ');
+        return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
     }
     if (format === 'date' || format === 'date-time') {
         return 'Date';
+    }
+
+    if (format === 'relationshipReference') {
+        // const relatedEntityTemplate = await EntityTemplateManager.getTemplateById(relationshipReference?.relatedTemplateId!);
+        // console.log({ relatedEntityTemplate });
+        // return relatedEntityTemplate.name;
+        return 'Wallet';
     }
     return 'string';
 };
@@ -18,7 +26,7 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     if (items?.format === 'fileId') {
         return 'string[]';
     }
-    const arrayOptions = items?.enum?.map((option) => `${option}`).join(' | ');
+    const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
     return `(${arrayOptions})[]`;
 };
 
@@ -49,12 +57,36 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     });
 
     let interfaceDefinition = `interface ${interfaceName} {\n`;
-
     Object.entries(dynamicInterface).forEach(([propertyName, propertyType]) => {
         interfaceDefinition += `  ${propertyName}: ${propertyType};\n`;
     });
-
     interfaceDefinition += '}';
 
     return interfaceDefinition;
+};
+
+export const generateInterfaceWithRelationships = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+    const relatedTemplateIds: string[] = [];
+    let interfaces = '';
+    Object.entries(entity).forEach(([_propertyName, propertyValues]) => {
+        if (propertyValues.format === 'relationshipReference') {
+            const { relatedTemplateId } = propertyValues.relationshipReference!;
+            if (!relatedTemplateIds.includes(relatedTemplateId!)) relatedTemplateIds.push(relatedTemplateId);
+        }
+    });
+
+    await Promise.all(
+        relatedTemplateIds.map(async (relatedTemplate) => {
+            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(relatedTemplate);
+            console.log({ entityTemplate });
+
+            const generatedInterface = generateInterface(entityTemplate.properties.properties, entityTemplate.name);
+            console.log({ generatedInterface });
+
+            // eslint-disable-next-line prefer-template, no-useless-concat
+            interfaces += generatedInterface + '\n' + '\n';
+        }),
+    );
+    interfaces += generateInterface(entity, interfaceName);
+    return interfaces;
 };

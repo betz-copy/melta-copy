@@ -1,13 +1,23 @@
-import { IEntitySingleProperty } from '../interfaces/entityTemplates';
+import { useQueryClient } from 'react-query';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 const generateFromString = (propertyValues: IEntitySingleProperty) => {
-    const { format } = propertyValues;
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const { format, relationshipReference } = propertyValues;
 
     if (propertyValues.enum) {
         return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
     }
     if (format === 'date' || format === 'date-time') {
         return 'Date';
+    }
+
+    if (format === 'relationshipReference') {
+        const entityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipReference?.relatedTemplateId!)!;
+
+        return entityTemplate.name;
     }
 
     return 'string';
@@ -56,4 +66,29 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     interfaceDefinition += '}';
 
     return interfaceDefinition;
+};
+
+export const generateInterfaceWithRelationships = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relatedTemplateIds: string[] = [];
+    let interfaces = '';
+    Object.entries(entity).forEach(([_propertyName, propertyValues]) => {
+        if (propertyValues.format === 'relationshipReference') {
+            const { relatedTemplateId } = propertyValues.relationshipReference!;
+            if (!relatedTemplateIds.includes(relatedTemplateId!)) relatedTemplateIds.push(relatedTemplateId);
+        }
+    });
+
+    relatedTemplateIds.map((relatedTemplate) => {
+        const entityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplate)!;
+        const generatedInterface = generateInterface(entityTemplate.properties.properties, entityTemplate.name);
+        console.log({ generatedInterface });
+
+        interfaces += generatedInterface + '\n' + '\n';
+    });
+
+    interfaces += generateInterface(entity, interfaceName);
+    return interfaces;
 };

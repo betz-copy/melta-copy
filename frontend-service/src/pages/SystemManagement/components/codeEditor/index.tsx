@@ -12,7 +12,7 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterface } from '../../../../utils/jsonSchemToInterface-ts';
+import { generateInterface, generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
 
 const CodeEditorDialog: React.FC<{
     open: boolean;
@@ -28,7 +28,7 @@ const CodeEditorDialog: React.FC<{
     const [editorValue, setEditorValue] = useState('');
 
     const defaultCode = [
-        `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',

@@ -237,10 +237,19 @@ export class EntityManager {
                 }),
             );
 
+            const populatedInstances = await this.getEntityByIdInTransaction(createdEntity.properties._id, transaction);
+
+            Object.entries(populatedInstances.properties).forEach(([name, value]) => {
+                // todo:check typeof IEntity
+                if (typeof value === 'object' && 'properties' in value) {
+                    populatedInstances.properties[name] = value.properties;
+                }
+            });
+
             if (entityTemplate.actions) {
                 const updatedEntitiesInActionExecution = await executeActionAndUpdateRelevantEntities(
                     entityTemplate,
-                    createdEntity,
+                    populatedInstances,
                     'onCreateEntity',
                     transaction,
                     ignoredRules,

@@ -1,17 +1,21 @@
 import * as ts from 'typescript';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
-import { generateInterface } from './generateInterfaceFromJsonSchema';
+import { generateInterfaceWithRelationships } from './generateInterfaceFromJsonSchema';
 import { IEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
 import { IBrokenRule } from '../../express/rules/interfaces';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 
-const prepareCodeForActionExecution = (entityTemplate: IMongoEntityTemplate, crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity') => {
+const prepareCodeForActionExecution = async (
+    entityTemplate: IMongoEntityTemplate,
+    crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
+) => {
     const updateEntityFunction = [
-        `${generateInterface(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${await generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
         'const actions: any[] = [];',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  actions.push({ entityId, properties });',
@@ -20,7 +24,7 @@ const prepareCodeForActionExecution = (entityTemplate: IMongoEntityTemplate, cru
 
     const getActionsFunction = [
         `function getActions(${entityTemplate.name}:${entityTemplate.name}){`,
-        `  ${crudAction}(${entityTemplate.name}:${entityTemplate.name})`,
+        `  ${crudAction}(${entityTemplate.name})`,
         '    return actions',
         '}',
     ].join('\n');
@@ -51,7 +55,7 @@ export const executeActionAndUpdateRelevantEntities = async (
     ignoredRules: IBrokenRule[],
     userId: string,
 ): Promise<IEntity[]> => {
-    const jsCode = prepareCodeForActionExecution(entityTemplate, crudAction);
+    const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
     const executionOutput: { entityId: string; properties: Record<string, any> }[] = executeActionCodeInVM(entity, jsCode);
     const updatedEntities: IEntity[] = [];
 
@@ -61,12 +65,21 @@ export const executeActionAndUpdateRelevantEntities = async (
                 throw new ServiceError(400, 'cant create new entity by code');
             }
 
-            await validateEntity(entityTemplate._id, entityToUpdate.properties);
+            const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
+            const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+            Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
+                if (value.format === 'relationshipReference' && name in entityToUpdate.properties) {
+                    // eslint-disable-next-line no-param-reassign
+                    entityToUpdate.properties[name] = entityToUpdate.properties[name]._id;
+                }
+            });
+
+            await validateEntity(entityTemplateOfEntityToUpdate._id, entityToUpdate.properties);
 
             const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
                 entityToUpdate.entityId,
                 entityToUpdate.properties,
-                entityTemplate,
+                entityTemplateOfEntityToUpdate,
                 ignoredRules,
                 transaction,
                 userId,
