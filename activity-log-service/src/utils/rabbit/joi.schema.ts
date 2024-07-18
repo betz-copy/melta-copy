@@ -5,8 +5,7 @@ export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid Mong
 const activityLogSchema = Joi.object({
     timestamp: Joi.date().required(),
     entityId: Joi.string().required(),
-    
-    : Joi.string().required(),
+    userId: Joi.string().required(),
     action: Joi.string()
         .valid(
             'DELETE_RELATIONSHIP',

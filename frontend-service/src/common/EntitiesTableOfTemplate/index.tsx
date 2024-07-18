@@ -263,6 +263,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     if (!gridApi) return;
                     const isSideBarOpen = gridApi.isToolPanelShowing();
                     gridApi.setSideBarVisible(!isSideBarOpen);
+                    // eslint-disable-next-line no-unused-expressions
                     isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
             };
@@ -435,7 +436,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     }}
                     suppressCsvExport
                     suppressContextMenu
-                    onToolPanelVisibleChanged={(params) => {
+                    onToolPanelVisibleChanged={() => {
                         const gridApi = gridRef.current?.api;
                         if (!gridApi) return;
                         const isSideBarOpen = gridApi.isToolPanelShowing();

@@ -10,6 +10,7 @@ import {
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateEntityTemplateActionSchema,
+    getTemplatesUsingRelationshipReferanceSchema,
 } from './validator.schema';
 import { validateActionAst } from './validator.template';
 
@@ -21,6 +22,12 @@ entityTemplateRouter.get(
     '/:templateId',
     ValidateRequest(getEntityTemplateByIdSchema),
     wrapController(EntityTemplateController.getEntityTemplateById),
+);
+
+entityTemplateRouter.get(
+    '/related/:relatedTemplateId',
+    ValidateRequest(getTemplatesUsingRelationshipReferanceSchema),
+    wrapController(EntityTemplateController.getTemplatesUsingRelationshipReferance),
 );
 
 entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), wrapController(EntityTemplateController.createEntityTemplate));

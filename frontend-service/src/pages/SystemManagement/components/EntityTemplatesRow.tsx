@@ -22,7 +22,7 @@ import {
 } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { templatesCompareFunc } from '../../../utils/templates';
+import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -32,6 +32,8 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { environment } from '../../../globals';
 import { CodeEditorDialog } from './codeEditor';
+import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -473,13 +475,20 @@ const EntityTemplatesRow: React.FC = () => {
     const { isLoading: deleteTemplateIsLoading, mutateAsync: deleteTemplateMutateAsync } = useMutation(
         (id: string) => deleteEntityTemplateRequest(id),
         {
-            onSuccess: (_data, id) => {
+            onSuccess: async (_data, id) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => {
                     entityTemplateMap!.delete(id);
                     return entityTemplateMap!;
                 });
+
                 setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
                 toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                }
             },
             onError: (error: AxiosError) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToDelete')} />);

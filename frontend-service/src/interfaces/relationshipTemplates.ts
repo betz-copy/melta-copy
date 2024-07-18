@@ -5,6 +5,7 @@ export interface IRelationshipTemplate {
     displayName: string;
     sourceEntityId: string;
     destinationEntityId: string;
+    isProperty: boolean;
 }
 
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {

@@ -1231,4 +1231,8 @@ export const environment = {
             'prw',
         ],
     },
+    matomo: {
+        urlBase: 'matomo.yesodot.services.idf',
+        siteId: 24,
+    },
 };

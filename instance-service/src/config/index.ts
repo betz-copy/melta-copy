@@ -16,6 +16,7 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
@@ -35,6 +36,7 @@ const config = {
         timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
         entities: {
             getByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+            getRelatedByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_RELATED_BY_ID_ROUTE').default('/api/templates/entities/related').asString(),
             searchRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
         },
         relationships: {
