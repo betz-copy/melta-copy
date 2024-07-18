@@ -6,6 +6,7 @@ import heLocale from 'date-fns/locale/he';
 import { TextField } from '@mui/material';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
+import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjfsDatesWidgets';
 
 const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
     const [dateValue, setDateValue] = useState<Date | null>(null);
@@ -28,19 +29,32 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
     }));
 
     return (
-        <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={heLocale}
-            localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
-        >
-            <MobileDatePicker
-                inputFormat="dd/MM/yyyy"
-                value={dateValue}
-                onChange={handleChange}
-                renderInput={(params) => <TextField {...params} />}
-                DialogProps={{ PaperProps: { sx: { backgroundColor: darkMode ? '#040404' : 'white' } } }}
-            />
-        </LocalizationProvider>
+        <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+            <LocalizationProvider
+                dateAdapter={AdapterDateFns}
+                adapterLocale={heLocale}
+                localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
+            >
+                <MobileDatePicker
+                    inputFormat={'dd/MM/yyyy'}
+                    value={dateValue}
+                    onChange={handleChange}
+                    showToolbar
+                    componentsProps={{ actionBar: { actions: ['cancel', 'accept'] } }}
+                    label={i18next.t('wizard.date')}
+                    renderInput={(params) => <TextField {...params} />}
+                    toolbarFormat="dd/MM"
+                    ToolbarComponent={CustomDateTimePickerToolbar}
+                    DialogProps={{
+                        PaperProps: {
+                            sx: {
+                                backgroundColor: darkMode ? '#040404' : 'white',
+                            },
+                        },
+                    }}
+                />
+            </LocalizationProvider>
+        </div>
     );
 });
 

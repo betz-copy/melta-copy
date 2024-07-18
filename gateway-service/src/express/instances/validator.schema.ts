@@ -57,6 +57,17 @@ export const exportEntitiesSchema = Joi.object({
     params: {},
 });
 
+// GET /api/instances/entities/pdfExport
+export const exportEntityToPdf = Joi.object({
+    body: {},
+    query: {
+        entityTemplateId: Joi.string(),
+    },
+    params: {
+        entityId: Joi.string().required(),
+    },
+});
+
 // POST /api/instances/search/batch
 export const searchEntitiesBatchRequestSchema = Joi.object({
     body: {

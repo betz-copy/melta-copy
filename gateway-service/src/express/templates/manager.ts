@@ -12,7 +12,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { deleteFile, deleteFiles, downloadFile, downloadFiles, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -33,6 +33,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { error } from 'console';
 
 const {
     categoryHasTemplates,
@@ -305,8 +306,9 @@ export class TemplatesManager {
     }
 
     static async createEntityTemplate(
-        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
+        templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'pdfTemplatesIds'>,
         file?: Express.Multer.File,
+        pdfTemplates?: Express.Multer.File[]
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
         let iconFileId: string | null;
@@ -317,6 +319,13 @@ export class TemplatesManager {
             iconFileId = null;
         }
 
+        let pdfTemplatesIds: string[] | null;
+        if (pdfTemplates) {
+            pdfTemplatesIds = await uploadFiles(pdfTemplates);
+        } else {
+            pdfTemplatesIds = null;
+        }
+
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
@@ -324,12 +333,28 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            pdfTemplatesIds
         });
 
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
 
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
+
+    static async exportEntityToPdfTemplate(
+        entityId: string, entityTemplateId?: string
+    ) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
+        if (entityTemplateId && entityTemplate?.pdfTemplatesIds?.includes(entityTemplateId)) {
+            return await downloadFile(entityTemplateId)
+        } else if (entityTemplate.pdfTemplatesIds) {
+            return await downloadFiles(entityTemplate.pdfTemplatesIds)
+        } else {
+            throw error;
+        }
+
+    }
+
 
     static async throwIfEntityHasRelationships(id: string) {
         const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
@@ -409,6 +434,7 @@ export class TemplatesManager {
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
         file?: Express.Multer.File,
+        pdfTemplatesIds?: Express.Multer.File[]
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
@@ -459,6 +485,18 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
+        let newPdfTemplatesIds: string[] | null;
+        if (pdfTemplatesIds) {
+            if (currTemplate?.pdfTemplatesIds) {
+                await deleteFiles(currTemplate.pdfTemplatesIds);
+                newPdfTemplatesIds = await uploadFiles(pdfTemplatesIds);
+            } else {
+                newPdfTemplatesIds = await uploadFiles(pdfTemplatesIds);
+            }
+        } else {
+            newPdfTemplatesIds = currTemplate?.pdfTemplatesIds;
+        }
+
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
             id,
             updatedTemplateData,
@@ -471,6 +509,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            pdfTemplatesIds: newPdfTemplatesIds,
         });
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
