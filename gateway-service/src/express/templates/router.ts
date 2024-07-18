@@ -98,6 +98,7 @@ templatesRouter.patch(
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
     wrapController(TemplatesController.createEntityTemplate, {
@@ -110,6 +111,7 @@ templatesRouter.post(
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).array('pdfTemplates'),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityTemplate, {
@@ -141,12 +143,12 @@ templatesRouter.delete(
     }),
 );
 
-templatesRouter.get('/entities/pdf/:entityId', ValidateRequest(exportEntityTemplateToPdfSchema), , wrapMiddleware(validateUserHasAtLeastSomePermissions), wrapController(TemplatesController.exportEntityToPdfTemplate, {
+templatesRouter.get('/entities/pdf/:entityId', ValidateRequest(exportEntityTemplateToPdfSchema), wrapMiddleware(validateUserHasAtLeastSomePermissions), wrapController(TemplatesController.exportEntityToPdfTemplate, {
     toLog: true,
     logRequestFields: [],
     indexName: 'templates-entities',
     responseDataExtractor: undefined,
-}),);
+}));
 
 
 // relationships (templates)

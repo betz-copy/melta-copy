@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { FilesController } from './controller';
 import { wrapController } from '../../utils/express';
 import { UploadBulkToMinio, UploadToMinio } from '../../utils/minio';
-import { defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, bulkFilesRequestSchema, downloadFilesSchema } from './validator.schema';
+import { defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, bulkFilesRequestSchema } from './validator.schema';
 import { ValidateRequest } from '../../utils/joi';
 
 import { config } from '../../config';
@@ -16,7 +16,6 @@ filesRouter.get('/:path', ValidateRequest(defaultSchema), wrapController(FilesCo
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), wrapController(FilesController.fileStat));
 
 filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), wrapController(FilesController.downloadZip));
-filesRouter.get('/zip', ValidateRequest(downloadFilesSchema), wrapController(FilesController.downloadZip));
 
 filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), wrapController(FilesController.deleteFiles));
 filesRouter.delete('/:path', ValidateRequest(defaultSchema), wrapController(FilesController.deleteFile));

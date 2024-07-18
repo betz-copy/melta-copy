@@ -2,8 +2,6 @@ import assert from 'assert';
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
-import { promisify } from 'util';
-import { promises as fsp } from 'fs';
 
 export default class TemplatesController {
     // all
@@ -30,7 +28,7 @@ export default class TemplatesController {
 
     // entityTemplates
     static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file, req.pdfTemplates));
+        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file, req.files as Express.Multer.File[]));
     }
 
     static async deleteEntityTemplate(req: Request, res: Response) {
@@ -38,7 +36,7 @@ export default class TemplatesController {
     }
 
     static async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
+        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file, req.files as Express.Multer.File[]));
     }
 
     static async updateEntityTemplateStatus(req: Request, res: Response) {
@@ -57,12 +55,8 @@ export default class TemplatesController {
 
     static async exportEntityToPdfTemplate(req: Request, res: Response) {
         const { entityId } = req.params;
-        const filePath = await TemplatesManager.exportEntityToPdfTemplate(entityId, req?.query?.entityTemplateId as string)
-        try {
-            await promisify(res.sendFile.bind(res))(filePath);
-        } finally {
-            await fsp.unlink(filePath);
-        }
+        const fileStream = await TemplatesManager.exportEntityToPdfTemplate(entityId, req?.query?.entityTemplateId as string);
+        fileStream.data.pipe(res);
     }
 
 

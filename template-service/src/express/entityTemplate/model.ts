@@ -51,8 +51,6 @@ const EntityTemplateSchema = new mongoose.Schema(
         },
         pdfTemplatesIds: {
             type: [String],
-            required: false,
-            default: null
         },
     },
     {
