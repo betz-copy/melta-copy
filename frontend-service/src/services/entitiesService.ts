@@ -70,7 +70,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         'properties',
         JSON.stringify(
             mapValues(entity.properties, (property, key) =>
-                entity.template.properties.properties[key].format === 'relationshipReference' ? property?.properties._id : property,
+                entity.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
             ),
         ),
     );

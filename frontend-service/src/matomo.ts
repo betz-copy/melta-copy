@@ -5,5 +5,4 @@ const matomoInstance = createInstance({
     urlBase: environment.matomo.urlBase,
     siteId: environment.matomo.siteId,
 });
-
 export default matomoInstance;
