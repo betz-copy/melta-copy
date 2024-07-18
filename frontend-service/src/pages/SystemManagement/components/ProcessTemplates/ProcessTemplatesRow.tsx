@@ -5,18 +5,25 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
-import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
+import {
+    deleteProcessTemplateRequest,
+    processTemplateObjectToProcessTemplateForm,
+    searchProcessTemplates,
+} from '../../../../services/templates/processTemplatesService';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
+import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import { environment } from '../../../../globals';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
     const [searchText, setSearchText] = useState('');
 
-    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         processTemplateId: string | null;
@@ -65,16 +72,42 @@ const ProcessTemplatesRow: React.FC = () => {
                     </IconButton>
                 </Grid>
             </Grid>
-            {Array.from(processTemplates.values())
-                .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
-                .map((processTemplate) => (
+            <InfiniteScroll<IMongoProcessTemplatePopulated>
+                queryKey={['searchProcessTemplates', searchText]}
+                queryFunction={async ({ pageParam: startRow = 0 }) => {
+                    const searchProcessTemplatesResult = await searchProcessTemplates({
+                        skip: startRow,
+                        limit: infiniteScrollPageCount,
+                        displayName: searchText.length > 0 ? searchText : undefined,
+                    });
+
+                    return searchProcessTemplatesResult;
+                }}
+                onQueryError={(error) => {
+                    // eslint-disable-next-line no-console
+                    console.log('failed to search process templates error:', error);
+                    toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                }}
+                getItemId={(processTemplate) => processTemplate._id}
+                getNextPageParam={(lastPage, allPages) => {
+                    const nextPage = allPages.length * infiniteScrollPageCount;
+                    console.log('process templates', { nextPage, allPages, lastPage });
+
+                    return lastPage.length ? nextPage : undefined;
+                }}
+                endText={i18next.t('entitiesCardView.noSearchLeft')}
+                emptyText={i18next.t('failedToGetTemplates')}
+                useContainer={false}
+            >
+                {(processTemplate) => (
                     <ProcessTemplateCard
                         key={processTemplate._id}
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
                     />
-                ))}
+                )}
+            </InfiniteScroll>
             <ProcessTemplateWizard
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}

@@ -8,12 +8,15 @@ import { ViewingCard } from './Card';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
-import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
+import { deleteRuleRequest, ruleObjectToRuleForm, searchRulesRequest, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
+
+const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -116,7 +119,6 @@ export const RuleCard: React.FC<{
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const [searchText, setSearchText] = useState('');
@@ -173,20 +175,42 @@ const RulesRow: React.FC = () => {
                 </Grid>
             </Grid>
             <Grid item container direction="row" gap="30px" marginTop="30px">
-                {Array.from(rules.values())
-                    .filter(({ name }) => searchText === '' || name.includes(searchText))
-                    .map((rule) => {
-                        return (
-                            <RuleCard
-                                key={rule._id}
-                                entityTemplates={entityTemplates}
-                                rule={rule}
-                                setDeleteRuleWizardState={setDeleteRuleWizardState}
-                                setRuleWizardDialogState={setRuleWizardDialogState}
-                                updateDisabledMutateAsync={updateDisabledMutateAsync}
-                            />
-                        );
-                    })}
+                <InfiniteScroll<IMongoRule>
+                    queryKey={['searchProcessTemplates', searchText]}
+                    queryFunction={async ({ pageParam: startRow = 0 }) => {
+                        const searchRulesResult = await searchRulesRequest({
+                            skip: startRow,
+                            limit: infiniteScrollPageCount,
+                            search: searchText.length > 0 ? searchText : undefined,
+                        });
+
+                        return searchRulesResult;
+                    }}
+                    onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.log('failed to search process templates error:', error);
+                        toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                    }}
+                    getItemId={(rule) => rule._id}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
+                    }}
+                    endText={i18next.t('entitiesCardView.noSearchLeft')}
+                    emptyText={i18next.t('failedToGetTemplates')}
+                    useContainer={false}
+                >
+                    {(rule) => (
+                        <RuleCard
+                            key={rule._id}
+                            entityTemplates={entityTemplates}
+                            rule={rule}
+                            setDeleteRuleWizardState={setDeleteRuleWizardState}
+                            setRuleWizardDialogState={setRuleWizardDialogState}
+                            updateDisabledMutateAsync={updateDisabledMutateAsync}
+                        />
+                    )}
+                </InfiniteScroll>
             </Grid>
             <RuleWizard
                 open={ruleWizardDialogState.isWizardOpen}

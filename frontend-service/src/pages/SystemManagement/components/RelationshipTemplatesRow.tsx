@@ -14,6 +14,7 @@ import { RelationshipTemplateWizard } from '../../../common/wizards/relationship
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
+    searchRelationshipTemplates,
 } from '../../../services/templates/relationshipTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
@@ -25,7 +26,9 @@ import { Box } from './Box';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
-import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -104,7 +107,6 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
@@ -252,7 +254,110 @@ const RelationshipTemplatesRow: React.FC = () => {
             </Grid>
 
             <Grid container gap="30px" marginTop="30px">
-                {getRelationshipGroupedByEntitiesTemplate(
+                <InfiniteScroll<{
+                    entityTemplate: IMongoEntityTemplatePopulated;
+                    relationships: IMongoRelationshipTemplatePopulated[];
+                }>
+                    queryKey={['searchRelationshipTemplates', searchText]}
+                    queryFunction={async ({ pageParam: startRow = 0 }) => {
+                        const searchProcessTemplatesResult = await searchRelationshipTemplates({
+                            skip: startRow,
+                            limit: infiniteScrollPageCount,
+                            search: searchText.length > 0 ? searchText : undefined,
+                            sourceEntityIds: sourceEntityTemplatesToShow.map((sourceEntity) => sourceEntity._id),
+                            destinationEntityIds: destinationEntityTemplatesToShow.map((destinationEntity) => destinationEntity._id),
+                        });
+
+                        return getRelationshipGroupedByEntitiesTemplate(
+                            Array.from(searchProcessTemplatesResult.values()).map((relationshipTemplate) =>
+                                populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+                            ),
+                        );
+                    }}
+                    onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.log('failed to search process templates error:', error);
+                        toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                    }}
+                    getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
+                    }}
+                    endText={i18next.t('entitiesCardView.noSearchLeft')}
+                    emptyText={i18next.t('failedToGetTemplates')}
+                    useContainer={false}
+                >
+                    {(relationshipTemplateWithEntity) => (
+                        <Box
+                            header={
+                                <Grid
+                                    item
+                                    container
+                                    direction={isSrcRelationChecked ? 'row' : 'row-reverse'}
+                                    justifyContent="flex-start"
+                                    alignItems="center"
+                                    gap="10px"
+                                    padding="0px 15px"
+                                    sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
+                                >
+                                    {relationshipTemplateWithEntity.entityTemplate.iconFileId ? (
+                                        <CustomIcon
+                                            iconUrl={relationshipTemplateWithEntity.entityTemplate.iconFileId}
+                                            height="24px"
+                                            width="24px"
+                                            color="#9398C2"
+                                        />
+                                    ) : (
+                                        <AppRegistrationIcon style={{ color: '#9398C2', ...environment.iconSize }} fontSize="small" />
+                                    )}
+                                    <Typography
+                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}
+                                    >
+                                        {relationshipTemplateWithEntity.entityTemplate.displayName}
+                                    </Typography>
+                                    <img src="/icons/arrow-relation-title.svg" />
+                                </Grid>
+                            }
+                            key={relationshipTemplateWithEntity.entityTemplate._id}
+                            addingIcon={
+                                <IconButton
+                                    style={{ borderRadius: '5px', width: 'fit-content' }}
+                                    onClick={() => {
+                                        if (isSrcRelationChecked)
+                                            setRelationshipTemplateWizardDialogState({
+                                                isWizardOpen: true,
+                                                relationshipTemplate: {
+                                                    ...defaultRelationshipTemplate,
+                                                    sourceEntityId: relationshipTemplateWithEntity.entityTemplate._id,
+                                                },
+                                            });
+                                        else
+                                            setRelationshipTemplateWizardDialogState({
+                                                isWizardOpen: true,
+                                                relationshipTemplate: {
+                                                    ...defaultRelationshipTemplate,
+                                                    destinationEntityId: relationshipTemplateWithEntity.entityTemplate._id,
+                                                },
+                                            });
+                                    }}
+                                >
+                                    <img src="/icons/add-new-relation-template.svg" />
+                                </IconButton>
+                            }
+                        >
+                            {relationshipTemplateWithEntity.relationships.map((relationshipTemplate) => (
+                                <RelationshipTemplateCard
+                                    key={relationshipTemplate._id}
+                                    relationshipTemplate={relationshipTemplate}
+                                    setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
+                                    setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
+                                />
+                            ))}
+                        </Box>
+                    )}
+                </InfiniteScroll>
+                {/* {getRelationshipGroupedByEntitiesTemplate(
                     filterRelationships({
                         relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
                             populateRelationshipTemplate(relationshipTemplate, entityTemplates),
@@ -328,7 +433,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                             />
                         ))}
                     </Box>
-                ))}
+                ))} */}
             </Grid>
 
             <RelationshipTemplateWizard

@@ -139,6 +139,8 @@ export class TemplatesManager {
         const allCategories = await TemplatesManager.getAllCategories();
 
         const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+        console.log('getAllAllowedTemplates', { permissionsOfUserId, allowedEntityTemplates });
+
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
@@ -302,6 +304,123 @@ export class TemplatesManager {
         });
 
         return entityTemplatesWithConstraints;
+    }
+
+    static async searchEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+        console.log('searchEntityTemplates', { permissionsOfUserId, allowedEntityTemplates });
+
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplates = lodashUniqby(
+            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
+            '_id',
+        );
+
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            allowedRelationshipsTemplatesBySource,
+            allowedRelationshipsTemplatesByDestination,
+            allowedEntityTemplatesIds,
+        );
+
+        const allowedEntityTemplatesByOneRelationship = await EntityTemplateManagerService.searchEntityTemplates({
+            ids: allowedEntityTemplatesIdsByOneRelationship,
+        });
+
+        const { allowedEntityTemplatesBecauseOfRules } = await TemplatesManager.getAllowedRules(
+            allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
+
+        const allAllowedEntityTemplates = [
+            ...allowedEntityTemplates,
+            ...allowedEntityTemplatesByOneRelationship,
+            ...allowedEntityTemplatesBecauseOfRules,
+        ];
+
+        const allConstraints = await InstanceManagerService.getAllConstraints();
+
+        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = allAllowedEntityTemplates.map((entityTemplate) => {
+            const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
+            return TemplatesManager.populateTemplateConstraints(
+                entityTemplate,
+                constraintsOfTemplate?.requiredConstraints ?? [],
+                constraintsOfTemplate?.uniqueConstraints ?? [],
+            );
+        });
+
+        console.log('hello', { entityTemplatesWithConstraints, allAllowedEntityTemplates });
+
+        return entityTemplatesWithConstraints;
+    }
+
+    static async searchRelationshipTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+        console.log('searchRelationshipTemplates', { permissionsOfUserId, allowedEntityTemplates });
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplates = lodashUniqby(
+            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
+            '_id',
+        );
+
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            allowedRelationshipsTemplatesBySource,
+            allowedRelationshipsTemplatesByDestination,
+            allowedEntityTemplatesIds,
+        );
+
+        const { allowedRelationshipTemplatesBecauseOfRules } = await TemplatesManager.getAllowedRules(
+            allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
+
+        return [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules];
+    }
+
+    static async searchRulesTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
+        console.log('searchRulesTemplates', { permissionsOfUserId, allowedEntityTemplates });
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplates = lodashUniqby(
+            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
+            '_id',
+        );
+
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            allowedRelationshipsTemplatesBySource,
+            allowedRelationshipsTemplatesByDestination,
+            allowedEntityTemplatesIds,
+        );
+
+        const { allowedRules } = await TemplatesManager.getAllowedRules(
+            allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
+
+        return allowedRules;
     }
 
     static async createEntityTemplate(

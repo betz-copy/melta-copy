@@ -37,6 +37,12 @@ export const deleteCategorySchema = Joi.object({
     },
 });
 
+export const getCategoriesSchema = Joi.object({
+    query: { search: Joi.string() },
+    body: {},
+    params: {},
+});
+
 // POST /api/templates/entities
 export const createEntityTemplateSchema = Joi.object({
     body: {
@@ -118,6 +124,19 @@ export const deleteEntityTemplateSchema = Joi.object({
     params: { id: MongoIdSchema.required() },
 });
 
+// POST /api/entities/templates/search
+export const searchEntityTemplatesSchema = Joi.object({
+    query: {},
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
+        categoryIds: Joi.array().items(MongoIdSchema),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    params: {},
+});
+
 // POST /api/templates/relationships
 export const createRelationshipTemplateSchema = Joi.object({
     body: {
@@ -151,6 +170,20 @@ export const deleteRelationshipTemplateSchema = Joi.object({
     params: { id: MongoIdSchema.required() },
 });
 
+// POST /api/relationship/templates/search?search=value
+export const searchTemplatesRequestSchema = Joi.object({
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
+        sourceEntityIds: Joi.array().items(MongoIdSchema),
+        destinationEntityIds: Joi.array().items(MongoIdSchema),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    query: {},
+    params: {},
+});
+
 // PATCH /api/templates/rules/:ruleId/status
 export const updateRuleStatusByIdRequestSchema = Joi.object({
     body: {
@@ -168,4 +201,17 @@ export const deleteRuleByIdRequestSchema = Joi.object({
     params: {
         ruleId: Joi.string().required(),
     },
+});
+
+// POST /api/templates/rules/search
+export const searchRulesRequestSchema = Joi.object({
+    body: {
+        search: Joi.string(),
+        entityTemplateIds: Joi.array().items(MongoIdSchema),
+        disabled: Joi.boolean(),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    query: {},
+    params: {},
 });

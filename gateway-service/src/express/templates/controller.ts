@@ -26,6 +26,12 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
     }
 
+    static async searchCategories(_req: Request, res: Response) {
+        console.log('controller searchCategories');
+
+        res.json(await TemplatesManager.getAllCategories());
+    }
+
     // entityTemplates
     static async createEntityTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
@@ -53,6 +59,13 @@ export default class TemplatesController {
         res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
 
+    static async searchEntityTemplates(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await TemplatesManager.searchEntityTemplates(permissionsOfUserId));
+    }
+
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createRelationshipTemplate(req.body));
@@ -66,6 +79,13 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
     }
 
+    static async searchRelationshipTemplates(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await TemplatesManager.searchRelationshipTemplates(permissionsOfUserId));
+    }
+
     // rules
     static async updateRuleStatusById(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
@@ -73,5 +93,12 @@ export default class TemplatesController {
 
     static async deleteRuleById(req: Request, res: Response) {
         res.json(await TemplatesManager.deleteRuleById(req.params.ruleId));
+    }
+
+    static async searchRulesTemplates(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await TemplatesManager.searchRulesTemplates(permissionsOfUserId));
     }
 }

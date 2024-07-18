@@ -39,6 +39,8 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         processTemplates: myPermissions.processesManagementId,
     };
 
+    console.log('SystemManagement', { myPermissions, tabsPermissionsMapping });
+
     return (
         <Box
             sx={{

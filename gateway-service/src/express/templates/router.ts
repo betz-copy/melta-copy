@@ -25,6 +25,10 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getCategoriesSchema,
+    searchEntityTemplatesSchema,
+    searchRulesRequestSchema,
+    searchTemplatesRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
@@ -79,6 +83,13 @@ templatesRouter.delete(
     ValidateRequest(deleteCategorySchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapController(TemplatesController.deleteCategory),
+);
+
+templatesRouter.post(
+    '/categories/search',
+    ValidateRequest(getCategoriesSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(TemplatesController.searchCategories),
 );
 
 // entities (templates)
@@ -140,6 +151,13 @@ templatesRouter.delete(
     }),
 );
 
+templatesRouter.post(
+    '/entities/search',
+    ValidateRequest(searchEntityTemplatesSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(TemplatesController.searchEntityTemplates),
+);
+
 // relationships (templates)
 templatesRouter.post(
     '/relationships',
@@ -175,6 +193,13 @@ templatesRouter.delete(
     }),
 );
 
+templatesRouter.post(
+    '/relationships/search',
+    ValidateRequest(searchTemplatesRequestSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(TemplatesController.searchRelationshipTemplates),
+);
+
 // rules (templates)
 templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.patch(
@@ -190,5 +215,12 @@ templatesRouter.delete(
     wrapController(TemplatesController.deleteRuleById),
 );
 templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
+
+templatesRouter.post(
+    '/rules/search',
+    ValidateRequest(searchRulesRequestSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(TemplatesController.searchRulesTemplates),
+);
 
 export default templatesRouter;

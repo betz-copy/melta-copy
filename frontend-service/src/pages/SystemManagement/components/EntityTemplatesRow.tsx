@@ -17,12 +17,12 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
+    searchEntityTemplates,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
 } from '../../../services/templates/enitityTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import SearchInput from '../../../common/inputs/SearchInput';
-import { templatesCompareFunc } from '../../../utils/templates';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -31,6 +31,9 @@ import { updateCategoryRequest } from '../../../services/templates/categoriesSer
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { environment } from '../../../globals';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -540,29 +543,49 @@ const EntityTemplatesRow: React.FC = () => {
 
             <DragDropContext onDragEnd={onDragEnd}>
                 <Grid container gap="30px" marginTop="30px">
-                    {getEntityTemplatesToShowGroupedByCategories(
-                        Array.from(entityTemplates.values())
-                            .filter(
-                                (entityTemplate) =>
-                                    categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
-                                    (searchText === '' || entityTemplate.displayName.includes(searchText)),
-                            )
-                            .sort((a, b) => {
-                                const res = templatesCompareFunc(a, b);
-                                if (res === 0) return Number(a.disabled) - Number(b.disabled);
-                                return res;
-                            }),
-                    ).map((entityTemplatesWithCategory) => (
-                        <Grid item key={entityTemplatesWithCategory.category._id}>
-                            <CategoryEntitiesBox
-                                entityTemplatesWithCategory={entityTemplatesWithCategory}
-                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                loadedEntityTemplateId={loadedEntityTemplateId}
-                            />
-                        </Grid>
-                    ))}
+                    <InfiniteScroll<{
+                        category: IMongoCategory;
+                        entityTemplates: IMongoEntityTemplatePopulated[];
+                    }>
+                        queryKey={['searchEntityTemplates', searchText]}
+                        queryFunction={async ({ pageParam: startRow = 0 }) => {
+                            const searchEntityTemplatesResult = await searchEntityTemplates({
+                                skip: startRow,
+                                limit: infiniteScrollPageCount,
+                                search: searchText.length > 0 ? searchText : undefined,
+                                categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
+                            });
+
+                            return getEntityTemplatesToShowGroupedByCategories(searchEntityTemplatesResult);
+                        }}
+                        onQueryError={(error) => {
+                            // eslint-disable-next-line no-console
+                            console.log('failed to search process templates error:', error);
+                            toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                        }}
+                        getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
+                        getNextPageParam={(lastPage, allPages) => {
+                            const nextPage = allPages.length * infiniteScrollPageCount;
+                            console.log({ nextPage, lastPage, allPages });
+
+                            return lastPage.length ? nextPage : undefined;
+                        }}
+                        endText={i18next.t('entitiesCardView.noSearchLeft')}
+                        emptyText={i18next.t('failedToGetTemplates')}
+                        useContainer={false}
+                    >
+                        {(entityTemplatesWithCategory) => (
+                            <Grid item key={entityTemplatesWithCategory.category._id}>
+                                <CategoryEntitiesBox
+                                    entityTemplatesWithCategory={entityTemplatesWithCategory}
+                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                    loadedEntityTemplateId={loadedEntityTemplateId}
+                                />
+                            </Grid>
+                        )}
+                    </InfiniteScroll>
                 </Grid>
             </DragDropContext>
             <EntityTemplateWizard

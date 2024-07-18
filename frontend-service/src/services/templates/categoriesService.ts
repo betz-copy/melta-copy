@@ -18,6 +18,11 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
     return restOfCategory;
 };
 
+const getAllCategoryRequest = async (search?: string) => {
+    const { data } = await axios.get(`${categories}?search=${search}`);
+    return data;
+};
+
 const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
     const formData = new FormData();
 
@@ -56,4 +61,4 @@ const deleteCategoryRequest = async (categoryId: string) => {
     return data;
 };
 
-export { createCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };
+export { createCategoryRequest, getAllCategoryRequest, updateCategoryRequest, categoryObjectToCategoryForm, deleteCategoryRequest };

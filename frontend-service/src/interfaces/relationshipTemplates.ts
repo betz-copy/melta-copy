@@ -19,3 +19,12 @@ export type IMongoRelationshipTemplatePopulated = Omit<IMongoRelationshipTemplat
 };
 
 export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplate>;
+
+export interface ISearchRelationshipTemplatesBody {
+    search?: string;
+    ids?: string[];
+    sourceEntityIds?: string[];
+    destinationEntityIds?: string[];
+    limit: number;
+    skip: number;
+}
