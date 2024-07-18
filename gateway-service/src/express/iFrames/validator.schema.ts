@@ -8,7 +8,7 @@ const iFrameSchema = Joi.object({
     description: Joi.string(),
     apiToken: Joi.string(),
     iconFileId: Joi.string().allow(null),
-    placeInSideBar: Joi.boolean(),
+    placeInSideBar: ExtendedJoi.boolean(),
 });
 
 // GET /api/iFrames/externalSite/:iFrameId

@@ -345,6 +345,7 @@ export default {
             chooseIcon: 'בחירת אייקון',
             editDetails: 'עריכת פרטים',
             settingPermissions: 'הגדרת הרשאות גישה',
+            selectCategories: 'הרשאות גישה',
             name: 'שם',
             url: 'כתובת',
             description: 'תיאור',

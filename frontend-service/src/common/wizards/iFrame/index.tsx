@@ -1,17 +1,16 @@
-import React from 'react';
+import React, { useImperativeHandle } from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame } from '../../../interfaces/iFrames';
+import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
-import { ChooseIcon } from '../entityTemplate/ChooseIcon';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import SettingIFramesPermissions from './SettingPrmissions';
-import InstancesPermissionsCard from '../../permissionsOfUserDialog/instancesPermissionsCard';
+import { ChooseIFrameIcon } from './ChooseIcon';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
@@ -22,20 +21,15 @@ const steps: StepsType<IFrameWizardValues> = [
         component: (props) => <CreateIFrameDetails {...props} />,
         validationSchema: createIFrameDetailsSchema,
     },
-    // {
-    //     label: i18next.t('wizard.iFrame.settingPermissions'),
-    //     component: (props) => <SettingIFramesPermissions />,
-    //     // validationSchema: createCategoryNameSchema,
-    // },
+    {
+        label: i18next.t('wizard.iFrame.settingPermissions'),
+        component: (props) => <SettingIFramesPermissions {...props} />,
+        // validationSchema: settingIFramesPermissionsSchema,
+    },
     {
         label: i18next.t('wizard.iFrame.chooseIcon'),
-        component: (props) => <ChooseIcon {...props} />,
+        component: (props) => <ChooseIFrameIcon {...props} />,
     },
-    // {
-    //     label: i18next.t('wizard.iFrame.chooseColor'),
-    //     component: (props) => <ChooseColor {...props} />,
-    //     validationSchema: chooseColorSchema,
-    // },
 ];
 
 const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
@@ -50,17 +44,17 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
     // const i = queryClient.getQueryData<IFrameMap>('getIFrames');
     // const iFramesArray = Array.from(i!.values());
     // console.log({ i });
-
+    // const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
+    // useImperativeHandle(ref, () => ({ refetch }));
     const { isLoading, mutateAsync } = useMutation(
         (iFrame: IFrameWizardValues) =>
-            isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFame),
-
+            isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: (data) => {
                 console.log('shirel ', { data });
 
-                // queryClient.setQueryData<IFrameMap>('getIFrames', (iFrames) => iFrames!.set(data._id, data));
-
+                // queryClient.setQueryData<IFrameMap>('getIFrames', (iFrames) => iFrames!.set(data._id, {data}));
+                // queryClient.invalidateQueries({ queryKey: ['getIFrames', data._id], exact: true });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

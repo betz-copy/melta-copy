@@ -45,9 +45,10 @@ const deleteIFrame = async (iFrameId: string) => {
 
 const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     const formData = new FormData();
-    console.log('shirel ', { updatedIFrame });
+    console.log('updatedData ', { updatedIFrame });
 
     const { name, url, categoryIds, description, apiToken, placeInSideBar } = updatedIFrame;
+
     if (updatedIFrame.icon) {
         if (updatedIFrame.icon.file instanceof File) {
             formData.append('file', updatedIFrame.icon.file);
@@ -62,11 +63,10 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     if (categoryIds) formData.append('categoryIds', JSON.stringify(categoryIds));
     if (description) formData.append('description', description);
     if (apiToken) formData.append('apiToken', apiToken);
-    if (placeInSideBar) formData.append('placeInSideBar', placeInSideBar.toString());
-    console.log(...formData, placeInSideBar);
+
+    formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
     const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
-    console.log({ data });
 
     return data;
 };

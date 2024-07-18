@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
@@ -13,9 +13,11 @@ interface IFramePageProps {
 
 const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
     const { iFrameId } = useParams();
+    const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
+    console.log({ iFrame }, { id });
 
-    const { data: iFrameData, isLoading } = useQuery(['getIFrame', iFrameId], async () => getIFrameById(iFrameId!), {
+    const { data: iFrameData, isLoading } = useQuery(['getIFrame', id], async () => getIFrameById(id!), {
         initialData: iFrame,
         retry: false,
         onError: (err) => {
@@ -23,6 +25,8 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
             navigate('/404');
         },
     });
+    console.log({ iFrameData });
+
     // const { mutateAsync: updateIFrameMutateAsync, isLoading: isUpdateIFrameLoading } = useMutation(
     //     (params: Parameters<typeof updateIFrame>) => updateIFrame(...params),
     //     {
@@ -53,6 +57,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
             </Grid>
         );
     }
+    console.log({ iFrameData });
 
     return (
         <Grid
