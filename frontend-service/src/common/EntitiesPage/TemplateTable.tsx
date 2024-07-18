@@ -232,8 +232,7 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            {/* omer TODO: change to template.fileExportField ? 'xl' : 'md' */}
-            <Dialog open={editDialog.isOpen} maxWidth={true ? 'xl' : 'md'}>
+            <Dialog open={editDialog.isOpen} maxWidth={template.pdfTemplatesIds?.length ? 'xl' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}

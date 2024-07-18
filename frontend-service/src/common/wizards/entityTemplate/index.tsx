@@ -43,7 +43,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints'
+        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'pdfTemplatesIds'
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];

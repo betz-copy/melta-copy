@@ -2,6 +2,7 @@
 import { AxiosError } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
+import { error } from 'console';
 import {
     EntityTemplateManagerService,
     ICategory,
@@ -33,7 +34,6 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
-import { error } from 'console';
 
 const {
     categoryHasTemplates,
@@ -307,23 +307,15 @@ export class TemplatesManager {
 
     static async createEntityTemplate(
         templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'pdfTemplatesIds'>,
-        file?: Express.Multer.File,
-        pdfTemplates?: Express.Multer.File[]
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
         let iconFileId: string | null;
         if (file) {
-            iconFileId = await uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else {
             iconFileId = null;
-        }
-
-        let pdfTemplatesIds: string[] | null;
-        if (pdfTemplates) {
-            pdfTemplatesIds = await uploadFiles(pdfTemplates);
-        } else {
-            pdfTemplatesIds = null;
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = templateData;
@@ -333,7 +325,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            pdfTemplatesIds
+            pdfTemplatesIds: files ? await uploadFiles(files) : undefined,
         });
 
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
@@ -341,20 +333,18 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static async exportEntityToPdfTemplate(
-        entityId: string, entityTemplateId?: string
-    ) {
+    static async exportEntityToPdfTemplate(entityId: string, entityTemplateId?: string) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
         if (entityTemplateId && entityTemplate?.pdfTemplatesIds?.includes(entityTemplateId)) {
-            return await downloadFile(entityTemplateId)
-        } else if (entityTemplate.pdfTemplatesIds) {
-            return await downloadFiles(entityTemplate.pdfTemplatesIds)
-        } else {
-            throw error;
+            return downloadFile(entityTemplateId);
         }
 
-    }
+        if (entityTemplate.pdfTemplatesIds) {
+            return downloadFiles(entityTemplate.pdfTemplatesIds);
+        }
 
+        throw error;
+    }
 
     static async throwIfEntityHasRelationships(id: string) {
         const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
@@ -433,8 +423,7 @@ export class TemplatesManager {
     static async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        file?: Express.Multer.File,
-        pdfTemplatesIds?: Express.Multer.File[]
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
@@ -475,8 +464,8 @@ export class TemplatesManager {
                 await deleteFile(currTemplate.iconFileId);
             }
 
-            iconFileId = await uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await deleteFile(currTemplate.iconFileId);
 
@@ -485,13 +474,13 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        let newPdfTemplatesIds: string[] | null;
-        if (pdfTemplatesIds) {
+        let newPdfTemplatesIds: string[] | undefined;
+        if (files) {
             if (currTemplate?.pdfTemplatesIds) {
                 await deleteFiles(currTemplate.pdfTemplatesIds);
-                newPdfTemplatesIds = await uploadFiles(pdfTemplatesIds);
+                newPdfTemplatesIds = await uploadFiles(files);
             } else {
-                newPdfTemplatesIds = await uploadFiles(pdfTemplatesIds);
+                newPdfTemplatesIds = await uploadFiles(files);
             }
         } else {
             newPdfTemplatesIds = currTemplate?.pdfTemplatesIds;
@@ -501,8 +490,8 @@ export class TemplatesManager {
             id,
             updatedTemplateData,
             currTemplate,
-        ).catch((error) => {
-            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
+        ).catch((e) => {
+            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${e}`);
         });
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
@@ -575,9 +564,9 @@ export class TemplatesManager {
             } as Omit<IEntityTemplate, 'disabled'>);
             console.log('Initial mongoDB update worked');
             return updatedEntityTemplate;
-        } catch (error) {
-            console.error('Initial mongoDB update failed', error);
-            throw error;
+        } catch (e) {
+            console.error('Initial mongoDB update failed', e);
+            throw e;
         }
     }
 
@@ -602,9 +591,9 @@ export class TemplatesManager {
             } as Omit<IEntityTemplate, 'disabled'>);
             console.log('RollBack mongoDB succeeded', rollBackTemplateWithoutProperties);
             return rolledBackEntityTemplate;
-        } catch (error) {
-            console.error('RollBack mongoDB update failed', error);
-            throw error;
+        } catch (e) {
+            console.error('RollBack mongoDB update failed', e);
+            throw e;
         }
     }
 

@@ -52,9 +52,9 @@ export const iconFileSchema = fileSchema.keys({
         .required(),
 });
 
-export const PdfTemplateSchema = fileSchema.keys({
+export const pdfTemplateSchema = fileSchema.keys({
     originalname: Joi.string()
-        .regex(/\.(svg|png)$/)
+        .regex(/\.(docx)$/)
         .required(),
 });
 
@@ -89,6 +89,5 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
 
     return wrapValidator(validator);
 };
-
 
 export default ValidateRequest;

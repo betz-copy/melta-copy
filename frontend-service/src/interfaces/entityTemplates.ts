@@ -27,7 +27,6 @@ export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
-    pdfTemplatesIds?: string[];
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;
@@ -41,6 +40,7 @@ export interface IEntityTemplate {
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     uniqueConstraints: IUniqueConstraintOfTemplate[];
+    pdfTemplatesIds?: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

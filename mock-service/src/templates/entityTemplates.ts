@@ -42,6 +42,7 @@ export interface IEntityTemplate {
     propertiesPreview: string[];
     disabled: boolean;
     iconFileId: string | null;
+    pdfTemplatesIds?: string[];
 }
 
 export interface IEntityTemplateMock extends Omit<IEntityTemplate, 'category' | 'iconFileId'> {

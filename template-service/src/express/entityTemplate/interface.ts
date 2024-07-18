@@ -41,7 +41,7 @@ export interface IEntityTemplate {
     enumPropertiesColors?: IEnumPropertiesColors;
     disabled: boolean;
     iconFileId: string | null;
-    pdfTemplatesIds: string[] | null;
+    pdfTemplatesIds?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

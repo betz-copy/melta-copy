@@ -65,6 +65,7 @@ const CreateOrEditEntityDetails: React.FC<{
     }>({ isOpen: false });
 
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
+    const [wasDirty, setWasDirty] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -174,16 +175,11 @@ const CreateOrEditEntityDetails: React.FC<{
         [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
     );
 
-    const normalizeFormValues = (formValues: EntityWizardValues) => ({
-        ...formValues,
-        properties: Object.fromEntries(Object.entries(formValues.properties).filter(([_, v]) => v != null)),
-    });
-
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
             onSubmit={async (values) => {
-                if (isEditMode && values.properties._id) updateMutation({ newEntityData: values });
+                if (isEditMode && entityToUpdate?.properties._id) updateMutation({ newEntityData: values });
                 else createMutation({ newEntityData: values });
 
                 if (!draftId) return;
@@ -243,10 +239,20 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const betterDirty = useMemo(
-                    () => !isEqual(normalizeFormValues(values), normalizeFormValues(formInitialValues)),
-                    [values, formInitialValues],
-                );
+                const betterDirty = useMemo(() => {
+                    // textarea/long-text causes the field to first be undefined, setting dirty to true,
+                    // so we check for dirty manually while ignoring these fields
+                    // (if the value changes it won't be undefined and it will consider it dirty)
+                    const valuePropsToFilter = { ...values.properties };
+                    const initialValuePropsToFilter = { ...formInitialValues.properties };
+
+                    Object.keys(valuePropsToFilter).forEach((key) => (valuePropsToFilter[key] === undefined ? delete valuePropsToFilter[key] : {}));
+                    Object.keys(initialValuePropsToFilter).forEach((key) =>
+                        initialValuePropsToFilter[key] === undefined ? delete initialValuePropsToFilter[key] : {},
+                    );
+
+                    return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
+                }, [formInitialValues, values]);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -254,6 +260,11 @@ const CreateOrEditEntityDetails: React.FC<{
                     createOrUpdateDraftDebounced(values, draftId);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [betterDirty, values, draftId]);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    if (betterDirty && !wasDirty) setWasDirty(true);
+                }, [betterDirty]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -337,7 +348,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
                                                         <Grid item>
                                                             <IconButton
-                                                                onClick={() => (betterDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                                                onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
                                                                 sx={{
                                                                     color: (theme) => theme.palette.primary.main,
                                                                 }}
@@ -386,8 +397,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {/* omer TODO: change this to only show if entity template has export file/s */}
-                                            {true ? (
+                                            {entityTemplate.pdfTemplatesIds?.length ? (
                                                 <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
                                                     <Grid item>
                                                         <Autocomplete

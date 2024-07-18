@@ -41,9 +41,9 @@ export const downloadFile = async (path: string) => {
 
 export const downloadFiles = async (paths: string[]) => {
     return axios.get(`${url}/${downloadFileRoute}/zip/`, {
-        params: { path: paths.join('?') }
-      });
-    };
+        params: { path: paths.join('?') },
+    });
+};
 
 export const deleteFile = (fileId: string) => {
     return axios.delete(`${url}/${deleteFileRoute}/${encodeURIComponent(fileId)}`);

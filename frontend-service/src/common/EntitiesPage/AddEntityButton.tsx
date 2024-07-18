@@ -41,8 +41,7 @@ const AddEntityButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-            {/* omer TODO: change to template.fileExportField ? 'xl' : 'md' */}
-            <Dialog open={addEntityWizardState.isOpen} maxWidth={true ? 'xl' : 'md'}>
+            <Dialog open={addEntityWizardState.isOpen} maxWidth={addEntityWizardState.initialValues?.template.pdfTemplatesIds?.length ? 'xl' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode={false}
                     entityTemplate={

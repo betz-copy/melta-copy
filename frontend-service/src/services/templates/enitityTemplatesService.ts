@@ -13,8 +13,16 @@ export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
-    const { iconFileId, properties, propertiesOrder, propertiesPreview, enumPropertiesColors, uniqueConstraints, ...restOfEntityTemplate } =
-        entityTemplate;
+    const {
+        iconFileId,
+        properties,
+        propertiesOrder,
+        propertiesPreview,
+        enumPropertiesColors,
+        uniqueConstraints,
+        pdfTemplatesIds,
+        ...restOfEntityTemplate
+    } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
@@ -57,6 +65,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         }
     });
 
+    const pdfTemplates = pdfTemplatesIds?.map((pdfTemplateId) => ({ name: pdfTemplateId } as File));
+
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
         return {
@@ -65,15 +75,16 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             properties: propertiesArray,
             attachmentProperties,
             uniqueConstraints,
+            pdfTemplatesIds: pdfTemplates,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, pdfTemplatesIds: pdfTemplates };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
-    const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, pdfTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -203,6 +214,11 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
     }
+
+    newEntityTemplate.pdfTemplatesIds?.forEach((pdfTemplateId) => {
+        formData.append('files', pdfTemplateId);
+    });
+
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
@@ -242,6 +258,13 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
         }
     }
+
+    if ('pdfTemplatesIds' in updatedEntityTemplate && updatedEntityTemplate.pdfTemplatesIds) {
+        updatedEntityTemplate.pdfTemplatesIds.forEach((pdfTemplateId: string | File | { name: string }) => {
+            if (pdfTemplateId instanceof File) formData.append('files', pdfTemplateId);
+        });
+    }
+
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
@@ -254,6 +277,15 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    if (updatedEntityTemplate.pdfTemplatesIds)
+        formData.append(
+            'pdfTemplatesIds',
+            JSON.stringify(
+                updatedEntityTemplate.pdfTemplatesIds
+                    .filter((homo) => !(homo instanceof File))
+                    .map((homo: string | { name: string }) => (typeof homo === 'string' ? homo : homo.name)),
+            ),
+        );
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };

@@ -460,8 +460,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         ))}
                 </Grid>
             </Grid>
-            {/* omer TODO: change to template.fileExportField ? 'xl' : 'md' */}
-            <Dialog open={editDialog.isOpen} maxWidth={true ? 'xl' : 'md'}>
+            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.pdfTemplatesIds?.length ? 'xl' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}

@@ -37,7 +37,7 @@ export class EntityTemplateManager {
         return EntityTemplateModel.find({ category }).lean().exec();
     }
 
-    static async createTemplate(templateData: Omit<Omit<IEntityTemplate, 'iconFileId'>, 'pdfTemplatesIds'>) {
+    static async createTemplate(templateData: IEntityTemplate) {
         const entityTemplate = await EntityTemplateModel.create(templateData);
 
         await sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);

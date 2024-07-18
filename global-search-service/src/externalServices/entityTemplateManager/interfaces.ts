@@ -27,6 +27,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
+    pdfTemplatesIds?: string[];
 }
 
 export interface ISearchEntityTemplatesBody {
