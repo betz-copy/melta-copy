@@ -313,6 +313,12 @@ const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: Com
     return data;
 };
 
+const exportEntityToFormatFile = async (entityId: string, pdfTemplateId: string) => {
+    const { data } = await axios.get(`${entityTemplates}/pdf/${entityId}`, { params: { pdfTemplateId } });
+
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
@@ -321,4 +327,5 @@ export {
     updateEntityTemplateStatusRequest,
     updateEnumFieldRequest,
     deleteEnumFieldRequest,
+    exportEntityToFormatFile,
 };

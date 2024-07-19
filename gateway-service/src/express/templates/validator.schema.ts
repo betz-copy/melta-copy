@@ -41,7 +41,7 @@ export const deleteCategorySchema = Joi.object({
 export const exportEntityTemplateToPdfSchema = Joi.object({
     body: {},
     query: {
-        entityTemplateId: Joi.string(),
+        pdfTemplateId: Joi.string(),
     },
     params: {
         entityId: Joi.string().required(),

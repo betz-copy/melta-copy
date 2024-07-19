@@ -333,10 +333,10 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static async exportEntityToPdfTemplate(entityId: string, entityTemplateId?: string) {
+    static async exportEntityToPdfTemplate(entityId: string, pdfTemplateId?: string) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
-        if (entityTemplateId && entityTemplate?.pdfTemplatesIds?.includes(entityTemplateId)) {
-            return downloadFile(entityTemplateId);
+        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
+            return downloadFile(pdfTemplateId);
         }
 
         if (entityTemplate.pdfTemplatesIds) {

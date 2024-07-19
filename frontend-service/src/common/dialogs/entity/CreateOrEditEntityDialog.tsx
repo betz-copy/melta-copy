@@ -35,6 +35,8 @@ import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
+import { getFileName } from '../../../utils/getFileName';
+import { exportEntityToFormatFile } from '../../../services/templates/enitityTemplatesService';
 
 const { errorCodes } = environment;
 
@@ -66,6 +68,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
+    const [selectedFileToExport, setSelectedFileToExport] = useState<string>('');
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -129,6 +132,7 @@ const CreateOrEditEntityDetails: React.FC<{
     );
 
     const navigate = useNavigate();
+
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
             createEntityRequest(newEntityData, ignoredRules),
@@ -266,6 +270,11 @@ const CreateOrEditEntityDetails: React.FC<{
                     if (betterDirty && !wasDirty) setWasDirty(true);
                 }, [betterDirty]);
 
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                // const thing = useMutation((result) => {
+                //     exportEntityToFormatFile(values.properties._id, selectedFileToExport);
+                // });
+
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
                         schema={schema}
@@ -315,6 +324,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         ))}
                     </>
                 );
+
                 return (
                     <>
                         <Form>
@@ -401,10 +411,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
                                                     <Grid item>
                                                         <Autocomplete
-                                                            id="template"
-                                                            // omer TODO: change this to display options from the entity
-                                                            options={[1, 2, 3, 4]}
-                                                            onChange={(_e, value) => setFieldValue('template', value || '')}
+                                                            options={entityTemplate.pdfTemplatesIds?.map(getFileName) || []}
+                                                            onChange={(_e, value) => setSelectedFileToExport(value!)}
                                                             renderInput={(params) => (
                                                                 <TextField
                                                                     {...params}
@@ -429,9 +437,9 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                         errors.template?.displayName ||
                                                                         errors.template?.properties
                                                                     }
-                                                                    name="template"
+                                                                    name="selectedExportFormat"
                                                                     variant="outlined"
-                                                                    label={i18next.t('entityTemplate')}
+                                                                    label={i18next.t('wizard.entityTemplate.exportFormats')}
                                                                 />
                                                             )}
                                                         />
@@ -443,12 +451,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 bgcolor: '#EBEFFA',
                                                                 color: (theme) => theme.palette.primary.main,
                                                                 ':hover': { color: 'white' },
-                                                                // whiteSpace: 'nowrap',
                                                                 textWrap: 'nowrap',
                                                             }}
                                                             variant="contained"
                                                             startIcon={<VisibilityIcon />}
                                                             onClick={() => handleClose()}
+                                                            disabled={!selectedFileToExport?.length}
                                                         >
                                                             {i18next.t('entityPage.preview')}
                                                         </Button>
@@ -465,6 +473,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             variant="contained"
                                                             startIcon={<FileDownloadOutlinedIcon />}
                                                             onClick={() => handleClose()}
+                                                            disabled={!selectedFileToExport?.length}
                                                         >
                                                             {i18next.t('entityPage.download')}
                                                         </Button>
