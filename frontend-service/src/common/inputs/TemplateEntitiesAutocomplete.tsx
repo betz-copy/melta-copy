@@ -47,23 +47,23 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const [page, setPage] = useState(0);
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
 
-    const fetchEntities = async () => {
-        const result = await searchEntitiesOfTemplateRequest(template._id!, {
-            skip: page * environment.agGrid.cacheBlockSize,
-            limit: environment.agGrid.cacheBlockSize,
-            filter: { $and: { disabled: { $eq: false } } },
-            textSearch: inputValue,
-        });
-        return result;
-    };
-
-    const { data, refetch, isFetching } = useQuery(['searchEntitiesOfTemplate', template._id, inputValue, page], fetchEntities, {
-        onError: () => {
-            toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
+    const { data, refetch, isFetching } = useQuery(
+        ['searchEntitiesOfTemplate', template._id, inputValue, page],
+        async () =>
+            await searchEntitiesOfTemplateRequest(template._id!, {
+                skip: page * environment.agGrid.cacheBlockSize,
+                limit: environment.agGrid.cacheBlockSize,
+                filter: { $and: { disabled: { $eq: false } } },
+                textSearch: inputValue,
+            }),
+        {
+            onError: () => {
+                toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
+            },
+            retry: false,
+            keepPreviousData: true,
         },
-        retry: false,
-        keepPreviousData: true,
-    });
+    );
 
     useEffect(() => {
         if (data) {
@@ -124,7 +124,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
             isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
-            filterOptions={(options) => options} 
+            filterOptions={(options) => options}
             renderInput={(params) => (
                 <TextField
                     {...params}
