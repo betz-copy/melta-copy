@@ -115,12 +115,13 @@ const getRowModelProps = <Data extends any = IEntity>(
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
+    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
             serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-            cacheBlockSize: 50,
-            maxBlocksInCache: 10,
+            cacheBlockSize,
+            maxBlocksInCache,
             pagination: true,
             paginationPageSize,
         };
@@ -131,10 +132,10 @@ const getRowModelProps = <Data extends any = IEntity>(
         rowModelType: 'serverSide',
         pagination: false,
         serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize: 50,
-        maxBlocksInCache: 10,
-        maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 50,
+        cacheBlockSize,
+        maxBlocksInCache,
+        maxConcurrentDatasourceRequests,
+        infiniteInitialRowCount,
     };
 };
 
