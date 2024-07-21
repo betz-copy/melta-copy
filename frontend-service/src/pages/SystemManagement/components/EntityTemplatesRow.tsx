@@ -555,6 +555,7 @@ const EntityTemplatesRow: React.FC = () => {
                                 search: searchText.length > 0 ? searchText : undefined,
                                 categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
                             });
+                            console.log({ searchEntityTemplatesResult });
 
                             return getEntityTemplatesToShowGroupedByCategories(searchEntityTemplatesResult);
                         }}
@@ -566,8 +567,6 @@ const EntityTemplatesRow: React.FC = () => {
                         getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
                         getNextPageParam={(lastPage, allPages) => {
                             const nextPage = allPages.length * infiniteScrollPageCount;
-                            console.log({ nextPage, lastPage, allPages });
-
                             return lastPage.length ? nextPage : undefined;
                         }}
                         endText={i18next.t('entitiesCardView.noSearchLeft')}

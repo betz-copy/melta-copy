@@ -9,19 +9,19 @@ export class EntityTemplateManager {
     static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
-
+    
         if (displayName) {
-            query.displayName = { $regex: escapeRegExp(displayName) };
+            query.displayName = { $regex: escapeRegExp(displayName) }; 
         }
-
+    
         if (ids) {
             query._id = { $in: ids };
         }
-
+    
         if (categoryIds) {
             query.category = { $in: categoryIds };
-        }
-
+        }        
+    
         return EntityTemplateModel.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 

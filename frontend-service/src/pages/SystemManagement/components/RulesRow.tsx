@@ -183,6 +183,11 @@ const RulesRow: React.FC = () => {
                             limit: infiniteScrollPageCount,
                             search: searchText.length > 0 ? searchText : undefined,
                         });
+                        console.log(
+                            'rules',
+                            { skip: startRow, limit: infiniteScrollPageCount, search: searchText.length > 0 ? searchText : undefined },
+                            { searchRulesResult },
+                        );
 
                         return searchRulesResult;
                     }}

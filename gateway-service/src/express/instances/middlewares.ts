@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateManagerService, ISearchEntityTemplatesBody } from '../../externalServices/templates/entityTemplateService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
@@ -62,6 +62,10 @@ export const validateUserCanExportEntities = async (req: Request) => {
 };
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };
+
+export interface RequestWithSearchBody extends RequestWithPermissionsOfUserId {
+    searchQuery: ISearchEntityTemplatesBody;
+}
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: Scope) => {
     const instanceId = req.params.id;

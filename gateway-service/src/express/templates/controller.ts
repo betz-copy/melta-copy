@@ -1,6 +1,6 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
+import { RequestWithPermissionsOfUserId, RequestWithSearchBody } from '../instances/middlewares';
 import { TemplatesManager } from './manager';
 
 export default class TemplatesController {
@@ -60,10 +60,10 @@ export default class TemplatesController {
     }
 
     static async searchEntityTemplates(req: Request, res: Response) {
-        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.searchEntityTemplates(permissionsOfUserId));
+        res.json(await TemplatesManager.searchEntityTemplates(permissionsOfUserId, searchQuery));
     }
 
     // relationshipTemplates
