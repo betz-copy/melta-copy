@@ -51,8 +51,7 @@ const RjsfTextWidget = ({
         onChange(newValue === '' ? options.emptyValue : newValue);
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
-    const variant = readonly && schema.readOnly !== true ? 'standard' : 'outlined';
-
+    const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
     const { rootSchema } = registry;
     const displayLabel = getDisplayLabel(validator, schema, uiSchema, rootSchema);
     const inputType = (type || schema.type) === 'string' ? 'text' : `${type || schema.type}`;

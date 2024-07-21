@@ -25,6 +25,7 @@ export interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area';
     enum?: string[];
+    readOnly?: true;
     items?: {
         type: 'string';
         enum?: string[];

@@ -64,7 +64,7 @@ const RjfsSelectWidget = ({
 
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
-    const variant = readonly && schema.readOnly !== true ? 'standard' : 'outlined';
+    const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     return (
         <Autocomplete<string | string[], boolean>

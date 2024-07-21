@@ -905,25 +905,23 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.required')}
                                                 />
                                             )}
-                                            {value.readOnly !== undefined && (
-                                                <FormControlLabel
-                                                    control={
-                                                        <Switch
-                                                            id={readOnly}
-                                                            name={readOnly}
-                                                            onChange={(_e, checked) => {
-                                                                setValues?.((prevValue) => ({
-                                                                    ...prevValue,
-                                                                    readOnly: checked,
-                                                                }));
-                                                            }}
-                                                            disabled={value.required}
-                                                            checked={value.readOnly}
-                                                        />
-                                                    }
-                                                    label={i18next.t('validation.readOnly')}
-                                                />
-                                            )}
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        id={readOnly}
+                                                        name={readOnly}
+                                                        onChange={(_e, checked) => {
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                readOnly: checked ? checked : undefined,
+                                                            }));
+                                                        }}
+                                                        disabled={value.required}
+                                                        checked={value.readOnly}
+                                                    />
+                                                }
+                                                label={i18next.t('validation.readOnly')}
+                                            />
                                             {value.preview !== undefined && (
                                                 <FormControlLabel
                                                     control={

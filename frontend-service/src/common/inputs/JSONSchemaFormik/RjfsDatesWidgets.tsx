@@ -74,7 +74,7 @@ const getRjfsDateOrDateTimeWidget =
             onFormChangeFunction(currentDate);
         };
 
-        const variant = readonly && schema.readOnly !== true ? 'standard' : 'outlined';
+        const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}

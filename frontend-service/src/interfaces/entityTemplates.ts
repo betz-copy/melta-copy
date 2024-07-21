@@ -12,7 +12,7 @@ export interface IEntitySingleProperty {
         format?: 'fileId';
     };
     minItems?: 1;
-    readOnly?: boolean;
+    readOnly?: true;
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;

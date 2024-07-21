@@ -37,7 +37,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            readOnly: value.readOnly!,
+            readOnly: value.readOnly || undefined,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -219,8 +219,6 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-    console.log({ formData });
-    console.log({ entityTemplate });
 
     const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
     return data;

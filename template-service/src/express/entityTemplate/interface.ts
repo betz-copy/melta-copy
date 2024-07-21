@@ -6,7 +6,7 @@ export interface IEntitySingleProperty {
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area';
     enum?: string[];
-    readOnly?: boolean;
+    readOnly?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;
