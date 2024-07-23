@@ -65,26 +65,6 @@ export class RelationshipManager {
         return Neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    /**
-     *
-     * search many rules
-     *
-     * map rules by entity
-     *
-     * const [
-     *  {
-     *      entity,
-     *      ruleReason:
-     *          { type: 'dependentViaAggregation', dependentRelationshipTemplateId: string, updatedProperties?: string[] }
-     *          | { type: 'dependentOnEntity', updatedProperties?: string[] }
-     *  }
-     * ]
-     *
-     * const [
-     *  {entity, relevantRules: []}
-     * ]
-     */
-
     static runRulesOnEntityDependentViaAggregation = async (
         transaction: Transaction,
         entityId: string,
@@ -273,7 +253,7 @@ export class RelationshipManager {
                     const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData.entityId)?.reasons || [];
                     reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
 
-                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId }); // TODO - not key of object
+                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
                 });
             }
         });

@@ -116,3 +116,12 @@ export const getRuleBreachAlertByIdRequestSchema = joi.object({
         ruleBreachAlertId: MongoIdSchema.required(),
     },
 });
+
+// GET /api/rule-breaches/getMany
+export const getManyRuleBreachesByIds = joi.object({
+    query: {},
+    body: {
+        rulesBreachIds: joi.array().items(MongoIdSchema),
+    },
+    params: {}
+});

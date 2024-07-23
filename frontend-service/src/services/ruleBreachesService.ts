@@ -15,12 +15,6 @@ export const createRuleBreachRequestRequest = async (
 
     formData.append('brokenRules', JSON.stringify(ruleBreachRequest.brokenRules));
     formData.append('actions', JSON.stringify(ruleBreachRequest.actions));
-    // TODO ---
-    // ruleBreachRequest.actions.forEach((action, index) => {
-    //     formData.append(`actions[${index}]`, JSON.stringify(action));
-    // });
-    // formData.append('actionType', ruleBreachRequest.actionType);
-    // formData.append('actionMetadata', JSON.stringify(ruleBreachRequest.actionMetadata));
 
     const filesToUpload = Object.entries(attachmentsProperties).filter(([_key, value]) => value instanceof File);
 

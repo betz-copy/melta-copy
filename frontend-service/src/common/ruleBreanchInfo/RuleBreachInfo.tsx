@@ -60,5 +60,4 @@ const RuleBreachInfo: React.FC<{
     );
 };
 
-// TODO - actionMetadata={actions[0].actionMetadata}...
 export default RuleBreachInfo;

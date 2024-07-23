@@ -49,9 +49,6 @@ class Neo4jClient {
             defaultAccessMode: transactionType === 'readTransaction' ? 'READ' : 'WRITE',
         });
         const trx = session.beginTransaction();
-        // TODO -
-        // const trx = session.beginTransaction({ timeout });
-        console.log('begin transaction');
 
         try {
             const result = await transactionWork(trx);

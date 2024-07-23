@@ -10,6 +10,7 @@ import {
     cancelRuleBreachRequestRequestSchema,
     createRuleBreachRequestRequestSchema,
     denyRuleBreachRequestRequestSchema,
+    getManyRuleBreachesByIds,
     getRuleBreachAlertByIdRequestSchema,
     getRuleBreachRequestByIdRequestSchema,
     searchRuleBreachAlertsRequestSchema,
@@ -28,7 +29,7 @@ RulesBreachesRouter.post(
 
 RulesBreachesRouter.post(
     '/getMany',
-    // ValidateRequest(createRuleBreachRequestRequestSchema),
+    ValidateRequest(getManyRuleBreachesByIds),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(RuleBreachesController.getManyRuleBreachRequests),
 );

@@ -14,6 +14,15 @@ export const searchRuleBreachRequestsRequestSchema = joi.object({
     params: {},
 });
 
+// POST /api
+export const getManyRuleBreachRequests = joi.object({
+    query: {},
+    body: {
+        ruleBreachIds: joi.array().items(mongoIdSchema),
+    },
+    params: {},
+})
+
 // POST /api/rule-breaches/requests
 export const createRuleBreachRequestRequestSchema = joi.object({
     query: {},

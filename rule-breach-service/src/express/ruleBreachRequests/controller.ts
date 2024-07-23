@@ -7,10 +7,7 @@ class RuleBreachRequestsController {
     }
 
     static async getManyRuleBreachRequests(req: Request, res: Response) {
-        console.log('gettt namyyyy');
-        console.log('body: ', req.body);
         const data = await RuleBreachRequestsManager.getManyRuleBreachRequests(req.body.ruleBreachIds);
-        console.log({data});
         res.json(data);
     }
 

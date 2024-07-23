@@ -12,7 +12,7 @@ import { InstancesManager } from '../instances/manager';
 import {
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
-    // IRuleBreachRequestNotificationMetadata,
+    IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
 } from '../../externalServices/notificationService/interfaces';
@@ -55,7 +55,7 @@ import { rabbitCreateNotification } from '../../utils/notifications/createNotifi
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,
-    // IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
 
@@ -68,29 +68,24 @@ export class RuleBreachesManager {
         files: Express.Multer.File[] = [],
     ): Promise<IRuleBreachRequestPopulated> {
         await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData, files);
-        // TODO - here
 
-        console.log('create rule breach!!');
         const { result, err } = await trycatch(async () => {
             const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest({
                 ...ruleBreachRequestData,
                 originUserId: userId,
             });
 
-            console.log({ ruleBreachRequest });
             const request = await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequest._id);
 
-            // await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
-            //     NotificationType.ruleBreachRequest,
-            //     { requestId: ruleBreachRequest._id },
-            //     { request },
-            //     [userId],
-            // );
+            await RuleBreachesManager.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
+                NotificationType.ruleBreachRequest,
+                { requestId: ruleBreachRequest._id },
+                { request },
+                [userId],
+            );
 
             return request;
         });
-
-        console.log({ err: (err as any)?.response?.data });
 
         if (err || !result) {
             await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequestData);
@@ -146,7 +141,7 @@ export class RuleBreachesManager {
     }
 
     static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId); // here
+        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
         if (ruleBreachRequest.actions.length > 1) {
