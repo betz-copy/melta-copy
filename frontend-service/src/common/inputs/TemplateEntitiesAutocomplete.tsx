@@ -1,6 +1,6 @@
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useQuery } from 'react-query';
+import { useInfiniteQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
@@ -44,56 +44,65 @@ const TemplateEntitiesAutocomplete: React.FC<{
     size,
 }) => {
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
-    const [page, setPage] = useState(0);
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
 
-    const { data, refetch, isFetching } = useQuery(
-        ['searchEntitiesOfTemplate', template._id, inputValue, page],
-        () => {
-            const { cacheBlockSize } = environment.agGrid;
+    const { cacheBlockSize } = environment.agGrid;
+
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
+        ['searchEntitiesOfTemplate', template._id, inputValue],
+        ({ pageParam = 0 }) => {
             return searchEntitiesOfTemplateRequest(template._id!, {
-                skip: page * cacheBlockSize,
+                skip: pageParam * cacheBlockSize,
                 limit: cacheBlockSize,
                 filter: { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
             });
         },
         {
+            getNextPageParam: (lastPage, pages) => {
+                if (lastPage.entities.length < cacheBlockSize) return undefined;
+                return pages.length;
+            },
             onError: () => {
                 toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
             },
-            retry: false,
-            keepPreviousData: true,
         },
     );
 
     useEffect(() => {
         if (data) {
-            setAllEntities((prev) =>
-                page === 0 ? data.entities.map((entity) => entity.entity) : [...prev, ...data.entities.map((entity) => entity.entity)],
-            );
+            // eslint-disable-next-line @typescript-eslint/no-shadow
+            setAllEntities(data.pages.flatMap((page) => page.entities.map((entity) => entity.entity)));
         }
-    }, [data, page]);
+    }, [data]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const debouncedSearch = useCallback(
+        _debounce((debounedValue: string) => {
+            setInputValue(debounedValue);
+        }, 300),
+        [],
+    );
 
     const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
         if (reason === 'input' && newValue.length >= 2) {
-            setPage(0);
-            setAllEntities([]);
-            refetch();
+            debouncedSearch(newValue);
         }
     };
 
     const loadMore = useCallback(() => {
-        if (!isFetching) setPage((prevPage) => prevPage + 1);
-    }, [isFetching]);
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
     const observer = useRef<IntersectionObserver | null>(null);
 
     const lastElementRef = useCallback(
         (node) => {
-            if (isFetching) return;
+            if (isLoading) return;
             if (observer.current) observer.current.disconnect();
 
             observer.current = new IntersectionObserver((entries) => {
@@ -101,7 +110,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             });
             if (node) observer.current.observe(node);
         },
-        [isFetching, loadMore],
+        [isLoading, loadMore],
     );
 
     const displayKeys = [
@@ -120,7 +129,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
             disabled={disabled}
             onBlur={onBlur}
             options={allEntities}
-            loading={isFetching}
+            loading={isLoading || isFetchingNextPage}
             loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
             noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
             getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
