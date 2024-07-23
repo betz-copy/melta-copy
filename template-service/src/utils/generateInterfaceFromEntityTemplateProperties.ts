@@ -83,7 +83,7 @@ export const generateInterfaceWithRelationships = async (entity: Record<string, 
             interfaces += generatedInterface + '\n' + '\n';
         }),
     );
-    interfaces += generateInterface(entity, interfaceName);כ
+    interfaces += generateInterface(entity, interfaceName);
 
     return interfaces;
 };
