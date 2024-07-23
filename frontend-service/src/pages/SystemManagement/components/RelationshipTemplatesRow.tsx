@@ -107,7 +107,6 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
     name: '',
     sourceEntityId: '',
     updatedAt: '',
-    isProperty: false,
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
