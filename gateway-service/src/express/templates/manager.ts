@@ -18,6 +18,7 @@ import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
+import streamToBuffer from '../../utils/fs';
 import config from '../../config';
 import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
@@ -34,6 +35,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { Readable } from 'stream';
 
 const {
     categoryHasTemplates,
@@ -337,7 +339,9 @@ export class TemplatesManager {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
 
         if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
-            return downloadFile(pdfTemplateId);
+            const fileStream = await downloadFile(pdfTemplateId);
+            const fileBuffer = await streamToBuffer(fileStream);
+            return Readable.from(fileBuffer);
         }
 
         if (entityTemplate.pdfTemplatesIds) {
