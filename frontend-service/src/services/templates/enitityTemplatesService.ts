@@ -314,7 +314,7 @@ const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: Com
 };
 
 const exportEntityToFormatFile = async (entityId: string, pdfTemplateId: string) => {
-    const { data } = await axios.get(`${entityTemplates}/pdf/${entityId}`, { params: { pdfTemplateId } });
+    const { data } = await axios.get(`${entityTemplates}/pdf/${entityId}`, { params: { pdfTemplateId }, responseType: 'stream' });
     return data;
 };
 

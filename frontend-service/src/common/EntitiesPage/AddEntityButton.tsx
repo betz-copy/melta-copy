@@ -41,7 +41,7 @@ const AddEntityButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-            <Dialog open={addEntityWizardState.isOpen} maxWidth={addEntityWizardState.initialValues?.template.pdfTemplatesIds?.length ? 'xl' : 'md'}>
+            <Dialog open={addEntityWizardState.isOpen} maxWidth={addEntityWizardState.initialValues?.template.pdfTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode={false}
                     entityTemplate={

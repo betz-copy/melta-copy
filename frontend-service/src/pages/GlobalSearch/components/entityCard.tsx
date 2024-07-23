@@ -460,7 +460,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         ))}
                 </Grid>
             </Grid>
-            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.pdfTemplatesIds?.length ? 'xl' : 'md'}>
+            <Dialog open={editDialog.isOpen} maxWidth={entityTemplate.pdfTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={entityTemplate}

@@ -18,6 +18,7 @@ import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
+import fileDownload from 'js-file-download';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
@@ -69,6 +70,7 @@ const CreateOrEditEntityDetails: React.FC<{
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
     const [selectedFileToExport, setSelectedFileToExport] = useState<string>('');
+    const [exportedFile, setExportedFile] = useState<string>('');
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -271,9 +273,15 @@ const CreateOrEditEntityDetails: React.FC<{
                 }, [betterDirty]);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                // const thing = useMutation((result) => {
-                //     exportEntityToFormatFile(values.properties._id, selectedFileToExport);
-                // });
+                const { isLoading: isExportToFileLoading, mutateAsync: exportMutation } = useMutation(
+                    ({ entityId, templateId }: { entityId: string; templateId: string }) => exportEntityToFormatFile(entityId, templateId),
+                    {
+                        onSuccess: (data) => setExportedFile(data),
+                        onError: () => {
+                            toast.error('homo');
+                        },
+                    },
+                );
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -348,7 +356,7 @@ const CreateOrEditEntityDetails: React.FC<{
 
                                                         {currentDraft && (
                                                             <Grid item container xs={8} justifyContent="right">
-                                                                <Typography color="#53566E" marginTop="0.5rem">
+                                                                <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
                                                                     {i18next.t('draftSaveDialog.lastSavedAt', {
                                                                         date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
                                                                     })}
@@ -411,8 +419,13 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
                                                     <Grid item>
                                                         <Autocomplete
-                                                            options={entityTemplate.pdfTemplatesIds?.map(getFileName) || []}
-                                                            onChange={(_e, value) => setSelectedFileToExport(value!)}
+                                                            options={
+                                                                entityTemplate.pdfTemplatesIds?.map((fileName) => ({
+                                                                    label: getFileName(fileName),
+                                                                    value: fileName,
+                                                                })) || []
+                                                            }
+                                                            onChange={(_e, selectedOption) => setSelectedFileToExport(selectedOption?.value!)}
                                                             renderInput={(params) => (
                                                                 <TextField
                                                                     {...params}
@@ -456,7 +469,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             variant="contained"
                                                             startIcon={<VisibilityIcon />}
                                                             onClick={() => handleClose()}
-                                                            disabled={!selectedFileToExport?.length}
+                                                            disabled={!(selectedFileToExport?.length && !values.properties._id)}
                                                         >
                                                             {i18next.t('entityPage.preview')}
                                                         </Button>
@@ -472,8 +485,17 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             }}
                                                             variant="contained"
                                                             startIcon={<FileDownloadOutlinedIcon />}
-                                                            onClick={() => handleClose()}
-                                                            disabled={!selectedFileToExport?.length}
+                                                            onClick={async () => {
+                                                                const file = await exportMutation({
+                                                                    entityId: values.properties._id || entityToUpdate?.templateId,
+                                                                    templateId: selectedFileToExport,
+                                                                });
+
+                                                                console.log(file);
+
+                                                                fileDownload(file, 'nigga.docx');
+                                                            }}
+                                                            disabled={!(selectedFileToExport?.length && !values.properties._id)}
                                                         >
                                                             {i18next.t('entityPage.download')}
                                                         </Button>
@@ -485,7 +507,14 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         style={{ borderRadius: '7px' }}
                                                         variant="outlined"
                                                         startIcon={<ClearIcon />}
-                                                        onClick={() => handleClose()}
+                                                        onClick={async () => {
+                                                            const file = await exportMutation({
+                                                                entityId: values.properties._id || entityToUpdate?.templateId,
+                                                                templateId: selectedFileToExport,
+                                                            });
+
+                                                            fileDownload(file, 'nigga');
+                                                        }}
                                                     >
                                                         {i18next.t('entityPage.cancel')}
                                                     </Button>
