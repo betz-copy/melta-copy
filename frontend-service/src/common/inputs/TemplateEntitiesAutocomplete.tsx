@@ -49,13 +49,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     const { data, refetch, isFetching } = useQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue, page],
-        async () =>
-            await searchEntitiesOfTemplateRequest(template._id!, {
-                skip: page * environment.agGrid.cacheBlockSize,
-                limit: environment.agGrid.cacheBlockSize,
+        () => {
+            const { cacheBlockSize } = environment.agGrid;
+            return searchEntitiesOfTemplateRequest(template._id!, {
+                skip: page * cacheBlockSize,
+                limit: cacheBlockSize,
                 filter: { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
-            }),
+            });
+        },
         {
             onError: () => {
                 toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
@@ -67,11 +69,9 @@ const TemplateEntitiesAutocomplete: React.FC<{
 
     useEffect(() => {
         if (data) {
-            if (page === 0) {
-                setAllEntities(data.entities.map((entity) => entity.entity));
-            } else {
-                setAllEntities((prev) => [...prev, ...data.entities.map((entity) => entity.entity)]);
-            }
+            setAllEntities((prev) =>
+                page === 0 ? data.entities.map((entity) => entity.entity) : [...prev, ...data.entities.map((entity) => entity.entity)],
+            );
         }
     }, [data, page]);
 
@@ -86,29 +86,30 @@ const TemplateEntitiesAutocomplete: React.FC<{
     };
 
     const loadMore = useCallback(() => {
-        if (!isFetching) {
-            setPage((prevPage) => prevPage + 1);
-        }
+        if (!isFetching) setPage((prevPage) => prevPage + 1);
     }, [isFetching]);
 
-    const observer = useRef<IntersectionObserver>();
+    const observer = useRef<IntersectionObserver | null>(null);
 
     const lastElementRef = useCallback(
         (node) => {
             if (isFetching) return;
             if (observer.current) observer.current.disconnect();
+
             observer.current = new IntersectionObserver((entries) => {
-                if (entries[0].isIntersecting) {
-                    loadMore();
-                }
+                if (entries[0].isIntersecting) loadMore();
             });
             if (node) observer.current.observe(node);
         },
         [isFetching, loadMore],
     );
 
-    const [additionalKey] = template.propertiesPreview ?? template.propertiesOrder;
-    const displayKeys = [showField, additionalKey];
+    const displayKeys = [
+        showField,
+        (template.propertiesPreview[0] === showField
+            ? template.propertiesPreview[1] ?? template.propertiesOrder[0]
+            : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
+    ];
 
     return (
         <Autocomplete
@@ -155,20 +156,15 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 return (
                     <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
                         <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                            <Grid item xs={4} overflow="hidden">
-                                <MeltaTooltip placement="right" title={displayOptionValues[0]}>
-                                    <Typography color="black" overflow="hidden">
-                                        {displayOptionValues[0]}
-                                    </Typography>
-                                </MeltaTooltip>
-                            </Grid>
-                            <Grid item xs={4} overflow="hidden">
-                                <MeltaTooltip placement="bottom" title={displayOptionValues[1]}>
-                                    <Typography fontWeight="1" color="#166BD4" noWrap>
-                                        {displayOptionValues[1]}
-                                    </Typography>
-                                </MeltaTooltip>
-                            </Grid>
+                            {displayOptionValues.map((value, index) => (
+                                <Grid item xs={4} overflow="hidden">
+                                    <MeltaTooltip placement="right" title={value}>
+                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                            {value}
+                                        </Typography>
+                                    </MeltaTooltip>
+                                </Grid>
+                            ))}
                             <Grid item xs={0}>
                                 <MeltaTooltip
                                     title={
