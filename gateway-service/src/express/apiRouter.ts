@@ -13,6 +13,7 @@ import RulesBreachesRouter from './ruleBreaches/router';
 import GanttsRouter from './gantts/router';
 import { workspaceRouter } from './workspaces/router';
 import config from '../config';
+import flowCubeRouter from './flowCube/router';
 
 const apiRouter = Router();
 
@@ -26,6 +27,8 @@ apiRouter.use('/config', (_req, res) =>
 apiRouter.use('/templates', templatesRouter);
 apiRouter.use('/instances', instancesRouter);
 
+apiRouter.use('/flow-cube', flowCubeRouter);
+
 apiRouter.use(
     '/files',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
@@ -35,7 +38,7 @@ apiRouter.use(
 apiRouter.use(
     '/preview',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody, proxyTimeout: config.previewService.requestTimeout }),
 );
 
 apiRouter.use('/processes', processesRouter);

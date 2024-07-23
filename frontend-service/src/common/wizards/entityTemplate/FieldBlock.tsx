@@ -10,6 +10,7 @@ import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',
@@ -20,6 +21,8 @@ export const FieldBlockAccordion = styled(Accordion)({
 interface FieldBlockProps<PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>> {
     propertiesType: PropertiesType;
     values: Values;
+    uniqueConstraints?: IUniqueConstraintOfTemplate[];
+    setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     initialValues: Values | undefined;
     setFieldValue: FormikHelpers<Values>['setFieldValue'];
     areThereAnyInstances: boolean;
@@ -34,12 +37,17 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
+    supportRelationshipReference: boolean;
+    supportEditEnum?: boolean;
+    supportUnique?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
 const FieldBlock = <PropertiesType extends string, Values extends Record<PropertiesType, CommonFormInputProperties[]>>({
     propertiesType,
     values,
+    uniqueConstraints,
+    setUniqueConstraints,
     initialValues,
     setFieldValue,
     areThereAnyInstances,
@@ -53,6 +61,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportEntityReferenceType,
     supportChangeToRequiredWithInstances,
     supportArrayFields,
+    supportRelationshipReference,
+    supportEditEnum,
+    supportUnique,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -61,13 +72,15 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         required: false,
         preview: false,
         hide: false,
-        unique: false,
+        groupName: undefined,
+        uniqueCheckbox: false,
         options: [],
         optionColors: {},
         pattern: '',
         patternCustomErrorMessage: '',
         dateNotification: undefined,
-        calculateTime: false,
+        calculateTime: undefined,
+        relationshipReference: undefined,
         serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
@@ -134,7 +147,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         }
 
         displayValuesCopy[index] = value;
-
         setDisplayValues(displayValuesCopy);
         updateFormik();
     };
@@ -144,13 +156,10 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         const inputValue = event.target.type === 'checkbox' ? event.target.checked : event.target.value;
         setFieldDisplayValue(index, inputName as keyof Values, inputValue);
     };
-
     const onChangeWrapper = (index: number) => (event: React.ChangeEvent<HTMLInputElement>) => onChange(index, event);
     const setFieldDisplayValueWrapper = (index: number) => (field: keyof Values, value: any) => setFieldDisplayValue(index, field, value);
     const setDisplayValueWrapper = (index: number) => (value: SetStateAction<CommonFormInputProperties>) => setDisplayValue(index, value);
-
     const isFieldBlockError = Boolean(touched?.[propertiesType]) && Boolean(errors?.[propertiesType]);
-
     return (
         <FieldBlockAccordion style={{ border: isFieldBlockError ? '1px solid red' : '' }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -179,6 +188,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                     >
                                         {displayValues.map((property, index) => {
                                             const props = {
+                                                entity: (values as any).displayName,
                                                 value: property,
                                                 index,
                                                 isEditMode,
@@ -191,7 +201,11 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportSerialNumberType,
                                                 supportEntityReferenceType,
                                                 supportChangeToRequiredWithInstances,
+                                                templateId: (values as any)._id,
                                                 supportArrayFields,
+                                                supportEditEnum,
+                                                supportRelationshipReference,
+                                                supportUnique,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
@@ -201,6 +215,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                         key={property.id}
                                                         setFieldValue={setFieldDisplayValueWrapper(index) as FieldEditCardProps['setFieldValue']}
                                                         setValues={setDisplayValueWrapper(index)}
+                                                        uniqueConstraints={uniqueConstraints}
+                                                        setUniqueConstraints={setUniqueConstraints}
                                                     />
                                                 );
                                             }

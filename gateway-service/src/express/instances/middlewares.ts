@@ -1,10 +1,10 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
@@ -94,6 +94,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
         body: { templateIds },
         permissionsOfUserId,
     } = req as RequestWithPermissionsOfUserId;
+    req.body.userId = req.user!.id;
 
     const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
         (entityTemplate) => entityTemplate._id,

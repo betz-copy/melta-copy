@@ -38,9 +38,10 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
 
     const templateIds = Array.from(entityTemplates.keys());
 
+    const expanded = entityId ? { [entityId]: 1 } : {};
     const { data: expandedEntity, isLoading } = useQuery(
-        ['getExpandedEntity', entityId, { templateIds, numberOfConnections: 0 }],
-        () => getExpandedEntityByIdRequest(entityId!, { templateIds }),
+        ['getExpandedEntity', entityId, expanded, { templateIds }],
+        () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
         {
             onError: (error: AxiosError) => {
                 if (error.response?.status === 404) {
@@ -51,9 +52,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     );
 
     if (isLoading) return <CircularProgress />;
-
     const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
-
     return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === currentEntityTemplate?.category._id));
 };
 

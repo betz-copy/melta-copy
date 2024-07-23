@@ -14,7 +14,6 @@ import {
     validateUserCanUpdateOrDeleteEntityTemplate,
     validateUserCanUpdateOrDeleteRelationshipTemplate,
 } from './middlewares';
-
 import config from '../../config';
 import ValidateRequest from '../../utils/joi';
 import {
@@ -23,32 +22,36 @@ import {
     createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
+    deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
+import { IMongoEntityTemplateWithConstraints } from './interfaces';
 
 const {
-    entityTemplateService: entityTemplateManager,
-    relationshipTemplateService: relationshipTemplateManager,
+    templateService: { url, requestTimeout },
     service: { uploadsFolderPath },
 } = config;
 
-const EntityTemplatesManagerProxy = createProxyMiddleware({
-    target: entityTemplateManager.url,
-    onProxyReq: fixRequestBody,
-    proxyTimeout: entityTemplateManager.requestTimeout,
+const TemplatesServiceProxy = createProxyMiddleware({
+    target: url,
+    onProxyReq: (proxyReq, req, _res) => {
+        fixRequestBody(proxyReq, req);
+    },
+    proxyTimeout: requestTimeout,
 });
 
-const RelationshipTemplatesManagerProxy = createProxyMiddleware({
-    target: relationshipTemplateManager.url,
-    onProxyReq: fixRequestBody,
-    proxyTimeout: relationshipTemplateManager.requestTimeout,
-});
+const fixDeleteResponseData = (data: IMongoEntityTemplateWithConstraints) => {
+    const logData = JSON.parse(JSON.stringify(data));
+    logData.category = { _id: data.category };
+    return logData;
+};
 
 const templatesRouter: Router = Router();
 
@@ -56,7 +59,7 @@ const templatesRouter: Router = Router();
 templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions), wrapController(TemplatesController.getAllAllowedTemplates));
 
 // categories
-templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), EntityTemplatesManagerProxy);
+templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
@@ -79,30 +82,62 @@ templatesRouter.delete(
 );
 
 // entities (templates)
+templatesRouter.put(
+    '/entities/update-enum-field/:id',
+    ValidateRequest(updateFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.updateEntityEnumFieldValue),
+);
+templatesRouter.patch(
+    '/entities/delete-enum-field/:id',
+    ValidateRequest(deleteFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    wrapController(TemplatesController.deleteEntityEnumFieldValue),
+);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
-    wrapController(TemplatesController.createEntityTemplate),
+    wrapController(TemplatesController.createEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityTemplate),
+    wrapController(TemplatesController.updateEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
-    wrapController(TemplatesController.updateEntityTemplateStatus),
+    wrapController(TemplatesController.updateEntityTemplateStatus, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityTemplate),
+    wrapController(TemplatesController.deleteEntityTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-entities',
+        responseDataExtractor: fixDeleteResponseData,
+    }),
 );
 
 // relationships (templates)
@@ -110,23 +145,44 @@ templatesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
-    wrapController(TemplatesController.createRelationshipTemplate),
+    wrapController(TemplatesController.createRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.put(
     '/relationships/:id',
     ValidateRequest(updateRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.updateRelationshipTemplate),
+    wrapController(TemplatesController.updateRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
 );
 templatesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.deleteRelationshipTemplate),
+    wrapController(TemplatesController.deleteRelationshipTemplate, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'templates-relationships',
+        responseDataExtractor: undefined,
+    }),
+);
+
+templatesRouter.get(
+    '/relationships/all',
+    wrapMiddleware(validateUserIsTemplatesManager),
+    wrapController(TemplatesController.getAllRelationshipTemplates),
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.patch(
     '/rules/:ruleId/status',
     wrapMiddleware(validateUserIsRulesManager),
@@ -139,6 +195,6 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     wrapController(TemplatesController.deleteRuleById),
 );
-templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), RelationshipTemplatesManagerProxy);
+templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 
 export default templatesRouter;

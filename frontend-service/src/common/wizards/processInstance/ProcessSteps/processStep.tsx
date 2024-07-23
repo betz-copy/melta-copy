@@ -1,28 +1,95 @@
-import { Grid, Button, CircularProgress, Box, Typography, TextField } from '@mui/material';
-import { Formik, Form, Field } from 'formik';
+/* eslint-disable no-extra-boolean-cast */
+import { Clear as ClearIcon, Done as DoneIcon, Edit as EditIcon } from '@mui/icons-material';
+import { Box, Button, CircularProgress, Grid, InputLabel, TextField, Typography } from '@mui/material';
+import { AxiosError } from 'axios';
+import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { Done as DoneIcon, Clear as ClearIcon, Edit as EditIcon } from '@mui/icons-material';
-import { AxiosError } from 'axios';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
-import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
-import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
-import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
-import { getStepValuesFromStepInstance } from './stepsFormik';
-import { updateStepRequest } from '../../../../services/processesService';
-import { ErrorToast } from '../../../ErrorToast';
-import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessStepValues } from '.';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { EntityReference } from '../EntityReference';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
+import { IPermissionsOfUser } from '../../../../services/permissionsService';
+import { updateStepRequest } from '../../../../services/processesService';
+import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
+import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
-import { OpenPreviewButton } from '../../../FilePreview/OpenPreviewButton';
+import { ErrorToast } from '../../../ErrorToast';
+import OpenPreview from '../../../FilePreview/OpenPreview';
+import { InstanceFileInput } from '../../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../../inputs/JSONSchemaFormik';
+import { EntityReference } from '../EntityReference';
+import ProcessStatus from '../ProcessSummaryStep/ProcessStatus';
+import { getStepValuesFromStepInstance } from './stepsFormik';
+
+export const CommentsDetails: FC<{ values: ProcessStepValues | IMongoStepInstancePopulated; toPrint?: boolean }> = ({ values, toPrint }) => {
+    if (!values.comments) {
+        return null;
+    }
+
+    return (
+        <div style={{ textAlign: toPrint ? 'right' : 'center' }}>
+            <BlueTitle title={i18next.t('wizard.processInstance.step.comment')} component="h6" variant={toPrint ? 'h6' : 'body1'} />
+            <Typography variant="body1" sx={{ paddingY: '5px', paddingX: '10px', wordBreak: 'break-word', fontSize: !toPrint ? '15px' : undefined }}>
+                {values.comments}
+            </Typography>
+        </div>
+    );
+};
+
+export const TextAreaProperty: FC<{
+    textArea: {
+        value?: any;
+        key: string;
+        title: string;
+    };
+}> = ({ textArea }) => {
+    return (
+        <Box key={textArea.key} marginY={2}>
+            <InputLabel
+                style={{
+                    fontFamily: 'Rubik',
+                    color: '#9398C2',
+                    fontSize: '1rem',
+                    fontWeight: 400,
+                    lineHeight: '1.4375em',
+                    transformOrigin: 'top right',
+                    padding: 0,
+                    display: 'block',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '133%',
+                    position: 'relative',
+                    right: 0,
+                    top: 0,
+                }}
+                shrink
+            >
+                {textArea.title}
+            </InputLabel>
+            <Typography
+                fontSize="16px"
+                width={700}
+                color="black"
+                style={{
+                    textOverflow: 'ellipsis',
+                    fontFamily: 'Rubik',
+                    whiteSpace: 'pre-line',
+                    overflowWrap: 'anywhere',
+                    padding: '4px 0 5px 1rem',
+                    borderBottom: '1px solid grey',
+                }}
+            >
+                {textArea.value || ''}
+            </Typography>
+        </Box>
+    );
+};
 
 interface ProcessStepProps {
     stepInstance: IMongoStepInstancePopulated;
@@ -31,6 +98,7 @@ interface ProcessStepProps {
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
+    toPrint?: boolean;
 }
 export const ProcessStep: FC<ProcessStepProps> = ({
     stepInstance,
@@ -39,6 +107,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     isStepEditMode,
     setIsStepEditMode,
     onStepUpdateSuccess,
+    toPrint,
 }) => {
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -95,11 +164,26 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                     propertiesOrder: stepTemplate.propertiesOrder,
                 });
 
+                const textAreaSchema = Object.entries(stepTemplate.properties.properties)
+                    .filter(([_key, property]) => property.format === 'text-area')
+                    .map(([key, property]) => ({
+                        key,
+                        title: property.title,
+                    }));
+
+                const textAreaValues = textAreaSchema.flatMap((property) => {
+                    if (values.properties[property.key]) {
+                        const value = renderHTML(values.properties[property.key]);
+                        return [{ ...property, value }];
+                    }
+                    return [{ ...property }];
+                });
+
                 return (
                     <Form>
                         <Grid container direction="column">
-                            {hasPermissionsToEditStep && (
-                                <Grid container spacing={1}>
+                            {hasPermissionsToEditStep && !toPrint && (
+                                <Grid container spacing={1} marginBottom={1}>
                                     {isStepEditMode ? (
                                         <>
                                             <Grid item>
@@ -146,11 +230,11 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                 </Grid>
                             )}
 
-                            <Grid container spacing={2} marginTop={1} justifyContent="space-between">
+                            <Grid container spacing={2} justifyContent="space-between">
                                 <Grid
                                     item
-                                    xs={7}
-                                    maxHeight={550}
+                                    xs={toPrint ? 0 : 7}
+                                    maxHeight={toPrint ? undefined : 550}
                                     sx={{
                                         overflowY: 'auto',
                                     }}
@@ -161,16 +245,20 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                             <JSONSchemaFormik
                                                 schema={propertiesSchema}
                                                 values={{ ...values, properties: values.properties }}
-                                                setValues={async (propertiesValues) => {
-                                                    setFieldValue('properties', propertiesValues);
+                                                setValues={(propertiesValues) => {
+                                                    return setFieldValue('properties', propertiesValues);
                                                 }}
                                                 errors={errors.properties ?? {}}
                                                 touched={touched.properties ?? {}}
-                                                setFieldTouched={async (field) => {
-                                                    setFieldTouched(`properties.${field}`);
+                                                setFieldTouched={(field) => {
+                                                    return setFieldTouched(`properties.${field}`);
                                                 }}
                                                 readonly={!isStepEditMode}
+                                                toPrint={toPrint}
                                             />
+                                            {toPrint &&
+                                                textAreaValues.length > 0 &&
+                                                textAreaValues.map((textArea) => <TextAreaProperty key={textArea.key} textArea={textArea} />)}
                                         </Grid>
                                     )}
 
@@ -188,9 +276,9 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                     {Object.entries(templateFileProperties).map(([key, value], index) => {
                                                         return (
                                                             <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
-                                                                {!!value.items ? (
+                                                                {value.items ? (
                                                                     <InstanceFileInput
-                                                                        key={key}
+                                                                        key={`${key} - ${value}`}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -198,11 +286,10 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         value={values.attachmentsProperties[key]}
                                                                         error={errors.properties?.[key] as string}
                                                                         setFieldTouched={setFieldTouched}
-                                                                        multiple={!!value.items}
                                                                     />
                                                                 ) : (
                                                                     <InstanceSingleFileInput
-                                                                        key={key}
+                                                                        key={`${key} : ${value}`}
                                                                         fileFieldName={`attachmentsProperties.${key}`}
                                                                         fieldTemplateTitle={value.title}
                                                                         setFieldValue={setFieldValue}
@@ -228,20 +315,27 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             if (values.attachmentsProperties[fieldName] !== undefined) {
                                                                 if (Array.isArray(values.attachmentsProperties[fieldName])) {
                                                                     attachments = values.attachmentsProperties[fieldName].map((file) => (
-                                                                        <OpenPreviewButton fileId={file.name} key={file.name} />
+                                                                        <OpenPreview fileId={file.name} key={file.name} download={toPrint} />
                                                                     ));
                                                                 } else {
                                                                     attachments = (
-                                                                        <OpenPreviewButton
+                                                                        <OpenPreview
                                                                             fileId={values.attachmentsProperties[fieldName].name}
-                                                                            key={fieldName}
+                                                                            key={`${fieldName} - 1`}
+                                                                            download={toPrint}
                                                                         />
                                                                     );
                                                                 }
                                                             }
 
                                                             return (
-                                                                <Grid container spacing={1} key={fieldName} display="flex" flexDirection="column">
+                                                                <Grid
+                                                                    container
+                                                                    spacing={1}
+                                                                    key={`${fieldName} - 2`}
+                                                                    display="flex"
+                                                                    flexDirection="column"
+                                                                >
                                                                     <Grid item>
                                                                         <Typography display="inline" variant="body1">
                                                                             {title}:
@@ -277,7 +371,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                             i18next.t('validation.requiredEntity')
                                                         );
                                                     }}
-                                                    key={fieldName}
+                                                    key={`${fieldName} - 3`}
                                                     field={fieldName}
                                                     values={values}
                                                     errors={errors}
@@ -296,44 +390,37 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                         </Grid>
                                     )}
                                 </Grid>
-
-                                <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
-                                    <Grid item>
-                                        <ProcessStatus
-                                            title={i18next.t('wizard.processInstance.step.stepStatus')}
-                                            instance={stepInstance}
-                                            editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
-                                        />
-                                    </Grid>
-
-                                    <Grid item width={250}>
-                                        {isStepEditMode ? (
-                                            <TextField
-                                                label={i18next.t('wizard.processInstance.step.comment')}
-                                                multiline
-                                                rows={8}
-                                                value={values.comments}
-                                                onChange={(e) => {
-                                                    setFieldValue('comments', e.target.value);
-                                                }}
-                                                style={{ width: '100%' }}
+                                {!toPrint && (
+                                    <Grid item container direction="column" xs={4.5} spacing={2} alignItems="center">
+                                        <Grid item>
+                                            <ProcessStatus
+                                                title={i18next.t('wizard.processInstance.step.stepStatus')}
+                                                instance={stepInstance}
+                                                editStatus={{ setFieldValue, isEditMode: isStepEditMode, values }}
                                             />
-                                        ) : (
-                                            values.comments && (
-                                                <div style={{ textAlign: 'center' }}>
-                                                    <BlueTitle
-                                                        title={i18next.t('wizard.processInstance.step.comment')}
-                                                        component="h6"
-                                                        variant="body1"
-                                                    />
-                                                    <Typography height="18vh" style={{ wordBreak: 'break-word', fontSize: '15px' }}>
-                                                        {values.comments}
-                                                    </Typography>
-                                                </div>
-                                            )
-                                        )}
+                                        </Grid>
+
+                                        <Grid item width={250}>
+                                            {isStepEditMode ? (
+                                                <TextField
+                                                    label={i18next.t('wizard.processInstance.step.comment')}
+                                                    multiline
+                                                    rows={8}
+                                                    value={values.comments}
+                                                    onChange={(e) => {
+                                                        setFieldValue('comments', e.target.value);
+                                                    }}
+                                                    style={{ width: '100%' }}
+                                                    InputProps={{
+                                                        style: { whiteSpace: 'pre-line', overflowWrap: 'break-word' },
+                                                    }}
+                                                />
+                                            ) : (
+                                                <CommentsDetails values={values} toPrint={toPrint} />
+                                            )}
+                                        </Grid>
                                     </Grid>
-                                </Grid>
+                                )}
                             </Grid>
                         </Grid>
                     </Form>

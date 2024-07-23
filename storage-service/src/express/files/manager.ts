@@ -1,13 +1,26 @@
+import * as Express from 'express';
+import { menash } from 'menashmq';
 import { Stream } from 'stream';
+import { config } from '../../config';
+import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { generatePath } from '../../utils/generatePath';
+import logger from '../../utils/logger/logsLogger';
 import DefaultManagerMinio from '../../utils/minio/manager';
+
+const { rabbit, document } = config;
 
 export class FilesManager extends DefaultManagerMinio {
     uploadFile(file?: Express.Multer.File) {
         return file;
     }
 
-    uploadFiles(files?: Express.Multer.File[]) {
+    async uploadFiles(files?: Express.Multer.File[]) {
+        const documentFiles = files?.filter((file) => isFileDocument(file.path));
+        if (documentFiles?.length)
+            await menash.send(
+                rabbit.previewQueue,
+                documentFiles.map((file) => file.path),
+            );
         return files;
     }
 
@@ -24,6 +37,12 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     async deleteFile(filePath: string) {
+        const pdfFileName = `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
+        try {
+            await this.minioClient.removeFile(pdfFileName);
+        } catch (error) {
+            logger.error('Error removing preview file:', { error });
+        }
         return this.minioClient.removeFile(filePath);
     }
 
@@ -40,8 +59,22 @@ export class FilesManager extends DefaultManagerMinio {
         return result;
     }
 
-    async deleteFiles(filePaths: string[]) {
-        return this.minioClient.removeFiles(filePaths);
+    deleteFiles(filePaths: string[]) {
+        const removalPromises = filePaths.map(async (filePath) => {
+            const extension = getFileExtension(filePath);
+            if (document.documentType.includes(extension)) {
+                const pdfFileName = `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
+                try {
+                    await this.minioClient.removeFile(pdfFileName);
+                } catch (error) {
+                    logger.error('Error removing preview file:', { error });
+                }
+            }
+        });
+
+        return Promise.all(removalPromises)
+            .then(() => this.minioClient.removeFiles(filePaths))
+            .catch((error) => logger.error('Error removing files:', { error }));
     }
 
     async getFilesData(filePaths: string[]): Promise<Buffer[]> {
@@ -50,15 +83,16 @@ export class FilesManager extends DefaultManagerMinio {
                 return this.minioClient.downloadFileStream(filePath.toString());
             }),
         );
-        return Promise.all(fileStreams.map(streamToBuffer));
+        return Promise.all(fileStreams.map((fileStream) => this.streamToBuffer(fileStream)));
+    }
+
+    private async streamToBuffer(stream: Stream): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            const chunks: Buffer[] = [];
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+            stream.on('end', () => resolve(Buffer.concat(chunks)));
+            stream.on('error', reject);
+        });
     }
 }
 
-async function streamToBuffer(stream: Stream): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-        stream.on('error', reject);
-    });
-}

@@ -4,10 +4,11 @@ import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '.
 import { environment } from '../../globals';
 import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
+import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -27,6 +28,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'text-area') type = 'text-area';
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -35,15 +37,18 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
-            unique: type !== 'serialNumber' && uniqueConstraints.filter((constraints) => constraints.includes(key)).length > 0, // serials cant be marked unique
-            calculateTime: value.calculateTime,
+            uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
+            groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
+            calculateTime: value.calculateTime ?? undefined,
             type,
             options: value.enum || value.items?.enum || [],
             optionColors: enumPropertiesColors?.[key] ? enumPropertiesColors[key] : {},
             pattern: value.pattern || '',
             patternCustomErrorMessage: value.patternCustomErrorMessage || '',
             dateNotification: value.dateNotification,
+            isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
+            relationshipReference: value.relationshipReference || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -60,21 +65,20 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             icon: { file, name: getFileName(iconFileId) },
             properties: propertiesArray,
             attachmentProperties,
+            uniqueConstraints,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
-    //// change to support file types
+    // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
-
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const uniqueConstraint: string[] = []; // UI supports only single unique constraint
     const schema: IEntityTemplate['properties'] = {
         type: 'object',
         properties: {},
@@ -96,10 +100,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             pattern,
             patternCustomErrorMessage,
             dateNotification,
+            isDailyAlert,
             calculateTime,
             serialStarter,
             hide,
-            unique,
+            relationshipReference,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -128,20 +133,27 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
-                dateNotification: dateNotification as string | undefined,
-                calculateTime: calculateTime as boolean | undefined,
+                dateNotification: dateNotification as number | undefined,
+                calculateTime: calculateTime ?? undefined,
+                isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+                relationshipReference: relationshipReference
+                    ? {
+                          relationshipTemplateId: relationshipReference!.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference!.relatedTemplateId,
+                          relatedTemplateField: relationshipReference!.relatedTemplateField,
+                      }
+                    : undefined,
             };
 
             propertiesOrder.push(name);
 
             if (required) schema.required.push(name);
             if (hide) schema.hide.push(name);
-            if (unique) uniqueConstraint.push(name);
             if (preview) propertiesPreview.push(name);
             if (type === 'serialNumber') serialsUniqueConstraints.push([name]);
-
             if (type === 'enum' || type === 'enumArray') {
                 Object.entries(optionColors).forEach(([option, color]) => {
                     if (!color) return;
@@ -177,7 +189,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
 
         if (required) schema.required.push(name);
     });
-    const uniqueConstraints = uniqueConstraint.length > 0 ? [uniqueConstraint, ...serialsUniqueConstraints] : serialsUniqueConstraints;
 
     return {
         ...restOfProperties,
@@ -190,7 +201,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
         propertiesTypeOrder,
         propertiesPreview,
         enumPropertiesColors,
-        uniqueConstraints,
+        uniqueConstraints: restOfProperties.uniqueConstraints || [],
     };
 };
 
@@ -253,7 +264,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
@@ -263,10 +273,30 @@ const deleteEntityTemplateRequest = async (entityTemplateId: string) => {
     return data;
 };
 
+const updateEnumFieldRequest = async (id: string, fieldValue: string, values: CommonFormInputProperties, field: string) => {
+    const { name, type, options } = values;
+    const partialInput = { name, type, options };
+    const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/update-enum-field/${id}`, {
+        fieldValue,
+        partialInput,
+        field,
+    });
+    return data;
+};
+
+const deleteEnumFieldRequest = async (id: string, fieldValue: string, field: CommonFormInputProperties) => {
+    const { name, type, options } = field;
+    const partialInput = { name, type, options };
+    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/delete-enum-field/${id}`, { fieldValue, partialInput });
+    return data;
+};
+
 export {
     createEntityTemplateRequest,
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
+    updateEnumFieldRequest,
+    deleteEnumFieldRequest,
 };

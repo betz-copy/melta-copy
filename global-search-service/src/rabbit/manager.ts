@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import config from '../config';
-import { EntityTemplateManagerService } from '../externalServices/entityTemplateManager';
+import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
 import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import RedisClient from '../utils/redis';
@@ -15,24 +15,24 @@ const {
 } = config;
 
 export default class Manager extends DefaultManagerNeo4j {
-    private entityTemplateManagerService: EntityTemplateManagerService;
+    private templateManagerService: TemplateManagerService;
 
     private redisClient: RedisClient;
 
     constructor(dbName: string) {
         super(dbName);
-        this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
+        this.templateManagerService = new TemplateManagerService(dbName);
         this.redisClient = new RedisClient(dbName);
     }
 
     private async createIndex(indexName: string, labels: string[], properties: string[]) {
         const createFullTextIndexCommand = `
-    CALL db.index.fulltext.createNodeIndex(
-        '${indexName}',
-        ['${labels.join("','")}'],
-        ['${properties.join("','")}'],
-        { analyzer: 'unicode_whitespace' }
-    )`;
+        CALL db.index.fulltext.createNodeIndex(
+            '${indexName}',
+            ['${labels.join("','")}'],
+            ['${properties.join("','")}'],
+            { analyzer: 'unicode_whitespace' }
+        )`;
 
         // we chose analyzer "unicode_whitespace" because we want to do searches of `*{search}*`.
         // in fulltext (lucene) query '*' works only on terms, and not phrases.
@@ -77,7 +77,7 @@ export default class Manager extends DefaultManagerNeo4j {
         }
 
         await this.createIndex(primaryIndexName, labels, properties);
-        await this.redisClient.set(redisKeyName, primaryIndexName);
+        await this.redisClient.set(redisKeyName, secondaryIndexName);
         await this.dropIndex(secondaryIndexName);
     }
 
@@ -94,8 +94,27 @@ export default class Manager extends DefaultManagerNeo4j {
         return templateProperties;
     }
 
-    public async upsertGlobalSearchIndex() {
-        const templates = await this.entityTemplateManagerService.searchEntityTemplates();
+    private async getRelationshipReferencesPropertiesIndex(template: IEntityTemplate) {
+        const relationshipReferencesProperties: string[] = [];
+
+        await Promise.all(
+            Object.entries(template.properties.properties).map(async ([key, value]) => {
+                if (value.format === 'relationshipReference') {
+                    const relatedTemplate = await this.templateManagerService.getEntityTemplateById(value.relationshipReference!.relatedTemplateId);
+                    this.getTemplatePropertiesIndex(relatedTemplate).forEach((innerProperty) =>
+                        relationshipReferencesProperties.push(
+                            `${key}.properties.${innerProperty}${config.neo4j.relationshipReferencePropertySuffix}`,
+                        ),
+                    );
+                }
+            }),
+        );
+
+        return relationshipReferencesProperties;
+    }
+
+    async upsertGlobalSearchIndex() {
+        const templates = await this.templateManagerService.searchEntityTemplates();
 
         const templateIds = templates.map((template) => template._id);
         const allTemplatesProperties = new Set<string>();
@@ -103,6 +122,13 @@ export default class Manager extends DefaultManagerNeo4j {
         templates.forEach((template) => {
             this.getTemplatePropertiesIndex(template).forEach((property) => allTemplatesProperties.add(property));
         });
+
+        await Promise.all(
+            templates.map(async (template) => {
+                const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
+                relationshipReferencesProperties.forEach((property) => allTemplatesProperties.add(property));
+            }),
+        );
 
         await this.upsertSearchIndex(
             globalSearchKeyName,
@@ -113,19 +139,21 @@ export default class Manager extends DefaultManagerNeo4j {
         );
     }
 
-    public async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
-        const changedTemplate = await this.entityTemplateManagerService.getEntityTemplateById(changedTemplateId);
+    async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
+        const changedTemplate = await this.templateManagerService.getEntityTemplateById(changedTemplateId);
+        const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(changedTemplate);
+        const allProperties = [...relationshipReferencesProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
 
         await this.upsertSearchIndex(
             `${templateSearchKeyNamePrefix}${changedTemplateId}`,
             `${primaryTemplateSearchIndexPrefix}${changedTemplateId}`,
             `${secondaryTemplateSearchIndexPrefix}${changedTemplateId}`,
             [changedTemplateId],
-            this.getTemplatePropertiesIndex(changedTemplate),
+            allProperties,
         );
     }
 
-    public async deleteTemplateSearchIndex(templateId: string) {
+    async deleteTemplateSearchIndex(templateId: string) {
         const redisKeyName = `${templateSearchKeyNamePrefix}${templateId}`;
 
         const latestIndex = await this.redisClient.get(redisKeyName);

@@ -5,9 +5,9 @@ import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import { formatDate } from '../../../utils/neo4j/lib';
 import config from '../../../config';
-import { getMockAdapterEntityTemplateManager, getMockAdapterRelationshipTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
-import { IMongoEntityTemplate } from '../../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -57,8 +57,7 @@ const defaultEntity = {
 const { neo4j } = config;
 
 describe('Entity router', () => {
-    const mockEntityTemplateManager = getMockAdapterEntityTemplateManager();
-    const mockRelationshipTemplateManager = getMockAdapterRelationshipTemplateManager();
+    const mockTemplateManager = getMockAdapterTemplateManager();
 
     let app: Express;
 
@@ -70,9 +69,9 @@ describe('Entity router', () => {
         // Initialize Neo4j client
         await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
         // Mock get template router - for validation middleware
-        mockEntityTemplatesRoutes(mockEntityTemplateManager, [defaultTemplate]);
+        mockEntityTemplatesRoutes(mockTemplateManager, [defaultTemplate]);
 
-        mockRulesRoutes(mockRelationshipTemplateManager, [], [defaultTemplateId], [defaultRelationshipTemplateId]);
+        mockRulesRoutes(mockTemplateManager, [], [defaultTemplateId]);
     });
 
     afterAll(async () => {
@@ -268,7 +267,7 @@ describe('Entity router', () => {
                     .send({ templateId: defaultTemplateId, properties: secondEntityProperties });
 
                 // Mock get relationship template route
-                mockRelationshipTemplatesRoutes(mockRelationshipTemplateManager, [
+                mockRelationshipTemplatesRoutes(mockTemplateManager, [
                     {
                         _id: defaultRelationshipTemplateId,
                         name: 'RelationshipMock',

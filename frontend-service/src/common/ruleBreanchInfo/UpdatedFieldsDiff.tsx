@@ -3,25 +3,37 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';
 import ReactDiffViewer from 'react-diff-viewer';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { getFileName } from '../../utils/getFileName';
+import { containsHTMLTags } from '../../utils/HtmlTagsStringValue';
 import { formatToString } from '../EntityProperties';
 
-const getEntityPropertyString = (
-    value: any,
-    type: 'string' | 'number' | 'boolean' | 'array',
-    format: string | undefined,
-    oldValue: any,
-    items?: any,
-) => {
+const getEntityPropertyString = (value: any, propertyTemplate: IEntitySingleProperty, oldValue: any, items?: any) => {
+    const { format } = propertyTemplate;
     if (value === null || value === undefined) {
         return '-';
     }
 
+    if (containsHTMLTags(value)) {
+        return new DOMParser().parseFromString(value, 'text/html').body.innerText;
+    }
+
+    if (format === 'relationshipReference') {
+        const isDiff = oldValue?.properties._id !== value.properties._id;
+        const displayValue = value.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
+        const oldDisplayValue = oldValue?.properties[propertyTemplate.relationshipReference!.relatedTemplateField];
+
+        if (isDiff && displayValue === oldDisplayValue) {
+            return `${displayValue} (${i18next.t('ruleBreachInfo.updateEntityActionInfo.contentUpdated')})`;
+        }
+
+        return displayValue;
+    }
+
     if (format !== 'fileId' && !items) {
-        return formatToString(value, type, format);
+        return formatToString(value, propertyTemplate);
     }
 
     // single
@@ -58,7 +70,7 @@ const getEntityPropertiesString = (
     const fieldPropertiesStrings = Object.entries(entityTemplate.properties.properties).map(([propertyKey, propertyTemplate]) => {
         const oldValue = oldEntityProperties?.[propertyKey];
         const value = entityProperties[propertyKey];
-        const valueFormatted = getEntityPropertyString(value, propertyTemplate.type, propertyTemplate.format, oldValue, propertyTemplate.items);
+        const valueFormatted = getEntityPropertyString(value, propertyTemplate, oldValue, propertyTemplate.items);
         return `${propertyTemplate.title}: ${valueFormatted}`;
     });
     return fieldPropertiesStrings.join('\n');

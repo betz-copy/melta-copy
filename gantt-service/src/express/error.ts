@@ -1,4 +1,5 @@
 import * as express from 'express';
+import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
     public code;
@@ -27,8 +28,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     }
 
-    // TODO: add some logging
-    console.log('Request failed with error: ', error);
+    logger.error('Request failed with error: ', { error });
 
     next();
 };

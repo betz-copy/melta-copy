@@ -15,7 +15,7 @@ import { environment } from '../globals';
 
 const { groupByEntitiesChunkSize } = environment.ganttSettings;
 
-const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
+export const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
         case 'date':
             return date.toISOString().split('T')[0];

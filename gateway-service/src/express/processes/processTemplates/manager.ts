@@ -18,6 +18,7 @@ import {
 } from '../../../externalServices/processService/interfaces/processInstance';
 import config from '../../../config';
 import { isProcessManager } from '../../../externalServices/permissionsService';
+import logger from '../../../utils/logger/logsLogger';
 
 const { internalSearchPullLimit } = config.processService;
 
@@ -58,7 +59,7 @@ export class ProcessTemplatesManager {
         const newFileIds = new Set(newStepsIconFileIds.filter((id) => id !== null) as string[]);
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
-        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused icons: ${idsToDelete}`)); // eslint-disable-line no-console
+        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused icons: ${idsToDelete}`));
     }
 
     private static async handleIcons(icons: Express.Multer.File[], newSteps: IMongoStepTemplate[]) {
@@ -107,10 +108,9 @@ export class ProcessTemplatesManager {
         const iconsIds = steps.map((step) => {
             return step.iconFileId;
         });
-        await deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.log('failed to delete icons images');
-            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${err}`);
+        await deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
+            logger.error('failed to delete icons images', { error });
+            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${error}`);
         });
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

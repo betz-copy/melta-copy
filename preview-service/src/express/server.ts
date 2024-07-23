@@ -3,7 +3,6 @@ import { once } from 'events';
 import * as express from 'express';
 import * as helmet from 'helmet';
 import * as http from 'http';
-import * as logger from 'morgan';
 import { config } from '../config';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
@@ -21,7 +20,6 @@ export class Server {
         const app = express();
 
         app.use(helmet());
-        app.use(logger('dev'));
         app.use(bodyParser.json({ limit: config.service.maxFileSize }));
         app.use(
             bodyParser.urlencoded({

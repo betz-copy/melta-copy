@@ -5,8 +5,15 @@ interface IEntitySingleProperty {
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
-    dateNotification?: string;
+    dateNotification?: number;
+    isDailyAlert?: boolean;
     calculateTime?: boolean;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 
 interface IJSONSchema {

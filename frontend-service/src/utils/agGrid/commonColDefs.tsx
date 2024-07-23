@@ -1,13 +1,14 @@
-import React from 'react';
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
-import { OpenPreviewButton } from '../../common/FilePreview/OpenPreviewButton';
-import { Value } from './Value';
-import { getDateWithoutTime, getLongDate } from '../date';
+import React from 'react';
+import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
-import { agGridLocaleText } from './agGridLocaleText';
+import { getDateWithoutTime, getLongDate } from '../date';
 import OverflowWrapper from './OverflowWrapper';
+import { Value } from './Value';
+import { agGridLocaleText } from './agGridLocaleText';
 import { getFileName } from '../getFileName';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -22,9 +23,7 @@ export const numberColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => (
-            <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />
-        ),
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => <Value hideValue={hideValue} value={props.value?.toString() ?? ''} />,
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
@@ -83,7 +82,31 @@ export const fileColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreviewButton fileId={props.value} /> : null),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreview fileId={props.value} /> : null),
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const relatedTemplateColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hardcodedWidth: number | undefined,
+    relatedTemplateId: string,
+    relatedTemplateField: string,
+    hideColumn = false,
+): ColDef<Data> => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
+            props.value ? (
+                <RelationshipReferenceView entity={props.value} relatedTemplateId={relatedTemplateId} relatedTemplateField={relatedTemplateField} />
+            ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
@@ -209,7 +232,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
         suppressMiniFilter: true,
         values: [], // You may need to fetch enum values dynamically or provide them here
     };
-    
+
     return {
         field,
         headerName: value.title,
@@ -220,18 +243,15 @@ export const enumFilesColDef = <Data extends any = IEntity>(
                 const items = enumArray.map((file) => getFileName(file));
                 return (
                     <OverflowWrapper
-                        items={enumArray} 
-                        getItemKey={(item) => item} 
-                        renderItem={(item) => (
-                            <OpenPreviewButton fileId={item} />
-                            )} 
+                        items={enumArray}
+                        getItemKey={(item) => item}
+                        renderItem={(item) => <OpenPreview fileId={item} />}
                         containerStyle={{ height: `${rowHeight}px` }}
-                        files = {items}
+                        files={items}
                     />
                 );
-            } else {
-                return null;
             }
+            return null;
         },
         filter: 'agSetColumnFilter',
         filterParams,

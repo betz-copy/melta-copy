@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { IPermission } from '../../externalServices/permissionsService';
 import PermissionsController from './controller';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
@@ -13,6 +14,18 @@ import {
 import { validateUserHasAtLeastSomePermissions, validateUserIsPermissionsManager } from './validateAuthorizationMiddleware';
 
 const permissionsRouter: Router = Router();
+
+const extractResponseLogData = (permissions: IPermission[]) => {
+    return {
+        performedOn: permissions[0].userId,
+        permissionsData: permissions.map((permission) => ({
+            _id: permission._id,
+            category: permission.category,
+            resourceType: permission.resourceType,
+            scopes: permission.scopes,
+        })),
+    };
+};
 
 permissionsRouter.get(
     '/',
@@ -30,20 +43,36 @@ permissionsRouter.post(
     '/bulk',
     ValidateRequest(createPermissionsBulkRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(PermissionsController.createPermissionsBulk),
+    wrapController(PermissionsController.createPermissionsBulk, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'permissions',
+        responseDataExtractor: extractResponseLogData,
+    }),
 );
+
 permissionsRouter.put(
     '/bulk',
     ValidateRequest(updatePermissionsBulkRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(PermissionsController.updatePermissionsBulk),
+    wrapController(PermissionsController.updatePermissionsBulk, {
+        toLog: true,
+        logRequestFields: [{ key: 'permissionsToUpdate', path: 'body' }],
+        indexName: 'permissions',
+        responseDataExtractor: extractResponseLogData,
+    }),
 );
 
 permissionsRouter.delete(
     '/',
     ValidateRequest(deletePermissionsRequestSchema),
     wrapMiddleware(validateUserIsPermissionsManager),
-    wrapController(PermissionsController.deletePermissions),
+    wrapController(PermissionsController.deletePermissions, {
+        toLog: true,
+        logRequestFields: [{ key: 'idsToDelete', path: 'query.ids' }],
+        indexName: 'permissions',
+        responseDataExtractor: extractResponseLogData,
+    }),
 );
 
 export default permissionsRouter;

@@ -1,7 +1,8 @@
-import * as express from 'express';
 import * as archiver from 'archiver';
+import * as express from 'express';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
+import logger from '../../utils/logger/logsLogger';
 import { FilesManager } from './manager';
 
 export default class FilesController extends DefaultController<FilesManager> {
@@ -44,7 +45,7 @@ export default class FilesController extends DefaultController<FilesManager> {
 
             archive.finalize();
         } catch (error) {
-            console.error('Error downloading zip:', error);
+            logger.error('Error downloading zip:', { error });
             res.status(500).send('Internal Server Error');
         }
     }
@@ -54,7 +55,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     }
 
     async uploadFiles(req: express.Request, res: express.Response) {
-        res.json(this.manager.uploadFiles(req.files as Express.Multer.File[]));
+        res.json(this.manager.uploadFiles(req.files as express.Multer.File[]));
     }
 
     async listFiles(_req: express.Request, res: express.Response) {

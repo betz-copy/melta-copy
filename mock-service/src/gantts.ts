@@ -1,8 +1,8 @@
 import config from './config';
-import { IMongoEntityTemplate } from './entityTemplates';
 import { getRandomGantts } from './mocks/gantts/generate';
 import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoEntityTemplate } from './templates/entityTemplates';
+import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
 import { Axios } from './utils/axios';
 

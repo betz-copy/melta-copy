@@ -40,6 +40,7 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
                             'CREATE_RELATIONSHIP',
                             'UPDATE_ENTITY',
                             'CREATE_ENTITY',
+                            'DUPLICATE_ENTITY',
                             'DISABLE_ENTITY',
                             'ACTIVATE_ENTITY',
                         ])

@@ -17,7 +17,7 @@ const PopperSidebar: React.FC<{
     const theme = useTheme();
 
     return (
-        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin }}>
+        <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin, zIndex: '200' }}>
             {({ TransitionProps }) => (
                 <Slide {...TransitionProps} direction={side === 'right' ? 'left' : 'right'}>
                     <Box paddingTop="3.8rem" paddingX="1.1rem">

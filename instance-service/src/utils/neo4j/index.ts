@@ -1,6 +1,7 @@
 import neo4j, { Driver, Neo4jError, QueryResult, Session, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 import config from '../../config';
+import logger from '../logger/logsLogger';
 
 const { url, auth, connectionRetries, connectionRetryDelay } = config.neo4j;
 
@@ -21,11 +22,11 @@ export default class Neo4jClient {
     }
 
     static async initialize() {
-        Neo4jClient.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password));
+        Neo4jClient.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true });
 
         await Neo4jClient.verifyConnectivity();
 
-        console.log('[NEO4J]: client initialized');
+        logger.info('[NEO4J]: client initialized');
 
         Neo4jClient.isInitialized = true;
     }
@@ -57,19 +58,19 @@ export default class Neo4jClient {
             throw err;
         } finally {
             try {
-                await this.currSession.close();
+                await this.session.close();
             } catch (err) {
-                console.error('Failed to close session. Possible leak, Error:', err);
+                console.error('Failed to close session. Possible leak, Error:', { err });
             }
         }
     }
 
-    async readTransaction<T>(cypherQuery: string, normalizeResultFunction?: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'readTransaction', cypherQuery, parameters, normalizeResultFunction));
+    async readTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
+        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'readTransaction', normalizeResultFunction, cypherQuery, parameters));
     }
 
-    async writeTransaction<T>(cypherQuery: string, normalizeResultFunction?: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'writeTransaction', cypherQuery, parameters, normalizeResultFunction));
+    async writeTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
+        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'writeTransaction', normalizeResultFunction, cypherQuery, parameters));
     }
 
     async performComplexReadTransaction<T>(transactionWork: TransactionWork<T>): Promise<T> {
@@ -80,7 +81,7 @@ export default class Neo4jClient {
         return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'writeTransaction', transactionWork));
     }
 
-    private async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
         const result = await this.session[transactionType](transactionWork);
 
         return result;
@@ -88,13 +89,21 @@ export default class Neo4jClient {
 
     private async performTransaction<T>(
         transactionType: TransactionType,
+        normalizeResultFunction: (queryResult: QueryResult) => T,
         cypherQuery: string,
         parameters: Record<string, any>,
-        normalizeResultFunction?: (queryResult: QueryResult) => T,
     ): Promise<T> {
-        const result = await this.session[transactionType]((tx) => tx.run(cypherQuery, parameters));
+        try {
+            const result = await this.session[transactionType]((tx) => tx.run(cypherQuery, parameters));
 
-        return normalizeResultFunction ? normalizeResultFunction(result) : (result as unknown as T);
+            return normalizeResultFunction(result);
+        } finally {
+            try {
+                await this.session.close();
+            } catch (err) {
+                console.error('Failed to close session. Possible leak, Error:', { err });
+            }
+        }
     }
 
     static async close() {
@@ -102,6 +111,10 @@ export default class Neo4jClient {
     }
 
     static async verifyConnectivity() {
-        await retry(() => Neo4jClient.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: console.log });
+        await retry(() => this.driver.verifyConnectivity(), {
+            retries: connectionRetries,
+            delay: connectionRetryDelay,
+            logger: logger.info.bind(logger),
+        });
     }
 }

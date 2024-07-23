@@ -13,11 +13,17 @@ const config = {
         isAliveRoute: env.get('PERMISSION_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
         managersKrtoffelIds: env.get('PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        isAliveRoute: env.get('CATEGORY_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/templates/entities').asString(),
-        createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('/api/templates/categories').asString(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        isAliveRoute: env.get('TEMPLATES_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
+        entities: {
+            createEntityTemplateRoute: env.get('CREATE_ENTITY_TEMPLATE_ROUTE').default('/api/templates/entities').asString(),
+            createCategoryRoute: env.get('CREATE_CATEGORY_ROUTE').default('/api/templates/categories').asString(),
+        },
+        relationships: {
+            createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
+            createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
+        },
     },
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),
@@ -30,12 +36,6 @@ const config = {
         nameMinLength: env.get('PROCESS_NAME_MIN_LENGTH').default(3).asInt(),
         nameMaxLength: env.get('PROCESS_NAME_MAX_LENGTH').default(8).asInt(),
         characters: env.get('ABC_CHARACTERS').default('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789').asString(),
-    },
-    relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
-        isAliveRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        createRelationshipTemplateRoute: env.get('CREATE_RELATIONSHIP_TEMPLATE_ROUTE').default('/api/templates/relationships').asString(),
-        createRuleRoute: env.get('CREATE_RULE_ROUTE').default('/api/templates/rules').asString(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),

@@ -1,9 +1,8 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult } from './interfaces/entities';
+import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
-import { IConnection } from './interfaces/rules';
 
 const {
     instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
@@ -13,25 +12,46 @@ export class InstanceManagerService {
     private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
 
     // entity instances
+    static async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
+        return data;
+    }
+
+    static async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
+            params: {
+                fieldValue,
+                fieldName,
+                type,
+            },
+        });
+        return data;
+    }
+
     static async getEntityInstanceById(id: string) {
         const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
         return data;
     }
 
-    static async createEntityInstance(entity: IEntity) {
-        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, entity);
+    static async getEntityInstancesByIds(ids: string[]) {
+        const { data } = await this.InstanceManagerApi.post<IEntity[]>(`${baseEntitiesRoute}/ids`, { ids });
+        return data;
+    }
+
+    static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, { ...entity, ignoredRules, userId, duplicatedFromId });
 
         return data;
     }
 
-    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules });
+    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules, userId });
 
         return data;
     }
 
-    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules });
+    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules, userId });
 
         return data;
     }
@@ -55,17 +75,18 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[]) {
+    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string) {
         const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, {
             relationshipInstance: relationship,
             ignoredRules,
+            userId,
         });
 
         return data;
     }
 
-    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules } });
+    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules, userId } });
 
         return data;
     }
@@ -76,8 +97,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getRelationshipsConnectionsByIds(relationshipIds: string[]) {
-        const { data } = await this.InstanceManagerApi.post<IConnection[]>(`${baseRelationshipsRoute}/connections`, {
+    static async getRelationshipsByIds(relationshipIds: string[]) {
+        const { data } = await this.InstanceManagerApi.post<IRelationship[]>(`${baseRelationshipsRoute}/ids`, {
             ids: relationshipIds,
         });
 
@@ -93,13 +114,22 @@ export class InstanceManagerService {
 
     static async getConstraintsOfTemplate(templateId: string) {
         const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
+        return data;
+    }
+
+    static async updateConstraintsOfTemplate(
+        templateId: string,
+        constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
+    ) {
+        const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
 
         return data;
     }
 
-    static async updateConstraintsOfTemplate(templateId: string, constraints: { requiredConstraints: string[]; uniqueConstraints: string[][] }) {
-        const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
-
+    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        const { data } = await this.InstanceManagerApi.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
+            newSerialNumberFields,
+        });
         return data;
     }
 }

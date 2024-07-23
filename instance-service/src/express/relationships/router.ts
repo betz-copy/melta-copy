@@ -6,22 +6,17 @@ import {
     createRelationshipRequestSchema,
     deleteRelationshipByIdRequestSchema,
     getRelationshipByIdRequestSchema,
-    getRelationshipsConnectionsByIdRequestSchema,
+    getRelationshipsByIdsRequestSchema,
     getRelationshipsCountRequestSchema,
     updateRelationshipByIdRequestSchema,
 } from './validator.schema';
 import RelationshipValidator from './validator.template';
 
 const relationshipRouter: Router = Router();
-
 const relationshipController = createController(RelationshipController);
 const relationshipValidatorController = createController(RelationshipValidator);
 
-relationshipRouter.post(
-    '/connections',
-    ValidateRequest(getRelationshipsConnectionsByIdRequestSchema),
-    relationshipController('getRelationshipsConnectionsById'),
-);
+relationshipRouter.post('/ids', ValidateRequest(getRelationshipsByIdsRequestSchema), relationshipController('getRelationshipsByIds'));
 relationshipRouter.get('/count', ValidateRequest(getRelationshipsCountRequestSchema), relationshipController('getRelationshipsCountByTemplateId'));
 relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), relationshipController('getRelationshipById'));
 relationshipRouter.post(

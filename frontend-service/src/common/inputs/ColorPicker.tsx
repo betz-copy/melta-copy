@@ -1,35 +1,44 @@
-import React, { CSSProperties, useEffect } from 'react';
+import React, { CSSProperties } from 'react';
 import { Grid, IconButton } from '@mui/material';
-import { SliderPicker } from 'react-color';
-import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
+import { ChromePicker } from 'react-color';
+import DoneIcon from '@mui/icons-material/Done';
+import InvertColorsOffIcon from '@mui/icons-material/InvertColorsOff';
 
 export interface IColorPickerProps {
     color?: string;
-    onColorChange: (color?: string) => void;
-    width: CSSProperties['width'];
+    onColorChange: (color?: string | undefined) => void;
     initialColor?: boolean;
-    allowDelete?: boolean;
+    doneIcon?: boolean;
     style?: CSSProperties;
+    onClose?: () => void;
 }
 
-export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, width, initialColor = true, allowDelete = true, style }) => {
-    useEffect(() => {
-        if (initialColor && !color) {
-            onColorChange('#40bfbc');
-        }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
+export const ColorPicker: React.FC<IColorPickerProps> = ({ color, onColorChange, doneIcon = false, style, onClose }) => {
     return (
         <Grid container direction="column" alignItems="center" sx={style}>
-            <SliderPicker color={color} onChange={({ hex }) => onColorChange(hex)} styles={{ default: { hue: { width } } }} />
-
-            {allowDelete && (
-                <Grid item marginTop="0.8rem">
-                    <IconButton onClick={() => onColorChange()} sx={{ padding: '0.4rem' }}>
-                        <DeleteIcon />
+            <Grid style={{ direction: 'ltr' }}>
+                <ChromePicker disableAlpha color={color} onChange={({ hex }) => onColorChange(hex)} />
+            </Grid>
+            <Grid item marginTop="0.8rem" display="flex">
+                <IconButton
+                    onClick={() => {
+                        onColorChange();
+                    }}
+                    sx={{ padding: '0.4rem', justifyContent: 'flex-end' }}
+                >
+                    <InvertColorsOffIcon />
+                </IconButton>
+                {doneIcon && onClose && (
+                    <IconButton
+                        onClick={() => {
+                            onClose();
+                        }}
+                        sx={{ padding: '0.4rem', justifyContent: 'flex-start' }}
+                    >
+                        <DoneIcon />
                     </IconButton>
-                </Grid>
-            )}
+                )}
+            </Grid>
         </Grid>
     );
 };

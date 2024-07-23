@@ -9,7 +9,7 @@ import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryNa
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { ICategory, ICategoryMap } from '../../../interfaces/categories';
 import { ChooseIcon } from './ChooseIcon';
-import { ChooseColor } from './ChooseColor';
+import { ChooseColor, chooseColorSchema } from './ChooseColor';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 
@@ -29,6 +29,7 @@ const steps: StepsType<CategoryWizardValues> = [
     {
         label: i18next.t('wizard.category.chooseColor'),
         component: (props) => <ChooseColor {...props} />,
+        validationSchema: chooseColorSchema,
     },
 ];
 

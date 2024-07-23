@@ -12,15 +12,11 @@ import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } fr
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { RelationshipTitle } from '../../../common/RelationshipTitle';
-import { populateRelationshipTemplate } from '../../../utils/templates';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
-    relationshipTemplates: IRelationshipTemplateMap;
     entityTemplates: IEntityTemplateMap;
     setRuleWizardDialogState: React.Dispatch<
         React.SetStateAction<{
@@ -35,27 +31,30 @@ export const RuleCard: React.FC<{
         }>
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
-}> = ({ rule, relationshipTemplates, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
+}> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
     const theme = useTheme();
-    const populatedRelationshipTemplate = populateRelationshipTemplate(relationshipTemplates.get(rule.relationshipTemplateId)!, entityTemplates);
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
     return (
         <ViewingCard
-            width={485}
+            width={250}
             title={
-                <Grid item container gap="10px" paddingLeft="5px" direction="column">
+                <Grid container gap="10px" paddingLeft="5px" direction="column">
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
                         <Grid item flexBasis="95%" height="30px">
-                            <Typography
-                                style={{
-                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                                    color: theme.palette.primary.main,
-                                    fontWeight: '400',
-                                }}
-                            >
-                                {rule.name}
-                            </Typography>
+                            <Grid item container alignItems="center" direction="row" flexWrap="nowrap" gap="5px">
+                                {rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />}
+                                <Typography
+                                    display="inline-block"
+                                    style={{
+                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
+                                        fontWeight: '400',
+                                    }}
+                                >
+                                    {rule.name}
+                                </Typography>
+                            </Grid>
                         </Grid>
                         <Grid item flexBasis="5%">
                             {isHoverOnCard && (
@@ -77,14 +76,10 @@ export const RuleCard: React.FC<{
                             )}
                         </Grid>
                     </Grid>
-                    <Grid item container alignItems="center" direction="row" flexWrap="nowrap">
-                        <RelationshipTitle style={{ width: 'fit-content' }} relationshipTemplate={populatedRelationshipTemplate} />
-                        {rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />}
-                    </Grid>
                 </Grid>
             }
             expendedCard={
-                <Grid item container gap="10px" minWidth="232px" paddingLeft="5px" direction="column" marginTop="20px">
+                <Grid item container gap="10px" paddingLeft="5px" direction="column" marginTop="20px">
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color="#9398C2">
                             <Typography>{i18next.t('wizard.rule.description')}</Typography>
@@ -103,11 +98,11 @@ export const RuleCard: React.FC<{
                     </Grid>
                     <Grid item container justifyContent="space-between">
                         <Grid item flexBasis="27%" color="#9398C2">
-                            <Typography>{i18next.t('wizard.rule.pinnedEntityTemplate')}</Typography>
+                            <Typography>{i18next.t('wizard.rule.primaryEntityTemplate')}</Typography>
                         </Grid>
                         <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
                             <Typography style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-                                {entityTemplates.get(rule.pinnedEntityTemplateId)?.displayName}
+                                {entityTemplates.get(rule.entityTemplateId)?.displayName}
                             </Typography>
                         </Grid>
                     </Grid>
@@ -123,7 +118,6 @@ const RulesRow: React.FC = () => {
 
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const [searchText, setSearchText] = useState('');
 
@@ -186,7 +180,6 @@ const RulesRow: React.FC = () => {
                             <RuleCard
                                 key={rule._id}
                                 entityTemplates={entityTemplates}
-                                relationshipTemplates={relationshipTemplates}
                                 rule={rule}
                                 setDeleteRuleWizardState={setDeleteRuleWizardState}
                                 setRuleWizardDialogState={setRuleWizardDialogState}

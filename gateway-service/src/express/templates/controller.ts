@@ -43,6 +43,16 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
 
+    static async updateEntityEnumFieldValue(req: Request, res: Response) {
+        const { field, partialInput: values, fieldValue } = req.body;
+        res.json(await TemplatesManager.updateEntityEnumFieldValue(req.params.id, field, values, fieldValue));
+    }
+
+    static async deleteEntityEnumFieldValue(req: Request, res: Response) {
+        const { fieldValue, partialInput: field } = req.body;
+        res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
+    }
+
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createRelationshipTemplate(req.body));
@@ -54,6 +64,10 @@ export default class TemplatesController {
 
     static async updateRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
+    }
+
+    static async getAllRelationshipTemplates(_req: Request, res: Response) {
+        res.json(await TemplatesManager.getAllRelationshipTemplates());
     }
 
     // rules

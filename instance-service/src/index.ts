@@ -1,21 +1,33 @@
 import axios from 'axios';
+import apm from 'elastic-apm-node';
 import config from './config';
 import Server from './express/server';
+import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j';
+import initializeRabbit from './utils/rabbit';
 import RedisClient from './utils/redis';
 
-const { service, redis } = config;
+const { service, redis, logs } = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
 
 const initializeRedis = async () => {
-    console.log('Connecting to Redis...');
+    logger.info('Connecting to Redis...');
 
     await RedisClient.initialize(redis.url);
 
-    console.log('Redis connection established');
+    logger.info('Redis connection established');
 };
 
 const main = async () => {
     await initializeRedis();
+    await initializeRabbit();
     await Neo4jClient.initialize();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
@@ -25,20 +37,20 @@ const main = async () => {
 
     await server.start();
 
-    console.log(`Server started on port: ${service.port}`);
+    logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((err) => {
-    console.error(err);
+main().catch((error) => {
+    logger.error('Main error: ', { error });
     process.exit(1);
 });
 
 process
     .on('unhandledRejection', (reason, p) => {
-        console.error(reason, 'Unhandled Rejection at Promise', p);
+        logger.error('Unhandled Rejection at Promise', { error: { p, reason } });
         process.exit(1);
     })
-    .on('uncaughtException', (err) => {
-        console.error(err, 'Uncaught Exception thrown');
+    .on('uncaughtException', (error) => {
+        logger.error('Uncaught Exception thrown', { error });
         process.exit(1);
     });

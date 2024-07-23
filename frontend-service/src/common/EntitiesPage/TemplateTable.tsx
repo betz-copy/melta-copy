@@ -19,12 +19,12 @@ import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { canUserWriteInstanceOfCategory } from '../../utils/permissions/instancePermissions';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
@@ -85,7 +85,7 @@ const TemplateTable = forwardRef<
 
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = canUserWriteInstanceOfCategory(instancesPermissions, template.category);
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -120,6 +120,13 @@ const TemplateTable = forwardRef<
 
             <Grid container flexDirection="row" alignItems="center">
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
+                    <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.columns')}
+                        iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <img src="/icons/columns-settings.svg" />
+                    </IconButtonWithPopover>
                     <IconButtonWithPopover
                         popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                         iconButtonProps={{
@@ -164,7 +171,7 @@ const TemplateTable = forwardRef<
                     rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
-                    fontSize="14px"
+                    fontSize={`${defaultFontSize}px`}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,
@@ -195,12 +202,9 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    entity={editDialog.entity!}
-                    onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    entityToUpdate={editDialog.entity!}
+                    onSuccessUpdate={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity)}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
             </Dialog>
         </Grid>

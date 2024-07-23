@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
+import { IEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
@@ -70,10 +70,19 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
+const fixComplexProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
     const { properties } = template.properties;
     Object.entries(properties).forEach(([key, value]) => {
-        if (value.format === 'fileId') {
+        if (value.format === 'relationshipReference') {
+            rows.forEach((row) => {
+                if (row[key] && row[key].properties) {
+                    row[key] = {
+                        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+                        hyperlink: `${config.service.meltaBaseUrl}/entity/${row[key].properties._id}`,
+                    };
+                }
+            });
+        } else if (value.format === 'fileId') {
             rows.forEach((row) => {
                 if (row[key]) {
                     row[key] = {
@@ -117,8 +126,13 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
                 });
                 cell.value = date;
             }
+            // Check if value is html tags when format is text area
+            if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
+                cell.value = String(cell.value).replace(/<[^>]*>/g, '');
+                cell.alignment = { vertical: 'top' };
+            }
         });
     });
 };
 
-export { styleAWorksheet, cerateWorksheet, createWorkbook, fixFileProperties };
+export { styleAWorksheet, cerateWorksheet, createWorkbook, fixComplexProperties };

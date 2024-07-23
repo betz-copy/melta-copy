@@ -1,7 +1,6 @@
 import * as http from 'http';
 import * as express from 'express';
 import * as helmet from 'helmet';
-import * as logger from 'morgan';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';
@@ -28,7 +27,6 @@ class Server {
         app.use(express.json({ limit: config.service.maxRequestSize }));
         app.use(express.urlencoded({ extended: true, limit: config.service.maxRequestSize }));
 
-        app.use(logger('dev'));
         app.use(appRouter);
 
         app.use(errorMiddleware);
