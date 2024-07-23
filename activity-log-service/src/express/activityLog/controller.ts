@@ -6,10 +6,6 @@ class ActivityLogController {
         const { limit, skip, actions } = req.query;
         res.json(await ActivityLogManager.getActivity(req.params.entityId, Number(limit), Number(skip), actions as string[]));
     }
-
-    static async createActivity(req: Request, res: Response) {
-        res.json(await ActivityLogManager.createActivity(req.body));
-    }
 }
 
 export default ActivityLogController;

@@ -136,15 +136,15 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            flight1 = await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, []);
-            flight2 = await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, []);
-            travelAgent1 = await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, []);
-            travelAgent2 = await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, []);
-            travelAgent3 = await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, []);
-            trip1 = await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, []);
-            trip2 = await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, []);
-            trip3 = await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, []);
-            airport1 = await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, []);
+            flight1 = await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, [], neo4j.mockUserId);
+            flight2 = await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, [], neo4j.mockUserId);
+            travelAgent1 = await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
+            travelAgent2 = await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
+            travelAgent3 = await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
+            trip1 = await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, [], neo4j.mockUserId);
+            trip2 = await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, [], neo4j.mockUserId);
+            trip3 = await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, [], neo4j.mockUserId);
+            airport1 = await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, [], neo4j.mockUserId);
 
             travelAgent1Toflight1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -155,6 +155,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 flightsOnRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             travelAgent2Toflight1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -165,6 +166,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 flightsOnRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             travelAgent3Toflight2 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -175,6 +177,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 flightsOnRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             flight1ToTrip1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -185,6 +188,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 tripConnectedToFlightRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             flight1ToTrip2 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -195,6 +199,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 tripConnectedToFlightRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             flight2ToTrip3 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -205,6 +210,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 tripConnectedToFlightRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
             flight1ToAirport1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -215,6 +221,7 @@ describe('e2e search entities batch tests', () => {
                 },
                 departureFromRelationshipTemplate,
                 [],
+                neo4j.mockUserId,
             );
         });
 
@@ -461,9 +468,9 @@ describe('e2e search entities batch tests', () => {
             },
         ])('basic check filter $type field', ({ field, value1, value2, value3 }) => {
             beforeEach(async () => {
-                await EntityManager.createEntity({ [field]: value1 }, entityTemplate, []);
-                await EntityManager.createEntity({ [field]: value2 }, entityTemplate, []);
-                await EntityManager.createEntity({ [field]: value3 }, entityTemplate, []);
+                await EntityManager.createEntity({ [field]: value1 }, entityTemplate, [], neo4j.mockUserId);
+                await EntityManager.createEntity({ [field]: value2 }, entityTemplate, [], neo4j.mockUserId);
+                await EntityManager.createEntity({ [field]: value3 }, entityTemplate, [], neo4j.mockUserId);
             });
 
             it('$eq', async () => {
@@ -679,9 +686,9 @@ describe('e2e search entities batch tests', () => {
             const entityWithDangerousChars: IEntity = { templateId: defaultTemplateId, properties: { name: 'Dangerous \' " / \\' } };
 
             beforeEach(async () => {
-                await EntityManager.createEntity(entityWithName.properties, entityTemplate, []);
-                await EntityManager.createEntity(entityWithAnotherName.properties, entityTemplate, []);
-                await EntityManager.createEntity(entityWithDangerousChars.properties, entityTemplate, []);
+                await EntityManager.createEntity(entityWithName.properties, entityTemplate, [], neo4j.mockUserId);
+                await EntityManager.createEntity(entityWithAnotherName.properties, entityTemplate, [], neo4j.mockUserId);
+                await EntityManager.createEntity(entityWithDangerousChars.properties, entityTemplate, [], neo4j.mockUserId);
             });
 
             it('$eq escape dangerous characters', async () => {
@@ -757,10 +764,10 @@ describe('e2e search entities batch tests', () => {
 
         it('check $or', async () => {
             await Promise.all([
-                EntityManager.createEntity({ num: 1, name: '111' }, entityTemplate, []),
-                EntityManager.createEntity({ num: 2, name: '222' }, entityTemplate, []),
-                EntityManager.createEntity({ num: 3, name: '333' }, entityTemplate, []),
-                EntityManager.createEntity({ num: 4, name: '444' }, entityTemplate, []),
+                EntityManager.createEntity({ num: 1, name: '111' }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 2, name: '222' }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 3, name: '333' }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 4, name: '444' }, entityTemplate, [], neo4j.mockUserId),
             ]);
 
             const searchBody: ISearchBatchBody = {
@@ -825,9 +832,9 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            await EntityManager.createEntity({ name: 'Name', age: 1, lastName: 'lastName' }, entityTemplate, []);
-            await EntityManager.createEntity({ name: 'AnotherName', age: 2 }, entityTemplate, []);
-            await EntityManager.createEntity({ name: 'Name with lucene-special-chars (((', age: 3 }, entityTemplate, []);
+            await EntityManager.createEntity({ name: 'Name', age: 1, lastName: 'lastName' }, entityTemplate, [], neo4j.mockUserId);
+            await EntityManager.createEntity({ name: 'AnotherName', age: 2 }, entityTemplate, [], neo4j.mockUserId);
+            await EntityManager.createEntity({ name: 'Name with lucene-special-chars (((', age: 3 }, entityTemplate, [], neo4j.mockUserId);
         });
 
         it('check simple search query', async () => {
@@ -968,10 +975,10 @@ describe('e2e search entities batch tests', () => {
     describe('check skip and limit', () => {
         beforeEach(async () => {
             await Promise.all([
-                EntityManager.createEntity({ num: 1 }, entityTemplate, []),
-                EntityManager.createEntity({ num: 2 }, entityTemplate, []),
-                EntityManager.createEntity({ num: 3 }, entityTemplate, []),
-                EntityManager.createEntity({ num: 4 }, entityTemplate, []),
+                EntityManager.createEntity({ num: 1 }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 2 }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 3 }, entityTemplate, [], neo4j.mockUserId),
+                EntityManager.createEntity({ num: 4 }, entityTemplate, [], neo4j.mockUserId),
             ]);
         });
 

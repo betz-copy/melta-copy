@@ -7,7 +7,14 @@ class RelationshipController {
     static async createRelationship(req: Request, res: Response) {
         const relationshipTemplate = fetchPropertyFromRequest<IMongoRelationshipTemplate>(req, 'relationshipTemplate');
 
-        res.json(await RelationshipManager.createRelationshipByEntityIds(req.body.relationshipInstance, relationshipTemplate, req.body.ignoredRules));
+        res.json(
+            await RelationshipManager.createRelationshipByEntityIds(
+                req.body.relationshipInstance,
+                relationshipTemplate,
+                req.body.ignoredRules,
+                req.body.userId,
+            ),
+        );
     }
 
     static async getRelationshipById(req: Request, res: Response) {
@@ -23,7 +30,7 @@ class RelationshipController {
     }
 
     static async deleteRelationshipById(req: Request, res: Response) {
-        res.json(await RelationshipManager.deleteRelationshipById(req.params.id, req.body.ignoredRules));
+        res.json(await RelationshipManager.deleteRelationshipById(req.params.id, req.body.ignoredRules, req.body.userId));
     }
 
     static async updateRelationshipPropertiesById(req: Request, res: Response) {

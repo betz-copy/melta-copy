@@ -46,6 +46,7 @@ export const createRelationshipRequestSchema = Joi.object({
             destinationEntityId: Joi.string().required(),
         },
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        userId: Joi.string().required(),
     },
     query: {},
     params: {},
@@ -58,6 +59,7 @@ export const deleteRelationshipByIdRequestSchema = Joi.object({
     query: {},
     body: {
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+        userId: Joi.string().required(),
     },
     params: {
         id: Joi.string().required(),

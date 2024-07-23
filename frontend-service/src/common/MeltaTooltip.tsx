@@ -7,6 +7,7 @@ const MeltaTooltip: React.FC<TooltipProps> = ({ children, ...tooltipProps }) => 
             {...tooltipProps}
             PopperProps={{
                 sx: { [`& .${tooltipClasses.tooltip}`]: { fontSize: '1rem', backgroundColor: '#101440' } },
+                ...tooltipProps.PopperProps,
             }}
         >
             {children}

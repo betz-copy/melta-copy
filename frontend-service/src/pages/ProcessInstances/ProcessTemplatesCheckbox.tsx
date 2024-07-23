@@ -11,6 +11,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={i18next.t('entityTemplatesCheckboxLabel')}
+            img={<img src="/icons/select-checkbox.svg" />}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}
@@ -19,7 +20,6 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             size="small"
             toTopBar
             isDraggableDisabled
-            horizontalOrigin={178}
         />
     );
 };

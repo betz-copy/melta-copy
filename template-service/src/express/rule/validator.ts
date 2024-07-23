@@ -41,6 +41,9 @@ const jsonSchemaTypeToType = ({ type, format }: IEntitySingleProperty): IConstan
                 // todo: block in UI too, or support it
                 throw new Error('array not supported in formulas! sorry!');
             }
+            if (format === 'relationshipReference') {
+                throw new Error('relationshipReference not supported in formulas! sorry!');
+            }
             return type;
     }
 };
@@ -110,6 +113,11 @@ const validateVariableOfAggregation = (
     assert(
         connectionTemplates,
         `relationshipTemplateId "${variable.aggregatedRelationship.relationshipTemplateId}" doesnt exist for entityTemplate "${relevantTemplates.entityTemplate.name}" connections`,
+    );
+
+    assert(
+        !connectionTemplates.relationshipTemplate.isProperty,
+        `relationshipTemplateId "${variable.aggregatedRelationship.relationshipTemplateId}" is a relationshipReference field and not supported in rules.`,
     );
 
     assert(
