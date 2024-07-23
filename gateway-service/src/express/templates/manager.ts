@@ -335,6 +335,7 @@ export class TemplatesManager {
 
     static async exportEntityToPdfTemplate(entityId: string, pdfTemplateId?: string) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
+
         if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
             return downloadFile(pdfTemplateId);
         }

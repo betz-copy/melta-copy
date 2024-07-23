@@ -54,11 +54,8 @@ export default class TemplatesController {
     }
 
     static async exportEntityToPdfTemplate(req: Request, res: Response) {
-        const { entityId } = req.params;
-        const { pdfTemplateId } = req.query;
-
-        const fileStream = await TemplatesManager.exportEntityToPdfTemplate(entityId, pdfTemplateId as string);
-        fileStream.data.pipe(res);
+        const data = await TemplatesManager.exportEntityToPdfTemplate(req.params.entityId, req.query.pdfTemplateId as string);
+        data.pipe(res);
     }
 
     // relationshipTemplates
