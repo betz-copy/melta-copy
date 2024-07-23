@@ -224,10 +224,10 @@ export class RelationshipManager {
 
                 entitiesDatas.forEach((entityData) => {
                     entitiesTemplatesIdsOfRules.add(entityData.entityTemplateId);
-                    const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData) || [];
+                    const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData.entityId)?.reasons || [];
                     reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
 
-                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData, reasons); // TODO - not key of object
+                    entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId }); // TODO - not key of object
                 });
             }
         });
@@ -250,10 +250,10 @@ export class RelationshipManager {
                     entityTemplateId: entity.templateId,
                 };
 
-                const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData) || [];
+                const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
                 reasons.push({ type: 'dependentOnEntity' });
 
-                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData, reasons);
+                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, {reasons, entityTemplateId: entityData.entityTemplateId});
             } else if (action.actionType === ActionTypes.CreateRelationship) {
                 const relationship = results[i] as IRelationship;
 
@@ -271,10 +271,10 @@ export class RelationshipManager {
                 ];
 
                 entitiesDatas.forEach((entityData) => {
-                    const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData) || [];
+                    const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
                     reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: relationship.templateId });
 
-                    entitiesIdsRulesReasonsMapAfterRunActions.set(entityData, reasons);
+                    entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
                 });
             }
         });
@@ -287,34 +287,38 @@ export class RelationshipManager {
         rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
     ) => {
         // sort relevant rules by each entity
-        const entitiesRelevantRulesMap = new Map<
+        // entityId -> rules[], entityTemplateId
+        const entitiesRelevantRulesMap = new Map<            
+            string,
             {
-                entityId: string;
+                rules: IMongoRule[]
                 entityTemplateId: string;
-            },
-            IMongoRule[]
+            }
         >();
 
-        entitiesIdsRulesReasonsMapBeforeRunActions.forEach((reasons, entityData) => {
+        entitiesIdsRulesReasonsMapBeforeRunActions.forEach(({reasons, entityTemplateId}, entityId) => {
             const relevantRules: IMongoRule[] = [];
+            const rulesIds: Set<string> = new Set<string>();
 
             reasons.forEach((reason) => {
                 if (reason.type === 'dependentOnEntity') {
                     relevantRules.push(
-                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityData.entityTemplateId] || [], entityData.entityTemplateId),
+                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityTemplateId] || [], entityTemplateId).filter((rule) => !rulesIds.has(rule._id)),
                     );
+                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
                 } else if (reason.type === 'dependentViaAggregation') {
                     relevantRules.push(
                         ...filterDependentRulesViaAggregation(
-                            rulesByEntityTemplateIds[entityData.entityTemplateId] || [],
+                            rulesByEntityTemplateIds[entityTemplateId] || [],
                             reason.dependentRelationshipTemplateId,
                             reason.updatedProperties,
-                        ),
+                        ).filter((rule) => !rulesIds.has(rule._id)),
                     );
+                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
                 }
             });
 
-            entitiesRelevantRulesMap.set(entityData, relevantRules);
+            entitiesRelevantRulesMap.set(entityId, {rules: relevantRules, entityTemplateId});
         });
 
         return entitiesRelevantRulesMap;
@@ -328,8 +332,8 @@ export class RelationshipManager {
         const entitiesRelevantRulesMap = RelationshipManager.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach((relevantRules, entityData) => {
-            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityData.entityId, relevantRules));
+        entitiesRelevantRulesMap.forEach(({rules}, entityId) => {
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
         });
 
         const ruleFailures = (await Promise.all(ruleFailuresPromises)).flat();

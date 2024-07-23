@@ -7,14 +7,18 @@ export interface IRelationship {
 }
 
 // reasons which rules to run on each entity
-export type EntitiesIdsRulesReasonsMap = Map<{
-    entityId: string;
-    entityTemplateId: string;
-}, ({
-    type: 'dependentViaAggregation';
-    dependentRelationshipTemplateId: string;
-    updatedProperties?: string[] | undefined;
-} | {
-    type: 'dependentOnEntity';
-    updatedProperties?: string[] | undefined;
-})[]>;
+// entityId -> reasons[], entityTemplateId
+export type EntitiesIdsRulesReasonsMap = Map<
+    string, {
+    reasons: 
+    ({
+        type: 'dependentViaAggregation';
+        dependentRelationshipTemplateId: string;
+        updatedProperties?: string[] | undefined;
+    } | 
+    {
+        type: 'dependentOnEntity';
+        updatedProperties?: string[] | undefined;
+    })[], 
+    entityTemplateId: string
+}>;
