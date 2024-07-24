@@ -246,7 +246,7 @@ const ConnectionsTable: React.FC<{
                         onClick: (connectionToDelete) => {
                             setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                         },
-                        disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty,
+                        disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
                     }}
                     getRowId={(connection: IEntity | IConnection) => {
                         if ('relationship' in connection) {

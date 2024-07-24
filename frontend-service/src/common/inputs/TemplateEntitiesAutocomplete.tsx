@@ -1,5 +1,5 @@
 import { Autocomplete, AutocompleteInputChangeReason, AutocompleteProps, Grid, TextField, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
@@ -11,6 +11,7 @@ import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService'
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import RelationshipReferenceView from '../RelationshipReferenceView';
+import { environment } from '../../globals';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -43,19 +44,20 @@ const TemplateEntitiesAutocomplete: React.FC<{
     size,
 }) => {
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
-    const {
-        data: entities,
-        refetch,
-        isFetching,
-    } = useQuery(
-        ['searchEntitiesOfTemplate', template._id, inputValue],
-        () =>
-            searchEntitiesOfTemplateRequest(template._id!, {
-                skip: 0,
-                limit: 10,
+    const [page, setPage] = useState(0);
+    const [allEntities, setAllEntities] = useState<IEntity[]>([]);
+
+    const { data, refetch, isFetching } = useQuery(
+        ['searchEntitiesOfTemplate', template._id, inputValue, page],
+        () => {
+            const { cacheBlockSize } = environment.agGrid;
+            return searchEntitiesOfTemplateRequest(template._id!, {
+                skip: page * cacheBlockSize,
+                limit: cacheBlockSize,
                 filter: { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
-            }),
+            });
+        },
         {
             onError: () => {
                 toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
@@ -64,100 +66,130 @@ const TemplateEntitiesAutocomplete: React.FC<{
             keepPreviousData: true,
         },
     );
+
+    useEffect(() => {
+        if (data) {
+            setAllEntities((prev) =>
+                page === 0 ? data.entities.map((entity) => entity.entity) : [...prev, ...data.entities.map((entity) => entity.entity)],
+            );
+        }
+    }, [data, page]);
+
     const handleInputChange = (_e: any, newValue: string, reason: AutocompleteInputChangeReason) => {
         setInputValue(newValue);
         onDisplayValueChange?.(_e, newValue, reason);
         if (reason === 'input' && newValue.length >= 2) {
+            setPage(0);
+            setAllEntities([]);
             refetch();
         }
     };
 
-    const previewKeys = template.propertiesPreview.slice(0, 2);
-    const additionalKeys = template.propertiesOrder.filter((key) => !previewKeys.includes(key)).slice(0, 2 - previewKeys.length);
-    const displayKeys = [...previewKeys, ...additionalKeys];
+    const loadMore = useCallback(() => {
+        if (!isFetching) setPage((prevPage) => prevPage + 1);
+    }, [isFetching]);
+
+    const observer = useRef<IntersectionObserver | null>(null);
+
+    const lastElementRef = useCallback(
+        (node) => {
+            if (isFetching) return;
+            if (observer.current) observer.current.disconnect();
+
+            observer.current = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) loadMore();
+            });
+            if (node) observer.current.observe(node);
+        },
+        [isFetching, loadMore],
+    );
+
+    const displayKeys = [
+        showField,
+        (template.propertiesPreview[0] === showField
+            ? template.propertiesPreview[1] ?? template.propertiesOrder[0]
+            : template.propertiesPreview[0]) ?? template.propertiesOrder[0],
+    ];
 
     return (
-        <MeltaTooltip title={value?.properties[showField] || ''} sx={{ maxWidth: '50%' }}>
-            <Autocomplete
-                value={value}
-                inputValue={inputValue}
-                onChange={onChange}
-                onInputChange={handleInputChange}
-                disabled={disabled}
-                onBlur={onBlur}
-                options={entities?.entities.map((entity) => entity.entity) || []}
-                loading={isFetching}
-                loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
-                noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
-                getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
-                isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
-                renderInput={(params) => (
-                    <TextField
-                        {...params}
-                        error={isError}
-                        fullWidth
-                        helperText={helperText}
-                        label={label}
-                        InputProps={{ ...params.InputProps, readOnly, endAdornment: readOnly ? undefined : params.InputProps.endAdornment }}
-                    />
-                )}
-                renderOption={(props, option) => {
-                    const displayOptionValues = displayKeys.map((key) => {
-                        const property = option.properties[key];
-                        const templateProperty = template.properties.properties[key];
+        <Autocomplete
+            value={value}
+            inputValue={inputValue}
+            onChange={onChange}
+            onInputChange={handleInputChange}
+            disabled={disabled}
+            onBlur={onBlur}
+            options={allEntities}
+            loading={isFetching}
+            loadingText={i18next.t('templateEntitiesAutocomplete.loading')}
+            noOptionsText={i18next.t('templateEntitiesAutocomplete.noOptions')}
+            getOptionLabel={(option) => option.properties[showField].toString() || option.properties._id.toString()}
+            isOptionEqualToValue={(option, currValue) => option.properties._id === currValue.properties._id}
+            filterOptions={(options) => options}
+            renderInput={(params) => (
+                <TextField
+                    {...params}
+                    error={isError}
+                    fullWidth
+                    helperText={helperText}
+                    label={label}
+                    InputProps={{ ...params.InputProps, readOnly, endAdornment: readOnly ? undefined : params.InputProps.endAdornment }}
+                />
+            )}
+            renderOption={(props, option) => {
+                const displayOptionValues = displayKeys.map((key) => {
+                    const property = option.properties[key];
+                    const templateProperty = template.properties.properties[key];
 
-                        return typeof property === 'object' ? (
-                            <RelationshipReferenceView
-                                key={key}
-                                entity={property}
-                                relatedTemplateId={property.templateId}
-                                relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
-                            />
-                        ) : (
-                            property
-                        );
-                    });
+                    return typeof property === 'object' ? (
+                        <RelationshipReferenceView
+                            key={key}
+                            entity={property}
+                            relatedTemplateId={property.templateId}
+                            relatedTemplateField={templateProperty.relationshipReference!.relatedTemplateField}
+                        />
+                    ) : (
+                        property
+                    );
+                });
 
-                    return (
-                        <li {...props}>
-                            <Grid container justifyContent="space-between" direction="row" spacing={1}>
-                                <Grid item xs={4} overflow="hidden">
-                                    <Typography color="black" overflow="hidden" noWrap>
-                                        {displayOptionValues[0]}
-                                    </Typography>
-                                </Grid>
-                                <Grid item xs={4} overflow="hidden">
-                                    <Typography fontWeight="1" color="#166BD4" noWrap>
-                                        {displayOptionValues[1]}
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={0}>
-                                    <MeltaTooltip
-                                        title={
-                                            template.propertiesPreview.length === 0 ? (
-                                                i18next.t('templateEntitiesAutocomplete.noPreviewFields')
-                                            ) : (
-                                                <EntityPropertiesInternal
-                                                    properties={option.properties}
-                                                    entityTemplate={template}
-                                                    showPreviewPropertiesOnly
-                                                    mode="white"
-                                                    textWrap
-                                                />
-                                            )
-                                        }
-                                    >
-                                        <InfoOutlined sx={{ color: '#166BD4' }} />
+                return (
+                    <li {...props} ref={props['data-option-index'] === allEntities.length - 1 ? lastElementRef : null}>
+                        <Grid container justifyContent="space-between" direction="row" spacing={1}>
+                            {displayOptionValues.map((displayOptionValue, index) => (
+                                <Grid item key={displayOptionValue} xs={4} overflow="hidden">
+                                    <MeltaTooltip placement="right" title={displayOptionValue}>
+                                        <Typography color={index > 0 ? '#166BD4' : 'black'} overflow="hidden">
+                                            {displayOptionValue}
+                                        </Typography>
                                     </MeltaTooltip>
                                 </Grid>
+                            ))}
+                            <Grid item xs={0}>
+                                <MeltaTooltip
+                                    title={
+                                        template.propertiesPreview.length === 0 ? (
+                                            i18next.t('templateEntitiesAutocomplete.noPreviewFields')
+                                        ) : (
+                                            <EntityPropertiesInternal
+                                                properties={option.properties}
+                                                entityTemplate={template}
+                                                showPreviewPropertiesOnly
+                                                mode="white"
+                                                textWrap
+                                            />
+                                        )
+                                    }
+                                >
+                                    <InfoOutlined sx={{ color: '#166BD4' }} />
+                                </MeltaTooltip>
                             </Grid>
-                        </li>
-                    );
-                }}
-                size={size}
-            />
-        </MeltaTooltip>
+                        </Grid>
+                    </li>
+                );
+            }}
+            size={size}
+        />
     );
 };
 

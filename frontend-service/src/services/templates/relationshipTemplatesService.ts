@@ -32,7 +32,6 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,
-        isProperty: false,
     };
 };
 
