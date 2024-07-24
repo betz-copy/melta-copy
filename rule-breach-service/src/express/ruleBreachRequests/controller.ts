@@ -7,7 +7,7 @@ class RuleBreachRequestsController {
     }
 
     static async getManyRuleBreachRequests(req: Request, res: Response) {
-        const data = await RuleBreachRequestsManager.getManyRuleBreachRequests(req.body.ruleBreachIds);
+        const data = await RuleBreachRequestsManager.getManyRuleBreachRequests(req.body.rulesBreachIds);
         res.json(data);
     }
 
@@ -22,11 +22,11 @@ class RuleBreachRequestsController {
         res.json(await RuleBreachRequestsManager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
     }
 
-    static async updateRuleBreachRequestActionMetadata(req: Request, res: Response) {
+    static async updateRuleBreachRequestActionsMetadatas(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
-        const { actionType, actionMetadata } = req.body;
+        const { actions } = req.body;
 
-        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestActionMetadata(ruleBreachRequestId, actionType, actionMetadata));
+        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId, actions));
     }
 
     static async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {

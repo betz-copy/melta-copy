@@ -1,7 +1,7 @@
 import axios from 'axios';
 import config from '../../config';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreach, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
+import { ActionTypes, IActionMetadata, IBrokenRule, IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from './interfaces';
 
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
 
@@ -53,19 +53,20 @@ export class RuleBreachService {
         return data;
     }
 
-    static async getManyRuleBreaches(ruleBreachIds: string[]): Promise<IRuleBreach[]> {
-        const { data } = await this.ruleBreachService.post<IRuleBreach[]>(`/requests/getManys`, { ruleBreachIds });
+    static async getManyRuleBreaches(rulesBreachIds: string[]): Promise<IRuleBreachRequest[]> {
+        const { data } = await this.ruleBreachService.post<IRuleBreachRequest[]>(`/requests/getManys`, { rulesBreachIds });
         return data;
     }
 
-    static async updateRuleBreachRequestActionMetadata(
+    static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
+        actions: {
+            actionType: ActionTypes,
+            actionMetadata: IActionMetadata,
+        } []
     ): Promise<IRuleBreachRequest> {
         const { data } = await this.ruleBreachService.patch<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}/action-metadata`, {
-            actionType,
-            actionMetadata,
+            actions
         });
         return data;
     }

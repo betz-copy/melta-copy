@@ -42,7 +42,7 @@ RuleBreachRequestsRouter.patch(
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/action-metadata',
     ValidateRequest(updateRuleBreachRequestActionMetadataRequestSchema),
-    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionMetadata),
+    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionsMetadatas),
 );
 
 RuleBreachRequestsRouter.patch(

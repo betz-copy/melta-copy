@@ -27,7 +27,7 @@ export const getManyRuleBreachesByIds = joi.object({
 export const getManyRuleBreachRequests = joi.object({
     query: {},
     body: {
-        ruleBreachIds: joi.array().items(mongoIdSchema),
+        rulesBreachIds: joi.array().items(mongoIdSchema),
     },
     params: {},
 })

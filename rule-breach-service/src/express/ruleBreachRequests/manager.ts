@@ -41,12 +41,14 @@ export class RuleBreachRequestsManager {
             .lean();
     }
 
-    public static async updateRuleBreachRequestActionMetadata(
+    public static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
+        actions: {
+            actionType: ActionTypes,
+            actionMetadata: IActionMetadata,
+        }[]
     ): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actionType, actionMetadata }, { new: true })
+        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }
