@@ -11,7 +11,7 @@ const iFrameSchema = Joi.object({
     placeInSideBar: ExtendedJoi.boolean(),
 });
 
-// GET /api/iFrames/externalSite/:iFrameId
+// GET /api/iframes/externalSite/:iFrameId
 export const getExternalSiteByIdSchema = Joi.object({
     query: {},
     body: {},
@@ -20,7 +20,7 @@ export const getExternalSiteByIdSchema = Joi.object({
     },
 });
 
-// GET /api/iFrames/:iFrameId
+// GET /api/iframes/:iFrameId
 export const getIFrameByIdSchema = Joi.object({
     query: {},
     body: {},
@@ -29,14 +29,15 @@ export const getIFrameByIdSchema = Joi.object({
     },
 });
 
-// POST /api/iFrames
+// POST /api/iframes
 export const createIFrameSchema = Joi.object({
     query: {},
     body: iFrameSchema,
     params: {},
+    file: iconFileSchema,
 });
 
-// DELETE /api/iFrames/:iFrameId
+// DELETE /api/iframes/:iFrameId
 export const deleteIFrameSchema = Joi.object({
     query: {},
     body: {},
@@ -45,7 +46,7 @@ export const deleteIFrameSchema = Joi.object({
     },
 });
 
-// PUT /api/iFrames
+// PUT /api/iframes
 export const updateIFrameSchema = Joi.object({
     query: {},
     body: iFrameSchema,
@@ -55,7 +56,7 @@ export const updateIFrameSchema = Joi.object({
     file: iconFileSchema,
 });
 
-// POST /api/iFrames/search
+// POST /api/iframes/search
 export const searchIFramesSchema = Joi.object({
     query: {},
     body: {

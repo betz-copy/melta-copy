@@ -32,7 +32,23 @@ const getIFrameById = async (id: string) => {
 };
 
 const createIFrame = async (newIFrame: IFrameWizardValues) => {
-    const { data } = await axios.post<IMongoIFrame>(iFrames, newIFrame);
+    const formData = new FormData();
+
+    if (newIFrame.icon) {
+        formData.append('file', newIFrame.icon.file as File);
+    }
+    const { name, url, categoryIds, description, apiToken, placeInSideBar } = newIFrame;
+    console.log({ newIFrame });
+
+    formData.append('name', name);
+    formData.append('url', url);
+    formData.append('categoryIds', JSON.stringify(categoryIds));
+    formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
+    if (description) formData.append('description', description);
+    if (apiToken) formData.append('apiToken', apiToken);
+
+    console.log('hwlooooo', ...formData);
+    const { data } = await axios.post<IMongoIFrame>(iFrames, formData);
 
     return data;
 };
@@ -45,7 +61,6 @@ const deleteIFrame = async (iFrameId: string) => {
 
 const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     const formData = new FormData();
-    console.log('updatedData ', { updatedIFrame });
 
     const { name, url, categoryIds, description, apiToken, placeInSideBar } = updatedIFrame;
 
@@ -56,15 +71,12 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
             formData.append('iconFileId', updatedIFrame.icon.file.name!);
         }
     }
-
     formData.append('name', name);
     formData.append('url', url);
-
-    if (categoryIds) formData.append('categoryIds', JSON.stringify(categoryIds));
+    formData.append('categoryIds', JSON.stringify(categoryIds));
+    formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
     if (description) formData.append('description', description);
     if (apiToken) formData.append('apiToken', apiToken);
-
-    formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
     const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
 

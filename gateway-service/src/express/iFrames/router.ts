@@ -12,7 +12,7 @@ import {
     searchIFramesSchema,
     updateIFrameSchema,
 } from './validator.schema';
-import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame } from './middlewares';
+import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame, validateUserCanUpdateIFrame } from './middlewares';
 import config from '../../config';
 
 export const iFramesRouter: Router = Router();
@@ -39,6 +39,7 @@ iFramesRouter.get(
 
 iFramesRouter.post(
     '/',
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createIFrameSchema),
     wrapMiddleware(validateUserIsTemplatesManager),
     wrapMiddleware(validateUserCanCreateIFrame),
@@ -47,10 +48,10 @@ iFramesRouter.post(
 
 iFramesRouter.put(
     '/:iFrameId',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(), //  .single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateIFrameSchema),
-    // wrapMiddleware(validateUserIsTemplatesManager),
-    // wrapMiddleware(validateUserCanUpdateIFrame),
+    wrapMiddleware(validateUserIsTemplatesManager),
+    wrapMiddleware(validateUserCanUpdateIFrame),
     wrapController(IFramesController.updateIFrame),
 );
 iFramesRouter.delete(

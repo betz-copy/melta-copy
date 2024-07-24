@@ -55,6 +55,6 @@ apiRouter.use('/rule-breaches', RulesBreachesRouter);
 
 apiRouter.use('/gantts', GanttsRouter);
 
-apiRouter.use('/iFrames', iFramesRouter);
+apiRouter.use('/iframes', iFramesRouter);
 
 export default apiRouter;

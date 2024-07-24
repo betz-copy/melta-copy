@@ -58,7 +58,7 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (_data, id) => {
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
-            navigate('/iFrames');
+            navigate('/iframes');
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
         onError: (err: AxiosError) => {
@@ -107,20 +107,7 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
                 </Grid>
                 <Grid container wrap="nowrap" justifyContent="flex-end">
                     <Grid item style={{ padding: '20px' }}>
-                        {isHovered && !isIFramePage ? (
-                            <Grid container wrap="nowrap" gap="15px">
-                                <Grid item>
-                                    <CardMenu
-                                        onEditClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}
-                                        onDeleteClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}
-                                    />
-                                </Grid>
-
-                                <Grid>
-                                    <OpenInFullIcon style={{ color: 'grey' }} />
-                                </Grid>
-                            </Grid>
-                        ) : (
+                        {isHovered && (
                             <Grid sx={{ display: 'flex' }}>
                                 <Grid>
                                     <MeltaTooltip title={i18next.t('actions.delete')}>

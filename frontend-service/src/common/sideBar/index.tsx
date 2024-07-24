@@ -271,7 +271,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Fade>
                     )}
                     <NavButton
-                        to="/iFrames"
+                        to="/iframes"
                         text={i18next.t('pages.iFrames')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}

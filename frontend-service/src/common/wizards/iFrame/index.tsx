@@ -11,6 +11,7 @@ import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import SettingIFramesPermissions from './SettingPrmissions';
 import { ChooseIFrameIcon } from './ChooseIcon';
+import { mapTemplates } from '../../../utils/templates';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
@@ -26,10 +27,10 @@ const steps: StepsType<IFrameWizardValues> = [
         component: (props) => <SettingIFramesPermissions {...props} />,
         // validationSchema: settingIFramesPermissionsSchema,
     },
-    {
-        label: i18next.t('wizard.iFrame.chooseIcon'),
-        component: (props) => <ChooseIFrameIcon {...props} />,
-    },
+    // {
+    //     label: i18next.t('wizard.iFrame.chooseIcon'),
+    //     component: (props) => <ChooseIFrameIcon {...props} />,
+    // },
 ];
 
 const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
@@ -40,7 +41,7 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
     isEditMode = false,
 }) => {
     // console.log({ initialValues });
-    // const queryClient = useQueryClient();
+    const queryClient = useQueryClient();
     // const i = queryClient.getQueryData<IFrameMap>('getIFrames');
     // const iFramesArray = Array.from(i!.values());
     // console.log({ i });
@@ -53,8 +54,12 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             onSuccess: (data) => {
                 console.log('shirel ', { data });
 
-                // queryClient.setQueryData<IFrameMap>('getIFrames', (iFrames) => iFrames!.set(data._id, {data}));
-                // queryClient.invalidateQueries({ queryKey: ['getIFrames', data._id], exact: true });
+                queryClient.setQueryData(['searchIFrames'], (iframes: any) => {
+                    const iFrames = mapTemplates(iframes);
+                    console.log({ iFrames });
+                    iFrames!.set(data._id, data);
+                });
+                // queryClient.invalidateQueries('getIFrame');
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

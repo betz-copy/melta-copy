@@ -151,7 +151,7 @@ const Main = () => {
                                     }
                                 />
                                 <Route
-                                    path="/iFrames"
+                                    path="/iframes"
                                     element={
                                         <>
                                             <TopBar title={title} />
@@ -159,7 +159,7 @@ const Main = () => {
                                         </>
                                     }
                                 />
-                                <Route path="/iFrames/:iFrameId" element={<IFramePage />} />
+                                <Route path="/iframes/:iFrameId" element={<IFramePage />} />
                                 <Route
                                     path="/gantts"
                                     element={

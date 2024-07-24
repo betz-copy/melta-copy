@@ -7,8 +7,8 @@ const ResizablePanel: React.FC<any> = ({ children }) => {
             <Panel
                 className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
                 style={{ padding: '10px' }}
-                defaultSize={33}
-                minSize={20}
+                // defaultSize={33}
+                // minSize={20}
             >
                 {children}
             </Panel>
