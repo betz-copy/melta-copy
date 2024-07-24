@@ -23,6 +23,7 @@ export type WizardBaseType<T extends object> = {
     initialValues?: T;
     initalStep?: number;
     isEditMode?: boolean;
+    refetchQuery?: () => Promise<void>;
 };
 
 export type StepsType<T extends object> = {

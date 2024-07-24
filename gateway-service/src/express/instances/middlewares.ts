@@ -4,7 +4,11 @@ import { EntityTemplateManagerService, ISearchEntityTemplatesBody } from '../../
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
+import {
+    ISearchRelationshipTemplatesBody,
+    ISearchRulesBody,
+    RelationshipsTemplateManagerService,
+} from '../../externalServices/templates/relationshipsTemplateService';
 import { ServiceError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
@@ -63,8 +67,16 @@ export const validateUserCanExportEntities = async (req: Request) => {
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: Omit<IPermissionsOfUser, 'user'> };
 
-export interface RequestWithSearchBody extends RequestWithPermissionsOfUserId {
+export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
     searchQuery: ISearchEntityTemplatesBody;
+}
+
+export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
+    searchBody: ISearchRelationshipTemplatesBody;
+}
+
+export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
+    searchBody: ISearchRulesBody;
 }
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: Scope) => {

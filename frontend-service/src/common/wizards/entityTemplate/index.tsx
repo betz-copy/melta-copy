@@ -88,6 +88,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         uniqueConstraints: [],
     },
     isEditMode = false,
+    refetchQuery,
 }) => {
     const queryClient = useQueryClient();
 
@@ -157,6 +158,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}
+            refetchQuery={refetchQuery}
         />
     );
 };

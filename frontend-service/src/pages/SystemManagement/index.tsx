@@ -2,7 +2,7 @@ import React, { ReactElement, useEffect } from 'react';
 import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
@@ -12,6 +12,9 @@ import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTempla
 import '../../css/pages.css';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { NoPermissions } from './components/NoPermissions';
+import { ICategoryMap } from '../../interfaces/categories';
+import { getAllCategoryRequest } from '../../services/templates/categoriesService';
+import { toast } from 'react-toastify';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();
@@ -23,8 +26,17 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
+    // const categories = queryClient.getQueryData<ICategoryMap>('getAllCategories')!;
+
+    const { data: categories } = useQuery<ICategoryMap>('getAllCategories', () => getAllCategoryRequest(), {
+        onError: (error) => {
+            console.log('failed loading categories:', error);
+            toast.error(i18next.t('failedToGetTemplates'));
+        },
+    });
+
     const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
-        categories: <CategoriesRow />,
+        categories: <CategoriesRow categories={categories} />,
         entityTemplates: <EntityTemplatesRow />,
         relationshipTemplates: <RelationshipTemplatesRow />,
         rules: <RulesRow />,

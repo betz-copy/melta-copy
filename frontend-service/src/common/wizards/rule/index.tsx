@@ -43,6 +43,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
         disabled: false,
     },
     isEditMode = false,
+    refetchQuery,
 }) => {
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
@@ -78,7 +79,10 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             title={i18next.t('wizard.rule.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFucntion={(values) => {
+                refetchQuery?.();
+                return mutateAsync(values);
+            }}
         />
     );
 };

@@ -72,6 +72,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
     initalStep = 0,
     initialValues = { ...defaultInitialValues },
     isEditMode = false,
+    refetchQuery,
 }) => {
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
@@ -117,6 +118,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             steps={steps}
             isLoading={isLoading}
             submitFucntion={mutateAsync}
+            refetchQuery={refetchQuery}
         />
     );
 };

@@ -1,6 +1,7 @@
 import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
+import { ISearchBody } from './entityTemplateService';
 
 const {
     templateService: {
@@ -16,21 +17,15 @@ export interface IRelationshipTemplate {
     destinationEntityId: string;
 }
 
-export interface ISearchRelationshipTemplatesBody {
-    search?: string;
+export interface ISearchRelationshipTemplatesBody extends ISearchBody {
     ids?: string[];
     sourceEntityIds?: string[];
     destinationEntityIds?: string[];
-    limit?: number;
-    skip?: number;
 }
 
-export interface ISearchRulesBody {
-    search?: string;
+export interface ISearchRulesBody extends ISearchBody {
     entityTemplateIds?: string[];
     disabled?: boolean;
-    limit?: number;
-    skip?: number;
 }
 
 export class RelationshipsTemplateManagerService extends TemplatesManagerService {

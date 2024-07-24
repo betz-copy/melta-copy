@@ -34,7 +34,8 @@ export const RuleCard: React.FC<{
         }>
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
-}> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
+    refetchQuery: () => Promise<void>;
+}> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync, refetchQuery }) => {
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -67,8 +68,12 @@ export const RuleCard: React.FC<{
                                             isWizardOpen: true,
                                             rule,
                                         });
+                                        refetchQuery();
                                     }}
-                                    onDeleteClick={() => setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id })}
+                                    onDeleteClick={() => {
+                                        setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id });
+                                        refetchQuery();
+                                    }}
                                     onDisableClick={() => updateDisabledMutateAsync(rule)}
                                     disabledProps={{
                                         isDisabled: rule.disabled,
@@ -162,6 +167,9 @@ const RulesRow: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
         },
     });
+
+    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchRulesTemplates', searchText], exact: true });
+
     return (
         <Grid item container>
             <Grid container spacing={1} alignItems="center">
@@ -176,16 +184,16 @@ const RulesRow: React.FC = () => {
             </Grid>
             <Grid item container direction="row" gap="30px" marginTop="30px">
                 <InfiniteScroll<IMongoRule>
-                    queryKey={['searchProcessTemplates', searchText]}
-                    queryFunction={async ({ pageParam: startRow = 0 }) => {
+                    queryKey={['searchRulesTemplates', searchText]}
+                    queryFunction={async ({ pageParam }) => {
                         const searchRulesResult = await searchRulesRequest({
-                            skip: startRow,
+                            skip: pageParam,
                             limit: infiniteScrollPageCount,
                             search: searchText.length > 0 ? searchText : undefined,
                         });
                         console.log(
                             'rules',
-                            { skip: startRow, limit: infiniteScrollPageCount, search: searchText.length > 0 ? searchText : undefined },
+                            { skip: pageParam, limit: infiniteScrollPageCount, search: searchText.length > 0 ? searchText : undefined },
                             { searchRulesResult },
                         );
 
@@ -198,8 +206,8 @@ const RulesRow: React.FC = () => {
                     }}
                     getItemId={(rule) => rule._id}
                     getNextPageParam={(lastPage, allPages) => {
-                        const nextPage = allPages.length * infiniteScrollPageCount;
-                        return lastPage.length ? nextPage : undefined;
+                        if (lastPage.length < infiniteScrollPageCount) return undefined;
+                        return allPages.length * infiniteScrollPageCount;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}
@@ -213,6 +221,7 @@ const RulesRow: React.FC = () => {
                             setDeleteRuleWizardState={setDeleteRuleWizardState}
                             setRuleWizardDialogState={setRuleWizardDialogState}
                             updateDisabledMutateAsync={updateDisabledMutateAsync}
+                            refetchQuery={refetch}
                         />
                     )}
                 </InfiniteScroll>
@@ -222,6 +231,7 @@ const RulesRow: React.FC = () => {
                 handleClose={() => setRuleWizardDialogState({ isWizardOpen: false, rule: null })}
                 initialValues={ruleObjectToRuleForm(ruleWizardDialogState.rule, entityTemplates)}
                 isEditMode={Boolean(ruleWizardDialogState.rule)}
+                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteRuleWizardState.isWizardOpen}

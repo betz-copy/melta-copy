@@ -72,6 +72,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
         steps: [],
     },
     isEditMode = false,
+    refetchQuery,
 }) => {
     const queryClient = useQueryClient();
     const { isLoading, mutateAsync } = useMutation(
@@ -109,7 +110,10 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             title={i18next.t(isEditMode ? 'wizard.processTemplate.editTitle' : 'wizard.processTemplate.title')}
             steps={stepsComponents}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFucntion={(values) => {
+                refetchQuery?.();
+                return mutateAsync(values);
+            }}
         />
     );
 };

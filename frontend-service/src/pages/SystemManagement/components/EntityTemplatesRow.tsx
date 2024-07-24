@@ -75,6 +75,7 @@ interface EntityTemplateCardProps {
         },
         unknown
     >;
+    refetchQuery: () => Promise<void>;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -82,6 +83,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
     updateEntityTemplateStatusAsync,
+    refetchQuery,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
@@ -133,8 +135,11 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
-                                onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
-                                onDuplicateClick={() =>
+                                onEditClick={() => {
+                                    setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                    refetchQuery?.();
+                                }}
+                                onDuplicateClick={() => {
                                     setEntityTemplateWizardDialogState({
                                         isWizardOpen: true,
                                         entityTemplate: {
@@ -145,8 +150,9 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             propertiesTypeOrder,
                                             uniqueConstraints,
                                         },
-                                    })
-                                }
+                                    });
+                                    refetchQuery?.();
+                                }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
@@ -269,6 +275,7 @@ interface CategoryEntitiesBoxProps {
         unknown
     >;
     loadedEntityTemplateId: string;
+    refetchQuery: () => Promise<void>;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
@@ -277,6 +284,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setDeleteEntityTemplateDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
+    refetchQuery,
 }) => {
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -375,6 +383,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                                    refetchQuery={refetchQuery}
                                                 />
                                             )}
                                         </Grid>
@@ -486,15 +495,20 @@ const EntityTemplatesRow: React.FC = () => {
     );
 
     const onDragEnd = (result) => {
+        console.log({ result, entityTemplates });
+
         if (!result.destination) {
             return;
         }
+        console.log('hiiii');
 
         if (result.source.droppableId === result.destination.droppableId) {
             return;
         }
+        console.log('hellooo');
 
         const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
+        console.log({ category, ...restEntityTemp });
 
         mutateAsync({
             entityTemplateId: result.draggableId,
@@ -502,6 +516,8 @@ const EntityTemplatesRow: React.FC = () => {
             category: categories.get(result.destination.droppableId)!,
         });
     };
+
+    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntityTemplates', searchText, categoriesToShow], exact: true });
 
     return (
         <Grid item container>
@@ -547,15 +563,21 @@ const EntityTemplatesRow: React.FC = () => {
                         category: IMongoCategory;
                         entityTemplates: IMongoEntityTemplatePopulated[];
                     }>
-                        queryKey={['searchEntityTemplates', searchText]}
-                        queryFunction={async ({ pageParam: startRow = 0 }) => {
-                            const searchEntityTemplatesResult = await searchEntityTemplates({
-                                skip: startRow,
+                        queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
+                        queryFunction={async ({ pageParam }) => {
+                            console.log({
+                                skip: pageParam,
                                 limit: infiniteScrollPageCount,
                                 search: searchText.length > 0 ? searchText : undefined,
                                 categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
                             });
-                            console.log({ searchEntityTemplatesResult });
+
+                            const searchEntityTemplatesResult = await searchEntityTemplates({
+                                skip: pageParam,
+                                limit: infiniteScrollPageCount,
+                                search: searchText.length > 0 ? searchText : undefined,
+                                categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
+                            });
 
                             return getEntityTemplatesToShowGroupedByCategories(searchEntityTemplatesResult);
                         }}
@@ -566,8 +588,8 @@ const EntityTemplatesRow: React.FC = () => {
                         }}
                         getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
                         getNextPageParam={(lastPage, allPages) => {
-                            const nextPage = allPages.length * infiniteScrollPageCount;
-                            return lastPage.length ? nextPage : undefined;
+                            if (lastPage.length < infiniteScrollPageCount) return undefined;
+                            return allPages.length * infiniteScrollPageCount;
                         }}
                         endText={i18next.t('entitiesCardView.noSearchLeft')}
                         emptyText={i18next.t('failedToGetTemplates')}
@@ -581,6 +603,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
+                                    refetchQuery={refetch}
                                 />
                             </Grid>
                         )}
@@ -593,6 +616,7 @@ const EntityTemplatesRow: React.FC = () => {
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
+                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}

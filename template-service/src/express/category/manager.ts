@@ -4,6 +4,8 @@ import { ServiceError } from '../error';
 
 class CategoryManager {
     static getCategories(displayName?: string) {
+        console.log('template manager', {displayName});
+        
         return CategoryModel.find(displayName ? { displayName: { $regex: new RegExp(`.*${displayName}.*`) } } : {})
             .lean()
             .exec();

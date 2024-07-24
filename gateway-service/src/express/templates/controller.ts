@@ -1,6 +1,11 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { RequestWithPermissionsOfUserId, RequestWithSearchBody } from '../instances/middlewares';
+import {
+    RequestWithPermissionsOfUserId,
+    RequestWithSearchEntityTemplateBody,
+    RequestWithSearchRelationshipTemplateBody,
+    RequestWithSearchRuleTemplateBody,
+} from '../instances/middlewares';
 import { TemplatesManager } from './manager';
 
 export default class TemplatesController {
@@ -26,10 +31,11 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
     }
 
-    static async searchCategories(_req: Request, res: Response) {
-        console.log('controller searchCategories');
+    static async searchCategories(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.getAllCategories());
+        res.json(await TemplatesManager.getAllCategories(permissionsOfUserId));
     }
 
     // entityTemplates
@@ -60,7 +66,7 @@ export default class TemplatesController {
     }
 
     static async searchEntityTemplates(req: Request, res: Response) {
-        const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchBody;
+        const { user, permissionsOfUserId, searchQuery } = req as RequestWithSearchEntityTemplateBody;
         assert(user, 'User doesnt exists under request');
 
         res.json(await TemplatesManager.searchEntityTemplates(permissionsOfUserId, searchQuery));
@@ -80,10 +86,10 @@ export default class TemplatesController {
     }
 
     static async searchRelationshipTemplates(req: Request, res: Response) {
-        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRelationshipTemplateBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.searchRelationshipTemplates(permissionsOfUserId));
+        res.json(await TemplatesManager.searchRelationshipTemplates(permissionsOfUserId, searchBody));
     }
 
     // rules
@@ -96,9 +102,9 @@ export default class TemplatesController {
     }
 
     static async searchRulesTemplates(req: Request, res: Response) {
-        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        const { user, permissionsOfUserId, searchBody } = req as RequestWithSearchRuleTemplateBody;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.searchRulesTemplates(permissionsOfUserId));
+        res.json(await TemplatesManager.searchRulesTemplates(permissionsOfUserId, searchBody));
     }
 }

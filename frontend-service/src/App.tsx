@@ -22,6 +22,7 @@ import './css/loading.css';
 import { IRuleMap } from './interfaces/rules';
 import { mapTemplates } from './utils/templates';
 import { IProcessTemplateMap } from './interfaces/processes/processTemplate';
+import { getAllCategoryRequest } from './services/templates/categoriesService';
 
 const App: React.FC = () => {
     const queryClient = useQueryClient();

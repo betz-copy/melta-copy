@@ -74,18 +74,22 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
     updatedAt: string;
 }
 
-export interface ISearchEntityTemplatesBody {
+export interface ISearchBody {
     search?: string;
-    ids?: string[];
-    categoryIds?: string[];
     limit?: number;
     skip?: number;
+}
+
+export interface ISearchEntityTemplatesBody extends ISearchBody {
+    ids?: string[];
+    categoryIds?: string[];
 }
 
 export class EntityTemplateManagerService extends TemplatesManagerService {
     // categories
     static async getAllCategories() {
         const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoCategory[]>(baseCategoriesRoute);
+        console.log('result =', { data });
 
         return data;
     }

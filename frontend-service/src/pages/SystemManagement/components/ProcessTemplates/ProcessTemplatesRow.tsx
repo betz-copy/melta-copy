@@ -57,6 +57,8 @@ const ProcessTemplatesRow: React.FC = () => {
         },
     );
 
+    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchProcessTemplates', searchText], exact: true });
+
     return (
         <Grid item container marginBottom="30px" gap="30px">
             <Grid container spacing={1} alignItems="center">
@@ -80,6 +82,8 @@ const ProcessTemplatesRow: React.FC = () => {
                         limit: infiniteScrollPageCount,
                         displayName: searchText.length > 0 ? searchText : undefined,
                     });
+
+                    console.log({ searchProcessTemplatesResult });
 
                     return searchProcessTemplatesResult;
                 }}
@@ -105,6 +109,7 @@ const ProcessTemplatesRow: React.FC = () => {
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
+                        refetchQuery={refetch}
                     />
                 )}
             </InfiniteScroll>
@@ -113,6 +118,7 @@ const ProcessTemplatesRow: React.FC = () => {
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}
                 initialValues={processTemplateObjectToProcessTemplateForm(processTemplateWizardDialogState.processTemplate)}
                 isEditMode={Boolean(processTemplateWizardDialogState.processTemplate)}
+                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteProcessTemplateDialogState.isDialogOpen}

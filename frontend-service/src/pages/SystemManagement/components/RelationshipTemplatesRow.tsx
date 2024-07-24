@@ -44,12 +44,14 @@ interface RelationshipTemplateCardProps {
             relationshipTemplateId: string | null;
         }>
     >;
+    refetchQuery?: () => Promise<void>;
 }
 
 const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     relationshipTemplate,
     setRelationshipTemplateWizardDialogState,
     setDeleteRelationshipTemplateDialogState,
+    refetchQuery,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -73,10 +75,15 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                             ...restOfRelationshipTemplate,
                                         },
                                     });
+                                    refetchQuery?.();
                                 }}
-                                onDeleteClick={() =>
-                                    setDeleteRelationshipTemplateDialogState({ isDialogOpen: true, relationshipTemplateId: relationshipTemplate._id })
-                                }
+                                onDeleteClick={() => {
+                                    setDeleteRelationshipTemplateDialogState({
+                                        isDialogOpen: true,
+                                        relationshipTemplateId: relationshipTemplate._id,
+                                    });
+                                    refetchQuery?.();
+                                }}
                                 disabledProps={{
                                     isDisabled: false,
                                     canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
@@ -166,6 +173,8 @@ const RelationshipTemplatesRow: React.FC = () => {
 
         return relationsGroupedByEntities;
     };
+
+    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchRelationshipTemplates', searchText], exact: true });
 
     return (
         <Grid item container marginBottom="30px">
@@ -260,7 +269,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 }>
                     queryKey={['searchRelationshipTemplates', searchText]}
                     queryFunction={async ({ pageParam: startRow = 0 }) => {
-                        const searchProcessTemplatesResult = await searchRelationshipTemplates({
+                        const searchRelationshipTemplatesResult = await searchRelationshipTemplates({
                             skip: startRow,
                             limit: infiniteScrollPageCount,
                             search: searchText.length > 0 ? searchText : undefined,
@@ -268,8 +277,10 @@ const RelationshipTemplatesRow: React.FC = () => {
                             destinationEntityIds: destinationEntityTemplatesToShow.map((destinationEntity) => destinationEntity._id),
                         });
 
+                        console.log({ searchRelationshipTemplatesResult });
+
                         return getRelationshipGroupedByEntitiesTemplate(
-                            Array.from(searchProcessTemplatesResult.values()).map((relationshipTemplate) =>
+                            Array.from(searchRelationshipTemplatesResult.values()).map((relationshipTemplate) =>
                                 populateRelationshipTemplate(relationshipTemplate, entityTemplates),
                             ),
                         );
@@ -281,8 +292,10 @@ const RelationshipTemplatesRow: React.FC = () => {
                     }}
                     getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}
                     getNextPageParam={(lastPage, allPages) => {
-                        const nextPage = allPages.length * infiniteScrollPageCount;
-                        return lastPage.length ? nextPage : undefined;
+                        console.log({ lastPage, allPages, infiniteScrollPageCount });
+
+                        if (lastPage.length !== infiniteScrollPageCount) return undefined;
+                        return allPages.length * infiniteScrollPageCount;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}
@@ -352,6 +365,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                                     relationshipTemplate={relationshipTemplate}
                                     setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
                                     setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
+                                    refetchQuery={refetch}
                                 />
                             ))}
                         </Box>
@@ -367,6 +381,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     relationshipTemplateWizardDialogState.relationshipTemplate,
                 )}
                 isEditMode={Boolean(relationshipTemplateWizardDialogState.relationshipTemplate?._id)}
+                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteRelationshipTemplateDialogState.isDialogOpen}
