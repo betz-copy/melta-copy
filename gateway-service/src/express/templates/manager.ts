@@ -18,7 +18,6 @@ import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
-import streamToBuffer from '../../utils/fs';
 import config from '../../config';
 import { IRule } from './rules/interfaces';
 import { getParametersOfFormula } from './rules';
@@ -35,7 +34,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
-import { Readable } from 'stream';
+import { patchDocumentAsStream } from './pdfExport';
 
 const {
     categoryHasTemplates,
@@ -336,12 +335,12 @@ export class TemplatesManager {
     }
 
     static async exportEntityToPdfTemplate(entityId: string, pdfTemplateId?: string) {
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
+        const entity = await InstanceManagerService.getEntityInstanceById(entityId);
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
         if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
             const fileStream = await downloadFile(pdfTemplateId);
-            const fileBuffer = await streamToBuffer(fileStream);
-            return Readable.from(fileBuffer);
+            return patchDocumentAsStream(fileStream, entity);
         }
 
         if (entityTemplate.pdfTemplatesIds) {

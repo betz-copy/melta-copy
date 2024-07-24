@@ -8,10 +8,11 @@ export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
         const stream = await FilesManager.downloadFile(path.toString());
-        const fileStats = await FilesManager.fileStat(path.toString());
 
-        res.setHeader('Content-Type', fileStats.metaData['content-type']);
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'); // MIME type for .docx files
+        res.setHeader('Content-Transfer-Encoding', 'binary');
+        res.setHeader('Cache-Control', 'no-cache');
 
         stream.pipe(res);
     }

@@ -20,6 +20,7 @@
   "dependencies": {
     "axios": "^0.26.1",
     "cookie-parser": "^1.4.6",
+    "docx": "^8.5.0",
     "dotenv": "^10.0.0",
     "elastic-apm-node": "^4.5.2",
     "env-var": "^7.0.0",

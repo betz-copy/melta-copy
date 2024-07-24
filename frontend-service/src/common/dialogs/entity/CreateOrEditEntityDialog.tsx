@@ -486,14 +486,15 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             variant="contained"
                                                             startIcon={<FileDownloadOutlinedIcon />}
                                                             onClick={async () => {
+                                                                console.log(entityToUpdate);
                                                                 const file = await exportMutation({
-                                                                    entityId: values.properties._id || entityToUpdate?.templateId,
+                                                                    entityId: values.properties._id || entityToUpdate?.properties._id,
                                                                     templateId: selectedFileToExport,
                                                                 });
 
                                                                 console.log(file);
 
-                                                                fileDownload(file, 'nigga.docx');
+                                                                fileDownload(file, 'simple-template.docx');
                                                             }}
                                                             disabled={!(selectedFileToExport?.length && !values.properties._id)}
                                                         >
@@ -509,11 +510,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         startIcon={<ClearIcon />}
                                                         onClick={async () => {
                                                             const file = await exportMutation({
-                                                                entityId: values.properties._id || entityToUpdate?.templateId,
+                                                                entityId: values.properties._id || entityToUpdate?.properties._id,
                                                                 templateId: selectedFileToExport,
                                                             });
 
-                                                            fileDownload(file, 'nigga');
+                                                            fileDownload(file, 'simple-template');
                                                         }}
                                                     >
                                                         {i18next.t('entityPage.cancel')}
