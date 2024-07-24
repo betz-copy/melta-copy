@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../../config';
-import { IBrokenRule } from '../ruleBreachService/interfaces';
+import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
@@ -130,6 +130,14 @@ export class InstanceManagerService {
         const { data } = await this.InstanceManagerApi.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    static async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean,  ignoredRules: IBrokenRule[] = []): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
+        const { data } = await this.InstanceManagerApi.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+            `${baseRelationshipsRoute}/bulk?dryRun=${dryRun}`, {actionsGroups, ignoredRules}
+        );
+
         return data;
     }
 }

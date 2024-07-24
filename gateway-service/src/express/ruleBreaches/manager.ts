@@ -95,9 +95,11 @@ export class RuleBreachesManager {
         return result;
     }
 
-    static async getManyRuleBreachRequests(body: { rulesBreachIds: string[] }) {
+    static async getManyRuleBreachRequests(body: { rulesBreachIds: string[], isPopulate: boolean }) {
         const ruleBreaches = await RuleBreachService.getManyRuleBreaches(body.rulesBreachIds);
         
+        if (!body.isPopulate) return ruleBreaches;
+
         const populatedRuleBreachesPromises = ruleBreaches.map((ruleBreach) => {
             return RuleBreachesManager.getRuleBreachRequestById(ruleBreach._id);
         });
@@ -147,6 +149,7 @@ export class RuleBreachesManager {
         if (ruleBreachRequest.actions.length > 1) {
             // TODO - use the new route of run bulk of actions
             console.log('run bulk of action of rule breach');
+            await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules).catch((err) => console.log({err}));
         }
         else try {
             const actionType = ruleBreachRequest.actions[0].actionType;
@@ -575,7 +578,7 @@ export class RuleBreachesManager {
         return brokenRules.map((brokenRule) => RuleBreachesManager.populateBrokenRule(brokenRule, entitiesMap, relationshipsMap));
     }
 
-    private static async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) { // TODO
+    private static async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) {
         const [sourceEntity, destinationEntity] = await Promise.all([
             sourceEntityId.startsWith('$') ? sourceEntityId : InstanceManagerService.getEntityInstanceById(sourceEntityId).catch(() => null),
             destinationEntityId.startsWith('$') ? destinationEntityId : InstanceManagerService.getEntityInstanceById(destinationEntityId).catch(() => null),
