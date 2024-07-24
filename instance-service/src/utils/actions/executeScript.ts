@@ -15,7 +15,7 @@ const prepareCodeForActionExecution = async (
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
 ) => {
     const updateEntityFunction = [
-        `${await generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
         'const actions: any[] = [];',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  actions.push({ entityId, properties });',

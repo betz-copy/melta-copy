@@ -10,7 +10,7 @@ import { addPropertyToRequest } from '../../utils/express';
 
 const cleanActionCode = async (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
-        `${await generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',

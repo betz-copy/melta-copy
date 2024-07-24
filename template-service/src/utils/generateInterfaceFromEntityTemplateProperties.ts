@@ -1,8 +1,8 @@
-import { IEntitySingleProperty } from '../express/entityTemplate/interface';
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '../express/entityTemplate/interface';
 import EntityTemplateManager from '../express/entityTemplate/manager';
 
-const generateFromString = (propertyValues: IEntitySingleProperty) => {
-    const { format } = propertyValues;
+const generateFromString = async (propertyValues: IEntitySingleProperty) => {
+    const { format, relationshipReference } = propertyValues;
 
     if (propertyValues.enum) {
         return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
@@ -12,11 +12,11 @@ const generateFromString = (propertyValues: IEntitySingleProperty) => {
     }
 
     if (format === 'relationshipReference') {
-        // const relatedEntityTemplate = await EntityTemplateManager.getTemplateById(relationshipReference?.relatedTemplateId!);
-        // console.log({ relatedEntityTemplate });
-        // return relatedEntityTemplate.name;
-        return 'Wallet';
+        const entityTemplate: IEntityTemplatePopulated = await EntityTemplateManager.getTemplateById(relationshipReference?.relatedTemplateId!)!;
+
+        return entityTemplate.name;
     }
+
     return 'string';
 };
 
@@ -30,7 +30,7 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     return `(${arrayOptions})[]`;
 };
 
-export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+export const generateInterface = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
         'readonly createdDate': 'string',
@@ -38,7 +38,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
         'readonly disabled': 'string',
     };
 
-    Object.entries(entity).forEach(([propertyName, propertyValues]) => {
+    const promises = Object.entries(entity).map(async ([propertyName, propertyValues]) => {
         const { type } = propertyValues;
 
         switch (type) {
@@ -52,38 +52,49 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
                 dynamicInterface[propertyName] = generateFromArray(propertyValues);
                 break;
             default:
-                dynamicInterface[propertyName] = generateFromString(propertyValues);
+                dynamicInterface[propertyName] = await generateFromString(propertyValues);
         }
     });
 
-    let interfaceDefinition = `interface ${interfaceName} {\n`;
-    Object.entries(dynamicInterface).forEach(([propertyName, propertyType]) => {
-        interfaceDefinition += `  ${propertyName}: ${propertyType};\n`;
-    });
-    interfaceDefinition += '}';
+    await Promise.all(promises);
 
-    return interfaceDefinition;
+    return [
+        `interface ${interfaceName} {`,
+        ...Object.entries(dynamicInterface).map(([propertyName, propertyType]) => `  ${propertyName}: ${propertyType};`),
+        '}',
+    ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
-    const relatedTemplateIds: string[] = [];
-    let interfaces = '';
-    Object.entries(entity).forEach(([_propertyName, propertyValues]) => {
-        if (propertyValues.format === 'relationshipReference') {
-            const { relatedTemplateId } = propertyValues.relationshipReference!;
-            if (!relatedTemplateIds.includes(relatedTemplateId!)) relatedTemplateIds.push(relatedTemplateId);
-        }
-    });
+async function getAllRelatedEntities(entityId, relatedEntities: IEntityTemplatePopulated[] = []) {
+    const entityTemplate = await EntityTemplateManager.getTemplateById(entityId);
+    if (!entityTemplate) return relatedEntities;
+    if (!relatedEntities.some((entity) => entity._id === entityTemplate._id)) relatedEntities.push(entityTemplate);
 
     await Promise.all(
-        relatedTemplateIds.map(async (relatedTemplate) => {
-            const entityTemplate = await EntityTemplateManager.getTemplateById(relatedTemplate);
-            const generatedInterface = generateInterface(entityTemplate.properties.properties, entityTemplate.name);
-            // eslint-disable-next-line prefer-template, no-useless-concat
-            interfaces += generatedInterface + '\n' + '\n';
+        Object.values(entityTemplate.properties.properties).map(async (propertyValues) => {
+            if (propertyValues.format === 'relationshipReference') {
+                const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+
+                if (!relatedEntities.some((entity) => entity._id === relatedTemplateId)) {
+                    await getAllRelatedEntities(relatedTemplateId, relatedEntities);
+                }
+            }
         }),
     );
-    interfaces += generateInterface(entity, interfaceName);
 
-    return interfaces;
+    return relatedEntities;
+}
+
+export const generateInterfaceWithRelationships = async (id: string) => {
+    const interfaces: string[] = [];
+
+    const entityAndAllRelatedEntities = await getAllRelatedEntities(id);
+    await Promise.all(
+        entityAndAllRelatedEntities.map(async (entity) => {
+            const generatedInterface = await generateInterface(entity.properties.properties, entity.name);
+            interfaces.push(generatedInterface);
+        }),
+    );
+
+    return interfaces.join('\n\n');
 };

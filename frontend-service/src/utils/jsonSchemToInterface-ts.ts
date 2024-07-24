@@ -66,24 +66,39 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     ].join('\n');
 };
 
-export const generateInterfaceWithRelationships = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySingleProperty>) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const interfaces: string[] = [];
+    const relationshipReferenceIds = new Set<string>();
 
-    const relatedTemplateIds = [
-        ...new Set(
-            Object.values(entity)
-                .filter(({ format }) => format === 'relationshipReference')
-                .map(({ relationshipReference }) => relationshipReference?.relatedTemplateId!),
-        ),
-    ];
+    const queue = [entity];
 
-    const generatedInterfacesForRelatedEntities = relatedTemplateIds.map((relatedTemplate) => {
-        const entityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplate)!;
-        return generateInterface(entityTemplate.properties.properties, entityTemplate.name);
-    });
+    while (queue.length > 0) {
+        const currentEntity = queue.shift()!;
 
-    const generatedInterfaceForEntity = generateInterface(entity, interfaceName);
-    const interfaces = [...generatedInterfacesForRelatedEntities, generatedInterfaceForEntity].join('\n\n');
+        Object.values(currentEntity).forEach((propertyValues) => {
+            if (propertyValues.format === 'relationshipReference') {
+                const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
+
+                if (!relationshipReferenceIds.has(relatedTemplateId)) {
+                    const relatedTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId)!;
+
+                    relationshipReferenceIds.add(relatedTemplateId);
+                    interfaces.push(generateInterface(relatedTemplate.properties.properties, relatedTemplate.name));
+                    queue.push(relatedTemplate.properties.properties);
+                }
+            }
+        });
+    }
+
     return interfaces;
+};
+
+export const generateInterfaceWithRelationships = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+    const generatedInterfacesForRelatedEntities = generateInterfacesForRelatedEntities(entity).reverse();
+    const generatedInterfaceForEntity = generateInterface(entity, interfaceName);
+
+    const allInterfaces = [...generatedInterfacesForRelatedEntities, generatedInterfaceForEntity].join('\n\n');
+    return allInterfaces;
 };
