@@ -1,5 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
+import groupBy from 'lodash.groupby';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
@@ -22,7 +23,6 @@ import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from
 import config from '../../config';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import groupBy from 'lodash.groupby';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
@@ -151,27 +151,28 @@ export class RelationshipManager {
             destinationEntityId,
         );
 
-        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{
-            createdRelationshipId: createdRelationship.properties._id,
-        }]);
+        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [
+            {
+                createdRelationshipId: createdRelationship.properties._id,
+            },
+        ]);
 
         return createdRelationship;
     }
 
-        static createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship) {
-            const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
-    
-            return runInTransactionAndNormalize(
-                transaction,
-                `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
+    static createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship) {
+        const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
+
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s {_id: '${sourceEntityId}'}),(d {_id: '${destinationEntityId}'})
                  MERGE (s)-[r: \`${templateId}\`]->(d)
                  ON CREATE SET r = $relProps
                  RETURN r, s, d`,
-                normalizeReturnedRelationship('singleResponseNotNullable'),
-                { relProps: { ...properties, ...generateDefaultProperties() } },
-            );
-        }
-       
+            normalizeReturnedRelationship('singleResponseNotNullable'),
+            { relProps: { ...properties, ...generateDefaultProperties() } },
+        );
+    }
 
     static async createRelationshipByEntityIds(
         relationship: IRelationship,
@@ -179,8 +180,8 @@ export class RelationshipManager {
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-    const createdRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-        return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction);       
+        const createdRelationship = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction);
         });
 
         const updatedFields = {
@@ -279,7 +280,7 @@ export class RelationshipManager {
                 const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
                 reasons.push({ type: 'dependentOnEntity' });
 
-                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, {reasons, entityTemplateId: entityData.entityTemplateId});
+                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
             } else if (action.actionType === ActionTypes.CreateRelationship) {
                 const relationship = results[i] as IRelationship;
 
@@ -314,22 +315,24 @@ export class RelationshipManager {
     ) => {
         // sort relevant rules by each entity
         // entityId -> rules[], entityTemplateId
-        const entitiesRelevantRulesMap = new Map<            
+        const entitiesRelevantRulesMap = new Map<
             string,
             {
-                rules: IMongoRule[]
+                rules: IMongoRule[];
                 entityTemplateId: string;
             }
         >();
 
-        entitiesIdsRulesReasonsMapBeforeRunActions.forEach(({reasons, entityTemplateId}, entityId) => {
+        entitiesIdsRulesReasonsMapBeforeRunActions.forEach(({ reasons, entityTemplateId }, entityId) => {
             const relevantRules: IMongoRule[] = [];
             const rulesIds: Set<string> = new Set<string>();
 
             reasons.forEach((reason) => {
                 if (reason.type === 'dependentOnEntity') {
                     relevantRules.push(
-                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityTemplateId] || [], entityTemplateId).filter((rule) => !rulesIds.has(rule._id)),
+                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityTemplateId] || [], entityTemplateId).filter(
+                            (rule) => !rulesIds.has(rule._id),
+                        ),
                     );
                     relevantRules.forEach((rule) => rulesIds.add(rule._id));
                 } else if (reason.type === 'dependentViaAggregation') {
@@ -344,7 +347,7 @@ export class RelationshipManager {
                 }
             });
 
-            entitiesRelevantRulesMap.set(entityId, {rules: relevantRules, entityTemplateId});
+            entitiesRelevantRulesMap.set(entityId, { rules: relevantRules, entityTemplateId });
         });
 
         return entitiesRelevantRulesMap;
@@ -358,7 +361,7 @@ export class RelationshipManager {
         const entitiesRelevantRulesMap = RelationshipManager.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
-        entitiesRelevantRulesMap.forEach(({rules}, entityId) => {
+        entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
             ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
         });
 
@@ -367,7 +370,11 @@ export class RelationshipManager {
         return ruleFailures;
     }
 
-    static async runBulkOfActionsInTransaction(transaction: Transaction, actions: IAction[], entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) { 
+    static async runBulkOfActionsInTransaction(
+        transaction: Transaction,
+        actions: IAction[],
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    ) {
         const results: (IEntity | IRelationship)[] = [];
         for (const action of actions) {
             if (action.actionType === ActionTypes.CreateEntity) {
@@ -464,10 +471,8 @@ export class RelationshipManager {
                     ruleFailuresBeforeAll,
                     ruleFailuresAfterAll,
                     actions.map((action, index) => {
-                        if (action.actionType === ActionTypes.CreateEntity)
-                            return { createdEntityId: results[index].properties._id };
-                        if (action.actionType === ActionTypes.CreateRelationship)
-                            return { createdRelationshipId: results[index].properties._id };
+                        if (action.actionType === ActionTypes.CreateEntity) return { createdEntityId: results[index].properties._id };
+                        if (action.actionType === ActionTypes.CreateRelationship) return { createdRelationshipId: results[index].properties._id };
                         return {};
                     }),
                 );

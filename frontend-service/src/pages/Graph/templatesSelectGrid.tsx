@@ -128,7 +128,7 @@ const TemplatesSelectGrid: React.FC<{
                         >
                             {i18next.t('graph.filterTitle')}
                         </Typography>
-                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid={true} />
+                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
                         <ChooseAllMenuItem
                             options={templates}
                             selectedOptionsFiltered={selectedTemplatesFiltered}

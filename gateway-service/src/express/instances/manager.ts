@@ -15,10 +15,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import {
-    ActionTypes,
-    IBrokenRule,
-} from '../../externalServices/ruleBreachService/interfaces';
+import { ActionTypes, IBrokenRule } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
@@ -192,13 +189,15 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [{
-                        actionType: ActionTypes.CreateEntity,
-                        actionMetadata: {
-                            templateId: entity.templateId,
-                            properties: entity.properties,
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                            },
                         },
-                    }] 
+                    ],
                 },
                 userId,
             );
@@ -338,14 +337,16 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [{
-                        actionType: ActionTypes.DuplicateEntity,
-                        actionMetadata: {
-                            templateId: entity.templateId,
-                            properties: entity.properties,
-                            entityIdToDuplicate: id,
-                    },
-                }]
+                    actions: [
+                        {
+                            actionType: ActionTypes.DuplicateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                                entityIdToDuplicate: id,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );

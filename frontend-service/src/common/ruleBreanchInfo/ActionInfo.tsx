@@ -23,28 +23,6 @@ import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach'
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 
-export const EntityForBrokenRules: React.FC<{
-    ruleTemplate: IMongoRule;
-    entity: IEntityForBrokenRules;
-    entityTemplate: IMongoEntityTemplatePopulated | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
-    entityPropertiesToShowTooltipOverride?: string[];
-    entityPropertiesToHighlightTooltip?: string[];
-}> = ({ ruleTemplate, entity, entityTemplate, actions, entityPropertiesToShowTooltipOverride, entityPropertiesToHighlightTooltip }) => {
-    const theme = useTheme();
-
-    return <EntityInfo
-        entity={entity}
-        entityTemplate={entityTemplate}
-        actions={actions}
-        entityPropertiesToShowTooltipOverride={entityPropertiesToShowTooltipOverride}
-        entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
-        entityPropertiesToHighlightColor={ruleTemplate.actionOnFail === 'WARNING' ? theme.palette.warning.main : theme.palette.error.main}
-    />
-} 
 export const EntityInfo: React.FC<{
     entity: IEntity | string | null;
     entityTemplate: IMongoEntityTemplatePopulated | null;
@@ -55,8 +33,14 @@ export const EntityInfo: React.FC<{
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
     entityPropertiesToHighlightColor?: CSSProperties['color'];
-}> = ({ entity, entityTemplate, actions, entityPropertiesToShowTooltipOverride, entityPropertiesToHighlightTooltip, entityPropertiesToHighlightColor }) => {
-
+}> = ({
+    entity,
+    entityTemplate,
+    actions,
+    entityPropertiesToShowTooltipOverride,
+    entityPropertiesToHighlightTooltip,
+    entityPropertiesToHighlightColor,
+}) => {
     let entityForLink: IEntity | null;
     let tooltipHeader: ReactNode | undefined;
     let linkable = true;
@@ -122,6 +106,31 @@ export const EntityInfo: React.FC<{
     );
 };
 
+export const EntityForBrokenRules: React.FC<{
+    ruleTemplate: IMongoRule;
+    entity: IEntityForBrokenRules;
+    entityTemplate: IMongoEntityTemplatePopulated | null;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+    entityPropertiesToShowTooltipOverride?: string[];
+    entityPropertiesToHighlightTooltip?: string[];
+}> = ({ ruleTemplate, entity, entityTemplate, actions, entityPropertiesToShowTooltipOverride, entityPropertiesToHighlightTooltip }) => {
+    const theme = useTheme();
+
+    return (
+        <EntityInfo
+            entity={entity}
+            entityTemplate={entityTemplate}
+            actions={actions}
+            entityPropertiesToShowTooltipOverride={entityPropertiesToShowTooltipOverride}
+            entityPropertiesToHighlightTooltip={entityPropertiesToHighlightTooltip}
+            entityPropertiesToHighlightColor={ruleTemplate.actionOnFail === 'WARNING' ? theme.palette.warning.main : theme.palette.error.main}
+        />
+    );
+};
+
 export const RelationshipInfo: React.FC<{
     relationshipTemplatePopulated: IMongoRelationshipTemplatePopulated;
     sourceEntity: IEntity | string | null;
@@ -138,9 +147,9 @@ export const RelationshipInfo: React.FC<{
                 {relationshipTemplatePopulated.displayName}
             </Box>{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.fromEntity')}</Box>{' '}
-            <EntityInfo entity={sourceEntity} entityTemplate={relationshipTemplatePopulated.sourceEntity} actions={actions}/>{' '}
+            <EntityInfo entity={sourceEntity} entityTemplate={relationshipTemplatePopulated.sourceEntity} actions={actions} />{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.toEntity')}</Box>{' '}
-            <EntityInfo entity={destinationEntity} entityTemplate={relationshipTemplatePopulated.destinationEntity} actions={actions}/>
+            <EntityInfo entity={destinationEntity} entityTemplate={relationshipTemplatePopulated.destinationEntity} actions={actions} />
         </>
     );
 };

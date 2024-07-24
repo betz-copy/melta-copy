@@ -1,4 +1,3 @@
-
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
     sourceEntityId: string;

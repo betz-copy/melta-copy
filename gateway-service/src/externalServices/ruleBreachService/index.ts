@@ -61,12 +61,12 @@ export class RuleBreachService {
     static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
         actions: {
-            actionType: ActionTypes,
-            actionMetadata: IActionMetadata,
-        } []
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadata;
+        }[],
     ): Promise<IRuleBreachRequest> {
         const { data } = await this.ruleBreachService.patch<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}/action-metadata`, {
-            actions
+            actions,
         });
         return data;
     }

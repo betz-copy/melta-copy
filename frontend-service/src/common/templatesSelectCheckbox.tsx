@@ -1,8 +1,8 @@
 import React, { Dispatch } from 'react';
+import i18next from 'i18next';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
-import i18next from 'i18next';
 
 const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,

@@ -44,9 +44,9 @@ export class RuleBreachRequestsManager {
     public static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
         actions: {
-            actionType: ActionTypes,
-            actionMetadata: IActionMetadata,
-        }[]
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadata;
+        }[],
     ): Promise<IRuleBreachRequest> {
         return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))

@@ -17,6 +17,12 @@ const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelat
     return index === -1 ? relationshipId : `$${index}._id`;
 };
 
+const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
+    const index = actionsResults.findIndex((actionResult) => actionResult.createdEntityId === entityId);
+
+    return index === -1 ? entityId : `$${index}._id`;
+};
+
 const getCauseFormattedForBrokenRules = (
     cause: ICausesOfInstance,
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
@@ -42,12 +48,6 @@ const getCauseFormattedForBrokenRules = (
             aggregatedRelationship: formattedAggregatedRelationship,
         },
     };
-};
-
-const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
-    const index = actionsResults.findIndex((actionResult) => actionResult.createdEntityId === entityId);
-
-    return index === -1 ? entityId : `$${index}._id`;
 };
 
 const getBrokenRuleFormatted = (

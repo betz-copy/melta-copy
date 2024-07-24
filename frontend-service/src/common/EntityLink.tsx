@@ -64,7 +64,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
         >
             {linkable ? (
                 <NavLink
-                    to={`/entity/${(entity && typeof entity !== 'string') ? entity.properties._id : 'unknownEntity'}`}
+                    to={`/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
                     style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
                 >
                     {linkText}

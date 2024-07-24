@@ -124,5 +124,5 @@ export const getManyRuleBreachesByIds = joi.object({
         rulesBreachIds: joi.array().items(MongoIdSchema),
         isPopulate: joi.bool().default(true),
     },
-    params: {}
+    params: {},
 });

@@ -98,21 +98,21 @@ export class EntityManager {
         }
     }
 
-static async createEntityInTransaction(transaction: Transaction, entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
-    return runInTransactionAndNormalize(
-        transaction,
-        `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
-        normalizeReturnedEntity('singleResponseNotNullable'),
-        {
-            properties: {
-                ...generateDefaultProperties(),
-                ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+    static async createEntityInTransaction(transaction: Transaction, entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
+            normalizeReturnedEntity('singleResponseNotNullable'),
+            {
+                properties: {
+                    ...generateDefaultProperties(),
+                    ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                },
             },
-        }
-    );
-}      
+        );
+    }
 
-static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
+    static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -221,11 +221,7 @@ static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
                 }),
             );
 
-            const newEntity = await EntityManager.createEntityInTransaction(
-                transaction,
-                fixedProperties,
-                entityTemplate
-            )
+            const newEntity = await EntityManager.createEntityInTransaction(transaction, fixedProperties, entityTemplate);
 
             await Promise.all(
                 Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -278,7 +274,7 @@ static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
 
         return entity;
     }
- 
+
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
         let latestIndex: string | null = null;
 
@@ -405,7 +401,7 @@ static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
     static async getEntitiesByIds(ids: string[]) {
         return Neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
-    
+
     static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
         await Neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})

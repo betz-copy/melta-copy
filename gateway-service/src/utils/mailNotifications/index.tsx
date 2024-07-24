@@ -174,10 +174,13 @@ export const processReviewerUpdateMail = ({
     );
 };
 
-const EntityLink: React.FC<{ entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({ entity, entityTemplate }) => {
+const EntityLink: React.FC<{ entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({
+    entity,
+    entityTemplate,
+}) => {
     return (
         <a
-            href={`${meltaBaseUrl}/entity/${(entity && typeof entity !== 'string') ? entity.properties._id : 'unknownEntity'}`}
+            href={`${meltaBaseUrl}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
             target="_blank"
             style={{ color: '#225AA7', fontWeight: 'bold' }}
         >
@@ -234,9 +237,7 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
     );
 };
 
-export const getActionsInfoMessages = async (
-    ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated,
-) => {
+export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
     return ruleBreach.actions.map((action) => {
         if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
             return getCreateOrDeleteRelActionInfo(
@@ -256,10 +257,7 @@ export const getActionsInfoMessages = async (
 };
 
 const ruleBreachBodyMassage = async (
-    ruleBreach:
-        | IRuleBreachAlertPopulated
-        | IRuleBreachRequestPopulated
-        | IRuleBreachRequestPopulated,
+    ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | IRuleBreachRequestPopulated,
     ruleBrokenData: IRule[],
 ) => {
     return (

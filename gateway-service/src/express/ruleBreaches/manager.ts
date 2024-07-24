@@ -151,8 +151,8 @@ export class RuleBreachesManager {
         } else
             try {
                 // only 1 action
-                const actionType = ruleBreachRequest.actions[0].actionType;
-                const actionMetadata = ruleBreachRequest.actions[0].actionMetadata;
+                const { actionType } = ruleBreachRequest.actions[0];
+                const { actionMetadata } = ruleBreachRequest.actions[0];
 
                 if (actionType === ActionTypes.CreateRelationship)
                     await RuleBreachesManager.createRelationship(
@@ -193,7 +193,6 @@ export class RuleBreachesManager {
                         { actionMetadata: actionMetadata as IUpdateEntityStatusMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
-
             } catch (error: any) {
                 if (error instanceof ServiceError && error.metadata.errorCode === errorCodes.ruleBlock) {
                     await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);

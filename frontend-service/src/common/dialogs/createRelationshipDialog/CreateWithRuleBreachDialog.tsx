@@ -44,8 +44,14 @@ const CreateWithRuleBreachDialog: React.FC<{
                         actionType: ActionTypes.CreateRelationship,
                         actionMetadata: {
                             relationshipTemplateId: actionMetadata.relationshipTemplateId,
-                            sourceEntityId: actionMetadata.sourceEntity!.properties._id,
-                            destinationEntityId: actionMetadata.destinationEntity!.properties._id,
+                            sourceEntityId:
+                                typeof actionMetadata.sourceEntity === 'string'
+                                    ? actionMetadata.sourceEntity
+                                    : actionMetadata.sourceEntity?.properties?._id || '',
+                            destinationEntityId:
+                                typeof actionMetadata.destinationEntity === 'string'
+                                    ? actionMetadata.destinationEntity
+                                    : actionMetadata.destinationEntity?.properties?._id || '',
                         } as ICreateRelationshipMetadata,
                     },
                 ],

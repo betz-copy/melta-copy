@@ -16,7 +16,7 @@ import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
 import { IRelationship } from '../../../interfaces/relationships';
 import { ErrorToast } from '../../ErrorToast';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { RootState } from '../../../store';
@@ -157,10 +157,7 @@ interface ICreateRelationshipBodyPopulated {
         sourceEntity: IEntity;
         destinationEntity: IEntity;
     };
-    rawBrokenRules?: {
-        ruleId: string;
-        relationshipIds: string[];
-    }[];
+    rawBrokenRules?: IBrokenRule[];
 }
 
 const CreateRelationshipDialog: React.FC<{
@@ -176,10 +173,7 @@ const CreateRelationshipDialog: React.FC<{
     const [createWithRuleBreachDialogState, setCreateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: {
-            ruleId: string;
-            relationshipIds: string[];
-        }[];
+        rawBrokenRules?: IBrokenRule[];
         actionMetadata?: ICreateRelationshipMetadataPopulated;
     }>({ isOpen: false });
 
@@ -296,8 +290,8 @@ const CreateRelationshipDialog: React.FC<{
                         await createRelationship({
                             relationshipInstancePopulated: {
                                 relationshipTemplateId: createWithRuleBreachDialogState.actionMetadata!.relationshipTemplateId,
-                                sourceEntity: createWithRuleBreachDialogState.actionMetadata!.sourceEntity!,
-                                destinationEntity: createWithRuleBreachDialogState.actionMetadata!.destinationEntity!,
+                                sourceEntity: createWithRuleBreachDialogState.actionMetadata!.sourceEntity! as IEntity,
+                                destinationEntity: createWithRuleBreachDialogState.actionMetadata!.destinationEntity! as IEntity,
                             },
                             rawBrokenRules: createWithRuleBreachDialogState.rawBrokenRules!,
                         });

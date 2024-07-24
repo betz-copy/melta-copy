@@ -20,7 +20,7 @@ export const getManyRuleBreachesByIds = joi.object({
     body: {
         rulesBreachIds: joi.array().items(mongoIdSchema),
     },
-    params: {}
+    params: {},
 });
 
 // POST /api
@@ -30,7 +30,7 @@ export const getManyRuleBreachRequests = joi.object({
         rulesBreachIds: joi.array().items(mongoIdSchema),
     },
     params: {},
-})
+});
 
 // POST /api/rule-breaches/requests
 export const createRuleBreachRequestRequestSchema = joi.object({
