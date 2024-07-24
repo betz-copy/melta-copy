@@ -5,11 +5,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
-import {
-    deleteProcessTemplateRequest,
-    processTemplateObjectToProcessTemplateForm,
-    searchProcessTemplates,
-} from '../../../../services/templates/processTemplatesService';
+import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';
@@ -22,6 +18,8 @@ const { infiniteScrollPageCount } = environment.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
+    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
+
     const [searchText, setSearchText] = useState('');
 
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
@@ -76,17 +74,11 @@ const ProcessTemplatesRow: React.FC = () => {
             </Grid>
             <InfiniteScroll<IMongoProcessTemplatePopulated>
                 queryKey={['searchProcessTemplates', searchText]}
-                queryFunction={async ({ pageParam: startRow = 0 }) => {
-                    const searchProcessTemplatesResult = await searchProcessTemplates({
-                        skip: startRow,
-                        limit: infiniteScrollPageCount,
-                        displayName: searchText.length > 0 ? searchText : undefined,
-                    });
-
-                    console.log({ searchProcessTemplatesResult });
-
-                    return searchProcessTemplatesResult;
-                }}
+                queryFunction={async ({ pageParam }) =>
+                    Array.from(processTemplates.values())
+                        .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
+                        .splice(pageParam, infiniteScrollPageCount)
+                }
                 onQueryError={(error) => {
                     // eslint-disable-next-line no-console
                     console.log('failed to search process templates error:', error);
@@ -95,8 +87,6 @@ const ProcessTemplatesRow: React.FC = () => {
                 getItemId={(processTemplate) => processTemplate._id}
                 getNextPageParam={(lastPage, allPages) => {
                     const nextPage = allPages.length * infiniteScrollPageCount;
-                    console.log('process templates', { nextPage, allPages, lastPage });
-
                     return lastPage.length ? nextPage : undefined;
                 }}
                 endText={i18next.t('entitiesCardView.noSearchLeft')}

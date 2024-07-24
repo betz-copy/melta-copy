@@ -141,7 +141,7 @@ export class TemplatesManager {
 
     // all
     static async getAllAllowedTemplates(userId: string, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allCategories = await TemplatesManager.getAllCategories(permissionsOfUserId);
+        const allCategories = await TemplatesManager.getAllowedCategories(permissionsOfUserId);
 
         const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
@@ -222,9 +222,18 @@ export class TemplatesManager {
     }
 
     // categories
-    static async getAllCategories(_permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    static async getAllowedCategories(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         console.log('gateway manager');
-        return EntityTemplateManagerService.getAllCategories();
+        const { instancesPermissions } = permissionsOfUserId;
+        const allowedCategoriesIds = instancesPermissions.map((permission) => permission.category);
+        console.log({ allowedCategoriesIds });
+        const categories = EntityTemplateManagerService.getAllCategories();
+        console.log(
+            'result =',
+            (await categories).filter((category) => allowedCategoriesIds.includes(category._id)),
+        );
+
+        return (await categories).filter((category) => allowedCategoriesIds.includes(category._id));
     }
 
     static async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
@@ -360,19 +369,11 @@ export class TemplatesManager {
 
         // return entityTemplatesWithConstraints;
 
-        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId, searchQuery);
 
-        const searchResults = await EntityTemplateManagerService.searchEntityTemplates(searchQuery);
-        const searchResultsIds = searchResults.map((entityTemplate) => entityTemplate._id);
-
-        const mergedIds = allowedEntityTemplatesIds.filter((allowedEntityTemplatesId) =>
-            searchResultsIds.find((searchResultsId) => searchResultsId === allowedEntityTemplatesId),
-        );
-        const filteredResults = searchResults.filter((entityTemplate) => mergedIds.includes(entityTemplate._id));
         const allConstraints = await InstanceManagerService.getAllConstraints();
 
-        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = filteredResults.map((entityTemplate) => {
+        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = allowedEntityTemplates.map((entityTemplate) => {
             const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
             return TemplatesManager.populateTemplateConstraints(
                 entityTemplate,
@@ -856,18 +857,18 @@ export class TemplatesManager {
     }
 
     // entities
-    static async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>) {
-        const searchBody: ISearchEntityTemplatesBody = {};
+    static async getAllowedEntitiesTemplates(userPermissions: Omit<IPermissionsOfUser, 'user'>, searchBody?: ISearchEntityTemplatesBody) {
+        const updatedSearchBody: ISearchEntityTemplatesBody = { ...searchBody };
 
         const { templatesManagementId, instancesPermissions } = userPermissions;
 
         if (!templatesManagementId) {
             const allowedCategories = instancesPermissions.map((permission) => permission.category);
 
-            searchBody.categoryIds = allowedCategories;
+            updatedSearchBody.categoryIds = allowedCategories;
         }
 
-        return EntityTemplateManagerService.searchEntityTemplates(searchBody);
+        return EntityTemplateManagerService.searchEntityTemplates(updatedSearchBody);
     }
 
     // rules

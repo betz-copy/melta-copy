@@ -8,7 +8,7 @@ import { ViewingCard } from './Card';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
 import { RuleWizard } from '../../../common/wizards/rule';
-import { deleteRuleRequest, ruleObjectToRuleForm, searchRulesRequest, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
+import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -124,6 +124,7 @@ export const RuleCard: React.FC<{
 const RulesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
+    const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const [searchText, setSearchText] = useState('');
@@ -185,20 +186,11 @@ const RulesRow: React.FC = () => {
             <Grid item container direction="row" gap="30px" marginTop="30px">
                 <InfiniteScroll<IMongoRule>
                     queryKey={['searchRulesTemplates', searchText]}
-                    queryFunction={async ({ pageParam }) => {
-                        const searchRulesResult = await searchRulesRequest({
-                            skip: pageParam,
-                            limit: infiniteScrollPageCount,
-                            search: searchText.length > 0 ? searchText : undefined,
-                        });
-                        console.log(
-                            'rules',
-                            { skip: pageParam, limit: infiniteScrollPageCount, search: searchText.length > 0 ? searchText : undefined },
-                            { searchRulesResult },
-                        );
-
-                        return searchRulesResult;
-                    }}
+                    queryFunction={async ({ pageParam }) =>
+                        Array.from(rules.values())
+                            .filter(({ name }) => searchText === '' || name.includes(searchText))
+                            .splice(pageParam, infiniteScrollPageCount)
+                    }
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
                         console.log('failed to search process templates error:', error);
@@ -206,8 +198,8 @@ const RulesRow: React.FC = () => {
                     }}
                     getItemId={(rule) => rule._id}
                     getNextPageParam={(lastPage, allPages) => {
-                        if (lastPage.length < infiniteScrollPageCount) return undefined;
-                        return allPages.length * infiniteScrollPageCount;
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}

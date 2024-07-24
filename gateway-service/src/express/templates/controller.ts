@@ -35,7 +35,7 @@ export default class TemplatesController {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.getAllCategories(permissionsOfUserId));
+        res.json(await TemplatesManager.getAllowedCategories(permissionsOfUserId));
     }
 
     // entityTemplates

@@ -19,7 +19,7 @@ const categoryObjectToCategoryForm = (category: IMongoCategory | null): Category
 };
 
 const getAllCategoryRequest = async (search?: string) => {
-    const { data } = await axios.get(`${categories}?search=${search}`);
+    const { data } = await axios.get(`${categories}`);
     console.log({ data });
 
     return data;

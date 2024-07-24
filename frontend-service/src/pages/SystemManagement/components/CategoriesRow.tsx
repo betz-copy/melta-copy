@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { Hive as HiveIcon } from '@mui/icons-material';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import i18next from 'i18next';
@@ -10,7 +10,7 @@ import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { CategoryWizard } from '../../../common/wizards/category';
-import { categoryObjectToCategoryForm, deleteCategoryRequest, getAllCategoryRequest } from '../../../services/templates/categoriesService';
+import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
 import { Box } from './Box';
@@ -91,22 +91,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
     );
 };
 
-const CategoriesRow: React.FC<{ categories?: ICategoryMap }> = ({ _categories }) => {
+const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
-    const {
-        data: categories,
-        isLoading: loading,
-        isError,
-    } = useQuery<ICategoryMap>('getAllCategories', () => getAllCategoryRequest(), {
-        onError: (error) => {
-            console.log('failed loading categories:', error);
-            toast.error(i18next.t('failedToGetTemplates'));
-        },
-    });
-    console.log({ categories, isError, loading });
-
-    // const categories = queryClient.getQueryData<ICategoryMap>('getAllCategories')!;
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
         isDialogOpen: boolean;

@@ -17,7 +17,6 @@ import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
-    searchEntityTemplates,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
 } from '../../../services/templates/enitityTemplatesService';
@@ -32,6 +31,7 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { environment } from '../../../globals';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
+import { templatesCompareFunc } from '../../../utils/templates';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -495,20 +495,15 @@ const EntityTemplatesRow: React.FC = () => {
     );
 
     const onDragEnd = (result) => {
-        console.log({ result, entityTemplates });
-
         if (!result.destination) {
             return;
         }
-        console.log('hiiii');
 
         if (result.source.droppableId === result.destination.droppableId) {
             return;
         }
-        console.log('hellooo');
 
         const { category, ...restEntityTemp } = entityTemplates.get(result.draggableId)!;
-        console.log({ category, ...restEntityTemp });
 
         mutateAsync({
             entityTemplateId: result.draggableId,
@@ -564,23 +559,21 @@ const EntityTemplatesRow: React.FC = () => {
                         entityTemplates: IMongoEntityTemplatePopulated[];
                     }>
                         queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
-                        queryFunction={async ({ pageParam }) => {
-                            console.log({
-                                skip: pageParam,
-                                limit: infiniteScrollPageCount,
-                                search: searchText.length > 0 ? searchText : undefined,
-                                categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
-                            });
-
-                            const searchEntityTemplatesResult = await searchEntityTemplates({
-                                skip: pageParam,
-                                limit: infiniteScrollPageCount,
-                                search: searchText.length > 0 ? searchText : undefined,
-                                categoryIds: categoriesToShow.map((categoryToShow) => categoryToShow._id),
-                            });
-
-                            return getEntityTemplatesToShowGroupedByCategories(searchEntityTemplatesResult);
-                        }}
+                        queryFunction={async ({ pageParam }) =>
+                            getEntityTemplatesToShowGroupedByCategories(
+                                Array.from(entityTemplates.values())
+                                    .filter(
+                                        (entityTemplate) =>
+                                            categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
+                                            (searchText === '' || entityTemplate.displayName.includes(searchText)),
+                                    )
+                                    .sort((a, b) => {
+                                        const res = templatesCompareFunc(a, b);
+                                        if (res === 0) return Number(a.disabled) - Number(b.disabled);
+                                        return res;
+                                    }),
+                            ).splice(pageParam, infiniteScrollPageCount)
+                        }
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
                             console.log('failed to search process templates error:', error);
@@ -588,8 +581,8 @@ const EntityTemplatesRow: React.FC = () => {
                         }}
                         getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
                         getNextPageParam={(lastPage, allPages) => {
-                            if (lastPage.length < infiniteScrollPageCount) return undefined;
-                            return allPages.length * infiniteScrollPageCount;
+                            const nextPage = allPages.length * infiniteScrollPageCount;
+                            return lastPage.length ? nextPage : undefined;
                         }}
                         endText={i18next.t('entitiesCardView.noSearchLeft')}
                         emptyText={i18next.t('failedToGetTemplates')}

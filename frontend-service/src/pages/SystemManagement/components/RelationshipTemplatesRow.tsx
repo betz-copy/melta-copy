@@ -27,6 +27,7 @@ import { CustomIcon } from '../../../common/CustomIcon';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
+import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -114,6 +115,7 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
@@ -268,22 +270,17 @@ const RelationshipTemplatesRow: React.FC = () => {
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
                     queryKey={['searchRelationshipTemplates', searchText]}
-                    queryFunction={async ({ pageParam: startRow = 0 }) => {
-                        const searchRelationshipTemplatesResult = await searchRelationshipTemplates({
-                            skip: startRow,
-                            limit: infiniteScrollPageCount,
-                            search: searchText.length > 0 ? searchText : undefined,
-                            sourceEntityIds: sourceEntityTemplatesToShow.map((sourceEntity) => sourceEntity._id),
-                            destinationEntityIds: destinationEntityTemplatesToShow.map((destinationEntity) => destinationEntity._id),
-                        });
-
-                        console.log({ searchRelationshipTemplatesResult });
-
+                    queryFunction={async ({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
-                            Array.from(searchRelationshipTemplatesResult.values()).map((relationshipTemplate) =>
-                                populateRelationshipTemplate(relationshipTemplate, entityTemplates),
-                            ),
-                        );
+                            filterRelationships({
+                                relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
+                                    populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+                                ),
+                                destinationEntityTemplatesToShow,
+                                sourceEntityTemplatesToShow,
+                                searchText,
+                            }),
+                        ).splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
@@ -292,10 +289,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                     }}
                     getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}
                     getNextPageParam={(lastPage, allPages) => {
-                        console.log({ lastPage, allPages, infiniteScrollPageCount });
-
-                        if (lastPage.length !== infiniteScrollPageCount) return undefined;
-                        return allPages.length * infiniteScrollPageCount;
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
                     }}
                     endText={i18next.t('entitiesCardView.noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}
@@ -377,7 +372,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 open={relationshipTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: false, relationshipTemplate: null })}
                 initialValues={relationshipTemplateObjectToRelationshipTemplateForm(
-                    entityTemplates,
+                    entityTemplates!,
                     relationshipTemplateWizardDialogState.relationshipTemplate,
                 )}
                 isEditMode={Boolean(relationshipTemplateWizardDialogState.relationshipTemplate?._id)}
