@@ -375,7 +375,7 @@ export class RelationshipManager {
                 results.push(
                     await EntityManager.createEntityInTransaction(
                         transaction,
-                        actionMetadata,
+                        actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
                     ),
                 );
