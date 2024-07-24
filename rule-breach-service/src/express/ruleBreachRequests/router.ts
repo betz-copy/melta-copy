@@ -10,6 +10,7 @@ import {
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
+    getManyRuleBreachesByIds,
 } from './validator.schema';
 
 const RuleBreachRequestsRouter: Router = Router();
@@ -22,7 +23,7 @@ RuleBreachRequestsRouter.post(
 
 RuleBreachRequestsRouter.post(
     '/getManys',
-    // ValidateRequest(createRuleBreachRequestRequestSchema),
+    ValidateRequest(getManyRuleBreachesByIds),
     wrapController(RuleBreachRequestsController.getManyRuleBreachRequests),
 );
 
