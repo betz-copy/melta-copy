@@ -47,6 +47,7 @@ const ProcessTemplatesRow: React.FC = () => {
                     return processTemplateMap!;
                 });
                 setDeleteProcessTemplateDialogState({ isDialogOpen: false, processTemplateId: null });
+                queryClient.invalidateQueries(['searchProcessTemplates', searchText]);
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {
@@ -54,8 +55,6 @@ const ProcessTemplatesRow: React.FC = () => {
             },
         },
     );
-
-    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchProcessTemplates', searchText], exact: true });
 
     return (
         <Grid item container marginBottom="30px" gap="30px">
@@ -99,7 +98,6 @@ const ProcessTemplatesRow: React.FC = () => {
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
-                        refetchQuery={refetch}
                     />
                 )}
             </InfiniteScroll>
@@ -108,7 +106,6 @@ const ProcessTemplatesRow: React.FC = () => {
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}
                 initialValues={processTemplateObjectToProcessTemplateForm(processTemplateWizardDialogState.processTemplate)}
                 isEditMode={Boolean(processTemplateWizardDialogState.processTemplate)}
-                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteProcessTemplateDialogState.isDialogOpen}

@@ -75,7 +75,6 @@ interface EntityTemplateCardProps {
         },
         unknown
     >;
-    refetchQuery: () => Promise<void>;
 }
 
 const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
@@ -83,7 +82,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
     updateEntityTemplateStatusAsync,
-    refetchQuery,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
@@ -137,7 +135,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             <CardMenu
                                 onEditClick={() => {
                                     setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
-                                    refetchQuery?.();
                                 }}
                                 onDuplicateClick={() => {
                                     setEntityTemplateWizardDialogState({
@@ -151,7 +148,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             uniqueConstraints,
                                         },
                                     });
-                                    refetchQuery?.();
                                 }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
                                 onDisableClick={() =>
@@ -275,7 +271,6 @@ interface CategoryEntitiesBoxProps {
         unknown
     >;
     loadedEntityTemplateId: string;
-    refetchQuery: () => Promise<void>;
 }
 
 const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
@@ -284,7 +279,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     setDeleteEntityTemplateDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
-    refetchQuery,
 }) => {
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
@@ -383,7 +377,6 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                                    refetchQuery={refetchQuery}
                                                 />
                                             )}
                                         </Grid>
@@ -445,6 +438,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
                 else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
             },
@@ -464,6 +458,7 @@ const EntityTemplatesRow: React.FC = () => {
                     return entityTemplateMap!;
                 });
                 setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {
@@ -485,6 +480,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
@@ -511,8 +507,6 @@ const EntityTemplatesRow: React.FC = () => {
             category: categories.get(result.destination.droppableId)!,
         });
     };
-
-    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntityTemplates', searchText, categoriesToShow], exact: true });
 
     return (
         <Grid item container>
@@ -596,7 +590,6 @@ const EntityTemplatesRow: React.FC = () => {
                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
-                                    refetchQuery={refetch}
                                 />
                             </Grid>
                         )}
@@ -609,7 +602,6 @@ const EntityTemplatesRow: React.FC = () => {
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
                 initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
-                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}

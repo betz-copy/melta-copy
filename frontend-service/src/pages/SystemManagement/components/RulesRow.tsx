@@ -34,8 +34,7 @@ export const RuleCard: React.FC<{
         }>
     >;
     updateDisabledMutateAsync: UseMutateAsyncFunction<IMongoRule, unknown, IMongoRule, unknown>;
-    refetchQuery: () => Promise<void>;
-}> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync, refetchQuery }) => {
+}> = ({ rule, entityTemplates, setRuleWizardDialogState, setDeleteRuleWizardState, updateDisabledMutateAsync }) => {
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -68,11 +67,9 @@ export const RuleCard: React.FC<{
                                             isWizardOpen: true,
                                             rule,
                                         });
-                                        refetchQuery();
                                     }}
                                     onDeleteClick={() => {
                                         setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id });
-                                        refetchQuery();
                                     }}
                                     onDisableClick={() => updateDisabledMutateAsync(rule)}
                                     disabledProps={{
@@ -147,6 +144,7 @@ const RulesRow: React.FC = () => {
     const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
         onSuccess: (data) => {
             queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
+            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
             else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
         },
@@ -161,6 +159,7 @@ const RulesRow: React.FC = () => {
                 ruleMap!.delete(id);
                 return ruleMap!;
             });
+            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },
@@ -168,8 +167,6 @@ const RulesRow: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
         },
     });
-
-    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchRulesTemplates', searchText], exact: true });
 
     return (
         <Grid item container>
@@ -213,7 +210,6 @@ const RulesRow: React.FC = () => {
                             setDeleteRuleWizardState={setDeleteRuleWizardState}
                             setRuleWizardDialogState={setRuleWizardDialogState}
                             updateDisabledMutateAsync={updateDisabledMutateAsync}
-                            refetchQuery={refetch}
                         />
                     )}
                 </InfiniteScroll>
@@ -223,7 +219,6 @@ const RulesRow: React.FC = () => {
                 handleClose={() => setRuleWizardDialogState({ isWizardOpen: false, rule: null })}
                 initialValues={ruleObjectToRuleForm(ruleWizardDialogState.rule, entityTemplates)}
                 isEditMode={Boolean(ruleWizardDialogState.rule)}
-                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteRuleWizardState.isWizardOpen}

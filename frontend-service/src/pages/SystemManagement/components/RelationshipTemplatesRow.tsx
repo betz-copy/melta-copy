@@ -14,7 +14,6 @@ import { RelationshipTemplateWizard } from '../../../common/wizards/relationship
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
-    searchRelationshipTemplates,
 } from '../../../services/templates/relationshipTemplatesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
@@ -45,14 +44,12 @@ interface RelationshipTemplateCardProps {
             relationshipTemplateId: string | null;
         }>
     >;
-    refetchQuery?: () => Promise<void>;
 }
 
 const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     relationshipTemplate,
     setRelationshipTemplateWizardDialogState,
     setDeleteRelationshipTemplateDialogState,
-    refetchQuery,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
 
@@ -76,14 +73,12 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                             ...restOfRelationshipTemplate,
                                         },
                                     });
-                                    refetchQuery?.();
                                 }}
                                 onDeleteClick={() => {
                                     setDeleteRelationshipTemplateDialogState({
                                         isDialogOpen: true,
                                         relationshipTemplateId: relationshipTemplate._id,
                                     });
-                                    refetchQuery?.();
                                 }}
                                 disabledProps={{
                                     isDisabled: false,
@@ -150,6 +145,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relationshipTemplateMap!;
             });
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
+            queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
@@ -175,8 +171,6 @@ const RelationshipTemplatesRow: React.FC = () => {
 
         return relationsGroupedByEntities;
     };
-
-    const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchRelationshipTemplates', searchText], exact: true });
 
     return (
         <Grid item container marginBottom="30px">
@@ -360,7 +354,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                                     relationshipTemplate={relationshipTemplate}
                                     setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
                                     setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
-                                    refetchQuery={refetch}
                                 />
                             ))}
                         </Box>
@@ -376,7 +369,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                     relationshipTemplateWizardDialogState.relationshipTemplate,
                 )}
                 isEditMode={Boolean(relationshipTemplateWizardDialogState.relationshipTemplate?._id)}
-                refetchQuery={refetch}
             />
             <AreYouSureDialog
                 open={deleteRelationshipTemplateDialogState.isDialogOpen}

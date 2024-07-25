@@ -24,14 +24,12 @@ interface ProcessTemplateCardProps {
             processTemplateId: string | null;
         }>,
     ) => void;
-    refetchQuery: () => Promise<void>;
 }
 
 export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
     processTemplate,
     setProcessTemplateWizardDialogState,
     setDeleteProcessTemplateDialogState,
-    refetchQuery,
 }) => {
     const theme = useTheme();
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
@@ -73,11 +71,9 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                 <CardMenu
                                     onEditClick={() => {
                                         setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate });
-                                        refetchQuery();
                                     }}
                                     onDeleteClick={() => {
                                         setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id });
-                                        refetchQuery();
                                     }}
                                 />
                             )}

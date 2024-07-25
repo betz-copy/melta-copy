@@ -3,9 +3,7 @@ import { ICategory } from './interface';
 import { ServiceError } from '../error';
 
 class CategoryManager {
-    static getCategories(displayName?: string) {
-        console.log('template manager', {displayName});
-        
+    static getCategories(displayName?: string) {        
         return CategoryModel.find(displayName ? { displayName: { $regex: new RegExp(`.*${displayName}.*`) } } : {})
             .lean()
             .exec();

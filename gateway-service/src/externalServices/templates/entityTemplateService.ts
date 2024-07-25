@@ -89,7 +89,6 @@ export class EntityTemplateManagerService extends TemplatesManagerService {
     // categories
     static async getAllCategories() {
         const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoCategory[]>(baseCategoriesRoute);
-        console.log('result =', { data });
 
         return data;
     }

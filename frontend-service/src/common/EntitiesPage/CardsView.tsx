@@ -59,17 +59,6 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                 templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
                             });
 
-                            console.log(
-                                'entities',
-                                {
-                                    skip: startRow,
-                                    limit: infiniteScrollPageCount,
-                                    textSearch: searchInput,
-                                    templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
-                                },
-                                { searchEntitiesResult },
-                            );
-
                             setEntitiesCount(searchEntitiesResult.count);
 
                             return searchEntitiesResult.entities.map(({ entity }) => entity);

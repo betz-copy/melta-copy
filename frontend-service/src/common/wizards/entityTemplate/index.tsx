@@ -88,7 +88,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         uniqueConstraints: [],
     },
     isEditMode = false,
-    refetchQuery,
 }) => {
     const queryClient = useQueryClient();
 
@@ -100,6 +99,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchEntityTemplates']);
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccefully'));
                 } else {
@@ -158,7 +158,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             steps={steps}
             isLoading={isLoading}
             submitFucntion={(values) => mutateAsync(values)}
-            refetchQuery={refetchQuery}
         />
     );
 };

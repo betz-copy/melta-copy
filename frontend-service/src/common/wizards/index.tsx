@@ -8,9 +8,6 @@ import { ObjectShape } from 'yup/lib/object';
 import { useSelector } from 'react-redux';
 import { Stepper } from './stepper';
 import { RootState } from '../../store';
-import { InfiniteData, QueryObserverResult, RefetchOptions, RefetchQueryFilters } from 'react-query';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -26,17 +23,6 @@ export type WizardBaseType<T extends object> = {
     initialValues?: T;
     initalStep?: number;
     isEditMode?: boolean;
-    refetchQuery?: () => <TPageData>(options?: (RefetchOptions & RefetchQueryFilters<TPageData>) | undefined) => Promise<
-        QueryObserverResult<
-            InfiniteData<
-                {
-                    category: IMongoCategory;
-                    entityTemplates: IMongoEntityTemplatePopulated[];
-                }[]
-            >,
-            unknown
-        >
-    >;
 };
 
 export type StepsType<T extends object> = {
