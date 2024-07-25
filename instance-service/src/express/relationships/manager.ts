@@ -374,6 +374,7 @@ export class RelationshipManager {
         transaction: Transaction,
         actions: IAction[],
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
         for (const action of actions) {
@@ -384,6 +385,7 @@ export class RelationshipManager {
                         transaction,
                         actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
+                        userId
                     ),
                 );
             } else {
@@ -410,7 +412,7 @@ export class RelationshipManager {
         return results;
     }
 
-    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean) {
+    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
@@ -452,7 +454,7 @@ export class RelationshipManager {
                     rulesByEntityTemplateIds,
                 );
 
-                const results = await RelationshipManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds);
+                const results = await RelationshipManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId);
 
                 const entitiesIdsRulesReasonsMapAfterRunActions = RelationshipManager.getEntitiesIdsRulesReasonsAfter(
                     actions,
@@ -483,9 +485,9 @@ export class RelationshipManager {
         );
     }
 
-    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean) {
+    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
         const transactionsPromises = actionsGroups.map((actionsGroup) => {
-            return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun);
+            return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
         });
 
         return Promise.allSettled(transactionsPromises);

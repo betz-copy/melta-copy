@@ -98,18 +98,88 @@ export class EntityManager {
         }
     }
 
-    static async createEntityInTransaction(transaction: Transaction, entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
-        return runInTransactionAndNormalize(
+    static async createEntityInTransaction(
+        transaction: Transaction,
+        properties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplate,
+        userId: string,
+        duplicatedFromId?: string,
+    ) {
+        const createdRelationships: IRelationship[] = [];
+
+        const fixedProperties = JSON.parse(JSON.stringify(properties));
+        const relatedEntitiesByIds: Record<string, IEntity> = {};
+
+        await Promise.all(
+            Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
+                if (property.format === 'relationshipReference') {
+                    const relatedEntityId = properties[name];
+
+                    if (relatedEntityId) {
+                        const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
+                        fixedProperties[name] = fixedField;
+                        relatedEntitiesByIds[relatedEntityId] = relatedEntity;
+                    }
+                }
+            }),
+        );
+
+        const newEntity = await runInTransactionAndNormalize(
             transaction,
             `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                    ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
                 },
             },
         );
+
+        await Promise.all(
+            Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
+                if (property.format === 'relationshipReference') {
+                    if (newEntity.properties[name]) {
+                        const createdRelationship = await this.createRelationshipReference(
+                            property.relationshipReference!,
+                            relatedEntitiesByIds[newEntity.properties[name].properties._id],
+                            newEntity.properties._id,
+                            transaction,
+                        );
+                        createdRelationships.push(createdRelationship);
+                    }
+                }
+            }),
+        );
+
+        await Promise.all(
+            createdRelationships.map(async (relationship) => {
+                const relatedEntityId =
+                    relationship.sourceEntityId === newEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
+
+                await createActivityLog({
+                    action: 'CREATE_RELATIONSHIP' as const,
+                    entityId: relatedEntityId,
+                    metadata: {
+                        relationshipTemplateId: relationship.templateId,
+                        relationshipId: relationship.properties._id,
+                        entityId: newEntity.properties._id,
+                    },
+                    timestamp: new Date(),
+                    userId,
+                });
+            }),
+        );
+
+        await createActivityLog({
+            action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
+            entityId: newEntity.properties._id,
+            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+            timestamp: new Date(),
+            userId,
+        });
+
+        return newEntity;
     }
 
     static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
@@ -201,78 +271,15 @@ export class EntityManager {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        const createdRelationships: IRelationship[] = [];
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const newEntity = await EntityManager.createEntityInTransaction(transaction, properties, entityTemplate, userId, duplicatedFromId);
 
-        const entity = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const fixedProperties = JSON.parse(JSON.stringify(properties));
-            const relatedEntitiesByIds: Record<string, IEntity> = {};
-
-            await Promise.all(
-                Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
-                    if (property.format === 'relationshipReference') {
-                        const relatedEntityId = properties[name];
-
-                        if (relatedEntityId) {
-                            const { fixedField, relatedEntity } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
-                            fixedProperties[name] = fixedField;
-                            relatedEntitiesByIds[relatedEntityId] = relatedEntity;
-                        }
-                    }
-                }),
-            );
-
-            const newEntity = await EntityManager.createEntityInTransaction(transaction, fixedProperties, entityTemplate);
-
-            await Promise.all(
-                Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
-                    if (property.format === 'relationshipReference') {
-                        if (newEntity.properties[name]) {
-                            const createdRelationship = await this.createRelationshipReference(
-                                property.relationshipReference!,
-                                relatedEntitiesByIds[newEntity.properties[name].properties._id],
-                                newEntity.properties._id,
-                                transaction,
-                            );
-                            createdRelationships.push(createdRelationship);
-                        }
-                    }
-                }),
-            );
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, newEntity);
 
             throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: newEntity.properties._id }]);
 
             return newEntity;
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
-
-        await Promise.all(
-            createdRelationships.map(async (relationship) => {
-                const relatedEntityId =
-                    relationship.sourceEntityId === entity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
-
-                await createActivityLog({
-                    action: 'CREATE_RELATIONSHIP' as const,
-                    entityId: relatedEntityId,
-                    metadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        entityId: entity.properties._id,
-                    },
-                    timestamp: new Date(),
-                    userId,
-                });
-            }),
-        );
-
-        await createActivityLog({
-            action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
-            entityId: entity.properties._id,
-            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-            timestamp: new Date(),
-            userId,
-        });
-
-        return entity;
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
