@@ -1,31 +1,31 @@
 import React, { useState } from 'react';
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import DeleteIcon from '@mui/icons-material/Delete';
-import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { Hive as HiveIcon } from '@mui/icons-material';
+import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { IFrameMap, IMongoIFrame } from '../../interfaces/iFrames';
-import { CardMenu } from '../SystemManagement/components/CardMenu';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 import { ErrorToast } from '../../common/ErrorToast';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { deleteIFrame, iFrameObjectToIFrameForm } from '../../services/iFramesService';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IFrameWizard } from '../../common/wizards/iFrame';
+import IFramePage from './IFramePage';
 
-const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }> = ({ iFrame, isIFramePage = true }) => {
+const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    // const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     // const handleCloseMenu = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     //     e.stopPropagation();
@@ -36,9 +36,13 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
     //     setAnchorEl(event.currentTarget);
     // };
     const [isHovered, setIsHovered] = useState(false);
+    const [open, setOpen] = useState<{
+        isOpen: boolean;
+    }>({ isOpen: false });
 
-    const iFrames = queryClient.getQueryData<IFrameMap>('getIFrames')!;
-    console.log({ iFrames });
+    const handleClose = () => {
+        setOpen({ isOpen: false });
+    };
 
     const [deleteIFrameDialogState, setDeleteIFrameDialogState] = useState<{
         isDialogOpen: boolean;
@@ -74,6 +78,7 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
             justifyContent="space-between"
             alignItems="center"
             wrap="nowrap"
+            dir="rtl"
         >
             <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
                 <Grid container wrap="nowrap" alignItems="start">
@@ -123,11 +128,22 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
                                         </IconButton>
                                     </MeltaTooltip>
                                 </Grid>
+                                <Grid>
+                                    <MeltaTooltip title={i18next.t('actions.הרחבה')}>
+                                        <IconButton onClick={() => setOpen({ isOpen: true })}>
+                                            <OpenInFullIcon color="primary" />
+                                        </IconButton>
+                                    </MeltaTooltip>
+                                </Grid>
                             </Grid>
                         )}
                     </Grid>
                 </Grid>
             </Grid>
+
+            <Dialog keepMounted={false} open={open.isOpen} onClose={handleClose} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
+                <IFramePage iFrame={iFrame} isIFramePage={false} handleClose={handleClose} />
+            </Dialog>
 
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}
@@ -145,4 +161,4 @@ const IFramesHeadline: React.FC<{ iFrame: IMongoIFrame; isIFramePage?: boolean }
     );
 };
 
-export default IFramesHeadline;
+export default IFrameHeadline;

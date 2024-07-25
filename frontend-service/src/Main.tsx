@@ -150,15 +150,7 @@ const Main = () => {
                                         </>
                                     }
                                 />
-                                <Route
-                                    path="/iframes"
-                                    element={
-                                        <>
-                                            <TopBar title={title} />
-                                            <IFrames setTitle={setTitle} />
-                                        </>
-                                    }
-                                />
+                                <Route path="/iframes" element={<IFrames />} />
                                 <Route path="/iframes/:iFrameId" element={<IFramePage />} />
                                 <Route
                                     path="/gantts"

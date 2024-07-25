@@ -14,7 +14,7 @@ export interface IMongoIFrame extends IFrame {
 export interface ISearchIFramesBody {
     search?: string;
     limit: number;
-    step: number;
+    skip: number;
 }
 
 export class IFramesService {

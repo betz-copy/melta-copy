@@ -21,8 +21,9 @@ export class IFrameManager {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    static searchIFrames({ search, limit, step }: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        // const allowedEntityTemplates = await getAllowedCategoriesForInstances(permissionsOfUserId);
+    static async searchIFrames({ search, limit, skip }: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        // const allowedCategories = await getAllowedCategoriesForInstances(permissionsOfUserId);
+        // console.log({ allowedCategories });
 
         const query: FilterQuery<IFrameDocument> = {};
 
@@ -32,10 +33,10 @@ export class IFrameManager {
 
         const iFrames = IFrameModel.find(query)
             .limit(limit)
-            .skip(step * limit)
+            .skip(skip * limit)
             .lean()
             .exec();
-        // return iFrames.map((gantt) => this.filterIFramesWithPermissions(gantt, allowedEntityTemplates));
+        // return iFrames.map((iframe) => this.filterIFramesWithPermissions(iframe, allowedCategories));
         return iFrames;
     }
 
@@ -73,7 +74,6 @@ export class IFrameManager {
         let updatedIFrame;
 
         if (file) {
-
             if (iconFileId) {
                 await deleteFile(iconFileId);
             }

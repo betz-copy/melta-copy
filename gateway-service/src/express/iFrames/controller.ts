@@ -22,8 +22,6 @@ class IFrameController {
     }
 
     static async createIFrame(req: Request, res: Response) {
-        console.log('the body: ', req.body);
-
         res.json(await IFrameManager.createIFrame(req.body));
     }
 

@@ -62,7 +62,7 @@ export const searchIFramesSchema = Joi.object({
     body: {
         search: Joi.string(),
         limit: Joi.number().integer().min(0).default(0),
-        step: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
     },
     params: {},
 });

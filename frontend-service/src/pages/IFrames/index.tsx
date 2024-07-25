@@ -1,48 +1,45 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable array-callback-return */
 import React, { useEffect, useState } from 'react';
-import i18next from 'i18next';
 import { useQuery, useQueryClient } from 'react-query';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import Iframe from 'react-iframe';
-import { Box, CircularProgress, Grid, IconButton } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
+import { Box, CircularProgress, Grid } from '@mui/material';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import ResizablePanel from './Resizable';
-import IFramesHeadline from './Headline';
+import IFramesHeadline from './IFramesHeadline';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
+import IFramePage from './IFramePage';
+// interface IFramesPageProps {
+//     setTitle: React.Dispatch<React.SetStateAction<string>>;
+// }
 
-interface IFramesPageProps {
-    setTitle: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
+const IFramesPage: React.FC = () => {
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-
-    const [search, setSearch] = useState<string>();
-    const [iFrameDialogOpen, setIFrameDialogOpen] = useState<boolean>(false);
-
-    useEffect(() => setTitle(i18next.t('pages.iFrames')), [setTitle]);
-
+    // const [iFrameDialogOpen, setIFrameDialogOpen] = useState<boolean>(false);
+    const [searchInput, setSearchInput] = useState('');
+    const onSearch = (newSearchInput: string) => {
+        setSearchInput(newSearchInput);
+    };
     const queryKey = ['searchIFrames'];
-    // const [gridHeight, setGridHeight] = useState<number>(80 * 5);
 
-    // const y = searchIFrames({ limit: 10, step: 10 });
-    // console.log({ y });
-    // const allIFrames = useQuery(queryKey, async () => searchIFrames({})).data;
-    // console.log({ allIFrames });
+    // const { data: allIFrames, isLoading } = useQuery(queryKey, async () => searchIFrames({}), {
+    // keepPreviousData: true, // Keep previous data while loading new data
+    // });
+    // const [inputValue, setInputValue] = useState<string>('');
+    // const [page, setPage] = useState(1);
+    // const [allIFrames, setAllIFrames] = useState<IMongoIFrame[]>([]);
+    // const queryKey = ['searchIFrames', inputValue, page];
 
-    // // const framess: IMongoIFrame[] = [];
-    // const iFramesRows: any = [];
-    // for (let i = 0; i < allIFrames!.length; i += 2) {
-    //     iFramesRows.push(allIFrames!.slice(i, i + 2));
-    // }
-    // console.log({ iFramesRows });
+    // const handleNext = () => {
+    //     setPage((prev) => prev + 1);
+    // };
 
-    // const allIFrames = useQuery(queryKey, async () => searchIFrames({})).data;
+    // const handlePrev = () => {
+    //     setPage((prev) => Math.max(prev - 1, 1)); // Ensure page number does not go below 1
+    // };
 
     // const itemsPerPage = 6;
     // const totalPages = Math.ceil(allIFrames!.length / itemsPerPage);
@@ -61,6 +58,8 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
 
     // console.log({ paginatedIFrames });
 
+    // useEffect(() => setTitle(i18next.t('pages.iFrames')), [setTitle]);
+
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
         iFrame: IMongoIFrame | null;
@@ -68,7 +67,7 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
         isWizardOpen: false,
         iFrame: null,
     });
-    // const allIFrames = queryClient.invalidateQueries(queryKey);
+
     const { data: allIFrames, isLoading } = useQuery(queryKey, async () => searchIFrames({}));
 
     const [iFramesRows, setIFramesRows] = useState<any>([]);
@@ -83,22 +82,6 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
         }
     }, [allIFrames]);
 
-    // let flag = 0;
-    // useEffect(() => {
-    //     if (allIFrames && flag !== 0) {
-    //         queryClient.setQueryData<IFrameMap>('searchIFrames', mapTemplates(allIFrames!));
-    //         flag = 1;
-    //     }
-    // }, [allIFrames, flag]);
-    // console.log({ iFramesRows });
-
-    // const [currentPage, setCurrentPage] = useState(1);
-    // const cardsPerPage = 4; // Number of cards per page
-    // const indexOfLastCard = currentPage * cardsPerPage;
-    // const indexOfFirstCard = indexOfLastCard - cardsPerPage;
-    // const currentIFrames = allIFrames!.slice(indexOfFirstCard, indexOfLastCard);
-    // console.log({ currentIFrames });
-
     if (isLoading)
         return (
             <Grid>
@@ -107,22 +90,23 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
         );
 
     return (
-        <div dir="ltr" style={{ maxHeight: '1000px', overflowY: 'auto', display: 'flex', flexWrap: 'wrap' }}>
-            <div>
-                <IconButton
-                    style={{ borderRadius: '5px', width: 'fit-content' }}
-                    onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null })}
-                >
-                    <AddIcon fontSize="large" />
-                </IconButton>
-            </div>
-            <PanelGroup direction="vertical" style={{ height: '1000px' }}>
-                {iFramesRows.map((iFrameRow, rowIndex) => (
+        <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
+            <Grid container>
+                <IFramesHeadline
+                    onSearch={onSearch}
+                    setIFrameWizardDialogState={() => {
+                        setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
+                    }}
+                />
+            </Grid>
+            <PanelGroup direction="vertical" style={{ height: '1050px' }}>
+                {iFramesRows.map((iFrameRow, rowIndex: number) => (
                     <>
-                        <Panel>
-                            <PanelGroup direction="horizontal" style={{ padding: '10px' }} key={rowIndex}>
-                                {iFrameRow.map((iframe, colIndex: any) => (
-                                    <ResizablePanel key={colIndex}>
+                        <Panel style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                            <PanelGroup direction="horizontal" style={{ padding: '10px', display: 'flex', flex: 1 }} key={rowIndex}>
+                                {iFrameRow.map((iframe, colIndex: number) => (
+                                    // eslint-disable-next-line react/no-array-index-key
+                                    <ResizablePanel key={colIndex} isFirst={colIndex === 0}>
                                         <Box
                                             sx={{
                                                 width: '100%',
@@ -137,14 +121,30 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
                                                 },
                                             }}
                                         >
-                                            <IFramesHeadline iFrame={iframe} />
-                                            <Iframe url={iframe!.url} title={iframe!.name} width="100%" height="100%" />
+                                            <IFramePage iFrame={iframe} isIFramePage={false} />
                                         </Box>
                                     </ResizablePanel>
                                 ))}
                             </PanelGroup>
                         </Panel>
                         <Grid>{rowIndex < iFramesRows.length - 1 && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />}</Grid>
+
+                        {/* <ResizableBox
+                        // width={boxStyle.width}
+                        // height={boxStyle.height}
+                        // onResize={handleResize}
+                        // onResizeStop={handleResize}
+                        // style={{ position: 'absolute', left: boxStyle.left, top: boxStyle.top }}
+                        >
+                            <div
+                                style={{ width: '100%', height: '100%', backgroundColor: 'lightblue' }}
+                                // onDrag={(e) => handleDrag(e, { x: e.clientX, y: e.clientY })}
+                                draggable
+                            >
+                                Box
+                            </div>
+                            <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />
+                        </ResizableBox> */}
                     </>
                 ))}
             </PanelGroup>
@@ -154,7 +154,7 @@ const IFramesPage: React.FC<IFramesPageProps> = ({ setTitle }) => {
                 initialValues={iFrameObjectToIFrameForm(iFrameWizardDialogState.iFrame)}
                 isEditMode={Boolean(iFrameWizardDialogState.iFrame)}
             />
-        </div>
+        </Grid>
     );
 };
 

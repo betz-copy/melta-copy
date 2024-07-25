@@ -2,15 +2,18 @@ import React from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { CircularProgress, Grid } from '@mui/material';
+import { Button, CircularProgress, Grid } from '@mui/material';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { getIFrameById } from '../../services/iFramesService';
+import IFrameHeadline from './Headline';
 
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
+    isIFramePage?: boolean;
+    handleClose?: () => void;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, handleClose }) => {
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
@@ -32,7 +35,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
         );
     }
 
-    return (
+    return isIFramePage ? (
         <Grid
             dir="rtl"
             style={{
@@ -46,6 +49,12 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame }) => {
         >
             <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" />
         </Grid>
+    ) : (
+        <>
+            <IFrameHeadline iFrame={iFrameData!} />
+            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={1} />
+            {/* <Button onClick={handleClose}>Close</Button> */}
+        </>
     );
 };
 export default IFramePage;

@@ -11,11 +11,10 @@ import { ICategoryMap } from '../../../interfaces/categories';
 // import { Category } from '@mui/icons-material';
 
 const settingIFramesPermissionsSchema = {
-    // CategoryIds: Yup.string().required(i18next.t('validation.required')),
-    // url: Yup.string().required(i18next.t('validation.required')), // .matches(variableUrlValidation, 'URL is not valid'),
-    // description: Yup.string(),
-    // apiToken: Yup.string(),
-    // placeInSideBar: Yup.boolean(), // .default(false),
+    CategoryIds: Yup.array()
+        .of(Yup.string())
+        .test('at-least-one', 'You must select at least one category', (value) => Array.isArray(value) && value.length > 0)
+        .required(i18next.t('validation.required')),
 };
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
@@ -87,4 +86,4 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     );
 };
 
-export default SettingIFramesPermissions;
+export { SettingIFramesPermissions, settingIFramesPermissionsSchema };

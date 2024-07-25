@@ -350,6 +350,7 @@ export default {
             url: 'כתובת',
             description: 'תיאור',
             placeInSideBar: 'למקם בסרגל צידי',
+            addIFrame: 'הוסף קישור חיצוני',
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',

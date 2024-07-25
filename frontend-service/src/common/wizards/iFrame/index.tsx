@@ -1,4 +1,4 @@
-import React, { useImperativeHandle } from 'react';
+import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
@@ -6,10 +6,10 @@ import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
+import { IFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
-import SettingIFramesPermissions from './SettingPrmissions';
+import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
 import { ChooseIFrameIcon } from './ChooseIcon';
 import { mapTemplates } from '../../../utils/templates';
 
@@ -27,10 +27,10 @@ const steps: StepsType<IFrameWizardValues> = [
         component: (props) => <SettingIFramesPermissions {...props} />,
         // validationSchema: settingIFramesPermissionsSchema,
     },
-    // {
-    //     label: i18next.t('wizard.iFrame.chooseIcon'),
-    //     component: (props) => <ChooseIFrameIcon {...props} />,
-    // },
+    {
+        label: i18next.t('wizard.iFrame.chooseIcon'),
+        component: (props) => <ChooseIFrameIcon {...props} />,
+    },
 ];
 
 const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
@@ -54,11 +54,11 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             onSuccess: (data) => {
                 console.log('shirel ', { data });
 
-                queryClient.setQueryData(['searchIFrames'], (iframes: any) => {
-                    const iFrames = mapTemplates(iframes);
-                    console.log({ iFrames });
-                    iFrames!.set(data._id, data);
-                });
+                // queryClient.setQueryData(['searchIFrames'], (iframes: any) => {
+                //     const iFrames = mapTemplates(iframes);
+                //     console.log({ iFrames });
+                //     iFrames!.set(data._id, data);
+                // });
                 // queryClient.invalidateQueries('getIFrame');
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();

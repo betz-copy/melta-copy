@@ -39,8 +39,8 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     label={i18next.t('wizard.iFrame.description')}
                     value={values.description}
                     onChange={handleChange}
-                    error={touched.name && Boolean(errors.name)}
-                    helperText={touched.name && errors.name}
+                    error={touched.description && Boolean(errors.description)}
+                    helperText={touched.description && errors.description}
                 />
             </Grid>
             <Grid item>
@@ -49,8 +49,8 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     label={i18next.t('wizard.iFrame.url')}
                     value={values.url}
                     onChange={handleChange}
-                    error={touched.name && Boolean(errors.name)}
-                    helperText={touched.name && errors.name}
+                    error={touched.url && Boolean(errors.url)}
+                    helperText={touched.url && errors.url}
                 />
             </Grid>
             <Grid>
