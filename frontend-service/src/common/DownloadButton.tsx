@@ -7,21 +7,23 @@ import i18next from 'i18next';
 import { getFileName } from '../utils/getFileName';
 import { environment } from '../globals';
 
-const DownloadButton: React.FC<{ fileId: string }> = ({ fileId }) => {
-    const fileName = getFileName(fileId);
+const DownloadButton: React.FC<{ fileId: string | File }> = ({ fileId }) => {
+    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
 
     return (
         <IconButton
             onClick={async (event) => {
                 event.stopPropagation();
+                const url = typeof fileId === 'string' ? `/api${environment.api.storage}/${fileId}` : URL.createObjectURL(fileId);
                 try {
                     await new Downloader({
-                        url: `/api${environment.api.storage}/${fileId}`,
+                        url,
                         filename: fileName,
                         withCredentials: true,
                     });
+
+                    if (typeof fileId !== 'string') URL.revokeObjectURL(url);
                 } catch (error) {
-                    console.error('Download error:', error);
                     toast.error(i18next.t('errorPage.fileDownloadError'));
                 }
             }}

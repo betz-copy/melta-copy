@@ -1,13 +1,12 @@
 import * as Joi from 'joi';
 
-// Get /api/preview/:fileId/:needsConversion
+// Get /api/preview/:fileId
 export const getPreviewSchema = Joi.object({
-    query: {
-        token: Joi.string(),
-    },
     body: {},
     params: {
         fileId: Joi.string().required(),
-        needsConversion: Joi.boolean(),
+    },
+    query: {
+        contentType: Joi.string().required().default('document'),
     },
 });

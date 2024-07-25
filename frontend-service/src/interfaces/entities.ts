@@ -1,3 +1,4 @@
+import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
 
@@ -36,10 +37,15 @@ export interface IRequiredConstraint {
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 
+export interface IUniqueConstraintOfTemplate {
+    groupName: string;
+    properties: string[];
+}
+
 export interface IConstraintsOfTemplate {
     templateId: string;
     requiredConstraints: string[];
-    uniqueConstraints: string[][];
+    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityWithDirectConnections {
@@ -113,4 +119,14 @@ export interface IExportEntitiesBody {
             sort?: ISearchSort;
         };
     };
+}
+
+export interface IGraphFilterBody {
+    selectedTemplate: IMongoEntityTemplatePopulated;
+    selectedProperty?: string;
+    filterField?: any;
+}
+
+export interface IGraphFilterBodyBatch {
+    [key: string]: IGraphFilterBody;
 }

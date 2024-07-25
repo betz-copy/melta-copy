@@ -11,6 +11,8 @@ import { IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../interfaces/ruleBreaches/ruleBreachRequest';
 import { generateMongoId, generateUser } from './permissions';
+import { IEntity } from '../interfaces/entities';
+import { IRelationship } from '../interfaces/relationships';
 
 const chance = new Chance();
 
@@ -22,7 +24,7 @@ const fliesOn = {
     destinationEntityId: '61e3ea6e4d51a83e87e83c81',
 };
 
-const tourist1 = {
+const tourist1: IEntity = {
     templateId: '61e3ea6e4d51a83e87e83c7f',
     properties: {
         firstName: 'נועה',
@@ -37,7 +39,7 @@ const tourist1 = {
     },
 };
 
-const tourist2 = {
+const tourist2: IEntity = {
     templateId: '61e3ea6e4d51a83e87e83c7f',
     properties: {
         firstName: 'סטטיק',
@@ -51,7 +53,7 @@ const tourist2 = {
     },
 };
 
-const tourist3 = {
+const tourist3: IEntity = {
     templateId: '61e3ea6e4d51a83e87e83c7f',
     properties: {
         firstName: 'גל',
@@ -65,7 +67,7 @@ const tourist3 = {
     },
 };
 
-const flight = {
+const flight: IEntity = {
     templateId: '61e3ea6e4d51a83e87e83c81',
     properties: {
         flightNumber: 'AA123',
@@ -81,40 +83,62 @@ const flight = {
     },
 };
 
+const tourist2OnFlight: IRelationship = {
+    templateId: fliesOn._id,
+    properties: { _id: '439589084490258314149654' },
+    sourceEntityId: tourist2.properties._id,
+    destinationEntityId: flight.properties._id,
+};
+
 const generateBrokenRules = (options?: { nullables?: boolean; actionType?: ActionTypes }): IRuleBreachPopulated['brokenRules'] => {
     const { nullables = true, actionType } = options ?? {};
     return [
         {
             ruleId: '61e3ea6e4d53a23e87e43c7c',
-            relationships: [
-                ...(actionType === ActionTypes.CreateRelationship ? ['created-relationship-id'] : []),
+            failures: [
                 {
-                    templateId: fliesOn._id,
-                    properties: {
-                        _id: '012345678901234567890002',
-                    },
-                    sourceEntity: tourist2,
-                    destinationEntity: flight,
+                    entity: actionType === ActionTypes.CreateEntity ? 'created-entity-id' : flight,
+                    causes: [
+                        {
+                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist2 } },
+                            properties: [],
+                        },
+                        {
+                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist3 } },
+                            properties: [],
+                        },
+                        ...(nullables
+                            ? [
+                                  { instance: { entity: null }, properties: [] },
+                                  { instance: { entity: null }, properties: [] },
+                              ]
+                            : []),
+                    ],
                 },
-                {
-                    templateId: fliesOn._id,
-                    properties: {
-                        _id: '012345678901234567890003',
-                    },
-                    sourceEntity: tourist3,
-                    destinationEntity: flight,
-                },
-                ...(nullables ? [null, null] : []),
             ],
+            ...(nullables
+                ? [
+                      {
+                          ruleId: '61e3ea6e4d83a23e87e43c7c',
+                          failures: [
+                              {
+                                  entity: null,
+                                  causes: [
+                                      {
+                                          instance: { entity: flight },
+                                          properties: [],
+                                      },
+                                      {
+                                          instance: null,
+                                          properties: [],
+                                      },
+                                  ],
+                              },
+                          ],
+                      },
+                  ]
+                : []),
         },
-        ...(nullables
-            ? [
-                  {
-                      ruleId: '61e3ea6e4d83a23e87e43c7c',
-                      relationships: [null],
-                  },
-              ]
-            : []),
     ];
 };
 

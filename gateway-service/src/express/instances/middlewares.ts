@@ -1,16 +1,16 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { InstancesService } from '../../externalServices/instanceService';
-import { RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { UserService } from '../../externalServices/userService';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { getWorkspaceId } from '../../utils/express';
 import { ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
-import { getWorkspaceId } from '../../utils/express';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
-import { UserService } from '../../externalServices/userService';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 // entities
 const getCategoryIdFromTemplateId = async (entityTemplateService: EntityTemplateService, templateId: string) => {
@@ -115,6 +115,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
         body: { templateIds },
         permissionsOfUserId,
     } = req as RequestWithPermissionsOfUserId;
+    req.body.userId = req.user!.id;
 
     const templatesManager = new TemplatesManager(await getWorkspaceId(req));
 

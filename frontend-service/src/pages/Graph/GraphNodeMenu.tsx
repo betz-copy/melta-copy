@@ -5,7 +5,7 @@ import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-import { IEntityExpanded } from '../../interfaces/entities';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
@@ -19,42 +19,49 @@ const GraphNodeMenu: React.FC<{
     location: { top: number; left: number };
     onCloseMenu: () => void;
     addNewGraphData: (graphData: GraphData) => void;
-}> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData }) => {
+    filterRecord: IGraphFilterBodyBatch;
+}> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData, filterRecord }) => {
     const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
-
     const queryClient = useQueryClient();
 
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
+    const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
         [
             'getExpandedEntity',
             node.id,
             {
+                [node.id]: node.numberOfConnectionsExpanded + 1,
+            },
+            {
                 disabled: false,
                 templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
-                numberOfConnections: node.numberOfConnectionsExpanded + 1,
             },
+            filterRecord,
         ],
         () =>
-            getExpandedEntityByIdRequest(node.id, {
-                disabled: false,
-                templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
-                numberOfConnections: node.numberOfConnectionsExpanded + 1,
-            }),
+            getExpandedEntityByIdRequest(
+                node.id,
+                {
+                    [node.id]: node.numberOfConnectionsExpanded + 1,
+                },
+                {
+                    disabled: false,
+                    templateIds: filteredEntityTemplates.map((entityTemplate) => entityTemplate._id),
+                },
+                filterRecord,
+            ),
         {
             enabled: false,
             onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data, entityTemplates, relationshipTemplates);
+                const newGraphData = expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
-
                 addNewGraphData(newGraphData);
             },
         },
     );
-
     return (
         <MuiMenu
             open
@@ -86,8 +93,6 @@ const GraphNodeMenu: React.FC<{
                 disabled={node.numberOfConnectionsExpanded >= 6}
                 onClick={async () => {
                     await getExpandedData();
-                    const expandedParams = JSON.parse(searchParams.get('expandedEntities')!);
-
                     const updatedExpandedEntities = {
                         ...expandedParams,
                         [node.id]: node.numberOfConnectionsExpanded,

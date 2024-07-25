@@ -1,10 +1,8 @@
-import { Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import EntitiesPage from '../../common/EntitiesPage';
-import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
@@ -66,21 +64,19 @@ const Category: React.FC = () => {
     }, [entityTemplates.size, category._id]);
 
     return (
-        <Grid container marginLeft="0" marginRight="0">
-            <EntitiesPage
-                key={category._id}
-                templates={categoryTemplates}
-                setTemplates={(newTemplates) => {
-                    const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
-                    setCategoryTemplatesId(ids);
-                }}
-                templatesToShowCheckbox={templatesToShowCheckbox}
-                setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
-                excelExportAllTablesFileName={`${category.displayName}.xlsx`}
-                pageType="category"
-                pageTitle={category.displayName}
-            />
-        </Grid>
+        <EntitiesPage
+            key={category._id}
+            templates={categoryTemplates}
+            setTemplates={(newTemplates) => {
+                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
+                setCategoryTemplatesId(ids);
+            }}
+            templatesToShowCheckbox={templatesToShowCheckbox}
+            setTemplatesToShowCheckbox={setTemplatesToShowCheckbox}
+            excelExportAllTablesFileName={`${category.displayName}.xlsx`}
+            pageType="category"
+            pageTitle={category.displayName}
+        />
     );
 };
 

@@ -1,22 +1,52 @@
+import * as apm from 'elastic-apm-node';
+import menash from 'menashmq';
 import { config } from './config';
 import { Server } from './express/server';
-import { MinIOClient } from './utils/minio/minioClient';
+import PreviewConsumer from './rabbit/consumer';
+import logger from './utils/logger/logsLogger';
 
-const { port: serverPort } = config.service;
+const {
+    logs,
+    rabbit,
+    service: { port: servicePort },
+} = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
+
+const initializeRabbitReceiver = async () => {
+    logger.info('Connecting to Rabbit for receiving messages...');
+
+    await menash.connect(rabbit.url, rabbit.retryOptions);
+
+    logger.info('Rabbit connected for receiving messages');
+
+    await menash.declareTopology({
+        queues: [{ name: rabbit.previewQueue, options: { durable: true, prefetch: 1 } }], // num of unack messages fetched at a time
+        consumers: [{ queueName: rabbit.previewQueue, onMessage: PreviewConsumer.createPreviewQueueReq, options: { noAck: false } }], // ack message only after processed
+    });
+
+    logger.info('Consumer initialized for receiving messages');
+};
 
 const main = async () => {
-    await MinIOClient.initialize();
+    await initializeRabbitReceiver();
 
-    console.log(`Preview connection established!`);
+    logger.info(`Preview connection established!`);
 
-    const server = new Server(serverPort);
+    const server = new Server(servicePort);
 
     await server.start();
 
-    console.log(`Server started on port: ${serverPort}`);
+    logger.info(`Server started on port: ${servicePort}`);
 };
 
-main().catch((err) => {
-    console.error(err);
+main().catch((error) => {
+    logger.error('Main error: ', { error });
     process.exit(1);
 });

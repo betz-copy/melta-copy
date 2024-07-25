@@ -1,6 +1,21 @@
 import axios from 'axios';
-import { StorageService } from '../../../externalServices/storageService';
+import { InstancesService } from '../../../externalServices/instanceService';
+import {
+    IArchiveProcessNotificationMetadata,
+    IDeleteProcessNotificationMetadata,
+    INewProcessNotificationMetadata,
+    IProcessReviewerUpdateNotificationMetadata,
+    IProcessStatusUpdateNotificationMetadata,
+    NotificationType,
+} from '../../../externalServices/notificationService/interfaces';
+import {
+    IArchiveProcessNotificationMetadataPopulated,
+    IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadataPopulated,
+    IProcessStatusUpdateNotificationMetadataPopulated,
+} from '../../../externalServices/notificationService/interfaces/populated';
 import { ProcessService } from '../../../externalServices/processService';
+import { IGenericStepPopulated } from '../../../externalServices/processService/interfaces';
 import {
     IMongoProcessInstancePopulated,
     IMongoProcessInstanceWithSteps,
@@ -10,37 +25,23 @@ import {
     ISearchProcessInstancesBody,
     Status,
 } from '../../../externalServices/processService/interfaces/processInstance';
-import { InstancesManager } from '../../instances/manager';
 import { IProcessDetails, PropertyFormats } from '../../../externalServices/processService/interfaces/processTemplate';
-import { removeTmpFile } from '../../../utils/fs';
-import { ServiceError } from '../../error';
-import {
-    IArchiveProcessNotificationMetadata,
-    IDeleteProcessNotificationMetadata,
-    INewProcessNotificationMetadata,
-    IProcessReviewerUpdateNotificationMetadata,
-    IProcessStatusUpdateNotificationMetadata,
-    NotificationType,
-} from '../../../externalServices/notificationService/interfaces';
-import { filteredMap } from '../../../utils';
-import { IGenericStepPopulated } from '../../../externalServices/processService/interfaces';
 import { IMongoStepInstance } from '../../../externalServices/processService/interfaces/stepInstance';
-import { InstancesService } from '../../../externalServices/instanceService';
-import { EntityNotExist, NotFoundError } from '../error';
-import { EntityTemplateService } from '../../../externalServices/entityTemplateService';
-import StepsInstancesManager from '../stepInstances/manager';
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
-import { RabbitManager } from '../../../utils/rabbit';
-import {
-    IArchiveProcessNotificationMetadataPopulated,
-    IDeleteProcessNotificationMetadataPopulated,
-    INewProcessNotificationMetadataPopulated,
-    IProcessStatusUpdateNotificationMetadataPopulated,
-} from '../../../externalServices/notificationService/interfaces/populated';
-import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
-import DefaultManagerProxy from '../../../utils/express/manager';
+import { StorageService } from '../../../externalServices/storageService';
+import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
 import { UserService } from '../../../externalServices/userService';
 import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
+import { filteredMap } from '../../../utils';
+import DefaultManagerProxy from '../../../utils/express/manager';
+import { removeTmpFile } from '../../../utils/fs';
+import logger from '../../../utils/logger/logsLogger';
+import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
+import { RabbitManager } from '../../../utils/rabbit';
+import { ServiceError } from '../../error';
+import { InstancesManager } from '../../instances/manager';
+import { EntityNotExist, NotFoundError } from '../error';
+import StepsInstancesManager from '../stepInstances/manager';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -173,8 +174,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
@@ -196,9 +196,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const newFileIds = new Set<string>(ProcessesInstancesManager.extractFileIdsFromProperties(templateProperties, newProperties));
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
-        // eslint-disable-next-line no-console
         if (idsToDelete.length)
-            await this.storageService.deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused files: ${idsToDelete}`));
+            await this.storageService.deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused files: ${idsToDelete}`));
     }
 
     async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
@@ -235,8 +234,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                // eslint-disable-next-line no-console
-                console.log('failed to delete process unused files');
+                logger.error('failed to delete process unused files');
             });
             throw error;
         });
@@ -261,7 +259,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const filesIdsToDelete = await this.collectFileIdsToDelete(templateId, steps, details);
 
         if (filesIdsToDelete.length) {
-            this.storageService.deleteFiles(filesIdsToDelete);
+            await this.storageService.deleteFiles(filesIdsToDelete);
         }
     }
 
@@ -300,10 +298,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const process = await this.service.getProcessInstanceById(processId, userId);
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
-        await this.deleteAllProcessFiles(process).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.log(`failed to delete process files`);
-            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${err}`);
+        await this.deleteAllProcessFiles(process).catch((error) => {
+            logger.error(`failed to delete process files`, { error });
+            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${error}`);
         });
         await this.service.deleteProcessInstance(processId);
 

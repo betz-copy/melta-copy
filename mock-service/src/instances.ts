@@ -3,8 +3,8 @@ import axios from 'axios';
 import { format, generate } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
-import { IMongoEntityTemplate } from './entityTemplates';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoEntityTemplate } from './templates/entityTemplates';
+import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
 import { createAxiosInstance } from './utils/axios';
 
@@ -21,10 +21,13 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
+const userId = config.permissionsService.managersKartoffelIds[0];
+
 export const createInstances = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
     format('fileId', (_value) => fileId);
+
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
@@ -32,6 +35,7 @@ export const createInstances = async (workspaceId: string, entityTemplates: IMon
                     axiosInstance.post(url + createEntityRoute, {
                         properties: generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
+                        userId,
                     }),
                 ),
             );
@@ -68,6 +72,7 @@ export const createRelationshipInstances = async (
                                 sourceEntityId,
                                 destinationEntityId,
                                 templateId: relationshipTemplate._id,
+                                userId,
                             },
                         }),
                     );

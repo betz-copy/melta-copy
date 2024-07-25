@@ -1,42 +1,41 @@
-// TODO-WORKSPACES: support mail notifications
-// // eslint-disable-next-line import/no-extraneous-dependencies
-// import { renderToString } from 'react-dom/server';
-// // eslint-disable-next-line import/no-extraneous-dependencies
-// import React from 'react';
-// import config from '../../config';
-// import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
-// import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
-// import {
-//     IActionMetadataPopulated,
-//     ICreateRelationshipMetadataPopulated,
-//     IDeleteRelationshipMetadataPopulated,
-//     IRuleBreachAlertPopulated,
-//     IRuleBreachRequestPopulated,
-//     IUpdateEntityMetadataPopulated,
-//     IUpdateEntityStatusMetadataPopulated,
-// } from '../../externalServices/ruleBreachService/interfaces/populated';
-// import UsersManager from '../../express/users/manager';
-// import { hebrew } from './hebrew';
-// import { mailConfig } from './mailConfig';
-// import { IRule } from '../../express/templates/rules/interfaces';
-// import {
-//     IArchiveProcessNotificationMetadataPopulated,
-//     IDateAboutToExpireMetadataPopulated,
-//     INewProcessNotificationMetadataPopulated,
-//     IRuleBreachAlertNotificationMetadataPopulated,
-//     IRuleBreachRequestNotificationMetadataPopulated,
-//     IRuleBreachResponseNotificationMetadataPopulated,
-// } from '../../externalServices/notificationService/interfaces/populated';
-// import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
-// import {
-//     IMailNotification,
-//     IMailNotificationMetadataPopulated,
-//     IProcessReviewerUpdateMailNotificationMetadataPopulated,
-//     IProcessStatusUpdateMailNotificationMetadataPopulated,
-// } from './interfaces';
-// import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-// import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-// import { RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { renderToString } from 'react-dom/server';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import React from 'react';
+import config from '../../config';
+import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
+import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
+import {
+    IActionMetadataPopulated,
+    ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadataPopulated,
+    IRuleBreachAlertPopulated,
+    IRuleBreachRequestPopulated,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadataPopulated,
+} from '../../externalServices/ruleBreachService/interfaces/populated';
+import UsersManager from '../../express/users/manager';
+import { hebrew } from './hebrew';
+import { mailConfig } from './mailConfig';
+import { IRule } from '../../express/templates/rules/interfaces';
+import {
+    IArchiveProcessNotificationMetadataPopulated,
+    IDateAboutToExpireMetadataPopulated,
+    INewProcessNotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
+} from '../../externalServices/notificationService/interfaces/populated';
+import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
+import {
+    IMailNotification,
+    IMailNotificationMetadataPopulated,
+    IProcessReviewerUpdateMailNotificationMetadataPopulated,
+    IProcessStatusUpdateMailNotificationMetadataPopulated,
+} from './interfaces';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import { EntityTemplateManagerService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 
 // const { mailTitle } = mailConfig;
 // const {

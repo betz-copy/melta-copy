@@ -15,6 +15,7 @@ import {
     fileColDef,
     numberColDef,
     regexColDef,
+    relatedTemplateColDef,
     stringColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -65,6 +66,16 @@ export const getColumnDefs = <Data extends any = IEntity>({
         if (format === 'date' || format === 'date-time')
             return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
         if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
+        if (format === 'relationshipReference')
+            return relatedTemplateColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                propertyTemplate.relationshipReference!.relatedTemplateId,
+                propertyTemplate.relationshipReference!.relatedTemplateField,
+                hideColumn,
+            );
         if (propertyTemplate.enum)
             return enumColDef(
                 property,

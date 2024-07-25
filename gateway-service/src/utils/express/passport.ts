@@ -1,7 +1,7 @@
 import passport from 'passport';
 import { Strategy as ShragaStrategy } from 'passport-shraga';
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
-import { BasicStrategy } from 'passport-http';
+import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
 
 import { Request } from 'express';
 import config from '../../config/index';
@@ -35,6 +35,17 @@ export interface IConnectedUser {
     id: string;
 }
 
+const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, userId, password, done) => {
+    const allowedUser = users.find((currUser) => currUser.userId === userId && currUser.password === password);
+
+    if (!allowedUser) {
+        done(null, false);
+        return;
+    }
+
+    done(null, { id: userId } as IUser);
+};
+
 export const initPassport = () => {
     passport.use(
         'jwt',
@@ -66,19 +77,7 @@ export const initPassport = () => {
     // override to simple 401 without the header
     // eslint-disable-next-line no-underscore-dangle
     (BasicStrategy.prototype as any)._challenge = () => 401;
-    // TODO-WORKSPACES: support custom users
-    // passport.use(
-    //     'basic',
-    //     new BasicStrategy((userId, password, done) => {
-    //         const allowedUser = users.find((currUser) => currUser.userId === userId && currUser.password === password);
-
-    //         if (!allowedUser) {
-    //             done(new Error('userId or password is incorrect'));
-    //         }
-
-    //         done(null, { id: userId } as IUser);
-    //     }),
-    // );
+    passport.use('basic', new BasicStrategy({ passReqToCallback: true }, verifyAllowedUserBasicStrategy));
 };
 
 declare global {

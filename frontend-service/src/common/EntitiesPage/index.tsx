@@ -87,55 +87,53 @@ const EntitiesPage: React.FC<{
     };
 
     return (
-        <Grid container margin="0vh">
-            <Grid item xs={12}>
-                <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
-                    <EntitiesPageHeadline
-                        searchInput={searchInput}
-                        setSearchInput={setSearchInput}
-                        onSearch={onSearch}
-                        entityTemplateSelectCheckboxProps={{
-                            categories,
-                            templatesToShow: templatesToShowCheckbox,
-                            setTemplatesToShow: setTemplatesToShowCheckbox,
-                            templates,
-                            setTemplates,
-                            isDraggableDisabled: isTemplatesCheckboxDraggableDisabled,
-                        }}
-                        excelExportProps={{
-                            onExcelExport: () => {
-                                if (!templateTablesViewRef.current) return;
-                                exportTemplatesToExcel();
-                            },
-                            isLoadingExcel: isLoadingExcelExport,
-                        }}
-                        viewModeProps={{
-                            viewMode: urlSearchParams.get('viewMode') as 'templates-tables-view' | 'cards-view',
-                            setViewMode: (newViewMode) =>
-                                setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
-                        }}
-                        pageTitle={pageTitle}
+        <>
+            <Box marginBottom="3vh" position="sticky" style={{ top: 0, right: 0, zIndex: 1 }}>
+                <EntitiesPageHeadline
+                    searchInput={searchInput}
+                    setSearchInput={setSearchInput}
+                    onSearch={onSearch}
+                    entityTemplateSelectCheckboxProps={{
+                        categories,
+                        templatesToShow: templatesToShowCheckbox,
+                        setTemplatesToShow: setTemplatesToShowCheckbox,
+                        templates,
+                        setTemplates,
+                        isDraggableDisabled: isTemplatesCheckboxDraggableDisabled,
+                    }}
+                    excelExportProps={{
+                        onExcelExport: () => {
+                            if (!templateTablesViewRef.current) return;
+                            exportTemplatesToExcel();
+                        },
+                        isLoadingExcel: isLoadingExcelExport,
+                    }}
+                    viewModeProps={{
+                        viewMode: urlSearchParams.get('viewMode') as 'templates-tables-view' | 'cards-view',
+                        setViewMode: (newViewMode) => setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
+                    }}
+                    pageTitle={pageTitle}
+                />
+            </Box>
+
+            <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
+                {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
+                    <TemplateTablesView
+                        ref={templateTablesViewRef}
+                        templates={templatesToShowCheckbox}
+                        searchInput={urlSearchParams.get('search')!}
+                        pageType={pageType}
                     />
-                </Box>
-                <Grid container padding="0 2.5rem">
-                    {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
-                        <TemplateTablesView
-                            ref={templateTablesViewRef}
-                            templates={templatesToShowCheckbox}
-                            searchInput={urlSearchParams.get('search')!}
-                            pageType={pageType}
-                        />
-                    )}
-                    {urlSearchParams.get('viewMode') === 'cards-view' && (
-                        <CardsView
-                            ref={cardsViewRef}
-                            templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
-                            searchInput={urlSearchParams.get('search')!}
-                        />
-                    )}
-                </Grid>
+                )}
+                {urlSearchParams.get('viewMode') === 'cards-view' && (
+                    <CardsView
+                        ref={cardsViewRef}
+                        templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}
+                        searchInput={urlSearchParams.get('search')!}
+                    />
+                )}
             </Grid>
-        </Grid>
+        </>
     );
 };
 

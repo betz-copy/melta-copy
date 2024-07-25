@@ -1,6 +1,7 @@
 node_modules/
 dist/
 coverage/
+halbana-**
 
 # ignore all .env, except in current directory (used for docker-compose)
 # in services directories we upload to git only .env.dev, and not .env

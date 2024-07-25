@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { finished } from 'stream/promises';
 import DefaultController from '../../utils/express/controller';
 import { FilesManager } from './manager';
 
@@ -8,15 +7,14 @@ export class FilesController extends DefaultController<FilesManager> {
         super(new FilesManager(dbName));
     }
 
-    async createFilePreview(req: Request, res: Response) {
-        const { fileId, needsConversion } = req.params;
+    async getFilePreview(req: Request, res: Response) {
+        const { fileId } = req.params;
+        const contentType = req.query.contentType as string;
 
-        const resultStream = await this.manager.createFilePreview(fileId, Boolean(needsConversion));
+        const resultStream = await this.manager.getFilePreview(fileId, contentType);
 
-        res.attachment();
+        res.setHeader('Content-Type', 'application/pdf');
 
         resultStream.pipe(res);
-
-        await finished(res);
     }
 }

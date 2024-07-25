@@ -4,7 +4,7 @@ import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
-import React from 'react';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
@@ -17,8 +17,11 @@ import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchema
 import { environment } from '../../../globals';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
@@ -39,8 +42,15 @@ const DuplicateEntity: React.FC<{}> = () => {
         navigate(`/entity/${entity?.properties._id}`);
     }
 
+    const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
+        isOpen: boolean;
+        brokenRules?: IRuleBreachPopulated['brokenRules'];
+        rawBrokenRules?: IRuleBreach['brokenRules'];
+    }>({ isOpen: false });
+
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
-        (newEntityDate: EntityWizardValues) => duplicateEntityRequest(entity.properties._id, newEntityDate),
+        ({ newEntityDate, ignoredRules }: { newEntityDate: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+            duplicateEntityRequest(entity.properties._id, newEntityDate, ignoredRules),
         {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
@@ -51,6 +61,14 @@ const DuplicateEntity: React.FC<{}> = () => {
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, entityTemplate);
                     return;
+                }
+
+                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    setDuplicateEntityWithRuleBreachDialogState({
+                        isOpen: true,
+                        brokenRules: errorMetadata.brokenRules,
+                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                    });
                 }
 
                 toast.error(i18next.t('wizard.entity.failedToDuplicate'));
@@ -65,8 +83,10 @@ const DuplicateEntity: React.FC<{}> = () => {
     const templateFileKeys = Object.keys(templateFilesProperties);
     const requiredFilesNames = entityTemplate.properties.required.filter((name) => templateFileKeys.includes(name));
 
-    const fieldProperties = pickBy(entity.properties, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
-    const fileIdsProperties = pickBy(entity.properties, (_value, key) => templateFileKeys.includes(key));
+    const { _id, createdAt, updatedAt, disabled, ...entityToDuplicateData } = entity.properties;
+
+    const fieldProperties = pickBy(entityToDuplicateData, (_value, key) => !templateFileKeys.includes(key)) as IEntity['properties'];
+    const fileIdsProperties = pickBy(entityToDuplicateData, (_value, key) => templateFileKeys.includes(key));
     Object.entries(fileIdsProperties).forEach(([key, value]) => {
         if (Array.isArray(value)) {
             fileIdsProperties[key] = value?.map((item) => {
@@ -81,7 +101,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
             onSubmit={async (values) => {
-                duplicateMutation({ ...values, template: entityTemplate });
+                duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
@@ -156,7 +176,6 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
-                                                                                    multiple={!!value.items}
                                                                                 />
                                                                             )}
                                                                         </Grid>
@@ -205,6 +224,33 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 </Grid>
                             </Grid>
                         </Form>
+                        {duplicateEntityWithRuleBreachDialogState.isOpen && (
+                            <ActionOnEntityWithRuleBreachDialog
+                                isLoadingActionOnEntity={isDuplicateLoading}
+                                handleClose={() => setDuplicateEntityWithRuleBreachDialogState({ isOpen: false })}
+                                doActionEntity={() =>
+                                    duplicateMutation({
+                                        newEntityDate: { ...values, template: entityTemplate },
+                                        ignoredRules: duplicateEntityWithRuleBreachDialogState.rawBrokenRules!,
+                                    })
+                                }
+                                actionType={ActionTypes.DuplicateEntity}
+                                brokenRules={duplicateEntityWithRuleBreachDialogState.brokenRules!}
+                                rawBrokenRules={duplicateEntityWithRuleBreachDialogState.rawBrokenRules!}
+                                currEntity={entity}
+                                entityFormData={{ ...values, template: entityTemplate }}
+                                onUpdatedRuleBlock={(brokenRules) =>
+                                    setDuplicateEntityWithRuleBreachDialogState((prevState) => ({
+                                        ...prevState,
+                                        brokenRules,
+                                    }))
+                                }
+                                onCreateRuleBreachRequest={() => {
+                                    setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
+                                    navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
+                                }}
+                            />
+                        )}
                     </>
                 );
             }}

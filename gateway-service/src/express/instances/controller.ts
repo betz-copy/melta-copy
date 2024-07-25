@@ -10,7 +10,8 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async createEntityInstance(req: Request, res: Response) {
-        res.json(await this.manager.createEntityInstance(req.body, req.files as Express.Multer.File[], req.user!));
+        const { ignoredRules, ...instanceData } = req.body;
+        res.json(await this.manager.createEntityInstance(instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id));
     }
 
     async exportEntities(req: Request, res: Response) {
@@ -30,11 +31,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async duplicateEntityInstance(req: Request, res: Response) {
-        res.json(await this.manager.duplicateEntityInstance(req.params.id, req.body, req.files as Express.Multer.File[], req.user!));
-    }
-
-    async viewEntityInstance(req: Request) {
-        await this.manager.viewEntityInstance(req.params.id, req.user!.id);
+        const { ignoredRules, ...instanceData } = req.body;
+        res.json(
+            await this.manager.duplicateEntityInstance(req.params.id, instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id),
+        );
     }
 
     async deleteEntityInstance(req: Request, res: Response) {

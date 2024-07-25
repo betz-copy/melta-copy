@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import { fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
+import config from '../../config';
+import { Authorizer } from '../../utils/authorizer';
 import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
+import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import {
     validateUserCanCreateEntityTemplateUnderCategory,
@@ -9,41 +12,32 @@ import {
     validateUserCanUpdateOrDeleteEntityTemplate,
     validateUserCanUpdateOrDeleteRelationshipTemplate,
 } from './middlewares';
-
-import config from '../../config';
-import ValidateRequest from '../../utils/joi';
 import {
     createCategorySchema,
     createEntityTemplateSchema,
     createRelationshipTemplateSchema,
     deleteCategorySchema,
     deleteEntityTemplateSchema,
+    deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    updateFieldValueSchema,
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
-import { Authorizer } from '../../utils/authorizer';
 
 const {
-    entityTemplateService: entityTemplateManager,
-    relationshipTemplateService: relationshipTemplateManager,
+    templateService: { url, requestTimeout },
     service: { uploadsFolderPath },
 } = config;
 
-const EntityTemplatesManagerProxy = createWorkspacesProxyMiddleware({
-    target: entityTemplateManager.url,
+const TemplatesServiceProxy = createWorkspacesProxyMiddleware({
+    target: url,
     onProxyReq: fixRequestBody,
-    proxyTimeout: entityTemplateManager.requestTimeout,
-});
-
-const RelationshipTemplatesManagerProxy = createWorkspacesProxyMiddleware({
-    target: relationshipTemplateManager.url,
-    onProxyReq: fixRequestBody,
-    proxyTimeout: relationshipTemplateManager.requestTimeout,
+    proxyTimeout: requestTimeout,
 });
 
 const templatesRouter: Router = Router();
@@ -55,7 +49,7 @@ const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 templatesRouter.get('/all', AuthorizerControllerMiddleware('userHasSomePermissions'), templatesControllerMiddleware('getAllAllowedTemplates'));
 
 // categories
-templatesRouter.get('/categories', AuthorizerControllerMiddleware('userHasSomePermissions'), EntityTemplatesManagerProxy);
+templatesRouter.get('/categories', AuthorizerControllerMiddleware('userHasSomePermissions'), TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
@@ -78,6 +72,18 @@ templatesRouter.delete(
 );
 
 // entities (templates)
+templatesRouter.put(
+    '/entities/update-enum-field/:id',
+    ValidateRequest(updateFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesControllerMiddleware('updateEntityEnumFieldValue'),
+);
+templatesRouter.patch(
+    '/entities/delete-enum-field/:id',
+    ValidateRequest(deleteFieldValueSchema),
+    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesControllerMiddleware('deleteEntityEnumFieldValue'),
+);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
@@ -124,8 +130,14 @@ templatesRouter.delete(
     templatesControllerMiddleware('deleteRelationshipTemplate'),
 );
 
+templatesRouter.get(
+    '/relationships/all',
+    AuthorizerControllerMiddleware('userCanReadTemplates'),
+    templatesControllerMiddleware('getAllRelationshipTemplates'),
+);
+
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware('userCanWriteRules'), RelationshipTemplatesManagerProxy);
+templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware('userCanWriteRules'), TemplatesServiceProxy);
 templatesRouter.patch(
     '/rules/:ruleId/status',
     AuthorizerControllerMiddleware('userCanWriteRules'),
@@ -138,6 +150,6 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware('deleteRuleById'),
 );
-templatesRouter.post('/rules', AuthorizerControllerMiddleware('userCanWriteRules'), RelationshipTemplatesManagerProxy);
+templatesRouter.post('/rules', AuthorizerControllerMiddleware('userCanWriteRules'), TemplatesServiceProxy);
 
 export default templatesRouter;

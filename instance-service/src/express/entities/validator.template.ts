@@ -1,4 +1,3 @@
-/* eslint-disable class-methods-use-this */
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import axios from 'axios';
@@ -6,38 +5,55 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import config from '../../config';
-import { EntityTemplateManagerService, IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
-import { IMongoRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 import { addPropertyToRequest } from '../../utils/express';
+import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
-import { IFilterOfField, IFilterOfTemplate, ISearchBatchBody, ISearchEntitiesOfTemplateBody, ISearchFilter } from './interface';
-import DefaultController from '../../utils/express/controller';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    IGetExpandedEntityBody,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUniqueConstraintOfTemplate,
+} from './interface';
 
 const { neo4j } = config;
 
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
+ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
-    type: 'string',
+    type: 'number',
 });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'relationshipReference',
+    type: 'string',
 });
 ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
 
-export default class EntityValidator extends DefaultController {
+export class EntityValidator extends DefaultController {
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -53,7 +69,6 @@ export default class EntityValidator extends DefaultController {
         const { result: entityTemplate, err: getEntityTemplateByIdErr } = await trycatch(() =>
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
-
         if (getEntityTemplateByIdErr || !entityTemplate) {
             if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
                 throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
@@ -65,9 +80,8 @@ export default class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    public async validateEntity(req: Request) {
+    async validateEntity(req: Request) {
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
-
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(req.body.properties);
 
@@ -78,56 +92,14 @@ export default class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
-    // same format as dates shown in UI
-    public async formatDateTimeForFullTextSearch(date: Date) {
-        return formatFnsInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
-    }
+    async validateConstraintsOfTemplate(req: Request) {
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
 
-    public async formatDateForFullTextSearch(date: Date) {
-        return formatFns(date, 'dd/MM/yyyy');
-    }
-
-    public addStringFieldsAndNormalizeDateValues(entityProperties: Record<string, any>, entityTemplate: IMongoEntityTemplate): Record<string, any> {
-        const normalizedEntity = {};
-
-        Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
-            if (!(key in entityProperties)) {
-                if (value.type === 'boolean') normalizedEntity[key] = false;
-                return;
-            }
-
-            const propertyValue = entityProperties[key];
-            const { type, format } = value;
-            // For Neo4j fulltext search (supports only string properties)
-            if (type !== 'string') {
-                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
-            }
-
-            if (type === 'string' && format === 'date') {
-                normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
-                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = this.formatDateForFullTextSearch(new Date(propertyValue));
-
-                return;
-            }
-
-            if (type === 'string' && format === 'date-time') {
-                normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
-                normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = this.formatDateTimeForFullTextSearch(new Date(propertyValue));
-
-                return;
-            }
-
-            normalizedEntity[key] = propertyValue;
-        });
-
-        return normalizedEntity;
-    }
-
-    public async validateConstraintsOfTemplate(req: Request) {
-        const { properties } = await this.getEntityTemplateByIdOrThrowValidationError(req.params.templateId);
+        const { properties } = entityTemplate;
         const propertiesKeys = Object.keys(properties.properties);
 
-        const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: string[][] } = req.body;
+        const { requiredConstraints, uniqueConstraints }: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] } =
+            req.body;
 
         requiredConstraints.forEach((constraintProp) => {
             const isConstraintPropertyUnknown = !propertiesKeys.includes(constraintProp);
@@ -136,7 +108,7 @@ export default class EntityValidator extends DefaultController {
             }
         });
         uniqueConstraints.forEach((constraintProps) => {
-            const unknownPropertyInConstraint = constraintProps.find((property) => !propertiesKeys.includes(property));
+            const unknownPropertyInConstraint = constraintProps.properties.find((property) => !propertiesKeys.includes(property));
             if (unknownPropertyInConstraint) {
                 throw new ValidationError(
                     `unique constraint of ${constraintProps} contains unknown property "${unknownPropertyInConstraint}" in template`,
@@ -145,7 +117,9 @@ export default class EntityValidator extends DefaultController {
         });
 
         uniqueConstraints.forEach((uniqueConstraint) => {
-            const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.find((property) => !requiredConstraints.includes(property));
+            const uniqueConstraintPropertyThatIsNotInRequired = uniqueConstraint.properties.find(
+                (property) => !requiredConstraints.includes(property),
+            );
 
             if (uniqueConstraintPropertyThatIsNotInRequired) {
                 // because neo4j 4.0 supports unique constraints but makes them required too
@@ -154,6 +128,8 @@ export default class EntityValidator extends DefaultController {
                 );
             }
         });
+
+        addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
     private strictIsValidDateString(dateString: string, expectedFormat: string) {
@@ -165,7 +141,6 @@ export default class EntityValidator extends DefaultController {
         if (rhs === null) return;
 
         const { type, format } = templateOfField;
-
         if (type === 'string' && format === 'date-time') {
             const isValid = this.strictIsValidDateString(rhs as string, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
             if (!isValid) throw new ValidationError(`filter on field ${path} should be of date-time format (isostring)`);
@@ -275,7 +250,7 @@ export default class EntityValidator extends DefaultController {
         });
     }
 
-    public async getRelationshipTemplatesRelatedToEntityTemplates(entityTemplateIds: string[]) {
+    private async getRelationshipTemplatesRelatedToEntityTemplates(entityTemplateIds: string[]) {
         const [relationshipTemplatesAsSource, relationshipTemplatesAsDestination] = await Promise.all([
             this.relationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: entityTemplateIds }),
             this.relationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: entityTemplateIds }),
@@ -310,7 +285,7 @@ export default class EntityValidator extends DefaultController {
         });
     }
 
-    public async validateSearchEntitiesOfTemplateBody(req: Request) {
+    async validateSearchEntitiesOfTemplateBody(req: Request) {
         const { filter, showRelationships, sort }: ISearchEntitiesOfTemplateBody = req.body;
         const { templateId } = req.params;
 
@@ -333,7 +308,7 @@ export default class EntityValidator extends DefaultController {
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
 
-    public async validateSearchBatchBody(req: Request) {
+    async validateSearchBatchBody(req: Request) {
         const searchBody: ISearchBatchBody = req.body;
         const templateIds = Object.keys(searchBody.templates);
         const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
@@ -341,7 +316,8 @@ export default class EntityValidator extends DefaultController {
             throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
         }
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
-        const entityTemplatesForValidationMap = new Map(
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
             entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
         );
 
@@ -357,4 +333,86 @@ export default class EntityValidator extends DefaultController {
 
         addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
     }
+
+    async validateFilterBatchBody(req: Request) {
+        const searchBody: IGetExpandedEntityBody['filters'] = req.body.filters;
+        const templateIds = Object.keys(searchBody);
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        if (entityTemplates.length < templateIds.length) {
+            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+        }
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+        Object.entries(searchBody).forEach(([templateId, { filter }]) => {
+            if (filter) {
+                this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `filters.${templateId}.filter`);
+            }
+        });
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
+    }
 }
+
+// same format as dates shown in UI
+const formatDateTimeForFullTextSearch = (date: Date) => {
+    return formatFnsInTimeZone(date, 'Asia/Jerusalem', 'dd/MM/yyyy, HH:mm:ss');
+};
+
+const formatDateForFullTextSearch = (date: Date) => {
+    return formatFns(date, 'dd/MM/yyyy');
+};
+
+export const addStringFieldsAndNormalizeDateValues = (
+    entityProperties: Record<string, any>,
+    entityTemplate: IMongoEntityTemplate,
+    recursiveRelationshipReference = false,
+): Record<string, any> => {
+    const normalizedEntity = {};
+
+    Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
+        if (!(key in entityProperties)) {
+            if (value.type === 'boolean') normalizedEntity[key] = false;
+            return;
+        }
+
+        const propertyValue = entityProperties[key];
+        const { type, format } = value;
+        // For Neo4j fulltext search (supports only string properties)
+        if (type !== 'string') {
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
+        }
+
+        if (type === 'string' && format === 'date') {
+            normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
+
+            return;
+        }
+
+        if (type === 'string' && format === 'date-time') {
+            normalizedEntity[key] = getNeo4jDateTime(new Date(propertyValue));
+            normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateTimeForFullTextSearch(new Date(propertyValue));
+
+            return;
+        }
+
+        if (type === 'string' && format === 'relationshipReference' && typeof propertyValue === 'object') {
+            if (recursiveRelationshipReference) {
+                normalizedEntity[key] = propertyValue.properties[value.relationshipReference!.relatedTemplateField] || propertyValue.properties._id;
+            } else {
+                normalizedEntity[`${key}.templateId${neo4j.relationshipReferencePropertySuffix}`] = value.relationshipReference!.relatedTemplateId;
+                Object.entries(propertyValue).forEach(([innerKey, innerProperty]) => {
+                    normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
+                });
+            }
+
+            return;
+        }
+
+        normalizedEntity[key] = propertyValue;
+    });
+
+    return normalizedEntity;
+};

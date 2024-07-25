@@ -9,6 +9,7 @@ import {
 import { StorageService } from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
+import logger from '../../../utils/logger/logsLogger';
 import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
@@ -69,9 +70,11 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             ? { properties, statusReview: { status: updatedStepStatus, reviewerId: userId }, comments, processId }
             : { properties, comments, processId };
 
-        const process = await this.service.getProcessInstanceById(processId, userId);
-        const stepTemplate = await this.service.getStepTemplateByStepInstanceId(stepId);
+        const process = await this.processInstancesManager.service.getProcessInstanceById(processId, userId);
+        const stepTemplate = await this.processInstancesManager.service.getStepTemplateByStepInstanceId(stepId);
+
         if (properties) await this.processInstancesManager.checkEntityReferenceFields(properties, stepTemplate.properties);
+
         if (!files.length) {
             // add remove old files
             const updatedStep = await this.service.updateStepInstance(stepId, processServiceUpdateData);
@@ -79,31 +82,37 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             if (updatedStepStatus) this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
             return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
         }
+
         const { props, files: filesToUpload } = await this.instancesManager.uploadInstanceFiles(files, processServiceUpdateData.properties);
-        const { properties: oldProperties } = await this.service.getStepInstanceById(stepId);
-        const updatedStep = await this.service
+        const { properties: oldProperties } = await this.processInstancesManager.service.getStepInstanceById(stepId);
+
+        const updatedStep = await this.processInstancesManager.service
             .updateStepInstance(stepId, {
                 ...processServiceUpdateData,
                 properties: props,
             })
-            .catch((processServiceError) => {
-                this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-                    // eslint-disable-next-line no-console
-                    console.log(`failed to delete files ${deleteFilesError}`);
+            .catch(async (processServiceError) => {
+                await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
+                    logger.error('failed to delete files error: ', { error: { deleteFilesError, processServiceError } });
                     throw processServiceError;
                 });
+
                 throw processServiceError;
             });
+
         if (oldProperties) await this.processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
+
         await Promise.all(
             files.map((file) => {
                 return removeTmpFile(file.path);
             }),
         );
+
         if (updatedData.status) {
             const updatedProcess = await this.processInstancesManager.getProcessInstance(processId, userId);
             this.handleNotificationsOnUpdateStepInstance(updatedProcess, process, updatedStep);
         }
+
         return this.getStepInstanceWithEntitesAndReviewers(updatedStep, userId);
     }
 }

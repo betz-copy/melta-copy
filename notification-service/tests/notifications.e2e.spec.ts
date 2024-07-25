@@ -2,7 +2,7 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 /* eslint-disable no-restricted-syntax */
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
 

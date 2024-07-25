@@ -1,12 +1,12 @@
 import lodashIsEqual from 'lodash.isequal';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { IGantt, ISearchGanttsBody, GanttsService, IMongoGantt, IGanttItem } from '../../externalServices/ganttsService';
+import { GanttsService, IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultManagerProxy from '../../utils/express/manager';
 import { ServiceError } from '../error';
 import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
-import DefaultManagerProxy from '../../utils/express/manager';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 export class GanttManager extends DefaultManagerProxy<GanttsService> {
     private instancesService: InstancesService;
@@ -22,7 +22,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
     }
 
-    private static filterGanttWithPermissions(gantt: IMongoGantt, allowedEntityTemplates: IMongoEntityTemplatePopulated[]): IMongoGantt | null {
+    private filterGanttWithPermissions(gantt: IMongoGantt, allowedEntityTemplates: IMongoEntityTemplatePopulated[]): IMongoGantt | null {
         const filteredItems = gantt.items.filter(({ entityTemplate }) => {
             return allowedEntityTemplates.some(({ _id }) => _id === entityTemplate.id);
         });
@@ -37,7 +37,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(this.entityTemplateService, permissionsOfUserId);
 
         const gantts = await this.service.searchGantts(searchBody);
-        return gantts.map((gantt) => GanttManager.filterGanttWithPermissions(gantt, allowedEntityTemplates));
+        return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
     async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
@@ -45,10 +45,10 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
         const gantt = await this.service.getGanttById(ganttId);
 
-        return GanttManager.filterGanttWithPermissions(gantt, allowedEntityTemplates);
+        return this.filterGanttWithPermissions(gantt, allowedEntityTemplates);
     }
 
-    private static doesRelationshipContainsEntityTemplate(
+    private doesRelationshipContainsEntityTemplate(
         relationshipTemplateId: string,
         relationshipTemplatesMap: Map<string, IRelationshipTemplate>,
         entityTemplateId: string,
@@ -94,11 +94,11 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
                 throw new ServiceError(400, 'gantt contains items without "groupByRelationshipId" while having "groupBy"');
             }
 
-            GanttManager.doesRelationshipContainsEntityTemplate(groupByRelationshipId, relationshipTemplatesMap, gantt.groupBy!.entityTemplateId);
+            this.doesRelationshipContainsEntityTemplate(groupByRelationshipId, relationshipTemplatesMap, gantt.groupBy!.entityTemplateId);
         });
     }
 
-    private static validateEntityTemplateOfGanttItem(ganttItem: IGanttItem, entityTemplatesMap: Map<string, IMongoEntityTemplatePopulated>) {
+    private validateEntityTemplateOfGanttItem(ganttItem: IGanttItem, entityTemplatesMap: Map<string, IMongoEntityTemplatePopulated>) {
         const {
             entityTemplate: { id: entityTemplateId, startDateField, endDateField, fieldsToShow },
         } = ganttItem;
@@ -118,18 +118,18 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         });
     }
 
-    private static validateRelationshipOfGanttItem(ganttItem: IGanttItem, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
+    private validateRelationshipOfGanttItem(ganttItem: IGanttItem, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
         const {
             entityTemplate: { id: entityTemplateId },
             connectedEntityTemplates,
         } = ganttItem;
 
         connectedEntityTemplates.forEach(({ relationshipTemplateId }) => {
-            GanttManager.doesRelationshipContainsEntityTemplate(relationshipTemplateId, relationshipTemplatesMap, entityTemplateId);
+            this.doesRelationshipContainsEntityTemplate(relationshipTemplateId, relationshipTemplatesMap, entityTemplateId);
         });
     }
 
-    private static validateConnectedEntityOfGanttItem(
+    private validateConnectedEntityOfGanttItem(
         ganttItem: IGanttItem,
         allEntityTemplates: Map<string, IMongoEntityTemplatePopulated>,
         relationshipTemplatesMap: Map<string, IRelationshipTemplate>,
@@ -171,7 +171,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
 
         gantt.items.forEach((ganttItem) => {
-            GanttManager.validateEntityTemplateOfGanttItem(ganttItem, entityTemplatesMap);
+            this.validateEntityTemplateOfGanttItem(ganttItem, entityTemplatesMap);
         });
 
         const relationshipTemplateIdsOfItems = gantt.items.reduce<string[]>(
@@ -194,7 +194,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         );
 
         gantt.items.forEach((ganttItem) => {
-            GanttManager.validateRelationshipOfGanttItem(ganttItem, relationshipTemplatesMap);
+            this.validateRelationshipOfGanttItem(ganttItem, relationshipTemplatesMap);
         });
         await this.validateGanttGroupBy(gantt, relationshipTemplatesMap);
 
@@ -227,7 +227,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         const allEntityTemplates = new Map([...entityTemplatesMap, ...additionalEntityTemplatesEntries]);
 
         gantt.items.forEach((ganttItem) => {
-            GanttManager.validateConnectedEntityOfGanttItem(ganttItem, allEntityTemplates, relationshipTemplatesMap);
+            this.validateConnectedEntityOfGanttItem(ganttItem, allEntityTemplates, relationshipTemplatesMap);
         });
     }
 

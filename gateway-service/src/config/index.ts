@@ -13,7 +13,6 @@ const config = {
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
@@ -28,23 +27,27 @@ const config = {
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
-            // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}, {"userId": "5e5689514203fc40043591ae", "password":"iamtapuz"}]
+            // for example: [{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}]
             users: env.get('BASIC_AUTHENTICATION_USERS').required().asJsonArray() as Array<{ userId: string; password: string }>,
         },
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        baseEntitiesRoute: env.get('ENTITY_TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
-        baseCategoriesRoute: env.get('ENTITY_TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        entities: {
+            baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
+            baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
+        },
+        relationships: {
+            baseRelationshipsRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_BASE_ROUTE').default('/api/templates/relationships').asString(),
+            baseRulesRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_RULES_BASE_ROUTE').default('/api/templates/rules').asString(),
+            updateRuleStatusByIdRouteSuffix: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX')
+                .default('/status')
+                .asString(),
+        },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-    relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
-        baseRelationshipsRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/templates/relationships').asString(),
-        baseRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_BASE_RULES_ROUTE').default('/api/templates/rules').asString(),
-        updateRuleStatusByIdRouteSuffix: env.get('RELATIONSHIP_TEMPLATE_SERVICE_UPDATE_RULE_STATUS_BY_ID_ROUTE_SUFFIX').default('/status').asString(),
-        requestTimeout: env.get('RELATIONSHIP_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-    },
+
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('/api/files').asString(),
@@ -62,13 +65,14 @@ const config = {
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
     },
     userService: {
         url: env.get('USER_SERVICE_BASE_URL').required().asString(),
         usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
         permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
-        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),
@@ -140,6 +144,35 @@ const config = {
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
+    },
+    logs: {
+        format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
+        enableApm: env.get('ENABLE_APM').default('true').asBool(),
+        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
+        enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
+        enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
+        label: env.get('LOG_LABEL').default('gateway').asString(),
+        extraDefault: {
+            serviceName: env.get('LOG_SERVICE_NAME').default('gateway-service').asString(),
+            environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
+        },
+        fileSettings: {
+            datePattern: env.get('FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('FILE_LOG_MAX_SIZE').default('3g').asString(),
+            maxFiles: env.get('FILE_LOG_MAX_FILES').default(3).asIntPositive(),
+            filename: env.get('FILE_LOG_FILENAME').default('log_file.log').asString(),
+            dirname: env.get('FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
+        fileRotateSettings: {
+            datePattern: env.get('ROTATE_FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
+            maxSize: env.get('ROTATE_FILE_LOG_MAX_SIZE').default('20m').asString(),
+            maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
+            dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
+        },
+    },
+    notifications: {
+        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
+        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
 };
 

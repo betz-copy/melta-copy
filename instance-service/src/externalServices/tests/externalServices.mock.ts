@@ -1,11 +1,11 @@
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuidv4 } from 'uuid';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../entityTemplateManager';
-import { IMongoRule } from '../../express/rules/interfaces';
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/interfaces/entityTemplates';
+import { IMongoRule } from '../templates/interfaces/rules';
 import config from '../../config';
-import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../relationshipTemplateManager';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/interfaces/relationshipTemplates';
 
-const { relationshipTemplateService: relationshipManager, entityTemplateService: entityTemplateManager } = config;
+const { url, relationships, entities } = config.templateService;
 
 const generateMongoId = () => uuidv4(); // not really ObjectId of mongo, but good enough
 export const generateTemplates = () => {
@@ -40,8 +40,8 @@ export const generateTemplates = () => {
             },
             hide: [],
         },
-        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesOrder: ['firstName', 'lastName', 'age', 'gender', 'agentId'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
         disabled: false,
         createdAt: new Date().toISOString(),
@@ -85,8 +85,8 @@ export const generateTemplates = () => {
             },
             hide: [],
         },
-        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesOrder: ['flightNumber', 'departureDate', 'landingDate', 'from', 'to', 'planeType'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
         disabled: false,
         createdAt: new Date().toISOString(),
@@ -131,8 +131,8 @@ export const generateTemplates = () => {
             },
             hide: [],
         },
-        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesOrder: ['name', 'destination', 'startDate', 'endDate', 'firstFile'],
         propertiesPreview: ['name', 'destination', 'startDate', 'endDate'],
         disabled: false,
         createdAt: new Date().toISOString(),
@@ -163,8 +163,8 @@ export const generateTemplates = () => {
             },
             hide: [],
         },
-        propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesOrder: ['airportName', 'airportId', 'country'],
         propertiesPreview: ['airportName', 'country'],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -203,8 +203,22 @@ export const generateTemplates = () => {
         updatedAt: new Date().toISOString(),
     };
 
-    const allRelationshipTemplates = [flightsOnRelationshipTemplate, tripConnectedToFlightRelationshipTemplate, departureFromRelationshipTemplate];
-    const allRelationshipTemplateIds = allRelationshipTemplates.map(({ _id }) => _id);
+    const tripConnectedToAirportRelationshipTemplate: IMongoRelationshipTemplate = {
+        _id: generateMongoId(),
+        name: 'tripConnectedToAirport',
+        displayName: 'טיסה משוייכת לשדה תעופה',
+        sourceEntityId: airportEntityTemplate._id,
+        destinationEntityId: tripEntityTemplate._id,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+    };
+
+    const allRelationshipTemplates = [
+        flightsOnRelationshipTemplate,
+        tripConnectedToFlightRelationshipTemplate,
+        departureFromRelationshipTemplate,
+        tripConnectedToAirportRelationshipTemplate,
+    ];
 
     // rule 1
     const oneTravelAgentPerFlight: IMongoRule = {
@@ -212,9 +226,7 @@ export const generateTemplates = () => {
         name: 'One travel agent per flight',
         description: 'One travel agent per flight',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: flightsOnRelationshipTemplate._id,
-        pinnedEntityTemplateId: flightEntityTemplate._id,
-        unpinnedEntityTemplateId: travelAgentEntityTemplate._id,
+        entityTemplateId: flightEntityTemplate._id,
         disabled: false,
         formula: {
             isGroup: true,
@@ -225,7 +237,13 @@ export const generateTemplates = () => {
                     operatorBool: 'lessThanOrEqual',
                     lhsArgument: {
                         isCountAggFunction: true,
-                        variableName: `${flightEntityTemplate._id}.${flightsOnRelationshipTemplate._id}.${travelAgentEntityTemplate._id}`,
+                        variable: {
+                            entityTemplateId: flightEntityTemplate._id,
+                            aggregatedRelationship: {
+                                relationshipTemplateId: flightsOnRelationshipTemplate._id,
+                                otherEntityTemplateId: travelAgentEntityTemplate._id,
+                            },
+                        },
                     },
                     rhsArgument: { isConstant: true, type: 'number', value: 1 },
                 },
@@ -234,14 +252,26 @@ export const generateTemplates = () => {
                     isAggregationGroup: true,
                     aggregation: 'SOME',
                     ruleOfGroup: 'AND',
-                    variableNameOfAggregation: `${flightEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${tripEntityTemplate._id}`,
+                    variableOfAggregation: {
+                        entityTemplateId: flightEntityTemplate._id,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                            otherEntityTemplateId: tripEntityTemplate._id,
+                        },
+                    },
                     subFormulas: [
                         {
                             isEquation: true,
                             operatorBool: 'equals',
                             lhsArgument: {
                                 isPropertyOfVariable: true,
-                                variableName: `${flightEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${tripEntityTemplate._id}`,
+                                variable: {
+                                    entityTemplateId: flightEntityTemplate._id,
+                                    aggregatedRelationship: {
+                                        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                        otherEntityTemplateId: tripEntityTemplate._id,
+                                    },
+                                },
                                 property: 'name',
                             },
                             rhsArgument: {
@@ -262,9 +292,7 @@ export const generateTemplates = () => {
         name: 'טיסה אחת ביום לטיול',
         description: 'מקסימום טיסה אחת ביום לאותו הטיול. אסור שיהיו כמה טיסות לאותו הטיול באותו היום כי אחרת זה יהיה ממש מבלבל',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
-        pinnedEntityTemplateId: tripEntityTemplate._id,
-        unpinnedEntityTemplateId: flightEntityTemplate._id,
+        entityTemplateId: tripEntityTemplate._id,
         disabled: false,
         formula: {
             isGroup: true,
@@ -273,42 +301,95 @@ export const generateTemplates = () => {
                 {
                     isAggregationGroup: true,
                     aggregation: 'EVERY',
-                    variableNameOfAggregation: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                    ruleOfGroup: 'OR',
+                    variableOfAggregation: {
+                        entityTemplateId: tripEntityTemplate._id,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                            otherEntityTemplateId: flightEntityTemplate._id,
+                        },
+                    },
+                    ruleOfGroup: 'AND',
                     subFormulas: [
                         {
-                            isEquation: true,
-                            operatorBool: 'notEqual',
-                            lhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [
-                                    {
-                                        isPropertyOfVariable: true,
-                                        variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                                        property: 'departureDate',
+                            isAggregationGroup: true,
+                            aggregation: 'EVERY',
+                            variableOfAggregation: {
+                                entityTemplateId: tripEntityTemplate._id,
+                                aggregatedRelationship: {
+                                    relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                    otherEntityTemplateId: flightEntityTemplate._id,
+                                    variableNameSuffix: '2',
+                                },
+                            },
+                            ruleOfGroup: 'OR',
+                            subFormulas: [
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'notEqual',
+                                    lhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: tripEntityTemplate._id,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                        otherEntityTemplateId: flightEntityTemplate._id,
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
                                     },
-                                ],
-                            },
-                            rhsArgument: {
-                                isRegularFunction: true,
-                                functionType: 'toDate',
-                                arguments: [{ isPropertyOfVariable: true, variableName: flightEntityTemplate._id, property: 'departureDate' }],
-                            },
-                        },
-                        {
-                            isEquation: true,
-                            operatorBool: 'equals',
-                            lhsArgument: {
-                                isPropertyOfVariable: true,
-                                variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                                property: '_id',
-                            },
-                            rhsArgument: {
-                                isPropertyOfVariable: true,
-                                variableName: flightEntityTemplate._id,
-                                property: '_id',
-                            },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: tripEntityTemplate._id,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                        otherEntityTemplateId: flightEntityTemplate._id,
+                                                        variableNameSuffix: '2',
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'equals',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: tripEntityTemplate._id,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                otherEntityTemplateId: flightEntityTemplate._id,
+                                            },
+                                        },
+                                        property: '_id',
+                                    },
+                                    rhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: tripEntityTemplate._id,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
+                                                otherEntityTemplateId: flightEntityTemplate._id,
+                                                variableNameSuffix: '2',
+                                            },
+                                        },
+                                        property: '_id',
+                                    },
+                                },
+                            ],
                         },
                     ],
                 },
@@ -317,14 +398,120 @@ export const generateTemplates = () => {
     };
 
     // rule 3
-    const warnOnEveryFlightOnActiveZone: IMongoRule = {
+    const warnOnEveryFlightDepartureFromAirportWithActiveTrip: IMongoRule = {
         _id: generateMongoId(),
-        name: 'התראה על טיסות בסבב פעיל',
-        description: 'התראה על כל טיסה חדשה שמחוברת לסבב פעיל',
+        name: 'התראה על טיסות בטיול פעיל',
+        description: 'התראה על כל טיסה חדשה שמחוברת לטיול פעיל',
         actionOnFail: 'WARNING',
-        relationshipTemplateId: tripConnectedToFlightRelationshipTemplate._id,
-        pinnedEntityTemplateId: tripEntityTemplate._id,
-        unpinnedEntityTemplateId: flightEntityTemplate._id,
+        entityTemplateId: airportEntityTemplate._id,
+        disabled: false,
+        formula: {
+            isGroup: true,
+            ruleOfGroup: 'AND',
+            subFormulas: [
+                {
+                    isAggregationGroup: true,
+                    aggregation: 'EVERY',
+                    variableOfAggregation: {
+                        entityTemplateId: airportEntityTemplate._id,
+                        aggregatedRelationship: {
+                            relationshipTemplateId: departureFromRelationshipTemplate._id,
+                            otherEntityTemplateId: flightEntityTemplate._id,
+                        },
+                    },
+                    ruleOfGroup: 'AND',
+                    subFormulas: [
+                        {
+                            isAggregationGroup: true,
+                            aggregation: 'EVERY',
+                            variableOfAggregation: {
+                                entityTemplateId: airportEntityTemplate._id,
+                                aggregatedRelationship: {
+                                    relationshipTemplateId: tripConnectedToAirportRelationshipTemplate._id,
+                                    otherEntityTemplateId: tripEntityTemplate._id,
+                                },
+                            },
+                            ruleOfGroup: 'OR',
+                            subFormulas: [
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'greaterThan',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: airportEntityTemplate._id,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToAirportRelationshipTemplate._id,
+                                                otherEntityTemplateId: tripEntityTemplate._id,
+                                            },
+                                        },
+                                        property: 'startDate',
+                                    },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: airportEntityTemplate._id,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: departureFromRelationshipTemplate._id,
+                                                        otherEntityTemplateId: flightEntityTemplate._id,
+                                                    },
+                                                },
+                                                property: 'landingDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                                {
+                                    isEquation: true,
+                                    operatorBool: 'lessThan',
+                                    lhsArgument: {
+                                        isPropertyOfVariable: true,
+                                        variable: {
+                                            entityTemplateId: airportEntityTemplate._id,
+                                            aggregatedRelationship: {
+                                                relationshipTemplateId: tripConnectedToAirportRelationshipTemplate._id,
+                                                otherEntityTemplateId: tripEntityTemplate._id,
+                                            },
+                                        },
+                                        property: 'endDate',
+                                    },
+                                    rhsArgument: {
+                                        isRegularFunction: true,
+                                        functionType: 'toDate',
+                                        arguments: [
+                                            {
+                                                isPropertyOfVariable: true,
+                                                variable: {
+                                                    entityTemplateId: airportEntityTemplate._id,
+                                                    aggregatedRelationship: {
+                                                        relationshipTemplateId: departureFromRelationshipTemplate._id,
+                                                        otherEntityTemplateId: flightEntityTemplate._id,
+                                                    },
+                                                },
+                                                property: 'departureDate',
+                                            },
+                                        ],
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
+        },
+    };
+
+    // rule 4
+    const startDateSmallerThenEndDateInTrip: IMongoRule = {
+        _id: generateMongoId(),
+        name: 'תאריך התחלה לפני תאריך סיום של טיול',
+        description: 'תאריך התחלה לפני תאריך סיום של טיול',
+        actionOnFail: 'WARNING',
+        entityTemplateId: tripEntityTemplate._id,
         disabled: false,
         formula: {
             isGroup: true,
@@ -332,19 +519,9 @@ export const generateTemplates = () => {
             subFormulas: [
                 {
                     isEquation: true,
-                    operatorBool: 'equals',
-                    lhsArgument: { isPropertyOfVariable: true, variableName: tripEntityTemplate._id, property: 'active' },
-                    rhsArgument: { isConstant: true, type: 'boolean', value: false },
-                },
-                // will always pass, but more intuitive
-                {
-                    isEquation: true,
-                    operatorBool: 'greaterThanOrEqual',
-                    lhsArgument: {
-                        isCountAggFunction: true,
-                        variableName: `${tripEntityTemplate._id}.${tripConnectedToFlightRelationshipTemplate._id}.${flightEntityTemplate._id}`,
-                    },
-                    rhsArgument: { isConstant: true, type: 'boolean', value: 0 },
+                    operatorBool: 'lessThanOrEqual',
+                    lhsArgument: { isPropertyOfVariable: true, variable: { entityTemplateId: tripEntityTemplate._id }, property: 'startDate' },
+                    rhsArgument: { isPropertyOfVariable: true, variable: { entityTemplateId: tripEntityTemplate._id }, property: 'endDate' },
                 },
             ],
         },
@@ -358,40 +535,34 @@ export const generateTemplates = () => {
         allEntityTemplates,
         allEntityTemplateIds,
         flightsOnRelationshipTemplate,
+        tripConnectedToAirportRelationshipTemplate,
         tripConnectedToFlightRelationshipTemplate,
         departureFromRelationshipTemplate,
         allRelationshipTemplates,
-        allRelationshipTemplateIds,
         oneTravelAgentPerFlight,
         noOverlappingFlightsInTrip,
-        warnOnEveryFlightOnActiveZone,
+        warnOnEveryFlightDepartureFromAirportWithActiveTrip,
+        startDateSmallerThenEndDateInTrip,
     };
 };
 
-export const mockEntityTemplatesRoutes = (mockEntityTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
+export const mockEntityTemplatesRoutes = (mockTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
     entityTemplates.forEach((entityTemplate) => {
-        mockEntityTemplateManager
-            .onGet(`${entityTemplateManager.url}${entityTemplateManager.getByIdRoute}/${entityTemplate._id}`)
-            .reply(200, entityTemplate);
+        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(200, entityTemplate);
     });
 
-    mockEntityTemplateManager.onPost(`${entityTemplateManager.url}${entityTemplateManager.searchRoute}`).reply(({ data }) => {
+    mockTemplateManager.onPost(`${url}${entities.searchRoute}`).reply(({ data }) => {
         const { ids } = JSON.parse(data) as Required<Pick<ISearchEntityTemplatesBody, 'ids'>>; // assuming only search by ids
         return [200, entityTemplates.filter(({ _id }) => ids.includes(_id))];
     });
 };
 
-export const mockRelationshipTemplatesRoutes = (
-    mockRelationshipTemplateManager: MockAdapter,
-    relationshipTemplates: IMongoRelationshipTemplate[],
-) => {
+export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter, relationshipTemplates: IMongoRelationshipTemplate[]) => {
     relationshipTemplates.forEach((relationshipTemplate) => {
-        mockRelationshipTemplateManager
-            .onGet(`${relationshipManager.url}${relationshipManager.getRelationshipByIdRoute}/${relationshipTemplate._id}`)
-            .reply(200, relationshipTemplate);
+        mockTemplateManager.onGet(`${url}${relationships.getRelationshipByIdRoute}/${relationshipTemplate._id}`).reply(200, relationshipTemplate);
     });
 
-    mockRelationshipTemplateManager.onPost(`${relationshipManager.url}${relationshipManager.searchTemplatesRoute}`).reply(({ data }) => {
+    mockTemplateManager.onPost(`${url}${relationships.searchTemplatesRoute}`).reply(({ data }) => {
         const { sourceEntityIds, destinationEntityIds } = JSON.parse(data) as Pick<
             ISearchRelationshipTemplatesBody,
             'sourceEntityIds' | 'destinationEntityIds'
@@ -407,42 +578,15 @@ export const mockRelationshipTemplatesRoutes = (
     });
 };
 
-export const mockRulesRoutes = (
-    mockRelationshipTemplateManager: MockAdapter,
-    rules: IMongoRule[],
-    entityTemplateIds: string[],
-    relationshipTemplateIds: string[],
-) => {
-    relationshipTemplateIds.forEach((currRelationshipTemplateId) => {
-        const rulesByRelationshipId = rules.filter(({ relationshipTemplateId }) => currRelationshipTemplateId === relationshipTemplateId);
-
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-                disabled: false,
-                relationshipTemplateIds: [currRelationshipTemplateId],
-            })
-            .reply(200, rulesByRelationshipId);
-    });
-
+export const mockRulesRoutes = (mockTemplateManager: MockAdapter, rules: IMongoRule[], entityTemplateIds: string[]) => {
     entityTemplateIds.forEach((entityTemplateId) => {
-        const rulesByPinnedEntityTemplate = rules.filter(({ pinnedEntityTemplateId }) => entityTemplateId === pinnedEntityTemplateId);
+        const rulesByEntityTemplate = rules.filter(({ entityTemplateId: entityTemplateIdOfRule }) => entityTemplateIdOfRule === entityTemplateId);
 
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
+        mockTemplateManager
+            .onPost(`${url}${relationships.searchRulesRoute}`, {
                 disabled: false,
-                pinnedEntityTemplateIds: [entityTemplateId],
+                entityTemplateIds: [entityTemplateId],
             })
-            .reply(200, rulesByPinnedEntityTemplate);
-    });
-
-    entityTemplateIds.forEach((entityTemplateId) => {
-        const rulesByUnpinnedEntityTemplate = rules.filter(({ unpinnedEntityTemplateId }) => entityTemplateId === unpinnedEntityTemplateId);
-
-        mockRelationshipTemplateManager
-            .onPost(`${relationshipManager.url}${relationshipManager.searchRulesRoute}`, {
-                disabled: false,
-                unpinnedEntityTemplateIds: [entityTemplateId],
-            })
-            .reply(200, rulesByUnpinnedEntityTemplate);
+            .reply(200, rulesByEntityTemplate);
     });
 };

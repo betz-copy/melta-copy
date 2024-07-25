@@ -5,10 +5,10 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
-import { EntityWizardValues } from '.';
+import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { canUserWriteInstanceOfCategory } from '../../../utils/permissions/instancePermissions';
+import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -35,11 +35,14 @@ const ChooseTemplate: React.FC<{
 
     if (categoryId) {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return entity.category._id === categoryId && canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return (
+                entity.category._id === categoryId &&
+                checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write')
+            );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return canUserWriteInstanceOfCategory(myPermissions.instancesPermissions, entity.category);
+            return checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write');
         });
     }
 
@@ -51,7 +54,7 @@ const ChooseTemplate: React.FC<{
         <Autocomplete
             id="template"
             options={activeEntityTemplatesFiltered}
-            onChange={(_e, value) => setFieldValue('template', value || '')}
+            onChange={(_e, value) => setFieldValue('template', value || emptyEntityTemplate)}
             value={values.template._id ? values.template : null}
             disabled={disabled}
             getOptionLabel={(option) => option.displayName}

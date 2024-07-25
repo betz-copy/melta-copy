@@ -45,6 +45,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
                         darkMode={darkMode}
                         showPreviewPropertiesOnly
                         mode="normal"
+                        viewFirstLineOfLongText
                     />
                 )}
             </CardContent>

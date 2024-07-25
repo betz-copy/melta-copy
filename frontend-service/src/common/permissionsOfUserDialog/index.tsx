@@ -20,11 +20,7 @@ import {
 } from '../../services/permissionsService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
-import {
-    canUserReadInstanceOfCategory,
-    canUserWriteInstanceOfCategory,
-    getUserPermissionScopeOfCategory,
-} from '../../utils/permissions/instancePermissions';
+import { checkUserInstanceOfCategoryPermission, getUserPermissionScopeOfCategory } from '../../utils/permissions/instancePermissions';
 import {
     doesUserHaveNoPermissions,
     getPermissionsToDeleteUpdateAndCreate,
@@ -286,9 +282,10 @@ const PermissionsOfUserDialog: React.FC<{
                                         ),
                                         permissionType: {
                                             read: {
-                                                checked: canUserReadInstanceOfCategory(
+                                                checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
+                                                    'Read',
                                                 ),
                                                 onChange:
                                                     mode === 'view'
@@ -310,9 +307,10 @@ const PermissionsOfUserDialog: React.FC<{
                                                           },
                                             },
                                             write: {
-                                                checked: canUserWriteInstanceOfCategory(
+                                                checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
+                                                    'Write',
                                                 ),
                                                 onChange:
                                                     mode === 'view'

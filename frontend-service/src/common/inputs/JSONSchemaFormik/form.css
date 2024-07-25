@@ -1,6 +1,24 @@
-#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root {
+/* Supported starting from version 105 of Chrome */
+
+/* #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root:has(.other-field) {
     width: 50%;
     max-width: 50%;
+}
+
+#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root:has(.text-area) {
+    width: 100%;
+    max-width: 100%;
+} */
+
+.has-other-field-child {
+    width: 50%;
+    max-width: 50% !important;
+}
+
+.has-text-area-child {
+    width: 100%;
+    max-width: 100%;
+    direction: rtl;
 }
 
 #json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root {
@@ -16,7 +34,6 @@
     width: 100%;
 }
 
-.MuiPickersToolbar-penIconButton
-{
+.MuiPickersToolbar-penIconButton {
     right: 265px !important;
 }

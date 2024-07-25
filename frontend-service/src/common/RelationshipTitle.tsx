@@ -6,6 +6,7 @@ import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipT
 import { MeltaTooltip } from './MeltaTooltip';
 import { EntityTemplateColor } from './EntityTemplateColor';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { environment } from '../globals';
 
 const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
     return (
@@ -13,7 +14,7 @@ const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ tit
             <Typography
                 variant="h6"
                 marginLeft="10px"
-                fontSize="16px"
+                fontSize={environment.mainFontSizes.headlineSubTitleFontSize}
                 noWrap
                 style={{
                     textOverflow: 'ellipsis',

@@ -2,20 +2,22 @@ import { Router } from 'express';
 import { fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
+import { Authorizer } from '../../utils/authorizer';
 import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
+import ValidateRequest from '../../utils/joi';
+import { InstancesController } from './controller';
 import {
     validateUserCanCreateEntityInstance,
     validateUserCanCreateRelationshipInstance,
     validateUserCanExportEntities,
     validateUserCanGetExpandedEntity,
     validateUserCanIgnoreRules,
+    validateUserCanReadEntityInstance,
     validateUserCanSearchEntitiesBatch,
     validateUserCanSearchEntitiesOfTemplate,
-    validateUserCanWriteEntityInstance,
-    validateUserCanReadEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
+    validateUserCanWriteEntityInstance,
 } from './middlewares';
-import { InstancesController } from './controller';
 import {
     createEntityInstanceSchema,
     createRelationshipSchema,
@@ -26,8 +28,6 @@ import {
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
-import ValidateRequest from '../../utils/joi';
-import { Authorizer } from '../../utils/authorizer';
 
 const { instanceService } = config;
 
@@ -57,13 +57,14 @@ InstancesRouter.post(
     InstancesControllerMiddleware('exportEntities'),
 );
 InstancesRouter.get('/entities/:id', wrapMiddleware(validateUserCanReadEntityInstance), InstanceManagerProxy);
+
 InstancesRouter.post(
     '/entities/expanded/:id',
     wrapMiddleware(validateUserCanReadEntityInstance),
     wrapMiddleware(validateUserCanGetExpandedEntity),
-    InstancesControllerMiddleware('viewEntityInstance'),
     InstanceManagerProxy,
 );
+
 InstancesRouter.post(
     '/entities',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),

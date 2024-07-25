@@ -6,6 +6,7 @@ import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessD
 import { environment } from '../globals';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
+import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
 
 const { processes } = environment.api;
 export const getProcessByIdRequest = async (processId: string) => {
@@ -98,9 +99,9 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
     return { formData, fileProperties };
 };
 
-export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: any) => {
+export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
-    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template);
+    const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template.details.properties.properties);
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
     formData.append(
         'details',
@@ -125,8 +126,6 @@ export const archiveProcessRequest = async (processId: string, archived: Boolean
 };
 export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
     const updatedSearchBody = { ...searchBody, name: searchBody.name !== '' ? searchBody.name : undefined };
-    console.log({ updatedSearchBody });
-
     const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };

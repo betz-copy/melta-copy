@@ -1,8 +1,8 @@
-/* eslint-disable no-console */
 import { ConsumerMessage } from 'menashmq';
 import NotificationsManager from '../express/notifications/manager';
 import { basicValidateRequest } from '../utils/joi';
 import { notificationSchema } from '../utils/joi/schemas/notification';
+import logger from '../utils/logger/logsLogger';
 
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {
@@ -18,7 +18,7 @@ class NotificationsConsumer {
 
             msg.ack();
         } catch (err: any) {
-            console.log(err);
+            logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
         }
     }

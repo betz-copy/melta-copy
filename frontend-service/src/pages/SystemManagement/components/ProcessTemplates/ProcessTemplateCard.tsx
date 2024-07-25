@@ -44,7 +44,6 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         container
                         direction="row"
                         justifyContent="space-between"
-                        minWidth="300px"
                         alignItems="center"
                         paddingLeft="20px"
                         flexWrap="nowrap"

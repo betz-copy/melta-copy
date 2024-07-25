@@ -49,7 +49,7 @@ export class StorageService extends DefaultExternalServiceApi {
     }
 
     async duplicateFiles(paths: string[]) {
-        const { data } = await this.api.post(duplicateFilesRoute, { paths });
+        const { data } = await this.api.post<{ path: string }[]>(duplicateFilesRoute, { paths });
         return data;
     }
 }

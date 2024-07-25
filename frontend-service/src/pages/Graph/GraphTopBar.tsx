@@ -1,15 +1,13 @@
-import React from 'react';
-import { Box, Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
-import i18next from 'i18next';
+import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import i18next from 'i18next';
+import React from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import { CopyUrlButton } from '../../common/CopyUrlButton';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import TemplatesSelectCheckbox from '../../common/templatesSelectCheckbox';
-import { ICategoryMap } from '../../interfaces/categories';
-import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 interface GraphTopBarProps {
@@ -21,24 +19,22 @@ interface GraphTopBarProps {
     setFilteredEntityTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
 }
 
-const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId, filteredEntityTemplates, setFilteredEntityTemplates }) => {
+const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView, entityId }) => {
     const queryClient = useQueryClient();
 
     const theme = useTheme();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const templateIds = Array.from(entityTemplates.keys());
 
+    const expanded = entityId ? { [entityId]: 1 } : {};
     const { data: expandedEntity } = useQuery(['getExpandedEntity', entityId, { templateIds, numberOfConnections: 1 }], () =>
-        getExpandedEntityByIdRequest(entityId!, { templateIds, numberOfConnections: 1 }),
+        getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
     );
 
-    const entityTemplate = entityTemplates.get(expandedEntity?.entity.templateId || '');
-
+    const entityTemplate = expandedEntity ? entityTemplates.get(expandedEntity.entity.templateId || '') : undefined;
     return (
         <Grid
             container
@@ -68,16 +64,6 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
                 <Typography style={{ paddingBottom: '2px' }} variant="h4" fontSize="28px" color={theme.palette.primary.main}>
                     {entityTemplate?.displayName}
                 </Typography>
-                <Box marginLeft="3rem">
-                    <TemplatesSelectCheckbox
-                        title={i18next.t('graph.filterTemplates')}
-                        templates={Array.from(entityTemplates.values())}
-                        selectedTemplates={filteredEntityTemplates}
-                        setSelectedTemplates={setFilteredEntityTemplates}
-                        size="small"
-                        categories={Array.from(categories.values())}
-                    />
-                </Box>
             </Grid>
 
             <Grid item>

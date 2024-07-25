@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Form as JSONSchemaForm } from '@rjsf/mui';
 import Ajv, { ErrorObject } from 'ajv';
 import addFormats from 'ajv-formats';
@@ -13,7 +13,9 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { RjfsDateWidget, RjfsDateTimeWidget } from './RjfsDatesWidgets';
 import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
+import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
+import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -23,6 +25,9 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 
         const field = ajvError.instancePath.slice(1); // for example: /field1/subfield2
         const schemaOfField = schema.properties[field];
+        if (ajvError.keyword === 'format') {
+            return [field, `${i18next.t('validation.mustBeEqualToFormat')}  ${i18next.t(`propertyTypes.${ajvError.params.format}`)}`];
+        }
 
         if (ajvError.keyword === 'pattern') {
             return [field, schemaOfField.patternCustomErrorMessage!];
@@ -36,21 +41,31 @@ const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properti
 export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'], data: any): FormikErrors<any> => {
     const ajv = new Ajv({ allErrors: true });
     ajv.addFormat('fileId', /.*/);
+    ajv.addFormat('text-area', /.*/);
     addFormats(ajv);
     ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
     ajv.addKeyword({
         keyword: 'dateNotification',
-        type: 'string',
     });
-    ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+    ajv.addKeyword({ keyword: 'isDailyAlert' });
+    ajv.addKeyword({ keyword: 'calculateTime' });
     ajv.addKeyword({
         keyword: 'serialStarter',
+    });
+    ajv.addKeyword({
+        keyword: 'relationshipReference',
+        type: 'string',
     });
     ajv.addKeyword({
         keyword: 'serialCurrent',
     });
 
-    const validateFunction = ajv.compile(schema);
+    const schemaToValidate = {
+        ...schema,
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+    };
+
+    const validateFunction = ajv.compile(schemaToValidate);
     validateFunction(data);
 
     const ajvErrors = validateFunction.errors ?? [];
@@ -72,6 +87,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    toPrint?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -83,9 +99,22 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    toPrint = false,
 }) => {
+    useEffect(() => {
+        // define 100% width to text-area field
+        const containerDiv = document.querySelectorAll(
+            '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
+        );
+        containerDiv.forEach((innerDiv) => {
+            const hasTextAreaField = innerDiv.querySelector('.text-area');
+            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
+        });
+    }, [values.template]);
+
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
+
     return (
         <JSONSchemaForm
             id="json-schema"
@@ -106,6 +135,18 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
+                if (propertySchema.format === 'text-area') {
+                    return {
+                        'ui:widget': 'TextAreaWidget',
+                        'ui:classNames': 'text-area',
+                        'ui:options': { toPrint },
+                    };
+                }
+                if (propertySchema.format === 'relationshipReference') {
+                    return {
+                        'ui:widget': 'TemplateReferenceWidget',
+                    };
+                }
                 return {};
             })}
             onChange={({ formData }) => {
@@ -118,6 +159,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 const [_, field] = id.split('root_');
                 setFieldTouched(field);
             }}
+            experimental_defaultFormStateBehavior={{
+                emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
+            }}
             noValidate
             validator={validator}
             extraErrors={ajvExtraErrorsOnlyTouched}
@@ -129,9 +173,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 DateTimeWidget: RjfsDateTimeWidget,
                 TextWidget: RjsfTextWidget,
                 EmailWidget: RjsfTextWidget,
+                TextAreaWidget: RjfsTextAreaWidget,
+                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
             }}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
     );
 };

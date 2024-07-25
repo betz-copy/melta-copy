@@ -1,5 +1,7 @@
+/* eslint-disable no-nested-ternary */
 import {
     Box,
+    Button,
     Divider,
     FormControl,
     Grid,
@@ -16,19 +18,40 @@ import {
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
-import React, { Dispatch, Fragment, Key, PropsWithChildren, SetStateAction, useState } from 'react';
+import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
+import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { useDarkModeStore } from '../stores/darkMode';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { MeltaTooltip } from './MeltaTooltip';
 
-const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; label: string; order: number }> = ({
-    checked,
-    indeterminate,
-    label,
-}) => {
+export const MenuItemContent: React.FC<{
+    checked: boolean;
+    indeterminate?: boolean;
+    label: string;
+    order: number;
+    isDraggable?: boolean;
+    group?: boolean;
+    insideGroup?: boolean;
+}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
     return (
         <>
+            {!group && (
+                <Grid
+                    style={{
+                        width: '24px',
+                        height: '24px',
+                        gap: '2px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignContent: 'center',
+                        justifyContent: 'center',
+                        marginRight: insideGroup ? '30px' : '10px',
+                    }}
+                >
+                    {isDraggable && <img src="/icons/draggable-icon.svg" />}
+                </Grid>
+            )}
             <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
             <ListItemText
                 primary={
@@ -59,7 +82,7 @@ const MenuItemContent: React.FC<{ checked: boolean; indeterminate?: boolean; lab
     );
 };
 
-type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
+export type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
     groups: Group[];
     getGroupOfOption: (option: Option, groups: Group[]) => Group;
     getGroupId: (group: Group) => Key;
@@ -68,6 +91,7 @@ type SelectCheckboxGroupProps<Option extends any, Group extends any> = {
 
 export type SelectCheckboxProps<Option extends any, Group extends any = any> = PropsWithChildren<{
     title: string;
+    img?: ReactElement;
     options: Option[];
     selectedOptions: Option[];
     setSelectedOptions: Dispatch<SetStateAction<Option[]>>;
@@ -79,18 +103,18 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
-    horizontalOriginProp?: number;
+    horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
 }>;
 
-const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
+export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
     const groupedCollectionInitial = Object.fromEntries(keys.map((key) => [key, [] as T[]]));
     const groupedCollection = lodashGroupBy(collection, func);
 
     return { ...groupedCollectionInitial, ...groupedCollection };
 };
 
-const SelectOptionsMenuItems = <Option extends any, Group extends any>({
+export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     options,
     setOptions,
     selectedOptions,
@@ -99,6 +123,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     getOptionLabel,
     isDraggableDisabled,
     menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
+    insideGroup,
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -108,6 +133,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     isDraggableDisabled: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     menuItemSx?: SxProps<Theme>;
+    insideGroup?: boolean;
 }) => {
     const isOptionChecked = (option: Option) => selectedOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 
@@ -158,22 +184,16 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
+                                            padding: '0px',
                                         }}
                                     >
-                                        <Grid
-                                            style={{
-                                                width: '24px',
-                                                height: '24px',
-                                                gap: '2px',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                alignContent: 'center',
-                                                justifyContent: 'center',
-                                            }}
-                                        >
-                                            {!isDraggableDisabled && <img src="/icons/draggable-icon.svg" />}
-                                        </Grid>
-                                        <MenuItemContent checked={isOptionChecked(option)} label={getOptionLabel(option)} order={index + 1} />
+                                        <MenuItemContent
+                                            checked={isOptionChecked(option)}
+                                            label={getOptionLabel(option)}
+                                            order={index + 1}
+                                            isDraggable={!isDraggableDisabled}
+                                            insideGroup={insideGroup}
+                                        />
                                     </MenuItem>
                                 )}
                             </Draggable>
@@ -186,7 +206,7 @@ const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     );
 };
 
-const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
+export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     options,
     optionsFiltered,
     selectedOptions,
@@ -196,6 +216,8 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     isDraggableDisabled,
     setOptions,
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
+    openMap,
+    setOpenMap,
 }: {
     options: Option[];
     optionsFiltered: SelectCheckboxProps<Option, Group>['options'];
@@ -206,6 +228,12 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     groupsProps: SelectCheckboxGroupProps<Option, Group>;
     isDraggableDisabled: boolean;
     setOptions?: Dispatch<SetStateAction<Option[]>>;
+    openMap: { [groupId: string]: boolean };
+    setOpenMap: React.Dispatch<
+        React.SetStateAction<{
+            [groupId: string]: boolean;
+        }>
+    >;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
@@ -214,61 +242,75 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     const selectedOptionsByGroups = groupByWithInitial(selectedOptions, groups.map(getGroupId), (option) =>
         getGroupId(getGroupOfOption(option, groups)),
     );
-
     return (
         <>
             {groups.map((group, index) => {
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                const groupId = getGroupId(group);
+                const isOpen = openMap[groupId] || false;
+
                 const optionsOfGroup = optionsByGroups[getGroupId(group)];
                 const filteredOptionsOfGroup = filteredOptionsByGroups[getGroupId(group)];
                 const selectedOptionsOfGroup = selectedOptionsByGroups[getGroupId(group)];
                 return (
-                    <Fragment key={getGroupId(group)}>
-                        <MenuItem
-                            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
-                            onClick={() => {
-                                setSelectedOptions((prevSelectedOptions) => {
-                                    const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
-                                        (option) => getGroupId(getGroupOfOption(option, groups)) === getGroupId(group),
-                                    );
-                                    const prevChecked = optionsOfGroup.length === prevSelectedOptionsOfGroup.length;
-                                    const prevFiltered = selectedOptionsOfGroup.length === filteredOptionsOfGroup.length;
+                    <Fragment key={groupId}>
+                        <Box display="flex" flex="row">
+                            <Button
+                                sx={{ minWidth: 'auto', marginLeft: '4px' }}
+                                onClick={() => setOpenMap((prev) => ({ ...prev, [groupId]: !isOpen }))}
+                            >
+                                {isOpen ? <IoIosArrowDown /> : <IoIosArrowBack />}
+                            </Button>
+                            <MenuItem
+                                sx={{ padding: '0px', width: '100%', height: '24px', my: '7px' }}
+                                onClick={() => {
+                                    setSelectedOptions((prevSelectedOptions) => {
+                                        const prevSelectedOptionsOfGroup = prevSelectedOptions.filter(
+                                            (option) => getGroupId(getGroupOfOption(option, groups)) === getGroupId(group),
+                                        );
+                                        const prevChecked = optionsOfGroup.length === prevSelectedOptionsOfGroup.length;
+                                        const prevFiltered = selectedOptionsOfGroup.length === filteredOptionsOfGroup.length;
 
-                                    if (prevChecked) {
-                                        if (prevFiltered) {
-                                            const selectedOptionsWithoutGroup = prevSelectedOptions.filter((prevSelectedOption) => {
-                                                const isSelectedOptionInGroup = optionsOfGroup.some(
-                                                    (optionOfGroup) => getOptionId(optionOfGroup) === getOptionId(prevSelectedOption),
-                                                );
-                                                return !isSelectedOptionInGroup;
-                                            });
-                                            setSelectedOptions(selectedOptionsWithoutGroup);
-                                            return selectedOptionsWithoutGroup;
+                                        if (prevChecked) {
+                                            if (prevFiltered) {
+                                                const selectedOptionsWithoutGroup = prevSelectedOptions.filter((prevSelectedOption) => {
+                                                    const isSelectedOptionInGroup = optionsOfGroup.some(
+                                                        (optionOfGroup) => getOptionId(optionOfGroup) === getOptionId(prevSelectedOption),
+                                                    );
+                                                    return !isSelectedOptionInGroup;
+                                                });
+                                                setSelectedOptions(selectedOptionsWithoutGroup);
+                                                return selectedOptionsWithoutGroup;
+                                            }
                                         }
-                                    }
 
-                                    const selectedOptionsWithGroup = lodashUniqby([...prevSelectedOptions, ...optionsOfGroup], getOptionId);
-                                    setSelectedOptions(selectedOptionsWithGroup);
-                                    return selectedOptionsWithGroup;
-                                });
-                            }}
-                        >
-                            <MenuItemContent
-                                checked={selectedOptionsOfGroup.length === filteredOptionsOfGroup.length}
-                                indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < filteredOptionsOfGroup.length}
-                                label={getGroupLabel(group)}
-                                order={index}
+                                        const selectedOptionsWithGroup = lodashUniqby([...prevSelectedOptions, ...optionsOfGroup], getOptionId);
+                                        setSelectedOptions(selectedOptionsWithGroup);
+                                        return selectedOptionsWithGroup;
+                                    });
+                                }}
+                            >
+                                <MenuItemContent
+                                    checked={selectedOptionsOfGroup.length === filteredOptionsOfGroup.length}
+                                    indeterminate={selectedOptionsOfGroup.length > 0 && selectedOptionsOfGroup.length < filteredOptionsOfGroup.length}
+                                    label={getGroupLabel(group)}
+                                    order={index}
+                                    group
+                                />
+                            </MenuItem>
+                        </Box>
+                        {isOpen && (
+                            <SelectOptionsMenuItems
+                                options={filteredOptionsOfGroup}
+                                selectedOptions={selectedOptions}
+                                setSelectedOptions={setSelectedOptions}
+                                getOptionId={getOptionId}
+                                getOptionLabel={getOptionLabel}
+                                isDraggableDisabled={isDraggableDisabled}
+                                setOptions={setOptions}
+                                insideGroup
                             />
-                        </MenuItem>
-                        <SelectOptionsMenuItems
-                            options={filteredOptionsOfGroup}
-                            selectedOptions={selectedOptions}
-                            setSelectedOptions={setSelectedOptions}
-                            getOptionId={getOptionId}
-                            getOptionLabel={getOptionLabel}
-                            isDraggableDisabled={isDraggableDisabled}
-                            setOptions={setOptions}
-                        />
-                        {/* divider between groups */}
+                        )}
                         {index < groups.length - 1 && (
                             <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                                 <Divider style={{ width: '199px' }} />
@@ -281,7 +323,7 @@ const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends any>({
     );
 };
 
-const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
+export const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     miniFilterValue: string,
     options: SelectCheckboxProps<Option, Group>['options'],
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'],
@@ -316,10 +358,11 @@ const getOptionsAndGroupsMiniFiltered = <Option extends any, Group extends any>(
     return { optionsFiltered, groupsFiltered };
 };
 
-export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar: boolean | undefined }> = ({
+export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => void; toTopBar?: boolean; templatesSelectGrid?: boolean }> = ({
     value,
     onChange,
     toTopBar,
+    templatesSelectGrid,
 }) => {
     const theme = useTheme();
     // must wrap with TextField with Grid. no idea why, but it works :O
@@ -342,7 +385,8 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                         }
                     }}
                     sx={{
-                        background: toTopBar ? '#FFFFFF' : '#EBEFFA',
+                        background: toTopBar || templatesSelectGrid ? '#FFFFFF' : '#EBEFFA',
+                        boxShadow: templatesSelectGrid ? '-2px 2px 6px 0px #1E27754D' : '',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
@@ -391,7 +435,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
     );
 };
 
-const ChooseAllMenuItem = <Option extends any, Group extends any>({
+export const ChooseAllMenuItem = <Option extends any, Group extends any>({
     options,
     selectedOptionsFiltered,
     setSelectedOptions,
@@ -404,7 +448,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 }) => {
     return (
         <MenuItem
-            sx={{ width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' }}
+            sx={{ width: '100%', height: '24px', padding: '0px', my: '10px' }}
             onClick={() => {
                 const prevChecked = selectedOptionsFiltered.length === optionsFiltered.length;
                 if (prevChecked) {
@@ -426,6 +470,7 @@ const ChooseAllMenuItem = <Option extends any, Group extends any>({
 
 const SelectCheckbox = <Option extends any, Group extends any>({
     title,
+    img,
     options,
     selectedOptions,
     setSelectedOptions,
@@ -437,7 +482,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
-    horizontalOriginProp,
+    horizontalOrigin = 154,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
@@ -452,25 +497,21 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         return isSelectedOptionInOptionsFiltered;
     });
 
-    let horizontalOrigin = horizontalOriginProp ?? 172;
-    if (title === i18next.t('systemManagement.destinationTemplates') || title === i18next.t('categories')) {
-        horizontalOrigin = 181;
-    } else if (title === i18next.t('systemManagement.sourceTemplates')) {
-        horizontalOrigin = 177;
-    }
     // eslint-disable-next-line no-nested-ternary
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
+    const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
         <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
-                renderValue={() => title}
+                renderValue={() => <Box>{title}</Box>}
                 MenuProps={{
                     PaperProps: {
                         style: {
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
+                            width: horizontalOrigin === 154 ? '219px' : undefined,
                             backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                             borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
@@ -493,6 +534,16 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         horizontal: horizontalOrigin,
                     },
                 }}
+                IconComponent={() => (
+                    <Box
+                        display="flex"
+                        alignContent="center"
+                        alignItems="center"
+                        sx={{ width: '16px', height: '12px', gap: '10px', marginRight: '14px' }}
+                    >
+                        {img ? img : isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                    </Box>
+                )}
                 size={size}
                 onOpen={() => {
                     setMiniFilterValue('');
@@ -545,6 +596,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         groupsProps={{ ...groupsProps, groups: groupsFiltered! }}
                         isDraggableDisabled={isDraggableDisabled}
                         setOptions={setOptions}
+                        openMap={openMap}
+                        setOpenMap={setOpenMap}
                     />
                 ) : (
                     <SelectOptionsMenuItems

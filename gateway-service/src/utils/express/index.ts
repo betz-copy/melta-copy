@@ -1,10 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import { Options, createProxyMiddleware } from 'http-proxy-middleware';
-import DefaultController from './controller';
-import { FunctionKey } from '../types';
-import { InvalidWorkspaceHeaderError } from '../../express/error';
+import { NextFunction, Request, Response } from 'express';
+import { createProxyMiddleware, Options } from 'http-proxy-middleware';
+import { get } from 'lodash';
 import config from '../../config';
+import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
+import dataLogger from '../logger/dataLogger';
+import { FunctionKey } from '../types';
+import DefaultController from './controller';
 
 const { workspaceHeaderName, dbHeaderName } = config.service;
 
@@ -18,11 +20,61 @@ export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<v
 
 export const wrapValidator = wrapMiddleware;
 
+interface IWrapControllerOptions {
+    toLog: boolean;
+    logRequestFields: Array<{ key: string; path: string }>;
+    indexName: string;
+    responseDataExtractor: ((body: any) => any) | undefined;
+}
+
+const defaultWrapControllerOptions: IWrapControllerOptions = {
+    toLog: false,
+    logRequestFields: [],
+    indexName: 'gateway',
+    responseDataExtractor: undefined,
+};
+
 export const wrapController = <ExtendedRequest extends Request<any, any, any, any> = Request, ExtendedResponse extends Response = Response>(
     func: (req: ExtendedRequest, res: ExtendedResponse, next?: NextFunction) => Promise<void>,
+    options: IWrapControllerOptions = defaultWrapControllerOptions,
 ) => {
+    const { toLog, logRequestFields, indexName, responseDataExtractor } = { ...options };
     return (req: ExtendedRequest, res: ExtendedResponse, next: NextFunction) => {
-        func(req, res, next).catch(next);
+        if (!toLog) {
+            func(req, res, next).catch(next);
+            return;
+        }
+
+        const originalJson = res.json.bind(res);
+        const loggedRequestData: Record<string, any> = {};
+
+        logRequestFields.forEach(({ key, path }) => {
+            loggedRequestData[key] = get(req, path);
+        });
+
+        res.json = (body: any) => {
+            const loggedResponseData = JSON.parse(JSON.stringify(responseDataExtractor ? responseDataExtractor(body) : body));
+
+            if (loggedResponseData?._id) {
+                const docId = loggedResponseData._id;
+                delete loggedResponseData._id;
+                loggedResponseData.docId = docId;
+            }
+
+            dataLogger.info(indexName, {
+                userId: req.user?.id,
+                path: req.path,
+                method: req.method,
+                ...loggedRequestData,
+                ...loggedResponseData,
+            });
+
+            return originalJson(body);
+        };
+        func(req, res, next).catch((error) => {
+            res.json = originalJson;
+            next(error);
+        });
     };
 };
 

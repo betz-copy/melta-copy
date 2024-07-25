@@ -1,12 +1,31 @@
-import { JsonGroup, RuleProperties, JsonItem, JsonRuleGroupExt } from 'react-awesome-query-builder';
-import { IAggregationGroup, IEquation, IGroup, IOperatorBool, IRegularFunction } from '../../interfaces/rules';
-import { IArgument, IConstant, IPropertyOfVariable } from '../../interfaces/rules/argument';
+import { JsonGroup, RuleProperties, JsonItem, JsonRuleGroupExt, JsonRule } from '@react-awesome-query-builder/mui';
 import { IFormula } from '../../interfaces/rules/formula';
 import { FunctionObject, ValueType } from './interfaces';
+import { IRegularFunction } from '../../interfaces/rules/formula/function';
+import { IArgument, IConstant, IPropertyOfVariable, IVariable } from '../../interfaces/rules/formula/argument';
+import { IEquation, IOperatorBool } from '../../interfaces/rules/formula/equation';
+import { IAggregationGroup, IGroup } from '../../interfaces/rules/formula/group';
 
 export class RuleParser {
-    private static formatAggregationField = (field: string) => {
-        return field.includes('.') ? field.split('.')[1] : field;
+    static variableParser = (variableNameFromField: string): IVariable => {
+        const variableNameWithoutAggregationContext = variableNameFromField.split('.').pop() ?? variableNameFromField;
+        const [entityTemplateId, relationshipTemplateId, otherEntityTemplateId, variableNameSuffix] = variableNameWithoutAggregationContext.split(
+            '-',
+        ) as
+            | [string]
+            | [string, string, string] // aggregation variable
+            | [string, string, string, string]; // aggregation variable with suffix
+
+        return {
+            entityTemplateId,
+            aggregatedRelationship: relationshipTemplateId
+                ? {
+                      relationshipTemplateId,
+                      otherEntityTemplateId: otherEntityTemplateId!,
+                      variableNameSuffix,
+                  }
+                : undefined,
+        };
     };
 
     private static toDateFunctionParser = (property: string): IRegularFunction => {
@@ -15,33 +34,30 @@ export class RuleParser {
         return {
             isRegularFunction: true,
             functionType: 'toDate',
-            arguments: [RuleParser.propertyParser(formattedField)],
+            arguments: [RuleParser.fieldParser(formattedField)],
         };
     };
 
-    private static propertyParser(property: string): IPropertyOfVariable | IRegularFunction {
-        const formattedField = RuleParser.formatAggregationField(property);
-
-        if (property.includes('-ignoreHour')) {
-            return RuleParser.toDateFunctionParser(property);
+    private static fieldParser(field: string): IPropertyOfVariable | IRegularFunction {
+        if (field.includes('-ignoreHour')) {
+            return RuleParser.toDateFunctionParser(field);
         }
 
-        const lastDashIndex = formattedField.lastIndexOf('-');
+        const lastDashIndex = field.lastIndexOf('-');
 
-        const propertyName = formattedField.substring(lastDashIndex + 1);
-
-        if (propertyName === null || propertyName === undefined) throw new Error('property can not be empty');
+        const variableName = field.substring(0, lastDashIndex);
+        const propertyName = field.substring(lastDashIndex + 1);
 
         return {
             isPropertyOfVariable: true,
-            variableName: formattedField.substring(0, lastDashIndex).replaceAll('-', '.'),
+            variable: RuleParser.variableParser(variableName),
             property: propertyName,
         };
     }
 
     private static addToDateFunctionParser = (funcObj: FunctionObject): IRegularFunction => {
         const dateArgumentKey = funcObj.func === 'addToDate' || funcObj.func === 'subFromDate' ? 'date' : 'dateTime';
-        const dateArgument = RuleParser.propertyParser(funcObj.args[dateArgumentKey].value); // assuming dateArgument is a property
+        const dateArgument = RuleParser.fieldParser(funcObj.args[dateArgumentKey].value); // assuming dateArgument is a property
 
         const durationValueType: ValueType = funcObj.func === 'addToDate' || funcObj.func === 'subFromDate' ? 'dateDuration' : 'dateTimeDuration';
         const durationArgument = RuleParser.constantParser(funcObj.args.duration.value, durationValueType);
@@ -107,7 +123,7 @@ export class RuleParser {
 
         let rhsArgument: IArgument;
         if (rhsArgumentValueSrc === 'field') {
-            rhsArgument = RuleParser.propertyParser(properties.value[0]);
+            rhsArgument = RuleParser.fieldParser(properties.value[0]);
         } else if (rhsArgumentValueSrc === 'func') {
             // only add/subToDate[Time] functions can be in rhs
             rhsArgument = RuleParser.addToDateFunctionParser(properties.value[0]);
@@ -117,7 +133,7 @@ export class RuleParser {
         return {
             isEquation: true,
             operatorBool: RuleParser.operatorParser(properties.operator!),
-            lhsArgument: RuleParser.propertyParser(properties.field!),
+            lhsArgument: RuleParser.fieldParser(properties.field as string),
             rhsArgument,
         };
     };
@@ -134,22 +150,23 @@ export class RuleParser {
         return {
             isGroup: true,
             ruleOfGroup: RuleParser.conjunctionParser(group.properties?.conjunction),
-            subFormulas: Object.values(group.children1!).map(RuleParser.jsonTreeToFormula),
+            subFormulas: (group.children1 as JsonItem[]).map(RuleParser.jsonTreeToFormula),
         };
     };
 
     private static aggregationGroupParser = (ruleGroup: JsonRuleGroupExt): IAggregationGroup | IEquation => {
+        const variableOfAggregation = RuleParser.variableParser(ruleGroup.properties!.field as string);
         if (ruleGroup.properties!.operator === 'some' || ruleGroup.properties!.operator === 'all') {
             return {
                 isAggregationGroup: true,
-                variableNameOfAggregation: ruleGroup.properties!.field!.replaceAll('-', '.'),
+                variableOfAggregation,
                 aggregation: RuleParser.aggregationParser(ruleGroup.properties!.operator),
                 ruleOfGroup: RuleParser.conjunctionParser(ruleGroup.properties!.conjunction),
-                subFormulas: Object.values(ruleGroup.children1!).map(RuleParser.jsonTreeToFormula),
+                subFormulas: (ruleGroup.children1 as JsonRule[]).map(RuleParser.jsonTreeToFormula),
             } as IAggregationGroup;
         }
 
-        if (Object.values(ruleGroup.children1!).length > 0) {
+        if ((ruleGroup.children1 as JsonRule[]).length > 0) {
             throw new Error('count aggregation doesn`t support subFormulas');
         }
 
@@ -158,7 +175,7 @@ export class RuleParser {
             operatorBool: RuleParser.operatorParser(ruleGroup.properties!.operator!),
             lhsArgument: {
                 isCountAggFunction: true,
-                variableName: ruleGroup.properties!.field!.replaceAll('-', '.'),
+                variable: variableOfAggregation,
             },
             rhsArgument: RuleParser.constantParser(ruleGroup.properties!.value[0], ruleGroup.properties!.valueType![0] as ValueType),
         } as IEquation;

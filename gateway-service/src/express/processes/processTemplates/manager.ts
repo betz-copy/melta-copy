@@ -1,25 +1,26 @@
-import { StorageService } from '../../../externalServices/storageService';
-import { removeTmpFile } from '../../../utils/fs';
+import config from '../../../config';
+import { ProcessService } from '../../../externalServices/processService';
+import {
+    IMongoProcessInstanceWithSteps,
+    ISearchProcessInstancesBody,
+    Status,
+} from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoProcessTemplatePopulated,
     IMongoProcessTemplateWithSteps,
     IProcessTemplateWithSteps,
     ISearchProcessTemplatesBody,
 } from '../../../externalServices/processService/interfaces/processTemplate';
-import { ProcessService } from '../../../externalServices/processService';
 import { IMongoStepTemplate, IStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
+import { StorageService } from '../../../externalServices/storageService';
+import { UserService } from '../../../externalServices/userService';
+import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
+import DefaultManagerProxy from '../../../utils/express/manager';
+import { removeTmpFile } from '../../../utils/fs';
+import logger from '../../../utils/logger/logsLogger';
 import { ServiceError } from '../../error';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
-import {
-    IMongoProcessInstanceWithSteps,
-    ISearchProcessInstancesBody,
-    Status,
-} from '../../../externalServices/processService/interfaces/processInstance';
-import config from '../../../config';
-import DefaultManagerProxy from '../../../utils/express/manager';
-import { UserService } from '../../../externalServices/userService';
-import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
 
 const { internalSearchPullLimit } = config.processService;
 
@@ -59,7 +60,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
 
     async getProcessTemplate(id: string, userId: string) {
         const processTemplate = await this.service.getProcessTemplateById(id, userId);
-        return ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate);
+        return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
     private async removeUnusedIconFileIds(oldStepsIconFileIds: IStepTemplate['iconFileId'][], newStepsIconFileIds: IStepTemplate['iconFileId'][]) {
@@ -68,7 +69,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
-            await this.storageService.deleteFiles(idsToDelete).catch(() => console.log(`failed to delete unused icons: ${idsToDelete}`)); // eslint-disable-line no-console
+            await this.storageService.deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused icons: ${idsToDelete}`));
     }
 
     private async handleIcons(icons: Express.Multer.File[], newSteps: IMongoStepTemplate[]) {
@@ -117,10 +118,9 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         const iconsIds = steps.map((step) => {
             return step.iconFileId;
         });
-        await this.storageService.deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((err) => {
-            // eslint-disable-next-line no-console
-            console.log('failed to delete icons images');
-            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${err}`);
+        await this.storageService.deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
+            logger.error('failed to delete icons images', { error });
+            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${error}`);
         });
         return ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

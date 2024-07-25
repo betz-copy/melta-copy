@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateService } from '../../externalServices/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/relationshipsTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { UserService } from '../../externalServices/userService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { getWorkspaceId } from '../../utils/express';

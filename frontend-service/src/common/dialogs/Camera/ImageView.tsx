@@ -40,7 +40,7 @@ const ImageView: React.FC<IImageView> = ({ setStream, imgURL, setImgURL, setOpen
             const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
             setStream(userStream);
         } catch {
-            toast(i18next.t('camera.cameraNotFound'));
+            toast.error(i18next.t('camera.cameraNotFound'));
         }
     };
 

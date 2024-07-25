@@ -1,33 +1,43 @@
-import menash from 'menashmq';
 import axios from 'axios';
+import apm from 'elastic-apm-node';
+import menash from 'menashmq';
 import config from './config';
 import { updateIndexConsumeFunction } from './rabbit/consumer';
+import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j/neo4j';
 import RedisClient from './utils/redis';
 
-const { service, rabbit } = config;
+const { rabbit, service, logs } = config;
+
+if (logs.enableApm) {
+    apm.start({
+        serviceName: logs.extraDefault.serviceName,
+        serverUrl: logs.apmServerUrl,
+        environment: logs.extraDefault.environment,
+    });
+}
 
 const initializeRabbit = async () => {
-    console.log('Connecting to Rabbit...');
+    logger.info('Connecting to Rabbit...');
 
     await menash.connect(rabbit.url, rabbit.retryOptions);
 
-    console.log('Rabbit connected');
+    logger.info('Rabbit connected');
 
     await menash.declareTopology({
         queues: [{ name: rabbit.queueName, options: { durable: true, prefetch: 1 } }],
         consumers: [{ queueName: rabbit.queueName, onMessage: updateIndexConsumeFunction }],
     });
 
-    console.log('Rabbit initialized');
+    logger.info('Rabbit initialized');
 };
 
 const initializeRedis = async () => {
-    console.log('Connecting to Redis...');
+    logger.info('Connecting to Redis...');
 
     await RedisClient.initialize();
 
-    console.log('Redis connection established');
+    logger.info('Redis connection established');
 };
 
 const main = async () => {

@@ -170,14 +170,14 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOriginProp={openCalenders ? 70 : 101}
+                                horizontalOrigin={openCalenders ? 61 : 89}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
                                         boxShadow: '-2px 2px 6px 0px #1E277540',
                                         border: 0,
-                                        width: openCalenders ? '17rem' : '13rem',
+                                        width: openCalenders ? '15rem' : '11.5rem',
                                     },
                                     '& .MuiOutlinedInput-notchedOutline': { border: 0 },
                                     '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
@@ -233,6 +233,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                         },
                                     },
                                 }}
+                                directionIsRow
                             />
 
                             <IconButtonWithPopover

@@ -1,3 +1,4 @@
+import { MatomoProvider } from '@datapunt/matomo-tracker-react';
 import Bowser from 'bowser';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
@@ -6,8 +7,10 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
+import './css/loading.css';
 import { environment } from './globals';
 import Main from './Main';
+import matomoInstance from './matomo';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
@@ -69,7 +72,11 @@ const App: React.FC = () => {
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
-    return <Main />;
+    return (
+        <MatomoProvider value={matomoInstance}>
+            <Main />;
+        </MatomoProvider>
+    );
 };
 
 export default App;

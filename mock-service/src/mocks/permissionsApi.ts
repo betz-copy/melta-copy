@@ -1,7 +1,7 @@
-import { IMongoCategory } from '../categories';
 import config from '../config/index';
 import { PermissionScope } from '../interfaces/permissions';
 import { ICompactPermissions } from '../interfaces/permissions/permissions';
+import { IMongoCategory } from '../templates/categories';
 
 export interface SyncUserPermissions {
     userId: string;
