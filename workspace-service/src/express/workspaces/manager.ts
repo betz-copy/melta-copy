@@ -6,6 +6,11 @@ import { IWorkspace, WorkspaceTypes } from './interface';
 import { WorkspacesModel } from './model';
 
 export class WorkspacesManager {
+    static async getWorkspaceIds(type: IWorkspace['type']) {
+        const workspaces = await WorkspacesModel.find({ type }, { _id: 1 }).lean().exec();
+        return workspaces.map(({ _id }) => _id);
+    }
+
     static async getFile(path: IWorkspace['path']) {
         const { dir, name, ext } = parsePath(path);
 
