@@ -60,7 +60,7 @@ const nodeToEntity = (node: Node): IEntity => {
         properties: normalizeFields(node.properties),
     };
 
-    return EntityManager.fixReturnedEntityRefrencesFields(entity);
+    return EntityManager.fixReturnedEntityReferencesFields(entity);
 };
 
 export const normalizeReturnedEntity =

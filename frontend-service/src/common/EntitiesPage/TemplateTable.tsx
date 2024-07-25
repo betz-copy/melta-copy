@@ -204,7 +204,7 @@ const TemplateTable = forwardRef<
                     entityTemplate={template}
                     entityToUpdate={editDialog.entity!}
                     onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity.updatedEntity);
+                        // entitiesTableRef.current?.updateRowDataClientSide(entity.updatedEntity);
                         if (entity.updatedEntities.length)
                             entity.updatedEntities.map((entityToUpdate) => entitiesTableRef.current?.updateRowDataClientSide(entityToUpdate));
                     }}

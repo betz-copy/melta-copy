@@ -25,6 +25,7 @@ import {
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
+    isIEntity,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
 } from './interface';
@@ -236,12 +237,14 @@ export class EntityManager {
                     }
                 }),
             );
+            const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
-            const populatedInstances = await this.getEntityByIdInTransaction(createdEntity.properties._id, transaction);
+            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
+
+            const populatedInstances = this.fixReturnedEntityReferencesFields(createdEntity);
 
             Object.entries(populatedInstances.properties).forEach(([name, value]) => {
-                // todo:check typeof IEntity
-                if (typeof value === 'object' && 'properties' in value) {
+                if (isIEntity(value)) {
                     populatedInstances.properties[name] = value.properties;
                 }
             });
@@ -258,9 +261,9 @@ export class EntityManager {
                 updatedEntities.push(...updatedEntitiesInActionExecution);
             }
 
-            const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
+            // const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
-            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
+            // throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
 
             return { createdEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
@@ -386,7 +389,7 @@ export class EntityManager {
         return node;
     }
 
-    static fixReturnedEntityRefrencesFields(entity: IEntity) {
+    static fixReturnedEntityReferencesFields(entity: IEntity) {
         const fixedExpandedEntity = entity;
 
         const relatedEntities = {};
@@ -517,6 +520,14 @@ export class EntityManager {
                 if (!node) {
                     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
                 }
+
+                const populatedInstances = this.fixReturnedEntityReferencesFields(entityToDelete);
+
+                Object.entries(populatedInstances.properties).forEach(([name, value]) => {
+                    if (isIEntity(value)) {
+                        populatedInstances.properties[name] = value.properties;
+                    }
+                });
 
                 if (entityTemplate.actions) {
                     const entitiesToUpdate = await executeActionAndUpdateRelevantEntities(
@@ -936,16 +947,25 @@ export class EntityManager {
                 userId,
             );
 
-            if (updatedEntity && entityTemplate.actions) {
-                const entitiesToUpdate = await executeActionAndUpdateRelevantEntities(
+            const populatedInstances = this.fixReturnedEntityReferencesFields(updatedEntity);
+
+            Object.entries(populatedInstances.properties).forEach(([name, value]) => {
+                if (isIEntity(value)) {
+                    populatedInstances.properties[name] = value.properties;
+                }
+            });
+
+            if (entityTemplate.actions) {
+                const updatedEntitiesInActionExecution = await executeActionAndUpdateRelevantEntities(
                     entityTemplate,
-                    updatedEntity,
+                    populatedInstances,
                     'onUpdateEntity',
                     transaction,
                     ignoredRules,
                     userId,
                 );
-                updatedEntities.push(...entitiesToUpdate);
+
+                updatedEntities.push(...updatedEntitiesInActionExecution);
             }
 
             return { updatedEntity, updatedEntities };
