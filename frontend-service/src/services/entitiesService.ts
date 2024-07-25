@@ -62,7 +62,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         } else {
             filesToUpload.push([`${key}`, value]);
         }
-    });
+    })
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
