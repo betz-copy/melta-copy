@@ -25,14 +25,16 @@ export interface IBrokenRule {
 export interface IRuleBreach {
     _id: string;
     originUserId: string;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadata;
+    }[];
     brokenRules: IBrokenRule[];
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadata;
     createdAt: Date;
 }
 
-export type IEntityForBrokenRules = IEntity | 'created-entity-id' | null;
-export type IRelationshipForBrokenRules = IRelationship | 'created-relationship-id' | null;
+export type IEntityForBrokenRules = IEntity | string | null; // TODO - change name and use in actionInfo component and metadatas types
+export type IRelationshipForBrokenRules = IRelationship | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;
@@ -59,8 +61,10 @@ export interface IRuleBreachPopulated {
     _id: string;
     originUser: IUser;
     brokenRules: IBrokenRulePopulated[];
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
     createdAt: Date;
 }
 

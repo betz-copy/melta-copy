@@ -11,13 +11,13 @@ export class RuleBreachService {
         timeout: requestTimeout,
     });
 
-    static async createRuleBreachRequest<T>(ruleBreachRequestData: Omit<IRuleBreachRequest<T>, '_id' | 'createdAt'>): Promise<IRuleBreachRequest<T>> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachRequest<T>>('/requests', ruleBreachRequestData);
+    static async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt'>): Promise<IRuleBreachRequest> {
+        const { data } = await this.ruleBreachService.post<IRuleBreachRequest>('/requests', ruleBreachRequestData);
         return data;
     }
 
-    static async createRuleBreachAlert<T>(ruleBreachAlertData: Omit<IRuleBreachAlert<T>, '_id' | 'createdAt'>): Promise<IRuleBreachAlert<T>> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachAlert<T>>('/alerts', ruleBreachAlertData);
+    static async createRuleBreachAlert(ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt'>): Promise<IRuleBreachAlert> {
+        const { data } = await this.ruleBreachService.post<IRuleBreachAlert>('/alerts', ruleBreachAlertData);
         return data;
     }
 
@@ -53,14 +53,20 @@ export class RuleBreachService {
         return data;
     }
 
-    static async updateRuleBreachRequestActionMetadata(
+    static async getManyRuleBreaches(rulesBreachIds: string[]): Promise<IRuleBreachRequest[]> {
+        const { data } = await this.ruleBreachService.post<IRuleBreachRequest[]>(`/requests/getManys`, { rulesBreachIds });
+        return data;
+    }
+
+    static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
+        actions: {
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadata;
+        }[],
     ): Promise<IRuleBreachRequest> {
         const { data } = await this.ruleBreachService.patch<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}/action-metadata`, {
-            actionType,
-            actionMetadata,
+            actions,
         });
         return data;
     }

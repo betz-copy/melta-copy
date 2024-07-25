@@ -12,6 +12,17 @@ export const getRelationshipByIdRequestSchema = Joi.object({
     },
 });
 
+export const runBulkOfActionsInMultipleTransactionsSchema = Joi.object({
+    query: {
+        dryRun: Joi.boolean().required(),
+    },
+    body: {
+        actionsGroups: Joi.array().items(Joi.array().items(Joi.object())), // TODO - IAction object and check with the validateRelationship function for example, and for entity
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
+    },
+    params: {},
+});
+
 /**
  * GET /api/instances/relationships/count?templateId
  */

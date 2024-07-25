@@ -8,7 +8,6 @@ import mapValues from 'lodash.mapvalues';
 import Neo4jClient from '../../utils/neo4j';
 import {
     generateDefaultProperties,
-    getNeo4jDateTime,
     normalizeReturnedRelAndEntities,
     normalizeReturnedEntity,
     normalizeResponseCount,
@@ -16,6 +15,7 @@ import {
     normalizeGetDbConstraints,
     runInTransactionAndNormalize,
     normalizeSearchWithRelationships,
+    getNeo4jDateTime,
 } from '../../utils/neo4j/lib';
 import {
     IConstraint,
@@ -36,7 +36,6 @@ import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRul
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
 import { filterDependentRulesOnEntity } from '../rules/getParametersOfFormula';
 import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
@@ -44,10 +43,11 @@ import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyT
 import RelationshipManager from '../relationships/manager';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import { executeActionAndUpdateRelevantEntities } from '../../utils/actions/executeScript';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { IUpdatedFields } from '../../externalServices/activityLog/interface';
-import { IRelationship } from '../relationships/interface';
+import { IRelationship } from '../relationships/interfaces';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -98,6 +98,20 @@ export class EntityManager {
             // unsupported constraint validation error. possibly neo4j broke expected message
             throw err;
         }
+    }
+
+    static async createEntityInTransaction(transaction: Transaction, entityProperties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
+            normalizeReturnedEntity('singleResponseNotNullable'),
+            {
+                properties: {
+                    ...generateDefaultProperties(),
+                    ...addStringFieldsAndNormalizeDateValues(entityProperties, entityTemplate),
+                },
+            },
+        );
     }
 
     static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
@@ -210,17 +224,7 @@ export class EntityManager {
                 }),
             );
 
-            const createdEntity = await runInTransactionAndNormalize(
-                transaction,
-                `CREATE (e: \`${entityTemplate._id}\` $properties) RETURN e`,
-                normalizeReturnedEntity('singleResponseNotNullable'),
-                {
-                    properties: {
-                        ...generateDefaultProperties(),
-                        ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
-                    },
-                },
-            );
+            const createdEntity = await EntityManager.createEntityInTransaction(transaction, fixedProperties, entityTemplate);
 
             await Promise.all(
                 Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -239,7 +243,7 @@ export class EntityManager {
             );
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
-            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, { createdEntityId: createdEntity.properties._id });
+            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
 
             const populatedInstances = this.fixReturnedEntityReferencesFields(createdEntity);
 
@@ -427,6 +431,20 @@ export class EntityManager {
         return Neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
+    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
+        await Neo4jClient.readTransaction(
+            `MATCH (p {_id:'${id}'})
+             CALL apoc.path.expandConfig(p, {
+                labelFilter: '${templateIds.join('|')}',
+                minLevel: 0,
+                maxLevel: ${numOfConnections}
+             })
+             YIELD path
+             RETURN apoc.path.elements(path)`,
+            normalizeReturnedRelAndEntities(disabled),
+        );
+    }
+
     static async getExpandedGraphById(
         id: string,
         reqBody: IGetExpandedEntityBody,
@@ -606,7 +624,7 @@ export class EntityManager {
 
             const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
             return updatedEntity;
         });
@@ -845,7 +863,7 @@ export class EntityManager {
 
         const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, {});
+        throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {

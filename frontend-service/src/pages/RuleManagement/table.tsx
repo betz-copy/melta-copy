@@ -19,12 +19,13 @@ import '../../css/table.css';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { trycatch } from '../../utils/trycatch';
 import { getRuleBreachAlertsRequest, getRuleBreachRequestsRequest } from '../../services/ruleBreachesService';
-import { dateColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
+import { dateColDef, enumArrayColDef, translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
+import { environment } from '../../globals';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -101,7 +102,14 @@ const getColumnDefs = (
             menuTabs: [],
             sortable: false,
         },
-        translatedEnumColDef('actionType', ({ data }) => data?.actionType, { title: i18next.t('ruleManagement.actionType') }, actionTypeTranslations),
+        enumArrayColDef(
+            'actionType',
+            ({ data }) => data?.actions.map((action) => actionTypeTranslations[action.actionType]),
+            { title: i18next.t('ruleManagement.actionType') },
+            Object.values(actionTypeTranslations),
+            400,
+            environment.agGrid.defaultRowHeight,
+        ),
         dateColDef('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
             format: 'date-time',

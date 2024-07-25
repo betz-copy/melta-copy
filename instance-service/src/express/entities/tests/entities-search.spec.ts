@@ -16,7 +16,7 @@ import {
     mockRulesRoutes,
 } from '../../../externalServices/tests/externalServices.mock';
 import RelationshipManager from '../../relationships/manager';
-import { IRelationship } from '../../relationships/interface';
+import { IRelationship } from '../../relationships/interfaces';
 
 const { neo4j, redis } = config;
 

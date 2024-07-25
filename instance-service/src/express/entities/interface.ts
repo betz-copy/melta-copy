@@ -1,4 +1,4 @@
-import { IRelationship } from '../relationships/interface';
+import { IRelationship } from '../relationships/interfaces';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 
 export interface IEntity {

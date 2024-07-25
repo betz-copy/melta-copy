@@ -10,6 +10,7 @@ import {
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
+    getManyRuleBreachesByIds,
 } from './validator.schema';
 
 const RuleBreachRequestsRouter: Router = Router();
@@ -18,6 +19,12 @@ RuleBreachRequestsRouter.post(
     '/search',
     ValidateRequest(searchRuleBreachRequestsRequestSchema),
     wrapController(RuleBreachRequestsController.searchRuleBreachRequests),
+);
+
+RuleBreachRequestsRouter.post(
+    '/getManys',
+    ValidateRequest(getManyRuleBreachesByIds),
+    wrapController(RuleBreachRequestsController.getManyRuleBreachRequests),
 );
 
 RuleBreachRequestsRouter.post(
@@ -35,7 +42,7 @@ RuleBreachRequestsRouter.patch(
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/action-metadata',
     ValidateRequest(updateRuleBreachRequestActionMetadataRequestSchema),
-    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionMetadata),
+    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionsMetadatas),
 );
 
 RuleBreachRequestsRouter.patch(

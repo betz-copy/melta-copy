@@ -15,16 +15,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import {
-    ActionTypes,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-} from '../../externalServices/ruleBreachService/interfaces';
+import { ActionTypes, IBrokenRule } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
@@ -198,14 +189,18 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateEntity,
-                    actionMetadata: {
-                        templateId: createdEntity.templateId,
-                        properties: createdEntity.properties,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateEntity,
+                            actionMetadata: {
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -244,14 +239,18 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateStatus,
-                    actionMetadata: {
-                        entityId: id,
-                        disabled: disabledStatus,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateStatus,
+                            actionMetadata: {
+                                entityId: id,
+                                disabled: disabledStatus,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -338,15 +337,19 @@ export class InstancesManager {
         );
         const { createdEntity, updatedEntities } = createInstanceOutput;
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDuplicateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DuplicateEntity,
-                    actionMetadata: {
-                        templateId: createdEntity.templateId,
-                        properties: createdEntity.properties,
-                        entityIdToDuplicate: id,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DuplicateEntity,
+                            actionMetadata: {
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
+                                entityIdToDuplicate: id,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -418,15 +421,19 @@ export class InstancesManager {
         }
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId: id,
+                                before: currentEntity.properties,
+                                updatedFields,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -467,15 +474,19 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -490,16 +501,20 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DeleteRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DeleteRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                relationshipId: relationship.properties._id,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );

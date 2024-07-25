@@ -9,12 +9,14 @@ import {
     deleteRuleByIdRequestSchema,
     createRuleRequestSchema,
     searchRulesRequestSchema,
+    getManyRulesByIdsRequestSchema,
 } from './validator.schema';
 import { validateRuleFormulaMiddleware } from './validator';
 
 const RuleRouter: Router = Router();
 
 RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), wrapController(RuleController.getRuleById));
+RuleRouter.post('/getMany', ValidateRequest(getManyRulesByIdsRequestSchema), wrapController(RuleController.getManyRulesByIds));
 RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), wrapController(RuleController.updateRuleById));
 RuleRouter.patch('/:ruleId/status', ValidateRequest(updateRuleStatusByIdRequestSchema), wrapController(RuleController.updateRuleStatusById));
 RuleRouter.delete('/:ruleId', ValidateRequest(deleteRuleByIdRequestSchema), wrapController(RuleController.deleteRuleById));
