@@ -1,0 +1,22 @@
+import { PermissionScope } from '../../interfaces/permissions';
+import { ICompactPermissions } from '../../interfaces/permissions/permissions';
+import { IMongoCategory } from '../../templates/categories';
+
+export interface SyncUserPermissions {
+    userId: string;
+    permissions: ICompactPermissions;
+}
+
+export const getPermissionsToCreate = (workspaceId: string, categories: IMongoCategory[]): ICompactPermissions => {
+    return {
+        [workspaceId]: {
+            permissions: { scope: PermissionScope.write },
+            templates: { scope: PermissionScope.write },
+            rules: { scope: PermissionScope.write },
+            processes: { scope: PermissionScope.write },
+            instances: {
+                categories: Object.fromEntries(categories.map(({ _id }) => [_id, { entityTemplates: {}, scope: PermissionScope.write }])),
+            },
+        },
+    };
+};

@@ -6,19 +6,18 @@ import { createGantts } from './gantts';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
-import { getPermissionsToCreate } from './mocks/permissionsApi';
 import { getProcessTemplateToCreate } from './mocks/processTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
+import { getUsersToCreate } from './mocks/users';
 import { getWorkspacesToCreate } from './mocks/workspaces';
-import { createUserPermissions, isPermissionServiceAlive } from './permissionsApi';
 import { createProcessInstances } from './processInstances';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
-import { createRules } from './rules';
 import { isStorageServiceAlive, uploadFile } from './storageService';
 import { isTemplateServiceAlive } from './templates';
 import { createCategories } from './templates/categories';
 import { createEntityTemplates } from './templates/entityTemplates';
 import { createRelationshipTemplates } from './templates/relationshipTemplates';
+import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
 
 const main = async () => {
@@ -48,10 +47,10 @@ const main = async () => {
         throw processServiceAliveErr;
     }
 
-    const { err: permissionServiceAliveErr } = await isPermissionServiceAlive();
-    if (permissionServiceAliveErr) {
+    const { err: userServiceAliveErr } = await isUserServiceAlive();
+    if (userServiceAliveErr) {
         console.log('Permission Service is not alive');
-        throw permissionServiceAliveErr;
+        throw userServiceAliveErr;
     }
 
     const { err: instanceServiceAliveErr } = await isInstanceServiceAlive();
@@ -90,13 +89,9 @@ const main = async () => {
 
     const createdRelationshipTemplates = await createRelationshipTemplates(mainWorkspace._id, relationshipTemplates, createdEntityTemplates);
 
-    console.log('Creating rules');
+    console.log('Creating users');
 
-    await createRules(mainWorkspace._id, createdEntityTemplates, createdRelationshipTemplates);
-
-    console.log('Creating permissions');
-
-    await createUserPermissions(getPermissionsToCreate(mainWorkspace._id, createdCategories));
+    await createUsers(getUsersToCreate(mainWorkspace._id, createdCategories));
 
     console.log('Creating example file');
 

@@ -6,11 +6,12 @@ const config = {
         dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
     },
     seed: env.get('SEED').asFloat(),
-    permissionsService: {
-        url: env.get('PERMISSION_SERVICE_URL').required().asString(),
-        baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
-        isAliveRoute: env.get('PERMISSION_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
-        managersKartoffelIds: env.get('PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
+    usersService: {
+        url: env.get('USER_SERVICE_URL').required().asString(),
+        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
+        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+        isAliveRoute: env.get('USER_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
+        managersKartoffelIds: env.get('USER_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
