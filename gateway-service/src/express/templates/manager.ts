@@ -23,6 +23,8 @@ import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
+import ProcessTemplatesManager from '../processes/processTemplates/manager';
+import { UsersManager } from '../users/manager';
 import {
     IEntityTemplateWithConstraints,
     IMongoEntityTemplateWithConstraints,
@@ -54,15 +56,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private processService: ProcessService;
 
+    private processManager: ProcessTemplatesManager;
+
     private ruleBreachService: RuleBreachService;
 
-    constructor(workspaceId: string) {
+    constructor(private workspaceId: string) {
         super(new EntityTemplateService(workspaceId));
         this.storageService = new StorageService(workspaceId);
         this.relationshipTemplateService = new RelationshipsTemplateService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
         this.processService = new ProcessService(workspaceId);
+        this.processManager = new ProcessTemplatesManager(workspaceId);
         this.ruleBreachService = new RuleBreachService(workspaceId);
     }
 
@@ -198,7 +203,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const allAllowedEntityTemplatesWithConstraints = await this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
         const processTemplates = await Promise.all(
-            processTemplatesBeforePopulate.map((processTemplate) => this.processService.getTemplateWithPopulatedStepReviewers(processTemplate)),
+            processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
         );
 
         return {

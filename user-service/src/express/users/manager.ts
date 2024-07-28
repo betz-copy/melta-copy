@@ -42,14 +42,8 @@ export class UsersManager {
 
         if (permissions) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions);
-            const usersIds: string[] = [];
-
-            simplePermissions.forEach(({ userId }) => {
-                if (usersIds.includes(userId)) return;
-                usersIds.push(userId);
-            });
-
-            query._id = { $in: usersIds };
+            const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
+            query._id = { $in: [...usersIds] };
         }
 
         const baseUsers = await UsersModel.find(query, {}, { limit, skip: step * limit })

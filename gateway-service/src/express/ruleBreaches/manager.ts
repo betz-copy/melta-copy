@@ -1,13 +1,14 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { InstancesService } from '../../externalServices/instanceService';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { StorageService } from '../../externalServices/storageService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
+import config from '../../config';
 import {
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
@@ -15,24 +16,13 @@ import {
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
 } from '../../externalServices/notificationService/interfaces';
-import config from '../../config';
 import {
-    IBrokenRulePopulated,
-    IRuleBreachPopulated,
-    ICreateRelationshipMetadataPopulated,
-    IDeleteRelationshipMetadataPopulated,
-    IUpdateEntityMetadataPopulated,
-    IActionMetadataPopulated,
-    IRuleBreachRequestPopulated,
-    IRuleBreachAlertPopulated,
-    IUpdateEntityStatusMetadataPopulated,
-    ICausesOfInstancePopulated,
-    IEntityForBrokenRules,
-    ICreateEntityMetadataPopulated,
-    IRelationshipForBrokenRules,
-    ICauseInstancePopulated,
-    IDuplicateEntityMetadataPopulated,
-} from '../../externalServices/ruleBreachService/interfaces/populated';
+    INotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
+} from '../../externalServices/notificationService/interfaces/populated';
+import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import {
     IBrokenRule,
     ICreateEntityMetadata,
@@ -52,19 +42,29 @@ import {
     IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { RuleBreachService } from '../../externalServices/ruleBreachService';
-import { UsersManager } from '../users/manager';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
-import { RabbitManager } from '../../utils/rabbit';
 import {
-    INotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
-import DefaultManagerProxy from '../../utils/express/manager';
+    IActionMetadataPopulated,
+    IBrokenRulePopulated,
+    ICauseInstancePopulated,
+    ICausesOfInstancePopulated,
+    ICreateEntityMetadataPopulated,
+    ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadataPopulated,
+    IDuplicateEntityMetadataPopulated,
+    IEntityForBrokenRules,
+    IRelationshipForBrokenRules,
+    IRuleBreachAlertPopulated,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadataPopulated,
+} from '../../externalServices/ruleBreachService/interfaces/populated';
 import { UserService } from '../../externalServices/userService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import DefaultManagerProxy from '../../utils/express/manager';
+import { RabbitManager } from '../../utils/rabbit';
+import { UsersManager } from '../users/manager';
 
 const { errorCodes } = config;
 
@@ -199,10 +199,17 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends INotificationMetadataPopulated,
     >(type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated, extraViewers: string[] = []) {
-        const rulesPermissions = await getPermissions({ resourceType: 'Rules' });
-        const viewers = new Set<string>();
+        const userIdsWithPermission = await UsersManager.searchUserIds({
+            permissions: {
+                [PermissionType.rules]: {
+                    scope: PermissionScope.write,
+                },
+            },
+            limit: config.instanceService.searchEntitiesFlowMaxLimit,
+        });
 
-        rulesPermissions.forEach((rulesPermission) => viewers.add(rulesPermission.userId));
+        const viewers = new Set<string>(userIdsWithPermission);
+
         extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
 
         await this.rabbitManager.createNotification(Array.from(viewers), type, metadata, populatedMetaData);

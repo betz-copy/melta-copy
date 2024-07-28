@@ -47,12 +47,13 @@ export const getAllowedEntityTemplatesForInstances = async (
 
 export const validateHasPermissionsToEntitiesInTemplates = async (
     entityTemplateService: EntityTemplateService,
+    workspaceId: string,
     user: Express.User,
     templateIds: string[],
 ) => {
     const userPermissions = await UserService.getUserPermissions(user.id);
 
-    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(entityTemplateService, userPermissions);
+    const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(entityTemplateService, userPermissions[workspaceId]);
     const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
     const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
@@ -62,8 +63,11 @@ export const validateHasPermissionsToEntitiesInTemplates = async (
 };
 
 export const validateUserCanSearchEntitiesBatch = async (req: Request) => {
+    const workspaceId = await getWorkspaceId(req);
+
     await validateHasPermissionsToEntitiesInTemplates(
-        new EntityTemplateService(await getWorkspaceId(req)),
+        new EntityTemplateService(workspaceId),
+        workspaceId,
         req.user!,
         Object.keys(req.body.templates),
     );
@@ -71,14 +75,16 @@ export const validateUserCanSearchEntitiesBatch = async (req: Request) => {
 
 export const validateUserCanSearchEntitiesOfTemplate = async (req: Request) => {
     const { templateId } = req.params;
+    const workspaceId = await getWorkspaceId(req);
 
-    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getWorkspaceId(req)), req.user!, [templateId]);
+    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(workspaceId), workspaceId, req.user!, [templateId]);
 };
 
 export const validateUserCanExportEntities = async (req: Request) => {
     const { templates } = req.body;
+    const workspaceId = await getWorkspaceId(req);
 
-    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(await getWorkspaceId(req)), req.user!, Object.keys(templates));
+    await validateHasPermissionsToEntitiesInTemplates(new EntityTemplateService(workspaceId), workspaceId, req.user!, Object.keys(templates));
 };
 
 const validateUserPermissionForEntityInstance = async (req: Request, permissionType: PermissionScope) => {

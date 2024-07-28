@@ -1,6 +1,6 @@
 import { Request } from 'express';
-import { EntityTemplateService } from '../../externalServices/entityTemplateService';
 import { IGantt, GanttsService } from '../../externalServices/ganttsService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { UserService } from '../../externalServices/userService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { getWorkspaceId } from '../../utils/express';

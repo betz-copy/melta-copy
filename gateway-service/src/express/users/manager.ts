@@ -1,7 +1,7 @@
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';
-import { ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
+import { ICompactNullablePermissions, ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
@@ -30,7 +30,7 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async syncUserPermissions(userId: string, permissions: ICompactPermissions): Promise<ICompactPermissions> {
+    static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions | ICompactPermissions): Promise<ICompactPermissions> {
         return UserService.syncUserPermissions(userId, permissions);
     }
 

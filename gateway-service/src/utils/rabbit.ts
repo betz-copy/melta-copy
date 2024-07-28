@@ -1,6 +1,7 @@
 import { menash } from 'menashmq';
 import config from '../config';
 import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
+import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
 
 const {
@@ -14,13 +15,13 @@ export class RabbitManager {
     async createNotification<
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends IMailNotificationMetadataPopulated,
-    >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, _populatedMetaData: NotificationMetadataPopulated) {
+    >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated) {
         if (!viewers.length) return;
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [dbHeaderName]: this.workspaceId } });
 
-        // TODO-WORKSPACES: support mail notifications
-        // const mailData = await createMail({ viewers, type, populatedMetaData });
-        // await menash.send(rabbit.mailNotificationQueue, mailData);
+        const mailData = await new MailManager(this.workspaceId).createMail({ viewers, type, populatedMetaData });
+
+        await menash.send(rabbit.mailNotificationQueue, mailData);
     }
 }

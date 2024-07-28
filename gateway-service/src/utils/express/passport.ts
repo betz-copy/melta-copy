@@ -1,13 +1,13 @@
-import passport from 'passport';
-import { Strategy as ShragaStrategy } from 'passport-shraga';
-import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
-import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
-
 import { Request } from 'express';
+import passport from 'passport';
+import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
+import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
+import { Strategy as ShragaStrategy } from 'passport-shraga';
 import config from '../../config/index';
 
 const {
     shragaAuthentication: { shragaURL, callbackURL, useEnrichId, accessTokenName, tokenSecret },
+    basicAuthentication: { users },
 } = config.authentication;
 
 export interface ShragaUser {
@@ -43,7 +43,7 @@ const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, us
         return;
     }
 
-    done(null, { id: userId } as IUser);
+    done(null, { id: userId } as IConnectedUser);
 };
 
 export const initPassport = () => {

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import config from '../../../config';
 import { InstancesService } from '../../../externalServices/instanceService';
 import {
     IArchiveProcessNotificationMetadata,
@@ -31,7 +32,7 @@ import { IMongoStepTemplate } from '../../../externalServices/processService/int
 import { StorageService } from '../../../externalServices/storageService';
 import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
 import { UserService } from '../../../externalServices/userService';
-import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
+import { PermissionScope, PermissionType } from '../../../externalServices/userService/interfaces/permissions';
 import { filteredMap } from '../../../utils';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
@@ -40,6 +41,7 @@ import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../.
 import { RabbitManager } from '../../../utils/rabbit';
 import { ServiceError } from '../../error';
 import { InstancesManager } from '../../instances/manager';
+import { UsersManager } from '../../users/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
 
@@ -321,8 +323,16 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     }
 
     private async sendNewProcessNotification(process: IMongoProcessInstancePopulated) {
-        const processPermissions = await getPermissions({ resourceType: 'Processes' });
-        const processesManagersIds = processPermissions.map((processPermission) => processPermission.userId);
+        // TODO-WORKSPACES - get by workspace id
+        const processesManagersIds = await UsersManager.searchUserIds({
+            permissions: {
+                [PermissionType.processes]: {
+                    scope: PermissionScope.write,
+                },
+            },
+            limit: config.instanceService.searchEntitiesFlowMaxLimit,
+        });
+
         await this.rabbitManager.createNotification<INewProcessNotificationMetadata, INewProcessNotificationMetadataPopulated>(
             processesManagersIds,
             NotificationType.newProcess,
@@ -488,8 +498,17 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const reviewersIds = new Set<string>();
 
         if (withManagers) {
-            const processPermissions = await getPermissions({ resourceType: 'Processes' });
-            processPermissions.forEach((processPermission) => reviewersIds.add(processPermission.userId));
+            // TODO-WORKSPACES - get by workspace id
+            const userIdsWithPermission = await UsersManager.searchUserIds({
+                permissions: {
+                    [PermissionType.processes]: {
+                        scope: PermissionScope.write,
+                    },
+                },
+                limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            });
+
+            userIdsWithPermission.forEach((userId) => reviewersIds.add(userId));
         }
 
         steps.forEach(({ reviewers }) => {

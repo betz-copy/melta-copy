@@ -48,12 +48,12 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return iconFilePropertiesEntries;
     }
 
-    static async getTemplateWithPopulatedStepReviewers(processTemplate: IMongoProcessTemplateWithSteps): Promise<IMongoProcessTemplatePopulated> {
-        const populatedSteps = await Promise.all(processTemplate.steps.map((step) => ProcessTemplatesManager.populateStepWithReviewers(step)));
+    async getTemplateWithPopulatedStepReviewers(processTemplate: IMongoProcessTemplateWithSteps): Promise<IMongoProcessTemplatePopulated> {
+        const populatedSteps = await Promise.all(processTemplate.steps.map((step) => this.populateStepWithReviewers(step)));
         return { ...processTemplate, steps: populatedSteps };
     }
 
-    private static async populateStepWithReviewers(step: IMongoStepTemplate) {
+    private async populateStepWithReviewers(step: IMongoStepTemplate) {
         const populatedReviewers = await Promise.all(step.reviewers.map((id) => UsersManager.getUserById(id)));
         return { ...step, reviewers: populatedReviewers };
     }
@@ -92,7 +92,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
     async createProcessTemplate(templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[]) {
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         const processTemplate = await this.service.createProcessTemplate({ ...templateData, steps: updatedSteps });
-        return ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate);
+        return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
     async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[], userId: string) {
@@ -105,7 +105,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         );
 
         const processTemplate = await this.service.updateProcessTemplate(templateId, { ...templateData, steps: updatedSteps });
-        const populatedProcessTemplate = await ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(processTemplate);
+        const populatedProcessTemplate = await this.getTemplateWithPopulatedStepReviewers(processTemplate);
 
         this.sendProcessReviewerUpdateNotifications(populatedProcessTemplate, currProcessTemplate);
 
@@ -122,7 +122,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             logger.error('failed to delete icons images', { error });
             throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${error}`);
         });
-        return ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(deletedTemplate);
+        return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }
 
     async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, userId: string) {
@@ -135,7 +135,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         }
 
         const processes = await this.service.searchProcessTemplates(query);
-        return Promise.all(processes.map((process) => ProcessTemplatesManager.getTemplateWithPopulatedStepReviewers(process)));
+        return Promise.all(processes.map((process) => this.getTemplateWithPopulatedStepReviewers(process)));
     }
 
     private async getInstancesOfTemplate(templateId: string, query: Omit<ISearchProcessInstancesBody, 'templateIds' | 'skip' | 'limit'> = {}) {

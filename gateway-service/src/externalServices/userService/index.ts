@@ -2,7 +2,7 @@ import axios from 'axios';
 import config from '../../config';
 import { IBaseUser, IUser, IUserSearchBody } from './interfaces/users';
 import { DeepPartial } from '../../utils/types';
-import { ICompactPermissions } from './interfaces/permissions/permissions';
+import { ICompactNullablePermissions, ICompactPermissions } from './interfaces/permissions/permissions';
 
 const {
     userService: { url, usersRoute, permissionsRoute, requestTimeout },
@@ -49,7 +49,7 @@ export class UserService {
         return data;
     }
 
-    static async syncUserPermissions(userId: string, permissions: any): Promise<ICompactPermissions> {
+    static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions | ICompactPermissions): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, { userId, permissions });
         return data;
     }

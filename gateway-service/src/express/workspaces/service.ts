@@ -9,6 +9,11 @@ const {
 export class WorkspaceService {
     private static api = axios.create({ baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
 
+    static async getWorkspaceIds(type: IWorkspace['type']) {
+        const { data } = await this.api.get<string[]>(`/${type}/ids`);
+        return data;
+    }
+
     static async getDir(path: IWorkspace['path']) {
         const { data } = await this.api.post<IWorkspace[]>('/dir', { path });
         return data;

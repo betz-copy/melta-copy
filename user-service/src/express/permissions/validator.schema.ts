@@ -2,7 +2,7 @@ import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactNullablePermissionsSchema } from '../../utils/joi/schemas/permission/compact';
 
-// GET /api/permissions/compact
+// GET /api/permissions/compact/find-by-user-id/:userId
 export const getCompactPermissionsOfUserRequestSchema = joi.object({
     query: {},
     body: {
@@ -13,7 +13,7 @@ export const getCompactPermissionsOfUserRequestSchema = joi.object({
     },
 });
 
-// POST /api/permissions/compact/update
+// POST /api/permissions/compact/sync
 export const syncCompactPermissionsRequestSchema = joi.object({
     query: {},
     body: {

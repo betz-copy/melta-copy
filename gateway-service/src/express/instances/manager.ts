@@ -296,7 +296,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.verifyFilePropertiesToDuplicateExistInCurrent(fileProperties, currentEntity);
 
         const filePropertiesToDuplicateEntries = Object.entries(fileProperties);
-        const duplicatedFiles = await duplicateFiles(filePropertiesToDuplicateEntries.flatMap(([_key, value]) => value));
+        const duplicatedFiles = await this.storageService.duplicateFiles(filePropertiesToDuplicateEntries.flatMap(([_key, value]) => value));
 
         let duplicatedFileIndex = 0;
         const duplicatedFilesProperties: Record<string, string | string[]> = {};

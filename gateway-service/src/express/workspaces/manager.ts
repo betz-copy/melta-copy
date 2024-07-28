@@ -6,6 +6,10 @@ import { WorkspaceService } from './service';
 export class WorkspaceManager {
     private static storageService = new StorageService(config.workspaceService.dbName);
 
+    static async getWorkspaceIds(type: IWorkspace['type']) {
+        return WorkspaceService.getWorkspaceIds(type);
+    }
+
     static async getDir(path: IWorkspace['path']) {
         return WorkspaceService.getDir(path);
     }

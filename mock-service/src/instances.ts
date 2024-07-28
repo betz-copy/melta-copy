@@ -21,7 +21,7 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
-const userId = config.permissionsService.managersKartoffelIds[0];
+const userId = config.usersService.managersKartoffelIds[0];
 
 export const createInstances = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     const axiosInstance = createAxiosInstance(workspaceId);
