@@ -7,11 +7,14 @@ import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
+import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 
 const IFramesHeadline: React.FC<{
+    searchInput: string;
+    setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
-}> = ({ onSearch, setIFrameWizardDialogState }) => {
+}> = ({ searchInput, setSearchInput, onSearch, setIFrameWizardDialogState }) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -30,6 +33,16 @@ const IFramesHeadline: React.FC<{
                         />
                     </Grid>
                 </Grid>
+            </Grid>
+            <Grid item data-tour="search-input">
+                <GlobalSearchBar
+                    inputValue={searchInput}
+                    setInputValue={setSearchInput}
+                    onSearch={onSearch}
+                    borderRadius="7px"
+                    placeholder={i18next.t('globalSearch.searchInPage')}
+                    toTopBar
+                />
             </Grid>
             <Grid item>
                 {/* {myPermissions.templatesManagementId && ( */}

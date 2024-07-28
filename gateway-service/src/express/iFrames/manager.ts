@@ -30,12 +30,11 @@ export class IFrameManager {
         if (search) {
             query.name = { $regex: this.escapeRegExp(search) };
         }
+        console.log({ search, limit, skip });
 
-        const iFrames = IFrameModel.find(query)
-            .limit(limit)
-            .skip(skip * limit)
-            .lean()
-            .exec();
+        const iFrames = await IFrameModel.find(query).limit(limit).skip(skip).lean().exec();
+        console.log({ iFrames });
+
         // return iFrames.map((iframe) => this.filterIFramesWithPermissions(iframe, allowedCategories));
         return iFrames;
     }
