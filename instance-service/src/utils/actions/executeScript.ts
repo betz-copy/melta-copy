@@ -2,7 +2,7 @@ import * as ts from 'typescript';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import { generateInterfaceWithRelationships } from './generateInterfaceFromJsonSchema';
-import { IEntity } from '../../express/entities/interface';
+import { IEntity, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
@@ -35,7 +35,7 @@ const prepareCodeForActionExecution = async (
     return jsCode;
 };
 
-const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
+export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
     try {
         const context = vm.createContext({ entity: entity.properties });
         // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
@@ -86,6 +86,55 @@ export const executeActionAndUpdateRelevantEntities = async (
             );
 
             updatedEntities.push(updatedEntity);
+        }),
+    );
+
+    return updatedEntities;
+};
+
+export const executeActionCodeAndGetEntitiesToUpdate = async (
+    entityTemplate: IMongoEntityTemplate,
+    entity: IEntity,
+    crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
+    transaction: Transaction,
+): Promise<{ entityId: string; properties: Record<string, any> }[]> => {
+    const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
+
+    Object.entries(populatedInstances.properties).forEach(([name, value]) => {
+        if (isIEntity(value)) {
+            populatedInstances.properties[name] = value.properties;
+        }
+    });
+
+    const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
+    const executionOutput: {
+        entityId: string;
+        properties: Record<string, any>;
+    }[] = executeActionCodeInVM(populatedInstances, jsCode);
+
+    const updatedEntities: {
+        entityId: string;
+        properties: Record<string, any>;
+    }[] = [];
+
+    await Promise.all(
+        executionOutput.map(async (entityToUpdate) => {
+            if (entityToUpdate.entityId === undefined) {
+                throw new ServiceError(400, 'cant create new entity by code');
+            }
+
+            const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
+            const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+            Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
+                if (value.format === 'relationshipReference' && name in entityToUpdate.properties) {
+                    // eslint-disable-next-line no-param-reassign
+                    entityToUpdate.properties[name] = entityToUpdate.properties[name]._id;
+                }
+            });
+
+            await validateEntity(entityTemplateOfEntityToUpdate._id, entityToUpdate.properties);
+
+            updatedEntities.push(entityToUpdate);
         }),
     );
 
