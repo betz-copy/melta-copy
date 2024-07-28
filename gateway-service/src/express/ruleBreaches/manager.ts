@@ -147,7 +147,7 @@ export class RuleBreachesManager {
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
 
         if (ruleBreachRequest.actions.length > 1) {
-            await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules);
+            await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules, user.id);
         } else
             try {
                 // only 1 action

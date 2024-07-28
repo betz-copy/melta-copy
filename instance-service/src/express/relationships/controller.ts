@@ -36,17 +36,6 @@ class RelationshipController {
     static async updateRelationshipPropertiesById(req: Request, res: Response) {
         res.json(await RelationshipManager.updateRelationshipPropertiesById(req.params.id, req.body.properties));
     }
-
-    static async runBulkOfActionsInMultipleTransactions(req: Request, res: Response) {
-        res.json(
-            await RelationshipManager.runBulkOfActionsInMultipleTransactions(
-                req.body.actionsGroups,
-                req.body.ignoredRules,
-                req.query.dryRun as unknown as boolean,
-                '11', //TODO - req.user!.id as string 
-            ),
-        );
-    }
 }
 
 export default RelationshipController;

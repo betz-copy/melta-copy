@@ -133,5 +133,10 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
+InstancesRouter.post(
+    '/bulk',
+    // wrapMiddleware(validateUserCanWriteEntityInstance), // TODO
+    wrapController(InstancesController.runBulkOfActions),
+)
 
 export default InstancesRouter;

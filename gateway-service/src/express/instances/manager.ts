@@ -533,4 +533,8 @@ export class InstancesManager {
 
         throw error;
     }
+
+    static async runBulkOfActions(actionsGroups, dryRun,  ignoredRules, userId: string) {
+        return InstanceManagerService.runBulkOfActions(actionsGroups, dryRun, ignoredRules, userId);
+    }
 }

@@ -106,3 +106,23 @@ export interface IGetExpandedEntityBody {
     expandedParams: { [entityId: string]: number };
     filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
 }
+
+// reasons which rules to run on each entity
+// entityId -> reasons[], entityTemplateId
+export type EntitiesIdsRulesReasonsMap = Map<
+    string,
+    {
+        reasons: (
+            | {
+                  type: 'dependentViaAggregation';
+                  dependentRelationshipTemplateId: string;
+                  updatedProperties?: string[] | undefined;
+              }
+            | {
+                  type: 'dependentOnEntity';
+                  updatedProperties?: string[] | undefined;
+              }
+        )[];
+        entityTemplateId: string;
+    }
+>;
