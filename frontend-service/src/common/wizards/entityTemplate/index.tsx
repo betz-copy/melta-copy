@@ -14,6 +14,9 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { mapTemplates } from '../../../utils/templates';
 
 const { errorCodes } = environment;
 
@@ -39,6 +42,12 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 export interface EntityTemplateWizardValues
     extends Omit<
@@ -98,12 +107,20 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, enitiyTemplate)
                 : createEntityTemplateRequest(enitiyTemplate),
         {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+
                 if (isEditMode) {
                     toast.success(i18next.t('wizard.entityTemplate.editedSuccefully'));
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
+                }
+
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
                 handleClose();
             },

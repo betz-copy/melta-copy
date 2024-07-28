@@ -7,6 +7,8 @@ const { logs } = config;
 
 type IWinstonFormat = Logform.Format;
 
+const jsonReplacer = (_key, val) => (val instanceof Error ? { ...val, message: val.message, stack: val.stack } : val);
+
 const customFormat: IWinstonFormat = format.combine(
     format.splat(),
     format.metadata({
@@ -35,7 +37,7 @@ const customFormat: IWinstonFormat = format.combine(
             ...metadata,
         };
 
-        return JSON.stringify(printData);
+        return JSON.stringify(printData, jsonReplacer);
     }),
 );
 

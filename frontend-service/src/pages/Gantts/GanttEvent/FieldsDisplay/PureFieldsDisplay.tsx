@@ -21,7 +21,8 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
     return (
         <>
             {fields.map((field, index) => {
-                const { title: fieldName, type, format } = entityTemplate.properties.properties[field];
+                const property = entityTemplate.properties.properties[field];
+                const { title: fieldName } = property;
 
                 return (
                     <Fragment key={field}>
@@ -44,7 +45,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], type, format)}`}
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property)}`}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>

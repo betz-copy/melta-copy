@@ -38,20 +38,20 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, { ...entity, ignoredRules });
+    static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+        const { data } = await this.InstanceManagerApi.post<IEntity>(`${baseEntitiesRoute}`, { ...entity, ignoredRules, userId, duplicatedFromId });
 
         return data;
     }
 
-    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules });
+    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules, userId });
 
         return data;
     }
 
-    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules });
+    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules, userId });
 
         return data;
     }
@@ -75,17 +75,18 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[]) {
+    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string) {
         const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, {
             relationshipInstance: relationship,
             ignoredRules,
+            userId,
         });
 
         return data;
     }
 
-    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[]) {
-        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules } });
+    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules, userId } });
 
         return data;
     }

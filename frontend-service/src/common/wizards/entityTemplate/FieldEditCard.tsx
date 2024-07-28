@@ -43,6 +43,7 @@ import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import RelationshipReferenceField from './RelationshipReferenceField';
 
 enum dateNotificationOptions {
     day = 1,
@@ -78,6 +79,7 @@ export interface FieldEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     templateId: string;
     supportArrayFields: boolean;
+    supportRelationshipReference: boolean;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
@@ -104,6 +106,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     templateId,
     supportArrayFields,
+    supportRelationshipReference,
     supportEditEnum,
     supportUnique,
 }) => {
@@ -554,6 +557,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                     if (validPropertyType === 'text-area') return false;
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
+                                                    if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
@@ -797,6 +801,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 dir="ltr"
                                                 sx={{ marginRight: '5px' }}
                                                 fullWidth
+                                            />
+                                        )}
+                                        {value.type === 'relationshipReference' && supportRelationshipReference && (
+                                            <RelationshipReferenceField
+                                                value={value}
+                                                index={index}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
+                                                isDisabled={isDisabled}
                                             />
                                         )}
                                         {(value.type === 'date' || value.type === 'date-time') &&

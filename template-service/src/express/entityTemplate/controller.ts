@@ -11,6 +11,10 @@ class EntityTemplateController {
         res.json(await EntityTemplateManager.getTemplateById(id));
     }
 
+    static async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
+        res.json(await EntityTemplateManager.getTemplatesUsingRelationshipReferance(req.params.relatedTemplateId));
+    }
+
     static async createEntityTemplate(req: Request, res: Response) {
         res.json(await EntityTemplateManager.createTemplate(req.body));
     }

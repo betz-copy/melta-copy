@@ -73,6 +73,7 @@ export default {
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
+        'deleteRelationshipPopoverText-cant': 'לא ניתן למחוק קשרים מסוג זה',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
         succeededToDeleteRelationship: 'הקשר נמחק בהצלחה',
         createdAt: 'תאריך יצירה',
@@ -229,6 +230,13 @@ export default {
         no: 'ביטול',
         enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
     },
+    templateEntitiesAutocomplete: {
+        label: 'ישות',
+        failedToSearchUsers: 'נכשל לחפש ישויות',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+        noPreviewFields: 'אין שדות לתצוגה מקדימה',
+    },
     userAutocomplete: {
         label: 'משתמש',
         failedToSearchUsers: 'נכשל לחפש משתמשים',
@@ -329,6 +337,8 @@ export default {
         displayName: 'שם תצוגה',
         file: 'הוסף אייקון',
         color: 'בחר צבע',
+        failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
+        date: 'בחר תאריך',
         category: {
             title: 'יצירת קטגוריה',
             createdSuccessfully: 'קטגוריה נוצרה בהצלחה',
@@ -358,6 +368,7 @@ export default {
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
+            relatedTemplateHaveToHadRequiredFields: 'תבנית ישות קשורה חייבת להכיל שדות חובה',
             attachmentDisplayName: 'שם לתצוגה',
             filesArrayOption: 'ריבוי קבצים',
             propertyType: 'סוג שדה',
@@ -559,6 +570,9 @@ export default {
         hide: 'הסתר',
         unique: 'ייחודי',
         readOnly: 'לקריאה בלבד',
+        incoming: 'משויך מ',
+        outgoing: 'משויך ל',
+        relatedDirection: 'כיוון שיוך',
         calculateTime: 'הצגת הפרש זמן',
         uniqueTooltipTitle:
             '* לחיצה על כפתור זה תדרוש להוסיף או ליצור קבוצת ייחודיים עבור שדה זה.\n* כאשר מספר שדות משוייכים לאותה הקבוצה, יאוכף שילוב של אותם השדות.\n* לדוגמה, כאשר "שם פרטי" ו"שם משפחה" משוייכים לקבוצת ייחודיים אחת, לא יהיה ניתן ליצור ישות חדשה עם אותו השילוב של "שם פרטי" ו"שם משפחה" שכבר קיים.',
@@ -594,6 +608,7 @@ export default {
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
+        relationshipReference: 'שיוך לקשר',
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',
@@ -659,6 +674,7 @@ export default {
             entityAfterUnknown: 'לא ידוע ישות אחרי',
             entityAfter: 'ישות אחרי',
             fileContentUpdated: 'מעודכן',
+            contentUpdated: 'מעודכן',
         },
         updateEntityStatusActionInfo: {
             updatingStatus: 'עדכון סטטוס',
@@ -755,6 +771,7 @@ export default {
         actionsHeaderName: 'פעולות',
         breachDetails: 'פרטי חריגה',
         'create-relationship': 'יצירת קשר',
+        'cant-create-relationship': 'לא ניתן ליצור קשרים מסוג זה',
         'delete-relationship': 'מחיקת קשר',
         'create-entity': 'יצירת ישות',
         'duplicate-entity': 'שכפול ישות',

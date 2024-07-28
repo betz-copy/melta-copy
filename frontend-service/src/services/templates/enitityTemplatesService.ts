@@ -8,7 +8,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -49,6 +49,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             dateNotification: value.dateNotification,
             isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
+            relationshipReference: value.relationshipReference || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -105,6 +106,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             serialStarter,
             hide,
             readOnly,
+            relationshipReference,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
             switch (type) {
@@ -139,6 +141,14 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 isDailyAlert: isDailyAlert ?? (dateNotification !== undefined ? true : undefined),
                 serialStarter: type === 'serialNumber' ? serialStarter : undefined,
                 serialCurrent: type === 'serialNumber' ? serialStarter : undefined,
+                relationshipReference: relationshipReference
+                    ? {
+                          relationshipTemplateId: relationshipReference!.relationshipTemplateId,
+                          relationshipTemplateDirection: relationshipReference!.relationshipTemplateDirection,
+                          relatedTemplateId: relationshipReference!.relatedTemplateId,
+                          relatedTemplateField: relationshipReference!.relatedTemplateField,
+                      }
+                    : undefined,
             };
 
             propertiesOrder.push(name);

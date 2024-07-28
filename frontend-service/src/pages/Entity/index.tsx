@@ -197,8 +197,12 @@ const ConnectionsTable: React.FC<{
                     </Grid>
                     <IconButtonWithPopover
                         style={{ borderRadius: '10px' }}
-                        popoverText={isEditButtonsDisabled ? disabledButtonText : i18next.t('ruleManagement.create-relationship')}
-                        disabled={isEditButtonsDisabled}
+                        popoverText={
+                            isEditButtonsDisabled
+                                ? disabledButtonText
+                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`)
+                        }
+                        disabled={isEditButtonsDisabled || relationshipTemplate.isProperty}
                         iconButtonProps={{
                             onClick: () => {
                                 const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
@@ -215,7 +219,13 @@ const ConnectionsTable: React.FC<{
                             },
                         }}
                     >
-                        <img src="/icons/add-relation-icon.svg" />
+                        <img
+                            src={
+                                isEditButtonsDisabled || relationshipTemplate.isProperty
+                                    ? '/icons/add-relation-icon-disabled.svg'
+                                    : '/icons/add-relation-icon.svg'
+                            }
+                        />
                     </IconButtonWithPopover>
                 </Grid>
             </Grid>
@@ -230,11 +240,13 @@ const ConnectionsTable: React.FC<{
                     template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
                     deleteRowButtonProps={{
-                        popoverText: isEditButtonsDisabled ? disabledButtonText : i18next.t('entityPage.deleteRelationshipPopoverText'),
+                        popoverText: isEditButtonsDisabled
+                            ? disabledButtonText
+                            : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
                         onClick: (connectionToDelete) => {
                             setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                         },
-                        disabledButton: isEditButtonsDisabled,
+                        disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
                     }}
                     getRowId={(connection: IEntity | IConnection) => {
                         if ('relationship' in connection) {
@@ -361,11 +373,19 @@ const Entity: React.FC = () => {
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
-        if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
-            connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: true });
-        }
-        if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
-            connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: false });
+        if (
+            !(
+                relationshipTemplate.isProperty &&
+                currentEntityTemplate.properties.properties[relationshipTemplate.name]?.relationshipReference?.relationshipTemplateId ===
+                    relationshipTemplate._id
+            )
+        ) {
+            if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
+                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: true });
+            }
+            if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
+                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: false });
+            }
         }
     });
 
@@ -434,6 +454,18 @@ const Entity: React.FC = () => {
                                                         {
                                                             // calculate the amount of the related connections of each entity
                                                             expandedEntity.connections.filter((connection) => {
+                                                                const connectionRelationshipTemplate = relationshipTemplates.get(
+                                                                    connection.relationship.templateId,
+                                                                )!;
+
+                                                                if (
+                                                                    connectionRelationshipTemplate.isProperty &&
+                                                                    currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]
+                                                                        ?.relationshipReference?.relationshipTemplateId ===
+                                                                        connectionRelationshipTemplate._id
+                                                                )
+                                                                    return false;
+
                                                                 if (
                                                                     expandedEntity.entity.properties._id ===
                                                                     connection.destinationEntity.properties._id
@@ -441,6 +473,7 @@ const Entity: React.FC = () => {
                                                                     return (
                                                                         entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id
                                                                     );
+
                                                                 return (
                                                                     entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id
                                                                 );

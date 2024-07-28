@@ -1,10 +1,3 @@
-import axios from 'axios';
-import config from '../config';
-
-const {
-    activityLogService: { url, baseRoute, requestTimeout },
-} = config;
-
 export interface IUpdatedFields {
     fieldName: string;
     oldValue: any;
@@ -39,12 +32,3 @@ interface IUpdateEntityMetadata extends IBaseActivityLog {
 }
 
 export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
-
-export class ActivityLogManagerService {
-    private static ActivityLogManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
-
-    static async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
-        const { data } = await this.ActivityLogManagerApi.post(baseRoute, activityLog);
-        return data;
-    }
-}

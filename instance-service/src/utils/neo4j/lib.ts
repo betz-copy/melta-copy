@@ -4,6 +4,7 @@ import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interface';
 import config from '../../config';
+import EntityManager from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 type Node = Neo4jNode<number>;
@@ -54,10 +55,12 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
     : never;
 
 const nodeToEntity = (node: Node): IEntity => {
-    return {
+    const entity = {
         templateId: node.labels[0],
         properties: normalizeFields(node.properties),
     };
+
+    return EntityManager.fixReturnedEntityRefrencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
@@ -129,7 +132,6 @@ const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: bo
         return isNode && !pathPart.properties.disabled === disabled;
     });
 };
-
 
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>
