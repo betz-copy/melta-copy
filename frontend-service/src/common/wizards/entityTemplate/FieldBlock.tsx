@@ -70,7 +70,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         required: false,
         preview: false,
         hide: false,
-        readOnly: undefined,
         groupName: undefined,
         uniqueCheckbox: false,
         options: [],
