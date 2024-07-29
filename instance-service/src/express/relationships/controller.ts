@@ -43,6 +43,7 @@ class RelationshipController {
                 req.body.actionsGroups,
                 req.body.ignoredRules,
                 req.query.dryRun as unknown as boolean,
+                req.body.userId,
             ),
         );
     }

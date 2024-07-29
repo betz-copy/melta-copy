@@ -27,6 +27,7 @@ import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
+import { IActivityLog } from '../../externalServices/activityLog/interface';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -382,49 +383,66 @@ export class RelationshipManager {
         return ruleFailures;
     }
 
+    static async handleCreateEntity(
+        actionMetadata: ICreateEntityMetadata,
+        transaction: Transaction,
+        dryRun: boolean,
+        userId?: string,
+        duplicatedFromId?: string,
+    ) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(actionMetadata.templateId);
+        return EntityManager.createEntityInTransaction(transaction, actionMetadata.properties, entityTemplate, userId, duplicatedFromId, dryRun);
+    }
+
+    static async handleUpdateEntity(actionMetadata: IUpdateEntityMetadata, transaction: Transaction, userId?: string) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
+            actionMetadata.entityTemplateId ?? (await EntityManager.getEntityById(actionMetadata.entityId)).templateId,
+        );
+
+        return EntityManager.updateEntityByIdInnerTransaction(
+            actionMetadata.entityId,
+            actionMetadata.updatedFields,
+            entityTemplate,
+            transaction,
+            userId,
+        );
+    }
+
     static async executeActionsOnCrud(action: IAction): Promise<{ entityId: string; properties: Record<string, any> }[]> {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
+                let entity: IEntity | undefined;
+                let crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity' | undefined;
+
                 switch (action.actionType) {
                     case ActionTypes.CreateEntity: {
-                        const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
-                        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(actionMetadata.templateId);
-                        const { createdEntity } = await EntityManager.createEntityInTransaction(
-                            transaction,
-                            actionMetadata.properties,
-                            entityTemplate,
-                        );
-
-                        const executionOutput: { entityId: string; properties: Record<string, any> }[] =
-                            await executeActionCodeAndGetEntitiesToUpdate(entityTemplate, createdEntity, 'onCreateEntity', transaction);
-                        console.log({ executionOutput });
-
-                        return executionOutput;
+                        entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction, true)).createdEntity;
+                        crudAction = 'onCreateEntity';
+                        break;
                     }
 
                     case ActionTypes.UpdateEntity: {
-                        const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                        const entity = await EntityManager.getEntityById(actionMetadata.entityId);
-                        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-                        const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
-                            actionMetadata.entityId,
-                            actionMetadata.updatedFields,
-                            entityTemplate,
-                            [],
-                            transaction,
-                            '',
-                        );
-
-                        const executionOutput: { entityId: string; properties: Record<string, any> }[] =
-                            await executeActionCodeAndGetEntitiesToUpdate(entityTemplate, updatedEntity, 'onUpdateEntity', transaction);
-                        console.log({ executionOutput });
-
-                        return executionOutput;
+                        entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
+                        crudAction = 'onUpdateEntity';
+                        break;
                     }
 
                     default:
                         break;
+                }
+
+                if (entity && crudAction) {
+                    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+                    const executionOutput: { entityId: string; properties: Record<string, any> }[] = await executeActionCodeAndGetEntitiesToUpdate(
+                        entityTemplate,
+                        entity,
+                        crudAction,
+                        transaction,
+                    );
+
+                    return executionOutput;
                 }
                 return [];
             },
@@ -436,32 +454,31 @@ export class RelationshipManager {
         transaction: Transaction,
         actions: IAction[],
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+        userId: string,
+        dryRun: boolean,
+        duplicatedFromId?: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
-        // const updatedInActions: { entityId: string; properties: Record<string, any> }[] = [];
+        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         for (const action of actions) {
             switch (action.actionType) {
                 case ActionTypes.CreateEntity: {
                     const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
-                    const { createdEntity } = await EntityManager.createEntityInTransaction(
+                    const { createdEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(
                         transaction,
                         actionMetadata.properties,
                         entitiesTemplatesByIds.get(actionMetadata.templateId)!,
+                        userId,
+                        duplicatedFromId,
+                        dryRun,
                     );
 
-                    // if (entitiesTemplatesByIds.get(actionMetadata.templateId)!.actions) {
-                    //     const executionOutput: { entityId: string; properties: Record<string, any> }[] =
-                    //         await executeActionAndUpdateRelevantEntitiesAction(
-                    //             entitiesTemplatesByIds.get(actionMetadata.templateId)!,
-                    //             createdEntity,
-                    //             transaction,
-                    //         );
-                    //     updatedInActions.push(...executionOutput);
-                    // }
                     results.push(createdEntity);
+                    allActivityLogsToCreate.push(...activityLogsToCreate);
                     break;
                 }
+
                 case ActionTypes.CreateRelationship: {
                     const actionMetadata = action.actionMetadata as ICreateRelationshipMetadata;
                     const relationship: IRelationship = {
@@ -482,19 +499,16 @@ export class RelationshipManager {
                     results.push(await RelationshipManager.createRelationshipInTransaction(transaction, fixedRelationship));
                     break;
                 }
+
                 case ActionTypes.UpdateEntity: {
-                    const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                    const entity = await EntityManager.getEntityById(actionMetadata.entityId);
-                    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-                    const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
-                        actionMetadata.entityId,
-                        actionMetadata.updatedFields,
-                        entityTemplate,
-                        [],
+                    const { updatedEntity, activityLogsToCreate } = await this.handleUpdateEntity(
+                        action.actionMetadata as IUpdateEntityMetadata,
                         transaction,
-                        '',
+                        userId,
                     );
+
                     results.push(updatedEntity);
+                    allActivityLogsToCreate.push(...activityLogsToCreate);
                     break;
                 }
 
@@ -503,52 +517,43 @@ export class RelationshipManager {
             }
         }
 
-        // await Promise.all(
-        //     updatedInActions.map(async (entityToUpdate) => {
-        //         const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
-        //         const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
-
-        //         const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
-        //             entityToUpdate.entityId,
-        //             entityToUpdate.properties,
-        //             entityTemplateOfEntityToUpdate,
-        //             [],
-        //             transaction,
-        //             '',
-        //         );
-
-        //         results.push(updatedEntity);
-        //     }),
-        // );
-        console.log({ results });
-
-        return results;
+        return { results, allActivityLogsToCreate };
     }
 
-    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean) {
+    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string, duplicatedFromId?: string) {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
-                // collecting all relationshipTemplatesIds
+                // collecting all relationshipTemplatesIds and entityTemplateIds
                 const entityTemplateIds: string[] = [];
                 const relationshipTemplateIds: string[] = [];
 
                 await Promise.all(
                     actions.map(async (action) => {
-                        if (action.actionType === ActionTypes.CreateRelationship) {
-                            relationshipTemplateIds.push((action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId);
-                        } else if (action.actionType === ActionTypes.CreateEntity) {
-                            entityTemplateIds.push((action.actionMetadata as ICreateEntityMetadata).templateId);
-                        } else if (action.actionType === ActionTypes.UpdateEntity) {
-                            const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                            const entity = await EntityManager.getEntityById(actionMetadata.entityId);
-                            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-                            entityTemplateIds.push(entityTemplate._id);
-                            console.log('hi', entityTemplate._id);
+                        switch (action.actionType) {
+                            case ActionTypes.CreateRelationship:
+                                relationshipTemplateIds.push((action.actionMetadata as ICreateRelationshipMetadata).relationshipTemplateId);
+                                break;
+
+                            case ActionTypes.CreateEntity:
+                                entityTemplateIds.push((action.actionMetadata as ICreateEntityMetadata).templateId);
+                                break;
+
+                            case ActionTypes.UpdateEntity: {
+                                const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
+                                if (actionMetadata.entityTemplateId) entityTemplateIds.push(actionMetadata.entityTemplateId);
+                                else {
+                                    const entity = await EntityManager.getEntityById(actionMetadata.entityId);
+                                    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+                                    entityTemplateIds.push(entityTemplate._id);
+                                }
+                                break;
+                            }
+                            default:
+                                break;
                         }
                     }),
                 );
-                console.log({ entityTemplateIds });
 
                 // get all entityTemplates group by entityTemplateId
                 const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: entityTemplateIds });
@@ -572,15 +577,20 @@ export class RelationshipManager {
 
                 const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
 
-                console.log({ rulesByEntityTemplateIds });
-
                 const ruleFailuresBeforeAll = await RelationshipManager.runRulesOnEntitiesWithRuleReasons(
                     transaction,
                     entitiesIdsRulesReasonsMapBeforeRunActions,
                     rulesByEntityTemplateIds,
                 );
 
-                const results = await RelationshipManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds);
+                const { results, allActivityLogsToCreate } = await RelationshipManager.runBulkOfActionsInTransaction(
+                    transaction,
+                    actions,
+                    entitiesTemplatesByIds,
+                    userId,
+                    dryRun,
+                    duplicatedFromId,
+                );
 
                 const entitiesIdsRulesReasonsMapAfterRunActions = RelationshipManager.getEntitiesIdsRulesReasonsAfter(
                     actions,
@@ -606,15 +616,21 @@ export class RelationshipManager {
                     }),
                 );
 
+                if (!dryRun) {
+                    const activityLogsPromises = allActivityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+
+                    await Promise.all(activityLogsPromises);
+                }
+
                 return results;
             },
             dryRun,
         );
     }
 
-    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean) {
+    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
         const transactionsPromises = actionsGroups.map((actionsGroup) => {
-            return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun);
+            return RelationshipManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
         });
 
         return Promise.allSettled(transactionsPromises);

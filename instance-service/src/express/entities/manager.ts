@@ -48,6 +48,7 @@ import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } f
 import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { IRelationship } from '../relationships/interfaces';
 import { IAction, ICreateEntityMetadata, ActionTypes, IUpdateEntityMetadata } from '../relationships/interfaces/action';
+import { IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -100,8 +101,16 @@ export class EntityManager {
         }
     }
 
-    static async createEntityInTransaction(transaction: Transaction, properties: IEntity['properties'], entityTemplate: IMongoEntityTemplate) {
+    static async createEntityInTransaction(
+        transaction: Transaction,
+        properties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplate,
+        userId?: string,
+        duplicatedFromId?: string,
+        dryRun?: boolean,
+    ) {
         const createdRelationships: IRelationship[] = [];
+        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         const fixedProperties = JSON.parse(JSON.stringify(properties));
         const relatedEntitiesByIds: Record<string, IEntity> = {};
@@ -148,33 +157,36 @@ export class EntityManager {
             }),
         );
 
-        // await Promise.all(
-        //     createdRelationships.map(async (relationship) => {
-        //         const relatedEntityId =
-        //             relationship.sourceEntityId === createdEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
+        if (!dryRun && userId) {
+            await Promise.all(
+                createdRelationships.map(async (relationship) => {
+                    const relatedEntityId =
+                        relationship.sourceEntityId === createdEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-        //         await createActivityLog({
-        //             action: 'CREATE_RELATIONSHIP' as const,
-        //             entityId: relatedEntityId,
-        //             metadata: {
-        //                 relationshipTemplateId: relationship.templateId,
-        //                 relationshipId: relationship.properties._id,
-        //                 entityId: createdEntity.properties._id,
-        //             },
-        //             timestamp: new Date(),
-        //             userId,
-        //         });
-        //     }),
-        // );
+                    activityLogsToCreate.push({
+                        action: 'CREATE_RELATIONSHIP' as const,
+                        entityId: relatedEntityId,
+                        metadata: {
+                            relationshipTemplateId: relationship.templateId,
+                            relationshipId: relationship.properties._id,
+                            entityId: createdEntity.properties._id,
+                        },
+                        timestamp: new Date(),
+                        userId,
+                    });
+                }),
+            );
 
-        // await createActivityLog({
-        //     action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
-        //     entityId: entity.createdEntity.properties._id,
-        //     metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-        //     timestamp: new Date(),
-        //     userId,
-        // });
-        return { createdEntity, createdRelationships };
+            activityLogsToCreate.push({
+                action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
+                entityId: createdEntity.properties._id,
+                metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
+                timestamp: new Date(),
+                userId,
+            });
+        }
+
+        return { createdEntity, activityLogsToCreate };
     }
 
     static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
@@ -267,7 +279,6 @@ export class EntityManager {
         duplicatedFromId?: string,
     ) {
         const updatedEntities: IEntity[] = [];
-        const createdRelationships1: IRelationship[] = [];
 
         if (entityTemplate.actions) {
             const actions: IAction[] = [
@@ -278,70 +289,40 @@ export class EntityManager {
             ];
 
             const entitiesToUpdate = await RelationshipManager.executeActionsOnCrud(actions[0]);
-            console.log({ entitiesToUpdate });
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: updatedFields } = entityToUpdate;
                     const currentEntity = await this.getEntityById(entityId);
+
                     actions.push({
                         actionType: ActionTypes.UpdateEntity,
                         actionMetadata: { entityId, before: currentEntity.properties, updatedFields } as IUpdateEntityMetadata,
                     });
                 }),
             );
-            console.log({ actions });
-            actions.map((a) => console.log(a.actionMetadata));
 
-            const rm = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false);
-            console.log({ rm });
-            const populated = await this.getEntityById(rm[0].properties._id);
-            console.log({ populated });
-
-            return { createdEntity: rm[0] as IEntity, updatedEntities };
+            const resultsOfBulkActions = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false, userId, duplicatedFromId);
+            return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
         }
 
-        const entity = await Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const { createdEntity, createdRelationships } = await EntityManager.createEntityInTransaction(transaction, properties, entityTemplate);
-            createdRelationships1.push(...createdRelationships);
-
+        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const { createdEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(
+                transaction,
+                properties,
+                entityTemplate,
+                userId,
+                duplicatedFromId,
+            );
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
             throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
+            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+
+            await Promise.all(activityLogsPromises);
 
             return { createdEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
-
-        await Promise.all(
-            createdRelationships1.map(async (relationship) => {
-                const relatedEntityId =
-                    relationship.sourceEntityId === entity.createdEntity.properties._id
-                        ? relationship.destinationEntityId
-                        : relationship.sourceEntityId;
-
-                await createActivityLog({
-                    action: 'CREATE_RELATIONSHIP' as const,
-                    entityId: relatedEntityId,
-                    metadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        entityId: entity.createdEntity.properties._id,
-                    },
-                    timestamp: new Date(),
-                    userId,
-                });
-            }),
-        );
-
-        await createActivityLog({
-            action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
-            entityId: entity.createdEntity.properties._id,
-            metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
-            timestamp: new Date(),
-            userId,
-        });
-
-        return entity;
     }
 
     static async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
@@ -599,6 +580,8 @@ export class EntityManager {
 
                     updatedEntities.push(...entitiesToUpdate);
                 }
+                console.log({ updatedEntities });
+
                 return { id, updatedEntities };
             });
         } catch (error) {
@@ -844,13 +827,11 @@ export class EntityManager {
         id: string,
         entityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
-        ignoredRules: IBrokenRule[],
         transaction: Transaction,
-        userId: string,
+        userId?: string,
     ) {
-        console.log({ ignoredRules }, { userId });
-
-        // const activityLogUpdatedFields: IUpdatedFields[] = [];
+        const activityLogUpdatedFields: IUpdatedFields[] = [];
+        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
         let createdRelationships: IRelationship[] = [];
         let deletedRelationships: IRelationship[] = [];
 
@@ -893,92 +874,88 @@ export class EntityManager {
         );
 
         await this.updateRelationshipReference(updatedEntity, updatedProperties, entityTemplate, transaction);
-        console.log({ createdRelationships }, { deletedRelationships });
 
-        // const ruleFailuresAfterAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+        const fields = Object.keys(entityTemplate.properties.properties);
+        for (let i = 0; i < fields.length; i++) {
+            const field = fields[i];
+            const propertyTemplate = entityTemplate.properties.properties[field];
 
-        // throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+            let newValue: any;
+            if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
+                newValue = entityProperties[field] ?? updatedEntity.properties[field];
+            } else {
+                newValue = updatedEntity.properties[field];
+            }
+            if (
+                newValue !== undefined &&
+                Array.isArray(entity.properties[field]) &&
+                newValue.length === entity.properties[field].length &&
+                newValue.every((element, index) => element === entity.properties[field][index])
+            )
+                continue;
+            if (entity.properties[field] === newValue) continue;
+            if (
+                propertyTemplate?.format === 'relationshipReference' &&
+                newValue &&
+                entity.properties[field] &&
+                newValue.properties._id === entity.properties[field].properties._id
+            )
+                continue;
 
-        // const fields = Object.keys(entityTemplate.properties.properties);
-        // for (let i = 0; i < fields.length; i++) {
-        //     const field = fields[i];
-        //     const propertyTemplate = entityTemplate.properties.properties[field];
+            activityLogUpdatedFields.push({
+                fieldName: field,
+                oldValue: entity.properties[field] ?? null,
+                newValue: newValue ?? null,
+            });
+        }
 
-        //     let newValue: any;
-        //     if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-        //         newValue = entityProperties[field] ?? updatedEntity.properties[field];
-        //     } else {
-        //         newValue = updatedEntity.properties[field];
-        //     }
-        //     if (
-        //         newValue !== undefined &&
-        //         Array.isArray(entity.properties[field]) &&
-        //         newValue.length === entity.properties[field].length &&
-        //         newValue.every((element, index) => element === entity.properties[field][index])
-        //     )
-        //         continue;
-        //     if (entity.properties[field] === newValue) continue;
-        //     if (
-        //         propertyTemplate?.format === 'relationshipReference' &&
-        //         newValue &&
-        //         entity.properties[field] &&
-        //         newValue.properties._id === entity.properties[field].properties._id
-        //     )
-        //         continue;
+        if (userId) {
+            await Promise.all(
+                createdRelationships.map(async (relationship) => {
+                    const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-        //     activityLogUpdatedFields.push({
-        //         fieldName: field,
-        //         oldValue: entity.properties[field] ?? null,
-        //         newValue: newValue ?? null,
-        //     });
-        // }
+                    activityLogsToCreate.push({
+                        action: 'CREATE_RELATIONSHIP' as const,
+                        entityId: relatedEntityId,
+                        metadata: {
+                            relationshipTemplateId: relationship.templateId,
+                            relationshipId: relationship.properties._id,
+                            entityId: id,
+                        },
+                        timestamp: new Date(),
+                        userId,
+                    });
+                }),
+            );
 
-        // await Promise.all(
-        //     createdRelationships.map(async (relationship) => {
-        //         const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
+            await Promise.all(
+                deletedRelationships.map(async (relationship) => {
+                    const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-        //         await createActivityLog({
-        //             action: 'CREATE_RELATIONSHIP' as const,
-        //             entityId: relatedEntityId,
-        //             metadata: {
-        //                 relationshipTemplateId: relationship.templateId,
-        //                 relationshipId: relationship.properties._id,
-        //                 entityId: id,
-        //             },
-        //             timestamp: new Date(),
-        //             userId,
-        //         });
-        //     }),
-        // );
+                    activityLogsToCreate.push({
+                        action: 'DELETE_RELATIONSHIP' as const,
+                        entityId: relatedEntityId,
+                        metadata: {
+                            relationshipTemplateId: relationship.templateId,
+                            relationshipId: relationship.properties._id,
+                            entityId: id,
+                        },
+                        timestamp: new Date(),
+                        userId,
+                    });
+                }),
+            );
 
-        // await Promise.all(
-        //     deletedRelationships.map(async (relationship) => {
-        //         const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
+            activityLogsToCreate.push({
+                action: 'UPDATE_ENTITY',
+                entityId: id,
+                metadata: { updatedFields: activityLogUpdatedFields },
+                timestamp: new Date(),
+                userId,
+            });
+        }
 
-        //         await createActivityLog({
-        //             action: 'DELETE_RELATIONSHIP' as const,
-        //             entityId: relatedEntityId,
-        //             metadata: {
-        //                 relationshipTemplateId: relationship.templateId,
-        //                 relationshipId: relationship.properties._id,
-        //                 entityId: id,
-        //             },
-        //             timestamp: new Date(),
-        //             userId,
-        //         });
-        //     }),
-        // );
-
-        // await createActivityLog({
-        //     action: 'UPDATE_ENTITY',
-        //     entityId: id,
-        //     metadata: { updatedFields: activityLogUpdatedFields },
-        //     timestamp: new Date(),
-        //     userId,
-        // });
-        console.log({ updatedEntity });
-
-        return updatedEntity;
+        return { updatedEntity, activityLogsToCreate };
     }
 
     static async updateEntityById(
@@ -994,33 +971,36 @@ export class EntityManager {
             const actions: IAction[] = [
                 {
                     actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: { entityId: id, before: this.getEntityById(id), updatedFields: entityProperties } as IUpdateEntityMetadata,
+                    actionMetadata: {
+                        entityId: id,
+                        before: this.getEntityById(id),
+                        updatedFields: entityProperties,
+                        entityTemplateId: entityTemplate._id,
+                    } as IUpdateEntityMetadata,
                 },
             ];
 
             const entitiesToUpdate = await RelationshipManager.executeActionsOnCrud(actions[0]);
-            console.log({ entitiesToUpdate });
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: updatedFields } = entityToUpdate;
                     const currentEntity = await this.getEntityById(entityId);
+
                     actions.push({
                         actionType: ActionTypes.UpdateEntity,
-                        actionMetadata: { entityId, before: currentEntity.properties, updatedFields } as IUpdateEntityMetadata,
+                        actionMetadata: {
+                            entityId,
+                            before: currentEntity.properties,
+                            updatedFields,
+                            entityTemplateId: currentEntity.templateId,
+                        } as IUpdateEntityMetadata,
                     });
                 }),
             );
-            console.log({ actions });
-            actions.map((a) => console.log(a.actionMetadata));
-            console.log({ ignoredRules });
 
-            const rm = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false);
-            console.log({ rm });
-            const populated = await this.getEntityById(rm[0].properties._id);
-            console.log({ populated });
-
-            return { createdEntity: rm[0] as IEntity, updatedEntities };
+            const resultsOfBulkActions = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            return { updatedEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
@@ -1037,11 +1017,10 @@ export class EntityManager {
             );
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-            const updatedEntity = await this.updateEntityByIdInnerTransaction(
+            const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
                 id,
                 entityProperties,
                 entityTemplate,
-                ignoredRules,
                 transaction,
                 userId,
             );
@@ -1050,13 +1029,9 @@ export class EntityManager {
 
             throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
-            // const populatedInstances = this.fixReturnedEntityReferencesFields(updatedEntity);
+            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
 
-            // Object.entries(populatedInstances.properties).forEach(([name, value]) => {
-            //     if (isIEntity(value)) {
-            //         populatedInstances.properties[name] = value.properties;
-            //     }
-            // });
+            await Promise.all(activityLogsPromises);
 
             return { updatedEntity, updatedEntities };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
