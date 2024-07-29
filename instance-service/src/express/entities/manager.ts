@@ -49,6 +49,7 @@ import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { IRelationship } from '../relationships/interfaces';
 import { IAction, ICreateEntityMetadata, ActionTypes, IUpdateEntityMetadata } from '../relationships/interfaces/action';
 import { IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
+import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 
 export class EntityManager {
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -280,7 +281,7 @@ export class EntityManager {
     ) {
         const updatedEntities: IEntity[] = [];
 
-        if (entityTemplate.actions) {
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
             const actions: IAction[] = [
                 {
                     actionType: ActionTypes.CreateEntity,
@@ -293,12 +294,27 @@ export class EntityManager {
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: updatedFields } = entityToUpdate;
-                    const currentEntity = await this.getEntityById(entityId);
+                    const currentEntity = await Neo4jClient.readTransaction(
+                        `MATCH (e {_id: '${entityId}'}) RETURN e`,
+                        normalizeReturnedEntity('singleResponse'),
+                    );
+                    console.log({ currentEntity });
 
-                    actions.push({
-                        actionType: ActionTypes.UpdateEntity,
-                        actionMetadata: { entityId, before: currentEntity.properties, updatedFields } as IUpdateEntityMetadata,
-                    });
+                    if (currentEntity) {
+                        actions.push({
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId,
+                                before: currentEntity.properties,
+                                updatedFields,
+                                entityTemplateId: currentEntity.templateId,
+                            } as IUpdateEntityMetadata,
+                        });
+                    } else
+                        actions.push({
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: { entityId: '$0._id', updatedFields, entityTemplateId: entityTemplate._id } as IUpdateEntityMetadata,
+                        });
                 }),
             );
 
@@ -967,7 +983,7 @@ export class EntityManager {
     ) {
         const updatedEntities: IEntity[] = [];
 
-        if (entityTemplate.actions) {
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
             const actions: IAction[] = [
                 {
                     actionType: ActionTypes.UpdateEntity,

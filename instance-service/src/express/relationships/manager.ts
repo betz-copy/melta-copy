@@ -211,6 +211,18 @@ export class RelationshipManager {
         return createdRelationship;
     }
 
+    static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
+        const { entityId, updatedFields, entityTemplateId } = actionMetadata;
+
+        if (entityId.startsWith('$') && entityId.endsWith('._id')) {
+            const numberPart = parseInt(entityId.slice(1, -4), 10);
+            const createdEntity = results[numberPart] as IEntity;
+            return { entityId: createdEntity.properties._id, before: createdEntity.properties, updatedFields, entityTemplateId };
+        }
+
+        return actionMetadata;
+    }
+
     static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
         if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
@@ -264,10 +276,12 @@ export class RelationshipManager {
                     });
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                    const entity = await EntityManager.getEntityById(actionMetadata.entityId);
-                    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-                    entitiesTemplatesIdsOfRules.add(entityTemplate._id);
-                    console.log('hi', entityTemplate._id);
+                    if (actionMetadata.entityTemplateId) entitiesTemplatesIdsOfRules.add(actionMetadata.entityTemplateId);
+                    else if (!actionMetadata.entityId.startsWith('$') && actionMetadata.entityId.endsWith('._id')) {
+                        const entity = await EntityManager.getEntityById(actionMetadata.entityId);
+                        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+                        entitiesTemplatesIdsOfRules.add(entityTemplate._id);
+                    }
                 }
             }),
         );
@@ -442,6 +456,8 @@ export class RelationshipManager {
                         transaction,
                     );
 
+                    console.log({ executionOutput });
+
                     return executionOutput;
                 }
                 return [];
@@ -501,11 +517,9 @@ export class RelationshipManager {
                 }
 
                 case ActionTypes.UpdateEntity: {
-                    const { updatedEntity, activityLogsToCreate } = await this.handleUpdateEntity(
-                        action.actionMetadata as IUpdateEntityMetadata,
-                        transaction,
-                        userId,
-                    );
+                    const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
+                    const fixedMetaData = this.getEntityIdByPrevResults(actionMetadata, results);
+                    const { updatedEntity, activityLogsToCreate } = await this.handleUpdateEntity(fixedMetaData, transaction, userId);
 
                     results.push(updatedEntity);
                     allActivityLogsToCreate.push(...activityLogsToCreate);
@@ -542,11 +556,12 @@ export class RelationshipManager {
                             case ActionTypes.UpdateEntity: {
                                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                                 if (actionMetadata.entityTemplateId) entityTemplateIds.push(actionMetadata.entityTemplateId);
-                                else {
+                                else if (!actionMetadata.entityId.startsWith('$') && actionMetadata.entityId.endsWith('._id')) {
                                     const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                                     entityTemplateIds.push(entityTemplate._id);
                                 }
+
                                 break;
                             }
                             default:

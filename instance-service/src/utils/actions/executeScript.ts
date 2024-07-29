@@ -55,6 +55,8 @@ export const executeActionAndUpdateRelevantEntities = async (
     ignoredRules: IBrokenRule[],
     userId: string,
 ): Promise<IEntity[]> => {
+    console.log({ ignoredRules });
+
     const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
     const executionOutput: { entityId: string; properties: Record<string, any> }[] = executeActionCodeInVM(entity, jsCode);
     const updatedEntities: IEntity[] = [];
@@ -76,11 +78,10 @@ export const executeActionAndUpdateRelevantEntities = async (
 
             await validateEntity(entityTemplateOfEntityToUpdate._id, entityToUpdate.properties);
 
-            const updatedEntity = await EntityManager.updateEntityByIdInnerTransaction(
+            const { updatedEntity } = await EntityManager.updateEntityByIdInnerTransaction(
                 entityToUpdate.entityId,
                 entityToUpdate.properties,
                 entityTemplateOfEntityToUpdate,
-                ignoredRules,
                 transaction,
                 userId,
             );
