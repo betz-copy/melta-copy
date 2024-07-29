@@ -2,7 +2,7 @@ import React from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
-import { Button, CircularProgress, Grid } from '@mui/material';
+import { CircularProgress, Grid } from '@mui/material';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
@@ -10,10 +10,9 @@ import IFrameHeadline from './Headline';
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
     isIFramePage?: boolean;
-    handleClose?: () => void;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, handleClose }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true }) => {
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
@@ -40,20 +39,26 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, ha
             dir="rtl"
             style={{
                 position: 'absolute',
-                left: 1,
-                right: 80,
-                bottom: 47,
-                top: 0,
+                left: 0,
+                right: 70,
+                bottom: -3,
+                top: -4,
             }}
-            height="100%"
         >
-            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" />
+            <Grid
+                item
+                style={{
+                    height: '100%',
+                    width: '100%',
+                }}
+            >
+                <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" />
+            </Grid>
         </Grid>
     ) : (
         <>
             <IFrameHeadline iFrame={iFrameData!} />
             <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={1} />
-            {/* <Button onClick={handleClose}>Close</Button> */}
         </>
     );
 };

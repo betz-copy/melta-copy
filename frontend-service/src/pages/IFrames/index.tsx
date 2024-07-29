@@ -1,64 +1,18 @@
-/* eslint-disable react/jsx-key */
-/* eslint-disable array-callback-return */
-import React, { useCallback, useEffect, useState } from 'react';
+/* eslint-disable react/no-array-index-key */
+import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { Box, CircularProgress, Grid, IconButton, Pagination, Stack } from '@mui/material';
+import { Box, CircularProgress, Grid, Pagination } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import ResizablePanel from './Resizable';
 import IFramesHeadline from './IFramesHeadline';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
-import { ViewingBox } from '../SystemManagement/components/ViewingBox';
-// interface IFramesPageProps {
-//     setTitle: React.Dispatch<React.SetStateAction<string>>;
-// }
 
 const IFramesPage: React.FC = () => {
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    // const [iFrameDialogOpen, setIFrameDialogOpen] = useState<boolean>(false);
-
-    // const { data: allIFrames, isLoading } = useQuery(queryKey, async () => searchIFrames({}), {
-    // keepPreviousData: true, // Keep previous data while loading new data
-    // });
-    // const [inputValue, setInputValue] = useState<string>('');
-    // const [page, setPage] = useState(1);
-    // const [allIFrames, setAllIFrames] = useState<IMongoIFrame[]>([]);
-    // const queryKey = ['searchIFrames', inputValue, page];
-
-    // const handleNext = () => {
-    //     setPage((prev) => prev + 1);
-    // };
-
-    // const handlePrev = () => {
-    //     setPage((prev) => Math.max(prev - 1, 1)); // Ensure page number does not go below 1
-    // };
-
-    // const itemsPerPage = 6;
-    // const totalPages = Math.ceil(allIFrames!.length / itemsPerPage);
-
-    // const paginatedIFrames: any[] = [];
-    // for (let page = 0; page < totalPages; page++) {
-    //     const pageIFrames = allIFrames!.slice(page * itemsPerPage, (page + 1) * itemsPerPage);
-    //     console.log({ pageIFrames });
-
-    //     const iFramesRows: any[] = [];
-    //     for (let i = 0; i < pageIFrames.length; i += 2) {
-    //         iFramesRows.push(pageIFrames.slice(i, i + 2));
-    //     }
-    //     paginatedIFrames.push(iFramesRows);
-    // }
-
-    // console.log({ paginatedIFrames });
-
-    // useEffect(() => setTitle(i18next.t('pages.iFrames')), [setTitle]);
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
         iFrame: IMongoIFrame | null;
@@ -67,20 +21,15 @@ const IFramesPage: React.FC = () => {
         iFrame: null,
     });
     const [searchInput, setSearchInput] = useState<string>();
-    const onSearch = (newSearchInput: string) => {
-        setSearchInput(newSearchInput);
-    };
-    // const [inputValue, setInputValue] = useState<string>();
     const [page, setPage] = useState(0);
-
     const [iFramesRows, setIFramesRows] = useState<any>([]);
     const [iframePages, setIframePages] = useState({});
 
     const queryKey = ['searchIFrames', page, searchInput];
+
     const { data: allIFrames } = useQuery(['searchIFrames'], () => {
         return searchIFrames({});
     });
-
     const { isLoading } = useQuery(
         queryKey,
         () => {
@@ -115,6 +64,18 @@ const IFramesPage: React.FC = () => {
             setIFramesRows(rows);
         }
     }, [iframePages[page]]);
+    // const [count, setCount] = useState<number>(0);
+    // useEffect(() => {
+    //     if (searchInput) {
+    //         console.log(Object.keys(iframePages), { iframePages }, { data });
+
+    //         setCount(Object.keys(iframePages).length);
+
+    //         // setIFramesRows(rows);
+    //     } else if (allIFrames) setCount(Math.ceil(allIFrames!.length / 4));
+    //     else setCount(0);
+    // }, [searchInput]);
+    // console.log({ count });
 
     if (isLoading)
         return (
@@ -127,9 +88,7 @@ const IFramesPage: React.FC = () => {
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>
                 <IFramesHeadline
-                    searchInput={searchInput ?? ''}
-                    setSearchInput={setSearchInput}
-                    onSearch={onSearch}
+                    onSearch={(searchValue) => setSearchInput(searchValue || undefined)}
                     setIFrameWizardDialogState={() => {
                         setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
                     }}

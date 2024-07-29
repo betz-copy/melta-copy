@@ -52,11 +52,12 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: (data) => {
-                console.log('shirel ', { data });
+                // console.log('shirel ', { data });
 
                 // queryClient.setQueryData(['searchIFrames'], (iframes: any) => {
-                //     const iFrames = mapTemplates(iframes);
-                //     console.log({ iFrames });
+                //     console.log({ iframes });
+
+                //     const iFrames = mapTemplates(iframes, 'name');
                 //     iFrames!.set(data._id, data);
                 // });
                 // queryClient.invalidateQueries('getIFrame');

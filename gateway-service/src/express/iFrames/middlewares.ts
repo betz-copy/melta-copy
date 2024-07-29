@@ -25,9 +25,9 @@ export const validateUserHasPermissionsToIFrame = async (userId: string, newIFra
     const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
 
     // ??
-    if (!userPermissions.templatesManagementId) {
-        throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete iframes` });
-    }
+    // if (!userPermissions.templatesManagementId) {
+    //     throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete iframes` });
+    // }
 
     const allowedCategoriesIds: string[] = getAllowedCategoriesForInstances(userPermissions);
 

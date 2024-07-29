@@ -9,6 +9,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
+import Iframe from 'react-iframe';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { IMongoIFrame } from '../../interfaces/iFrames';
@@ -18,12 +19,12 @@ import { deleteIFrame, iFrameObjectToIFrameForm } from '../../services/iFramesSe
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IFrameWizard } from '../../common/wizards/iFrame';
-import IFramePage from './IFramePage';
 
 const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     // const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
@@ -61,6 +62,10 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (_data, id) => {
+            // queryClient.setQueryData<IFrameMap>('searchIFrames', (data) => {
+            //     data!.delete(id);
+            //     return data!;
+            // });
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             navigate('/iframes');
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
@@ -114,20 +119,24 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                     <Grid item style={{ padding: '20px' }}>
                         {isHovered && (
                             <Grid sx={{ display: 'flex' }}>
-                                <Grid>
-                                    <MeltaTooltip title={i18next.t('actions.delete')}>
-                                        <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
-                                            <DeleteIcon color="primary" />
-                                        </IconButton>
-                                    </MeltaTooltip>
-                                </Grid>
-                                <Grid>
-                                    <MeltaTooltip title={i18next.t('actions.edit')}>
-                                        <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
-                                            <EditIcon color="primary" />
-                                        </IconButton>
-                                    </MeltaTooltip>
-                                </Grid>
+                                {myPermissions.templatesManagementId && (
+                                    <>
+                                        <Grid>
+                                            <MeltaTooltip title={i18next.t('actions.delete')}>
+                                                <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
+                                                    <DeleteIcon color="primary" />
+                                                </IconButton>
+                                            </MeltaTooltip>
+                                        </Grid>
+                                        <Grid>
+                                            <MeltaTooltip title={i18next.t('actions.edit')}>
+                                                <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
+                                                    <EditIcon color="primary" />
+                                                </IconButton>
+                                            </MeltaTooltip>
+                                        </Grid>
+                                    </>
+                                )}
                                 <Grid>
                                     <MeltaTooltip title={i18next.t('actions.הרחבה')}>
                                         <IconButton onClick={() => setOpen({ isOpen: true })}>
@@ -142,7 +151,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
             </Grid>
 
             <Dialog keepMounted={false} open={open.isOpen} onClose={handleClose} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
-                <IFramePage iFrame={iFrame} isIFramePage={false} handleClose={handleClose} />
+                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={1} />
             </Dialog>
 
             <IFrameWizard

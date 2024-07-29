@@ -10,11 +10,9 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 
 const IFramesHeadline: React.FC<{
-    searchInput: string;
-    setSearchInput?: (newSearchInput: string) => void;
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
-}> = ({ searchInput, setSearchInput, onSearch, setIFrameWizardDialogState }) => {
+}> = ({ onSearch, setIFrameWizardDialogState }) => {
     const theme = useTheme();
 
     const queryClient = useQueryClient();
@@ -22,40 +20,31 @@ const IFramesHeadline: React.FC<{
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
-            <Grid item>
-                <Grid container spacing={5} wrap="nowrap" alignItems="center">
-                    <Grid item>
-                        <BlueTitle
-                            title={i18next.t('pages.iFrames')}
-                            component="h4"
-                            variant="h4"
-                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
-                        />
+            <Grid container spacing={5} wrap="nowrap" alignItems="center">
+                <Grid item>
+                    <BlueTitle
+                        title={i18next.t('pages.iFrames')}
+                        component="h4"
+                        variant="h4"
+                        style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                    />
+                </Grid>
+                <Grid item>
+                    <Grid container wrap="nowrap" gap="15px">
+                        <GlobalSearchBar onSearch={onSearch} borderRadius="7px" placeholder={i18next.t('globalSearch.searchInPage')} toTopBar />
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item data-tour="search-input">
-                <GlobalSearchBar
-                    inputValue={searchInput}
-                    setInputValue={setSearchInput}
-                    onSearch={onSearch}
-                    borderRadius="7px"
-                    placeholder={i18next.t('globalSearch.searchInPage')}
-                    toTopBar
-                />
-            </Grid>
+
             <Grid item>
-                {/* {myPermissions.templatesManagementId && ( */}
-                <IconButton onClick={setIFrameWizardDialogState} style={{ backgroundColor: 'pink' }}>
-                    <AddIcon htmlColor="primary" />
-                    <Typography fontSize={14} style={{ fontWeight: '500' }}>
-                        {i18next.t('wizard.iFrame.addIFrame')}
-                    </Typography>
-                </IconButton>
-                {/* )} */}
-                {/* {myPermissions.processesManagementId && (
-                    <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px' }}></AddProcessButton>
-                )} */}
+                {myPermissions.templatesManagementId && (
+                    <IconButton onClick={setIFrameWizardDialogState} style={{ backgroundColor: 'pink' }}>
+                        <AddIcon htmlColor="primary" />
+                        <Typography fontSize={14} style={{ fontWeight: '500' }}>
+                            {i18next.t('wizard.iFrame.addIFrame')}
+                        </Typography>
+                    </IconButton>
+                )}
             </Grid>
         </TopBarGrid>
     );

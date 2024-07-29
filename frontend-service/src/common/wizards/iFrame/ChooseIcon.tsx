@@ -3,11 +3,12 @@ import { StepComponentProps } from '../index';
 import { ImagePicker } from '../../inputs/ImagePicker';
 import { IFrameWizardValues } from '.';
 
-export const ChooseIFrameIcon: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, handleChange }) => (
+const ChooseIFrameIcon: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, setFieldValue }) => (
     <ImagePicker
         image={values.icon}
-        onPick={handleChange}
-        onDelete={() => handleChange({ ...values, icon: undefined })}
+        onPick={(image) => setFieldValue('icon', image)}
+        onDelete={() => setFieldValue('icon', undefined)}
         defaultInputType={values.icon?.file ? 'chooseFile' : 'chooseFromOptions'}
     />
 );
+export { ChooseIFrameIcon };

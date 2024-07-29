@@ -4,14 +4,7 @@ import IFramesController from './controller';
 import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import {
-    createIFrameSchema,
-    deleteIFrameSchema,
-    getExternalSiteByIdSchema,
-    getIFrameByIdSchema,
-    searchIFramesSchema,
-    updateIFrameSchema,
-} from './validator.schema';
+import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame, validateUserCanUpdateIFrame } from './middlewares';
 import config from '../../config';
 
@@ -27,14 +20,6 @@ iFramesRouter.get(
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapMiddleware(validateUserCanGetIFrame),
     wrapController(IFramesController.getIFrameById),
-);
-
-iFramesRouter.get(
-    '/externalSite/:iFrameId',
-    ValidateRequest(getExternalSiteByIdSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapMiddleware(validateUserCanGetIFrame),
-    wrapController(IFramesController.getExternalSiteById),
 );
 
 iFramesRouter.post(

@@ -26,9 +26,9 @@ export class IFrameManager {
         // console.log({ allowedCategories });
 
         const query: FilterQuery<IFrameDocument> = {};
-
         if (search) {
-            query.name = { $regex: this.escapeRegExp(search) };
+            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' }; // 'i' for case-insensitive
+            query.$or = [{ name: searchRegex }, { description: searchRegex }, { url: searchRegex }];
         }
         console.log({ search, limit, skip });
 
