@@ -136,11 +136,7 @@ export class RelationshipManager {
             },
         ]);
 
-        const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
-
-        await Promise.all(activityLogsPromises);
-
-        return createdRelationship;
+        return {createdRelationship, activityLogsToCreate};
     }
 
     static async createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship, userId: string) {
@@ -190,7 +186,12 @@ export class RelationshipManager {
         userId: string,
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction, userId);
+            const {createdRelationship, activityLogsToCreate} = await RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction, userId);
+
+            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+            await Promise.all(activityLogsPromises);
+
+            return createdRelationship;
         }); 
     }
 

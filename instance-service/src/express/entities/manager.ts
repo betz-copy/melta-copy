@@ -219,7 +219,7 @@ export class EntityManager {
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                 if (property.format === 'relationshipReference') {
                     if (newEntity.properties[name]) {
-                        const createdRelationship = await this.createRelationshipReference(
+                        const {createdRelationship} = await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntitiesByIds[newEntity.properties[name].properties._id],
                             newEntity.properties._id,
@@ -232,14 +232,14 @@ export class EntityManager {
             }),
         );
 
-        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         await Promise.all(
             createdRelationships.map(async (relationship) => {
                 const relatedEntityId =
                     relationship.sourceEntityId === newEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                activityLogsToCreate.push({
+                allActivityLogsToCreate.push({
                     action: 'CREATE_RELATIONSHIP' as const,
                     entityId: relatedEntityId,
                     metadata: {
@@ -253,7 +253,7 @@ export class EntityManager {
             }),
         );
 
-        activityLogsToCreate.push({
+        allActivityLogsToCreate.push({
             action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
             entityId: newEntity.properties._id,
             metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
@@ -261,7 +261,7 @@ export class EntityManager {
             userId,
         });
 
-        return { newEntity, activityLogsToCreate };
+        return { newEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
 
     static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
@@ -788,7 +788,7 @@ export class EntityManager {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[updatedProperty] = fixedField;
-                        const createdRelationship = await this.createRelationshipReference(
+                        const {createdRelationship} = await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntity,
                             entityId,

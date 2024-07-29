@@ -229,7 +229,6 @@ export class BulkActionManager {
                     await Promise.all(activityLogsPromises);
                 }
 
-                console.log({results, dryRun});
                 return results;
             },
             dryRun,
