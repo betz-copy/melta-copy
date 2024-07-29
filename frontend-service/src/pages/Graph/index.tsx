@@ -92,6 +92,8 @@ const Graph: React.FC = () => {
     const graphEntityTemplateIds = uniqBy(graphData.nodes, ({ templateId }) => templateId).map((element) => element.templateId);
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
+            console.log('addNewGraphData', { newGraphData });
+
             const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
             const mergedGraphLinks = getFixedGraphLinks([...prevGraphData.links, ...newGraphData.links]);
 
@@ -143,17 +145,44 @@ const Graph: React.FC = () => {
     const setGraphDataOnStart = async () => {
         const { data: initialExpandedEntity } = await getExpandedEntityById();
         const expandedEntityGraphData = getGraphDataWithNodeSizes(
-            expandedEntityToGraphData(initialExpandedEntity!, entityTemplates, relationshipTemplates),
+            expandedEntityToGraphData(
+                { ...initialExpandedEntity, connections: [initialExpandedEntity?.connections[0]] },
+                entityTemplates,
+                relationshipTemplates,
+            ),
         );
 
         expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
         setGraphData(expandedEntityGraphData);
         const shouldZoom = !(initialExpandedEntity && initialExpandedEntity?.connections.length < 1);
         setShouldZoomToFit(shouldZoom);
+        console.log('setGraphDataOnStart', { initialExpandedEntity, expandedEntityGraphData });
+
+        return initialExpandedEntity;
     };
 
     useEffect(() => {
-        setGraphDataOnStart();
+        const getGraphData = async () => {
+            const initialExpandedEntity = await setGraphDataOnStart();
+            let index = 1;
+            while (initialExpandedEntity!.connections[index]) {
+                const expandedEntityGraphData = getGraphDataWithNodeSizes(
+                    expandedEntityToGraphData(
+                        { ...initialExpandedEntity, connections: initialExpandedEntity?.connections.splice(index, index) },
+                        entityTemplates,
+                        relationshipTemplates,
+                    ),
+                );
+                console.log('getGraphData', { expandedEntityGraphData });
+                index++;
+
+                setTimeout(() => {
+                    addNewGraphData(expandedEntityGraphData);
+                }, 1000);
+            }
+            console.log('getGraphData', { initialExpandedEntity });
+        };
+        getGraphData();
     }, [entityId, filteredEntityTemplates, load, filterRecord]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const renderTooltip = (node: NodeObject) => {
@@ -165,6 +194,8 @@ const Graph: React.FC = () => {
     if (!is3DGraph) {
         forceRef.current?.d3Force('node', forceManyBody().strength(-100).distanceMin(50).distanceMax(400));
     }
+
+    console.log({ graphData });
 
     const commonGraphProps: SharedProperties<ForceGraphProps, ForceGraphProps3D> = {
         height,

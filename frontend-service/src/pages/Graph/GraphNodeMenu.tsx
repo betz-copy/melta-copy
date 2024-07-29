@@ -55,9 +55,18 @@ const GraphNodeMenu: React.FC<{
         {
             enabled: false,
             onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
-                node.numberOfConnectionsExpanded++;
-                addNewGraphData(newGraphData);
+                let index = 0;
+                while (index < data.connections.length) {
+                    const newGraphData = expandedEntityToGraphData(
+                        { ...data, connections: data.connections.splice(index, index + 1) },
+                        entityTemplates,
+                        relationshipTemplates,
+                    );
+                    node.numberOfConnectionsExpanded++;
+                    index++;
+                    console.log('node menu', { data, entityTemplates, relationshipTemplates, newGraphData });
+                    addNewGraphData(newGraphData);
+                }
             },
         },
     );
