@@ -285,11 +285,11 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
             isRegularFunction: true;
             functionType: IRegularFunction['functionType'];
             arguments: object[];
-        } = joiValidateNoConvert(regularFunctionSchema, regularFunctionData);
+        } = this.joiValidateNoConvert(regularFunctionSchema, regularFunctionData);
 
         funcArguments.forEach((argument) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions
-            validateArgument(argument, relevantTemplates, aggregationGroupsContext);
+            this.validateArgument(argument, relevantTemplates, aggregationGroupsContext);
         });
         switch (functionType) {
             case 'toDate': {
@@ -375,7 +375,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         (groupData.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions
-            return validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
+            return this.validateFormula(subFormula, relevantTemplates, aggregationGroupsContext);
         });
     }
 
@@ -393,7 +393,7 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         (aggregationGroup.subFormulas as Array<any>).forEach((subFormula) => {
             // eslint-disable-next-line no-use-before-define -- circular recursive functions (formula->group->formulas)
-            validateFormula(subFormula, relevantTemplates, [...aggregationGroupsContext, aggregationGroup.variableOfAggregation]);
+            this.validateFormula(subFormula, relevantTemplates, [...aggregationGroupsContext, aggregationGroup.variableOfAggregation]);
         });
     }
 
@@ -414,26 +414,26 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
     private async validateAndGetRelevantTemplates(rule: IRule): Promise<IRelevantTemplates> {
         const entityTemplate = await this.entityTemplateManager.getTemplateById(rule.entityTemplateId);
 
-        const relationshipTemplatesOfEntityAsSource = (await RelationshipTemplateManager.searchTemplates({
+        const relationshipTemplatesOfEntityAsSource = (await this.manager.searchTemplates({
             sourceEntityIds: [entityTemplate._id],
             skip: 0,
             limit: 0,
         })) as IMongoRelationshipTemplate[];
 
-        const relationshipTemplatesOfEntityAsDestination = (await RelationshipTemplateManager.searchTemplates({
+        const relationshipTemplatesOfEntityAsDestination = (await this.manager.searchTemplates({
             destinationEntityIds: [entityTemplate._id],
             skip: 0,
             limit: 0,
         })) as IMongoRelationshipTemplate[];
 
         const connectionsTemplatesOfEntityAsSourcePromises = relationshipTemplatesOfEntityAsSource.map(async (relationshipTemplate) => {
-            const destinationEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.destinationEntityId);
+            const destinationEntity = await this.entityTemplateManager.getTemplateById(relationshipTemplate.destinationEntityId);
             return { relationshipTemplate, otherEntityTemplate: destinationEntity };
         });
         const connectionsTemplatesOfEntityAsSource = await Promise.all(connectionsTemplatesOfEntityAsSourcePromises);
 
         const connectionsTemplatesOfEntityAsDestinationPromises = relationshipTemplatesOfEntityAsDestination.map(async (relationshipTemplate) => {
-            const sourceEntity = await EntityTemplateManager.getTemplateById(relationshipTemplate.sourceEntityId);
+            const sourceEntity = await this.entityTemplateManager.getTemplateById(relationshipTemplate.sourceEntityId);
             return { relationshipTemplate, otherEntityTemplate: sourceEntity };
         });
         const connectionsTemplatesOfEntityAsDestination = await Promise.all(connectionsTemplatesOfEntityAsDestinationPromises);
@@ -442,14 +442,14 @@ export class RuleValidator extends DefaultController<IMongoRelationshipTemplate,
 
         return { entityTemplate, connectionsTemplatesOfEntityTemplate };
     }
+
+    async validateRuleFormula(rule: IRule) {
+        const relevantTemplates = await this.validateAndGetRelevantTemplates(rule);
+
+        this.validateFormula(rule.formula, relevantTemplates, []);
+    }
+
+    async validateRuleFormulaMiddleware(req: Request) {
+        await this.validateRuleFormula(req.body);
+    }
 }
-
-export const validateRuleFormula = async (rule: IRule) => {
-    const relevantTemplates = await validateAndGetRelevantTemplates(rule);
-
-    validateFormula(rule.formula, relevantTemplates, []);
-};
-
-export const validateRuleFormulaMiddleware = async (req: Request) => {
-    await validateRuleFormula(req.body);
-};

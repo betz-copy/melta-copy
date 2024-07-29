@@ -5,7 +5,7 @@ const {
     service: { dbHeaderName },
 } = config;
 
-export default class DefaultExternalServiceRabbit {
+export class DefaultExternalServiceRabbit {
     constructor(protected workspaceId: string) {}
 
     protected sendToQueue(queueName: string, content: string | Object | Buffer) {

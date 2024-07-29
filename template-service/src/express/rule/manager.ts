@@ -2,10 +2,10 @@ import { Document, FilterQuery } from 'mongoose';
 import { escapeRegExp } from '../../utils';
 import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import { IRule } from './interfaces';
+import { IMongoRule, IRule } from './interfaces';
 import RuleModel from './model';
 
-export class RuleManager extends DefaultManagerMongo<IRule> {
+export class RuleManager extends DefaultManagerMongo<IMongoRule> {
     constructor(dbName: string) {
         super(dbName, RuleModel);
     }

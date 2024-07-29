@@ -20,6 +20,7 @@ services:
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       RABBIT_URL: ${RABBIT_URL}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   template-service:
     build: ./template-service
@@ -33,6 +34,7 @@ services:
       MONGO_CATEGORIES_COLLECTION_NAME: ${MONGO_CATEGORIES_COLLECTION_NAME}
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   instance-service:
     build: ./instance-service
@@ -46,6 +48,7 @@ services:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       REDIS_HOST: ${REDIS_HOST}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   global-search-service:
     build: ./global-search-service
@@ -58,6 +61,7 @@ services:
       REDIS_HOST: ${REDIS_HOST}
       RABBIT_URL: ${RABBIT_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   activity-log-service:
     build: ./activity-log-service
@@ -67,6 +71,7 @@ services:
       MONGO_ACTIVITIES_COLLECTION_NAME: ${ACTIVITIES_COLLECTION_NAME}
       RABBIT_URL: ${RABBIT_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   notification-service:
     build: ./notification-service
@@ -76,6 +81,7 @@ services:
       MONGO_NOTIFICATIONS_COLLECTION_NAME: ${MONGO_NOTIFICATIONS_COLLECTION_NAME}
       RABBIT_URL: ${RABBIT_URL}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   rule-breach-service:
     build: ./rule-breach-service
@@ -85,6 +91,7 @@ services:
       MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_ALERTS_COLLECTION_NAME}
       MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME: ${MONGO_RULE_BREACH_REQUESTS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   process-service:
     build: ./process-service
@@ -96,6 +103,7 @@ services:
       MONGO_STEP_TEMPLATES_COLLECTION_NAME: ${MONGO_STEP_TEMPLATES_COLLECTION_NAME}
       MONGO_STEP_INSTANCES_COLLECTION_NAME: ${MONGO_STEP_INSTANCES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   gantt-service:
     build: ./gantt-service
@@ -104,6 +112,7 @@ services:
       MONGO_URL: ${GANTT_SERVICE_MONGO_URL}
       MONGO_GANTTS_COLLECTION_NAME: ${MONGO_GANTTS_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   preview-service:
     build: ./preview-service
@@ -116,6 +125,7 @@ services:
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       RABBIT_URL: ${RABBIT_URL}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   workspace-service:
     build: ./workspace-service
@@ -152,6 +162,7 @@ services:
       NOTIFICATIONS_MAIL_FROM: ${MAIL_USER}
       MAX_FILE_BYTE_SIZE: ${MAX_FILE_BYTE_SIZE}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      DB_HEADER_NAME: ${DB_HEADER_NAME}
 
   # frontend-service:
   #   build: ./frontend-service

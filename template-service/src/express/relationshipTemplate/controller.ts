@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { IRelationshipTemplate } from './interface';
+import { IMongoRelationshipTemplate } from './interface';
 import { RelationshipTemplateManager } from './manager';
 
-class RelationshipTemplateController extends DefaultController<IRelationshipTemplate, RelationshipTemplateManager> {
+class RelationshipTemplateController extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     constructor(dbName: string) {
         super(new RelationshipTemplateManager(dbName));
     }

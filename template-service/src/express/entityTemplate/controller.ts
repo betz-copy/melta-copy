@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { IEntityTemplate } from './interface';
+import { IMongoEntityTemplate } from './interface';
 import { EntityTemplateManager } from './manager';
 
-class EntityTemplateController extends DefaultController<IEntityTemplate, EntityTemplateManager> {
+class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(dbName: string) {
         super(new EntityTemplateManager(dbName));
     }

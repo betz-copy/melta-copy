@@ -10,7 +10,7 @@ import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import DefaultManagerMongo from '../../utils/mongo/manager';
 
-export class EntityTemplateManager extends DefaultManagerMongo<IEntityTemplate> {
+export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
     private globalSearchIndexCreator: GlobalSearchIndexCreator;
 
     private relationshipTemplateManager: RelationshipTemplateManager;

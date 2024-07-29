@@ -1,6 +1,6 @@
 // @ts-ignore
 import axios from 'axios';
-import { format, generate } from 'json-schema-faker';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
@@ -26,14 +26,14 @@ const userId = config.usersService.managersKartoffelIds[0];
 export const createInstances = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
-    format('fileId', (_value) => fileId);
+    JSONSchemaFaker.format('fileId', (_value) => fileId);
 
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
                     axiosInstance.post(url + createEntityRoute, {
-                        properties: generate(entityTemplate.properties),
+                        properties: JSONSchemaFaker.generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
                         userId,
                     }),
@@ -67,7 +67,7 @@ export const createRelationshipInstances = async (
 
                 return limit(async () => {
                     const { result } = await trycatch(() =>
-                        axiosInstance.post(url + createRelationshipRoute, {
+                        axiosInstance.post<IMongoRelationshipTemplate>(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
@@ -84,7 +84,7 @@ export const createRelationshipInstances = async (
 
     const results = await Promise.all(promises);
 
-    return results.map((result) => result?.data);
+    return results.filter(Boolean).map((result) => result!.data);
 };
 
 export const isInstanceServiceAlive = async () => {

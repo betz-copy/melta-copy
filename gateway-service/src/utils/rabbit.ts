@@ -22,6 +22,6 @@ export class RabbitManager {
 
         const mailData = await new MailManager(this.workspaceId).createMail({ viewers, type, populatedMetaData });
 
-        await menash.send(rabbit.mailNotificationQueue, mailData);
+        await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [dbHeaderName]: this.workspaceId } });
     }
 }

@@ -8,7 +8,7 @@ import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import config from '../../config';
 import { IUpdatedFields } from '../../externalServices/activityLog/interface';
-import { createActivityLog } from '../../externalServices/activityLog/producer';
+import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
@@ -55,11 +55,14 @@ export default class EntityManager extends DefaultManagerNeo4j {
 
     private relationshipManager: RelationshipManager;
 
-    constructor(dbName: string) {
-        super(dbName);
-        this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
-        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
-        this.relationshipManager = new RelationshipManager(dbName);
+    private activityLogProducer: ActivityLogProducer;
+
+    constructor(workspaceId: string) {
+        super(workspaceId);
+        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.relationshipManager = new RelationshipManager(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }
 
     private throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
@@ -262,7 +265,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
                 const relatedEntityId =
                     relationship.sourceEntityId === entity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                await createActivityLog({
+                await this.activityLogProducer.createActivityLog({
                     action: 'CREATE_RELATIONSHIP' as const,
                     entityId: relatedEntityId,
                     metadata: {
@@ -276,7 +279,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             }),
         );
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
             entityId: entity.properties._id,
             metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
@@ -376,7 +379,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    fixReturnedEntityRefrencesFields(entity: IEntity) {
+    static fixReturnedEntityRefrencesFields(entity: IEntity) {
         const fixedExpandedEntity = entity;
 
         const relatedEntities = {};
@@ -431,6 +434,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
         }
 
         const filterRes = await getExpandedFilteredGraphRecursively(
+            this.neo4jClient,
             disabled || null,
             initialExpandedEntity,
             fixSearchBody,
@@ -439,7 +443,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             entityTemplatesMap,
         );
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: 'VIEW_ENTITY',
             entityId: id,
             metadata: {},
@@ -571,7 +575,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             return updatedEntity;
         });
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
             metadata: {},
             entityId: id,
@@ -846,7 +850,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             createdRelationships.map(async (relationship) => {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                await createActivityLog({
+                await this.activityLogProducer.createActivityLog({
                     action: 'CREATE_RELATIONSHIP' as const,
                     entityId: relatedEntityId,
                     metadata: {
@@ -864,7 +868,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             deletedRelationships.map(async (relationship) => {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                await createActivityLog({
+                await this.activityLogProducer.createActivityLog({
                     action: 'DELETE_RELATIONSHIP' as const,
                     entityId: relatedEntityId,
                     metadata: {
@@ -878,7 +882,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
             }),
         );
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: 'UPDATE_ENTITY',
             entityId: id,
             metadata: { updatedFields: activityLogUpdatedFields },

@@ -1,7 +1,7 @@
 /* eslint-disable no-plusplus */
 // @ts-ignore
 import { Axios } from 'axios';
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoProcessTemplatePopulated } from './processTemplate';
@@ -101,7 +101,7 @@ const createProcessInstance = (
     const requestBody = {
         name: generateUniqueName(generatedNames),
         templateId: processTemplate._id,
-        details: generate(processTemplate.details.properties) as Record<string, any>,
+        details: JSONSchemaFaker.generate(processTemplate.details.properties) as Record<string, any>,
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
@@ -140,7 +140,7 @@ export const createProcessInstances = async (
     const generatedNames = new Set<string>();
     const instanceNumbers = processTemplates.map(() => chance.integer({ min: minNumberOfProcesses, max: maxNumberOfProcesses }));
     const maxInstances = Math.max(...instanceNumbers);
-    format('fileId', (_value) => fileId);
+    JSONSchemaFaker.format('fileId', (_value) => fileId);
     const promises = Array(maxInstances)
         .fill(null)
         .flatMap((_, instanceIndex) =>

@@ -1,10 +1,10 @@
 /* eslint-disable lines-between-class-members */
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { ICategory } from './interface';
+import { IMongoCategory } from './interface';
 import CategoryManager from './manager';
 
-class CategoriesController extends DefaultController<ICategory, CategoryManager> {
+class CategoriesController extends DefaultController<IMongoCategory, CategoryManager> {
     constructor(dbName: string) {
         super(new CategoryManager(dbName));
     }

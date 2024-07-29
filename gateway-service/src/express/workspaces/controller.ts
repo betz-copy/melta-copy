@@ -2,6 +2,10 @@ import { Request, Response } from 'express';
 import { WorkspaceManager } from './manager';
 
 export class WorkspaceController {
+    static async getWorkspaceIds(req: Request, res: Response) {
+        res.json(await WorkspaceManager.getWorkspaceIds(req.body.path));
+    }
+
     static async getDir(req: Request, res: Response) {
         res.json(await WorkspaceManager.getDir(req.body.path));
     }

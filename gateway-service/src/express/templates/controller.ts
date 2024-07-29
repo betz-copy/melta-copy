@@ -24,7 +24,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async deleteCategory(req: Request, res: Response) {
-        res.json(await this.manager.deleteCategory(req.params.id));
+        res.json(await this.manager.deleteCategory(req.params.id, req.user!.id, (req as RequestWithPermissionsOfUserId).permissionsOfUserId));
     }
 
     async updateCategory(req: Request, res: Response) {

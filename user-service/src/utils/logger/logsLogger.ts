@@ -1,6 +1,6 @@
 import 'winston-daily-rotate-file';
 import { Logform, Logger, format } from 'winston';
-import config from '../../config';
+import { config } from '../../config';
 import initializeLogger, { IExtra, IPrintData } from './loggerFactory';
 
 const { logs } = config;

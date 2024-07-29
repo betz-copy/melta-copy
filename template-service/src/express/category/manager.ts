@@ -1,9 +1,9 @@
 import DefaultManagerMongo from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import { ICategory } from './interface';
+import { ICategory, IMongoCategory } from './interface';
 import CategoryModel from './model';
 
-class CategoryManager extends DefaultManagerMongo<ICategory> {
+class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     constructor(dbName: string) {
         super(dbName, CategoryModel);
     }

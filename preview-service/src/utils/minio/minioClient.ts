@@ -1,5 +1,5 @@
 import * as minio from 'minio';
-import { Readable, Stream } from 'stream';
+import { Readable } from 'stream';
 import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
@@ -22,7 +22,7 @@ export class MinIOClient {
         });
     }
 
-    private async wrapDBNotExistsError(func: () => Promise<Stream>) {
+    private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
         } catch (err: any) {
@@ -40,15 +40,15 @@ export class MinIOClient {
         }
     }
 
-    downloadFileStream(filePath: string): Promise<Stream> {
+    downloadFileStream(filePath: string) {
         return this.wrapDBNotExistsError(this.minioClient.getObject.bind(this, this.bucketName, filePath));
     }
 
-    uploadFileStream(filePath: Readable, objectName: string, metaData = {}): Promise<Stream> {
+    uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
         return this.wrapDBNotExistsError(this.minioClient.putObject.bind(this, this.bucketName, objectName, filePath, metaData));
     }
 
-    statFile(filePath: string): Promise<Stream> {
+    statFile(filePath: string) {
         return this.wrapDBNotExistsError(this.minioClient.statObject.bind(this, this.bucketName, filePath));
     }
 }

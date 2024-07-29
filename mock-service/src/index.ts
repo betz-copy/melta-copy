@@ -17,6 +17,7 @@ import { isTemplateServiceAlive } from './templates';
 import { createCategories } from './templates/categories';
 import { createEntityTemplates } from './templates/entityTemplates';
 import { createRelationshipTemplates } from './templates/relationshipTemplates';
+import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
 import { createWorkspaces, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
 
@@ -29,8 +30,7 @@ const main = async () => {
         throw workspacesServiceAliveErr;
     }
 
-    // check only root workspace (which is created automatically) exists
-    if ((await getWorkspaces()).length !== 1) {
+    if ((await getWorkspaces()).length) {
         console.log('DB not empty');
         return;
     }
@@ -49,7 +49,7 @@ const main = async () => {
 
     const { err: userServiceAliveErr } = await isUserServiceAlive();
     if (userServiceAliveErr) {
-        console.log('Permission Service is not alive');
+        console.log('User Service is not alive');
         throw userServiceAliveErr;
     }
 
@@ -103,7 +103,16 @@ const main = async () => {
 
     console.log('Creating relationships');
 
-    await createRelationshipInstances(mainWorkspace._id, createdEntityInstances, createdRelationshipTemplates, chance);
+    const createdRelationshipInstances = await createRelationshipInstances(
+        mainWorkspace._id,
+        createdEntityInstances,
+        createdRelationshipTemplates,
+        chance,
+    );
+
+    console.log('Creating rules');
+
+    await createRules(mainWorkspace._id, createdEntityTemplates, createdRelationshipInstances);
 
     console.log('Creating process templates');
 
@@ -121,3 +130,6 @@ const main = async () => {
 };
 
 main();
+
+// console.log('Starting mock in 20 seconds...');
+// setTimeout(main, 20000);

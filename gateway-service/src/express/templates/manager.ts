@@ -257,7 +257,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     // TODO: race condition here
-    async deleteCategory(id: string) {
+    async deleteCategory(id: string, userId: string, userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const templates = await this.entityTemplateService.searchEntityTemplates({ categoryIds: [id] });
         if (templates.length > 0) {
             throw new ServiceError(400, 'category still has entity templates', { errorCode: categoryHasTemplates });
@@ -272,7 +272,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             await trycatch(() => this.storageService.deleteFile(category.iconFileId!));
         }
 
-        await trycatch(() => PermissionsManager.deletePermissionsOfCategory(id));
+        delete userPermissions.instances?.categories[id];
+        await trycatch(() => UsersManager.syncUserPermissions(userId, { [this.workspaceId]: { instances: userPermissions.instances } }));
     }
 
     async updateCategory(id: string, updatedData: Partial<ICategory> & { file?: string }, file?: Express.Multer.File) {
