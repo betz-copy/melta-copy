@@ -66,8 +66,6 @@ const validateEntity = async (entityTemplate: IMongoEntityTemplate, metadataProp
 export const validateActionsGroups = async (req: Request) => {
     const { actionsGroups } = req.body;
 
-    console.log({actionsGroups});
-
     const entitiesIds = new Set<string>();
     const relationshipTemplatesIds = new Set<string>();
     const entityTemplatesIds = new Set<string>();
@@ -107,17 +105,21 @@ export const validateActionsGroups = async (req: Request) => {
             if (action.actionType === ActionTypes.CreateRelationship) {
                 const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
-                validateRelationship(
-                    relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0], 
-                    entitiesByEntitiesIds[metadata.sourceEntityId][0], 
-                    entitiesByEntitiesIds[metadata.destinationEntityId][0]
-                );
+                if (!metadata.relationshipTemplateId.startsWith('$')&&
+                    !metadata.sourceEntityId.startsWith('$') &&
+                    !metadata.destinationEntityId.startsWith('$')) {
+                        validateRelationship(
+                            relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0], 
+                            entitiesByEntitiesIds[metadata.sourceEntityId][0], 
+                            entitiesByEntitiesIds[metadata.destinationEntityId][0]
+                        );
+                }
             } else if (action.actionType === ActionTypes.CreateEntity) {
                 const metadata = action.actionMetadata as ICreateEntityMetadata;
 
-                entityTemplatesIds.add(metadata.templateId);
-
-                validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
+                if (!metadata.templateId.startsWith('$')) {
+                    validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
+                }
             }
         }),
     );
