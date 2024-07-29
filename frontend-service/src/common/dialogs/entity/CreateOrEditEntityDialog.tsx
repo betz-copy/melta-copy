@@ -38,6 +38,7 @@ import { DraftWarningDialog } from './draftWarningDialog';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
 import { getFileName } from '../../../utils/getFileName';
 import { exportEntityToFormatFile } from '../../../services/templates/enitityTemplatesService';
+import { getLongDate } from '../../../utils/date';
 
 const { errorCodes } = environment;
 
@@ -278,7 +279,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     {
                         onSuccess: (data) => setExportedFile(data),
                         onError: () => {
-                            toast.error('homo');
+                            toast.error(i18next.t('errorPage.fileDownloadError'));
                         },
                     },
                 );
@@ -486,15 +487,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             variant="contained"
                                                             startIcon={<FileDownloadOutlinedIcon />}
                                                             onClick={async () => {
-                                                                console.log(entityToUpdate);
                                                                 const file = await exportMutation({
                                                                     entityId: values.properties._id || entityToUpdate?.properties._id,
                                                                     templateId: selectedFileToExport,
                                                                 });
 
-                                                                console.log(file);
-
-                                                                fileDownload(file, 'simple-template.docx');
+                                                                fileDownload(file, `${selectedFileToExport}_${getLongDate(new Date())}.docx`);
                                                             }}
                                                             disabled={!(selectedFileToExport?.length && !values.properties._id)}
                                                         >

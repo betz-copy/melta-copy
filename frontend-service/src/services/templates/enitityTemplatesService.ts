@@ -282,8 +282,8 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             'pdfTemplatesIds',
             JSON.stringify(
                 updatedEntityTemplate.pdfTemplatesIds
-                    .filter((homo) => !(homo instanceof File))
-                    .map((homo: string | { name: string }) => (typeof homo === 'string' ? homo : homo.name)),
+                    .filter((fileTemplate) => !(fileTemplate instanceof File))
+                    .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
             ),
         );
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);

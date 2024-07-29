@@ -1,6 +1,7 @@
 import { Paragraph, patchDocument, PatchType, TextRun } from 'docx';
 import { Readable, Transform } from 'stream';
 import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
+import logger from '../../../utils/logger/logsLogger';
 
 const checkIfBold = (text: string) => {
     const boldTagRegex = /<strong>(.*?)<\/strong>/;
@@ -118,9 +119,9 @@ export const patchDocumentAsStream = async (fileStream: Readable, entity: IEntit
                 const patchedBuffer = await patchDocument(chunk, { patches });
                 this.push(patchedBuffer);
                 callback();
-            } catch (error) {
-                console.error('Error patching document:', error);
-                callback(error as Error);
+            } catch (error: any) {
+                logger.error('\n\n\nError patching document:', error, '\n\n\n');
+                callback(error);
             }
         },
     });

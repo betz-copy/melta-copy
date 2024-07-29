@@ -13,7 +13,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, deleteFiles, downloadFile, downloadFiles, uploadFile, uploadFiles } from '../../externalServices/storageService';
+import { deleteFile, deleteFiles, downloadFile, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -340,12 +340,13 @@ export class TemplatesManager {
 
         if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
             const fileStream = await downloadFile(pdfTemplateId);
+            console.log({ fileStream }, '\n\n\ngot successfully\n\n\n');
             return patchDocumentAsStream(fileStream, entity);
         }
 
-        if (entityTemplate.pdfTemplatesIds) {
-            return downloadFiles(entityTemplate.pdfTemplatesIds);
-        }
+        // if (entityTemplate.pdfTemplatesIds) {
+        //     return downloadFiles(entityTemplate.pdfTemplatesIds);
+        // }
 
         throw error;
     }

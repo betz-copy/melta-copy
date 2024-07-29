@@ -36,13 +36,14 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
 };
 
 export const downloadFile = async (path: string) => {
-    const { data } = await axios.get(`${url}/${downloadFileRoute}/${path}`, {
+    const { data } = await axios.get<Readable>(`${url}/${downloadFileRoute}/${path}`, {
         responseType: 'stream',
         headers: {
             Accept: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         },
     });
-    return data as Readable;
+
+    return data;
 };
 
 export const downloadFiles = async (paths: string[]) => {
