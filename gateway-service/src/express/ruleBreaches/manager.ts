@@ -59,6 +59,7 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 
 const { errorCodes } = config;
 
@@ -142,12 +143,14 @@ export class RuleBreachesManager {
         }
     }
 
-    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User): Promise<IRuleBreachRequestPopulated> {
+    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User):
+    Promise<(IRuleBreachRequestPopulated | {actionsResults: PromiseSettledResult<(IRelationship | IEntity)[]>[], ruleBreachRequestPopulated: IRuleBreachRequestPopulated})> {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
+        let actionsResults;
 
         if (ruleBreachRequest.actions.length > 1) {
-            await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules, user.id);
+            actionsResults = await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules, user.id);
         } else
             try {
                 // only 1 action
@@ -217,6 +220,10 @@ export class RuleBreachesManager {
             { request: ruleBreachRequestPopulated },
             [ruleBreachRequest.originUserId],
         );
+
+        if (ruleBreachRequest.actions.length > 1) {
+            return {ruleBreachRequestPopulated, actionsResults};
+        }
 
         return ruleBreachRequestPopulated;
     }
