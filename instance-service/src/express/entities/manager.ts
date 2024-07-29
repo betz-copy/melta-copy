@@ -235,7 +235,7 @@ export class EntityManager {
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         await Promise.all(
-            createdRelationships.map(async (relationship) => {
+            createdRelationships.map(async (relationship) => { // TODO - instead the map, use the activityLogs that the createRelationshipReference function return
                 const relatedEntityId =
                     relationship.sourceEntityId === newEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
