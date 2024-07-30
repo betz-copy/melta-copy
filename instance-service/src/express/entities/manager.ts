@@ -373,23 +373,23 @@ export class EntityManager {
         );
     }
 
-    static async executeActionsOnCrud(action: IAction): Promise<{ entityId: string; properties: Record<string, any> }[]> {
+    static async executeActionsOnCrud(
+        action: IAction,
+        crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
+    ): Promise<{ entityId: string; properties: Record<string, any> }[]> {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
                 let entity: IEntity | undefined;
-                let crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity' | undefined;
 
                 switch (action.actionType) {
                     case ActionTypes.CreateEntity: {
                         entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction)).createdEntity;
-                        crudAction = 'onCreateEntity';
                         break;
                     }
 
                     case ActionTypes.UpdateEntity: {
                         entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
-                        crudAction = 'onUpdateEntity';
                         break;
                     }
 
@@ -397,7 +397,7 @@ export class EntityManager {
                         break;
                 }
 
-                if (entity && crudAction) {
+                if (entity) {
                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
                     const executionOutput: { entityId: string; properties: Record<string, any> }[] = await executeActionCodeAndGetEntitiesToUpdate(
@@ -432,7 +432,7 @@ export class EntityManager {
                 },
             ];
 
-            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0]);
+            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onCreateEntity');
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
@@ -441,23 +441,16 @@ export class EntityManager {
                         `MATCH (e {_id: '${entityId}'}) RETURN e`,
                         normalizeReturnedEntity('singleResponse'),
                     );
-                    console.log({ currentEntity });
 
-                    if (currentEntity) {
-                        actions.push({
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: {
-                                entityId,
-                                before: currentEntity.properties,
-                                updatedFields,
-                                entityTemplateId: currentEntity.templateId,
-                            } as IUpdateEntityMetadata,
-                        });
-                    } else
-                        actions.push({
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: { entityId: '$0._id', updatedFields, entityTemplateId: entityTemplate._id } as IUpdateEntityMetadata,
-                        });
+                    actions.push({
+                        actionType: ActionTypes.UpdateEntity,
+                        actionMetadata: {
+                            entityId: currentEntity?.properties._id ?? '$0._id',
+                            before: currentEntity?.properties,
+                            updatedFields,
+                            entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
+                        } as IUpdateEntityMetadata,
+                    });
                 }),
             );
 
@@ -740,7 +733,6 @@ export class EntityManager {
 
                     updatedEntities.push(...entitiesToUpdate);
                 }
-                console.log({ updatedEntities });
 
                 return { id, updatedEntities };
             });
@@ -1149,7 +1141,7 @@ export class EntityManager {
                 },
             ];
 
-            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0]);
+            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onUpdateEntity');
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {

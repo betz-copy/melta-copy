@@ -17,7 +17,10 @@ const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelat
     return index === -1 ? relationshipId : `$${index}._id`;
 };
 
-const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
+const getEntityIdFormattedForBrokenRules = (
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    entityId: string,
+) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdEntityId === entityId);
 
     return index === -1 ? entityId : `$${index}._id`;
@@ -52,7 +55,7 @@ const getCauseFormattedForBrokenRules = (
 
 const getBrokenRuleFormatted = (
     brokenRule: IBrokenRule,
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
 ): IBrokenRule => {
     const { ruleId, failures } = brokenRule;
 
@@ -99,7 +102,7 @@ export const throwIfActionCausedRuleFailures = (
     ignoredRules: IBrokenRule[],
     ruleFailuresBeforeAction: IRuleFailure[],
     ruleFailuresAfterAction: IRuleFailure[],
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
 ) => {
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
