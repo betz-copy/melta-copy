@@ -71,6 +71,9 @@ const Graph: React.FC = () => {
     const [load, setLoad] = useState<boolean>(false);
     const reload = () => setLoad(!load);
     const [is3DGraph, setIs3DGraph] = useLocalStorage(graphSettings.is3DViewLocalStorageKey, false);
+    const [initialExpandedEntity, setInitialExpandedEntity] = useState<IEntityExpanded | undefined>();
+    const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
+    const BATCH_SIZE = 10;
 
     const templateOptions = Array.from(entityTemplates.values());
     const updateGraphSize = () => {
@@ -92,8 +95,6 @@ const Graph: React.FC = () => {
     const graphEntityTemplateIds = uniqBy(graphData.nodes, ({ templateId }) => templateId).map((element) => element.templateId);
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
-            console.log('addNewGraphData', { newGraphData });
-
             const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
             const mergedGraphLinks = getFixedGraphLinks([...prevGraphData.links, ...newGraphData.links]);
 
@@ -142,48 +143,33 @@ const Graph: React.FC = () => {
         },
     );
 
-    const setGraphDataOnStart = async () => {
-        const { data: initialExpandedEntity } = await getExpandedEntityById();
-        const expandedEntityGraphData = getGraphDataWithNodeSizes(
-            expandedEntityToGraphData(
-                { ...initialExpandedEntity, connections: [initialExpandedEntity?.connections[0]] },
-                entityTemplates,
-                relationshipTemplates,
-            ),
-        );
-
-        expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
-        setGraphData(expandedEntityGraphData);
-        const shouldZoom = !(initialExpandedEntity && initialExpandedEntity?.connections.length < 1);
-        setShouldZoomToFit(shouldZoom);
-        console.log('setGraphDataOnStart', { initialExpandedEntity, expandedEntityGraphData });
-
-        return initialExpandedEntity;
-    };
-
     useEffect(() => {
-        const getGraphData = async () => {
-            const initialExpandedEntity = await setGraphDataOnStart();
-            let index = 1;
-            while (initialExpandedEntity!.connections[index]) {
-                const expandedEntityGraphData = getGraphDataWithNodeSizes(
-                    expandedEntityToGraphData(
-                        { ...initialExpandedEntity, connections: initialExpandedEntity?.connections.splice(index, index) },
-                        entityTemplates,
-                        relationshipTemplates,
-                    ),
-                );
-                console.log('getGraphData', { expandedEntityGraphData });
-                index++;
-
-                setTimeout(() => {
-                    addNewGraphData(expandedEntityGraphData);
-                }, 1000);
+        const loadNextBatch = async () => {
+            let expandedEntity = initialExpandedEntity;
+            if (!initialExpandedEntity) {
+                const { data } = await getExpandedEntityById();
+                expandedEntity = data;
+                setInitialExpandedEntity(data);
             }
-            console.log('getGraphData', { initialExpandedEntity });
+
+            const startIndex = currentBatchIndex * BATCH_SIZE;
+            const expandedEntityGraphData = getGraphDataWithNodeSizes(
+                expandedEntityToGraphData(
+                    {
+                        ...expandedEntity,
+                        connections: expandedEntity?.connections.slice(startIndex, startIndex + BATCH_SIZE),
+                    },
+                    entityTemplates,
+                    relationshipTemplates,
+                ),
+            );
+
+            addNewGraphData(expandedEntityGraphData);
+            if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex + 1);
         };
-        getGraphData();
-    }, [entityId, filteredEntityTemplates, load, filterRecord]); // eslint-disable-line react-hooks/exhaustive-deps
+
+        loadNextBatch();
+    }, [currentBatchIndex, is3DGraph]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -194,8 +180,6 @@ const Graph: React.FC = () => {
     if (!is3DGraph) {
         forceRef.current?.d3Force('node', forceManyBody().strength(-100).distanceMin(50).distanceMax(400));
     }
-
-    console.log({ graphData });
 
     const commonGraphProps: SharedProperties<ForceGraphProps, ForceGraphProps3D> = {
         height,
@@ -328,6 +312,8 @@ const Graph: React.FC = () => {
                 set3DView={(is3DView) => {
                     setIs3DGraph(is3DView);
                     setShouldZoomToFit(true);
+                    setCurrentBatchIndex(0);
+                    setGraphData({ nodes: [], links: [] });
                 }}
                 is3DView={is3DGraph}
             />
