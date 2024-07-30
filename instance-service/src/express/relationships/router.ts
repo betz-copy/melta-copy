@@ -6,7 +6,6 @@ import {
     deleteRelationshipByIdRequestSchema,
     updateRelationshipByIdRequestSchema,
     getRelationshipsCountRequestSchema,
-    runBulkOfActionsInMultipleTransactionsSchema,
     getRelationshipsByIdsRequestSchema,
 } from './validator.schema';
 import ValidateRequest from '../../utils/joi';
@@ -22,12 +21,6 @@ relationshipRouter.get(
     wrapController(RelationshipController.getRelationshipsCountByTemplateId),
 );
 relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
-
-relationshipRouter.post(
-    '/bulk',
-    ValidateRequest(runBulkOfActionsInMultipleTransactionsSchema),
-    wrapController(RelationshipController.runBulkOfActionsInMultipleTransactions),
-);
 
 relationshipRouter.post(
     '/',

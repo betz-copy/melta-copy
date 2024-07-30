@@ -18,6 +18,7 @@ import {
     getNeo4jDateTime,
 } from '../../utils/neo4j/lib';
 import {
+    EntitiesIdsRulesReasonsMap,
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
@@ -34,7 +35,7 @@ import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
-import { filterDependentRulesOnEntity } from '../rules/getParametersOfFormula';
+import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import config from '../../config';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
@@ -42,7 +43,7 @@ import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import RelationshipManager from '../relationships/manager';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-import { executeActionAndUpdateRelevantEntities } from '../../utils/actions/executeScript';
+import { executeActionAndUpdateRelevantEntities, executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
@@ -50,8 +51,87 @@ import { IRelationship } from '../relationships/interfaces';
 import { IAction, ICreateEntityMetadata, ActionTypes, IUpdateEntityMetadata } from '../relationships/interfaces/action';
 import { IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
+import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+import BulkActionManager from '../bulkActions/manager';
 
 export class EntityManager {
+    static getRelevantRulesOfEntities = (
+        entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap,
+        rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
+    ) => {
+        // sort relevant rules by each entity
+        // entityId -> rules[], entityTemplateId
+        const entitiesRelevantRulesMap = new Map<
+            string,
+            {
+                rules: IMongoRule[];
+                entityTemplateId: string;
+            }
+        >();
+
+        entitiesIdsRulesReasonsMapBeforeRunActions.forEach(({ reasons, entityTemplateId }, entityId) => {
+            const relevantRules: IMongoRule[] = [];
+            const rulesIds: Set<string> = new Set<string>();
+
+            reasons.forEach((reason) => {
+                if (reason.type === 'dependentOnEntity') {
+                    relevantRules.push(
+                        ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityTemplateId] || [], entityTemplateId).filter(
+                            (rule) => !rulesIds.has(rule._id),
+                        ),
+                    );
+                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                } else if (reason.type === 'dependentViaAggregation') {
+                    relevantRules.push(
+                        ...filterDependentRulesViaAggregation(
+                            rulesByEntityTemplateIds[entityTemplateId] || [],
+                            reason.dependentRelationshipTemplateId,
+                            reason.updatedProperties,
+                        ).filter((rule) => !rulesIds.has(rule._id)),
+                    );
+                    relevantRules.forEach((rule) => rulesIds.add(rule._id));
+                }
+            });
+
+            entitiesRelevantRulesMap.set(entityId, { rules: relevantRules, entityTemplateId });
+        });
+
+        return entitiesRelevantRulesMap;
+    };
+
+    static async runRulesOnEntitiesWithRuleReasons(
+        transaction: Transaction,
+        entitiesIdsRulesReasonsMap: EntitiesIdsRulesReasonsMap,
+        rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
+    ) {
+        const entitiesRelevantRulesMap = EntityManager.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
+
+        const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
+        entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
+            ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
+        });
+
+        const ruleFailures = (await Promise.all(ruleFailuresPromises)).flat();
+
+        return ruleFailures;
+    }
+
+    static runRulesOnEntityDependentViaAggregation = async (
+        transaction: Transaction,
+        entityId: string,
+        entityTemplateId: string,
+        dependentRelationshipTemplateId: string,
+        updatedProperties?: string[],
+    ): Promise<IRuleFailure[]> => {
+        const rulesOfEntity = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: [entityTemplateId],
+        });
+
+        const relevantRules = filterDependentRulesViaAggregation(rulesOfEntity, dependentRelationshipTemplateId, updatedProperties);
+
+        return runRulesOnEntity(transaction, entityId, relevantRules);
+    };
+
     private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
@@ -108,13 +188,12 @@ export class EntityManager {
         entityTemplate: IMongoEntityTemplate,
         userId?: string,
         duplicatedFromId?: string,
-        dryRun?: boolean,
     ) {
         const createdRelationships: IRelationship[] = [];
-        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         const fixedProperties = JSON.parse(JSON.stringify(properties));
         const relatedEntitiesByIds: Record<string, IEntity> = {};
+        const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
@@ -142,25 +221,27 @@ export class EntityManager {
             },
         );
 
-        await Promise.all(
-            Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
-                if (property.format === 'relationshipReference') {
-                    if (createdEntity.properties[name]) {
-                        const createdRelationship = await this.createRelationshipReference(
-                            property.relationshipReference!,
-                            relatedEntitiesByIds[createdEntity.properties[name].properties._id],
-                            createdEntity.properties._id,
-                            transaction,
-                        );
-                        createdRelationships.push(createdRelationship);
+        if (userId) {
+            await Promise.all(
+                Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
+                    if (property.format === 'relationshipReference') {
+                        if (createdEntity.properties[name]) {
+                            const { createdRelationship } = await this.createRelationshipReference(
+                                property.relationshipReference!,
+                                relatedEntitiesByIds[createdEntity.properties[name].properties._id],
+                                createdEntity.properties._id,
+                                transaction,
+                                userId,
+                            );
+                            createdRelationships.push(createdRelationship);
+                        }
                     }
-                }
-            }),
-        );
+                }),
+            );
 
-        if (!dryRun && userId) {
             await Promise.all(
                 createdRelationships.map(async (relationship) => {
+                    // TODO - instead the map, use the activityLogs that the createRelationshipReference function return
                     const relatedEntityId =
                         relationship.sourceEntityId === createdEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
@@ -209,6 +290,7 @@ export class EntityManager {
         relatedEntity: IEntity,
         originalEntityId: string,
         transaction: Transaction,
+        userId: string,
     ) {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
@@ -224,7 +306,7 @@ export class EntityManager {
 
         const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationshipTemplateId!);
 
-        return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationshipToCreate, relationshipTemplate, [], transaction);
+        return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationshipToCreate, relationshipTemplate, [], transaction, userId);
     }
 
     static async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
@@ -272,6 +354,67 @@ export class EntityManager {
         return relatedEntityIdsByFieldToChange;
     }
 
+    static async handleCreateEntity(actionMetadata: ICreateEntityMetadata, transaction: Transaction, userId?: string, duplicatedFromId?: string) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(actionMetadata.templateId);
+        return EntityManager.createEntityInTransaction(transaction, actionMetadata.properties, entityTemplate, userId, duplicatedFromId);
+    }
+
+    static async handleUpdateEntity(actionMetadata: IUpdateEntityMetadata, transaction: Transaction, userId?: string) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
+            actionMetadata.entityTemplateId ?? (await EntityManager.getEntityById(actionMetadata.entityId)).templateId,
+        );
+
+        return EntityManager.updateEntityByIdInnerTransaction(
+            actionMetadata.entityId,
+            actionMetadata.updatedFields,
+            entityTemplate,
+            transaction,
+            userId,
+        );
+    }
+
+    static async executeActionsOnCrud(action: IAction): Promise<{ entityId: string; properties: Record<string, any> }[]> {
+        return Neo4jClient.performComplexTransaction(
+            'writeTransaction',
+            async (transaction) => {
+                let entity: IEntity | undefined;
+                let crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity' | undefined;
+
+                switch (action.actionType) {
+                    case ActionTypes.CreateEntity: {
+                        entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction)).createdEntity;
+                        crudAction = 'onCreateEntity';
+                        break;
+                    }
+
+                    case ActionTypes.UpdateEntity: {
+                        entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
+                        crudAction = 'onUpdateEntity';
+                        break;
+                    }
+
+                    default:
+                        break;
+                }
+
+                if (entity && crudAction) {
+                    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+                    const executionOutput: { entityId: string; properties: Record<string, any> }[] = await executeActionCodeAndGetEntitiesToUpdate(
+                        entityTemplate,
+                        entity,
+                        crudAction,
+                        transaction,
+                    );
+
+                    return executionOutput;
+                }
+                return [];
+            },
+            true,
+        );
+    }
+
     static async createEntity(
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
@@ -289,7 +432,7 @@ export class EntityManager {
                 },
             ];
 
-            const entitiesToUpdate = await RelationshipManager.executeActionsOnCrud(actions[0]);
+            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0]);
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
@@ -318,7 +461,7 @@ export class EntityManager {
                 }),
             );
 
-            const resultsOfBulkActions = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false, userId, duplicatedFromId);
+            const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
         }
 
@@ -333,6 +476,7 @@ export class EntityManager {
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, createdEntity);
 
             throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: createdEntity.properties._id }]);
+
             const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
 
             await Promise.all(activityLogsPromises);
@@ -700,7 +844,7 @@ export class EntityManager {
         );
 
         const ruleFailuresForEachNeighbourPromises = neighboursOfUpdatedEntity.map(async ({ relationshipTemplate, neighbourOfEntity }) => {
-            return RelationshipManager.runRulesOnEntityDependentViaAggregation(
+            return EntityManager.runRulesOnEntityDependentViaAggregation(
                 transaction,
                 neighbourOfEntity.properties._id,
                 neighbourOfEntity.templateId,
@@ -754,6 +898,7 @@ export class EntityManager {
         entityProperties: Record<string, any>,
         updatedProperties: string[],
         transaction: Transaction,
+        userId: string,
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
@@ -783,11 +928,12 @@ export class EntityManager {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[updatedProperty] = fixedField;
-                        const createdRelationship = await this.createRelationshipReference(
+                        const { createdRelationship } = await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntity,
                             entityId,
                             transaction,
+                            userId,
                         );
 
                         createdRelationships.push(createdRelationship);
@@ -867,7 +1013,14 @@ export class EntityManager {
             fixedProperties,
             createdRelationships: newCreatedRelationships,
             deletedRelationships: newDeletedRelationships,
-        } = await this.handleRelationshipReferenceFieldsChanges(entity, entityTemplate, entityProperties, updatedProperties, transaction);
+        } = await this.handleRelationshipReferenceFieldsChanges(
+            entity,
+            entityTemplate,
+            entityProperties,
+            updatedProperties,
+            transaction,
+            userId ?? '',
+        );
         createdRelationships = newCreatedRelationships;
         deletedRelationships = newDeletedRelationships;
 
@@ -996,7 +1149,7 @@ export class EntityManager {
                 },
             ];
 
-            const entitiesToUpdate = await RelationshipManager.executeActionsOnCrud(actions[0]);
+            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0]);
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
@@ -1015,7 +1168,7 @@ export class EntityManager {
                 }),
             );
 
-            const resultsOfBulkActions = await RelationshipManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { updatedEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
         }
 

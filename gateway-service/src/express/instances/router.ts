@@ -14,6 +14,7 @@ import {
     validateUserCanWriteEntityInstance,
     validateUserCanReadEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
+    validateUserCanWriteBulkEntityInstance,
 } from './middlewares';
 import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
@@ -133,5 +134,6 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
+InstancesRouter.post('/bulk', wrapMiddleware(validateUserCanWriteBulkEntityInstance), wrapController(InstancesController.runBulkOfActions));
 
 export default InstancesRouter;

@@ -116,3 +116,23 @@ export const isIEntity = (object: any): object is IEntity => {
         typeof object.templateId === 'string'
     );
 };
+
+// reasons which rules to run on each entity
+// entityId -> reasons[], entityTemplateId
+export type EntitiesIdsRulesReasonsMap = Map<
+    string,
+    {
+        reasons: (
+            | {
+                  type: 'dependentViaAggregation';
+                  dependentRelationshipTemplateId: string;
+                  updatedProperties?: string[] | undefined;
+              }
+            | {
+                  type: 'dependentOnEntity';
+                  updatedProperties?: string[] | undefined;
+              }
+        )[];
+        entityTemplateId: string;
+    }
+>;

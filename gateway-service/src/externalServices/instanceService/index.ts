@@ -5,7 +5,15 @@ import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearch
 import { IRelationship } from './interfaces/relationships';
 
 const {
-    instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
+    instanceService: {
+        url,
+        baseEntitiesRoute,
+        baseRelationshipsRoute,
+        baseBulkActionsRoute,
+        baseConstraintsRoute,
+        requestTimeout,
+        searchOfTemplateRoute,
+    },
 } = config;
 
 export class InstanceManagerService {
@@ -148,10 +156,18 @@ export class InstanceManagerService {
         actionsGroups: IAction[][],
         dryRun: boolean,
         ignoredRules: IBrokenRule[] = [],
+        userId: string,
     ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
+        console.log({
+            actionsGroups,
+            dryRun,
+            ignoredRules,
+            userId,
+        });
+
         const { data } = await this.InstanceManagerApi.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
-            `${baseRelationshipsRoute}/bulk?dryRun=${dryRun}`,
-            { actionsGroups, ignoredRules },
+            `${baseBulkActionsRoute}/bulk?dryRun=${dryRun}`,
+            { actionsGroups, ignoredRules, userId },
         );
 
         return data;

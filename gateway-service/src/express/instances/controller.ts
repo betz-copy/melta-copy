@@ -58,6 +58,12 @@ class InstancesController {
         const { disabled, ignoredRules } = req.body;
         res.json(await InstancesManager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
     }
+
+    static async runBulkOfActions(req: Request, res: Response) {
+        const { actionsGroups, ignoredRules } = req.body;
+
+        res.json(await InstancesManager.runBulkOfActions(actionsGroups, req.query.dryRun, ignoredRules, req.user!.id));
+    }
 }
 
 export default InstancesController;
