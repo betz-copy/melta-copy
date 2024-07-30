@@ -492,7 +492,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                     templateId: selectedFileToExport,
                                                                 });
 
-                                                                fileDownload(file, `${selectedFileToExport}_${getLongDate(new Date())}.docx`);
+                                                                fileDownload(
+                                                                    file,
+                                                                    `${getFileName(selectedFileToExport).split('.')[0]}_${getLongDate(
+                                                                        new Date(),
+                                                                    )}.docx`,
+                                                                );
                                                             }}
                                                             disabled={!(selectedFileToExport?.length && !values.properties._id)}
                                                         >

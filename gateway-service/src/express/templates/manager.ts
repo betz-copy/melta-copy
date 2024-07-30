@@ -338,15 +338,8 @@ export class TemplatesManager {
         const entity = await InstanceManagerService.getEntityInstanceById(entityId);
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
-        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId)) {
-            const fileStream = await downloadFile(pdfTemplateId);
-            console.log({ fileStream }, '\n\n\ngot successfully\n\n\n');
-            return patchDocumentAsStream(fileStream, entity);
-        }
-
-        // if (entityTemplate.pdfTemplatesIds) {
-        //     return downloadFiles(entityTemplate.pdfTemplatesIds);
-        // }
+        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId))
+            return patchDocumentAsStream(await downloadFile(pdfTemplateId), entity);
 
         throw error;
     }
