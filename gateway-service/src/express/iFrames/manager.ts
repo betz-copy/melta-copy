@@ -1,51 +1,37 @@
 import { FilterQuery } from 'mongoose';
-import { IFramesService, ISearchIFramesBody } from '../../externalServices/iFramesService';
+import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import IFrameModel from './model';
 import { IFrame, IFrameDocument } from './interface';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { removeTmpFile } from '../../utils/fs';
+import { getAllowedCategoriesForInstances } from './middlewares';
 
 export class IFrameManager {
-    // private static filterIFrameWithPermissions(iFrame: IMongoIFrame, allowedEntityTemplates: IMongoEntityTemplatePopulated[]) {
-    //     const filteredIFrame = iFrame.categoryIds.filter((id) => {
-    //         return allowedEntityTemplates.some(({ _id }) => _id === id);
-    //     });
-    //     console.log({ filteredIFrame });
-
-    //     return filteredIFrame;
-    // }
+    private static filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
+        return allIFrames.filter((iframe) => iframe.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId)));
+    }
 
     static escapeRegExp(text: string) {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    static async searchIFrames({ search, limit, skip }: ISearchIFramesBody, _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        // const allowedCategories = await getAllowedCategoriesForInstances(permissionsOfUserId);
-        // console.log({ allowedCategories });
-
+    static async searchIFrames({ search, limit, skip }: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        const allowedCategories: string[] = getAllowedCategoriesForInstances(permissionsOfUserId);
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
-            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' }; // 'i' for case-insensitive
+            const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { description: searchRegex }, { url: searchRegex }];
         }
-        console.log({ search, limit, skip });
-
-        const iFrames = await IFrameModel.find(query).limit(limit).skip(skip).lean().exec();
-        console.log({ iFrames });
-
-        // return iFrames.map((iframe) => this.filterIFramesWithPermissions(iframe, allowedCategories));
-        return iFrames;
+        const allIFrames = await IFrameModel.find(query).lean().exec();
+        const filteredIFrames = this.filterIFramesWithPermissions(allIFrames, allowedCategories);
+        if (!skip && !limit) return filteredIFrames;
+        return filteredIFrames.slice(skip, skip + limit);
     }
 
     static getIFrameById(iFrameId: string) {
         return IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
-    }
-
-    static async getExternalSiteById(iFrameId: string) {
-        const iFrame = await this.getIFrameById(iFrameId);
-        return IFramesService.getExternalSiteById(iFrame.url);
     }
 
     static async createIFrame(iFrame: IFrame) {

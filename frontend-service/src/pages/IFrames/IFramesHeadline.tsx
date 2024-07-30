@@ -38,11 +38,11 @@ const IFramesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.templatesManagementId && (
-                    <IconButton onClick={setIFrameWizardDialogState} style={{ backgroundColor: 'pink' }}>
+                    <IconButton onClick={setIFrameWizardDialogState} >
                         <AddIcon htmlColor="primary" />
-                        <Typography fontSize={14} style={{ fontWeight: '500' }}>
+                        {/* <Typography fontSize={14} style={{ fontWeight: '500' }}>
                             {i18next.t('wizard.iFrame.addIFrame')}
-                        </Typography>
+                        </Typography> */}
                     </IconButton>
                 )}
             </Grid>

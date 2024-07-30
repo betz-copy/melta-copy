@@ -1,5 +1,20 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography } from '@mui/material';
+import {
+    Divider,
+    IconButton,
+    Grid,
+    Box,
+    Slide,
+    Fade,
+    Button,
+    useTheme,
+    Typography,
+    Collapse,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    Menu,
+} from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -30,6 +45,7 @@ import { getMyNotificationGroupCountRequest } from '../../services/notificationS
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
+import { searchIFrames } from '../../services/iFramesService';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -37,7 +53,69 @@ type SideBarProps = {
 };
 
 const { notifications } = environment;
+const IFramesInSideBar: React.FC<any> = ({
+    // : React.FC<categoriesGroupedByGroupProps> = ({
+    iFrames,
+    activeButton,
+    isDrawerOpen,
+    handleChangeActiveButton,
+}) => {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [showIFrames, setShowIFrames] = useState<boolean>(true);
+    // const [anchorEl  nchorEl] = useState(null);
 
+    const iconButtonRef = useRef(null);
+
+    return (
+        <Grid>
+            <Grid
+                style={{
+                    direction: 'rtl',
+                }}
+            >
+                <IconButton
+                    ref={iconButtonRef}
+                    onClick={() => {
+                        setShowIFrames(!showIFrames);
+                    }}
+                    sx={{
+                        color: '#FFFFFF80',
+                        fontFamily: 'Rubik',
+                        fontSize: '17px',
+                        maxWidth: isDrawerOpen ? 'auto' : '90px',
+                    }}
+                    // onMouseEnter={(event) => setAnchorEl(event.currentTarget)}
+                    // onMouseLeave={() => setAnchorEl(null)}
+                >
+                    <NavButton
+                        to="/iframes"
+                        text={i18next.t('pages.iFrames')}
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                    >
+                        <CodeIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
+                </IconButton>
+            </Grid>
+            {iFrames?.length && (
+                <Menu anchorEl={iconButtonRef.current} open={showIFrames} onClose={() => setShowIFrames(false)}>
+                    {iFrames.map((iFrame) => (
+                        <NavButton
+                            key={iFrame._id}
+                            to={`/iframes/${iFrame._id}`}
+                            text={iFrame.name}
+                            isDrawerOpen={isDrawerOpen}
+                            // disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === iFrame._id))}
+                            onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, iFrame._id)}
+                        >
+                            <Typography>{iFrame.name}</Typography>
+                        </NavButton>
+                    ))}
+                </Menu>
+            )}
+        </Grid>
+    );
+};
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
@@ -46,6 +124,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+
+    const { data: allIFrames } = useQuery(['searchIFrames'], () => {
+        return searchIFrames({});
+    });
+    const iFramesInSideBar = allIFrames?.filter((iframe) => iframe.placeInSideBar);
+
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
@@ -270,14 +354,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             </Box>
                         </Fade>
                     )}
-                    <NavButton
-                        to="/iframes"
-                        text={i18next.t('pages.iFrames')}
+
+                    <IFramesInSideBar
+                        iFrames={iFramesInSideBar}
+                        activeButton={activeButton}
+                        myPermissions={myPermissions}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
-                    >
-                        <CodeIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
-                    </NavButton>
+                        handleChangeActiveButton={handleChangeActiveButton}
+                    />
+
                     <NavButton
                         to="/rule-management"
                         text={i18next.t('pages.ruleManagement')}

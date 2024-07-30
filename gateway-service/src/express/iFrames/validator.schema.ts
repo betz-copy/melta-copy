@@ -11,15 +11,6 @@ const iFrameSchema = Joi.object({
     placeInSideBar: ExtendedJoi.boolean(),
 });
 
-// GET /api/iframes/externalSite/:iFrameId
-export const getExternalSiteByIdSchema = Joi.object({
-    query: {},
-    body: {},
-    params: {
-        iFrameId: MongoIdSchema.required(),
-    },
-});
-
 // GET /api/iframes/:iFrameId
 export const getIFrameByIdSchema = Joi.object({
     query: {},

@@ -25,7 +25,7 @@ const steps: StepsType<IFrameWizardValues> = [
     {
         label: i18next.t('wizard.iFrame.settingPermissions'),
         component: (props) => <SettingIFramesPermissions {...props} />,
-        // validationSchema: settingIFramesPermissionsSchema,
+        validationSchema: settingIFramesPermissionsSchema,
     },
     {
         label: i18next.t('wizard.iFrame.chooseIcon'),

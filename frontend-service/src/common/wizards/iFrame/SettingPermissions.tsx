@@ -11,10 +11,7 @@ import { ICategoryMap } from '../../../interfaces/categories';
 // import { Category } from '@mui/icons-material';
 
 const settingIFramesPermissionsSchema = {
-    CategoryIds: Yup.array()
-        .of(Yup.string())
-        .test('at-least-one', 'You must select at least one category', (value) => Array.isArray(value) && value.length > 0)
-        .required(i18next.t('validation.required')),
+    categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneField')).required(i18next.t('validation.required')),
 };
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {

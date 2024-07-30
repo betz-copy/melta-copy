@@ -1,4 +1,3 @@
-// import { Request } from 'express';
 import { Request } from 'express';
 import { IFrame } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
@@ -21,13 +20,7 @@ export const getAllowedCategoriesForInstances = (userPermissions: Omit<IPermissi
 };
 
 export const validateUserHasPermissionsToIFrame = async (userId: string, newIFrame: IFrame | undefined, existingIFrameId: string | undefined) => {
-    // async (userId: string, iFrameId: string) => {
     const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
-
-    // ??
-    // if (!userPermissions.templatesManagementId) {
-    //     throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete iframes` });
-    // }
 
     const allowedCategoriesIds: string[] = getAllowedCategoriesForInstances(userPermissions);
 
