@@ -2,9 +2,10 @@ import { FilterQuery } from 'mongoose';
 import { typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import { SinglePermissionOfTypePerUserError } from './errors';
-import { IPermission, ICompactPermissions, ICompactNullablePermissions, ISubCompactPermissions } from './interface/permissions';
+import { IPermission, ICompactPermissions, ICompactNullablePermissions, ISubCompactPermissions, ICompact } from './interface/permissions';
 import { PermissionsModel } from './model';
 import { UsersManager } from '../users/manager';
+import { RecursiveNullable } from '../../utils/types';
 
 export class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
@@ -60,6 +61,13 @@ export class PermissionsManager {
         });
 
         return this.getCompactPermissionsOfUser(userId, updatedWorkspacesIds);
+    }
+
+    static async deletePermissionsFromMetadata(
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        metadata: RecursiveNullable<ICompact<IPermission>>,
+    ): Promise<void> {
+        await PermissionsModel.updateMany(query, { $unset: { metadata } }).lean().exec();
     }
 
     static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions): Promise<IPermission[]> {

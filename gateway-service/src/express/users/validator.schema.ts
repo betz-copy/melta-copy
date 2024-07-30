@@ -1,4 +1,6 @@
 import joi from 'joi';
+import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { MongoIdSchema } from '../../utils/joi';
 
 const UserExternalMetadataSchema = joi.object({
     kartoffelId: joi.string().required(),
@@ -51,6 +53,23 @@ export const syncUserPermissionsRequestSchema = joi.object({
     params: {
         userId: joi.string().required(),
     },
+});
+
+// PATCH /api/permissions/metadata
+export const deletePermissionsFromMetadataRequestSchema = joi.object({
+    query: {},
+    body: {
+        metadata: joi.object(),
+        query: {
+            workspaceId: MongoIdSchema.required(),
+            type: joi
+                .string()
+                .valid(...Object.values(PermissionType))
+                .required(),
+            userId: MongoIdSchema.optional(),
+        },
+    },
+    params: {},
 });
 
 // GET /api/users/external

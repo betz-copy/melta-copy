@@ -1,8 +1,8 @@
 import axios from 'axios';
 import config from '../../config';
 import { IBaseUser, IUser, IUserSearchBody } from './interfaces/users';
-import { DeepPartial } from '../../utils/types';
-import { ICompactNullablePermissions, ICompactPermissions } from './interfaces/permissions/permissions';
+import { DeepPartial, RecursiveNullable } from '../../utils/types';
+import { ICompact, ICompactNullablePermissions, ICompactPermissions, IPermission } from './interfaces/permissions/permissions';
 
 const {
     userService: { url, usersRoute, permissionsRoute, requestTimeout },
@@ -51,6 +51,14 @@ export class UserService {
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions | ICompactPermissions): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/sync`, { userId, permissions });
+        return data;
+    }
+
+    static async deletePermissionsFromMetadata(
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        metadata: RecursiveNullable<ICompact<IPermission>>,
+    ) {
+        const { data } = await this.userService.patch<void>(`${permissionsRoute}/metadata`, { query, metadata });
         return data;
     }
 }

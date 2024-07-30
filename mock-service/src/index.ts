@@ -130,6 +130,3 @@ const main = async () => {
 };
 
 main();
-
-// console.log('Starting mock in 20 seconds...');
-// setTimeout(main, 20000);

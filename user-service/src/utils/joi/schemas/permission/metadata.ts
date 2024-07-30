@@ -1,8 +1,7 @@
 import * as joi from 'joi';
-import { IInstancePermissionOrderedHierarchy } from '../../../../express/permissions/interface/permissions';
 import { PermissionScopeSchema } from '.';
 
-const getPermissionMetadataSchema = (classHierarchy: readonly string[]) => {
+export const getPermissionMetadataSchema = (classHierarchy: readonly string[], allowNull = false) => {
     const [className, ...restOfHierarchy] = classHierarchy;
 
     const schema: joi.PartialSchemaMap = {
@@ -13,12 +12,5 @@ const getPermissionMetadataSchema = (classHierarchy: readonly string[]) => {
         schema[className] = joi.object().pattern(joi.string(), getPermissionMetadataSchema(restOfHierarchy));
     }
 
-    return joi.object(schema);
+    return allowNull ? joi.object(schema).allow(null) : joi.object(schema);
 };
-
-export const AdminPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const RulesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const PermissionsPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const ProcessesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const TemplatesPermissionMetadataSchema = getPermissionMetadataSchema([]);
-export const InstancesPermissionMetadataSchema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy);

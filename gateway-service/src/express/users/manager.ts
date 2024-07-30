@@ -1,9 +1,15 @@
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';
-import { ICompactNullablePermissions, ICompactPermissions } from '../../externalServices/userService/interfaces/permissions/permissions';
+import {
+    ICompact,
+    ICompactNullablePermissions,
+    ICompactPermissions,
+    IPermission,
+} from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
+import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
@@ -33,6 +39,13 @@ export class UsersManager {
     // TODO return proper permissions type
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {
         return UserService.syncUserPermissions(userId, permissions);
+    }
+
+    static async deletePermissionsFromMetadata(
+        query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
+        metadata: RecursiveNullable<ICompact<IPermission>>,
+    ) {
+        return UserService.deletePermissionsFromMetadata(query, metadata);
     }
 
     static async syncUser(userId: string): Promise<IUser> {

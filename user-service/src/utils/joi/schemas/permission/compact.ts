@@ -1,38 +1,32 @@
 import * as joi from 'joi';
-import { PermissionType } from '../../../../express/permissions/interface';
-import {
-    AdminPermissionMetadataSchema,
-    InstancesPermissionMetadataSchema,
-    PermissionsPermissionMetadataSchema,
-    ProcessesPermissionMetadataSchema,
-    RulesPermissionMetadataSchema,
-    TemplatesPermissionMetadataSchema,
-} from './metadata';
 import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
+import { PermissionType } from '../../../../express/permissions/interface';
+import { IInstancePermissionOrderedHierarchy } from '../../../../express/permissions/interface/permissions';
+import { getPermissionMetadataSchema } from './metadata';
 
-const getSubCompactPermissionSchema = (allowNull: boolean = false) => {
+const getSubCompactPermissionSchema = (allowNull = false) => {
     return joi.custom((value) => {
         let schema: joi.ObjectSchema;
 
         Object.entries(value).forEach(([type, permissionCompact]) => {
             switch (type) {
                 case PermissionType.admin:
-                    schema = AdminPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
                 case PermissionType.rules:
-                    schema = RulesPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
                 case PermissionType.permissions:
-                    schema = PermissionsPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
                 case PermissionType.processes:
-                    schema = ProcessesPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
                 case PermissionType.templates:
-                    schema = TemplatesPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema([], allowNull);
                     break;
                 case PermissionType.instances:
-                    schema = InstancesPermissionMetadataSchema;
+                    schema = getPermissionMetadataSchema(IInstancePermissionOrderedHierarchy, allowNull);
                     break;
 
                 default:

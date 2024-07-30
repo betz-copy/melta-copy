@@ -8,6 +8,7 @@ import {
     searchExternalUsersRequestSchema,
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
+    deletePermissionsFromMetadataRequestSchema,
     updateUserExternalMetadataRequestSchema,
 } from './validator.schema';
 
@@ -27,5 +28,11 @@ usersRouter.patch(
 );
 
 usersRouter.post('/:userId/permissions/sync', ValidateRequest(syncUserPermissionsRequestSchema), wrapController(UsersController.syncUserPermissions));
+
+usersRouter.patch(
+    '/metadata',
+    ValidateRequest(deletePermissionsFromMetadataRequestSchema),
+    wrapController(UsersController.deletePermissionsFromMetadata),
+);
 
 usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));

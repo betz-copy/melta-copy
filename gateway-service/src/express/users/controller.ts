@@ -28,6 +28,10 @@ export class UsersController {
         res.json(await UsersManager.syncUserPermissions(req.params.userId, req.body));
     }
 
+    static async deletePermissionsFromMetadata(req: Request, res: Response) {
+        res.json(await UsersManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
+    }
+
     static async searchExternalUsers(req: Request, res: Response) {
         res.json(await UsersManager.searchExternalUsers(req.body.search));
     }

@@ -13,4 +13,8 @@ export class PermissionsController {
 
         res.json(await PermissionsManager.syncCompactPermissionsOfUser(userId, permissions));
     }
+
+    static async deletePermissionsFromMetadata(req: Request, res: Response) {
+        res.json(await PermissionsManager.deletePermissionsFromMetadata(req.body.query, req.body.metadata));
+    }
 }
