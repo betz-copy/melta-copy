@@ -194,6 +194,10 @@ export class TemplatesManager {
         };
     }
 
+    static getAllRelationshipTemplates() {
+        return RelationshipsTemplateManagerService.searchRelationshipTemplates();
+    }
+
     static async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId);
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
@@ -344,15 +348,30 @@ export class TemplatesManager {
         throw error;
     }
 
-    static async throwIfEntityHasRelationships(id: string) {
-        const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
-        if (outgoingRelationships.length > 0) {
+    static entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IRelationshipTemplate[]) {
+        return relastionships.some((relationship) => {
+            const isUsedAsRelationshipReference =
+                entityTemplateToDelete.properties.properties[relationship.name].relationshipReference?.relationshipTemplateId === relationship._id;
+
+            return !isUsedAsRelationshipReference;
+        });
+    }
+
+    // TODO: Move to template-service
+    static async throwIfEntityHasRelationships(entityTemplateToDelete: IMongoEntityTemplatePopulated) {
+        const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: [entityTemplateToDelete._id],
+        });
+        if (this.entityHasRelationshipNotReference(entityTemplateToDelete, outgoingRelationships)) {
             throw new ServiceError(400, 'entity template still has outgoing relationships', {
                 errorCode: entityTemplateHasOutgoingRelationships,
             });
         }
-        const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [id] });
-        if (incomingRelationships.length > 0) {
+
+        const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: [entityTemplateToDelete._id],
+        });
+        if (this.entityHasRelationshipNotReference(entityTemplateToDelete, incomingRelationships)) {
             throw new ServiceError(400, 'entity template still has incoming relationships', {
                 errorCode: entityTemplateHasIncomingRelationships,
             });
@@ -367,12 +386,12 @@ export class TemplatesManager {
     }
 
     static async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
-        await TemplatesManager.throwIfEntityHasRelationships(id);
+        const entityTemplateToDelete = await EntityTemplateManagerService.getEntityTemplateById(id);
+        await TemplatesManager.throwIfEntityHasRelationships(entityTemplateToDelete);
         await TemplatesManager.throwIfEntityTemplateHasInstances(id);
 
-        const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
-        if (iconFileId) {
-            await deleteFile(iconFileId);
+        if (entityTemplateToDelete.iconFileId) {
+            await deleteFile(entityTemplateToDelete.iconFileId);
         }
 
         await InstanceManagerService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
@@ -453,6 +472,8 @@ export class TemplatesManager {
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                     throw new ServiceError(400, 'can not remove options from enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
+                if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
+                    throw new ServiceError(400, 'can not change relationship reference fields');
             });
         }
 

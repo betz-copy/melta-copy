@@ -7,7 +7,7 @@ import { useParams } from 'react-router-dom';
 import { FormikErrors, FormikTouched } from 'formik';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { EntityWizardValues } from '.';
+import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
@@ -54,7 +54,7 @@ const ChooseTemplate: React.FC<{
         <Autocomplete
             id="template"
             options={activeEntityTemplatesFiltered}
-            onChange={(_e, value) => setFieldValue('template', value || '')}
+            onChange={(_e, value) => setFieldValue('template', value || emptyEntityTemplate)}
             value={values.template._id ? values.template : null}
             disabled={disabled}
             getOptionLabel={(option) => option.displayName}

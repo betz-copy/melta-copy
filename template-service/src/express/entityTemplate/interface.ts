@@ -4,7 +4,7 @@ import { IMongoCategory } from '../category/interface';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
     enum?: string[];
     pattern?: string;
     patternCustomErrorMessage?: string;
@@ -13,6 +13,12 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
     items?: {
         type: 'string';
         enum?: string[];

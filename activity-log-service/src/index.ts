@@ -3,6 +3,7 @@ import * as apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
+import initializeRabbit from './utils/rabbit';
 
 const { mongo, service, logs } = config;
 
@@ -24,6 +25,8 @@ const initializeMongo = async () => {
 
 const main = async () => {
     await initializeMongo();
+
+    await initializeRabbit();
 
     const server = new Server(service.port);
 

@@ -15,6 +15,7 @@ import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
+import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -52,10 +53,19 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'serialStarter',
     });
     ajv.addKeyword({
+        keyword: 'relationshipReference',
+        type: 'string',
+    });
+    ajv.addKeyword({
         keyword: 'serialCurrent',
     });
 
-    const validateFunction = ajv.compile(schema);
+    const schemaToValidate = {
+        ...schema,
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+    };
+
+    const validateFunction = ajv.compile(schemaToValidate);
     validateFunction(data);
 
     const ajvErrors = validateFunction.errors ?? [];
@@ -132,6 +142,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:options': { toPrint },
                     };
                 }
+                if (propertySchema.format === 'relationshipReference') {
+                    return {
+                        'ui:widget': 'TemplateReferenceWidget',
+                    };
+                }
                 return {};
             })}
             onChange={({ formData }) => {
@@ -159,6 +174,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextWidget: RjsfTextWidget,
                 EmailWidget: RjsfTextWidget,
                 TextAreaWidget: RjfsTextAreaWidget,
+                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

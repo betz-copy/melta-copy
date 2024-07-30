@@ -51,6 +51,7 @@ const createRelationshipAndExpectRuleBlock = async (
             },
             relationshipTemplate,
             [],
+            neo4j.mockUserId,
         ),
     );
     expect(err).toStrictEqual(
@@ -82,6 +83,7 @@ const createRelationshipAndExpectToSucceed = async (
         },
         relationshipTemplate,
         ignoredRules,
+        neo4j.mockUserId,
     );
 
     expect(relationship.templateId).toStrictEqual(relationshipTemplate._id);
@@ -92,7 +94,7 @@ const createRelationshipAndExpectToSucceed = async (
 };
 
 const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brokenRule: IBrokenRule) => {
-    const { err } = await trycatch(() => RelationshipManager.deleteRelationshipById(relationshipId, []));
+    const { err } = await trycatch(() => RelationshipManager.deleteRelationshipById(relationshipId, [], neo4j.mockUserId));
     expect(err).toStrictEqual(
         new ServiceError(400, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
@@ -114,7 +116,7 @@ const deleteRelationshipAndExpectToSucceed = async (
     destinationEntity: IEntity,
     ignoredRules: IBrokenRule[] = [],
 ) => {
-    const deletedRelationship = await RelationshipManager.deleteRelationshipById(relationshipId, ignoredRules);
+    const deletedRelationship = await RelationshipManager.deleteRelationshipById(relationshipId, ignoredRules, neo4j.mockUserId);
 
     expect(deletedRelationship.templateId).toStrictEqual(relationshipTemplateId);
     expect(deletedRelationship.sourceEntityId).toStrictEqual(sourceEntity.properties._id);
@@ -159,12 +161,14 @@ describe('Relationship manager test rules', () => {
                     },
                     travelAgentEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 secondTravelAgent = await EntityManager.createEntity(
                     { firstName: 'Name2', lastName: 'Name2', agentId: '2' },
                     travelAgentEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 flight = await EntityManager.createEntity(
@@ -175,6 +179,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 trip = await EntityManager.createEntity(
@@ -184,6 +189,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 airport = await EntityManager.createEntity(
@@ -194,6 +200,7 @@ describe('Relationship manager test rules', () => {
                     },
                     airportEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
             });
 
@@ -363,6 +370,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 firstFlight = await EntityManager.createEntity(
@@ -373,6 +381,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 secondFlight = await EntityManager.createEntity(
@@ -383,6 +392,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 thirdFlightOverlapping = await EntityManager.createEntity(
@@ -393,6 +403,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 fourthFlightNotOverlapping = await EntityManager.createEntity(
@@ -403,6 +414,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 fifthFlightOverlapping = await EntityManager.createEntity(
@@ -413,6 +425,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
             });
 
@@ -622,6 +635,7 @@ describe('Relationship manager test rules', () => {
                     },
                     airportEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstTrip = await EntityManager.createEntity(
                     {
@@ -633,6 +647,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondTrip = await EntityManager.createEntity(
                     {
@@ -644,6 +659,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstFlight = await EntityManager.createEntity(
                     {
@@ -653,6 +669,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondFlight = await EntityManager.createEntity(
                     {
@@ -662,6 +679,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 thirdFlight = await EntityManager.createEntity(
                     {
@@ -671,6 +689,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
             });
 
@@ -891,6 +910,7 @@ describe('Relationship manager test rules', () => {
                     },
                     travelAgentEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 secondTravelAgent = await EntityManager.createEntity(
@@ -901,6 +921,7 @@ describe('Relationship manager test rules', () => {
                     },
                     travelAgentEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 thirdTravelAgent = await EntityManager.createEntity(
@@ -911,6 +932,7 @@ describe('Relationship manager test rules', () => {
                     },
                     travelAgentEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 flight = await EntityManager.createEntity(
@@ -921,6 +943,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -932,6 +955,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightsOnRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstRelationshipId = firstRelationship.properties._id;
 
@@ -975,6 +999,7 @@ describe('Relationship manager test rules', () => {
                             ],
                         },
                     ],
+                    neo4j.mockUserId,
                 );
                 secondRelationshipId = secondRelationship.properties._id;
 
@@ -1028,6 +1053,7 @@ describe('Relationship manager test rules', () => {
                             ],
                         },
                     ],
+                    neo4j.mockUserId,
                 );
                 thirdRelationshipId = thirdRelationship.properties._id;
             });
@@ -1142,6 +1168,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 firstFlight = await EntityManager.createEntity(
@@ -1152,6 +1179,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 secondFlightNotOverlapping = await EntityManager.createEntity(
@@ -1162,6 +1190,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 thirdFlightOverlapping = await EntityManager.createEntity(
@@ -1172,6 +1201,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -1183,6 +1213,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripConnectedToFlightRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstRelationshipId = firstRelationship.properties._id;
 
@@ -1195,6 +1226,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripConnectedToFlightRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondRelationshipId = secondRelationship.properties._id;
 
@@ -1238,6 +1270,7 @@ describe('Relationship manager test rules', () => {
                             ],
                         },
                     ],
+                    neo4j.mockUserId,
                 );
                 thirdRelationshipId = thirdRelationship.properties._id;
             });
@@ -1312,6 +1345,7 @@ describe('Relationship manager test rules', () => {
                     },
                     airportEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstTrip = await EntityManager.createEntity(
                     {
@@ -1323,6 +1357,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondTrip = await EntityManager.createEntity(
                     {
@@ -1334,6 +1369,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstFlight = await EntityManager.createEntity(
                     {
@@ -1343,6 +1379,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondFlight = await EntityManager.createEntity(
                     {
@@ -1352,6 +1389,7 @@ describe('Relationship manager test rules', () => {
                     },
                     flightEntityTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
 
                 const firstTripConnectedToAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -1363,6 +1401,7 @@ describe('Relationship manager test rules', () => {
                     },
                     tripConnectedToAirportRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 firstTripConnectedToAirportRelationshipId = firstTripConnectedToAirportRelationship.properties._id;
 
@@ -1406,6 +1445,7 @@ describe('Relationship manager test rules', () => {
                             ],
                         },
                     ],
+                    neo4j.mockUserId,
                 );
 
                 const secondFlightDepartureFromAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
@@ -1417,6 +1457,7 @@ describe('Relationship manager test rules', () => {
                     },
                     departureFromRelationshipTemplate,
                     [],
+                    neo4j.mockUserId,
                 );
                 secondFlightDepartureFromAirportRelationshipId = secondFlightDepartureFromAirportRelationship.properties._id;
 
@@ -1460,6 +1501,7 @@ describe('Relationship manager test rules', () => {
                             ],
                         },
                     ],
+                    neo4j.mockUserId,
                 );
             }, 500000);
 

@@ -6,6 +6,7 @@ const INSTANCE_SERVICE_URL = 'http://localhost:8007';
 
 const COUNT_1_RULE_IDS = ['6690bbed306c5aece178ae0e'];
 const NO_OVERLAPPING_FLIGHTS_RULE_ID = '6690bbed306c5aece178ae16';
+const ALL_RULE_IDS = ['6690bbed306c5aece178ae0e', '6690bbed306c5aece178ae16']
 
 
 const getMongoModels = async ({
@@ -105,27 +106,40 @@ const migrateCount1Rules = async () => {
     }
 };
 
-const migrateCount1RuleBreaches = async () => {
+const getPinnedEntityIdOfBrokenRule = (alert, rule, relationships, isPinnedAsSource) => {
+    if (action.actionType === 'update-entity') {
+        const someRelationshipOfRule = relationships.find(rel => rel.templateId === rule.relationshipTemplateId);
+        if (someRelationshipOfRule) return isPinnedAsSource ? someRelationshipOfRule.sourceEntityId : someRelationshipOfRule.destinationEntityId;
+        return '00000000-0000-0000-0000-000000000000';
+    }
+    if (action.actionType === 'create-relationship' || action.actionType === 'delete-relationship') {
+        return isPinnedAsSource ? alert.actionMetadata.sourceEntityId : alert.actionMetadata.destinationEntityId;
+    }
+
+    throw new Error(`not possible alert.actionType ${alert.actionType}`);
+}
+
+const migrateRuleBreaches = async () => {
     const {
         ruleModel: oldRuleModel,
         relationshipModel,
         alertModel: alertModel,
     } = await getMongoModels({ ruleModelName: 'rules-backups', alertModelName: 'rule-breach-alerts-fixes' });
 
-    for (const ruleId of COUNT_1_RULE_IDS) {
+    for (const ruleId of ALL_RULE_IDS) {
         console.log(`connected! getting info for ruleId "${ruleId}"...`);
         const rule = await oldRuleModel.findById(ruleId).orFail(new Error('fu')).lean().exec();
 
         const relationshipTemplate = await relationshipModel.findById(rule.relationshipTemplateId).orFail(new Error('fu')).lean().exec();
         const isPinnedAsSource = relationshipTemplate.sourceEntityId === rule.pinnedEntityTemplateId;
 
-        // can be only "create rel" for these rules
-        const alerts = await alertModel.find({ actionType: 'create-relationship', 'brokenRules.ruleId': ruleId }).lean().exec();
+        const alerts = await alertModel.find({ 'brokenRules.ruleId': ruleId }).lean().exec();
 
         console.log(alerts.length);
         for (const alert of alerts) {
             console.log('updating alert...');
-            const pinnedEntityId = isPinnedAsSource ? alert.actionMetadata.sourceEntityId : alert.actionMetadata.destinationEntityId;
+
+            if (alert.actionMetadata.before) alert.actionMetadata.before = alert.actionMetadata.before.properties ?? alert.actionMetadata.before;
 
             const newAlert = {
                 ...alert,
@@ -136,6 +150,8 @@ const migrateCount1RuleBreaches = async () => {
                         const { data: relationships } = await axios.post(`${INSTANCE_SERVICE_URL}/api/instances/relationships/ids`, {
                             ids: brokenRule.relationshipIds,
                         });
+
+                        const pinnedEntityId = getPinnedEntityIdOfBrokenRule(alert, rule, relationships, isPinnedAsSource);
 
                         return {
                             ruleId: brokenRule.ruleId,
@@ -290,70 +306,11 @@ const migrateNoOverlappingRules = async () => {
     console.log(`updated rule!`, newRule);
 };
 
-const migrateNoOverlappingRuleBreaches = async () => {
-    const {
-        ruleModel,
-        relationshipModel,
-        alertModel,
-    } = await getMongoModels({ ruleModelName: 'rules-backups', alertModelName: 'rule-breach-alerts-fixes' });
-
-    console.log(`connected! getting info for ruleId "${NO_OVERLAPPING_FLIGHTS_RULE_ID}"...`);
-    const rule = await ruleModel.findById(NO_OVERLAPPING_FLIGHTS_RULE_ID).orFail(new Error('fu')).lean().exec();
-
-    const dateTimeOverlappingField = rule.formula.subFormulas[0].subFormulas[0].lhsArgument.arguments[0].property;
-
-    const relationshipTemplate = await relationshipModel.findById(rule.relationshipTemplateId).orFail(new Error('fu')).lean().exec();
-    const isPinnedAsSource = relationshipTemplate.sourceEntityId === rule.pinnedEntityTemplateId;
-
-    // can be create rel + update entity, for these rules. not many alert with "update entity", so I dont bother
-    const alerts = await alertModel.find({ actionType: 'create-relationship', 'brokenRules.ruleId': NO_OVERLAPPING_FLIGHTS_RULE_ID }).lean().exec();
-
-    console.log(alerts.length);
-    for (const alert of alerts) {
-        console.log('updating alert...');
-
-        const newAlert = {
-            ...alert,
-            brokenRules: await Promise.all(
-                alert.brokenRules.map(async (brokenRule) => {
-                    if (brokenRule.ruleId !== String(rule._id)) return brokenRule;
-
-                    const { data: relationships } = await axios.post(`${INSTANCE_SERVICE_URL}/api/instances/relationships/ids`, {
-                        ids: brokenRule.relationshipIds,
-                    });
-
-                    const someRelationship = relationships[0] ?? alert.actionMetadata;
-                    const pinnedEntityId = isPinnedAsSource ? someRelationship.sourceEntityId : someRelationship.destinationEntityId;
-
-                    return {
-                        ruleId: brokenRule.ruleId,
-                        failures: [
-                            {
-                                entityId: pinnedEntityId,
-                                causes: brokenRule.relationshipIds.map((relationshipId) => {
-                                    // shouldnt always be both properties, sometimes it's not "new causes". but fuck it, too complex
-                                    return {
-                                        instance: getInstanceFromRelationshipIdOfOldAlert(alert, relationshipId, pinnedEntityId, relationships),
-                                        properties: ['_id', dateTimeOverlappingField],
-                                    };
-                                }),
-                            },
-                        ],
-                    };
-                }),
-            ),
-        };
-
-        await alertModel.findByIdAndUpdate(alert._id, newAlert).exec();
-        console.log('updated alert!', JSON.stringify(newAlert, null, 2));
-    }
-};
 
 const main = async () => {
     await migrateCount1Rules();
     await migrateNoOverlappingRules();
-    await migrateCount1RuleBreaches();
-    await migrateNoOverlappingRuleBreaches();
+    await migrateRuleBreaches();
 
     mongoose.connections.forEach(conn => conn.close());
 }

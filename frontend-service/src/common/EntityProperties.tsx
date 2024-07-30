@@ -16,19 +16,22 @@ import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../util
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
 import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import RelationshipReferenceView from './RelationshipReferenceView';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (
-    value: any,
-    valueType: 'string' | 'number' | 'boolean' | 'array',
-    format?: string,
-    keyEnumColors?: Record<string, string>,
-    isPrintingMode?: boolean,
-    propertySchema?: IEntitySingleProperty,
-) => {
+interface FormatOptions {
+    keyEnumColors?: Record<string, string>;
+    isPrintingMode?: boolean;
+    pureString?: boolean;
+}
+
+export const formatToString = (value: any, property: IEntitySingleProperty, options: FormatOptions = {}) => {
+    const { format, type: valueType } = property;
+    const { keyEnumColors, isPrintingMode, pureString } = options;
+
     if (value === null || value === undefined) return '-';
 
     if (valueType === 'number') {
@@ -39,15 +42,29 @@ export const formatToString = (
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
-    }
-    if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
-    if (valueType === 'array') {
-        if (propertySchema?.items?.format === 'fileId') {
-            return value.map((val) => <OpenPreview fileId={val} key={val} />);
+        if (format === 'relationshipReference') {
+
+            return pureString ? (
+                value.properties[property.relationshipReference!.relatedTemplateField!]
+            ) : (
+                <RelationshipReferenceView
+                    entity={value}
+                    relatedTemplateId={property.relationshipReference!.relatedTemplateId}
+                    relatedTemplateField={property.relationshipReference!.relatedTemplateField}
+                />
+            );
         }
-        return value.map((val) => (
-            <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
-        ));
+    }
+    if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (valueType === 'array') {
+        if (property.items?.format === 'fileId') {
+            return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
+        }
+        return pureString
+            ? value.join(', ')
+            : value.map((val: string) => (
+                  <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+              ));
     }
     return value;
 };
@@ -120,14 +137,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                const stringFormatValue = formatToString(
-                    propertyValue,
-                    propertySchema.type,
-                    propertySchema.format,
-                    (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                const stringFormatValue = formatToString(propertyValue, propertySchema, {
+                    keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     isPrintingMode,
-                    propertySchema,
-                );
+                });
 
                 const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
@@ -154,7 +167,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
                     // todo: make getTextDirection handle all possible value and reuse everywhere
-                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId'
+                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'
                         ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,
@@ -205,7 +218,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 }}
                             >
                                 <MeltaTooltip
-                                    disableHoverListener={textWrap}
+                                    disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
                                     placement="bottom"
                                     title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >

@@ -83,6 +83,23 @@ const getTemplatePropertiesIndex = (template: IEntityTemplate) => {
     return templateProperties;
 };
 
+const getRelationshipReferencesPropertiesIndex = async (template: IEntityTemplate) => {
+    const relationshipReferencesProperties: string[] = [];
+
+    await Promise.all(
+        Object.entries(template.properties.properties).map(async ([key, value]) => {
+            if (value.format === 'relationshipReference') {
+                const relatedTemplate = await TemplateManagerService.getEntityTemplateById(value.relationshipReference!.relatedTemplateId);
+                getTemplatePropertiesIndex(relatedTemplate).forEach((innerProperty) =>
+                    relationshipReferencesProperties.push(`${key}.properties.${innerProperty}${config.neo4j.relationshipReferencePropertySuffix}`),
+                );
+            }
+        }),
+    );
+
+    return relationshipReferencesProperties;
+};
+
 export const upsertGlobalSearchIndex = async () => {
     const templates = await TemplateManagerService.searchEntityTemplates();
 
@@ -92,6 +109,13 @@ export const upsertGlobalSearchIndex = async () => {
     templates.forEach((template) => {
         getTemplatePropertiesIndex(template).forEach((property) => allTemplatesProperties.add(property));
     });
+
+    await Promise.all(
+        templates.map(async (template) => {
+            const relationshipReferencesProperties = await getRelationshipReferencesPropertiesIndex(template);
+            relationshipReferencesProperties.forEach((property) => allTemplatesProperties.add(property));
+        }),
+    );
 
     await upsertSearchIndex(
         globalSearchKeyName,
@@ -104,13 +128,15 @@ export const upsertGlobalSearchIndex = async () => {
 
 export const upsertChangedTemplateSearchIndex = async (changedTemplateId: string) => {
     const changedTemplate = await TemplateManagerService.getEntityTemplateById(changedTemplateId);
+    const relationshipReferencesProperties = await getRelationshipReferencesPropertiesIndex(changedTemplate);
+    const allProperties = [...relationshipReferencesProperties, ...getTemplatePropertiesIndex(changedTemplate)];
 
     await upsertSearchIndex(
         `${templateSearchKeyNamePrefix}${changedTemplateId}`,
         `${primaryTemplateSearchIndexPrefix}${changedTemplateId}`,
         `${secondaryTemplateSearchIndexPrefix}${changedTemplateId}`,
         [changedTemplateId],
-        getTemplatePropertiesIndex(changedTemplate),
+        allProperties,
     );
 };
 

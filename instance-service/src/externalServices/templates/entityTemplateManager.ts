@@ -4,7 +4,7 @@ import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from './interfaces/e
 
 const {
     templateService: {
-        entities: { getByIdRoute, searchRoute },
+        entities: { getByIdRoute, searchRoute, getRelatedByIdRoute },
     },
 } = config;
 
@@ -12,6 +12,14 @@ export class EntityTemplateManagerService extends TemplatesManagerService {
     // entity templates
     static async getEntityTemplateById(id: string) {
         const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+
+        return data;
+    }
+
+    static async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
+        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoEntityTemplate[]>(
+            `${getRelatedByIdRoute}/${relatedTemplateId}`,
+        );
 
         return data;
     }

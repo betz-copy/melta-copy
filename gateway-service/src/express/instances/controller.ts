@@ -38,10 +38,6 @@ class InstancesController {
         );
     }
 
-    static async viewEntityInstance(req: Request) {
-        await InstancesManager.viewEntityInstance(req.params.id, req.user!.id);
-    }
-
     static async deleteEntityInstance(req: Request, res: Response) {
         res.json(await InstancesManager.deleteEntityInstance(req.params.id));
     }

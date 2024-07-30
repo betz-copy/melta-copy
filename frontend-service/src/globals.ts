@@ -173,6 +173,10 @@ export const environment = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
+        cacheBlockSize: 50,
+        maxBlocksInCache: 10,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 50,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -1231,5 +1235,9 @@ export const environment = {
             'ch',
             'prw',
         ],
+    },
+    matomo: {
+        urlBase: 'matomo.yesodot.services.idf',
+        siteId: 24,
     },
 };

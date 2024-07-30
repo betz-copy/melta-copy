@@ -71,6 +71,10 @@ export default class TemplatesController {
         res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
     }
 
+    static async getAllRelationshipTemplates(_req: Request, res: Response) {
+        res.json(await TemplatesManager.getAllRelationshipTemplates());
+    }
+
     // rules
     static async updateRuleStatusById(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));

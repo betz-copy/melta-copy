@@ -188,6 +188,12 @@ templatesRouter.delete(
     }),
 );
 
+templatesRouter.get(
+    '/relationships/all',
+    wrapMiddleware(validateUserIsTemplatesManager),
+    wrapController(TemplatesController.getAllRelationshipTemplates),
+);
+
 // rules (templates)
 templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.patch(

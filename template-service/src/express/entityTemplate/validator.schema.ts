@@ -27,6 +27,13 @@ export const getEntityTemplateByIdSchema = Joi.object({
     params: { templateId: MongoIdSchema.required() },
 });
 
+// GET /api/entities/templates/related/:relatedTemplateId
+export const getTemplatesUsingRelationshipReferanceSchema = Joi.object({
+    query: {},
+    body: {},
+    params: { relatedTemplateId: MongoIdSchema.required() },
+});
+
 // DELETE /api/entities/templates/:templateId
 export const deleteEntityTemplateSchema = Joi.object({
     body: {},
