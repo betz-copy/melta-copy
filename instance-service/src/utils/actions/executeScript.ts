@@ -1,6 +1,7 @@
 import * as ts from 'typescript';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
+import format from 'date-fns/format';
 import { generateInterfaceWithRelationships } from './generateInterfaceFromJsonSchema';
 import { IEntity, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
@@ -126,14 +127,25 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
 
             const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
             const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+            const entityAfterManipulations = entityToUpdate;
+
             Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
-                if (value.format === 'relationshipReference' && name in entityToUpdate.properties) {
-                    // eslint-disable-next-line no-param-reassign
-                    entityToUpdate.properties[name] = entityToUpdate.properties[name]._id;
+                if (name in entityToUpdate.properties) {
+                    const propertyValue = entityToUpdate.properties[name];
+
+                    if (value.format === 'relationshipReference') {
+                        entityAfterManipulations.properties[name] = propertyValue._id;
+                    }
+                    if (value.format === 'date-time') {
+                        entityAfterManipulations.properties[name] = propertyValue.toISOString();
+                    }
+                    if (value.format === 'date') {
+                        entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
+                    }
                 }
             });
 
-            await validateEntity(entityTemplateOfEntityToUpdate._id, entityToUpdate.properties);
+            await validateEntity(entityTemplateOfEntityToUpdate._id, entityAfterManipulations.properties);
 
             updatedEntities.push(entityToUpdate);
         }),
