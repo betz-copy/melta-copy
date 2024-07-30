@@ -88,3 +88,8 @@ export enum ActionTypes {
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
 }
+
+export interface IAction {
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+}

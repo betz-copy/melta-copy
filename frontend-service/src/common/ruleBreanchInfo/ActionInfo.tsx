@@ -22,6 +22,7 @@ import { EntityLink } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
+import { environment } from '../../globals';
 
 export const EntityInfo: React.FC<{
     entity: IEntity | string | null;
@@ -45,7 +46,9 @@ export const EntityInfo: React.FC<{
     let tooltipHeader: ReactNode | undefined;
     let linkable = true;
 
-    if (typeof entity === 'string' && entity.startsWith('$')) {
+    if (!entity) {
+        entityForLink = null;
+    } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
         const numberPart = entity.slice(1, -4);
         const actionIndex = parseInt(numberPart) < actions.length ? parseInt(numberPart) : 0;
 
@@ -71,8 +74,6 @@ export const EntityInfo: React.FC<{
             </Typography>
         );
         linkable = entityForLink.properties._id.startsWith('&');
-    } else if (!entity) {
-        entityForLink = null;
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (

@@ -15,7 +15,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { ActionTypes, IBrokenRule } from '../../externalServices/ruleBreachService/interfaces';
+import { ActionTypes, IAction, IBrokenRule } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
@@ -534,7 +534,11 @@ export class InstancesManager {
         throw error;
     }
 
-    static async runBulkOfActions(actionsGroups, dryRun,  ignoredRules, userId: string) {
+    static async runBulkOfActions(
+        actionsGroups: IAction[][],
+        dryRun: boolean,
+        ignoredRules: IBrokenRule[] = [],
+        userId: string) {
         return InstanceManagerService.runBulkOfActions(actionsGroups, dryRun, ignoredRules, userId);
     }
 }

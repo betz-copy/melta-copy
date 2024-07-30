@@ -28,6 +28,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
+    RunRuleReason,
 } from './interface';
 import { NotFoundError, ServiceError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
@@ -45,7 +46,7 @@ import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
-import { IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
+import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 
@@ -69,14 +70,14 @@ export class EntityManager {
             const rulesIds: Set<string> = new Set<string>();
 
             reasons.forEach((reason) => {
-                if (reason.type === 'dependentOnEntity') {
+                if (reason.type === RunRuleReason.dependentOnEntity) {
                     relevantRules.push(
                         ...filterDependentRulesOnEntity(rulesByEntityTemplateIds[entityTemplateId] || [], entityTemplateId).filter(
                             (rule) => !rulesIds.has(rule._id),
                         ),
                     );
                     relevantRules.forEach((rule) => rulesIds.add(rule._id));
-                } else if (reason.type === 'dependentViaAggregation') {
+                } else if (reason.type === RunRuleReason.dependentViaAggregation) {
                     relevantRules.push(
                         ...filterDependentRulesViaAggregation(
                             rulesByEntityTemplateIds[entityTemplateId] || [],
@@ -106,9 +107,7 @@ export class EntityManager {
             ruleFailuresPromises.push(runRulesOnEntity(transaction, entityId, rules));
         });
 
-        const ruleFailures = (await Promise.all(ruleFailuresPromises)).flat();
-
-        return ruleFailures;
+        return (await Promise.all(ruleFailuresPromises)).flat();
     }
 
     static runRulesOnEntityDependentViaAggregation = async (
@@ -235,12 +234,12 @@ export class EntityManager {
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         await Promise.all(
-            createdRelationships.map(async (relationship) => { // TODO - instead the map, use the activityLogs that the createRelationshipReference function return
+            createdRelationships.map(async (relationship) => {
                 const relatedEntityId =
                     relationship.sourceEntityId === newEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
                 allActivityLogsToCreate.push({
-                    action: 'CREATE_RELATIONSHIP' as const,
+                    action: ActionsLog.CREATE_RELATIONSHIP,
                     entityId: relatedEntityId,
                     metadata: {
                         relationshipTemplateId: relationship.templateId,
@@ -254,7 +253,7 @@ export class EntityManager {
         );
 
         allActivityLogsToCreate.push({
-            action: duplicatedFromId ? 'DUPLICATE_ENTITY' : 'CREATE_ENTITY',
+            action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
             entityId: newEntity.properties._id,
             metadata: duplicatedFromId ? { entityIdDuplicatedFrom: duplicatedFromId } : {},
             timestamp: new Date(),
@@ -541,7 +540,7 @@ export class EntityManager {
         );
 
         await createActivityLog({
-            action: 'VIEW_ENTITY',
+            action: ActionsLog.VIEW_ENTITY,
             entityId: id,
             metadata: {},
             timestamp: new Date(),
@@ -673,7 +672,7 @@ export class EntityManager {
         });
 
         await createActivityLog({
-            action: disabled ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
+            action: disabled ? ActionsLog.DISABLE_ENTITY : ActionsLog.ACTIVATE_ENTITY,
             metadata: {},
             entityId: id,
             timestamp: new Date(),
@@ -952,7 +951,7 @@ export class EntityManager {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
                 await createActivityLog({
-                    action: 'CREATE_RELATIONSHIP' as const,
+                    action: ActionsLog.CREATE_RELATIONSHIP,
                     entityId: relatedEntityId,
                     metadata: {
                         relationshipTemplateId: relationship.templateId,
@@ -970,7 +969,7 @@ export class EntityManager {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
                 await createActivityLog({
-                    action: 'DELETE_RELATIONSHIP' as const,
+                    action: ActionsLog.DELETE_RELATIONSHIP,
                     entityId: relatedEntityId,
                     metadata: {
                         relationshipTemplateId: relationship.templateId,
@@ -984,7 +983,7 @@ export class EntityManager {
         );
 
         await createActivityLog({
-            action: 'UPDATE_ENTITY',
+            action: ActionsLog.UPDATE_ENTITY,
             entityId: id,
             metadata: { updatedFields: activityLogUpdatedFields },
             timestamp: new Date(),

@@ -54,11 +54,11 @@ export class RuleBreachService {
     }
 
     static async getManyRuleBreaches(rulesBreachIds: string[]): Promise<IRuleBreachRequest[]> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachRequest[]>(`/requests/getManys`, { rulesBreachIds });
+        const { data } = await this.ruleBreachService.post<IRuleBreachRequest[]>(`/requests/get-many`, { rulesBreachIds });
         return data;
     }
 
-    static async updateRuleBreachRequestActionsMetadatas(
+    static async updateRuleBreachRequestActionsMetadata(
         ruleBreachRequestId: string,
         actions: {
             actionType: ActionTypes;

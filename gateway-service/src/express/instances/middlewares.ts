@@ -21,6 +21,12 @@ const getCategoryIdFromTemplateId = async (templateId: string) => {
     return category._id;
 };
 
+const getCategoryIdsFromTemplateIds = async (templateIds: string[]) => {
+    const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: templateIds});
+    
+    return templates.map((template)=> template.category._id);
+};
+
 export const validateUserCanCreateEntityInstance = async (req: Request) => {
     const { templateId } = req.body;
 
@@ -86,31 +92,50 @@ export const validateUserCanWriteEntityInstance = async (req: Request) => {
     await validateUserPermissionForEntityInstance(req, 'Write');
 };
 
+const extractEntitiesAndTemplatesIds = (actionsGroups: IAction[][]): {
+    templateIds: string[];
+    entitiesIds: string[];
+} => {
+    const templateIds = new Set<string>();
+    const entitiesIds = new Set<string>();
+
+    actionsGroups.forEach((actionsGroup) => actionsGroup.forEach((action) => {
+        if (action.actionType === ActionTypes.CreateEntity) {
+            templateIds.add((action.actionMetadata as ICreateEntityMetadata).templateId);
+        } else if (action.actionType === ActionTypes.CreateRelationship) {
+            const {destinationEntityId, sourceEntityId} = (action.actionMetadata as ICreateRelationshipMetadata);
+
+            if (!destinationEntityId.startsWith('$')) entitiesIds.add((action.actionMetadata as ICreateRelationshipMetadata).destinationEntityId);
+            if (!sourceEntityId.startsWith('$')) entitiesIds.add((action.actionMetadata as ICreateRelationshipMetadata).sourceEntityId);
+        }
+    }));
+
+    return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
+}
+
+const getCategoriesIdsByEntitiesAndTemplatesIds = async (entitiesIds: string[], templateIdsFromReq: string[]) => {
+    const templateIds = new Set<string>([...templateIdsFromReq]);
+
+    const entities = await InstanceManagerService.getEntityInstancesByIds(entitiesIds);
+    entities.forEach((entity) => templateIds.add(entity.templateId));
+
+    const categoriesIds = await getCategoryIdsFromTemplateIds([...templateIds]);
+
+    return categoriesIds;
+}
+
 export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
     const permissionType = 'Write';
 
     const {actionsGroups} = req.body;
 
-    const templateIds: string[] = [];
-    const entitiesIds: string[] = [];
+    const { templateIds, entitiesIds } = extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
-    (actionsGroups as IAction[][]).forEach((actionsGroup) => actionsGroup.forEach((action) =>{
-        if (action.actionType === ActionTypes.CreateEntity) {
-            templateIds.push((action.actionMetadata as ICreateEntityMetadata).templateId);
-        } else if (action.actionType === ActionTypes.CreateRelationship) {
-            const {destinationEntityId, sourceEntityId} = (action.actionMetadata as ICreateRelationshipMetadata);
+    const [categoriesIds, permissionsArrOfUser] = await Promise.all([
+        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds), 
+        getPermissions({ userId: req.user!.id })
+    ]);
 
-            if (!destinationEntityId.startsWith('$')) entitiesIds.push((action.actionMetadata as ICreateRelationshipMetadata).destinationEntityId);
-            if (!sourceEntityId.startsWith('$')) entitiesIds.push((action.actionMetadata as ICreateRelationshipMetadata).sourceEntityId);
-        }
-    }));
-
-    const entities = await Promise.all(entitiesIds.map((entityId) => InstanceManagerService.getEntityInstanceById(entityId)));
-    entities.forEach((entity) => templateIds.push(entity.templateId));
-
-    const categoriesIds = await Promise.all(templateIds.map((templateId) => getCategoryIdFromTemplateId(templateId)));
-
-    const permissionsArrOfUser = await getPermissions({ userId: req.user!.id });
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
 
     const hasPermission = permissionsOfUserId.instancesPermissions.every(

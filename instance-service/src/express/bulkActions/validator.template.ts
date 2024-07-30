@@ -2,7 +2,7 @@ import { Request } from 'express';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '../relationships/interfaces/action';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';

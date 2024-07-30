@@ -139,17 +139,10 @@ export class InstanceManagerService {
         ignoredRules: IBrokenRule[] = [],
         userId: string,
     ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
-
-        console.log({
-            actionsGroups,
-            dryRun,
-            ignoredRules,
-            userId,
-        });
-
         const { data } = await this.InstanceManagerApi.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
-            `${baseBulkActionsRoute}/bulk?dryRun=${dryRun}`,
+            `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },
+            { params: { dryRun } }
         );
 
         return data;
