@@ -3,13 +3,12 @@ import React from 'react';
 import { Menu as MuiMenu, MenuItem } from '@mui/material';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
 import i18next from 'i18next';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { expandedEntityToGraphData, highlightNode } from '../../utils/graph';
+import { highlightNode } from '../../utils/graph';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
@@ -17,15 +16,12 @@ const GraphNodeMenu: React.FC<{
     node: NodeObject;
     location: { top: number; left: number };
     onCloseMenu: () => void;
-    addNewGraphData: (graphData: GraphData) => void;
     filterRecord: IGraphFilterBodyBatch;
-}> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData, filterRecord }) => {
+    onSuccessExpandGraph: (data: IEntityExpanded) => void;
+}> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, filterRecord, onSuccessExpandGraph }) => {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const queryClient = useQueryClient();
 
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};
     const { refetch: getExpandedData } = useQuery<IEntityExpanded>(
         [
@@ -55,9 +51,8 @@ const GraphNodeMenu: React.FC<{
         {
             enabled: false,
             onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
-                addNewGraphData(newGraphData);
+                onSuccessExpandGraph(data);
             },
         },
     );

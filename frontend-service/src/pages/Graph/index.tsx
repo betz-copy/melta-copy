@@ -10,7 +10,6 @@ import { useParams, useSearchParams } from 'react-router-dom';
 import uniqBy from 'lodash.uniqby';
 import uniqWith from 'lodash.uniqwith';
 import { useSelector } from 'react-redux';
-
 import i18next from 'i18next';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { expandedEntityToGraphData, getGraphDataWithNodeSizes, getFixedGraphLinks, fixHighlighted, updateNodeLabelIcons } from '../../utils/graph';
@@ -157,7 +156,8 @@ const Graph: React.FC = () => {
                 expandedEntityToGraphData(
                     {
                         ...expandedEntity,
-                        connections: expandedEntity?.connections.slice(startIndex, startIndex + BATCH_SIZE),
+                        connections: expandedEntity?.connections?.slice(startIndex, startIndex + BATCH_SIZE) ?? [],
+                        entity: expandedEntity!.entity,
                     },
                     entityTemplates,
                     relationshipTemplates,
@@ -165,11 +165,13 @@ const Graph: React.FC = () => {
             );
 
             addNewGraphData(expandedEntityGraphData);
+            const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
+            setShouldZoomToFit(shouldZoom);
             if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex + 1);
         };
 
         loadNextBatch();
-    }, [currentBatchIndex, is3DGraph]);
+    }, [currentBatchIndex, initialExpandedEntity, is3DGraph]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -308,6 +310,9 @@ const Graph: React.FC = () => {
                     reload();
                     setFilters([]);
                     setFilterRecord({});
+                    setInitialExpandedEntity(undefined);
+                    setGraphData({ nodes: [], links: [] });
+                    setCurrentBatchIndex(0);
                 }}
                 set3DView={(is3DView) => {
                     setIs3DGraph(is3DView);
@@ -380,8 +385,11 @@ const Graph: React.FC = () => {
                         forceRef.current?.resumeAnimation();
                         setNodeMenuState(undefined);
                     }}
-                    addNewGraphData={addNewGraphData}
                     filterRecord={filterRecord}
+                    onSuccessExpandGraph={(data: IEntityExpanded) => {
+                        setInitialExpandedEntity(data);
+                        setCurrentBatchIndex(0);
+                    }}
                 />
             )}
             {graphMenuState && (
