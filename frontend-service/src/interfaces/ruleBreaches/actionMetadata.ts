@@ -91,5 +91,5 @@ export enum ActionTypes {
 
 export interface IAction {
     actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
+    actionMetadata: IActionMetadata;
 }
