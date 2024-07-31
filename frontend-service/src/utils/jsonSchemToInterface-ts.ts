@@ -36,17 +36,21 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
 export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
-        'readonly createdDate': 'string',
+        'readonly createdAt': 'string',
         'readonly updatedAt': 'string',
         'readonly disabled': 'string',
     };
 
     Object.entries(entity).forEach(([propertyName, propertyValues]) => {
-        const { type } = propertyValues;
+        const { type, serialCurrent } = propertyValues;
 
         switch (type) {
             case 'number':
-                dynamicInterface[propertyName] = 'number';
+                if (serialCurrent) {
+                    dynamicInterface[`readonly ${propertyName}`] = 'number';
+                } else {
+                    dynamicInterface[propertyName] = 'number';
+                }
                 break;
             case 'boolean':
                 dynamicInterface[propertyName] = 'boolean';

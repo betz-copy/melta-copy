@@ -33,17 +33,21 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
 export const generateInterface = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
-        'readonly createdDate': 'string',
+        'readonly createdAt': 'string',
         'readonly updatedAt': 'string',
         'readonly disabled': 'string',
     };
 
-    const promises = Object.entries(entity).map(async ([propertyName, propertyValues]) => {
-        const { type } = propertyValues;
+    const getAllPropertiesTypes = Object.entries(entity).map(async ([propertyName, propertyValues]) => {
+        const { type, serialCurrent } = propertyValues;
 
         switch (type) {
             case 'number':
-                dynamicInterface[propertyName] = 'number';
+                if (serialCurrent) {
+                    dynamicInterface[`readonly ${propertyName}`] = 'number';
+                } else {
+                    dynamicInterface[propertyName] = 'number';
+                }
                 break;
             case 'boolean':
                 dynamicInterface[propertyName] = 'boolean';
@@ -56,7 +60,7 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
         }
     });
 
-    await Promise.all(promises);
+    await Promise.all(getAllPropertiesTypes);
 
     return [
         `interface ${interfaceName} {`,
