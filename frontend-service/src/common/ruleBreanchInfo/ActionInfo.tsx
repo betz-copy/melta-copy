@@ -52,7 +52,7 @@ export const EntityInfo: React.FC<{
         // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
         // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
-        const actionIndex = parseInt(numberPart) < actions.length ? parseInt(numberPart) : 0;
+        const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
 
         const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
         entityForLink = {
