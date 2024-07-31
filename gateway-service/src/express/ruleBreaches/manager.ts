@@ -154,8 +154,7 @@ export class RuleBreachesManager {
         } else
             try {
                 // only 1 action
-                const { actionType } = ruleBreachRequest.actions[0];
-                const { actionMetadata } = ruleBreachRequest.actions[0];
+                const [{ actionType, actionMetadata }] = ruleBreachRequest.actions;
 
                 if (actionType === ActionTypes.CreateRelationship)
                     await RuleBreachesManager.createRelationship(

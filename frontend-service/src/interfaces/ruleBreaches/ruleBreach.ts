@@ -30,7 +30,7 @@ export interface IRuleBreach {
     createdAt: Date;
 }
 
-export type IEntityForBrokenRules = IEntity | string | null; // TODO - change name and use in actionInfo component and metadatas types
+export type IEntityForBrokenRules = IEntity | string | null;
 export type IRelationshipForBrokenRules = IRelationship | string | null;
 
 export interface ICauseInstancePopulated {

@@ -49,6 +49,8 @@ export const EntityInfo: React.FC<{
     if (!entity) {
         entityForLink = null;
     } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
+        // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
+        // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
         const actionIndex = parseInt(numberPart) < actions.length ? parseInt(numberPart) : 0;
 
