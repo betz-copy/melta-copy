@@ -11,7 +11,8 @@ import PermissionsManager from '../permissions/manager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '../../externalServices/ruleBreachService/interfaces';
+import { IAction } from '../../externalServices/ruleBreachService/interfaces';
+import { InstancesManager } from './manager';
 
 // entities
 const getCategoryIdFromTemplateId = async (templateId: string) => {
@@ -92,27 +93,6 @@ export const validateUserCanWriteEntityInstance = async (req: Request) => {
     await validateUserPermissionForEntityInstance(req, 'Write');
 };
 
-const extractEntitiesAndTemplatesIds = (actionsGroups: IAction[][]): {
-    templateIds: string[];
-    entitiesIds: string[];
-} => {
-    const templateIds = new Set<string>();
-    const entitiesIds = new Set<string>();
-
-    actionsGroups.forEach((actionsGroup) => actionsGroup.forEach((action) => {
-        if (action.actionType === ActionTypes.CreateEntity) {
-            templateIds.add((action.actionMetadata as ICreateEntityMetadata).templateId);
-        } else if (action.actionType === ActionTypes.CreateRelationship) {
-            const {destinationEntityId, sourceEntityId} = (action.actionMetadata as ICreateRelationshipMetadata);
-
-            if (!destinationEntityId.startsWith('$')) entitiesIds.add((action.actionMetadata as ICreateRelationshipMetadata).destinationEntityId);
-            if (!sourceEntityId.startsWith('$')) entitiesIds.add((action.actionMetadata as ICreateRelationshipMetadata).sourceEntityId);
-        }
-    }));
-
-    return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
-}
-
 const getCategoriesIdsByEntitiesAndTemplatesIds = async (entitiesIds: string[], templateIdsFromReq: string[]) => {
     const templateIds = new Set<string>([...templateIdsFromReq]);
 
@@ -129,7 +109,7 @@ export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
 
     const {actionsGroups} = req.body;
 
-    const { templateIds, entitiesIds } = extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
+    const { templateIds, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
     const [categoriesIds, permissionsArrOfUser] = await Promise.all([
         getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds), 
