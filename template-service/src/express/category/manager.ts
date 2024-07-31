@@ -1,11 +1,12 @@
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import config from '../../config';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { ICategory, IMongoCategory } from './interface';
-import CategoryModel from './model';
+import { CategorySchema } from './model';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     constructor(dbName: string) {
-        super(dbName, CategoryModel);
+        super(dbName, config.mongo.categoriesCollectionName, CategorySchema);
     }
 
     async getCategories(displayName?: string) {

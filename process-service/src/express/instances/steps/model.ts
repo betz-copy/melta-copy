@@ -1,9 +1,8 @@
 import * as mongoose from 'mongoose';
 import config from '../../../config';
 import { Status } from '../processes/interface';
-import { IStepInstance } from './interface';
 
-const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
+export const StepInstanceSchema = new mongoose.Schema(
     {
         templateId: {
             type: String,
@@ -25,7 +24,3 @@ const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
         versionKey: false,
     },
 );
-
-const StepInstanceModel = mongoose.model<IStepInstance>(config.mongo.stepInstancesCollectionName, StepInstanceSchema);
-
-export default StepInstanceModel;

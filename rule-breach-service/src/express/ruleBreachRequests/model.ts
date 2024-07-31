@@ -1,9 +1,7 @@
 import * as mongoose from 'mongoose';
-import config from '../../config';
 import { defaultSchemaOptions, ruleBreachSchemaDefinition } from '../../utils/mongo/schemas/ruleBreach';
-import { IRuleBreachRequest } from './interface';
 
-const RuleBreachRequestsSchema = new mongoose.Schema(
+export const RuleBreachRequestsSchema = new mongoose.Schema(
     {
         ...ruleBreachSchemaDefinition,
         reviewerId: {
@@ -18,7 +16,3 @@ const RuleBreachRequestsSchema = new mongoose.Schema(
     },
     defaultSchemaOptions,
 );
-
-const RuleBreachRequestsModel = mongoose.model<IRuleBreachRequest>(config.mongo.ruleBreachRequestsCollectionName, RuleBreachRequestsSchema);
-
-export default RuleBreachRequestsModel;

@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
 import config from '../../../config';
-import { IProcessInstance, Status } from './interface';
+import { Status } from './interface';
 
-const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
+export const ProcessInstanceSchema = new mongoose.Schema(
     {
         templateId: {
             type: String,
@@ -45,6 +45,3 @@ const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
 );
 
 ProcessInstanceSchema.index({ name: 1 }, { unique: true });
-const ProcessInstanceModel = mongoose.model<IProcessInstance>(config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
-
-export default ProcessInstanceModel;

@@ -1,13 +1,14 @@
 import { Document, FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IMongoRule, IRule } from './interfaces';
-import RuleModel from './model';
+import { RuleTemplateSchema } from './model';
 
 export class RuleManager extends DefaultManagerMongo<IMongoRule> {
     constructor(dbName: string) {
-        super(dbName, RuleModel);
+        super(dbName, config.mongo.ruleCollectionName, RuleTemplateSchema);
     }
 
     async getRuleById(templateId: string) {

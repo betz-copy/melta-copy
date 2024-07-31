@@ -1,13 +1,14 @@
 import { ClientSession, Document, FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from './interface';
-import RelationshipTemplateModel from './model';
+import { RelationshipTemplateSchema } from './model';
 
 export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelationshipTemplate> {
     constructor(dbName: string) {
-        super(dbName, RelationshipTemplateModel);
+        super(dbName, config.mongo.relationshipTemplatesCollectionName, RelationshipTemplateSchema);
     }
 
     async getTemplateById(templateId: string) {

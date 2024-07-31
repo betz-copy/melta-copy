@@ -3,7 +3,7 @@ import { Document, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
-import DefaultManagerMongo from '../../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { ServiceError, TemplateNotFoundError } from '../../error';
 import ProcessInstanceManager from '../../instances/processes/manager';
 import StepTemplateManager from '../steps/manager';
@@ -16,7 +16,7 @@ import {
     IProcessTemplateSearchProperties,
     ProcessTemplateDocument,
 } from './interface';
-import ProcessTemplateModel from './model';
+import { ProcessTemplateSchema } from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
@@ -26,7 +26,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     private stepTemplateManager: StepTemplateManager;
 
     constructor(dbName: string) {
-        super(dbName, ProcessTemplateModel);
+        super(dbName, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
         this.processInstanceManager = new ProcessInstanceManager(dbName);
         this.stepTemplateManager = new StepTemplateManager(dbName);
     }
@@ -138,7 +138,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
         if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
         if (reviewerId) {
-            return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
+            return getProcessTemplatesByReviewerIdAggregation(this.model, query, reviewerId, limit, skip);
         }
 
         return this.model.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();

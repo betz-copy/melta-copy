@@ -2,12 +2,12 @@
 import { ClientSession } from 'mongoose';
 import config from '../../../config';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
-import DefaultManagerMongo from '../../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
 import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqBody } from './interface';
-import StepInstanceModel from './model';
+import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
     private processInstanceManager: ProcessInstanceManager;
@@ -15,7 +15,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     private stepInstanceManager: StepInstanceManager;
 
     constructor(dbName: string) {
-        super(dbName, StepInstanceModel);
+        super(dbName, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
         this.processInstanceManager = new ProcessInstanceManager(dbName);
         this.stepInstanceManager = new StepInstanceManager(dbName);
     }

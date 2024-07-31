@@ -18,8 +18,6 @@ export interface IMongoCategory extends ICategory {
 export const createCategories = async (workspaceId: string, categories: ICategory[]) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
-    console.log(axiosInstance.defaults.headers);
-
     const promises = categories.map((category) => {
         return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
     });

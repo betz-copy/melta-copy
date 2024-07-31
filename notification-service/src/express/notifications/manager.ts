@@ -1,13 +1,14 @@
 import { FilterQuery } from 'mongoose';
+import config from '../../config';
 import transaction from '../../utils/mongo';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotificationDoesNotExistError } from '../error';
 import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from './interface';
-import NotificationModel from './model';
+import { NotificationsSchema } from './model';
 
 export class NotificationsManager extends DefaultManagerMongo<INotification> {
     constructor(dbName: string) {
-        super(dbName, NotificationModel);
+        super(dbName, config.mongo.notificationsCollectionName, NotificationsSchema);
     }
 
     public async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {
