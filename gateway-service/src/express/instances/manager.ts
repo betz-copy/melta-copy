@@ -15,22 +15,15 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import {
-    ActionTypes,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-} from '../../externalServices/ruleBreachService/interfaces';
+import { ActionTypes, IAction, IBrokenRule, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
+import groupBy from 'lodash.groupby';
+import { Dictionary } from 'lodash';
 
 const { errorCodes } = config;
 
@@ -173,6 +166,21 @@ export class InstancesManager {
         return updatedProperties;
     }
 
+    static async handlePreparationsBeforeCreateEntity(
+        instanceData: IEntity,
+        files: Express.Multer.File[]
+    ) {
+        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
+
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
+        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
+
+        return {
+            templateId: instanceData.templateId,
+            properties: newInstanceProperties,
+        };
+    }
+
     static async createEntityInstance(
         instanceData: IEntity,
         files: Express.Multer.File[],
@@ -180,29 +188,25 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
-
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
-        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
-
-        const newInstanceData: IEntity = {
-            templateId: instanceData.templateId,
-            properties: newInstanceProperties,
-        };
+        const newInstanceData: IEntity = await InstancesManager.handlePreparationsBeforeCreateEntity(instanceData, files);
 
         const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateEntity,
-                    actionMetadata: {
-                        templateId: entity.templateId,
-                        properties: entity.properties,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -241,14 +245,18 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateStatus,
-                    actionMetadata: {
-                        entityId: id,
-                        disabled: disabledStatus,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateStatus,
+                            actionMetadata: {
+                                entityId: id,
+                                disabled: disabledStatus,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -335,21 +343,35 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDuplicateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DuplicateEntity,
-                    actionMetadata: {
-                        templateId: entity.templateId,
-                        properties: entity.properties,
-                        entityIdToDuplicate: id,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DuplicateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                                entityIdToDuplicate: id,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
         }
 
         return entity;
+    }
+
+    static checkSerialFieldWasUpdated(entityTemplate: IMongoEntityTemplatePopulated, updatedInstanceDataProperties: IEntity['properties'], currentEntity: IEntity) {
+        Object.keys(entityTemplate.properties.properties).forEach((key) => {
+            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
+                if (updatedInstanceDataProperties[key] !== currentEntity.properties[key]) {
+                    throw new ServiceError(400, "can't change serial properties");
+                }
+            }
+        });
     }
 
     static async updateEntityInstance(
@@ -365,14 +387,8 @@ export class InstancesManager {
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
-        Object.keys(entityTemplate.properties.properties).forEach((key) => {
-            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                if (updatedInstanceData.properties[key] !== currentEntity.properties[key]) {
-                    throw new ServiceError(400, "can't change serial properties");
-                }
-            }
-        });
-
+        InstancesManager.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
+    
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
@@ -415,15 +431,19 @@ export class InstancesManager {
         }
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId: id,
+                                before: currentEntity.properties,
+                                updatedFields,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -464,15 +484,19 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -487,16 +511,20 @@ export class InstancesManager {
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DeleteRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DeleteRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                relationshipId: relationship.properties._id,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
@@ -517,5 +545,107 @@ export class InstancesManager {
         }
 
         throw error;
+    }
+
+    static extractEntitiesAndTemplatesIds(actionsGroups: IAction[][]): {
+        templateIds: string[];
+        entitiesIds: string[];
+    } {
+        const templateIds = new Set<string>();
+        const entitiesIds = new Set<string>();
+    
+        actionsGroups.forEach((actionsGroup) => actionsGroup.forEach((action) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                templateIds.add((action.actionMetadata as ICreateEntityMetadata).templateId);
+            } else if (action.actionType === ActionTypes.CreateRelationship) {
+                const {destinationEntityId, sourceEntityId} = (action.actionMetadata as ICreateRelationshipMetadata);
+    
+                if (!destinationEntityId.startsWith('$')) entitiesIds.add(destinationEntityId);
+                if (!sourceEntityId.startsWith('$')) entitiesIds.add(sourceEntityId);
+            } else if (action.actionType === ActionTypes.UpdateEntity) {
+                const {entityId} = (action.actionMetadata as IUpdateEntityMetadata);
+                if (!entityId.startsWith('$')) entitiesIds.add(entityId);
+            }
+        }));
+    
+        return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
+    }
+
+    static async getManyEntitiesNewPropertiesToUpdate(
+        entitiesToUpdate: IEntity[],
+        templatesByIds: Dictionary<IMongoEntityTemplatePopulated[]>,
+    ) {
+        const entitiesNewPropertiesPromises = entitiesToUpdate.map((entityToUpdate) => {
+            const [entityTemplate] = templatesByIds[entityToUpdate.templateId];
+            
+            return InstancesManager.setSerialPropertiesAndUpdateTemplate(entityToUpdate.properties, entityTemplate).then((properties) => {
+                return {
+                    templateId: entityToUpdate.templateId,
+                    properties
+                };
+            });
+        });
+
+        return Promise.all(entitiesNewPropertiesPromises);
+    }
+
+    static async getAllActionsTemplatesByIds(actionsGroups: IAction[][]) {
+        const { templateIds: templateIdsFromReq, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
+        const templateIds = new Set<string>([...templateIdsFromReq]);
+
+        const entities = await InstanceManagerService.getEntityInstancesByIds(entitiesIds);
+        entities.forEach((entity) => templateIds.add(entity.templateId));
+
+        const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: [...templateIds]});
+
+        return {
+            templatesByIds: groupBy(templates, (template) => template._id),
+            entitiesByIds: groupBy(entities, (entity) => entity.properties._id),
+        };
+    }
+
+    static async runBulkOfActions(
+        actionsGroups: IAction[][],
+        dryRun: boolean,
+        ignoredRules: IBrokenRule[] = [],
+        userId: string) {
+            const {templatesByIds, entitiesByIds} = await InstancesManager.getAllActionsTemplatesByIds(actionsGroups);
+            const entitiesToCreate: IEntity[] = [];
+
+            actionsGroups.forEach((actionGroup) =>
+                actionGroup.forEach((action) => {
+                    if (action.actionType === ActionTypes.CreateEntity) {
+                        const instanceData = action.actionMetadata as ICreateEntityMetadata;
+        
+                        // TODO - for now we are not support upload files in bulk, we will support it in the future
+                        entitiesToCreate.push(instanceData);
+                        
+                    } else if (action.actionType === ActionTypes.UpdateEntity) {
+                        const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
+                        const entity = entitiesByIds[actionMetadata.entityId][0];
+                        const templateOfEntity = templatesByIds[entity.templateId][0];
+    
+                        InstancesManager.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
+                    }
+                })
+            );
+
+        const newEntitiesToCreateByActionsGroups = await InstancesManager.getManyEntitiesNewPropertiesToUpdate(entitiesToCreate, templatesByIds);
+        let indexOfEntityToCreate = 0;
+
+           const newActionsGroups = actionsGroups.map((actionsGroup) => 
+           actionsGroup.map((action) => {
+                if (action.actionType !== ActionTypes.CreateEntity) {
+                    return action;
+                }
+                const newAction = {
+                    ...action,
+                    actionMetadata: newEntitiesToCreateByActionsGroups[indexOfEntityToCreate],
+                };
+                indexOfEntityToCreate++;
+                return newAction;
+           }));
+
+        return InstanceManagerService.runBulkOfActions(newActionsGroups, dryRun, ignoredRules, userId);
     }
 }
