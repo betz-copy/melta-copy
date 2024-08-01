@@ -1,6 +1,5 @@
 import axios from 'axios';
 import FormData from 'form-data';
-import { Readable } from 'stream';
 import config from '../config';
 import fsCreateReadStream from '../utils/fs';
 
@@ -36,8 +35,8 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
 };
 
 export const downloadFile = async (path: string) => {
-    const { data } = await axios.get<Readable>(`${url}/${downloadFileRoute}/${path}`, {
-        responseType: 'stream',
+    const { data } = await axios.get<ArrayBuffer>(`${url}/${downloadFileRoute}/${path}`, {
+        responseType: 'arraybuffer',
         headers: {
             Accept: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
         },
