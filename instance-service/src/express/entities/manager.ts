@@ -218,12 +218,12 @@ export class EntityManager {
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                 if (property.format === 'relationshipReference') {
                     if (newEntity.properties[name]) {
-                        const {createdRelationship} = await this.createRelationshipReference(
+                        const { createdRelationship } = await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntitiesByIds[newEntity.properties[name].properties._id],
                             newEntity.properties._id,
                             transaction,
-                            userId
+                            userId,
                         );
                         createdRelationships.push(createdRelationship);
                     }
@@ -282,7 +282,7 @@ export class EntityManager {
         relatedEntity: IEntity,
         originalEntityId: string,
         transaction: Transaction,
-        userId: string
+        userId: string,
     ) {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
@@ -354,7 +354,13 @@ export class EntityManager {
         duplicatedFromId?: string,
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const { newEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(transaction, properties, entityTemplate, userId, duplicatedFromId);
+            const { newEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(
+                transaction,
+                properties,
+                entityTemplate,
+                userId,
+                duplicatedFromId,
+            );
 
             const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, newEntity);
 
@@ -757,7 +763,7 @@ export class EntityManager {
         entityProperties: Record<string, any>,
         updatedProperties: string[],
         transaction: Transaction,
-        userId: string
+        userId: string,
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
@@ -787,12 +793,12 @@ export class EntityManager {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[updatedProperty] = fixedField;
-                        const {createdRelationship} = await this.createRelationshipReference(
+                        const { createdRelationship } = await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntity,
                             entityId,
                             transaction,
-                            userId
+                            userId,
                         );
 
                         createdRelationships.push(createdRelationship);

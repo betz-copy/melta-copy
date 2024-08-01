@@ -86,6 +86,7 @@ const config = {
         url: env.get('RULE_BREACH_SERVICE_URL').required().asString(),
         baseRoute: env.get('RULE_BREACH_SERVICE_BASE_ROUTE').default('/api/rule-breaches').asString(),
         requestTimeout: env.get('RULE_BREACH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     },
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),

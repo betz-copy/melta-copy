@@ -101,11 +101,7 @@ export class RuleBreachesManager {
         const ruleBreaches = await RuleBreachService.getManyRuleBreaches(body.rulesBreachIds);
         if (!body.isPopulate) return ruleBreaches;
 
-        return Promise.all(
-            ruleBreaches.map(ruleBreach =>
-                RuleBreachesManager.getRuleBreachRequestById(ruleBreach._id)
-            )
-        );
+        return Promise.all(ruleBreaches.map((ruleBreach) => RuleBreachesManager.getRuleBreachRequestById(ruleBreach._id)));
     }
 
     static async createRuleBreachAlert(
@@ -143,14 +139,24 @@ export class RuleBreachesManager {
         }
     }
 
-    static async approveRuleBreachRequest(ruleBreachRequestId: string, user: Express.User):
-    Promise<(IRuleBreachRequestPopulated | {actionsResults: PromiseSettledResult<(IRelationship | IEntity)[]>[], ruleBreachRequestPopulated: IRuleBreachRequestPopulated})> {
+    static async approveRuleBreachRequest(
+        ruleBreachRequestId: string,
+        user: Express.User,
+    ): Promise<
+        | IRuleBreachRequestPopulated
+        | { actionsResults: PromiseSettledResult<(IRelationship | IEntity)[]>[]; ruleBreachRequestPopulated: IRuleBreachRequestPopulated }
+    > {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
         RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
         let actionsResults;
 
         if (ruleBreachRequest.actions.length > 1) {
-            actionsResults = await InstanceManagerService.runBulkOfActions([ruleBreachRequest.actions], false, ruleBreachRequest.brokenRules, user.id);
+            actionsResults = await InstanceManagerService.runBulkOfActions(
+                [ruleBreachRequest.actions],
+                false,
+                ruleBreachRequest.brokenRules,
+                user.id,
+            );
         } else
             try {
                 // only 1 action
@@ -221,7 +227,7 @@ export class RuleBreachesManager {
         );
 
         if (ruleBreachRequest.actions.length > 1) {
-            return {ruleBreachRequestPopulated, actionsResults};
+            return { ruleBreachRequestPopulated, actionsResults };
         }
 
         return ruleBreachRequestPopulated;
@@ -570,14 +576,14 @@ export class RuleBreachesManager {
     }
 
     private static populateEntityForBrokenRules(entityId: string, entitiesMap: Map<string, IEntity>): IEntityForBrokenRules {
-        if (entityId.startsWith(config.brokenRulesFakeEntityIdPrefix)) {
+        if (entityId.startsWith(config.ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return entityId;
         }
         return entitiesMap.get(entityId) ?? null;
     }
 
     private static populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
-        if (relationshipId.startsWith(config.brokenRulesFakeEntityIdPrefix)) {
+        if (relationshipId.startsWith(config.ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return relationshipId;
         }
         return relationshipsMap.get(relationshipId) ?? null;
@@ -775,10 +781,11 @@ export class RuleBreachesManager {
             UsersManager.getUserById(originUserId),
         ]);
 
-        const populatedActions = actions?.map((action, index) => ({
-            actionType: action.actionType,
-            actionMetadata: actionsMetadatas[index],
-        })) || [];        
+        const populatedActions =
+            actions?.map((action, index) => ({
+                actionType: action.actionType,
+                actionMetadata: actionsMetadatas[index],
+            })) || [];
 
         return {
             ...restOfRuleBreach,
