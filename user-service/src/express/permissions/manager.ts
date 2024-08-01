@@ -12,8 +12,8 @@ export class PermissionsManager {
         const compactPermissions: ICompactPermissions = {};
 
         permissions.forEach(({ workspaceId, type, metadata }) => {
-            if (compactPermissions[workspaceId][type]) throw new SinglePermissionOfTypePerUserError(type);
-            compactPermissions[workspaceId][type] = metadata as any;
+            if (compactPermissions[workspaceId]?.[type]) throw new SinglePermissionOfTypePerUserError(type);
+            compactPermissions[workspaceId] = { [type]: metadata };
         });
 
         return compactPermissions;
@@ -53,7 +53,7 @@ export class PermissionsManager {
                         return;
                     }
 
-                    actions.push(PermissionsModel.updateOne({ userId, type }, { metadata }, { upsert: true, session }).lean().exec());
+                    actions.push(PermissionsModel.updateOne({ userId, type, workspaceId }, { metadata }, { upsert: true, session }).lean().exec());
                 });
             });
 
