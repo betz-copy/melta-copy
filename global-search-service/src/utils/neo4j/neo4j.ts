@@ -2,7 +2,7 @@ import neo4j, { Driver, Neo4jError, QueryResult, Session, Transaction } from 'ne
 import { retry } from 'ts-retry-promise';
 import config from '../../config';
 
-const { url, auth, connectionRetries, connectionRetryDelay } = config.neo4j;
+const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
 
 type TransactionType = 'writeTransaction' | 'readTransaction';
 type TransactionWork<T> = (tx: Transaction) => Promise<T> | T;
@@ -17,7 +17,7 @@ export default class Neo4jClient {
     private currSession: Session;
 
     constructor(database: string) {
-        this.database = database;
+        this.database = `${workspaceNamePrefix}${database}`;
     }
 
     static async initialize() {
@@ -47,7 +47,7 @@ export default class Neo4jClient {
             // Check if the error is caused by non-existing database
             if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
                 // Create the db if it doesn't exist
-                await this.createSession({}).run(`CREATE DATABASE ${this.database} IF NOT EXISTS`);
+                await this.createSession({}).run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`);
 
                 // Retry
                 return func();

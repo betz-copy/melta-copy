@@ -21,6 +21,7 @@ const config = {
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
+        workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
