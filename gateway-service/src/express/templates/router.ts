@@ -195,6 +195,7 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     wrapController(TemplatesController.deleteRuleById),
 );
+templatesRouter.post('/rules/get-many', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 
 export default templatesRouter;
