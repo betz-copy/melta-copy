@@ -192,7 +192,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 else createMutation({ newEntityData: values });
 
                 if (!draftId) return;
-                deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId);
+                setTimeout(() => deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId), environment.draftAutoSaveDebounce);
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
@@ -513,14 +513,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                         style={{ borderRadius: '7px' }}
                                                         variant="outlined"
                                                         startIcon={<ClearIcon />}
-                                                        onClick={async () => {
-                                                            const file = await exportMutation({
-                                                                entityId: values.properties._id || entityToUpdate?.properties._id,
-                                                                templateId: selectedFileToExport,
-                                                            });
-
-                                                            fileDownload(file, 'simple-template');
-                                                        }}
+                                                        onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
                                                     >
                                                         {i18next.t('entityPage.cancel')}
                                                     </Button>
