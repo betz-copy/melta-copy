@@ -43,7 +43,7 @@ export default class Neo4jClient {
 
     async wrapDBNotExistsError(func: () => Promise<any>) {
         try {
-            return await func();
+            return func();
         } catch (err) {
             // Check if the error is caused by non-existing database
             if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
@@ -66,19 +66,19 @@ export default class Neo4jClient {
     }
 
     async readTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'readTransaction', normalizeResultFunction, cypherQuery, parameters));
+        return this.wrapDBNotExistsError(() => this.performTransaction('readTransaction', normalizeResultFunction, cypherQuery, parameters));
     }
 
     async writeTransaction<T>(cypherQuery: string, normalizeResultFunction: (queryResult: QueryResult) => T, parameters = {}): Promise<T> {
-        return this.wrapDBNotExistsError(this.performTransaction.bind(this, 'writeTransaction', normalizeResultFunction, cypherQuery, parameters));
+        return this.wrapDBNotExistsError(() => this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters));
     }
 
     async performComplexReadTransaction<T>(transactionWork: TransactionWork<T>): Promise<T> {
-        return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'readTransaction', transactionWork));
+        return this.wrapDBNotExistsError(() => this.performComplexTransaction('readTransaction', transactionWork));
     }
 
     async performComplexWriteTransaction<T>(transactionWork: TransactionWork<T>): Promise<T> {
-        return this.wrapDBNotExistsError(this.performComplexTransaction.bind(this, 'writeTransaction', transactionWork));
+        return this.wrapDBNotExistsError(() => this.performComplexTransaction('writeTransaction', transactionWork));
     }
 
     async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {

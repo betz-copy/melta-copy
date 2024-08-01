@@ -8,7 +8,6 @@ import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadF
 const filesRouter: Router = Router();
 
 const filesController = createController(FilesController);
-const multerController = createController(MinioMulter);
 
 filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController('downloadZip'));
 
@@ -22,7 +21,7 @@ filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController('de
 filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController('duplicateFile'));
 filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController('duplicateFiles'));
 
-filesRouter.post('/bulk', multerController('uploadBulkToMinio'), ValidateRequest(uploadFilesRequestSchema), filesController('uploadFiles'));
-filesRouter.post('/', multerController('uploadToMinio'), ValidateRequest(uploadFileRequestSchema), filesController('uploadFile'));
+filesRouter.post('/bulk', MinioMulter.uploadToMinio, ValidateRequest(uploadFilesRequestSchema), filesController('uploadFiles'));
+filesRouter.post('/', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFileRequestSchema), filesController('uploadFile'));
 
 export { filesRouter };

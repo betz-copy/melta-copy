@@ -8,11 +8,7 @@ const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
 export class MinIOClient {
     private minioClient: minio.Client;
 
-    private bucketName: string;
-
-    constructor(bucketName: string) {
-        this.bucketName = bucketName;
-
+    constructor(private bucketName: string) {
         this.minioClient = new minio.Client({
             endPoint,
             port,
@@ -41,14 +37,14 @@ export class MinIOClient {
     }
 
     downloadFileStream(filePath: string) {
-        return this.wrapDBNotExistsError(this.minioClient.getObject.bind(this, this.bucketName, filePath));
+        return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
 
     uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
-        return this.wrapDBNotExistsError(this.minioClient.putObject.bind(this, this.bucketName, objectName, filePath, metaData));
+        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, objectName, filePath, metaData));
     }
 
     statFile(filePath: string) {
-        return this.wrapDBNotExistsError(this.minioClient.statObject.bind(this, this.bucketName, filePath));
+        return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }
 }
