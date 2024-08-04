@@ -100,14 +100,6 @@ const Graph: React.FC = () => {
 
             const uniqueGraphNodes = uniqBy(mergedGraphNodes, ({ id }) => id);
             const uniqueGraphLinks = uniqWith(mergedGraphLinks, (item1, item2) => item1.source === item2.source && item1.target === item2.target);
-            console.log('hello addNewGraphData', {
-                prevGraphData,
-                newGraphData,
-                mergedGraphNodes,
-                mergedGraphLinks,
-                uniqueGraphNodes,
-                uniqueGraphLinks,
-            });
 
             setShouldUpdateHighlighted(true);
             return getGraphDataWithNodeSizes({
@@ -156,15 +148,14 @@ const Graph: React.FC = () => {
             let expandedEntity = initialExpandedEntity?.entity;
             const { data } = await getExpandedEntityById();
             if (data?.connections.length !== initialExpandedEntity?.entity?.connections.length) {
-                console.log('hello inside if');
                 expandedEntity = data;
                 setInitialExpandedEntity({ entity: data, menu: false });
                 setGraphData({ nodes: [], links: [] });
                 setCurrentBatchIndex(0);
             }
-            console.log('hello start', { data, initialExpandedEntity, expandedEntity, graphData });
             setIsLoading(true);
             const startIndex = currentBatchIndex * BATCH_SIZE;
+
             let expandedEntityGraphData = expandedEntityToGraphData(
                 {
                     ...expandedEntity,
@@ -174,28 +165,15 @@ const Graph: React.FC = () => {
                 entityTemplates,
                 relationshipTemplates,
             );
-            console.log('hello before', { expandedEntityGraphData });
-
             if (!initialExpandedEntity?.menu) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
 
-            console.log('hello during', { startIndex, currentBatchIndex, expandedEntityGraphData });
             expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
             addNewGraphData(expandedEntityGraphData);
             const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
             setShouldZoomToFit(shouldZoom);
-            console.log(
-                'hello end',
-                'expandedEntity!.connections.length',
-                expandedEntity!.connections.length,
-                'currentBatchIndex * BATCH_SIZE',
-                currentBatchIndex * BATCH_SIZE,
-            );
 
             if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) {
-                console.log('hello big bro if');
-                // setTimeout(() => {
                 setCurrentBatchIndex(currentBatchIndex + 1);
-                // }, 500);
             } else setIsLoading(false);
         };
 
@@ -432,10 +410,9 @@ const Graph: React.FC = () => {
                     }}
                     filterRecord={filterRecord}
                     onSuccessExpandGraph={(data: IEntityExpanded) => {
-                        console.log('hello menu', { data });
                         if (initialExpandedEntity?.entity !== data) {
                             setInitialExpandedEntity({ entity: data, menu: true });
-                            setCurrentBatchIndex(initialExpandedEntity?.entity?.connections.length || 0);
+                            setCurrentBatchIndex(0);
                         }
                     }}
                 />
