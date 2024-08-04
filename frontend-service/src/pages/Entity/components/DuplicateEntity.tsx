@@ -112,7 +112,8 @@ const DuplicateEntity: React.FC<{}> = () => {
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
-            onSubmit={async (values) => {
+            onSubmit={async (values, formikHelpers) => {
+                formikHelpers.setTouched({});
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -188,6 +189,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             ) : (
                                                                                 <InstanceFileInput
@@ -199,6 +201,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             )}
                                                                         </Grid>

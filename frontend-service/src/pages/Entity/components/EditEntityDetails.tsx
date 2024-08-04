@@ -106,7 +106,8 @@ const EditEntityDetails: React.FC<{
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
-            onSubmit={async (values) => {
+            onSubmit={async (values, formikHelpers) => {
+                formikHelpers.setTouched({});
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -181,6 +182,7 @@ const EditEntityDetails: React.FC<{
                                                                                 value={values.attachmentsProperties[key]}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
+                                                                                setExternalErrors={setExternalErrors}
                                                                             />
                                                                         ) : (
                                                                             <InstanceFileInput
@@ -191,6 +193,7 @@ const EditEntityDetails: React.FC<{
                                                                                 value={values.attachmentsProperties[key]}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
+                                                                                setExternalErrors={setExternalErrors}
                                                                             />
                                                                         )}
                                                                     </Grid>

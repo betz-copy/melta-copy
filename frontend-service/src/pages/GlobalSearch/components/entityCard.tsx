@@ -138,7 +138,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const decreaseIndex = () => setPreviewImageIndex(previewImageIndex - 1);
 
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity; wizardValues?: EntityWizardValues }>({ isOpen: false });
-    const [gotClosed, setGotClosed] = useState(false);
     const navigate = useNavigate();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
     const first5PropsKeys: string[] = [
@@ -480,11 +479,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                         refetchQuery?.();
-                        setGotClosed(false);
                     }}
-                    handleClose={(isSubmit?: boolean) => {
+                    handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setGotClosed(isSubmit || false);
                     }}
                     onError={(currEntityValues) =>
                         setEditDialog({
@@ -496,7 +493,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    gotClosed={gotClosed}
                 />
             </Dialog>
         </Card>

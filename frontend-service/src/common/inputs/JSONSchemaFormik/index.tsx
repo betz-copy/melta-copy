@@ -89,7 +89,6 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
-    dialog?: { isDialog: boolean; gotClosed?: boolean };
     toPrint?: boolean;
 }
 
@@ -103,7 +102,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
-    dialog,
     toPrint = false,
 }) => {
     useEffect(() => {
@@ -120,15 +118,9 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     const rjsfExtraErrors = formikErrorsToRjsfExtraErrors(errors as Record<string, string>);
     const ajvExtraErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraErrors, (_value, key) => touched[key]);
     const rjsfExtraUniqueErrors = formikErrorsToRjsfExtraErrors(uniqueErrors as Record<string, string>);
-    const ajvExtraUniqueErrorsOnlyTouched: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => touched[key]);
 
-    let mergedErrors: ErrorSchema<{}>;
-    if (dialog && dialog.isDialog) {
-        if (dialog.gotClosed) {
-            const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
-            mergedErrors = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
-        } else mergedErrors = { ...ajvExtraErrorsOnlyTouched, ...rjsfExtraUniqueErrors };
-    } else mergedErrors = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, ajvExtraUniqueErrorsOnlyTouched);
+    const notTouchedUnique: ErrorSchema<{}> = pickBy(rjsfExtraUniqueErrors, (_value, key) => !touched[key]);
+    const mergedErrors: ErrorSchema<{}> = mergeErrorSchemas(ajvExtraErrorsOnlyTouched, notTouchedUnique);
 
     return (
         <JSONSchemaForm

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
@@ -17,6 +17,12 @@ interface InstanceFileInputProps {
     value: File[] | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    setExternalErrors?: React.Dispatch<
+        React.SetStateAction<{
+            files: boolean;
+            unique: {};
+        }>
+    >;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -27,6 +33,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     value,
     error,
     setFieldTouched,
+    setExternalErrors,
 }) => {
     const filesName = value
         ? value.map((file) => {
@@ -58,6 +65,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     const updatedFiles = value ? [...value, ...acceptedFiles] : acceptedFiles;
                     setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 onDeleteFile={(fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
@@ -65,6 +73,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                     updatedFiles.splice(fileIndex, 1);
                     setFieldValue(fileFieldName, updatedFiles);
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 errorText={error}
                 multiple

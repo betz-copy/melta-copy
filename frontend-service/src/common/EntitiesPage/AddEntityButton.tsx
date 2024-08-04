@@ -28,7 +28,6 @@ const AddEntityButton: React.FC<{
         isOpen: false,
     });
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
-    const [gotClosed, setGotClosed] = useState(false);
 
     return (
         <>
@@ -83,11 +82,9 @@ const AddEntityButton: React.FC<{
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
-                        setGotClosed(false);
                     }}
-                    handleClose={(isSubmit?: boolean) => {
+                    handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        setGotClosed(isSubmit || false);
                     }}
                     onError={(currEntityValues) =>
                         setAddEntityWizardState((prev) => ({
@@ -102,7 +99,6 @@ const AddEntityButton: React.FC<{
                     onSuccessCreate={onSuccessCreate}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    gotClosed={gotClosed}
                 />
             </Dialog>
         </>

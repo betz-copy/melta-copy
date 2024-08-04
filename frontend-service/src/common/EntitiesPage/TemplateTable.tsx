@@ -38,7 +38,7 @@ const TemplateTable = forwardRef<
 >(({ template, quickFilterText, page }, ref) => {
     const theme = useTheme();
 
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>();
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     useImperativeHandle(ref, () => entitiesTableRef.current!);
 
@@ -78,7 +78,6 @@ const TemplateTable = forwardRef<
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
-    const [gotClosed, setGotClosed] = useState(false);
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
@@ -212,17 +211,14 @@ const TemplateTable = forwardRef<
                         entitiesTableRef.current?.updateRowDataClientSide(entity);
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
-                        setGotClosed(false);
                     }}
-                    handleClose={(isSubmit?: boolean) => {
+                    handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setGotClosed(isSubmit || false);
                     }}
                     externalErrors={externalErrors}
                     setExternalErrors={setExternalErrors}
                     createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
                     setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
-                    gotClosed={gotClosed}
                 />
             </Dialog>
         </Grid>

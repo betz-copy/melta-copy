@@ -76,7 +76,7 @@ const CreateOrEditEntityDetails: React.FC<{
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
     onSuccessUpdate?: (data: IEntity) => void;
-    handleClose: (isSubmit?: boolean) => void;
+    handleClose: () => void;
     onError: (entity: EntityWizardValues) => void;
     onSuccessCreate?: (entity: IEntity) => void;
     externalErrors: {
@@ -91,7 +91,6 @@ const CreateOrEditEntityDetails: React.FC<{
     >;
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
     setCreateOrUpdateWithRuleBreachDialogState: React.Dispatch<React.SetStateAction<ICreateOrUpdateWithRuleBreachDialogState>>;
-    gotClosed: boolean;
 }> = ({
     isEditMode = false,
     entityTemplate,
@@ -105,7 +104,6 @@ const CreateOrEditEntityDetails: React.FC<{
     setExternalErrors,
     createOrUpdateWithRuleBreachDialogState,
     setCreateOrUpdateWithRuleBreachDialogState,
-    gotClosed,
 }) => {
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let entityId = entityToUpdate?.properties._id;
@@ -240,6 +238,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 },
                 {
                     autoClose: false,
+                    style: { width: '335px' },
                 },
             );
             mutationPromise.finally(resolve);
@@ -249,7 +248,10 @@ const CreateOrEditEntityDetails: React.FC<{
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
-            onSubmit={(values) => mutationPromiseToastify(values)}
+            onSubmit={(values, formikHelpers) => {
+                formikHelpers.setTouched({});
+                mutationPromiseToastify(values);
+            }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
@@ -257,6 +259,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
                 }
+
                 return { properties: propertiesErrors };
             }}
         >
@@ -304,7 +307,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         touched={touched.properties ?? {}}
                         setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                         isEditMode={isEditMode}
-                        dialog={{ isDialog: true, gotClosed }}
                     />
                 );
 
@@ -333,6 +335,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         value={values.attachmentsProperties[key] as File[] | undefined}
                                         error={errors.attachmentsProperties?.[key] as string}
                                         setFieldTouched={setFieldTouched}
+                                        setExternalErrors={setExternalErrors}
                                     />
                                 ) : (
                                     <InstanceSingleFileInput
@@ -344,6 +347,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                         value={values.attachmentsProperties[key] as File | undefined}
                                         error={errors.attachmentsProperties?.[key] as string}
                                         setFieldTouched={setFieldTouched}
+                                        setExternalErrors={setExternalErrors}
                                     />
                                 )}
                             </Grid>
@@ -436,7 +440,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     onClick={() =>
                                                         Object.keys(errors).length > 0
                                                             ? ''
-                                                            : setTimeout(() => (externalErrors ? undefined : handleClose(true)), 5000)
+                                                            : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
                                                     }
                                                     disabled={!dirty}
                                                     startIcon={<DoneIcon />}
