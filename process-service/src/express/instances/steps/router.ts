@@ -8,7 +8,7 @@ import StepInstanceValidator from './validator.template';
 const StepInstanceRouter: Router = Router();
 
 const stepInstanceController = createController(StepInstanceController);
-const stepInstanceValidatorController = createController(StepInstanceValidator);
+const stepInstanceValidatorController = createController(StepInstanceValidator, true);
 
 StepInstanceRouter.get('/:id', ValidateRequest(getStepByIdRequestSchema), stepInstanceController('getStepById'));
 StepInstanceRouter.get(
