@@ -36,14 +36,12 @@ export const isRelationshipConnectedToEntityTemplate = (
 
 export const mapTemplates = <T extends Record<string, any> & { _id: string }>(templates: T[], sortByField: keyof T = 'displayName') => {
     const map: Map<string, T> = new Map();
-    console.log({ templates });
 
     const sortedTemplates = templates.sort((a, b) => a[sortByField].localeCompare(b[sortByField]));
 
     sortedTemplates.forEach((template) => {
         map.set(template._id, template);
     });
-    console.log({ map });
 
     return map;
 };
