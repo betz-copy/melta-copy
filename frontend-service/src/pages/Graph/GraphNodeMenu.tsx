@@ -52,6 +52,7 @@ const GraphNodeMenu: React.FC<{
             enabled: false,
             onSuccess: (data) => {
                 node.numberOfConnectionsExpanded++;
+                console.log('hello data length', data.connections.length);
                 onSuccessExpandGraph(data);
             },
         },

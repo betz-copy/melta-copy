@@ -70,9 +70,10 @@ const Graph: React.FC = () => {
     const [load, setLoad] = useState<boolean>(false);
     const reload = () => setLoad(!load);
     const [is3DGraph, setIs3DGraph] = useLocalStorage(graphSettings.is3DViewLocalStorageKey, false);
-    const [initialExpandedEntity, setInitialExpandedEntity] = useState<IEntityExpanded | undefined>();
+    const [initialExpandedEntity, setInitialExpandedEntity] = useState<{ entity?: IEntityExpanded; menu?: boolean }>();
     const [currentBatchIndex, setCurrentBatchIndex] = useState(0);
-    const BATCH_SIZE = 10;
+    const [isLoading, setIsLoading] = useState(false);
+    const BATCH_SIZE = is3DGraph ? 25 : 50;
 
     const templateOptions = Array.from(entityTemplates.values());
     const updateGraphSize = () => {
@@ -99,6 +100,14 @@ const Graph: React.FC = () => {
 
             const uniqueGraphNodes = uniqBy(mergedGraphNodes, ({ id }) => id);
             const uniqueGraphLinks = uniqWith(mergedGraphLinks, (item1, item2) => item1.source === item2.source && item1.target === item2.target);
+            console.log('hello addNewGraphData', {
+                prevGraphData,
+                newGraphData,
+                mergedGraphNodes,
+                mergedGraphLinks,
+                uniqueGraphNodes,
+                uniqueGraphLinks,
+            });
 
             setShouldUpdateHighlighted(true);
             return getGraphDataWithNodeSizes({
@@ -144,34 +153,54 @@ const Graph: React.FC = () => {
 
     useEffect(() => {
         const loadNextBatch = async () => {
-            let expandedEntity = initialExpandedEntity;
-            if (!initialExpandedEntity) {
-                const { data } = await getExpandedEntityById();
+            let expandedEntity = initialExpandedEntity?.entity;
+            const { data } = await getExpandedEntityById();
+            if (data?.connections.length !== initialExpandedEntity?.entity?.connections.length) {
+                console.log('hello inside if');
                 expandedEntity = data;
-                setInitialExpandedEntity(data);
+                setInitialExpandedEntity({ entity: data, menu: false });
+                setGraphData({ nodes: [], links: [] });
+                setCurrentBatchIndex(0);
             }
-
+            console.log('hello start', { data, initialExpandedEntity, expandedEntity, graphData });
+            setIsLoading(true);
             const startIndex = currentBatchIndex * BATCH_SIZE;
-            const expandedEntityGraphData = getGraphDataWithNodeSizes(
-                expandedEntityToGraphData(
-                    {
-                        ...expandedEntity,
-                        connections: expandedEntity?.connections?.slice(startIndex, startIndex + BATCH_SIZE) ?? [],
-                        entity: expandedEntity!.entity,
-                    },
-                    entityTemplates,
-                    relationshipTemplates,
-                ),
+            let expandedEntityGraphData = expandedEntityToGraphData(
+                {
+                    ...expandedEntity,
+                    connections: expandedEntity?.connections?.slice(startIndex, startIndex + BATCH_SIZE) ?? [],
+                    entity: expandedEntity!.entity,
+                },
+                entityTemplates,
+                relationshipTemplates,
             );
+            console.log('hello before', { expandedEntityGraphData });
 
+            if (!initialExpandedEntity?.menu) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
+
+            console.log('hello during', { startIndex, currentBatchIndex, expandedEntityGraphData });
+            expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
             addNewGraphData(expandedEntityGraphData);
             const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
             setShouldZoomToFit(shouldZoom);
-            if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex + 1);
+            console.log(
+                'hello end',
+                'expandedEntity!.connections.length',
+                expandedEntity!.connections.length,
+                'currentBatchIndex * BATCH_SIZE',
+                currentBatchIndex * BATCH_SIZE,
+            );
+
+            if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) {
+                console.log('hello big bro if');
+                // setTimeout(() => {
+                setCurrentBatchIndex(currentBatchIndex + 1);
+                // }, 500);
+            } else setIsLoading(false);
         };
 
         loadNextBatch();
-    }, [currentBatchIndex, initialExpandedEntity, is3DGraph]);
+    }, [currentBatchIndex, initialExpandedEntity?.menu, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -299,7 +328,23 @@ const Graph: React.FC = () => {
         setFilters((prevFilters) => [...prevFilters, Date.now()]);
     };
     return (
-        <Box ref={ref} position="relative">
+        <Box ref={ref} position="relative" height="100%" width="100%">
+            {isLoading && (
+                <Box
+                    position="absolute"
+                    top={0}
+                    left={0}
+                    width="100%"
+                    height="100%"
+                    display="flex"
+                    alignItems="center"
+                    justifyContent="center"
+                    zIndex={9999}
+                    style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)' }}
+                >
+                    <CircularProgress />
+                </Box>
+            )}
             <GraphTopBar
                 entityId={entityId}
                 filteredEntityTemplates={filteredEntityTemplates}
@@ -387,8 +432,11 @@ const Graph: React.FC = () => {
                     }}
                     filterRecord={filterRecord}
                     onSuccessExpandGraph={(data: IEntityExpanded) => {
-                        setInitialExpandedEntity(data);
-                        setCurrentBatchIndex(0);
+                        console.log('hello menu', { data });
+                        if (initialExpandedEntity?.entity !== data) {
+                            setInitialExpandedEntity({ entity: data, menu: true });
+                            setCurrentBatchIndex(initialExpandedEntity?.entity?.connections.length || 0);
+                        }
                     }}
                 />
             )}

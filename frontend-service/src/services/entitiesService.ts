@@ -38,6 +38,8 @@ export const getExpandedEntityByIdRequest = async (
             filters,
         })
     ).data;
+    console.log('hello getExpandedEntityByIdRequest', { filters, batch });
+
     return batch;
 };
 
