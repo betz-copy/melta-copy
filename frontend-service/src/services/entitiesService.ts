@@ -38,7 +38,6 @@ export const getExpandedEntityByIdRequest = async (
             filters,
         })
     ).data;
-
     return batch;
 };
 
