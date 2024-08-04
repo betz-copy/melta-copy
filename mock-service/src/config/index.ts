@@ -39,7 +39,7 @@ const config = {
         createEntityRoute: env.get('CREATE_ENTITY_ROUTE').default('/api/instances/entities').asString(),
         maxNumberOfEntities: env.get('MAX_NUMBER_OF_ENTITIES').default(100).asInt(),
         minNumberOfEntities: env.get('MIN_NUMBER_OF_ENTITIES').default(1).asInt(),
-        createRelationshipRoute: env.get('CREATE_RELATIONSHIP_ROUTE').default('/api/instances/relationships').asString(),p
+        createRelationshipRoute: env.get('CREATE_RELATIONSHIP_ROUTE').default('/api/instances/relationships').asString(),
         maxNumberOfRelationships: env.get('MAX_NUMBER_OF_RELATIONSHIPS').default(100).asInt(),
         minNumberOfRelationships: env.get('MIN_NUMBER_OF_RELATIONSHIPS').default(0).asInt(),
     },
