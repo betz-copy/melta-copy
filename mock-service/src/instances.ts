@@ -1,8 +1,9 @@
 // @ts-ignore
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
+import { IRelationship } from './interfaces/relationships';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
@@ -66,17 +67,24 @@ export const createRelationshipInstances = async (
                     relevantDestinationEntities[chance.integer({ min: 0, max: relevantDestinationEntities.length - 1 })].properties._id;
 
                 return limit(async () => {
-                    const { result } = await trycatch(() =>
-                        axiosInstance.post<IMongoRelationshipTemplate>(url + createRelationshipRoute, {
+                    try {
+                        const { data } = await axiosInstance.post<IRelationship>(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
                                 templateId: relationshipTemplate._id,
-                                userId,
                             },
-                        }),
-                    );
-                    return result;
+                            userId,
+                        });
+                        return data;
+                    } catch (error) {
+                        if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
+                            console.log('Relationship already exists, skipping...');
+                            return;
+                        }
+
+                        throw error;
+                    }
                 });
             });
         })
@@ -84,7 +92,7 @@ export const createRelationshipInstances = async (
 
     const results = await Promise.all(promises);
 
-    return results.filter(Boolean).map((result) => result!.data);
+    return results.filter(Boolean) as IRelationship[];
 };
 
 export const isInstanceServiceAlive = async () => {
