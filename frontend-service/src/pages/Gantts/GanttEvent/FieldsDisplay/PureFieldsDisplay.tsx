@@ -45,7 +45,7 @@ export const PureFieldsDisplay: React.FC<IPureFieldsDisplayProps> = ({ fields, e
                                         ...textStyle,
                                     }}
                                 >
-                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property)}`}
+                                    {`${expanded ? `${fieldName}:` : ''} ${formatToString(entity.properties[field], property, { pureString: true })}`}
                                 </Typography>
                             </MeltaTooltip>
                         </Grid>

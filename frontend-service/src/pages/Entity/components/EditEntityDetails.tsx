@@ -14,7 +14,7 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -33,7 +33,7 @@ const EditEntityDetails: React.FC<{
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: IBrokenRule[];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 

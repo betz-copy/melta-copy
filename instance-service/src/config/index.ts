@@ -69,7 +69,6 @@ const config = {
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
     requiredConstraint: env.get('REQUIRED_CONSTRAINT').default('requiredConstraint').asString(),
     uniqueConstraint: env.get('UNIQUE_CONSTRAINT').default('uniqueConstraint').asString(),
-
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
     cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),

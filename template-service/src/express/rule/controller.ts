@@ -6,6 +6,10 @@ class RuleController {
         res.json(await RuleManager.getRuleById(req.params.ruleId));
     }
 
+    static async getManyRulesByIds(req: Request, res: Response) {
+        res.json(await RuleManager.getManyRulesByIds(req.body.rulesIds));
+    }
+
     static async updateRuleById(req: Request, res: Response) {
         res.json(await RuleManager.updateRuleById(req.params.ruleId, req.body));
     }

@@ -22,8 +22,15 @@ const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (value: any, property: IEntitySingleProperty, keyEnumColors?: Record<string, string>, isPrintingMode?: boolean) => {
+interface FormatOptions {
+    keyEnumColors?: Record<string, string>;
+    isPrintingMode?: boolean;
+    pureString?: boolean;
+}
+
+export const formatToString = (value: any, property: IEntitySingleProperty, options: FormatOptions = {}) => {
     const { format, type: valueType } = property;
+    const { keyEnumColors, isPrintingMode, pureString } = options;
 
     if (value === null || value === undefined) return '-';
 
@@ -35,23 +42,28 @@ export const formatToString = (value: any, property: IEntitySingleProperty, keyE
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
-        if (format === 'relationshipReference')
-            return (
+        if (format === 'relationshipReference') {
+            return pureString ? (
+                value.properties[property.relationshipReference!.relatedTemplateField!]
+            ) : (
                 <RelationshipReferenceView
                     entity={value}
                     relatedTemplateId={property.relationshipReference!.relatedTemplateId}
                     relatedTemplateField={property.relationshipReference!.relatedTemplateField}
                 />
             );
+        }
     }
-    if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
-            return value.map((val) => <OpenPreview fileId={val} key={val} />);
+            return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
         }
-        return value.map((val) => (
-            <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
-        ));
+        return pureString
+            ? value.join(', ')
+            : value.map((val: string) => (
+                  <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+              ));
     }
     return value;
 };
@@ -72,6 +84,7 @@ interface IEntityPropertiesProps {
     textWrap?: boolean;
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
+    pureString?: boolean;
 }
 
 const getPropertyColor = (
@@ -102,6 +115,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     textWrap = false,
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
+    pureString = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -124,12 +138,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                const stringFormatValue = formatToString(
-                    propertyValue,
-                    propertySchema,
-                    (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                const stringFormatValue = formatToString(propertyValue, propertySchema, {
+                    keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     isPrintingMode,
-                );
+                    pureString,
+                });
 
                 const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');

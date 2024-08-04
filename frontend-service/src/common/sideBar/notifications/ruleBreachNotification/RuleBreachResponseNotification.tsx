@@ -23,13 +23,7 @@ export const RuleBreachResponseNotification: React.FC<{
                 </Typography>
             </Grid>
             <Grid item>
-                <RuleBreachInfo
-                    originUser={request.originUser}
-                    brokenRules={request.brokenRules}
-                    actionType={request.actionType}
-                    actionMetadata={request.actionMetadata}
-                    isCompact
-                />
+                <RuleBreachInfo originUser={request.originUser} brokenRules={request.brokenRules} actions={request.actions} isCompact />
             </Grid>
             <Grid item>
                 <Typography component="p" variant="body1">

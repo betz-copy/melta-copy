@@ -37,6 +37,7 @@ export const NodeTooltip: React.FC<NodeTooltipProps> = ({ node, entityTemplate, 
                         mode="white"
                         textWrap
                         viewFirstLineOfLongText
+                        pureString
                     />
                 ) : (
                     i18next.t('graph.noPreviewProperties')

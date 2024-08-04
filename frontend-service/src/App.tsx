@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useQuery, useQueryClient } from 'react-query';
 import Bowser from 'bowser';
 import 'react-toastify/dist/ReactToastify.css';
+import { MatomoProvider } from '@datapunt/matomo-tracker-react';
 import { AuthService } from './services/authService';
 import Main from './Main';
 import { RootState } from './store';
@@ -22,7 +23,6 @@ import './css/loading.css';
 import { IRuleMap } from './interfaces/rules';
 import { mapTemplates } from './utils/templates';
 import { IProcessTemplateMap } from './interfaces/processes/processTemplate';
-import { MatomoProvider } from '@datapunt/matomo-tracker-react';
 import matomoInstance from './matomo';
 
 const App: React.FC = () => {
@@ -122,6 +122,5 @@ const App: React.FC = () => {
         </MatomoProvider>
     );
 };
-
 
 export default App;

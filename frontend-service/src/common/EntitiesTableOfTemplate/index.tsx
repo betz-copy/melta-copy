@@ -69,7 +69,7 @@ export const getDatasource = <Data extends any = IEntity>(
         async getRows(params: IServerSideGetRowsParams<Data>) {
             if (rowData && mainEntity) {
                 params.success({
-                    rowData: rowData,
+                    rowData,
                     rowCount: rowData.length,
                 });
                 return;
