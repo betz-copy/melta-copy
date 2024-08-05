@@ -21,13 +21,12 @@ import { ProcessTemplateSchema } from './model';
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
 export default class ProcessTemplateManager extends DefaultManagerMongo<IProcessTemplate> {
-    private processInstanceManager: ProcessInstanceManager;
+    public stepTemplateManager: StepTemplateManager;
 
-    private stepTemplateManager: StepTemplateManager;
+    private processInstanceManager: ProcessInstanceManager;
 
     constructor(dbName: string) {
         super(dbName, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
-        this.processInstanceManager = new ProcessInstanceManager(dbName);
         this.stepTemplateManager = new StepTemplateManager(dbName);
     }
 
@@ -37,14 +36,19 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
+        console.log('1');
         const templateId: string = await transaction(async (session) => {
+            console.log('2');
             const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);
+            console.log('3');
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
+            console.log('4', _id);
             return _id;
         });
+        console.log('5');
         return this.getProcessTemplateById(templateId);
     }
 

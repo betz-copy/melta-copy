@@ -54,9 +54,7 @@ export const createProcessTemplates = async (workspaceId: string, processTemplat
     const axiosInstance = createAxiosInstance(workspaceId);
 
     const promises = processTemplates.map((processTemplate) => {
-        return axiosInstance.post<IMongoProcessTemplatePopulated>(url + createProcessTemplateRoute, {
-            ...processTemplate,
-        });
+        return axiosInstance.post<IMongoProcessTemplatePopulated>(url + createProcessTemplateRoute, processTemplate);
     });
 
     const results = await Promise.all(promises);

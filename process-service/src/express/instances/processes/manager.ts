@@ -10,7 +10,6 @@ import { InstancePropertiesValidationError, NotFoundError, ServiceError, Validat
 import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
-import StepTemplateManager from '../../templates/steps/manager';
 import { IMongoStepInstance } from '../steps/interface';
 import StepInstanceManager from '../steps/manager';
 import {
@@ -27,18 +26,16 @@ import {
 import { ProcessInstanceSchema } from './model';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
-class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
-    private stepInstanceManager: StepInstanceManager;
 
+class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     private processTemplateManager: ProcessTemplateManager;
 
-    private stepTemplateManager: StepTemplateManager;
+    private stepInstanceManager: StepInstanceManager;
 
     constructor(dbName: string) {
         super(dbName, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
-        this.stepInstanceManager = new StepInstanceManager(dbName);
         this.processTemplateManager = new ProcessTemplateManager(dbName);
-        this.stepTemplateManager = new StepTemplateManager(dbName);
+        this.stepInstanceManager = new StepInstanceManager(dbName);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
@@ -69,7 +66,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const { templateId, details, steps }: CreateProcessReqBody = req.body;
 
         const template = await this.processTemplateManager.getProcessTemplateById(templateId, false);
-        const stepTemplates = await this.stepTemplateManager.getStepTemplates(template.steps);
+        const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
 
         ProcessInstanceManager.validateReviewersNotInTemplate(steps, stepTemplates);
         ProcessInstanceManager.validateInstanceProperties(details, template.details.properties);
@@ -82,7 +79,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
         if (steps) {
             const [stepTemplates, stepInstances] = await Promise.all([
-                this.stepTemplateManager.getStepTemplates(template.steps),
+                this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps),
                 this.stepInstanceManager.getSteps(Object.keys(steps)),
             ]);
 

@@ -10,14 +10,8 @@ import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqB
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
-    private processInstanceManager: ProcessInstanceManager;
-
-    private stepInstanceManager: StepInstanceManager;
-
     constructor(dbName: string) {
         super(dbName, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
-        this.processInstanceManager = new ProcessInstanceManager(dbName);
-        this.stepInstanceManager = new StepInstanceManager(dbName);
     }
 
     validateStepIds(validStepIds: string[], stepIdsToCheck: string[]) {
@@ -58,7 +52,8 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
-        const currProcess = await this.processInstanceManager.getProcessById(processId, true);
+        const processInstanceManager = new ProcessInstanceManager(this.dbName);
+        const currProcess = await processInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
         if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
@@ -73,8 +68,8 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
             );
         }
 
-        const currStep = await this.stepInstanceManager.getStepById(id);
-        const updatedProcessStatus = this.processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
+        const currStep = await this.getStepById(id);
+        const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
 
         if (currProcess.status === updatedProcessStatus)
             return this.model
@@ -83,7 +78,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                 .lean();
 
         return transaction(async (session) => {
-            await this.processInstanceManager.updateStatus(processId, updatedProcessStatus, session);
+            await processInstanceManager.updateStatus(processId, updatedProcessStatus, session);
             return this.model
                 .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
                 .orFail(new NotFoundError('step', id))
