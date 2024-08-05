@@ -13,6 +13,7 @@ import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
+import Resizable from './Resizable';
 
 const IFramesPage: React.FC = () => {
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
@@ -24,7 +25,7 @@ const IFramesPage: React.FC = () => {
     });
     const [searchInput, setSearchInput] = useState<string>();
     const [page, setPage] = useState(0);
-    const [iFramesRows, setIFramesRows] = useState<any>([]);
+    // const [iFramesRows, setIFramesRows] = useState<any>([]);
     const [iframePages, setIframePages] = useState({});
 
     const queryKey = ['searchIFrames', page, searchInput];
@@ -96,52 +97,105 @@ const IFramesPage: React.FC = () => {
                     }}
                 />
             </Grid>
-            <Grid item>
-                <ViewingBox minHeight="82vh">
-                    <InfiniteScroll
-                        queryKey={queryKey}
-                        queryFunction={async ({ pageParam }) => {
-                            console.log({ pageParam });
+            <Grid item width="100%" height="100%">
+                {/* <ViewingBox minHeight="82vh"> */}
+                <InfiniteScroll
+                    queryKey={queryKey}
+                    queryFunction={async ({ pageParam }) => {
+                        console.log('Fetching data for page:', pageParam ?? 0);
 
-                            const data = await searchIFrames({ limit: 4, search: searchInput, skip: (pageParam ?? 0) * 4 });
-                            // setIframePages((prev) => ({ ...prev, [page]: data }));
-                            // console.log({ data }, iframePages[page]);
-                            return data;
-                        }}
-                        onQueryError={(error) => {
-                            // eslint-disable-next-line no-console
-                            console.log('failed loading gantts: ', error);
-                            toast.error(i18next.t('gantts.searchFailed'));
-                        }}
-                        emptyText={i18next.t('gantts.noGanttsFound')}
-                        useContainer={false}
-                    >
-                        {(iframe) => (
-                            // <PanelGroup direction="vertical" style={{ height: '1000px' }}>
-                            //     <PanelGroup direction="horizontal" style={{ padding: '10px', display: 'flex', flex: 1 }} key={rowIndex}>
-                            //         <ResizablePanel>
-                            <Box
-                                sx={{
-                                    width: '100%',
-                                    height: '100%',
-                                    borderRadius: 3,
-                                    overflow: 'hidden',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    '&:hover': {
-                                        border: 0,
-                                        boxShadow: '-6px 6px 7px 0px #1E277540',
-                                    },
-                                }}
-                            >
-                                <IFramePage iFrame={iframe} isIFramePage={false} />
-                            </Box>
-                            //         </ResizablePanel>
-                            //     </PanelGroup>
-                            // </PanelGroup>
-                        )}
-                    </InfiniteScroll>
-                </ViewingBox>
+                        const skip = pageParam ? pageParam * 4 : 0;
+                        const data = await searchIFrames({ limit: 4, search: searchInput, skip });
+                        const dataArray = Array.isArray(data) ? data : [data];
+                        console.log({ data: dataArray, pageParam });
+
+                        if (!dataArray || dataArray.length === 0) {
+                            console.log('No more data to load.');
+                            return [];
+                        }
+                        const result: any = [];
+                        for (let i = 0; i < data.length; i += 2) {
+                            result.push(data.slice(i, i + 2));
+                        }
+                        console.log({ result });
+
+                        return [result];
+                    }}
+                    onQueryError={(error) => {
+                        console.log('Failed loading data:', error);
+                        toast.error(i18next.t('gantts.searchFailed'));
+                    }}
+                    emptyText={i18next.t('gantts.noGanttsFound')}
+                    useContainer={false}
+                >
+                    {(iFramesRows: any) => {
+                        return (
+                            // <Box position="relative" display="flex" flexDirection="column" width="80%" sx={{ backgroundColor: 'red' }}>
+                            // <Box
+                            //     sx={{
+                            //         width: '100%',
+                            //         height: 'calc(100vh - 64px)', // Adjust height as needed
+                            //         overflowY: 'auto', // Enable vertical scrolling
+                            //     }}
+                            // >
+                            <Grid container flexDirection="column" height="100%">
+                                {/* <Grid style={{ width: '100%' }}> */}
+
+                                <PanelGroup direction="vertical" style={{ height: '1000px' }}>
+                                    {iFramesRows.map((iFrameRow, rowIndex: number) => (
+                                        <React.Fragment key={rowIndex}>
+                                            {/* {rowIndex === iFramesRows.length - 1 && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />} */}
+                                            <Panel
+                                                style={{
+                                                    // display: 'flex',
+                                                    // flexDirection: 'column',
+                                                    flex: 1,
+                                                    minHeight: '300px',
+                                                }}
+                                            >
+                                                <PanelGroup
+                                                    direction="horizontal"
+                                                    style={{ padding: '10px', display: 'flex', flex: 1 }}
+                                                    key={rowIndex}
+                                                >
+                                                    {iFrameRow.map((iframe, colIndex: number) => (
+                                                        // eslint-disable-next-line react/no-array-index-key, react/jsx-key
+                                                        <ResizablePanel key={colIndex} isFirst={colIndex === 0}>
+                                                            <Box
+                                                                sx={{
+                                                                    width: '100%',
+                                                                    height: '100%',
+                                                                    borderRadius: 3,
+                                                                    overflow: 'hidden',
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    '&:hover': {
+                                                                        border: 0,
+                                                                        boxShadow: '-6px 6px 7px 0px #1E277540',
+                                                                    },
+                                                                }}
+                                                            >
+                                                                <IFramePage iFrame={iframe} isIFramePage={false} />
+                                                            </Box>
+                                                        </ResizablePanel>
+                                                    ))}
+                                                </PanelGroup>
+                                            </Panel>
+                                            {/* <Grid> */}
+                                            {/* {rowIndex < iFramesRows.length - 1 && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />} */}
+                                            <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />
+
+                                            {/* </Grid> */}
+                                        </React.Fragment>
+                                    ))}
+                                </PanelGroup>
+                            </Grid>
+                            // </Box>
+                        );
+                    }}
+                </InfiniteScroll>
+
+                {/* </ViewingBox> */}
             </Grid>
             {/* <Box position="relative" display="flex" width="100%" flexDirection="column" alignItems="center">
                 <Grid style={{ width: '95%' }}>

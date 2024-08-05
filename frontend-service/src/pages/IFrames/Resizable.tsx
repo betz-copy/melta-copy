@@ -14,12 +14,12 @@ const ResizablePanel: React.FC<any> = ({ children, isFirst = false }) => {
         <>
             <Panel
                 className="bg-slate-100 rounded-lg flex items-center justify-center text-center p-2"
-                style={{ padding: '10px', minHeight: '50px', minWidth: '50px' }}
+                style={{ padding: '10px', minWidth: '400px' }}
                 // onResize={handleResize}
             >
                 {children}
             </Panel>
-            {isFirst && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />}
+            {isFirst && <PanelResizeHandle className="mx-1 w-2 h-2 bg-sl    ate-300" />}
         </>
     );
 };
