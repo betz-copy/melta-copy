@@ -150,8 +150,9 @@ export class BulkActionManager {
     ) {
         const results: (IEntity | IRelationship)[] = [];
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
+        const fixedActions = actions;
 
-        for (const action of actions) {
+        for (const [index, action] of Object.entries(actions)) {
             switch (action.actionType) {
                 case ActionTypes.CreateEntity: {
                     const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
@@ -202,6 +203,7 @@ export class BulkActionManager {
                 case ActionTypes.UpdateEntity: {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     const fixedMetaData = this.getEntityIdByPrevResults(actionMetadata, results);
+                    fixedActions[index].actionMetadata = fixedMetaData;
                     const { updatedEntity, activityLogsToCreate } = await EntityManager.handleUpdateEntity(fixedMetaData, transaction, userId);
 
                     results.push(updatedEntity);
@@ -213,7 +215,7 @@ export class BulkActionManager {
             }
         }
 
-        return { results, allActivityLogsToCreate };
+        return { results, allActivityLogsToCreate, fixedActions };
     }
 
     static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
@@ -278,12 +280,14 @@ export class BulkActionManager {
                     rulesByEntityTemplateIds,
                 );
 
-                const { results, allActivityLogsToCreate } = await BulkActionManager.runBulkOfActionsInTransaction(
+                const { results, allActivityLogsToCreate, fixedActions } = await BulkActionManager.runBulkOfActionsInTransaction(
                     transaction,
                     actions,
                     entitiesTemplatesByIds,
                     userId,
                 );
+
+                console.dir(fixedActions, { depth: null });
 
                 const entitiesIdsRulesReasonsMapAfterRunActions = BulkActionManager.getEntitiesIdsRulesReasonsAfter(
                     actions,
@@ -307,6 +311,7 @@ export class BulkActionManager {
                         if (action.actionType === ActionTypes.UpdateEntity) return { updatedEntityId: results[index].properties._id };
                         return {};
                     }),
+                    fixedActions,
                 );
 
                 if (!dryRun) {

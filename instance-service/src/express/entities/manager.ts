@@ -446,7 +446,7 @@ export class EntityManager {
                         actionType: ActionTypes.UpdateEntity,
                         actionMetadata: {
                             entityId: currentEntity?.properties._id ?? '$0._id',
-                            before: currentEntity?.properties,
+                            before: currentEntity?.properties ?? properties,
                             updatedFields,
                             entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
                         } as IUpdateEntityMetadata,

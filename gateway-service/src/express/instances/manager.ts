@@ -525,12 +525,13 @@ export class InstancesManager {
 
     static async handleBrokenRulesError(error: any): Promise<never> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
-            const { brokenRules } = error.response.data.metadata;
+            const { brokenRules, actions } = error.response.data.metadata;
 
             throw new ServiceError(400, error.message, {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await RuleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
+                actions: await RuleBreachesManager.populateActionsMetaData(actions),
             });
         }
 

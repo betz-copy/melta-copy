@@ -17,7 +17,11 @@ const ExecWithRuleBreachDialog: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
-}> = ({ isSubmitting, onCancel, onSubmit, brokenRules, actionType, actionMetadata }) => {
+    actions?: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+}> = ({ isSubmitting, onCancel, onSubmit, brokenRules, actionType, actionMetadata, actions }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
@@ -42,7 +46,7 @@ const ExecWithRuleBreachDialog: React.FC<{
                     : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
             </DialogTitle>
             <DialogContent>
-                <RuleBreachInfo brokenRules={brokenRules} actions={[{ actionType, actionMetadata }]} isCompact={false} />
+                <RuleBreachInfo brokenRules={brokenRules} actions={actions ?? [{ actionType, actionMetadata }]} isCompact={false} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{i18next.t('execActionWithRuleBreach.cancel')}</Button>

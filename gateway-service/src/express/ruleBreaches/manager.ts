@@ -706,7 +706,8 @@ export class RuleBreachesManager {
 
     public static async populateUpdateEntityActionMetadata(actionMetadata: IUpdateEntityMetadata): Promise<IUpdateEntityMetadataPopulated> {
         const { entityId, ...restOfMetadata } = actionMetadata;
-
+        /// i get null when update the created entity and then it doesn't know the id so it makes it null
+        // i can define it $0._id and then get the first place but its ugly
         const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
 
         return {
@@ -728,9 +729,9 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
-        const { originUserId, actions, brokenRules, ...restOfRuleBreach } = ruleBreach;
-
+    public static populateActionsMetaData = async (
+        actions: IAction[],
+    ): Promise<{ actionType: ActionTypes; actionMetadata: IActionMetadataPopulated }[]> => {
         const populatedActionMetadatasPromises: Promise<IActionMetadataPopulated>[] = [];
 
         if (actions) {
@@ -764,11 +765,6 @@ export class RuleBreachesManager {
 
         const actionsMetadatas = await Promise.all(populatedActionMetadatasPromises!);
 
-        const [populatedBrokenRules, originUser] = await Promise.all([
-            RuleBreachesManager.populateBrokenRules(brokenRules),
-            UsersManager.getUserById(originUserId),
-        ]);
-
         const populatedActions: {
             actionType: ActionTypes;
             actionMetadata: IActionMetadataPopulated;
@@ -780,6 +776,22 @@ export class RuleBreachesManager {
                   };
               })
             : [];
+
+        return populatedActions;
+    };
+
+    public static async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
+        const { originUserId, actions, brokenRules, ...restOfRuleBreach } = ruleBreach;
+
+        const [populatedBrokenRules, originUser] = await Promise.all([
+            RuleBreachesManager.populateBrokenRules(brokenRules),
+            UsersManager.getUserById(originUserId),
+        ]);
+
+        const populatedActions: {
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadataPopulated;
+        }[] = await this.populateActionsMetaData(actions);
 
         return {
             ...restOfRuleBreach,

@@ -11,6 +11,7 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { IEntity } from '../../../interfaces/entities';
 import {
     ActionTypes,
+    IActionMetadataPopulated,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     IDuplicateEntityMetadata,
@@ -76,6 +77,10 @@ interface IActionOnEntityWithRuleBreachDialogProps {
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
     onCreateRuleBreachRequest: () => void;
+    actions?: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
 }
 
 const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = ({
@@ -89,6 +94,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     entityFormData,
     onUpdatedRuleBlock,
     onCreateRuleBreachRequest,
+    actions,
 }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
@@ -181,8 +187,13 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 }
             }}
             brokenRules={brokenRules}
+
+            /// that for one broken
             actionType={actionType}
             actionMetadata={actionMetadataPopulated}
+
+            /// that for multiple broken- when there was action code
+            actions={actions}
         />
     );
 };

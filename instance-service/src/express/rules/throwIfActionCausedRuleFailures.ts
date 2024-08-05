@@ -10,6 +10,7 @@ import { ICause } from './interfaces/formulaWithCauses/cause';
 import { filteredMap } from '../../utils/filteredMap';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
+import { IAction } from '../relationships/interfaces/action';
 
 const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);
@@ -103,6 +104,7 @@ export const throwIfActionCausedRuleFailures = (
     ruleFailuresBeforeAction: IRuleFailure[],
     ruleFailuresAfterAction: IRuleFailure[],
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    actions?: IAction[],
 ) => {
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
@@ -133,6 +135,7 @@ export const throwIfActionCausedRuleFailures = (
         throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules,
+            actions,
         });
     }
 };
