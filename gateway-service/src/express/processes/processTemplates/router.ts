@@ -11,7 +11,7 @@ import {
     getTemplateByIdSchema,
     searchProcessTemplatesSchema,
 } from './validator.schema';
-import { Authorizer } from '../../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 
 const {
     service: { uploadsFolderPath },
@@ -20,7 +20,6 @@ const {
 const TemplatesRouter: Router = Router();
 
 const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplatesController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 TemplatesRouter.get(
     '/:id',

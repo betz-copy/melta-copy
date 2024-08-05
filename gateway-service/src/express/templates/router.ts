@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
-import { Authorizer } from '../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
@@ -43,7 +43,6 @@ const TemplatesServiceProxy = createWorkspacesProxyMiddleware({
 const templatesRouter: Router = Router();
 
 const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 // all needed categories
 templatesRouter.get('/all', AuthorizerControllerMiddleware('userHasSomePermissions'), templatesControllerMiddleware('getAllAllowedTemplates'));

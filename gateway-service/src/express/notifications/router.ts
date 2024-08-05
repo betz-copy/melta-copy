@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { Authorizer } from '../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import NotificationsController from './controller';
@@ -14,7 +14,6 @@ import {
 const notificationsRouter: Router = Router();
 
 const NotificationsControllerMiddleware = createWorkspacesController(NotificationsController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 notificationsRouter.get(
     '/my',

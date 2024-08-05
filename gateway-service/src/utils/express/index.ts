@@ -89,12 +89,20 @@ export const getWorkspaceId = async (req: Request) => {
     return workspaceId;
 };
 
-export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(controller: {
-    new (workspaceId: string, userId: string): T;
-}) => {
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
+    controller: { new (workspaceId: string, userId: string): T },
+    isMiddleware = false,
+) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {
             const workspaceId = await getWorkspaceId(req);
+
+            if (isMiddleware) {
+                return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next)
+                    .then(() => next())
+                    .catch(next); // eslint-disable-line new-cap
+            }
+
             return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };

@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
-import { Authorizer } from '../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import RuleBreachesController from './controller';
@@ -19,7 +19,6 @@ import {
 const RulesBreachesRouter: Router = Router();
 
 const RulesBreachesControllerMiddleware = createWorkspacesController(RuleBreachesController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 RulesBreachesRouter.post(
     '/requests',

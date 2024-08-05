@@ -5,7 +5,7 @@ import { WorkspaceService } from '../express/workspaces/service';
 import { UserService } from '../externalServices/userService';
 import { PermissionScope, PermissionType } from '../externalServices/userService/interfaces/permissions';
 import { ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
-import { wrapMiddleware } from './express';
+import { createWorkspacesController, wrapMiddleware } from './express';
 import DefaultController from './express/controller';
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
@@ -133,3 +133,5 @@ export class Authorizer extends DefaultController {
         this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.read } });
     }
 }
+
+export const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer, true);

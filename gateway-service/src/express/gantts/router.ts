@@ -4,12 +4,11 @@ import { createWorkspacesController, wrapMiddleware } from '../../utils/express'
 import ValidateRequest from '../../utils/joi';
 import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
 import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCanUpdateGantt } from './middlewares';
-import { Authorizer } from '../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const GanttsRouter: Router = Router();
 
 const GanttsControllerMiddleware = createWorkspacesController(GanttController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 GanttsRouter.get(
     '/:ganttId',

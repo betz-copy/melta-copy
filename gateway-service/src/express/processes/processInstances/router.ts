@@ -13,12 +13,11 @@ import {
     archivedProcessStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../../utils/joi';
-import { Authorizer } from '../../../utils/authorizer';
+import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 
 const InstancesRouter: Router = Router();
 
 const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
-const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer);
 
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware('getProcessInstance'));
 InstancesRouter.post(
