@@ -134,21 +134,24 @@ export const MeltaRoutesInner: React.FC = () => {
                                 </CategoryProtectedRoute>
                             </Route>
 
-                            {/* TODO nest routes when nested params is implemented - https://github.com/molefrog/wouter/issues/409 */}
                             <Route path="/entity/:entityId">
-                                <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                    <Entity />
-                                </EntityProtectedRoute>
-                            </Route>
-                            <Route path="/entity/:entityId/graph">
-                                <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                    <Graph />
-                                </EntityProtectedRoute>
-                            </Route>
-                            <Route path="/entity/:entityId/duplicate">
-                                <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
-                                    <Duplicate />
-                                </EntityProtectedRoute>
+                                <Route path="/">
+                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                        <Entity />
+                                    </EntityProtectedRoute>
+                                </Route>
+
+                                <Route path="/graph">
+                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                        <Graph />
+                                    </EntityProtectedRoute>
+                                </Route>
+
+                                <Route path="/duplicate">
+                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                        <Duplicate />
+                                    </EntityProtectedRoute>
+                                </Route>
                             </Route>
 
                             {meltaPlus && (
