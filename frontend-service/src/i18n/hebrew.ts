@@ -580,6 +580,7 @@ export default {
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',
         unique: 'ייחודי',
+        readOnly: 'לקריאה בלבד',
         incoming: 'משויך מ',
         outgoing: 'משויך ל',
         relatedDirection: 'כיוון שיוך',

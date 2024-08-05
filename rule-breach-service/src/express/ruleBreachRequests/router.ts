@@ -22,7 +22,7 @@ RuleBreachRequestsRouter.post(
 );
 
 RuleBreachRequestsRouter.post(
-    '/getManys',
+    '/get-many',
     ValidateRequest(getManyRuleBreachesByIds),
     wrapController(RuleBreachRequestsController.getManyRuleBreachRequests),
 );

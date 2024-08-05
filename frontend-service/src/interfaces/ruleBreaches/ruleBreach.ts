@@ -1,7 +1,7 @@
 import { IUser } from '../../services/kartoffelService';
 import { IEntity } from '../entities';
 import { IRelationship } from '../relationships';
-import { ActionTypes, IActionMetadata, IActionMetadataPopulated } from './actionMetadata';
+import { ActionTypes, IAction, IActionMetadataPopulated } from './actionMetadata';
 
 export interface ICauseInstance {
     // same format of IVariable in Formula interfaces, but with instance ids
@@ -25,15 +25,12 @@ export interface IBrokenRule {
 export interface IRuleBreach {
     _id: string;
     originUserId: string;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadata;
-    }[];
+    actions: IAction[];
     brokenRules: IBrokenRule[];
     createdAt: Date;
 }
 
-export type IEntityForBrokenRules = IEntity | string | null; // TODO - change name and use in actionInfo component and metadatas types
+export type IEntityForBrokenRules = IEntity | string | null;
 export type IRelationshipForBrokenRules = IRelationship | string | null;
 
 export interface ICauseInstancePopulated {

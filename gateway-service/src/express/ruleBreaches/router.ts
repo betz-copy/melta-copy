@@ -28,7 +28,7 @@ RulesBreachesRouter.post(
 );
 
 RulesBreachesRouter.post(
-    '/getMany',
+    '/requests/get-many',
     ValidateRequest(getManyRuleBreachesByIds),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(RuleBreachesController.getManyRuleBreachRequests),

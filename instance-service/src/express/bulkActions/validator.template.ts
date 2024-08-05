@@ -5,7 +5,7 @@ import groupBy from 'lodash.groupby';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from '../relationships/interfaces/action';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { IEntity } from '../entities/interface';
@@ -93,8 +93,6 @@ export const validateActionsGroups = async (req: Request) => {
     ]).catch(() => {
         throw new ValidationError(`General error finding Relationship or Entity`);
     });
-
-    console.log({ entities, relationshipTemplates, entitiesTemplates });
 
     const entitiesByEntitiesIds = groupBy(entities, (entity) => entity.properties._id);
     const relationshipTemplatesByRelationshipTemplatesIds = groupBy(relationshipTemplates, (relationshipTemplate) => relationshipTemplate._id);

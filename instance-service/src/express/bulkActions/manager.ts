@@ -3,9 +3,9 @@ import { Transaction } from 'neo4j-driver';
 import groupBy from 'lodash.groupby';
 import Neo4jClient from '../../utils/neo4j';
 import { IRelationship } from '../relationships/interfaces';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '../relationships/interfaces/action';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from './interface';
 import EntityManager from '../entities/manager';
-import { EntitiesIdsRulesReasonsMap, IEntity } from '../entities/interface';
+import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IBrokenRule } from '../rules/interfaces';
@@ -73,7 +73,10 @@ export class BulkActionManager {
                     entitiesDatas.forEach((entityData) => {
                         entitiesTemplatesIdsOfRules.add(entityData.entityTemplateId);
                         const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData.entityId)?.reasons || [];
-                        reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
+                        reasons.push({
+                            type: RunRuleReason.dependentViaAggregation,
+                            dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId,
+                        });
 
                         entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData.entityId, {
                             reasons,
@@ -111,7 +114,7 @@ export class BulkActionManager {
                 };
 
                 const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
-                reasons.push({ type: 'dependentOnEntity' });
+                reasons.push({ type: RunRuleReason.dependentOnEntity });
 
                 entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
             } else if (action.actionType === ActionTypes.CreateRelationship) {
@@ -132,7 +135,7 @@ export class BulkActionManager {
 
                 entitiesDatas.forEach((entityData) => {
                     const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
-                    reasons.push({ type: 'dependentViaAggregation', dependentRelationshipTemplateId: relationship.templateId });
+                    reasons.push({ type: RunRuleReason.dependentViaAggregation, dependentRelationshipTemplateId: relationship.templateId });
 
                     entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
                 });
@@ -252,11 +255,12 @@ export class BulkActionManager {
                         }
                     }),
                 );
-                console.log({ entityTemplateIds });
 
                 // get all entityTemplates group by entityTemplateId
-                const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: entityTemplateIds });
-                const relationshipTemplates = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: relationshipTemplateIds });
+                const [entityTemplates, relationshipTemplates] = await Promise.all([
+                    EntityTemplateManagerService.searchEntityTemplates({ ids: [...entityTemplateIds] }),
+                    RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: [...relationshipTemplateIds] }),
+                ]);
 
                 const entitiesTemplatesByIds = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
                 const relationshipsTemplatesByIds = new Map(
@@ -274,20 +278,14 @@ export class BulkActionManager {
 
                 const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
 
-                const ruleFailuresBeforeAll = await EntityManager.runRulesOnEntitiesWithRuleReasons(
-                    transaction,
-                    entitiesIdsRulesReasonsMapBeforeRunActions,
-                    rulesByEntityTemplateIds,
-                );
-
-                const { results, allActivityLogsToCreate, fixedActions } = await BulkActionManager.runBulkOfActionsInTransaction(
-                    transaction,
-                    actions,
-                    entitiesTemplatesByIds,
-                    userId,
-                );
-
-                console.dir(fixedActions, { depth: null });
+                const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate, fixedActions }] = await Promise.all([
+                    EntityManager.runRulesOnEntitiesWithRuleReasons(
+                        transaction,
+                        entitiesIdsRulesReasonsMapBeforeRunActions,
+                        rulesByEntityTemplateIds,
+                    ),
+                    BulkActionManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId),
+                ]);
 
                 const entitiesIdsRulesReasonsMapAfterRunActions = BulkActionManager.getEntitiesIdsRulesReasonsAfter(
                     actions,
@@ -316,7 +314,6 @@ export class BulkActionManager {
 
                 if (!dryRun) {
                     const activityLogsPromises = allActivityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
-
                     await Promise.all(activityLogsPromises);
                 }
 

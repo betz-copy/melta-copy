@@ -149,6 +149,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
+    const readOnly = `properties[${index}].readOnly`;
 
     const unique =
         value.type !== 'serialNumber' &&
@@ -905,6 +906,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             disabled={
                                                                 value.type === 'serialNumber' ||
                                                                 value.type === 'boolean' ||
+                                                                value.readOnly ||
                                                                 (supportChangeToRequiredWithInstances
                                                                     ? false
                                                                     : isEditMode &&
@@ -917,6 +919,23 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.required')}
                                                 />
                                             )}
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        id={readOnly}
+                                                        name={readOnly}
+                                                        onChange={(_e, checked) => {
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                readOnly: checked ? checked : undefined,
+                                                            }));
+                                                        }}
+                                                        disabled={value.required}
+                                                        checked={value.readOnly}
+                                                    />
+                                                }
+                                                label={i18next.t('validation.readOnly')}
+                                            />
                                             {value.preview !== undefined && (
                                                 <FormControlLabel
                                                     control={

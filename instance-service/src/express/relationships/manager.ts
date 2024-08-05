@@ -18,7 +18,8 @@ import config from '../../config';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
-import { IActivityLog } from '../../externalServices/activityLog/interface';
+import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
+import { IEntity } from '../entities/interface';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -158,7 +159,7 @@ export class RelationshipManager {
         );
 
         const updatedFields = {
-            action: 'CREATE_RELATIONSHIP' as const,
+            action: ActionsLog.CREATE_RELATIONSHIP,
             timestamp: new Date(),
             userId,
             metadata: {
@@ -202,6 +203,20 @@ export class RelationshipManager {
 
             return createdRelationship;
         });
+    }
+
+    static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
+        const relationshipToReturn: IRelationship = relationship;
+        if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
+            const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4), 10);
+            relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
+        }
+        if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
+            const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4), 10);
+            relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
+        }
+
+        return relationshipToReturn;
     }
 
     static async deleteRelationshipByIdInTransaction(id: string, ignoredRules: IBrokenRule[], transaction: Transaction) {
@@ -256,7 +271,7 @@ export class RelationshipManager {
         });
 
         const updatedFields = {
-            action: 'DELETE_RELATIONSHIP' as const,
+            action: ActionsLog.DELETE_RELATIONSHIP,
             timestamp: new Date(),
             userId,
             metadata: {

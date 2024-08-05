@@ -22,6 +22,7 @@ import { EntityLink } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
+import { environment } from '../../globals';
 
 export const EntityInfo: React.FC<{
     entity: IEntity | string | null;
@@ -45,9 +46,13 @@ export const EntityInfo: React.FC<{
     let tooltipHeader: ReactNode | undefined;
     let linkable = true;
 
-    if (typeof entity === 'string' && entity.startsWith('$')) {
+    if (!entity) {
+        entityForLink = null;
+    } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
+        // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
+        // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
-        const actionIndex = parseInt(numberPart) < actions.length ? parseInt(numberPart) : 0;
+        const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
 
         const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
         entityForLink = {
@@ -71,8 +76,6 @@ export const EntityInfo: React.FC<{
             </Typography>
         );
         linkable = entityForLink.properties._id.startsWith('&');
-    } else if (!entity) {
-        entityForLink = null;
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (

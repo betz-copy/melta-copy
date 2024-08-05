@@ -62,7 +62,7 @@ class InstancesController {
     static async runBulkOfActions(req: Request, res: Response) {
         const { actionsGroups, ignoredRules } = req.body;
 
-        res.json(await InstancesManager.runBulkOfActions(actionsGroups, req.query.dryRun, ignoredRules, req.user!.id));
+        res.json(await InstancesManager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
 }
 

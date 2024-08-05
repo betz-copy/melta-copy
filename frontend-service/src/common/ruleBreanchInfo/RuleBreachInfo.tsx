@@ -1,7 +1,6 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { ActionTypes, IActionMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
@@ -10,10 +9,7 @@ import { IUser } from '../../services/kartoffelService';
 const RuleBreachInfo: React.FC<{
     originUser?: IUser;
     brokenRules: IRuleBreachPopulated['brokenRules'];
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IRuleBreachPopulated['actions'];
     isCompact: boolean;
 }> = ({ originUser, brokenRules, actions, isCompact }) => {
     return (

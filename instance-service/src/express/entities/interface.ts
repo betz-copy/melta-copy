@@ -117,6 +117,11 @@ export const isIEntity = (object: any): object is IEntity => {
     );
 };
 
+export enum RunRuleReason {
+    dependentViaAggregation = 'dependentViaAggregation',
+    dependentOnEntity = 'dependentOnEntity',
+}
+
 // reasons which rules to run on each entity
 // entityId -> reasons[], entityTemplateId
 export type EntitiesIdsRulesReasonsMap = Map<
@@ -124,12 +129,12 @@ export type EntitiesIdsRulesReasonsMap = Map<
     {
         reasons: (
             | {
-                  type: 'dependentViaAggregation';
+                  type: RunRuleReason.dependentViaAggregation;
                   dependentRelationshipTemplateId: string;
                   updatedProperties?: string[] | undefined;
               }
             | {
-                  type: 'dependentOnEntity';
+                  type: RunRuleReason.dependentOnEntity;
                   updatedProperties?: string[] | undefined;
               }
         )[];

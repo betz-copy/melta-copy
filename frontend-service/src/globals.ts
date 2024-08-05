@@ -185,6 +185,7 @@ export const environment = {
         infiniteScrollPageCount: 10,
     },
     accessTokenName: 'rabaz-access-token',
+    brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
