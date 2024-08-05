@@ -21,10 +21,11 @@ import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MenuButton } from '../../../common/MenuButton';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { useUserStore } from '../../../stores/user';
 import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
@@ -43,6 +44,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
+    const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const open = Boolean(anchorEl);
@@ -54,8 +56,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const handleClose = () => {
         setAnchorEl(null);
     };
-
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const closeDeleteDialog = () => {
         setOpenDeleteDialog(false);
@@ -133,7 +133,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entityTemplate.category, 'Write');
+    const canWriteInstance = checkUserInstanceOfCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances,
+        entityTemplate.category,
+        PermissionScope.write,
+    );
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>

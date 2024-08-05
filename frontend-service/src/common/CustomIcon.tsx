@@ -1,4 +1,6 @@
 import React, { CSSProperties } from 'react';
+import { useQuery } from 'react-query';
+import axios from '../axios';
 import { environment } from '../globals';
 import { useDarkModeStore } from '../stores/darkMode';
 
@@ -14,13 +16,23 @@ interface CustomImageProps {
 export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
+    const { data: imgSrc } = useQuery({
+        queryKey: ['getCustomImage', imageUrl],
+        queryFn: async () => {
+            if (!imageUrl.startsWith('/api')) return imageUrl;
+
+            const { data } = await axios.get(imageUrl, { baseURL: '', responseType: 'blob' });
+            return URL.createObjectURL(data);
+        },
+    });
+
     const customProps: React.ComponentProps<'img'> = preserveColor
-        ? { src: imageUrl, style }
+        ? { src: imgSrc, style }
         : {
               style: {
                   ...style,
                   backgroundColor: color || (darkMode ? '#FFFFFF' : '#000000'),
-                  WebkitMaskImage: `url(${imageUrl})`,
+                  WebkitMaskImage: `url(${imgSrc})`,
                   WebkitMaskSize: 'contain',
               },
           };

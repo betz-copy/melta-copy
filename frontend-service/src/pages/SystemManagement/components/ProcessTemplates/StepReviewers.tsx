@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IUser } from '../../../../services/kartoffelService';
+import { IUser } from '../../../../interfaces/users';
 import { environment } from '../../../../globals';
 
 interface StepReviewersProps {
@@ -31,7 +31,7 @@ export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
             </Grid>
             {isOpen &&
                 reviewers.map((reviewer) => (
-                    <Grid item key={reviewer.id}>
+                    <Grid item key={reviewer._id}>
                         <Typography
                             style={{
                                 fontSize: environment.mainFontSizes.headlineSubTitleFontSize,

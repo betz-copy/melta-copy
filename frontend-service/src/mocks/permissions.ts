@@ -3,19 +3,16 @@ import { Chance } from 'chance';
 import faker from '@faker-js/faker';
 import MockAdapter from 'axios-mock-adapter';
 import { categories } from './templates/categories';
+import { IUser } from '../interfaces/users';
 
 const chance = new Chance();
 faker.locale = 'he';
 
 export const generateMongoId = () => chance.string({ pool: 'abcdef0123456789', length: 24 });
 
-const generateUserDigitalIdentities = () => {
-    const sources = chance.pickset(['source1', 'source2', 'source3'], chance.integer({ min: 1, max: 3 }));
-    return sources.map((source) => ({ uniqueId: chance.email({ domain: source }) }));
-};
-const generateUser = () => {
+const generateUser = (): IUser => {
     const hierarchy = chance.pickone([
-        undefined,
+        '',
         Array.from({ length: 7 })
             .map(() => faker.commerce.department())
             .join('/'),
@@ -23,12 +20,19 @@ const generateUser = () => {
     const name = { firstName: faker.name.firstName(), lastName: faker.name.lastName() };
     const fullName = `${name.firstName} ${name.lastName}`;
     return {
-        id: generateMongoId(), // kartoffelId
-        displayName: `${fullName}${hierarchy ? ` - ${hierarchy}` : ''}`,
-        digitalIdentities: generateUserDigitalIdentities(),
-        firstName: name.firstName,
-        lastName: name.lastName,
+        _id: generateMongoId(),
         fullName,
+        jobTitle: faker.name.jobTitle(),
+        hierarchy,
+        mail: faker.internet.email(name.firstName, name.lastName),
+        preferences: {
+            darkMode: chance.bool(),
+        },
+        externalMetadata: {
+            kartoffelId: generateMongoId(),
+            digitalIdentitySource: chance.pickone(['source1', 'source2', 'source3']),
+        },
+        permissions: {},
     };
 };
 

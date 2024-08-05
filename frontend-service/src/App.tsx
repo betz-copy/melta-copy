@@ -14,7 +14,7 @@ import matomoInstance from './matomo';
 import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
-import { getMyPermissionsRequest, IPermissionsOfUser } from './services/permissionsService';
+import { getMyUserRequest } from './services/userService';
 import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
@@ -31,23 +31,12 @@ const App: React.FC = () => {
 
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
+
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
     });
-
-    const { isLoading: isLoadingMyPermissions, isError: isErrorMyPermissions } = useQuery<IPermissionsOfUser>(
-        'getMyPermissions',
-        getMyPermissionsRequest,
-        {
-            onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed loading my permissions:', error);
-                toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
-            },
-        },
-    );
 
     const [isLoadingUser, setIsLoadingUser] = useState(true);
 
@@ -57,18 +46,20 @@ const App: React.FC = () => {
 
             if (!user) return;
 
-            setUser(user);
+            const userFromDb = await getMyUserRequest().catch(() => ({}));
+
+            setUser({ ...user, ...userFromDb });
             setIsLoadingUser(false);
         };
 
         initUser();
     }, [setUser]);
 
-    if (isLoadingUser || isLoadingMyPermissions) <LoadingAnimation />;
+    if (isLoadingUser) <LoadingAnimation />;
 
     if (!currentUser) return <span>unauthorized</span>;
 
-    if (isErrorMyPermissions) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
+    // if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 

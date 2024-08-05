@@ -1,5 +1,4 @@
 import React from 'react';
-import loadingAnimation from '../assets/icons/Melta_Logo.svg';
 import '../css/loading.css';
 import { environment } from '../globals';
 import { useWorkspaceStore } from '../stores/workspace';
@@ -16,7 +15,7 @@ export const LoadingAnimation: React.FC<ILoadingAnimationProps> = ({ isLoading }
             {!isLoading && (
                 <img
                     className="ld ld-bounce"
-                    src={workspace?.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : loadingAnimation}
+                    src={workspace?.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : '/icons/Melta_Logo.svg'}
                     width="300px"
                 />
             )}

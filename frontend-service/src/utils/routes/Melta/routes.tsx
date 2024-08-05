@@ -10,8 +10,8 @@ import { TopBar } from '../../../common/TopBar';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MainBox } from '../../../Main.styled';
 import ScrollToTop from '../../../ScrollToTop';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { useMeltaPlusStore } from '../../../stores/meltaPlus';
+import { useUserStore } from '../../../stores/user';
 import { LocalStorage } from '../../localStorage';
 import {
     CategoryProtectedRoute,
@@ -44,9 +44,9 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const { setIsOpen, setCurrentStep } = useTour();
 
-    const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -97,14 +97,14 @@ export const MeltaRoutesInner: React.FC = () => {
                         <Switch>
                             <Route path="/system-management">
                                 <TopBar title={title} />
-                                <SystemManagementProtectedRoute permissions={myPermissions}>
+                                <SystemManagementProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
                                     <SystemManagement setTitle={setTitle} />
                                 </SystemManagementProtectedRoute>
                             </Route>
 
                             <Route path="/permissions-management">
                                 <TopBar title={title} />
-                                <PermissionsManagementProtectedRoute permissions={myPermissions}>
+                                <PermissionsManagementProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
                                     <PermissionsManagement setTitle={setTitle} />
                                 </PermissionsManagementProtectedRoute>
                             </Route>
@@ -129,26 +129,26 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/category/:categoryId">
-                                <CategoryProtectedRoute permissions={myPermissions}>
+                                <CategoryProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
                                     <Category />
                                 </CategoryProtectedRoute>
                             </Route>
 
                             <Route path="/entity/:entityId">
                                 <Route path="/">
-                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                         <Entity />
                                     </EntityProtectedRoute>
                                 </Route>
 
                                 <Route path="/graph">
-                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                         <Graph />
                                     </EntityProtectedRoute>
                                 </Route>
 
                                 <Route path="/duplicate">
-                                    <EntityProtectedRoute permissions={myPermissions} entityTemplates={entityTemplates}>
+                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                         <Duplicate />
                                     </EntityProtectedRoute>
                                 </Route>

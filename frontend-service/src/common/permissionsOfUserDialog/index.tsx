@@ -8,16 +8,10 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import * as Yup from 'yup';
+import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
-import { IUser } from '../../services/kartoffelService';
-import {
-    createPermissionsBulkRequest,
-    deletePermissionsBulkRequest,
-    IPermission,
-    IPermissionsOfUser,
-    PermissionResourceType,
-    updatePermissionsBulkRequest,
-} from '../../services/permissionsService';
+import { PermissionScope } from '../../interfaces/permissions';
+import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { checkUserInstanceOfCategoryPermission, getUserPermissionScopeOfCategory } from '../../utils/permissions/instancePermissions';
@@ -107,7 +101,7 @@ const PermissionsOfUserDialog: React.FC<{
     isOpen: boolean;
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
-    existingPermissionsOfUser?: IPermissionsOfUser;
+    existingPermissionsOfUser?: IUser;
 }> = ({ isOpen, handleClose, mode, existingPermissionsOfUser }) => {
     const currentUser = useUserStore((state) => state.user);
     const [_, navigate] = useLocation();
@@ -158,7 +152,7 @@ const PermissionsOfUserDialog: React.FC<{
                 });
 
                 if (newPermissionsOfUser.user.id === currentUser.id) {
-                    queryClient.setQueryData<IPermissionsOfUser>('getMyPermissions', newPermissionsOfUser);
+                    queryClient.setQueryData<IPermissionsOfUser>(environment.queryKeys.getMyUser, newPermissionsOfUser);
                 }
 
                 if (mode === 'create') {
@@ -190,7 +184,7 @@ const PermissionsOfUserDialog: React.FC<{
                     user: Yup.object().nullable().required(i18next.t('validation.required')),
                 }).unknown(true)}
                 validate={(formPermissionsOfUser) => {
-                    if (mode === 'create' && allPermissions?.some(({ user }) => user.id === formPermissionsOfUser.user?.id)) {
+                    if (mode === 'create' && allPermissions?.some(({ user }) => user.id === formPermissionsOfUser.user?._id)) {
                         return { user: i18next.t('permissions.permissionsOfUserDialog.userAlreadyExistOnCreateMessage') };
                     }
 
@@ -285,7 +279,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                 checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
-                                                    'Read',
+                                                    PermissionScope.read,
                                                 ),
                                                 onChange:
                                                     mode === 'view'
@@ -310,7 +304,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                 checked: checkUserInstanceOfCategoryPermission(
                                                     formikProps.values.instancesPermissions as IPermissionsOfUser['instancesPermissions'],
                                                     currCategory,
-                                                    'Write',
+                                                    PermissionScope.write,
                                                 ),
                                                 onChange:
                                                     mode === 'view'

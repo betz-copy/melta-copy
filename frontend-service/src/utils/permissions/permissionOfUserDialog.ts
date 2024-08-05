@@ -1,8 +1,7 @@
 import isEqualWith from 'lodash.isequalwith';
-import { IPermission, IPermissionsOfUser, PermissionResourceType } from '../../services/permissionsService';
 import { IFormPermissionsOfUser } from '../../common/permissionsOfUserDialog/permissionsTypes';
 import { ICategoryMap } from '../../interfaces/categories';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 
 const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
     return (
@@ -54,7 +53,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
     const defaultScopes = ['Read', 'Write'] as IPermission['scopes'];
     if (formPermissionsOfUser.doesHavePermissionsManagement && !existingPermissionsOfUser?.permissionsManagementId) {
         permissionsToCreate.push({
-            userId: formPermissionsOfUser.user.id,
+            userId: formPermissionsOfUser.user._id,
             resourceType: PermissionResourceType.Permissions,
             category: 'All',
             scopes: defaultScopes,
@@ -65,7 +64,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
 
     if (formPermissionsOfUser.doesHaveTemplatesManagement && !existingPermissionsOfUser?.templatesManagementId) {
         permissionsToCreate.push({
-            userId: formPermissionsOfUser.user.id,
+            userId: formPermissionsOfUser.user._id,
             resourceType: PermissionResourceType.Templates,
             category: 'All',
             scopes: defaultScopes,
@@ -76,7 +75,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
 
     if (formPermissionsOfUser.doesHaveRulesManagement && !existingPermissionsOfUser?.rulesManagementId) {
         permissionsToCreate.push({
-            userId: formPermissionsOfUser.user.id,
+            userId: formPermissionsOfUser.user._id,
             resourceType: PermissionResourceType.Rules,
             category: 'All',
             scopes: defaultScopes,
@@ -87,7 +86,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
 
     if (formPermissionsOfUser.doesHaveProcessesManagement && !existingPermissionsOfUser?.processesManagementId) {
         permissionsToCreate.push({
-            userId: formPermissionsOfUser.user.id,
+            userId: formPermissionsOfUser.user._id,
             resourceType: PermissionResourceType.Processes,
             category: 'All',
             scopes: defaultScopes,
@@ -106,7 +105,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
 
         if (permissionsOfUserDialogStateForCategory && !existingPermissionsOfUserForCategory) {
             permissionsToCreate.push({
-                userId: formPermissionsOfUser.user.id,
+                userId: formPermissionsOfUser.user._id,
                 resourceType: PermissionResourceType.Instances,
                 category: id,
                 scopes: permissionsOfUserDialogStateForCategory.scopes,
@@ -117,7 +116,7 @@ const getPermissionsToDeleteUpdateAndCreate = (
             if (permissionsOfUserDialogStateForCategory.scopes.sort().join(',') !== existingPermissionsOfUserForCategory.scopes.sort().join(',')) {
                 permissionsToUpdate.push({
                     ...existingPermissionsOfUserForCategory,
-                    userId: formPermissionsOfUser.user.id,
+                    userId: formPermissionsOfUser.user._id,
                     resourceType: PermissionResourceType.Instances,
                     category: id,
                     scopes: permissionsOfUserDialogStateForCategory.scopes,

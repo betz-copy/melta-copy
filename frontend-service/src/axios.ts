@@ -1,11 +1,15 @@
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { environment } from './globals';
 import { AuthService } from './services/authService';
 
 const axios = axiosInstance.create({
     withCredentials: true,
     timeout: 1800000,
     baseURL: '/api',
+    headers: {
+        [environment.workspaceIdHeaderName]: 'workspaces',
+    },
 });
 
 axios.interceptors.response.use(

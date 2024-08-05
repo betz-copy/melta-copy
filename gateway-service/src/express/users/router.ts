@@ -1,23 +1,28 @@
 import { Router } from 'express';
-import { UsersController } from './controller';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import { UsersController } from './controller';
 import {
     createUserRequestSchema,
+    deletePermissionsFromMetadataRequestSchema,
+    getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
-    deletePermissionsFromMetadataRequestSchema,
     updateUserExternalMetadataRequestSchema,
 } from './validator.schema';
 
 export const usersRouter: Router = Router();
 
+usersRouter.get('/my', ValidateRequest(getMyUserRequestSchema), wrapController(UsersController.getMyUser));
+
+usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));
+
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 
-usersRouter.get('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
-usersRouter.get('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
+usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
+usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
 
@@ -34,5 +39,3 @@ usersRouter.patch(
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
-
-usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));

@@ -26,6 +26,7 @@ export const environment = {
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
     },
+    workspaceIdHeaderName: 'workspace-id',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,

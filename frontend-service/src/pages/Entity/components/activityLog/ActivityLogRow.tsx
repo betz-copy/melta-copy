@@ -3,7 +3,7 @@ import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
 import { IActivityLog } from '../../../../services/activityLogService';
-import { getUserByIdRequest } from '../../../../services/kartoffelService';
+import { getUserByIdRequest } from '../../../../services/userService';
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getShortDate } from '../../../../utils/date';
@@ -21,7 +21,7 @@ const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntity
                 {isLoading ? (
                     <Skeleton variant="circular" width={40} height={40} />
                 ) : (
-                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!.id })} />
+                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
                 )}
             </Grid>
             <Grid item container xs={9}>

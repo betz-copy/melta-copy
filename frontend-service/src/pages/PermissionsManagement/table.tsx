@@ -13,7 +13,7 @@ import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IPermissionsOfUser } from '../../services/permissionsService';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 import { environment } from '../../globals';
 
 const { defaultRowHeight } = environment.agGrid;

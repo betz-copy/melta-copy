@@ -12,6 +12,7 @@ import { IRuleMap } from '../../../interfaces/rules';
 import ErrorPage from '../../../pages/ErrorPage';
 import { getAllTemplates, GetAllTemplatesType } from '../../../services/templates/getAllTemplates';
 import { getFile } from '../../../services/workspacesService';
+import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../templates';
 import { MeltaRoutesInner } from './routes';
@@ -22,6 +23,8 @@ interface IMeltaRoutesProps {
 
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
 
     const queryClient = useQueryClient();
 
@@ -60,6 +63,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         if (!workspace) return;
 
         setWorkspace(workspace);
+        setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
     }, [workspace, setWorkspace]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);

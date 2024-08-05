@@ -1,7 +1,7 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useTheme } from '@mui/material';
-import { IUser } from '../services/kartoffelService';
+import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 
 interface UserAvatarProps {
@@ -11,14 +11,8 @@ interface UserAvatarProps {
 }
 
 const getNameInitials = (user: IUser): string => {
-    if (user.firstName && user.lastName) {
-        return user.firstName.charAt(0) + user.lastName.charAt(0);
-    }
-    if (user.fullName) {
-        const names = user.fullName.split(' ');
-        return names.map((name) => name.charAt(0)).join('');
-    }
-    return '';
+    const names = user.fullName.split(' ');
+    return names.map((name) => name.charAt(0)).join('');
 };
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {

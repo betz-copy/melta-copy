@@ -7,6 +7,13 @@ const UserExternalMetadataSchema = joi.object({
     digitalIdentitySource: joi.string().required(),
 });
 
+// GET /api/users/my
+export const getMyUserRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {},
+});
+
 // GET /api/users/:userId
 export const getUserByIdRequestSchema = joi.object({
     query: {},

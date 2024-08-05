@@ -4,8 +4,9 @@ import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import i18next from 'i18next';
-import { IUser, searchUsersRequest } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { searchUsersRequest } from '../../services/userService';
 
 const UserAutocomplete: React.FC<{
     value: IUser | null;
@@ -44,7 +45,7 @@ const UserAutocomplete: React.FC<{
         data: usersOptions,
         refetch: searchUsersOptions,
         isFetching: isFetchingUsersOptions,
-    } = useQuery(['searchUsers', currentDisplayValue], () => searchUsersRequest(currentDisplayValue), {
+    } = useQuery(['searchUsers', currentDisplayValue], () => searchUsersRequest({ search: currentDisplayValue, limit: 10 }), {
         onError: (error) => {
             console.log('failed to search users. error:', error);
             toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
@@ -93,7 +94,7 @@ const UserAutocomplete: React.FC<{
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
                 getOptionLabel={(option) => option.displayName}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => option.id === currValue.id}
+                isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
                 options={usersOptions!}
                 loading={isFetchingUsersOptions}
                 loadingText={i18next.t('userAutocomplete.loading')}

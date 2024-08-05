@@ -4,8 +4,9 @@ import React, { isValidElement } from 'react';
 import { useQuery } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (isAllowed) {
@@ -19,14 +20,14 @@ export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) =>
     return <div />;
 };
 
-export const CategoryProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
+export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
     const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
-    return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === categoryId));
+    return protectedRoute(children, !permissions.instances?.categories[categoryId]);
 };
 
-export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; entityTemplates: IEntityTemplateMap }> = ({
+export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({
     children,
     permissions,
     entityTemplates,
@@ -52,14 +53,16 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     );
 
     if (isLoading) return <CircularProgress />;
+
     const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
-    return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === currentEntityTemplate?.category._id));
+
+    return protectedRoute(children, !permissions.instances?.categories[currentEntityTemplate?.category._id ?? '']);
 };
 
-export const SystemManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    return protectedRoute(children, !permissions.templatesManagementId && !permissions.processesManagementId);
+export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    return protectedRoute(children, permissions.templates?.scope !== PermissionScope.write && permissions.processes?.scope !== PermissionScope.write);
 };
 
-export const PermissionsManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    return protectedRoute(children, !permissions.permissionsManagementId);
+export const PermissionsManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    return protectedRoute(children, permissions.processes?.scope !== PermissionScope.write);
 };

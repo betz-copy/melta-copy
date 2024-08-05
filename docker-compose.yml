@@ -168,12 +168,6 @@ services:
 
   # frontend-service:
   #   build: ./frontend-service
-  #   volumes:
-  #     - ${MANIFEST_PATH}:/usr/share/nginx/html/manifest.json
-  #     - ${FAVICON_PATH}:/usr/share/nginx/html/favicon.ico
-  #     - ${MELTA_GOOGLE_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Google_Logo.svg
-  #     - ${MELTA_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Logo.svg
-  #     - ${MELTA_SHORT_LOGO_PATH}:/usr/share/nginx/html/icons/Melta_Short_Logo.svg
 
   nginx:
     image: nginx:alpine

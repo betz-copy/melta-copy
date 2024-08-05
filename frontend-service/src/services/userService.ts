@@ -6,6 +6,11 @@ import { IUser, IUserSearchBody } from '../interfaces/users';
 
 const { users } = environment.api;
 
+export const getMyUserRequest = async () => {
+    const { data } = await axios.get<IUser>(`${users}/my`);
+    return data;
+};
+
 export const getUserByIdRequest = async (userId: string) => {
     const { data } = await axios.get<IUser>(`${users}/${userId}`);
     return data;

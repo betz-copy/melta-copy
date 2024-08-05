@@ -1,5 +1,4 @@
-import { IUser } from '../../services/kartoffelService';
-import { IPermission } from '../../services/permissionsService';
+import { IUser } from '../../interfaces/users';
 
 export type IFormPermissionsOfUser = {
     user: IUser | null;
@@ -7,5 +6,5 @@ export type IFormPermissionsOfUser = {
     doesHaveTemplatesManagement: boolean;
     doesHaveRulesManagement: boolean;
     doesHaveProcessesManagement: boolean;
-    instancesPermissions: Pick<IPermission, 'category' | 'scopes'>[];
+    instancesPermissions: IUser['permissions']['instances'];
 };

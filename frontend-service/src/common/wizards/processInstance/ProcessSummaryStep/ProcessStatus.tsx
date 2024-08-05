@@ -95,7 +95,7 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
                 <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
                     <span style={{ fontWeight: 'bold', fontSize: isPrinting ? '14px' : undefined }}>
                         {` ${
-                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
+                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!._id
                                 ? i18next.t('wizard.processInstance.summary.byYou')
                                 : `${i18next.t('wizard.processInstance.summary.by')} ${(instance as IMongoStepInstancePopulated).reviewer!.fullName}`
                         }`}
