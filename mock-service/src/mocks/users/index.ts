@@ -6,7 +6,7 @@ import { getPermissionsToCreate } from './permissions';
 export const getUsersToCreate = (workspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {
     return config.usersService.managersKartoffelIds.map((kartoffelId) => {
         return {
-            fullName: 'נייקי קדידיס',
+            fullName: 'נייקי אדידס',
             mail: 'me@me.com',
             jobTitle: 'גיבור',
             hierarchy: 'מגניב/ביותר',

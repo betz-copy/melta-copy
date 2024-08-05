@@ -15,7 +15,7 @@ FlowCubeRouter.post(
     ValidateRequest(searchFlowCubeRequestSchema),
     wrapMiddleware(validateUserCanSearchEntitiesOfTemplate),
     wrapMiddleware(async (req) => {
-        req.headers[config.service.workspaceHeaderName] = req.params.workspaceId;
+        req.headers[config.service.dbHeaderName] = req.params.workspaceId;
     }),
     FlowCubeControllerMiddleware('searchFlowCube'),
 );

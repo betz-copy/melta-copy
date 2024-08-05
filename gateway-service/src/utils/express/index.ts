@@ -8,7 +8,7 @@ import dataLogger from '../logger/dataLogger';
 import { FunctionKey } from '../types';
 import DefaultController from './controller';
 
-const { workspaceHeaderName, dbHeaderName } = config.service;
+const { dbHeaderName } = config.service;
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -81,7 +81,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
 export const getWorkspaceId = async (req: Request) => {
-    const workspaceId = req.headers[workspaceHeaderName];
+    const workspaceId = req.headers[dbHeaderName];
 
     if (typeof workspaceId !== 'string') throw new InvalidWorkspaceHeaderError();
     await WorkspaceService.getById(workspaceId); // check if workspace exists
