@@ -1,7 +1,9 @@
 import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
+import { formatJewishDateInHebrew, toJewishDate } from 'jewish-date';
 import config from '../../../config';
 import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
+import moment from 'moment';
 
 // const getFieldSegments = (field: string): string[] => {
 //     const listRegex = /<ol>(.*?)<\/ol>/gs;
@@ -119,6 +121,12 @@ import { IEntity } from '../../../externalServices/instanceService/interfaces/en
 // });
 // };
 
+const getJewishDateFromDateString = (dateStr: string) => formatJewishDateInHebrew(toJewishDate(new Date(dateStr)));
+
+const getHebrewDateFromDateString = (dateStr: string) => {
+    moment(dateStr).;
+};
+
 /**
  * Checks if string text contains html tags.
  * @param text contains or not html tags
@@ -158,17 +166,56 @@ const isIsoDate = (strDate: string): boolean => {
 };
 
 /**
+ *
+ * @param strDate string that may be date
+ * @returns true if the string is in the form of date. Otherwise, false.
+ */
+const isDateWithoutTime = (strDate: string): boolean => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(strDate)) return false;
+    const date = new Date(strDate);
+    const [year, month, day] = strDate.split('-').map(Number);
+    return !Number.isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
+};
+
+/**
  * Creates document patches from an entity's properties.
  *
  * @param {IEntity} entity - The entity containing properties to be converted into patches.
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
 const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
+    // Constant indicating when to convert to jewish date (כ"ח בכסלו התשפ"ד)
+    const JEWISH_DATE_INDICATOR = '_jewish_date';
+    // Constant indicating when to convert to HEBREW date (ה18 באוגוסט 2023)
+    const HEBREW_DATE_INDICATOR = '_hebrew_date';
+
     const { properties } = entity;
     const patches: Record<string, IPatch> = {};
 
+    // Extract keys of properties that are date strings
+    const datePropertyKeys = Object.entries(properties)
+        .map(([key, value]) => {
+            // Check if the value is a string and is a valid ISO date or a date without time
+            if (typeof value === 'string' && (isIsoDate(value) || isDateWithoutTime(value))) return key;
+            return undefined;
+        })
+        // Filter out undefined values
+        .filter(Boolean) as string[];
+
+    // Create a new object with Jewish date properties added
+    const propertiesWithHebrewDates = datePropertyKeys.reduce(
+        (acc, datePropertyKey) => ({
+            ...acc,
+            // Add a new property with the Jewish date indicator and formatted Hebrew date
+            [`${datePropertyKey}${JEWISH_DATE_INDICATOR}`]: formatJewishDateInHebrew(toJewishDate(new Date(properties[datePropertyKey]))),
+            // Add a new property with the Jewish date indicator and formatted Hebrew date
+            [`${datePropertyKey}${HEBREW_DATE_INDICATOR}`]: formatJewishDateInHebrew(toJewishDate(new Date(properties[datePropertyKey]))),
+        }),
+        properties,
+    );
+
     // Iterate over each property in the entity
-    Object.entries(properties).forEach(([key, value]) => {
+    Object.entries(propertiesWithHebrewDates).forEach(([key, value]) => {
         const trimmedValue = isHTML(String(value)) ? extractTextFromHtml(value) : value;
         let formattedValue = trimmedValue;
 
@@ -176,7 +223,7 @@ const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
             formattedValue = `${new Date(formattedValue).toLocaleDateString('uk')}, ${new Date(formattedValue).toLocaleTimeString('uk')}`;
         if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
 
-        console.log('\n', { key, formattedValue, type: typeof formattedValue, isnibba: key === 'nibba' }, '\n');
+        console.log({ formattedValue });
 
         patches[key] = {
             type: PatchType.PARAGRAPH,
@@ -195,8 +242,8 @@ export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, entity: IE
 
     // Due to the fact that 'patchDocument' function can patch only one instance per patch,
     // we need to check if the document can no longer change with the patches
-    let patchedDocument = await patchDocument(arrayBuffer, { patches });
-    let newPatchedDocument = await patchDocument(patchedDocument, { patches });
+    let patchedDocument = await patchDocument(arrayBuffer, { patches, keepOriginalStyles: true });
+    let newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
 
     // Prevent infinite loop and re-patch while there are patches.
     for (
@@ -206,7 +253,7 @@ export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, entity: IE
     ) {
         patchedDocument = newPatchedDocument;
         // eslint-disable-next-line no-await-in-loop
-        newPatchedDocument = await patchDocument(patchedDocument, { patches });
+        newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
     }
 
     return Buffer.from(patchedDocument);
