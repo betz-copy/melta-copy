@@ -403,7 +403,10 @@ export default {
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
-            exportFormats: 'פורמטים לייצוא',
+            exportDocuments: 'פורמטים לייצוא',
+            // eslint-disable-next-line quotes
+            exportDocumentsInfo: `אתם בטח שואלים את עצמכם מה זה הפיצ'ר הזה? ואיך מתמודדים איתו? אז קודם כל הוא לא חובה, שתרגעו.
+            עכשיו, מה זה? לכאן אתם יכולים להעלות קובץ word (בלבד), ואם תכתבו בו {{שם שדה באנגלית}} (בהתאם למה ששמתם ביישות), תוכלו "להזריק" את המידע שלכם פנימה לקובץ. לא מאמינים לי? תנסו :)`,
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',

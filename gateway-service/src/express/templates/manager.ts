@@ -309,7 +309,7 @@ export class TemplatesManager {
     }
 
     static async createEntityTemplate(
-        templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'pdfTemplatesIds'>,
+        templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'documentTemplatesIds'>,
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
@@ -328,7 +328,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            pdfTemplatesIds: files ? await uploadFiles(files) : undefined,
+            documentTemplatesIds: files ? await uploadFiles(files) : undefined,
         });
 
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
@@ -481,16 +481,16 @@ export class TemplatesManager {
             iconFileId = currTemplate.iconFileId;
         }
 
-        let newPdfTemplatesIds: string[] | undefined;
+        let newDocumentTemplatesIds: string[] | undefined;
         if (files) {
-            if (currTemplate?.pdfTemplatesIds) {
-                await deleteFiles(currTemplate.pdfTemplatesIds);
-                newPdfTemplatesIds = await uploadFiles(files);
+            if (currTemplate?.documentTemplatesIds) {
+                await deleteFiles(currTemplate.documentTemplatesIds);
+                newDocumentTemplatesIds = await uploadFiles(files);
             } else {
-                newPdfTemplatesIds = await uploadFiles(files);
+                newDocumentTemplatesIds = await uploadFiles(files);
             }
         } else {
-            newPdfTemplatesIds = currTemplate?.pdfTemplatesIds;
+            newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
@@ -505,7 +505,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            pdfTemplatesIds: newPdfTemplatesIds,
+            documentTemplatesIds: newDocumentTemplatesIds,
         });
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,

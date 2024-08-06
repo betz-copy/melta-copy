@@ -60,7 +60,7 @@ class InstancesController {
     }
 
     static async exportEntityToDocumentTemplate(req: Request, res: Response) {
-        const response = await InstancesManager.exportEntityToDocumentTemplate(req.params.entityId, req.query.pdfTemplateId as string);
+        const response = await InstancesManager.exportEntityToDocumentTemplate(req.body);
         res.send(response);
     }
 }

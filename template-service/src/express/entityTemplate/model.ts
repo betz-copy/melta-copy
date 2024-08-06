@@ -49,7 +49,7 @@ const EntityTemplateSchema = new mongoose.Schema(
         iconFileId: {
             type: String,
         },
-        pdfTemplatesIds: {
+        documentTemplatesIds: {
             type: [String],
         },
     },

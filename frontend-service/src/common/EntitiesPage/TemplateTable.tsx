@@ -232,7 +232,7 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} maxWidth={template.pdfTemplatesIds?.length ? 'lg' : 'md'}>
+            <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}

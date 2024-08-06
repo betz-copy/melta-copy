@@ -52,13 +52,13 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'pdfTemplatesIds'
+        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
-    pdfTemplatesIds?: File[];
+    documentTemplatesIds?: File[];
 }
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -82,7 +82,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         validationSchema: addFieldsSchema,
     },
     {
-        label: i18next.t('wizard.entityTemplate.exportFormats'),
+        label: i18next.t('wizard.entityTemplate.exportDocuments'),
         component: (props) => <ExportFormats {...props} />,
     },
 ];
@@ -101,7 +101,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
-        pdfTemplatesIds: [],
+        documentTemplatesIds: [],
     },
     isEditMode = false,
 }) => {

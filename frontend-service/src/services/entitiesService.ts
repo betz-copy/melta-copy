@@ -235,7 +235,7 @@ export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchB
     return data;
 };
 
-export const exportEntityToFormatFile = async (entityId: string, pdfTemplateId: string) => {
-    const { data } = await axios.get(`${entities}/export/${entityId}`, { params: { pdfTemplateId }, responseType: 'blob' });
+export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
+    const { data } = await axios.post(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
     return data;
 };

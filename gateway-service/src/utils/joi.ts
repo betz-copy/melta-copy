@@ -52,7 +52,7 @@ export const iconFileSchema = fileSchema.keys({
         .required(),
 });
 
-export const pdfTemplateSchema = fileSchema.keys({
+export const documentTemplateSchema = fileSchema.keys({
     originalname: Joi.string()
         .regex(/\.(docx)$/)
         .required(),

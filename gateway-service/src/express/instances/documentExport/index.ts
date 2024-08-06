@@ -211,8 +211,7 @@ const isDateWithoutTime = (strDate: string): boolean => {
  * @param {IEntity} entity - The entity containing properties to be converted into patches.
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
-const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
-    const { properties } = entity;
+const createPatchesFromEntity = (properties: IEntity['properties']): Record<string, IPatch> => {
     const patches: Record<string, IPatch> = {};
 
     // Extract keys of properties that are date strings
@@ -257,8 +256,8 @@ const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
 const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Uint8Array) =>
     firstPatchDocument.toString() === secondPatchDocument.toString();
 
-export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, entity: IEntity) => {
-    const patches = createPatchesFromEntity(entity);
+export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties: IEntity['properties']) => {
+    const patches = createPatchesFromEntity(properties);
 
     // Due to the fact that 'patchDocument' function can patch only one instance per patch,
     // we need to check if the document can no longer change with the patches

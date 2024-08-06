@@ -57,26 +57,14 @@ export const exportEntitiesSchema = Joi.object({
     params: {},
 });
 
-// GET /api/instances/entities/pdfExport
-export const exportEntityToPdf = Joi.object({
-    body: {},
-    query: {
-        entityTemplateId: Joi.string(),
+// POST /api/instances/entities/export/document
+export const exportEntityToDocumentSchema = Joi.object({
+    body: {
+        documentTemplateId: Joi.string().required(),
+        entityProperties: Joi.object(),
     },
-    params: {
-        entityId: Joi.string().required(),
-    },
-});
-
-// POST /api/instances/entities/export
-export const exportEntityTemplateToPdfSchema = Joi.object({
-    body: {},
-    query: {
-        pdfTemplateId: Joi.string(),
-    },
-    params: {
-        entityId: Joi.string().required(),
-    },
+    query: {},
+    params: {},
 });
 
 // POST /api/instances/search/batch

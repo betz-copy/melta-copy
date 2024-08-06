@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
@@ -31,7 +32,7 @@ import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
-import { patchDocumentAsStream } from './pdfExport';
+import { patchDocumentAsStream } from './documentExport';
 
 const { errorCodes } = config;
 
@@ -236,14 +237,14 @@ export class InstancesManager {
         return deleteFiles(fileIdsToDelete);
     }
 
-    static async exportEntityToDocumentTemplate(entityId: string, pdfTemplateId?: string) {
-        const entity = await InstanceManagerService.getEntityInstanceById(entityId);
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-
-        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId))
-            return patchDocumentAsStream(await downloadFile(pdfTemplateId), entity);
-
-        throw new ServiceError(500, 'could not export entity to document template', { entityId });
+    static async exportEntityToDocumentTemplate({
+        documentTemplateId,
+        entityProperties,
+    }: {
+        documentTemplateId: string;
+        entityProperties: IEntity['properties'];
+    }) {
+        return patchDocumentAsStream(await downloadFile(documentTemplateId), entityProperties);
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

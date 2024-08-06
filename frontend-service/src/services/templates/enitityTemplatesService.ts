@@ -20,7 +20,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints,
-        pdfTemplatesIds,
+        documentTemplatesIds,
         ...restOfEntityTemplate
     } = entityTemplate;
 
@@ -66,7 +66,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         }
     });
 
-    const pdfTemplates = pdfTemplatesIds?.map((pdfTemplateId) => ({ name: pdfTemplateId } as File));
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
 
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
@@ -76,16 +76,16 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             properties: propertiesArray,
             attachmentProperties,
             uniqueConstraints,
-            pdfTemplatesIds: pdfTemplates,
+            documentTemplatesIds: documentTemplates,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, pdfTemplatesIds: pdfTemplates };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, documentTemplatesIds: documentTemplates };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
-    const { properties, attachmentProperties, propertiesTypeOrder, pdfTemplatesIds, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -225,8 +225,8 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         formData.append('file', newEntityTemplate.icon.file as File);
     }
 
-    newEntityTemplate.pdfTemplatesIds?.forEach((pdfTemplateId) => {
-        formData.append('files', pdfTemplateId);
+    newEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId) => {
+        formData.append('files', documentTemplateId);
     });
 
     if (entityTemplate.enumPropertiesColors) {
@@ -269,9 +269,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         }
     }
 
-    if ('pdfTemplatesIds' in updatedEntityTemplate && updatedEntityTemplate.pdfTemplatesIds) {
-        updatedEntityTemplate.pdfTemplatesIds.forEach((pdfTemplateId: string | File | { name: string }) => {
-            if (pdfTemplateId instanceof File) formData.append('files', pdfTemplateId);
+    if ('documentTemplatesIds' in updatedEntityTemplate && updatedEntityTemplate.documentTemplatesIds) {
+        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId: string | File | { name: string }) => {
+            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
         });
     }
 
@@ -287,11 +287,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
-    if (updatedEntityTemplate.pdfTemplatesIds)
+    if (updatedEntityTemplate.documentTemplatesIds)
         formData.append(
-            'pdfTemplatesIds',
+            'documentTemplatesIds',
             JSON.stringify(
-                updatedEntityTemplate.pdfTemplatesIds
+                updatedEntityTemplate.documentTemplatesIds
                     .filter((fileTemplate) => !(fileTemplate instanceof File))
                     .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
             ),

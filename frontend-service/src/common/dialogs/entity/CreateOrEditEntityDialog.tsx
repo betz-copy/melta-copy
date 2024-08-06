@@ -26,7 +26,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { createEntityRequest, exportEntityToFormatFile, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { createEntityRequest, exportEntityToDocumentRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 import { getLongDate } from '../../../utils/date';
 import { getFileName } from '../../../utils/getFileName';
@@ -276,7 +276,8 @@ const CreateOrEditEntityDetails: React.FC<{
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const { isLoading: isExportToFileLoading, mutateAsync: exportMutation } = useMutation(
-                    ({ entityId, templateId }: { entityId: string; templateId: string }) => exportEntityToFormatFile(entityId, templateId),
+                    ({ documentTemplateId, entityProperties }: { documentTemplateId: string; entityProperties: EntityWizardValues['properties'] }) =>
+                        exportEntityToDocumentRequest(documentTemplateId, entityProperties),
                     {
                         onSuccess: (data) => setExportedFile(data),
                         onError: () => {
@@ -417,12 +418,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {entityTemplate.pdfTemplatesIds?.length ? (
+                                            {entityTemplate.documentTemplatesIds?.length ? (
                                                 <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
                                                     <Grid item>
                                                         <Autocomplete
                                                             options={
-                                                                entityTemplate.pdfTemplatesIds?.map((fileName) => ({
+                                                                entityTemplate.documentTemplatesIds?.map((fileName) => ({
                                                                     label: getFileName(fileName),
                                                                     value: fileName,
                                                                 })) || []
@@ -454,7 +455,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                     }
                                                                     name="selectedExportFormat"
                                                                     variant="outlined"
-                                                                    label={i18next.t('wizard.entityTemplate.exportFormats')}
+                                                                    label={i18next.t('wizard.entityTemplate.exportDocuments')}
                                                                 />
                                                             )}
                                                         />
@@ -486,11 +487,14 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 textWrap: 'nowrap',
                                                             }}
                                                             variant="contained"
-                                                            startIcon={<FileDownloadOutlinedIcon />}
+                                                            startIcon={isExportToFileLoading ? <CircularProgress /> : <FileDownloadOutlinedIcon />}
                                                             onClick={async () => {
                                                                 const file = await exportMutation({
-                                                                    entityId: values.properties._id || entityToUpdate?.properties._id,
-                                                                    templateId: selectedFileToExport,
+                                                                    documentTemplateId: selectedFileToExport,
+                                                                    entityProperties: {
+                                                                        createdAt: isEditMode ? entityToUpdate?.properties.createdAtd : new Date(),
+                                                                        ...values.properties,
+                                                                    },
                                                                 });
 
                                                                 fileDownload(
@@ -500,7 +504,9 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                     )}.docx`,
                                                                 );
                                                             }}
-                                                            disabled={!(selectedFileToExport?.length && !values.properties._id)}
+                                                            disabled={
+                                                                !(selectedFileToExport?.length && !values.properties._id) || isExportToFileLoading
+                                                            }
                                                         >
                                                             {i18next.t('entityPage.download')}
                                                         </Button>

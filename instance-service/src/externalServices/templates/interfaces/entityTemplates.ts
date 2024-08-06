@@ -31,7 +31,7 @@ export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
-    pdfTemplatesIds?: string[];
+    documentTemplatesIds?: string[];
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;

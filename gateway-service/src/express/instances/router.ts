@@ -23,6 +23,7 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    exportEntityToDocumentSchema,
     searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -117,7 +118,8 @@ InstancesRouter.patch(
 );
 
 InstancesRouter.post(
-    '/entities/export',
+    '/entities/export/document',
+    ValidateRequest(exportEntityToDocumentSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     wrapController(InstancesController.exportEntityToDocumentTemplate, {
         toLog: true,
