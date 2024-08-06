@@ -13,7 +13,9 @@ export class PermissionsManager {
 
         permissions.forEach(({ workspaceId, type, metadata }) => {
             if (compactPermissions[workspaceId]?.[type]) throw new SinglePermissionOfTypePerUserError(type);
-            compactPermissions[workspaceId] = { [type]: metadata };
+
+            if (!compactPermissions[workspaceId]) compactPermissions[workspaceId] = {};
+            compactPermissions[workspaceId][type] = metadata as any;
         });
 
         return compactPermissions;
