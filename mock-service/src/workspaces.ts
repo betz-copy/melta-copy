@@ -11,8 +11,18 @@ export const createWorkspace = async (workspace: Omit<IWorkspace, '_id'>) => {
 };
 
 export const createWorkspaces = async (workspaces: Omit<IWorkspace, '_id'>[]) => {
-    await createWorkspace(workspaces[0]);
-    return createWorkspace(workspaces[1]);
+    let mainWorkspace: IWorkspace;
+
+    for (const workspace of workspaces) {
+        mainWorkspace = await createWorkspace(workspace);
+    }
+
+    return mainWorkspace!;
+};
+
+export const getRootWorkspace = async () => {
+    const { data } = await axios.post<IWorkspace>(`${url}${baseRoute}/file`, { path: '/' });
+    return data;
 };
 
 export const getWorkspaces = async () => {

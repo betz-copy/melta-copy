@@ -7,9 +7,10 @@ export interface SyncUserPermissions {
     permissions: ICompactPermissions;
 }
 
-export const getPermissionsToCreate = (workspaceId: string, categories: IMongoCategory[]): ICompactPermissions => {
+export const getPermissionsToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, categories: IMongoCategory[]): ICompactPermissions => {
     return {
-        [workspaceId]: {
+        [rootWorkspaceId]: { admin: { scope: PermissionScope.write } },
+        [mainWorkspaceId]: {
             permissions: { scope: PermissionScope.write },
             templates: { scope: PermissionScope.write },
             rules: { scope: PermissionScope.write },

@@ -3,7 +3,7 @@ import { IUser } from '../../interfaces/users';
 import { IMongoCategory } from '../../templates/categories';
 import { getPermissionsToCreate } from './permissions';
 
-export const getUsersToCreate = (workspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {
+export const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {
     return config.usersService.managersKartoffelIds.map((kartoffelId) => {
         return {
             fullName: 'נייקי אדידס',
@@ -17,7 +17,7 @@ export const getUsersToCreate = (workspaceId: string, categories: IMongoCategory
                 kartoffelId,
                 digitalIdentitySource: 'סייבר',
             },
-            permissions: getPermissionsToCreate(workspaceId, categories),
+            permissions: getPermissionsToCreate(rootWorkspaceId, mainWorkspaceId, categories),
         };
     });
 };

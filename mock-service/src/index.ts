@@ -19,7 +19,7 @@ import { createEntityTemplates } from './templates/entityTemplates';
 import { createRelationshipTemplates } from './templates/relationshipTemplates';
 import { createRules } from './templates/rules';
 import { createUsers, isUserServiceAlive } from './users';
-import { createWorkspaces, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
+import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
@@ -30,7 +30,9 @@ const main = async () => {
         throw workspacesServiceAliveErr;
     }
 
-    if ((await getWorkspaces()).length) {
+    const [rootWorkspace, workspaces] = await Promise.all([getRootWorkspace(), getWorkspaces()]);
+
+    if (workspaces.length) {
         console.log('DB not empty');
         return;
     }
@@ -91,7 +93,7 @@ const main = async () => {
 
     console.log('Creating users');
 
-    await createUsers(getUsersToCreate(mainWorkspace._id, createdCategories));
+    await createUsers(getUsersToCreate(rootWorkspace._id, mainWorkspace._id, createdCategories));
 
     console.log('Creating example file');
 
