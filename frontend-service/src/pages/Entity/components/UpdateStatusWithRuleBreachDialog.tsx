@@ -34,8 +34,12 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
         () => {
             return createRuleBreachRequestRequest({
                 brokenRules: rawBrokenRules,
-                actionType: ActionTypes.UpdateStatus,
-                actionMetadata: { entityId: actionMetadata.entity?.properties._id, disabled } as IUpdateEntityStatusMetadata,
+                actions: [
+                    {
+                        actionType: ActionTypes.UpdateStatus,
+                        actionMetadata: { entityId: actionMetadata.entity?.properties._id, disabled } as IUpdateEntityStatusMetadata,
+                    },
+                ],
             });
         },
         {

@@ -186,8 +186,8 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
-    createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
+    brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,

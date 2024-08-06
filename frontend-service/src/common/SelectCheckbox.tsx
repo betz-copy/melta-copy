@@ -542,7 +542,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         alignItems="center"
                         sx={{ width: '16px', height: '12px', gap: '10px', marginRight: '14px' }}
                     >
-                        {img ? img : isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />}
+                        {img || (isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />)}
                     </Box>
                 )}
                 size={size}
