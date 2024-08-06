@@ -5,6 +5,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery } from 'react-query';
 import i18next from 'i18next';
+
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
