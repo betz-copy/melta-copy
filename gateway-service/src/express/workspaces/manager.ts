@@ -1,10 +1,15 @@
-import config from '../../config';
 import { StorageService } from '../../externalServices/storageService';
+import DefaultManagerProxy from '../../utils/express/manager';
 import { IWorkspace } from './interface';
 import { WorkspaceService } from './service';
 
-export class WorkspaceManager {
-    private static storageService = new StorageService(config.workspaceService.dbName);
+export class WorkspaceManager extends DefaultManagerProxy {
+    private storageService: StorageService;
+
+    constructor(workspaceId: string) {
+        super(null);
+        this.storageService = new StorageService(workspaceId);
+    }
 
     static async getWorkspaceIds(type: IWorkspace['type']) {
         return WorkspaceService.getWorkspaceIds(type);
@@ -22,7 +27,7 @@ export class WorkspaceManager {
         return WorkspaceService.getById(id);
     }
 
-    private static async uploadFilesWrapper(files: Express.Multer.File[]) {
+    private async uploadFilesWrapper(files: Express.Multer.File[]) {
         if (!files.length) return {};
 
         const fileIds = await this.storageService.uploadFiles(files);
@@ -33,13 +38,13 @@ export class WorkspaceManager {
         );
     }
 
-    static async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
-        const fileProperties = await WorkspaceManager.uploadFilesWrapper(files);
+    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+        const fileProperties = await this.uploadFilesWrapper(files);
 
         return WorkspaceService.createOne({ ...workspace, ...fileProperties });
     }
 
-    private static async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
+    private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
         try {
             return deleteFunc();
         } catch (error) {
@@ -48,7 +53,7 @@ export class WorkspaceManager {
         }
     }
 
-    private static async deleteUnusedFiles(workspace: IWorkspace, updatedWorkspace: Omit<IWorkspace, '_id'>) {
+    private async deleteUnusedFiles(workspace: IWorkspace, updatedWorkspace: Omit<IWorkspace, '_id'>) {
         const filesToDelete: string[] = [];
 
         if (workspace.iconFileId && workspace.iconFileId !== updatedWorkspace.iconFileId) filesToDelete.push(workspace.iconFileId);
@@ -57,20 +62,20 @@ export class WorkspaceManager {
         return !filesToDelete.length ? [] : this.storageService.deleteFiles(filesToDelete);
     }
 
-    static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
-        const [oldWorkspace, fileProperties] = await Promise.all([WorkspaceService.getById(id), WorkspaceManager.uploadFilesWrapper(files)]);
+    async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+        const [oldWorkspace, fileProperties] = await Promise.all([WorkspaceService.getById(id), this.uploadFilesWrapper(files)]);
 
         const updatedWorkspace = await WorkspaceService.updateOne(id, { ...workspace, ...fileProperties });
 
-        await WorkspaceManager.deleteFilesWrapper(id, () => WorkspaceManager.deleteUnusedFiles(oldWorkspace, updatedWorkspace));
+        await this.deleteFilesWrapper(id, () => this.deleteUnusedFiles(oldWorkspace, updatedWorkspace));
 
         return updatedWorkspace;
     }
 
-    static async deleteOne(id: string) {
+    async deleteOne(id: string) {
         const { iconFileId, logoFileId } = await WorkspaceService.getById(id);
 
-        await WorkspaceManager.deleteFilesWrapper(id, () => this.storageService.deleteFiles([iconFileId, logoFileId].filter(Boolean) as string[]));
+        await this.deleteFilesWrapper(id, () => this.storageService.deleteFiles([iconFileId, logoFileId].filter(Boolean) as string[]));
 
         return WorkspaceService.deleteOne(id);
     }

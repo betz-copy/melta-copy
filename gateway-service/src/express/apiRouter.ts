@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import config from '../config';
 import { AuthorizerControllerMiddleware } from '../utils/authorizer';
-import { createWorkspacesProxyMiddleware } from '../utils/express';
 import ActivityLogRouter from './activityLog/router';
 import flowCubeRouter from './flowCube/router';
 import GanttsRouter from './gantts/router';
@@ -31,7 +30,7 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 apiRouter.use(
     '/files',
     AuthorizerControllerMiddleware('userHasSomePermissions'),
-    createWorkspacesProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(

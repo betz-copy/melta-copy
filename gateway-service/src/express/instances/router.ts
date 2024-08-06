@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { fixRequestBody } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { InstancesController } from './controller';
 import {
@@ -31,7 +31,7 @@ import {
 
 const { instanceService } = config;
 
-const InstanceManagerProxy = createWorkspacesProxyMiddleware({
+const InstanceManagerProxy = createProxyMiddleware({
     target: instanceService.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: instanceService.requestTimeout,

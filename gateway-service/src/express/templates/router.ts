@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import { fixRequestBody } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, createWorkspacesProxyMiddleware, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import {
@@ -34,7 +34,7 @@ const {
     service: { uploadsFolderPath },
 } = config;
 
-const TemplatesServiceProxy = createWorkspacesProxyMiddleware({
+const TemplatesServiceProxy = createProxyMiddleware({
     target: url,
     onProxyReq: fixRequestBody,
     proxyTimeout: requestTimeout,

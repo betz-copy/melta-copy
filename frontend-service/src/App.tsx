@@ -18,6 +18,8 @@ import { getMyUserRequest } from './services/userService';
 import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
+    const [isErrorMyUser, setIsErrorMyUser] = useState(false);
+
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
         const isValidBrowser = browser.satisfies({
@@ -46,9 +48,13 @@ const App: React.FC = () => {
 
             if (!user) return;
 
-            const userFromDb = await getMyUserRequest().catch(() => ({}));
+            try {
+                const userFromDb = await getMyUserRequest();
+                setUser({ ...user, ...userFromDb });
+            } catch (error) {
+                setIsErrorMyUser(true);
+            }
 
-            setUser({ ...user, ...userFromDb });
             setIsLoadingUser(false);
         };
 
@@ -59,7 +65,7 @@ const App: React.FC = () => {
 
     if (!currentUser) return <span>unauthorized</span>;
 
-    // if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
+    if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 

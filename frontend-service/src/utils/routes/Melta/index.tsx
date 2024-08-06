@@ -3,6 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { updateAxiosWorkspaceHeader } from '../../../axios';
 import { LoadingAnimation } from '../../../common/LoadingAnimation';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -64,6 +65,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
 
         setWorkspace(workspace);
         setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+        updateAxiosWorkspaceHeader(workspace._id);
     }, [workspace, setWorkspace]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);

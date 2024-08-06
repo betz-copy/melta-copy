@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from 'express';
-import { createProxyMiddleware, Options } from 'http-proxy-middleware';
 import { get } from 'lodash';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
@@ -95,7 +94,8 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
 ) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return async (req: Request, res: Response, next: NextFunction) => {
-            const workspaceId = await getWorkspaceId(req);
+            const workspaceId = await getWorkspaceId(req).catch(next);
+            if (!workspaceId) return;
 
             if (isMiddleware) {
                 return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next)
@@ -106,18 +106,4 @@ export const createWorkspacesController = <T extends InstanceType<typeof Default
             return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
-};
-
-export const createWorkspacesProxyMiddleware = (options: Options) => {
-    return createProxyMiddleware({
-        ...options,
-        onProxyReq: async (...params) => {
-            const [proxyReq, req] = params;
-
-            const workspaceId = await getWorkspaceId(req);
-            proxyReq.setHeader(dbHeaderName, workspaceId);
-
-            if (options.onProxyReq) options.onProxyReq(...params);
-        },
-    });
 };

@@ -1,7 +1,12 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
 import { WorkspaceManager } from './manager';
 
-export class WorkspaceController {
+export class WorkspaceController extends DefaultController<WorkspaceManager> {
+    constructor(workspaceId: string) {
+        super(new WorkspaceManager(workspaceId));
+    }
+
     static async getWorkspaceIds(req: Request, res: Response) {
         res.json(await WorkspaceManager.getWorkspaceIds(req.body.path));
     }
@@ -18,15 +23,15 @@ export class WorkspaceController {
         res.json(await WorkspaceManager.getById(req.params.id));
     }
 
-    static async createOne(req: Request, res: Response) {
-        res.json(await WorkspaceManager.createOne(req.body, req.files as Express.Multer.File[]));
+    async createOne(req: Request, res: Response) {
+        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[]));
     }
 
-    static async updateOne(req: Request, res: Response) {
-        res.json(await WorkspaceManager.updateOne(req.params.id, req.body, req.files as Express.Multer.File[]));
+    async updateOne(req: Request, res: Response) {
+        res.json(await this.manager.updateOne(req.params.id, req.body, req.files as Express.Multer.File[]));
     }
 
-    static async deleteOne(req: Request, res: Response) {
-        res.json(await WorkspaceManager.deleteOne(req.params.id));
+    async deleteOne(req: Request, res: Response) {
+        res.json(await this.manager.deleteOne(req.params.id));
     }
 }

@@ -106,7 +106,6 @@ const config = {
         requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     workspaceService: {
-        dbName: env.get('WORKSPACE_SERVICE_DB_NAME').default('workspaces').asString(),
         url: env.get('WORKSPACE_SERVICE_URL').required().asString(),
         baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
         requestTimeout: env.get('WORKSPACES_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),

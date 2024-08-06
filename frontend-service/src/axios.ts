@@ -7,9 +7,6 @@ const axios = axiosInstance.create({
     withCredentials: true,
     timeout: 1800000,
     baseURL: '/api',
-    headers: {
-        [environment.workspaceIdHeaderName]: 'workspaces',
-    },
 });
 
 axios.interceptors.response.use(
@@ -22,6 +19,10 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     },
 );
+
+export const updateAxiosWorkspaceHeader = (workspaceId: string) => {
+    axios.defaults.headers[environment.workspaceIdHeaderName] = workspaceId;
+};
 
 if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     console.log('Development Environment, using axios mock');

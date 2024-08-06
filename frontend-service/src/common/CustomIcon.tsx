@@ -1,11 +1,11 @@
 import React, { CSSProperties } from 'react';
 import { useQuery } from 'react-query';
-import axios from '../axios';
 import { environment } from '../globals';
+import { ApiUrl, apiUrlToImageSource } from '../services/storageService';
 import { useDarkModeStore } from '../stores/darkMode';
 
 interface CustomImageProps {
-    imageUrl: string;
+    imageUrl: ApiUrl | string;
     width: CSSProperties['width'];
     height: CSSProperties['height'];
     color?: CSSProperties['color'];
@@ -19,10 +19,8 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
     const { data: imgSrc } = useQuery({
         queryKey: ['getCustomImage', imageUrl],
         queryFn: async () => {
-            if (!imageUrl.startsWith('/api')) return imageUrl;
-
-            const { data } = await axios.get(imageUrl, { baseURL: '', responseType: 'blob' });
-            return URL.createObjectURL(data);
+            if (!imageUrl.startsWith('/api/files')) return imageUrl;
+            return apiUrlToImageSource(imageUrl as ApiUrl);
         },
     });
 

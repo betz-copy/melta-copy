@@ -3,7 +3,8 @@ import { PermissionsManager } from './manager';
 
 export class PermissionsController {
     static async getCompactPermissionsOfUser(req: Request, res: Response) {
-        const { userId, workspaceIds } = req.body;
+        const { userId } = req.params;
+        const { workspaceIds } = req.body;
 
         res.json(await PermissionsManager.getCompactPermissionsOfUser(userId, workspaceIds));
     }
