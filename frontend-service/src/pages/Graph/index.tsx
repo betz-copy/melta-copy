@@ -323,7 +323,7 @@ const Graph: React.FC = () => {
 
     return (
         <Box ref={ref} position="relative" height="100%" width="100%">
-            <Backdrop open={isLoading}>
+            <Backdrop open={isLoading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
                 <CircularProgress />
             </Backdrop>
             <GraphTopBar
