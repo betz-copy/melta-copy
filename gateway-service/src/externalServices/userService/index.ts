@@ -34,7 +34,7 @@ export class UserService {
         return data;
     }
 
-    static async createUser(userData: Omit<IUser, '_id'>): Promise<IUser> {
+    static async createUser(userData: Omit<IUser, '_id' | 'displayName'>): Promise<IUser> {
         const { data } = await this.userService.post<IUser>(usersRoute, userData);
         return data;
     }

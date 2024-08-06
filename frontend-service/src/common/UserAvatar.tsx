@@ -11,7 +11,7 @@ interface UserAvatarProps {
 }
 
 const getNameInitials = (user: IUser): string => {
-    const names = user.fullName.split(' ');
+    const names = user.fullName?.split(' ') ?? [];
     return names.map((name) => name.charAt(0)).join('');
 };
 

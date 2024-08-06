@@ -9,12 +9,12 @@ import { ISubCompactPermissions } from '../permissions/interface/permissions';
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.appendPermissionsToUser(baseUser, workspaceIds);
+        return this.baseUserToUser(baseUser, workspaceIds);
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.appendPermissionsToUser(baseUser, workspaceIds);
+        return this.baseUserToUser(baseUser, workspaceIds);
     }
 
     static async SearchBaseUsers(
@@ -75,12 +75,12 @@ export class UsersManager {
 
         await PermissionsManager.syncCompactPermissionsOfUser(baseUser._id, permissions);
 
-        return this.appendPermissionsToUser(baseUser);
+        return this.baseUserToUser(baseUser);
     }
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
         const baseUser = await UsersModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
-        return this.appendPermissionsToUser(baseUser);
+        return this.baseUserToUser(baseUser);
     }
 
     static async updateUsersBulk(bulkUpdateData: Record<string, IBaseUser>): Promise<void> {
@@ -89,12 +89,12 @@ export class UsersManager {
         );
     }
 
-    private static async appendPermissionsToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
+    private static async baseUserToUser(user: IBaseUser, workspaceIds?: string[]): Promise<IUser> {
         const permissions = await PermissionsManager.getCompactPermissionsOfUser(user._id, workspaceIds);
-        return { ...user, permissions };
+        return { ...user, permissions, displayName: `${user.fullName} - ${user.hierarchy}/${user.jobTitle}` };
     }
 
     private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
-        return Promise.all(users.map((user) => this.appendPermissionsToUser(user)));
+        return Promise.all(users.map((user) => this.baseUserToUser(user)));
     }
 }

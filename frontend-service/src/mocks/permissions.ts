@@ -33,6 +33,7 @@ const generateUser = (): IUser => {
             digitalIdentitySource: chance.pickone(['source1', 'source2', 'source3']),
         },
         permissions: {},
+        displayName: `${fullName} - ${hierarchy}/${faker.name.jobTitle()}`,
     };
 };
 
