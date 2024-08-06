@@ -15,7 +15,7 @@ import {
     validateUserCanReadEntityInstance,
     validateUserCanUpdateOrDeleteRelationshipInstance,
 } from './middlewares';
-import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
+import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
 import {
     createEntityInstanceSchema,
@@ -109,6 +109,17 @@ InstancesRouter.patch(
     ValidateRequest(updateEntityStatusSchema),
     wrapMiddleware(validateUserCanWriteEntityInstance),
     wrapController(InstancesController.updateEntityStatus, {
+        toLog: true,
+        logRequestFields: [],
+        indexName: 'entities',
+        responseDataExtractor: undefined,
+    }),
+);
+
+InstancesRouter.post(
+    '/entities/export',
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentTemplate, {
         toLog: true,
         logRequestFields: [],
         indexName: 'entities',

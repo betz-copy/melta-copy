@@ -53,11 +53,6 @@ export default class TemplatesController {
         res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
 
-    static async exportEntityToPdfTemplate(req: Request, res: Response) {
-        const response = await TemplatesManager.exportEntityToPdfTemplate(req.params.entityId, req.query.pdfTemplateId as string);
-        res.send(response);
-    }
-
     // relationshipTemplates
     static async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.createRelationshipTemplate(req.body));

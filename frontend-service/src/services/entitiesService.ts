@@ -234,3 +234,8 @@ export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchB
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
     return data;
 };
+
+export const exportEntityToFormatFile = async (entityId: string, pdfTemplateId: string) => {
+    const { data } = await axios.get(`${entities}/export/${entityId}`, { params: { pdfTemplateId }, responseType: 'blob' });
+    return data;
+};

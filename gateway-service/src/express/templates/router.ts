@@ -25,7 +25,6 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
-    exportEntityTemplateToPdfSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
@@ -138,18 +137,6 @@ templatesRouter.delete(
         logRequestFields: [],
         indexName: 'templates-entities',
         responseDataExtractor: fixDeleteResponseData,
-    }),
-);
-
-templatesRouter.get(
-    '/entities/pdf/:entityId',
-    ValidateRequest(exportEntityTemplateToPdfSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(TemplatesController.exportEntityToPdfTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-entities',
-        responseDataExtractor: undefined,
     }),
 );
 

@@ -58,6 +58,11 @@ class InstancesController {
         const { disabled, ignoredRules } = req.body;
         res.json(await InstancesManager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
     }
+
+    static async exportEntityToDocumentTemplate(req: Request, res: Response) {
+        const response = await InstancesManager.exportEntityToDocumentTemplate(req.params.entityId, req.query.pdfTemplateId as string);
+        res.send(response);
+    }
 }
 
 export default InstancesController;

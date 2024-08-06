@@ -4,7 +4,7 @@
 import { promises as fsp } from 'fs';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
+import { deleteFiles, downloadFile, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
 import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IExportEntitiesBody } from './interfaces';
@@ -31,6 +31,7 @@ import { ServiceError } from '../error';
 import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
+import { patchDocumentAsStream } from './pdfExport';
 
 const { errorCodes } = config;
 
@@ -233,6 +234,16 @@ export class InstancesManager {
         }
 
         return deleteFiles(fileIdsToDelete);
+    }
+
+    static async exportEntityToDocumentTemplate(entityId: string, pdfTemplateId?: string) {
+        const entity = await InstanceManagerService.getEntityInstanceById(entityId);
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId))
+            return patchDocumentAsStream(await downloadFile(pdfTemplateId), entity);
+
+        throw new ServiceError(500, 'could not export entity to document template', { entityId });
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

@@ -2,7 +2,6 @@
 import { AxiosError } from 'axios';
 import lodashUniqby from 'lodash.uniqby';
 import _isEqual from 'lodash.isequal';
-import { error } from 'console';
 import {
     EntityTemplateManagerService,
     ICategory,
@@ -13,7 +12,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, deleteFiles, downloadFile, uploadFile, uploadFiles } from '../../externalServices/storageService';
+import { deleteFile, deleteFiles, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -34,7 +33,6 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
-import { patchDocumentAsStream } from './pdfExport';
 
 const {
     categoryHasTemplates,
@@ -336,16 +334,6 @@ export class TemplatesManager {
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
 
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
-    }
-
-    static async exportEntityToPdfTemplate(entityId: string, pdfTemplateId?: string) {
-        const entity = await InstanceManagerService.getEntityInstanceById(entityId);
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-
-        if (pdfTemplateId && entityTemplate?.pdfTemplatesIds?.includes(pdfTemplateId))
-            return patchDocumentAsStream(await downloadFile(pdfTemplateId), entity);
-
-        throw error;
     }
 
     static entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IRelationshipTemplate[]) {

@@ -9,6 +9,7 @@ import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
+import fileDownload from 'js-file-download';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
 import isEqual from 'lodash.isequal';
@@ -18,7 +19,6 @@ import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
-import fileDownload from 'js-file-download';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
@@ -26,8 +26,10 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { createEntityRequest, exportEntityToFormatFile, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
+import { getLongDate } from '../../../utils/date';
+import { getFileName } from '../../../utils/getFileName';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -36,9 +38,6 @@ import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
-import { getFileName } from '../../../utils/getFileName';
-import { exportEntityToFormatFile } from '../../../services/templates/enitityTemplatesService';
-import { getLongDate } from '../../../utils/date';
 
 const { errorCodes } = environment;
 
