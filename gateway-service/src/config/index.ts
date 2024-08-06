@@ -12,6 +12,8 @@ const config = {
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
         maxPatchIterations: env.get('MAX_PATCH_ITERATIONS').default(100).asIntPositive(),
+        jewishDateIndicator: env.get('JEWISH_DATE_INDICATOR').default('_jewish_date').asString(),
+        hebrewDateIndicator: env.get('HEBREW_DATE_INDICATOR').default('_hebrew_date').asString(),
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
@@ -46,7 +48,6 @@ const config = {
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),

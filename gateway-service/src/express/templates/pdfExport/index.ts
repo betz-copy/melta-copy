@@ -1,9 +1,12 @@
 import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
-import { formatJewishDateInHebrew, toJewishDate } from 'jewish-date';
+import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import config from '../../../config';
 import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
-import moment from 'moment';
+
+const {
+    service: { jewishDateIndicator, hebrewDateIndicator, maxPatchIterations },
+} = config;
 
 // const getFieldSegments = (field: string): string[] => {
 //     const listRegex = /<ol>(.*?)<\/ol>/gs;
@@ -121,11 +124,36 @@ import moment from 'moment';
 // });
 // };
 
-const getJewishDateFromDateString = (dateStr: string) => formatJewishDateInHebrew(toJewishDate(new Date(dateStr)));
+const getJewishDateWithTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const { day, monthName, year } = toHebrewJewishDate(toJewishDate(date));
 
-const getHebrewDateFromDateString = (dateStr: string) => {
-    moment(dateStr).;
+    return `${day} ב${monthName} ${year}, ${date.toLocaleTimeString('he', {
+        hour: '2-digit',
+        minute: '2-digit',
+    })}`;
 };
+
+const getHebrewDateWithTime = (dateStr: string) => {
+    const date = new Date(dateStr);
+    return `${new Intl.DateTimeFormat('he', {
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+    }).format(date)}, ${date.toLocaleTimeString('he', {
+        hour: '2-digit',
+        minute: '2-digit',
+    })}`;
+};
+
+const getJewishDate = (dateStr: string) => {
+    const { day, monthName, year } = toHebrewJewishDate(toJewishDate(new Date(dateStr)));
+
+    return `${day} ב${monthName} ${year}`;
+};
+
+const getHebrewDate = (dateStr: string) =>
+    new Intl.DateTimeFormat('he', { month: 'long', day: 'numeric', year: 'numeric' }).format(new Date(dateStr));
 
 /**
  * Checks if string text contains html tags.
@@ -159,7 +187,7 @@ const extractTextFromHtml = (html: string, htmlTag: string = 'p'): string => {
  * @param strDate string that may be date
  * @returns true if the string is in the form of date. Otherwise, false.
  */
-const isIsoDate = (strDate: string): boolean => {
+const isDateWithTime = (strDate: string): boolean => {
     if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(strDate)) return false;
     const d = new Date(strDate);
     return d instanceof Date && !Number.isNaN(d.getTime()) && d.toISOString() === strDate; // valid date
@@ -184,34 +212,28 @@ const isDateWithoutTime = (strDate: string): boolean => {
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
 const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
-    // Constant indicating when to convert to jewish date (כ"ח בכסלו התשפ"ד)
-    const JEWISH_DATE_INDICATOR = '_jewish_date';
-    // Constant indicating when to convert to HEBREW date (ה18 באוגוסט 2023)
-    const HEBREW_DATE_INDICATOR = '_hebrew_date';
-
     const { properties } = entity;
     const patches: Record<string, IPatch> = {};
 
     // Extract keys of properties that are date strings
     const datePropertyKeys = Object.entries(properties)
-        .map(([key, value]) => {
-            // Check if the value is a string and is a valid ISO date or a date without time
-            if (typeof value === 'string' && (isIsoDate(value) || isDateWithoutTime(value))) return key;
-            return undefined;
-        })
-        // Filter out undefined values
-        .filter(Boolean) as string[];
+        .filter(([_, value]) => typeof value === 'string' && (isDateWithTime(value) || isDateWithoutTime(value)))
+        .map(([key]) => key);
 
     // Create a new object with Jewish date properties added
     const propertiesWithHebrewDates = datePropertyKeys.reduce(
-        (acc, datePropertyKey) => ({
-            ...acc,
-            // Add a new property with the Jewish date indicator and formatted Hebrew date
-            [`${datePropertyKey}${JEWISH_DATE_INDICATOR}`]: formatJewishDateInHebrew(toJewishDate(new Date(properties[datePropertyKey]))),
-            // Add a new property with the Jewish date indicator and formatted Hebrew date
-            [`${datePropertyKey}${HEBREW_DATE_INDICATOR}`]: formatJewishDateInHebrew(toJewishDate(new Date(properties[datePropertyKey]))),
-        }),
-        properties,
+        (acc, datePropertyKey) => {
+            const dateValue = properties[datePropertyKey];
+            if (isDateWithTime(dateValue)) {
+                acc[`${datePropertyKey}${jewishDateIndicator}`] = getJewishDateWithTime(dateValue);
+                acc[`${datePropertyKey}${hebrewDateIndicator}`] = getHebrewDateWithTime(dateValue);
+            } else {
+                acc[`${datePropertyKey}${jewishDateIndicator}`] = getJewishDate(dateValue);
+                acc[`${datePropertyKey}${hebrewDateIndicator}`] = getHebrewDate(dateValue);
+            }
+            return acc;
+        },
+        { ...properties },
     );
 
     // Iterate over each property in the entity
@@ -219,11 +241,9 @@ const createPatchesFromEntity = (entity: IEntity): Record<string, IPatch> => {
         const trimmedValue = isHTML(String(value)) ? extractTextFromHtml(value) : value;
         let formattedValue = trimmedValue;
 
-        if (typeof trimmedValue === 'string' && isIsoDate(trimmedValue))
+        if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
             formattedValue = `${new Date(formattedValue).toLocaleDateString('uk')}, ${new Date(formattedValue).toLocaleTimeString('uk')}`;
         if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
-
-        console.log({ formattedValue });
 
         patches[key] = {
             type: PatchType.PARAGRAPH,
@@ -248,7 +268,7 @@ export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, entity: IE
     // Prevent infinite loop and re-patch while there are patches.
     for (
         let patchIterations = 0;
-        patchIterations < config.service.maxPatchIterations && arePatchesEqual(patchedDocument, newPatchedDocument);
+        patchIterations < maxPatchIterations && arePatchesEqual(patchedDocument, newPatchedDocument);
         patchIterations += 1
     ) {
         patchedDocument = newPatchedDocument;
