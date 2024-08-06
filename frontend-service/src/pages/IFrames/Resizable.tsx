@@ -19,7 +19,7 @@ const ResizablePanel: React.FC<any> = ({ children, isFirst = false }) => {
             >
                 {children}
             </Panel>
-            {isFirst && <PanelResizeHandle className="mx-1 w-2 h-2 bg-sl    ate-300" />}
+            {isFirst && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />}
         </>
     );
 };
