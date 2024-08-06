@@ -7,6 +7,7 @@ import RedisClient from './utils/redis';
 import config from './config';
 import logger from './utils/logger/logsLogger';
 import initializeRabbit from './utils/rabbit';
+import { ServiceError } from './express/error';
 
 const { service, neo4j, redis, logs } = config;
 
@@ -42,16 +43,19 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    logger.error('Main error: ', { error });
     process.exit(1);
+    throw new ServiceError(500, 'Main error', { error });
+
 });
 
 process
     .on('unhandledRejection', (reason, p) => {
-        logger.error('Unhandled Rejection at Promise', { error: { p, reason } });
         process.exit(1);
+        throw new ServiceError(500, 'Unhandled Rejection at Promise', { error: { p, reason } });
+
     })
     .on('uncaughtException', (error) => {
-        logger.error('Uncaught Exception thrown', { error });
         process.exit(1);
+        throw new ServiceError(500, 'Uncaught Exception thrown', { error });
+
     });

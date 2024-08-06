@@ -5,6 +5,7 @@ import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
+import { ServiceError } from './express/error';
 
 const { mongo, service, rabbit, logs } = config;
 
@@ -51,4 +52,5 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((error) => logger.error('Main error: ', { error }));
+main().catch((error) => {    throw new ServiceError(500, 'Main error', { error });
+});

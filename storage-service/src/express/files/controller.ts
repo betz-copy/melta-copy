@@ -2,7 +2,7 @@ import * as express from 'express';
 import * as archiver from 'archiver';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
-import logger from '../../utils/logger/logsLogger';
+import { ServiceError } from '../error';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
@@ -40,8 +40,7 @@ export class FilesController {
 
             archive.finalize();
         } catch (error) {
-            logger.error('Error downloading zip:', { error });
-            res.status(500).send('Internal Server Error');
+            throw new ServiceError(500, 'Internal Server Error', { error });
         }
     }
 

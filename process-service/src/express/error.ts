@@ -1,12 +1,14 @@
 // eslint-disable-next-line max-classes-per-file
 import * as express from 'express';
+import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
     public code;
 
-    constructor(code: number, message: string) {
+    constructor(code: number, message: string, public metadata: object = {}) {
         super(message);
         this.code = code;
+        this.metadata = metadata;
     }
 }
 
@@ -17,7 +19,7 @@ export class ValidationError extends ServiceError {
     }
 }
 
-export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
             type: error.name,
@@ -34,6 +36,21 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
             message: error.message,
         });
     }
+
+    logger.error('error for handling new request', {
+        error: {
+            request: {
+                method: req.method,
+                url: req.url,
+                body: req.body,
+            },
+            response: {
+                status: res.statusCode,
+                message: res.statusMessage,
+            },
+            ...error,
+        },
+    });
 
     next();
 };

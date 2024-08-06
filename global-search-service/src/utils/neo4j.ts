@@ -4,6 +4,7 @@ import { retry } from 'ts-retry-promise';
 import config from '../config';
 import { trycatch } from './index';
 import logger from './logger/logsLogger';
+import { ServiceError } from '../error';
 
 interface Neo4jAuth {
     username: string;
@@ -52,9 +53,8 @@ class Neo4jClient {
         } finally {
             const { err: error } = await trycatch(() => session.close());
 
-            if (error) {
-                logger.error('Failed to close session. Possible leak, Error:', { error });
-            }
+            if (error) 
+                throw new ServiceError(500, 'Failed to close session', { error });
         }
     }
 

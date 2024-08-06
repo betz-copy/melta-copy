@@ -26,7 +26,7 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
     return axiosErrorData;
 };
 
-export const errorMiddleware = async (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const errorMiddleware = async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
             type: error.name,
@@ -55,7 +55,20 @@ export const errorMiddleware = async (error: Error, _req: express.Request, res: 
             message: 'internal server error',
         });
 
-        logger.error('Request failed with error: ', { error });
+        logger.error('error for handling new request', {
+            error: {
+                request: {
+                    method: req.method,
+                    url: req.url,
+                    body: req.body,
+                },
+                response: {
+                    status: res.statusCode,
+                    message: res.statusMessage,
+                },
+                ...error,
+            },
+        });
     }
 
     next();

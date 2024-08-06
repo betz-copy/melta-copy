@@ -40,7 +40,6 @@ import {
     IProcessStatusUpdateNotificationMetadataPopulated,
 } from '../../../externalServices/notificationService/interfaces/populated';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
-import logger from '../../../utils/logger/logsLogger';
 
 export default class ProcessesInstancesManager {
     static async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
@@ -147,8 +146,10 @@ export default class ProcessesInstancesManager {
         );
 
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
-            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                logger.error('failed to delete process unused files');
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((error) => {
+                throw new ServiceError(500, `failed to delete process unused files`, {
+                    error,
+                });
             });
             throw error;
         });
@@ -170,7 +171,10 @@ export default class ProcessesInstancesManager {
         const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
-        if (idsToDelete.length) await deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused files: ${idsToDelete}`));
+        if (idsToDelete.length)
+            await deleteFiles(idsToDelete).catch((error) => {
+                throw new ServiceError(500, `failed to delete unused files: ${idsToDelete}`, { error });
+            });
     }
 
     static async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
@@ -206,8 +210,8 @@ export default class ProcessesInstancesManager {
         );
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
-            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                logger.error('failed to delete process unused files');
+            await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((error) => {
+                throw new ServiceError(500, `failed to delete process unused files`, { error });
             });
             throw error;
         });
@@ -272,8 +276,7 @@ export default class ProcessesInstancesManager {
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((error) => {
-            logger.error(`failed to delete process files`, { error });
-            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${error}`);
+            throw new ServiceError(500, `failed to delete process files`, { error });
         });
         await ProcessManagerService.deleteProcessInstance(processId);
 

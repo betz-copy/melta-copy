@@ -14,7 +14,7 @@ import {
 import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExample1 } from './mock/instances';
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
-import logger from '../src/utils/logger/logsLogger';
+import { ServiceError } from '../src/express/error';
 
 const testUrl = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {
@@ -303,10 +303,9 @@ describe('Test Process Service', () => {
             it('Should try create instance with wrong templateId and return 404', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance({ ...processTemplate, _id: randomMongoId() }, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                logger.error(response.error);
-
                 expect(response.status).toBe(404);
                 expect(response.text).toContain('not found');
+                throw new ServiceError(404, 'Main error', { error: response.error });
             });
 
             it('Should try create instance with wrong stepsTemplateId and return 400', async () => {
@@ -524,14 +523,14 @@ describe('Test Process Service', () => {
                                     processId: processInstance._id,
                                 },
                             } as UpdateStepReqBody);
-                        logger.error(response.error);
-
+                            
                         expect(response.status).toBe(200);
                         expect(response.body.status).toBe(Status.Rejected);
 
                         // eslint-disable-next-line no-await-in-loop
                         const { status: processInstanceStatus } = (await request(app).get(`/api/processes/instances/${processInstance._id}`)).body;
                         expect(processInstanceStatus).toBe(Status.Rejected);
+                        throw new ServiceError(500, 'test error', { error: response.error });
                     }
                 });
                 it('should update step status and return step with status 200', async () => {

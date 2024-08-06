@@ -24,7 +24,7 @@ export class ValidationError extends ServiceError {
     }
 }
 
-export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
         res.status(400).send({
             type: error.name,
@@ -42,8 +42,21 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
             message: error.message,
         });
     }
-
-    logger.error('Request failed with error: ', { error });
+    
+    logger.error('error for handling new request', {
+        error: {
+            request: {
+                method: req.method,
+                url: req.url,
+                body: req.body,
+            },
+            response: {
+                status: res.statusCode,
+                message: res.statusMessage,
+            },
+            ...error,
+        },
+    });
 
     next();
 };

@@ -5,6 +5,7 @@ import Server from './express/server';
 import config from './config';
 import NotificationsConsumer from './rabbit/consumer';
 import logger from './utils/logger/logsLogger';
+import { ServiceError } from './express/error';
 
 const { mongo, rabbit, service, logs } = config;
 
@@ -52,5 +53,5 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    logger.error('Main error: ', { error });
+    throw new ServiceError(500, 'Main error', { error });
 });

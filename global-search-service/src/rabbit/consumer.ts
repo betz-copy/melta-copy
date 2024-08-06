@@ -4,6 +4,7 @@ import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import { requestSchema } from './validator.schema';
 import logger from '../utils/logger/logsLogger';
+import { ServiceError } from '../error';
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
@@ -33,10 +34,8 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
                 throw new Error('invalid action type (should be caught in joi valiton)');
         }
     } catch (error) {
-        logger.error('Failed to update search index', { error });
         msg.nack(false);
-
-        return;
+        throw new ServiceError(500, 'Failed to update search index', { error });
     }
 
     logger.info(`Successfully updated search index!`);

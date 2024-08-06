@@ -1,3 +1,4 @@
+import { ServiceError } from '../../express/error';
 import { EntityTemplateManagerService, IEntityTemplate } from '../../externalServices/templates/entityTemplateService';
 import logger from '../logger/logsLogger';
 
@@ -61,9 +62,10 @@ async function main() {
                     `Succeed to update fields that have a date notification in entityTemplate: ${entity._id} - ${entity.name} in properties: ${updatedProperties}`,
                 );
             } catch (error) {
-                logger.error(
+                throw new ServiceError(
+                    500,
                     `Failed to update fields that have a date notification in entityTemplate: ${entity._id} - ${entity.name} in properties: ${updatedProperties}`,
-                    error,
+                    { error },
                 );
             }
         }

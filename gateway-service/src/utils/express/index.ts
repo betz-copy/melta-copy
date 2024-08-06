@@ -58,6 +58,7 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
                 userId: req.user?.id,
                 path: req.path,
                 method: req.method,
+                status: res.status,
                 ...loggedRequestData,
                 ...loggedResponseData,
             });

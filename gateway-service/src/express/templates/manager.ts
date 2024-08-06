@@ -560,9 +560,7 @@ export class TemplatesManager {
 
             return updatedEntityTemplate;
         } catch (error) {
-            logger.error('Initial mongoDB update failed', { error });
-
-            throw error;
+            throw new ServiceError(500, 'Initial mongoDB update failed', { error });
         }
     }
 
@@ -589,9 +587,7 @@ export class TemplatesManager {
 
             return rolledBackEntityTemplate;
         } catch (error) {
-            logger.error('RollBack mongoDB update failed', { error });
-
-            throw error;
+            throw new ServiceError(500, 'RollBack mongoDB update failed', { error });
         }
     }
 
@@ -608,14 +604,11 @@ export class TemplatesManager {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
             if (neoError.response?.status === 404) {
-                logger.error('Neo4j update failed: Node not found', { error: neoError });
-                return templateWithoutProperties;
+                throw new ServiceError(404, 'Neo4j update failed: Node not found', { error: neoError });
             }
-
-            logger.error('Neo4j update failed: starting roll-back', { error: neoError });
             await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
 
-            throw neoError;
+            throw new ServiceError(500, 'Neo4j update failed: starting roll-back', { error: neoError });
         }
 
         const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);

@@ -8,6 +8,7 @@ import { IFilterDatesRange } from '../../externalServices/instanceService/interf
 import { getPermissions } from '../../externalServices/permissionsService';
 import logger from '../logger/logsLogger';
 import config from '../../config';
+import { ServiceError } from '../../express/error';
 
 const { notifications } = config;
 
@@ -110,7 +111,7 @@ export const checkForDateNotifications = async () => {
             const allEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates();
             await Promise.all(allEntityTemplates.map(sendNotificationsForEntityTemplate));
         } catch (error) {
-            logger.error('Error checking date notifications:', error);
+            throw new ServiceError(500, 'Error checking date notifications', { error });
         }
     });
 };

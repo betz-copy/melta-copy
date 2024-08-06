@@ -4,6 +4,7 @@ import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio';
 import logger from './utils/logger/logsLogger';
+import { ServiceError } from './express/error';
 
 const { logs, rabbit } = config;
 
@@ -44,6 +45,6 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    logger.error('Main error: ', { error });
     process.exit(1);
+    throw new ServiceError(500, 'Main error', { error });
 });

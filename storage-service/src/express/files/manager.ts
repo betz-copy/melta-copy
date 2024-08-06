@@ -4,7 +4,7 @@ import { generatePath } from '../../utils/generatePath';
 import { minioClient } from '../../utils/minio';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
-import logger from '../../utils/logger/logsLogger';
+import { ServiceError } from '../error';
 
 const { rabbit, document } = config;
 
@@ -40,7 +40,7 @@ export class FilesManager {
         try {
             await minioClient.removeFile(pdfFileName);
         } catch (error) {
-            logger.error('Error removing preview file:', { error });
+            throw new ServiceError(500, 'Error removing preview file', { error });
         }
         return minioClient.removeFile(filePath);
     }
@@ -66,14 +66,15 @@ export class FilesManager {
                 try {
                     await minioClient.removeFile(pdfFileName);
                 } catch (error) {
-                    logger.error('Error removing preview file:', { error });
+                    throw new ServiceError(500, 'Error removing preview file', { error });
                 }
             }
         });
 
         return Promise.all(removalPromises)
             .then(() => minioClient.removeFiles(filePaths))
-            .catch((error) => logger.error('Error removing files:', { error }));
+            .catch((error) => {    throw new ServiceError(500, 'Error removing files', { error });
+        });
     }
 
     static async getFilesData(filePaths: string[]): Promise<Buffer[]> {
