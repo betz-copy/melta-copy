@@ -36,10 +36,12 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     useEffect(() => {
         if (!currentWorkspace) return;
         setWorkspace(currentWorkspace);
-        // TODO-WORKSPACES check user has currentWorkspace permissions
-        setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+
+        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
+            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+
         updateAxiosWorkspaceHeader(currentWorkspace._id);
-    }, [currentWorkspace, setWorkspace]);
+    }, [currentWorkspace, setWorkspace, currentUser, setUser]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 

@@ -1,8 +1,6 @@
 import { IProcessTemplateWithSteps } from '../processTemplate';
-import config from '../config';
 
-const { reviewersKartoffelIds } = config.processService;
-export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
+export const getProcessTemplateToCreate = (userIds: string[], chance: Chance.Chance) => {
     const processTemplates: IProcessTemplateWithSteps[] = [
         {
             name: 'createNewWeapon',
@@ -33,7 +31,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'weaponModel',
                     displayName: 'מודל הנשק',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -63,7 +61,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'payment',
                     displayName: 'תשלום',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -89,7 +87,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'use',
                     displayName: 'שימוש',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -139,7 +137,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'flightSelection',
                     displayName: 'בחירת טיסה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -170,7 +168,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'flightPayment',
                     displayName: 'טיסה תשלום',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -196,7 +194,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'travelInsurance',
                     displayName: 'ביטוח נסיעה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -249,7 +247,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'prepareCrust',
                     displayName: 'הכנת הבצק',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -274,7 +272,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'addToppings',
                     displayName: 'הוספת תוספות',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -300,7 +298,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'bakePizza',
                     displayName: 'אפית הפיצה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -348,7 +346,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'verifySender',
                     displayName: 'אימות השולח',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -373,7 +371,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'verifyRecipient',
                     displayName: 'אימות המקבל',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -398,7 +396,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'processTransfer',
                     displayName: 'ביצוע ההעברה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -423,7 +421,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'moreStep',
                     displayName: 'עוד שלב',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -477,7 +475,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'manuscriptReview',
                     displayName: 'ביקורת תסריט',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -499,7 +497,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'copyEditing',
                     displayName: 'עריכת עותק',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -520,7 +518,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'coverDesign',
                     displayName: 'עיצוב כריכה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -541,7 +539,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'print',
                     displayName: 'הדפסה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -558,7 +556,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'distribution',
                     displayName: 'הפצה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -602,7 +600,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'missionPlan',
                     displayName: 'תכנון משימה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -619,7 +617,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'spacecraftDesign',
                     displayName: 'עיצוב החללית',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -636,7 +634,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'crewSelection',
                     displayName: 'בחירת הצוות',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -653,7 +651,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'launchPreparation',
                     displayName: 'הכנה להשקה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -670,7 +668,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'launch',
                     displayName: 'השקה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',
@@ -687,7 +685,7 @@ export const getProcessTemplateToCreate = (chance: Chance.Chance) => {
                 {
                     name: 'missionOperation',
                     displayName: 'הפעלת משימה',
-                    reviewers: [chance.pickone(reviewersKartoffelIds)],
+                    reviewers: [chance.pickone(userIds)],
                     iconFileId: null,
                     properties: {
                         type: 'object',

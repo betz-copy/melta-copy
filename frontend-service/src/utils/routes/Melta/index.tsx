@@ -36,6 +36,17 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useQuery('getRules', () => undefined, { enabled: false });
     useQuery('getProcessTemplates', () => undefined, { enabled: false });
 
+    const {
+        data: workspace,
+        isLoading: isLoadingWorkspace,
+        isError: isErrorWorkspace,
+    } = useQuery({
+        queryKey: ['workspace', path],
+        queryFn: () => getFile(path),
+    });
+
+    console.log({ workspace });
+
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
             toast.error(i18next.t('failedToGetTemplates'));
@@ -49,24 +60,19 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
         },
-    });
-
-    const {
-        data: workspace,
-        isLoading: isLoadingWorkspace,
-        isError: isErrorWorkspace,
-    } = useQuery({
-        queryKey: ['workspace', path],
-        queryFn: () => getFile(path),
+        enabled: Boolean(workspace?._id),
     });
 
     useEffect(() => {
         if (!workspace) return;
 
         setWorkspace(workspace);
-        setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+
+        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
+            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+
         updateAxiosWorkspaceHeader(workspace._id);
-    }, [workspace, setWorkspace]);
+    }, [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);

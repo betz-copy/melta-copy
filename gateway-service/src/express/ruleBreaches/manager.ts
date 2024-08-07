@@ -75,8 +75,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private instancesService: InstancesService;
 
-    private instancesManager: InstancesManager;
-
     private rabbitManager: RabbitManager;
 
     constructor(private workspaceId: string) {
@@ -84,8 +82,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         this.storageService = new StorageService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
-        this.instancesManager = new InstancesManager(workspaceId);
-
         this.rabbitManager = new RabbitManager(workspaceId);
     }
 
@@ -217,8 +213,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private async createRelationship(ruleBreachRequest: IRuleBreachRequest<ICreateRelationshipMetadata>) {
         const { relationshipTemplateId, sourceEntityId, destinationEntityId } = ruleBreachRequest.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
-        await this.instancesManager.createRelationshipInstance(
+        await instancesManager.createRelationshipInstance(
             { templateId: relationshipTemplateId, sourceEntityId, destinationEntityId, properties: {} as any },
             ruleBreachRequest.brokenRules,
             ruleBreachRequest.originUserId,
@@ -227,7 +224,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     private async deleteRelationship(ruleBreachRequest: IRuleBreachRequest<IDeleteRelationshipMetadata>) {
-        await this.instancesManager.deleteRelationshipInstance(
+        const instancesManager = new InstancesManager(this.workspaceId);
+
+        await instancesManager.deleteRelationshipInstance(
             ruleBreachRequest.actionMetadata.relationshipId,
             ruleBreachRequest.brokenRules,
             ruleBreachRequest.originUserId,
@@ -236,7 +235,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     private async updateEntityStatus(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityStatusMetadata>) {
-        await this.instancesManager.updateEntityStatus(
+        const instancesManager = new InstancesManager(this.workspaceId);
+
+        await instancesManager.updateEntityStatus(
             ruleBreachRequest.actionMetadata.entityId,
             ruleBreachRequest.actionMetadata.disabled,
             ruleBreachRequest.brokenRules,
@@ -247,8 +248,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private async createEntity(ruleBreachRequest: IRuleBreachRequest<ICreateEntityMetadata>) {
         const { templateId, properties } = ruleBreachRequest.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await this.instancesManager.createEntityInstance(
+        const entity = await instancesManager.createEntityInstance(
             { templateId, properties },
             [],
             ruleBreachRequest.brokenRules,
@@ -264,8 +266,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private async duplicateEntity(ruleBreachRequest: IRuleBreachRequest<IDuplicateEntityMetadata>) {
         const { templateId, properties, entityIdToDuplicate } = ruleBreachRequest.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await this.instancesManager.duplicateEntityInstance(
+        const entity = await instancesManager.duplicateEntityInstance(
             entityIdToDuplicate,
             { templateId, properties },
             [],
@@ -283,6 +286,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private async updateEntity(ruleBreachRequest: IRuleBreachRequest<IUpdateEntityMetadata>) {
         const { entityId, updatedFields } = ruleBreachRequest.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
         const entity = await this.instancesService.getEntityInstanceById(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
@@ -290,7 +294,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
 
-        await this.instancesManager.updateEntityInstance(
+        await instancesManager.updateEntityInstance(
             entityId,
             { ...entity, properties: newEntityPropertiesWithoutNulls },
             [],
@@ -360,15 +364,17 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     private async uploadRuleBreachFiles(ruleBreach: Partial<IRuleBreach>, files: Express.Multer.File[]) {
         if (!files.length) return;
 
+        const instancesManager = new InstancesManager(this.workspaceId);
+
         if (isCreateEntityRuleBreach(ruleBreach)) {
-            const { props: propertiesWithFiles } = await this.instancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.properties);
+            const { props: propertiesWithFiles } = await instancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.properties);
             // eslint-disable-next-line no-param-reassign
             ruleBreach.actionMetadata.properties = propertiesWithFiles;
             return;
         }
 
         if (isUpdateEntityRuleBreach(ruleBreach)) {
-            const { props: updatedFieldsWithFiles } = await this.instancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
+            const { props: updatedFieldsWithFiles } = await instancesManager.uploadInstanceFiles(files, ruleBreach.actionMetadata.updatedFields);
             // eslint-disable-next-line no-param-reassign
             ruleBreach.actionMetadata.updatedFields = updatedFieldsWithFiles;
             return;
@@ -380,11 +386,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             const currentEntity = await this.instancesService.getEntityInstanceById(entityIdToDuplicate);
             const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
 
-            const fileProperties = this.instancesManager.getEntityFileProperties(properties, currentEntityTemplate);
+            const fileProperties = instancesManager.getEntityFileProperties(properties, currentEntityTemplate);
 
-            const duplicatedFilesProperties = await this.instancesManager.duplicateFileProperties(fileProperties, currentEntity);
+            const duplicatedFilesProperties = await instancesManager.duplicateFileProperties(fileProperties, currentEntity);
 
-            const { props: propertiesWithFiles } = await this.instancesManager.uploadInstanceFiles(files, {
+            const { props: propertiesWithFiles } = await instancesManager.uploadInstanceFiles(files, {
                 ...properties,
                 ...duplicatedFilesProperties,
             });
@@ -398,10 +404,12 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     private async deleteRuleBreachFiles(ruleBreach: Partial<IRuleBreach>) {
+        const instancesManager = new InstancesManager(this.workspaceId);
+
         if (isCreateEntityRuleBreach(ruleBreach) || isDuplicateEntityRuleBreach(ruleBreach)) {
             const entityTemplate = await this.entityTemplateService.getEntityTemplateById(ruleBreach.actionMetadata.templateId);
 
-            const filePropertiesToDelete = this.instancesManager.getEntityFileProperties(ruleBreach.actionMetadata.properties, entityTemplate);
+            const filePropertiesToDelete = instancesManager.getEntityFileProperties(ruleBreach.actionMetadata.properties, entityTemplate);
             const fileIdsToDelete = Object.values(filePropertiesToDelete).flat();
 
             await this.storageService.deleteFiles(fileIdsToDelete);
@@ -409,7 +417,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             const entity = await this.instancesService.getEntityInstanceById(ruleBreach.actionMetadata.entityId);
             const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
-            const filePropertiesToDelete = this.instancesManager.getEntityFileProperties(ruleBreach.actionMetadata.updatedFields, entityTemplate);
+            const filePropertiesToDelete = instancesManager.getEntityFileProperties(ruleBreach.actionMetadata.updatedFields, entityTemplate);
             const fileIdsToDelete = Object.values(filePropertiesToDelete).flat();
 
             await this.storageService.deleteFiles(fileIdsToDelete);

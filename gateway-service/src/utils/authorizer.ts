@@ -5,7 +5,7 @@ import { WorkspaceService } from '../express/workspaces/service';
 import { UserService } from '../externalServices/userService';
 import { PermissionScope, PermissionType } from '../externalServices/userService/interfaces/permissions';
 import { ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
-import { createWorkspacesController, wrapMiddleware } from './express';
+import { createWorkspacesController } from './express';
 import DefaultController from './express/controller';
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
@@ -92,45 +92,58 @@ export class Authorizer extends DefaultController {
     // private async authorizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
 
     async userHasSomePermissions(req: Request) {
+        console.log({ userId: req.user!.id, workspaceId: this.workspaceId });
+        console.log(await UserService.getUserPermissions(req.user!.id, [this.workspaceId]));
+
         const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
+        console.log({ userWorkspacePermissions });
+
         if (!userWorkspacePermissions) throw new UserNotAuthorizedError();
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userWorkspacePermissions;
     }
 
-    private async wrapAuthMiddleware(authPermissions: ISubCompactPermissions) {
-        return wrapMiddleware((req) => this.authorizeUser(req, req.user!.id, authPermissions));
+    private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {
+        return this.authorizeUser(req, req.user!.id, authPermissions);
     }
 
-    async userCanWriteProcesses() {
-        this.wrapAuthMiddleware({ [PermissionType.processes]: { scope: PermissionScope.write } });
+    async userCanWriteProcesses(req: Request) {
+        console.log('--------------------------- write processes');
+        this.wrapAuthMiddleware(req, { [PermissionType.processes]: { scope: PermissionScope.write } });
     }
 
-    async userCanReadProcesses() {
-        this.wrapAuthMiddleware({ [PermissionType.processes]: { scope: PermissionScope.read } });
+    async userCanReadProcesses(req: Request) {
+        console.log('--------------------------- read processes');
+        this.wrapAuthMiddleware(req, { [PermissionType.processes]: { scope: PermissionScope.read } });
     }
 
-    async userCanWriteTemplates() {
-        this.wrapAuthMiddleware({ [PermissionType.templates]: { scope: PermissionScope.write } });
+    async userCanWriteTemplates(req: Request) {
+        console.log('--------------------------- write templates');
+        this.wrapAuthMiddleware(req, { [PermissionType.templates]: { scope: PermissionScope.write } });
     }
 
-    async userCanReadTemplates() {
-        this.wrapAuthMiddleware({ [PermissionType.templates]: { scope: PermissionScope.read } });
+    async userCanReadTemplates(req: Request) {
+        console.log('--------------------------- read templates');
+        this.wrapAuthMiddleware(req, { [PermissionType.templates]: { scope: PermissionScope.read } });
     }
 
-    async userCanWritePermissions() {
-        this.wrapAuthMiddleware({ [PermissionType.permissions]: { scope: PermissionScope.write } });
+    async userCanWritePermissions(req: Request) {
+        console.log('--------------------------- write permissions');
+        this.wrapAuthMiddleware(req, { [PermissionType.permissions]: { scope: PermissionScope.write } });
     }
 
-    async userCanReadPermissions() {
-        this.wrapAuthMiddleware({ [PermissionType.permissions]: { scope: PermissionScope.read } });
+    async userCanReadPermissions(req: Request) {
+        console.log('--------------------------- read permissions');
+        this.wrapAuthMiddleware(req, { [PermissionType.permissions]: { scope: PermissionScope.read } });
     }
 
-    async userCanWriteRules() {
-        this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.write } });
+    async userCanWriteRules(req: Request) {
+        console.log('--------------------------- write rules');
+        this.wrapAuthMiddleware(req, { [PermissionType.rules]: { scope: PermissionScope.write } });
     }
 
-    async userCanReadRules() {
-        this.wrapAuthMiddleware({ [PermissionType.rules]: { scope: PermissionScope.read } });
+    async userCanReadRules(req: Request) {
+        console.log('--------------------------- read rules');
+        this.wrapAuthMiddleware(req, { [PermissionType.rules]: { scope: PermissionScope.read } });
     }
 }
 

@@ -28,7 +28,6 @@ const config = {
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),
         isAliveRoute: env.get('PROCESS_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        reviewersKartoffelIds: env.get('PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS').required().asArray(),
         createProcessTemplateRoute: env.get('CREATE_PROCESS_TEMPLATE_ROUTE').default('/api/processes/templates').asString(),
         processInstanceRoute: env.get('PROCESS_INSTANCE_ROUTE').default('/api/processes/instances').asString(),
         maxNumberOfProcesses: env.get('MAX_NUMBER_OF_PROCESSES').default(50).asInt(),

@@ -4,7 +4,6 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { IPermissionsOfUser, deletePermissionsBulkRequest } from '../../services/permissionsService';
 
 const deleteAllPermissionsOfUserRequest = async ({ permissionsManagementId, templatesManagementId, instancesPermissions }: IPermissionsOfUser) => {
     const permissionsOfUsersIds: string[] = instancesPermissions.map(({ _id }) => _id);

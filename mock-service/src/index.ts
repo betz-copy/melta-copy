@@ -93,7 +93,8 @@ const main = async () => {
 
     console.log('Creating users');
 
-    await createUsers(getUsersToCreate(rootWorkspace._id, mainWorkspace._id, createdCategories));
+    const users = await createUsers(getUsersToCreate(rootWorkspace._id, mainWorkspace._id, createdCategories));
+    const userIds = users.map(({ _id }) => _id);
 
     console.log('Creating example file');
 
@@ -113,11 +114,11 @@ const main = async () => {
 
     console.log('Creating process templates');
 
-    const createdProcessTemplates = await createProcessTemplates(mainWorkspace._id, getProcessTemplateToCreate(chance));
+    const createdProcessTemplates = await createProcessTemplates(mainWorkspace._id, getProcessTemplateToCreate(userIds, chance));
 
     console.log('Creating process Instances');
 
-    await createProcessInstances(mainWorkspace._id, createdProcessTemplates, chance, exampleFileId);
+    await createProcessInstances(mainWorkspace._id, createdProcessTemplates, userIds, chance, exampleFileId);
 
     console.log('Creating gantts');
 

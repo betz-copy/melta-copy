@@ -110,7 +110,6 @@ const PermissionsOfUserDialog: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const queryClient = useQueryClient();
-    const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const { mutateAsync: createOrEditPermissionsOfUser } = useMutation(

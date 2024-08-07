@@ -201,10 +201,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...allowedEntityTemplatesBecauseOfRules,
         ];
 
-        const allAllowedEntityTemplatesWithConstraints = await this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates);
-        const processTemplates = await Promise.all(
-            processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
-        );
+        const [allAllowedEntityTemplatesWithConstraints, ...processTemplates] = await Promise.all([
+            this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates),
+            ...processTemplatesBeforePopulate.map((processTemplate) => this.processManager.getTemplateWithPopulatedStepReviewers(processTemplate)),
+        ]);
 
         return {
             categories: allCategories,

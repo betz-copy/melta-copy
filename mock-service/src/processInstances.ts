@@ -9,8 +9,7 @@ import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
-const { url, processInstanceRoute, reviewersKartoffelIds, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } =
-    config.processService;
+const { url, processInstanceRoute, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } = config.processService;
 
 // eslint-disable-next-line no-shadow
 export enum Status {
@@ -92,6 +91,7 @@ const createProcessInstance = (
     axiosInstance: Axios,
     processTemplate: IMongoProcessTemplatePopulated,
     generatedNames: Set<string>,
+    userIds: string[],
     chance: Chance.Chance,
 ) => {
     const randomStartDate = new Date(chance.date()).toLocaleDateString();
@@ -105,7 +105,7 @@ const createProcessInstance = (
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
-            const allowedReviewers = reviewersKartoffelIds.filter((kartoffelId) => !step.reviewers.includes(kartoffelId));
+            const allowedReviewers = userIds.filter((kartoffelId) => !step.reviewers.includes(kartoffelId));
             if (!allowedReviewers.length) {
                 throw new Error(
                     `There are not enough kartoffelIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`,
@@ -132,6 +132,7 @@ const createProcessInstance = (
 export const createProcessInstances = async (
     workspaceId: string,
     processTemplates: IMongoProcessTemplatePopulated[],
+    userIds: string[],
     chance: Chance.Chance,
     fileId: string,
 ) => {
@@ -146,7 +147,7 @@ export const createProcessInstances = async (
         .flatMap((_, instanceIndex) =>
             processTemplates
                 .filter((__, templateIndex) => instanceIndex < instanceNumbers[templateIndex])
-                .map((processTemplate) => createProcessInstance(axiosInstance, processTemplate, generatedNames, chance)),
+                .map((processTemplate) => createProcessInstance(axiosInstance, processTemplate, generatedNames, userIds, chance)),
         );
 
     return Promise.all(promises);

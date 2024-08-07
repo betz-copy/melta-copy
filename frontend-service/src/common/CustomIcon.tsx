@@ -3,18 +3,21 @@ import { useQuery } from 'react-query';
 import { environment } from '../globals';
 import { ApiUrl, apiUrlToImageSource } from '../services/storageService';
 import { useDarkModeStore } from '../stores/darkMode';
+import { useWorkspaceStore } from '../stores/workspace';
 
 interface CustomImageProps {
     imageUrl: ApiUrl | string;
     width: CSSProperties['width'];
-    height: CSSProperties['height'];
+    height?: CSSProperties['height'];
     color?: CSSProperties['color'];
     preserveColor?: boolean;
     style?: CSSProperties;
+    className?: string;
 }
 
-export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style }) => {
+export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style, className }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
     const { data: imgSrc } = useQuery({
         queryKey: ['getCustomImage', imageUrl],
@@ -22,6 +25,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
             if (!imageUrl.startsWith('/api/files')) return imageUrl;
             return apiUrlToImageSource(imageUrl as ApiUrl);
         },
+        enabled: !imageUrl.startsWith('/api/files') || Boolean(currentWorkspace._id),
     });
 
     const customProps: React.ComponentProps<'img'> = preserveColor
@@ -35,7 +39,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
               },
           };
 
-    return <img height={height} width={width} {...customProps} />;
+    return <img height={height} width={width} className={className} {...customProps} />;
 };
 
 interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {

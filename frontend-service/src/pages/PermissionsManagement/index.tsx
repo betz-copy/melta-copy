@@ -1,24 +1,22 @@
-import React, { useEffect, useState } from 'react';
-import i18next from 'i18next';
-
+import { AddCircle } from '@mui/icons-material';
 import { CircularProgress, Grid, IconButton, TextField } from '@mui/material';
-
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { AddCircle } from '@mui/icons-material';
-import Table from './table';
-import { getAllPermissionsOfUsersRequest, IPermissionsOfUser } from '../../services/permissionsService';
-import { ICategoryMap } from '../../interfaces/categories';
-import DeletePermissionsOfUserDialog from './deleteDialog';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
-
 import '../../css/pages.css';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IUser } from '../../interfaces/users';
+import { searchUsersRequest } from '../../services/userService';
+import DeletePermissionsOfUserDialog from './deleteDialog';
+import Table from './table';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => getAllPermissionsOfUsersRequest(), {
+    const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => searchUsersRequest({ limit: 5 }), {
         onError: (error) => {
             // eslint-disable-next-line no-console
             console.log('failed loading all permissions:', error);
@@ -29,14 +27,14 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);
     const [deletePermissionDialogState, setDeletePermissionDialogState] = useState<{
         isDialogOpen: boolean;
-        permissionsOfUser: IPermissionsOfUser | null;
+        permissionsOfUser: IUser | null;
     }>({
         isDialogOpen: false,
         permissionsOfUser: null,
     });
     const [editPermissionDialogState, setEditPermissionDialogState] = useState<{
         isDialogOpen: boolean;
-        permissionsOfUser: IPermissionsOfUser | null;
+        permissionsOfUser: IUser | null;
     }>({
         isDialogOpen: false,
         permissionsOfUser: null,

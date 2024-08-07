@@ -1,3 +1,4 @@
+import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 
 export type IFormPermissionsOfUser = {
@@ -6,5 +7,5 @@ export type IFormPermissionsOfUser = {
     doesHaveTemplatesManagement: boolean;
     doesHaveRulesManagement: boolean;
     doesHaveProcessesManagement: boolean;
-    instancesPermissions: IUser['permissions']['instances'];
+    instancesPermissions: ICompact<IInstancesPermission>;
 };

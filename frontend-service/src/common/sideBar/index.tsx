@@ -80,6 +80,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const workspace = useWorkspaceStore((state) => state.workspace);
 
+    console.log(currentUser.currentWorkspacePermissions);
+
     return (
         <Drawer
             ref={drawerRef}
