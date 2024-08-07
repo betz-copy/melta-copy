@@ -1,6 +1,5 @@
 import React, { Dispatch, useState } from 'react';
-import { Box, Button, Divider, Grid, Paper } from '@mui/material';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import { Box, Button, Divider, Grid, Paper, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
@@ -95,15 +94,41 @@ const TemplatesSelectGrid: React.FC<{
                         onClick={() => {
                             setOpenFilter(!openFilter);
                         }}
-                        style={{ width: '120px', height: '50px', gap: '20px', zIndex: '100' }}
+                        style={{
+                            width: openFilter ? '235px' : '120px',
+                            height: '50px',
+                            gap: '20px',
+                            zIndex: '100',
+                            padding: '17px, 20px, 17px, 20px',
+                            display: 'flex',
+                            justifyContent: openFilter ? 'space-between' : 'center',
+                            alignContent: 'center',
+                        }}
                     >
-                        <FilterListIcon />
-                        {i18next.t('graph.filter')}
+                        <Box>
+                            <img src="/icons/select-checkbox.svg" style={{ marginLeft: '15px' }} />
+                            {i18next.t('graph.filter')}
+                        </Box>
+                        {openFilter && <img src="/icons/star.svg" />}
                     </Button>
                 </Box>
                 {openFilter && (
-                    <Paper className={classes.popper} style={{ zIndex: '100', position: 'relative', padding: '5px' }}>
-                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} />
+                    <Paper className={classes.popper} style={{ zIndex: '100', position: 'relative', padding: '5px', width: '235px' }}>
+                        <Typography
+                            style={{
+                                color: '#1E2775',
+                                fontWeight: '500',
+                                fontFamily: 'Rubik',
+                                fontSize: '14px',
+                                padding: '15px',
+                                marginRight: '7px',
+                            }}
+                            component="body"
+                            variant="body1"
+                        >
+                            {i18next.t('graph.filterTitle')}
+                        </Typography>
+                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={false} templatesSelectGrid />
                         <ChooseAllMenuItem
                             options={templates}
                             selectedOptionsFiltered={selectedTemplatesFiltered}
@@ -128,15 +153,25 @@ const TemplatesSelectGrid: React.FC<{
                                 setOpenMap={setOpenMap}
                                 openMap={openMap}
                             />
+                            <Button
+                                style={{
+                                    marginRight: '17px',
+                                    width: '195px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'start',
+                                    gap: '20px',
+                                }}
+                                onClick={() => {
+                                    setShowAll(!showAll);
+                                }}
+                            >
+                                {showAll ? <IoIosArrowDown /> : <IoIosArrowBack />}
+                                <Typography fontFamily="rubik" fontSize="14px">
+                                    {i18next.t('graph.additionalTemplates')}
+                                </Typography>
+                            </Button>
                         </Box>
-                        <Button
-                            style={{ width: '10px' }}
-                            onClick={() => {
-                                setShowAll(!showAll);
-                            }}
-                        >
-                            {showAll ? <IoIosArrowDown /> : <IoIosArrowBack />}
-                        </Button>
                     </Paper>
                 )}
             </Grid>
@@ -148,6 +183,7 @@ const TemplatesSelectGrid: React.FC<{
                             style={{
                                 zIndex: '100',
                                 position: 'absolute',
+                                width: '235px',
                             }}
                         >
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>

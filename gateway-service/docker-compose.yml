@@ -15,7 +15,7 @@ services:
       TOKEN_SECRET: secret
       ENTITY_TEMPLATE_SERVICE_URL: http://entity-template-service:8000
       STORAGE_SERVICE_URL: http://storage-service:8000
-      RELATIONSHIP_TEMPLATE_SERVICE_URL: http://relationship-template-service:8000
+      TEMPLATE_SERVICE_URL: http://template-service:8000
       INSTANCE_SERVICE_URL: http://instance-service:8000
       PERMISSION_SERVICE_BASE_URL: http://permission-service:8000
       CALLBACK_URL: http://localhost/api/auth/callback

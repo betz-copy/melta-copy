@@ -1,7 +1,7 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 
 export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) => {

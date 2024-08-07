@@ -2,6 +2,7 @@
 import React from 'react';
 import { WidgetProps, asNumber, guessType } from '@rjsf/utils';
 import { Autocomplete, TextField, TextFieldProps } from '@mui/material';
+import './form.css';
 
 const nums = new Set(['number', 'integer']);
 
@@ -63,7 +64,7 @@ const RjfsSelectWidget = ({
 
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, processValue(schema, newValue));
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, processValue(schema, newValue));
-    const variant = readonly ? 'standard' : 'outlined';
+    const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
 
     return (
         <Autocomplete<string | string[], boolean>
@@ -96,7 +97,14 @@ const RjfsSelectWidget = ({
                     InputLabelProps={{
                         shrink: readonly || undefined,
                     }}
-                    inputProps={{ ...params.inputProps, required: multiple ? required && value.length === 0 : required }}
+                    inputProps={{
+                        ...params.inputProps,
+                        required: multiple ? required && value.length === 0 : required,
+                        style: {
+                            ...params.inputProps,
+                            textOverflow: 'ellipsis',
+                        },
+                    }}
                     error={rawErrors.length > 0}
                     color={color as TextFieldProps['color']}
                     label={label || schema.title}

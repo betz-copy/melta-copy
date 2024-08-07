@@ -43,6 +43,7 @@ import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import RelationshipReferenceField from './RelationshipReferenceField';
 
 enum dateNotificationOptions {
     day = 1,
@@ -78,9 +79,11 @@ export interface FieldEditCardProps {
     supportChangeToRequiredWithInstances: boolean;
     templateId: string;
     supportArrayFields: boolean;
+    supportRelationshipReference: boolean;
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
+    supportUnique?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -103,7 +106,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportChangeToRequiredWithInstances,
     templateId,
     supportArrayFields,
+    supportRelationshipReference,
     supportEditEnum,
+    supportUnique,
 }) => {
     const isText = value.type === 'string' || value.type === 'text-area';
 
@@ -144,10 +149,15 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const required = `properties[${index}].required`;
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
+    const readOnly = `properties[${index}].readOnly`;
 
     const unique =
-        value.type !== 'serialNumber' && uniqueConstraints!.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
-    const uniqueConstraintGroupName = uniqueConstraints!.find((constraint) => constraint.properties.includes(value.name))?.groupName!;
+        value.type !== 'serialNumber' &&
+        uniqueConstraints &&
+        uniqueConstraints.filter((constraints) => constraints.properties.includes(value.name)).length > 0;
+    const uniqueConstraintGroupName = uniqueConstraints
+        ? uniqueConstraints.find((constraint) => constraint.properties.includes(value.name))?.groupName
+        : '';
 
     const touchedUniqueGroupName = touched?.groupName;
     const errorUniqueGroupName = errors?.groupName;
@@ -547,6 +557,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     }
                                                     if (validPropertyType === 'text-area') return false;
                                                     if (validPropertyType === 'enumArray') return supportArrayFields;
+                                                    if (validPropertyType === 'relationshipReference') return supportRelationshipReference;
                                                     if (validPropertyType === 'fileId' || validPropertyType === 'multipleFiles') return false; // TODO: support file inputs
                                                     return true;
                                                 })
@@ -792,6 +803,16 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 fullWidth
                                             />
                                         )}
+                                        {value.type === 'relationshipReference' && supportRelationshipReference && (
+                                            <RelationshipReferenceField
+                                                value={value}
+                                                index={index}
+                                                touched={touched}
+                                                errors={errors}
+                                                setFieldValue={setFieldValue}
+                                                isDisabled={isDisabled}
+                                            />
+                                        )}
                                         {(value.type === 'date' || value.type === 'date-time') &&
                                             'dateNotification' in value &&
                                             (value.dateNotification !== undefined ? (
@@ -885,6 +906,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             disabled={
                                                                 value.type === 'serialNumber' ||
                                                                 value.type === 'boolean' ||
+                                                                value.readOnly ||
                                                                 (supportChangeToRequiredWithInstances
                                                                     ? false
                                                                     : isEditMode &&
@@ -897,6 +919,23 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.required')}
                                                 />
                                             )}
+                                            <FormControlLabel
+                                                control={
+                                                    <Switch
+                                                        id={readOnly}
+                                                        name={readOnly}
+                                                        onChange={(_e, checked) => {
+                                                            setValues?.((prevValue) => ({
+                                                                ...prevValue,
+                                                                readOnly: checked ? checked : undefined,
+                                                            }));
+                                                        }}
+                                                        disabled={value.required}
+                                                        checked={value.readOnly}
+                                                    />
+                                                }
+                                                label={i18next.t('validation.readOnly')}
+                                            />
                                             {value.preview !== undefined && (
                                                 <FormControlLabel
                                                     control={
@@ -925,7 +964,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                     label={i18next.t('validation.hide')}
                                                 />
                                             )}
-                                            {unique !== undefined && setValues && value.type !== 'serialNumber' && (
+                                            {supportUnique && unique !== undefined && setValues && value.type !== 'serialNumber' && (
                                                 <FormControlLabel
                                                     control={
                                                         <Switch

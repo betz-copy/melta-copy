@@ -1,0 +1,43 @@
+//This script is for updating how uniqueCOnstraints will display in neo4j in order to support uniqueConstraint as  GROUP.
+//for example: 
+//from: uniqueConstraint-668152f25a84ae0012baa31f-cc-vv
+//to: uniqueConstraint-defaultGroup-668152f25a84ae0012baa31f-cc,vv
+
+
+
+CALL db.constraints() 
+YIELD name
+WHERE name STARTS WITH 'uniqueConstraint' 
+AND SIZE(SPLIT(name, '-')) > 3
+
+
+WITH *, SPLIT(name, '-')[1] as templateId, SPLIT(name, '-')[2..] as properties
+WITH *, name, 'uniqueConstraint-defaultGroup-' + templateId + '-' + apoc.text.join(properties, ',') AS formattedName
+
+WITH *, collect(DISTINCT name) AS dropStatements, collect(DISTINCT [name, formattedName]) AS createDetails
+
+UNWIND createDetails AS detail
+
+WITH *, detail[0] as name, detail[1] as formattedName
+
+
+WITH *, 'DROP CONSTRAINT `' + name + '`' as dropCommand
+
+WITH *, 'CREATE CONSTRAINT `' + formattedName + '`'+ ' ON (n: `' + templateId + '`) ASSERT(' + (apoc.text.join([prop IN properties | 'n.' + prop], ',')) + ') IS NODE KEY'
+    as createCommand
+
+WITH collect(dropCommand + '; ' + createCommand) as commands
+
+return apoc.text.join(commands, ';\n')
+
+
+
+
+
+
+
+
+////After running script in cypher neo4j, take the output, remove the string ("") and run the command like this:
+
+DROP CONSTRAINT `uniqueConstraint-668152f25a84ae0012baa31f-cc-vv`; CREATE CONSTRAINT `uniqueConstraint-defaultGroup-668152f25a84ae0012baa31f-cc,vv` ON (n: `668152f25a84ae0012baa31f`) ASSERT(n.cc,n.vv) IS NODE KEY;
+DROP CONSTRAINT `uniqueConstraint-668153075a84ae0012baa329-aa-bb`; CREATE CONSTRAINT `uniqueConstraint-defaultGroup-668153075a84ae0012baa329-aa,bb` ON (n: `668153075a84ae0012baa329`) ASSERT(n.aa,n.bb) IS NODE KEY

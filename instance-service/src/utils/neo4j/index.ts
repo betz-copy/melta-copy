@@ -25,7 +25,7 @@ class Neo4jClient {
     }
 
     async initialize(url: string, auth: Neo4jAuth, database: string, configuration: Config = {}) {
-        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), configuration);
+        this.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true, ...configuration });
         this.database = database;
 
         await this.verifyConnectivity();
@@ -43,11 +43,17 @@ class Neo4jClient {
         return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
-    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
-        const session = this.driver.session({ database: this.database });
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>, dryRun = false) {
+        const session = this.driver.session({
+            database: this.database,
+            defaultAccessMode: transactionType === 'readTransaction' ? 'READ' : 'WRITE',
+        });
+        const trx = session.beginTransaction();
 
         try {
-            const result = await session[transactionType](transactionWork);
+            const result = await transactionWork(trx);
+            if (dryRun) await trx.rollback();
+            else await trx.commit();
 
             return result;
         } finally {
@@ -92,7 +98,11 @@ class Neo4jClient {
     async verifyConnectivity() {
         const { connectionRetries, connectionRetryDelay } = config.neo4j;
 
-        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: logger.info });
+        await retry(() => this.driver.verifyConnectivity(), {
+            retries: connectionRetries,
+            delay: connectionRetryDelay,
+            logger: logger.info.bind(logger),
+        });
     }
 }
 

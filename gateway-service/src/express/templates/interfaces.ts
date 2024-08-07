@@ -3,7 +3,7 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-} from '../../externalServices/entityTemplateService';
+} from '../../externalServices/templates/entityTemplateService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {

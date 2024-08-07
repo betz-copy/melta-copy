@@ -21,6 +21,10 @@ export class RuleBreachRequestsManager {
         return { rows, lastRowIndex };
     }
 
+    public static async getManyRuleBreachRequests(ids: string[]) {
+        return RuleBreachRequestsModel.find({ _id: { $in: ids } });
+    }
+
     public static async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>,
     ): Promise<IRuleBreachRequest> {
@@ -37,12 +41,14 @@ export class RuleBreachRequestsManager {
             .lean();
     }
 
-    public static async updateRuleBreachRequestActionMetadata(
+    public static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
+        actions: {
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadata;
+        }[],
     ): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actionType, actionMetadata }, { new: true })
+        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }

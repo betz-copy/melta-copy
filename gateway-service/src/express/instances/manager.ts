@@ -9,22 +9,21 @@ import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/inst
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IExportEntitiesBody } from './interfaces';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { EntityTemplateManagerService, IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '../../externalServices/entityTemplateService';
-import { ActivityLogManagerService, IUpdatedFields } from '../../externalServices/activityLogService';
-import { trycatch } from '../../utils';
 import {
-    ActionTypes,
-    IBrokenRule,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-} from '../../externalServices/ruleBreachService/interfaces';
+    EntityTemplateManagerService,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+} from '../../externalServices/templates/entityTemplateService';
+import { trycatch } from '../../utils';
+import { ActionTypes, IAction, IBrokenRule, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from '../../externalServices/ruleBreachService/interfaces';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import config from '../../config';
 import { ServiceError } from '../error';
-import { cerateWorksheet, createWorkbook, fixFileProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
+import groupBy from 'lodash.groupby';
+import { Dictionary } from 'lodash';
 
 const { errorCodes } = config;
 
@@ -111,7 +110,7 @@ export class InstancesManager {
                 filter,
                 sort,
             });
-            const rows = await fixFileProperties(
+            const rows = await fixComplexProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );
@@ -124,142 +123,254 @@ export class InstancesManager {
         }
     }
 
-    static getFilePropertiesKeysByTemplate(template: IEntityTemplatePopulated) {
-        const filePropertiesEntries = Object.entries(template.properties.properties).filter(
-            ([_key, value]) => value.format === 'fileId' || value.items?.format === 'fileId',
-        );
-        return filePropertiesEntries.map(([key]) => key);
+    static getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
+        return objectFilter(entityProperties, (key) => {
+            const propertyTemplate = template.properties.properties[key];
+            return propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId';
+        });
     }
 
-    private static getCurrentEntityFilesEntries(entityProperties: object, fileProperties: string[]) {
-        return Object.entries(entityProperties).filter(([key]) => fileProperties.includes(key));
-    }
+    private static async setSerialPropertiesAndUpdateTemplate(
+        entityProperties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplatePopulated,
+    ): Promise<IEntity['properties']> {
+        const updatedProperties: IEntity['properties'] = { ...entityProperties };
 
-    static async createEntityInstance(instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const { props: fileProperties } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
-        let templateUpdated = false;
-
-        const updatedProperties = {
+        let isTemplateUpdated = false;
+        const updatedTemplateProperties = {
             ...entityTemplate.properties.properties,
         };
-        const newInstanceData: IEntity = { templateId: instanceData.templateId, properties: { ...fileProperties } };
 
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                newInstanceData.properties[key] = Number(entityTemplate.properties.properties[key].serialCurrent);
+                updatedProperties[key] = Number(entityTemplate.properties.properties[key].serialCurrent);
 
                 const serialNum: number = Number(entityTemplate.properties.properties[key].serialCurrent) + 1;
                 const newSerialNumberObj = { ...entityTemplate.properties.properties[key], serialCurrent: serialNum };
-                updatedProperties[key] = newSerialNumberObj;
-                templateUpdated = true;
+                updatedTemplateProperties[key] = newSerialNumberObj;
+                isTemplateUpdated = true;
             }
         });
-        if (templateUpdated) {
+        if (isTemplateUpdated) {
             const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
-            await EntityTemplateManagerService.updateEntityTemplate(instanceData.templateId, {
+            await EntityTemplateManagerService.updateEntityTemplate(entityTemplate._id, {
                 ...restOfEntityTemplate,
                 category: category._id,
                 properties: {
                     ...entityTemplate.properties,
-                    properties: updatedProperties,
+                    properties: updatedTemplateProperties,
                 },
             });
         }
 
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData);
+        return updatedProperties;
+    }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'CREATE_ENTITY',
-            entityId: entity.properties._id,
-            metadata: {},
-            timestamp: new Date(),
-            userId: user.id,
-        });
+    static async handlePreparationsBeforeCreateEntity(
+        instanceData: IEntity,
+        files: Express.Multer.File[]
+    ) {
+        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
+
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
+        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
+
+        return {
+            templateId: instanceData.templateId,
+            properties: newInstanceProperties,
+        };
+    }
+
+    static async createEntityInstance(
+        instanceData: IEntity,
+        files: Express.Multer.File[],
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        createAlert: boolean = true,
+    ) {
+        const newInstanceData: IEntity = await InstancesManager.handlePreparationsBeforeCreateEntity(instanceData, files);
+
+        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
+            InstancesManager.handleBrokenRulesError,
+        );
+
+        if (createAlert && ignoredRules.length) {
+            await RuleBreachesManager.createRuleBreachAlert(
+                {
+                    brokenRules: ignoredRules,
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                            },
+                        },
+                    ],
+                },
+                userId,
+            );
+        }
+
         return entity;
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
-        const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(entityTemplate);
-        const filesEntries = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-        const filesToDelete: string[] = [];
-        for (const [key, value] of filesEntries) {
-            if (!Array.isArray(value)) {
-                if ((!instanceData.properties[key] && newFilesKeys.includes(key)) || (!newFilesKeys.includes(key) && instanceData.properties[key])) {
-                    continue;
-                }
-                filesToDelete.push(value);
-            } else {
-                const filesArray = instanceData.properties[key] || [];
-                const filesToDeleteFromArray = value.filter((file) => !filesArray.includes(file));
-                filesToDelete.push(...filesToDeleteFromArray);
+
+        const fileProperties = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
+
+        const fileIdsToDelete = Object.entries(fileProperties).flatMap(([key, value]) => {
+            if (Array.isArray(value)) {
+                return value.filter((fileId) => !(instanceData.properties[key] as string[]).includes(fileId));
             }
-        }
-        if (filesToDelete.length === 0) {
+            if (!instanceData.properties[key] || newFilesKeys.includes(key)) {
+                return value;
+            }
+
+            return [];
+        });
+
+        if (fileIdsToDelete.length === 0) {
             return [];
         }
-        return deleteFiles(filesToDelete);
+
+        return deleteFiles(fileIdsToDelete);
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules).catch(
+        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityStatusMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateStatus,
-                    actionMetadata: {
-                        entityId: id,
-                        disabled: disabledStatus,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateStatus,
+                            actionMetadata: {
+                                entityId: id,
+                                disabled: disabledStatus,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: disabledStatus ? 'DISABLE_ENTITY' : 'ACTIVATE_ENTITY',
-            metadata: {},
-            entityId: id,
-            timestamp: new Date(),
-            userId,
-        });
         return entity;
     }
 
-    static async duplicateEntityInstance(id: string, instanceData: IEntity, files: Express.Multer.File[], user: Express.User) {
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
-        const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(currentEntityTemplate);
-        const filesEntries = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-        const filesEntriesToDuplicate = filesEntries.filter(([_key, value]) => Object.values(instanceData.properties).includes(value));
+    static verifyFilePropertiesToDuplicateExistInCurrent(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
+        Object.entries(fileProperties).forEach(([key, value]) => {
+            if (!value) return;
 
-        const duplicatedFiles = await duplicateFiles(filesEntriesToDuplicate.map(([_key, value]) => value));
+            if (Array.isArray(value)) {
+                const unknownFileId = value.find((fileId) => !(currentEntity.properties[key] as string[] | undefined)?.includes(fileId));
+                if (unknownFileId) {
+                    throw new ServiceError(400, `duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
+                }
+                return;
+            }
 
-        const duplicatedFilesEntries = filesEntriesToDuplicate.map(([key], index) => [key, duplicatedFiles[index].path]);
-
-        const duplicatedFilesEntriesProperties = Object.fromEntries(duplicatedFilesEntries);
-
-        const duplicatedInstanceData: IEntity = {
-            templateId: instanceData.templateId,
-            properties: { ...instanceData.properties, ...duplicatedFilesEntriesProperties },
-        };
-
-        return this.createEntityInstance(duplicatedInstanceData, files, user);
+            if (value !== currentEntity.properties[key]) {
+                throw new ServiceError(400, `duplicated entity contains unknown fileId ${value} in key ${key}`);
+            }
+        });
     }
 
-    static async viewEntityInstance(id: string, userId: string) {
-        await ActivityLogManagerService.createActivityLog({
-            action: 'VIEW_ENTITY',
-            entityId: id,
-            metadata: {},
-            timestamp: new Date(),
-            userId,
+    static async duplicateFileProperties(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
+        InstancesManager.verifyFilePropertiesToDuplicateExistInCurrent(fileProperties, currentEntity);
+
+        const filePropertiesToDuplicateEntries = Object.entries(fileProperties);
+        const duplicatedFiles = await duplicateFiles(filePropertiesToDuplicateEntries.flatMap(([_key, value]) => value));
+
+        let duplicatedFileIndex = 0;
+        const duplicatedFilesProperties: Record<string, string | string[]> = {};
+        filePropertiesToDuplicateEntries.forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+                duplicatedFilesProperties[key] = [];
+                value.forEach((_oldFileId) => {
+                    (duplicatedFilesProperties[key] as string[]).push(duplicatedFiles[duplicatedFileIndex].path);
+                    duplicatedFileIndex++;
+                });
+            } else {
+                duplicatedFilesProperties[key] = duplicatedFiles[duplicatedFileIndex].path;
+                duplicatedFileIndex++;
+            }
+        });
+
+        return duplicatedFilesProperties;
+    }
+
+    static async duplicateEntityInstance(
+        id: string,
+        instanceData: IEntity,
+        files: Express.Multer.File[],
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        duplicateFileProperties = true,
+        createAlert: boolean = true,
+    ) {
+        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+
+        const fileProperties = InstancesManager.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
+
+        let duplicatedFileProperties: Record<string, string | string[]> = {};
+        if (duplicateFileProperties) {
+            duplicatedFileProperties = await InstancesManager.duplicateFileProperties(fileProperties, currentEntity);
+        }
+
+        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, {
+            ...instanceData.properties,
+            ...duplicatedFileProperties,
+        });
+
+        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, currentEntityTemplate);
+
+        const newInstanceData: IEntity = {
+            templateId: instanceData.templateId,
+            properties: newInstanceProperties,
+        };
+
+        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
+            InstancesManager.handleBrokenRulesError,
+        );
+
+        if (createAlert && ignoredRules.length) {
+            await RuleBreachesManager.createRuleBreachAlert(
+                {
+                    brokenRules: ignoredRules,
+                    actions: [
+                        {
+                            actionType: ActionTypes.DuplicateEntity,
+                            actionMetadata: {
+                                templateId: entity.templateId,
+                                properties: entity.properties,
+                                entityIdToDuplicate: id,
+                            },
+                        },
+                    ],
+                },
+                userId,
+            );
+        }
+
+        return entity;
+    }
+
+    static checkSerialFieldWasUpdated(entityTemplate: IMongoEntityTemplatePopulated, updatedInstanceDataProperties: IEntity['properties'], currentEntity: IEntity) {
+        Object.keys(entityTemplate.properties.properties).forEach((key) => {
+            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
+                if (updatedInstanceDataProperties[key] !== currentEntity.properties[key]) {
+                    throw new ServiceError(400, "can't change serial properties");
+                }
+            }
         });
     }
 
@@ -276,14 +387,8 @@ export class InstancesManager {
 
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
-        Object.keys(entityTemplate.properties.properties).forEach((key) => {
-            if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
-                if (updatedInstanceData.properties[key] !== currentEntity.properties[key]) {
-                    throw new ServiceError(400, "can't change serial properties");
-                }
-            }
-        });
-
+        InstancesManager.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
+    
         const updatedInstance = await InstanceManagerService.updateEntityInstance(
             id,
             {
@@ -291,13 +396,13 @@ export class InstancesManager {
                 properties: { ...uploadedFilesAndProperties },
             },
             ignoredRules,
+            userId,
         ).catch(InstancesManager.handleBrokenRulesError);
         await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             logger.error(`failed to delete files of instanceId ${id}`),
         );
 
         const updatedFields: Record<string, any> = {};
-        const activityLogUpdatedFields: IUpdatedFields[] = [];
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -307,6 +412,9 @@ export class InstancesManager {
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
                 newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+            } else if (propertyTemplate?.format === 'relationshipReference') {
+                if (updatedInstance.properties[field]?.properties) newValue = updatedInstance.properties[field].properties._id;
+                if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
             } else {
                 newValue = updatedInstance.properties[field];
             }
@@ -320,44 +428,36 @@ export class InstancesManager {
             if (currentEntity.properties[field] === newValue) continue;
 
             updatedFields[field] = newValue ?? null;
-            activityLogUpdatedFields.push({
-                fieldName: field,
-                oldValue: currentEntity.properties[field] ?? null,
-                newValue: newValue ?? null,
-            });
         }
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IUpdateEntityMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: currentEntity.properties,
-                        updatedFields,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId: id,
+                                before: currentEntity.properties,
+                                updatedFields,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
         }
 
-        await ActivityLogManagerService.createActivityLog({
-            action: 'UPDATE_ENTITY',
-            metadata: { updatedFields: activityLogUpdatedFields },
-            entityId: updatedInstanceData.properties._id,
-            timestamp: new Date(),
-            userId,
-        });
         return updatedInstance;
     }
 
     private static async deleteAllEntityFiles(currentEntity: IEntity) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
-        const filePropertiesKeys = InstancesManager.getFilePropertiesKeysByTemplate(entityTemplate);
-        const filesEntriesToRemove = InstancesManager.getCurrentEntityFilesEntries(currentEntity.properties, filePropertiesKeys);
-        const fileIdsToRemove = filesEntriesToRemove.map(([, value]) => value).flat();
+        const filePropertiesToRemove = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
+        const fileIdsToRemove = Object.values(filePropertiesToRemove).flat();
+
         if (fileIdsToRemove.length === 0) {
             return [];
         }
@@ -379,90 +479,56 @@ export class InstancesManager {
     }
 
     static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules).catch(
+        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<ICreateRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.CreateRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.CreateRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
         }
-
-        const updatedFields = {
-            action: 'CREATE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: createdRelationship.templateId,
-                relationshipId: createdRelationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: createdRelationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
-        });
 
         return createdRelationship;
     }
 
     static async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules).catch(
+        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules, userId).catch(
             InstancesManager.handleBrokenRulesError,
         );
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert<IDeleteRelationshipMetadata>(
+            await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actionType: ActionTypes.DeleteRelationship,
-                    actionMetadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        sourceEntityId: relationship.sourceEntityId,
-                        destinationEntityId: relationship.destinationEntityId,
-                    },
+                    actions: [
+                        {
+                            actionType: ActionTypes.DeleteRelationship,
+                            actionMetadata: {
+                                relationshipTemplateId: relationship.templateId,
+                                relationshipId: relationship.properties._id,
+                                sourceEntityId: relationship.sourceEntityId,
+                                destinationEntityId: relationship.destinationEntityId,
+                            },
+                        },
+                    ],
                 },
                 userId,
             );
         }
-
-        const updatedFields = {
-            action: 'DELETE_RELATIONSHIP' as const,
-            timestamp: new Date(),
-            userId,
-            metadata: {
-                relationshipTemplateId: relationship.templateId,
-                relationshipId: relationship.properties._id,
-            },
-        };
-
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.sourceEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.destinationEntityId },
-        });
-        await ActivityLogManagerService.createActivityLog({
-            ...updatedFields,
-            entityId: relationship.destinationEntityId,
-            metadata: { ...updatedFields.metadata, entityId: relationship.sourceEntityId },
-        });
 
         return relationship;
     }
@@ -479,5 +545,107 @@ export class InstancesManager {
         }
 
         throw error;
+    }
+
+    static extractEntitiesAndTemplatesIds(actionsGroups: IAction[][]): {
+        templateIds: string[];
+        entitiesIds: string[];
+    } {
+        const templateIds = new Set<string>();
+        const entitiesIds = new Set<string>();
+    
+        actionsGroups.forEach((actionsGroup) => actionsGroup.forEach((action) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                templateIds.add((action.actionMetadata as ICreateEntityMetadata).templateId);
+            } else if (action.actionType === ActionTypes.CreateRelationship) {
+                const {destinationEntityId, sourceEntityId} = (action.actionMetadata as ICreateRelationshipMetadata);
+    
+                if (!destinationEntityId.startsWith('$')) entitiesIds.add(destinationEntityId);
+                if (!sourceEntityId.startsWith('$')) entitiesIds.add(sourceEntityId);
+            } else if (action.actionType === ActionTypes.UpdateEntity) {
+                const {entityId} = (action.actionMetadata as IUpdateEntityMetadata);
+                if (!entityId.startsWith('$')) entitiesIds.add(entityId);
+            }
+        }));
+    
+        return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
+    }
+
+    static async getManyEntitiesNewPropertiesToUpdate(
+        entitiesToUpdate: IEntity[],
+        templatesByIds: Dictionary<IMongoEntityTemplatePopulated[]>,
+    ) {
+        const entitiesNewPropertiesPromises = entitiesToUpdate.map((entityToUpdate) => {
+            const [entityTemplate] = templatesByIds[entityToUpdate.templateId];
+            
+            return InstancesManager.setSerialPropertiesAndUpdateTemplate(entityToUpdate.properties, entityTemplate).then((properties) => {
+                return {
+                    templateId: entityToUpdate.templateId,
+                    properties
+                };
+            });
+        });
+
+        return Promise.all(entitiesNewPropertiesPromises);
+    }
+
+    static async getAllActionsTemplatesByIds(actionsGroups: IAction[][]) {
+        const { templateIds: templateIdsFromReq, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
+        const templateIds = new Set<string>([...templateIdsFromReq]);
+
+        const entities = await InstanceManagerService.getEntityInstancesByIds(entitiesIds);
+        entities.forEach((entity) => templateIds.add(entity.templateId));
+
+        const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: [...templateIds]});
+
+        return {
+            templatesByIds: groupBy(templates, (template) => template._id),
+            entitiesByIds: groupBy(entities, (entity) => entity.properties._id),
+        };
+    }
+
+    static async runBulkOfActions(
+        actionsGroups: IAction[][],
+        dryRun: boolean,
+        ignoredRules: IBrokenRule[] = [],
+        userId: string) {
+            const {templatesByIds, entitiesByIds} = await InstancesManager.getAllActionsTemplatesByIds(actionsGroups);
+            const entitiesToCreate: IEntity[] = [];
+
+            actionsGroups.forEach((actionGroup) =>
+                actionGroup.forEach((action) => {
+                    if (action.actionType === ActionTypes.CreateEntity) {
+                        const instanceData = action.actionMetadata as ICreateEntityMetadata;
+        
+                        // TODO - for now we are not support upload files in bulk, we will support it in the future
+                        entitiesToCreate.push(instanceData);
+                        
+                    } else if (action.actionType === ActionTypes.UpdateEntity) {
+                        const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
+                        const entity = entitiesByIds[actionMetadata.entityId][0];
+                        const templateOfEntity = templatesByIds[entity.templateId][0];
+    
+                        InstancesManager.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
+                    }
+                })
+            );
+
+        const newEntitiesToCreateByActionsGroups = await InstancesManager.getManyEntitiesNewPropertiesToUpdate(entitiesToCreate, templatesByIds);
+        let indexOfEntityToCreate = 0;
+
+           const newActionsGroups = actionsGroups.map((actionsGroup) => 
+           actionsGroup.map((action) => {
+                if (action.actionType !== ActionTypes.CreateEntity) {
+                    return action;
+                }
+                const newAction = {
+                    ...action,
+                    actionMetadata: newEntitiesToCreateByActionsGroups[indexOfEntityToCreate],
+                };
+                indexOfEntityToCreate++;
+                return newAction;
+           }));
+
+        return InstanceManagerService.runBulkOfActions(newActionsGroups, dryRun, ignoredRules, userId);
     }
 }

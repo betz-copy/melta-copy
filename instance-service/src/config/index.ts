@@ -16,28 +16,40 @@ const config = {
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
+        mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        getByIdRoute: env.get('ENTITY_TEMPLATE_SERVICE_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
-        searchRoute: env.get('ENTITY_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
-        timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        activityLogQueue: env.get('ACTIVITY_LOG_QUEUE_NAME').default('activity-log-queue').asString(),
     },
-    relationshipTemplateService: {
-        url: env.get('RELATIONSHIP_TEMPLATE_SERVICE_URL').required().asString(),
-        getRelationshipByIdRoute: env
-            .get('RELATIONSHIP_TEMPLATE_SERVICE_GET_RELATIONSHIP_BY_ID_ROUTE')
-            .default('/api/templates/relationships')
-            .asString(),
-        searchRulesRoute: env.get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
-        searchTemplatesRoute: env
-            .get('RELATIONSHIP_TEMPLATE_SERVICE_SEARCH_TEMPLATES_ROUTE')
-            .default('/api/templates/relationships/search')
-            .asString(),
-        timeout: env.get('RELATIONSHIP_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+        entities: {
+            getByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+            getRelatedByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_RELATED_BY_ID_ROUTE').default('/api/templates/entities/related').asString(),
+            searchRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
+        },
+        relationships: {
+            getRelationshipByIdRoute: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_GET_RELATIONSHIP_BY_ID_ROUTE')
+                .default('/api/templates/relationships')
+                .asString(),
+            searchRulesRoute: env.get('TEMPLATE_SERVICE_RELATIONSHIPS_SEARCH_RULES_ROUTE').default('/api/templates/rules/search').asString(),
+            searchTemplatesRoute: env
+                .get('TEMPLATE_SERVICE_RELATIONSHIPS_SEARCH_TEMPLATES_ROUTE')
+                .default('/api/templates/relationships/search')
+                .asString(),
+        },
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
@@ -51,14 +63,16 @@ const config = {
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
     },
+    createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
     requiredConstraint: env.get('REQUIRED_CONSTRAINT').default('requiredConstraint').asString(),
     uniqueConstraint: env.get('UNIQUE_CONSTRAINT').default('uniqueConstraint').asString(),
-
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
+    cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
+    cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableApm: env.get('ENABLE_APM').default('true').asBool(),

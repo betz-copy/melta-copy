@@ -148,8 +148,8 @@ const IFramesPage: React.FC = () => {
                             initialWidth={900}
                             minHeight={500}
                             minWidth={900}
-                            setHeight={() => {}}
-                            setWidth={() => {}}
+                            setHeight={() => { }}
+                            setWidth={() => { }}
                             maxHeight={800}
                             maxWidth={1800}
                         >

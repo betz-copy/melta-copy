@@ -1,8 +1,10 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { IRuleBreach } from '../interfaces/ruleBreach';
+import { IAction } from '../interfaces/ruleBreach';
 import { ActionTypes } from '../interfaces/actionMetadata';
 import {
+    createEntityMetadataSchema,
+    duplicateEntityMetadataSchema,
     createRelationshipMetadataSchema,
     deleteRelationshipMetadataSchema,
     updateEntityMetadataSchema,
@@ -10,7 +12,7 @@ import {
 } from './schemas/actionMetadata';
 
 export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
-    const parent: Omit<IRuleBreach, 'createdAt'> = helpers.state.ancestors[0];
+    const parent: IAction = helpers.state.ancestors[0];
     let schema: joi.ObjectSchema;
 
     switch (parent.actionType) {
@@ -19,6 +21,12 @@ export const validateActionMetadata: joi.CustomValidator = (value, helpers) => {
             break;
         case ActionTypes.DeleteRelationship:
             schema = deleteRelationshipMetadataSchema;
+            break;
+        case ActionTypes.CreateEntity:
+            schema = createEntityMetadataSchema;
+            break;
+        case ActionTypes.DuplicateEntity:
+            schema = duplicateEntityMetadataSchema;
             break;
         case ActionTypes.UpdateEntity:
             schema = updateEntityMetadataSchema;

@@ -1,11 +1,13 @@
+import type { Property } from 'csstype';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
 import { useSelector } from 'react-redux';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { IEntity } from '../interfaces/entities';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { RootState } from '../store';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
 import { MeltaTooltip } from './MeltaTooltip';
@@ -13,20 +15,23 @@ import { VerifyLink } from './VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
 import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
 import { environment } from '../globals';
-import { RootState } from '../store';
 import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import RelationshipReferenceView from './RelationshipReferenceView';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
-export const formatToString = (
-    value: any,
-    valueType: 'string' | 'number' | 'boolean' | 'array',
-    format?: string,
-    keyEnumColors?: Record<string, string>,
-    propertySchema?: IEntitySingleProperty,
-) => {
+interface FormatOptions {
+    keyEnumColors?: Record<string, string>;
+    isPrintingMode?: boolean;
+    pureString?: boolean;
+}
+
+export const formatToString = (value: any, property: IEntitySingleProperty, options: FormatOptions = {}) => {
+    const { format, type: valueType } = property;
+    const { keyEnumColors, isPrintingMode, pureString } = options;
+
     if (value === null || value === undefined) return '-';
 
     if (valueType === 'number') {
@@ -36,16 +41,29 @@ export const formatToString = (
     if (valueType === 'string') {
         if (format === 'date') return new Date(value).toLocaleDateString('en-uk');
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
-        if (format === 'fileId') return <OpenPreview fileId={value} />;
-    }
-    if (keyEnumColors?.[value] && valueType === 'string') return <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
-    if (valueType === 'array') {
-        if (propertySchema?.items?.format === 'fileId') {
-            return value.map((val) => <OpenPreview fileId={val} key={val} />);
+        if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
+        if (format === 'relationshipReference') {
+            return pureString ? (
+                value.properties[property.relationshipReference!.relatedTemplateField!]
+            ) : (
+                <RelationshipReferenceView
+                    entity={value}
+                    relatedTemplateId={property.relationshipReference!.relatedTemplateId}
+                    relatedTemplateField={property.relationshipReference!.relatedTemplateField}
+                />
+            );
         }
-        return value.map((val) => (
-            <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
-        ));
+    }
+    if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
+    if (valueType === 'array') {
+        if (property.items?.format === 'fileId') {
+            return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
+        }
+        return pureString
+            ? value.join(', ')
+            : value.map((val: string) => (
+                  <ColoredEnumChip key={val} label={val} color={keyEnumColors?.[val] || 'default'} style={{ margin: '5px 0px 0px 5px' }} />
+              ));
     }
     return value;
 };
@@ -58,13 +76,30 @@ interface IEntityPropertiesProps {
     mode: 'normal' | 'white';
     showPreviewPropertiesOnly?: boolean;
     overridePropertiesToShow?: string[];
+    propertiesToHighlight?: string[];
+    propertiesToHighlightColor?: CSSProperties['color'];
     removeFiles?: boolean;
     style?: CSSProperties;
     innerStyle?: CSSProperties;
     textWrap?: boolean;
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
+    pureString?: boolean;
 }
+
+const getPropertyColor = (
+    propertyKey: string,
+    propertiesToHighlight: string[] | undefined,
+    highlightColor: Property.Color | undefined,
+    mode: 'normal' | 'white',
+    normalColor: Property.Color,
+) => {
+    if (propertiesToHighlight?.includes(propertyKey)) {
+        return highlightColor;
+    }
+
+    return mode === 'white' ? 'white' : normalColor;
+};
 
 export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkMode?: boolean }> = ({
     entityTemplate,
@@ -72,16 +107,19 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     mode,
     showPreviewPropertiesOnly = false,
     overridePropertiesToShow,
+    propertiesToHighlight,
+    propertiesToHighlightColor,
     removeFiles = false,
     style,
     innerStyle,
     textWrap = false,
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
+    pureString = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
-        propertiesOrderedToShow = overridePropertiesToShow;
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
     } else if (showPreviewPropertiesOnly) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => entityTemplate.propertiesPreview!.includes(propertyKey));
     } else if (removeFiles) {
@@ -90,9 +128,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
                 entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
-    } else {
-        propertiesOrderedToShow = entityTemplate.propertiesOrder;
-    }
+    } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
+
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
     return (
         <Grid container style={{ ...style, alignItems: textWrap ? 'flex-start' : 'center', alignContent: 'center' }}>
@@ -101,13 +138,14 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const propertyValue = properties[propertyKey];
                 const hideField = entityTemplate.properties.hide.includes(propertyKey);
                 const containsHtmlTags = containsHTMLTags(propertyValue);
-                const stringFormatValue = formatToString(
-                    propertyValue,
-                    propertySchema.type,
-                    propertySchema.format,
-                    (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
-                    propertySchema,
-                );
+                const stringFormatValue = formatToString(propertyValue, propertySchema, {
+                    keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
+                    isPrintingMode,
+                    pureString,
+                });
+
+                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
                 let innerContent;
                 if (hideFieldsToDisplay.includes(propertyKey)) innerContent = <>••••••••</>;
@@ -130,7 +168,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
-                    propertySchema.format !== 'text-area'
+                    // todo: make getTextDirection handle all possible value and reuse everywhere
+                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'
                         ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,
@@ -161,7 +200,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             textAlign: 'right',
                                         }}
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#9398C2'}
+                                        color={propertyTitleColor}
                                         fontWeight={mode === 'white' ? '800' : ''}
                                     >
                                         {propertySchema.title}:
@@ -181,18 +220,17 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                 }}
                             >
                                 <MeltaTooltip
-                                    disableHoverListener={textWrap}
+                                    disableHoverListener={propertySchema.format === 'relationshipReference' ? true : textWrap}
                                     placement="bottom"
                                     title={<Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{titleContent}</Grid>}
                                 >
                                     <Typography
                                         fontSize="14px"
-                                        color={mode === 'white' ? 'white' : '#53566E'}
+                                        color={propertyValueColor}
                                         style={{
                                             textOverflow: 'ellipsis',
                                             whiteSpace: textWrap ? undefined : 'nowrap',
                                             overflowX: 'hidden',
-                                            overflowY: 'auto',
                                             paddingLeft: '1rem',
                                             maxHeight: isPrintingMode ? undefined : '350px',
                                             direction: propertySchema.type === 'number' ? 'rtl' : textDirection,

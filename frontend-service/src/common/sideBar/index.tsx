@@ -176,10 +176,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 style={{
                     backgroundImage: 'url(/icons/sideNav-bg.png)',
                     backgroundRepeat: 'no-repeat',
-                    backgroundPositionY: isDrawerOpen ? '-23px' : '',
+                    backgroundPositionY: isDrawerOpen ? '-23px' : '2px',
                 }}
             >
-                <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="10px">
+                <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="5px">
                     <Box
                         position="relative"
                         onClick={(event) => {
@@ -304,7 +304,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
-                        marginTop: '17px',
+                        marginTop: isDrawerOpen ? '25px' : '0px',
                     }}
                 >
                     {Array.from(

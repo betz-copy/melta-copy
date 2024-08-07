@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { Request } from 'express';
-import { RelationshipsTemplateManagerService } from '../../externalServices/relationshipTemplateManager';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addPropertyToRequest } from '../../utils/express';
 import { trycatch } from '../../utils/lib';
 import EntityManager from '../entities/manager';

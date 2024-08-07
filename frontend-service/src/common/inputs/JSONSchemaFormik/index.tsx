@@ -15,6 +15,7 @@ import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
+import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -52,10 +53,19 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'serialStarter',
     });
     ajv.addKeyword({
+        keyword: 'relationshipReference',
+        type: 'string',
+    });
+    ajv.addKeyword({
         keyword: 'serialCurrent',
     });
 
-    const validateFunction = ajv.compile(schema);
+    const schemaToValidate = {
+        ...schema,
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+    };
+
+    const validateFunction = ajv.compile(schemaToValidate);
     validateFunction(data);
 
     const ajvErrors = validateFunction.errors ?? [];
@@ -77,6 +87,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    toPrint?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -88,14 +99,16 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    toPrint = false,
 }) => {
     useEffect(() => {
+        // define 100% width to text-area field
         const containerDiv = document.querySelectorAll(
             '#json-schema > .form-group.field.field-object > .MuiFormControl-root > .MuiGrid-root > .MuiGrid-root',
         );
         containerDiv.forEach((innerDiv) => {
-            const hasOtherField = innerDiv.querySelector('.other-field');
-            innerDiv.classList.add(hasOtherField ? 'has-other-field-child' : 'has-text-area-child');
+            const hasTextAreaField = innerDiv.querySelector('.text-area');
+            innerDiv.classList.add(hasTextAreaField ? 'has-text-area-child' : 'has-other-field-child');
         });
     }, [values.template]);
 
@@ -107,9 +120,15 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
+                if (propertySchema.readOnly) {
+                    return {
+                        'ui:options': {
+                            disabled: true,
+                        },
+                    };
+                }
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
-                        'ui:classNames': 'other-field',
                         'ui:options': {
                             inputType: 'text',
                             disabled: true,
@@ -120,7 +139,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 if (propertySchema.type === 'array' && propertySchema.items!.enum) {
                     return {
                         'ui:widget': 'SelectWidget',
-                        'ui:classNames': 'other-field',
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
@@ -128,11 +146,15 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TextAreaWidget',
                         'ui:classNames': 'text-area',
+                        'ui:options': { toPrint },
                     };
                 }
-                return {
-                    'ui:classNames': 'other-field',
-                };
+                if (propertySchema.format === 'relationshipReference') {
+                    return {
+                        'ui:widget': 'TemplateReferenceWidget',
+                    };
+                }
+                return {};
             })}
             onChange={({ formData }) => {
                 setValues(formData);
@@ -159,9 +181,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextWidget: RjsfTextWidget,
                 EmailWidget: RjsfTextWidget,
                 TextAreaWidget: RjfsTextAreaWidget,
+                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
             }}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
     );
 };

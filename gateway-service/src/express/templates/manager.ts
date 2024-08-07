@@ -9,9 +9,9 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
-} from '../../externalServices/entityTemplateService';
+} from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
@@ -33,6 +33,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import logger from '../../utils/logger/logsLogger';
 
 const {
     categoryHasTemplates,
@@ -73,55 +74,58 @@ export class TemplatesManager {
     }
 
     private static async getAllowedRules(
+        allowedEntityTemplatesIds: string[],
         allowedRelationshipsTemplates: IRelationshipTemplate[],
         allowedEntityTemplatesIdsByOneRelationship: string[],
     ) {
         const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
 
-        const rulesByAllowedRelationshipTemplates = await RelationshipsTemplateManagerService.searchRules({
-            relationshipTemplateIds: allowedRelationshipsTemplatesIds,
+        const rulesByAllowedEntityTemplates = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: allowedEntityTemplatesIds,
         });
 
         /*
-         * you need rules of pinned entity templates of "by one relationship"
-         * because you can break the rule if it has aggregation on the pinned entity (pinned.conncections.allowedEntityToEdit)
+         * you need rules of entity templates of "by one relationship"
+         * because you can break the rule if it has aggregation on the entity (entity.conncections.allowedEntityToEdit)
          * for example, say you have permissions only for people.
          * so you receive templates
          * 1. template of person - because you have direct permission
          * 2. template of flight - because there's relationship person<=>flight
-         * 3!!!. template of trip - because there's a rule of flight<=>trip,
-         *    and flight is the pinned entity in the rule, and the rule might contain aggregation of "flight.flightsOn.person",
+         * 3!!!. template of trip - because there's a rule of flight that checks connected trip,
+         *    and flight is the entity of the rule, and the rule might contain aggregation of "flight.flightsOn.person",
          *    and rule might break on person change
          */
-        const rulesPinnedByEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
-            pinnedEntityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
+        const rulesOfEntityTemplatesByOneRelationship = await RelationshipsTemplateManagerService.searchRules({
+            entityTemplateIds: allowedEntityTemplatesIdsByOneRelationship,
         });
 
-        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedRelationshipTemplates, ...rulesPinnedByEntityTemplatesByOneRelationship], '_id');
+        const allowedRules: IRule[] = lodashUniqby([...rulesByAllowedEntityTemplates, ...rulesOfEntityTemplatesByOneRelationship], '_id');
 
-        const allowedRelationshipTemplatesIdsBecauseOfRules = allowedRules
-            .map(({ relationshipTemplateId }) => relationshipTemplateId)
-            .filter((relationshipTemplateId) => !allowedRelationshipsTemplatesIds.includes(relationshipTemplateId));
+        const parametersOfRulesOfEntityTemplatesByOneRelationship = rulesOfEntityTemplatesByOneRelationship.flatMap(({ formula }) =>
+            getParametersOfFormula(formula),
+        );
+
+        const allowedRelationshipTemplatesIdsBecauseOfRules = parametersOfRulesOfEntityTemplatesByOneRelationship
+            .filter(
+                ({ variable }) =>
+                    variable.aggregatedRelationship &&
+                    !allowedRelationshipsTemplatesIds.includes(variable.aggregatedRelationship.relationshipTemplateId),
+            )
+            .map(({ variable }) => variable.aggregatedRelationship!.relationshipTemplateId);
 
         const allowedRelationshipTemplatesBecauseOfRules = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
-            ids: allowedRelationshipTemplatesIdsBecauseOfRules,
+            ids: [...new Set(allowedRelationshipTemplatesIdsBecauseOfRules)],
         });
 
-        const unpinnedEntityTemplatesIdsOfAllowedRules = allowedRelationshipTemplatesBecauseOfRules.map((relationshipTemplate) => {
-            const rule = allowedRules.find(({ relationshipTemplateId }) => relationshipTemplateId === relationshipTemplate._id)!;
-            const unpinnedEntityTemplateId =
-                relationshipTemplate.sourceEntityId === rule.pinnedEntityTemplateId
-                    ? relationshipTemplate.destinationEntityId
-                    : relationshipTemplate.sourceEntityId;
-            return unpinnedEntityTemplateId;
-        });
-
-        const unknownUnpinnedEntityTemplatesIdsOfAllowedRules = unpinnedEntityTemplatesIdsOfAllowedRules.filter((entityTemplateId) => {
-            return !allowedEntityTemplatesIdsByOneRelationship.includes(entityTemplateId);
-        });
+        const allowedEntityTemplatesIdsBecauseOfRules = parametersOfRulesOfEntityTemplatesByOneRelationship
+            .filter(
+                ({ variable }) =>
+                    variable.aggregatedRelationship && !allowedEntityTemplatesIds.includes(variable.aggregatedRelationship.otherEntityTemplateId),
+            )
+            .map(({ variable }) => variable.aggregatedRelationship!.otherEntityTemplateId);
 
         const allowedEntityTemplatesBecauseOfRules = await EntityTemplateManagerService.searchEntityTemplates({
-            ids: unknownUnpinnedEntityTemplatesIdsOfAllowedRules,
+            ids: allowedEntityTemplatesIdsBecauseOfRules,
         });
 
         return {
@@ -160,7 +164,11 @@ export class TemplatesManager {
         });
 
         const { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules } =
-            await TemplatesManager.getAllowedRules(allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship);
+            await TemplatesManager.getAllowedRules(
+                allowedEntityTemplatesIds,
+                allowedRelationshipsTemplates,
+                allowedEntityTemplatesIdsByOneRelationship,
+            );
 
         const allAllowedEntityTemplates = [
             ...allowedEntityTemplates,
@@ -183,6 +191,10 @@ export class TemplatesManager {
             rules: allowedRules,
             processTemplates,
         };
+    }
+
+    static getAllRelationshipTemplates() {
+        return RelationshipsTemplateManagerService.searchRelationshipTemplates();
     }
 
     static async getAllAllowedEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
@@ -324,15 +336,30 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static async throwIfEntityHasRelationships(id: string) {
-        const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ sourceEntityIds: [id] });
-        if (outgoingRelationships.length > 0) {
+    static entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IRelationshipTemplate[]) {
+        return relastionships.some((relationship) => {
+            const isUsedAsRelationshipReference =
+                entityTemplateToDelete.properties.properties[relationship.name].relationshipReference?.relationshipTemplateId === relationship._id;
+
+            return !isUsedAsRelationshipReference;
+        });
+    }
+
+    // TODO: Move to template-service
+    static async throwIfEntityHasRelationships(entityTemplateToDelete: IMongoEntityTemplatePopulated) {
+        const outgoingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: [entityTemplateToDelete._id],
+        });
+        if (this.entityHasRelationshipNotReference(entityTemplateToDelete, outgoingRelationships)) {
             throw new ServiceError(400, 'entity template still has outgoing relationships', {
                 errorCode: entityTemplateHasOutgoingRelationships,
             });
         }
-        const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({ destinationEntityIds: [id] });
-        if (incomingRelationships.length > 0) {
+
+        const incomingRelationships = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: [entityTemplateToDelete._id],
+        });
+        if (this.entityHasRelationshipNotReference(entityTemplateToDelete, incomingRelationships)) {
             throw new ServiceError(400, 'entity template still has incoming relationships', {
                 errorCode: entityTemplateHasIncomingRelationships,
             });
@@ -347,12 +374,12 @@ export class TemplatesManager {
     }
 
     static async deleteEntityTemplate(id: string): Promise<IMongoEntityTemplateWithConstraints> {
-        await TemplatesManager.throwIfEntityHasRelationships(id);
+        const entityTemplateToDelete = await EntityTemplateManagerService.getEntityTemplateById(id);
+        await TemplatesManager.throwIfEntityHasRelationships(entityTemplateToDelete);
         await TemplatesManager.throwIfEntityTemplateHasInstances(id);
 
-        const { iconFileId } = await EntityTemplateManagerService.getEntityTemplateById(id);
-        if (iconFileId) {
-            await deleteFile(iconFileId);
+        if (entityTemplateToDelete.iconFileId) {
+            await deleteFile(entityTemplateToDelete.iconFileId);
         }
 
         await InstanceManagerService.updateConstraintsOfTemplate(id, { requiredConstraints: [], uniqueConstraints: [] });
@@ -433,6 +460,8 @@ export class TemplatesManager {
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
                     throw new ServiceError(400, 'can not remove options from enum');
                 if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
+                if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
+                    throw new ServiceError(400, 'can not change relationship reference fields');
             });
         }
 
@@ -527,10 +556,12 @@ export class TemplatesManager {
                 ...templateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('Initial mongoDB update worked');
+            logger.info('Initial mongoDB update worked');
+
             return updatedEntityTemplate;
         } catch (error) {
-            console.error('Initial mongoDB update failed', error);
+            logger.error('Initial mongoDB update failed', { error });
+
             throw error;
         }
     }
@@ -554,10 +585,12 @@ export class TemplatesManager {
                 ...rollBackTemplateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('RollBack mongoDB succeeded', rollBackTemplateWithoutProperties);
+            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties });
+
             return rolledBackEntityTemplate;
         } catch (error) {
-            console.error('RollBack mongoDB update failed', error);
+            logger.error('RollBack mongoDB update failed', { error });
+
             throw error;
         }
     }
@@ -575,12 +608,13 @@ export class TemplatesManager {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
             if (neoError.response?.status === 404) {
-                console.error('Neo4j update failed: Node not found');
-                // if not found, it's not an error.
+                logger.error('Neo4j update failed: Node not found', { error: neoError });
                 return templateWithoutProperties;
             }
-            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response?.status);
+
+            logger.error('Neo4j update failed: starting roll-back', { error: neoError });
             await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
+
             throw neoError;
         }
 
@@ -664,8 +698,8 @@ export class TemplatesManager {
 
     static getDependentRelationshipTemplates(formula: IFormula) {
         const parameters = getParametersOfFormula(formula);
-        const variablesWithAggregation = parameters.filter(({ variableName }) => variableName.split('.').length === 3);
-        const relationshipTemplates = variablesWithAggregation.map(({ variableName }) => variableName.split('.')[1]);
+        const variablesWithAggregation = parameters.filter(({ variable }) => variable.aggregatedRelationship);
+        const relationshipTemplates = variablesWithAggregation.map(({ variable }) => variable.aggregatedRelationship!.relationshipTemplateId);
 
         return [...new Set(relationshipTemplates)];
     }
@@ -679,9 +713,8 @@ export class TemplatesManager {
         const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-        const relationshipRelatedRules = await RelationshipsTemplateManagerService.searchRules({ relationshipTemplateIds: [templateId] });
-        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [sourceEntityId] });
-        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ pinnedEntityTemplateIds: [destinationEntityId] });
+        const sourceRelatedRules = await RelationshipsTemplateManagerService.searchRules({ entityTemplateIds: [sourceEntityId] });
+        const destinationRelatedRules = await RelationshipsTemplateManagerService.searchRules({ entityTemplateIds: [destinationEntityId] });
 
         const dependentRelationshipsToSource = sourceRelatedRules.map(({ formula }) => {
             return TemplatesManager.getDependentRelationshipTemplates(formula);
@@ -692,7 +725,7 @@ export class TemplatesManager {
 
         const dependentRelationships = [...new Set(...dependentRelationshipsToSource, ...dependentRelationshipsToDestination)];
 
-        if (relationshipRelatedRules.length !== 0 || dependentRelationships.includes(templateId)) {
+        if (dependentRelationships.includes(templateId)) {
             throw new ServiceError(400, 'relationship template still has rules', { errorCode: relationshipTemplateHasRules });
         }
 
