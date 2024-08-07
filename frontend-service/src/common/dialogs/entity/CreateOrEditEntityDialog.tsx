@@ -186,7 +186,15 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (!draftId) return;
 
                 // ? created via debounce, this counters that (waits for the debounce to complete and then removes the draft)
-                setTimeout(() => deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId), environment.draftAutoSaveDebounce);
+                setTimeout(
+                    () =>
+                        deleteDraft(
+                            entityTemplate.category._id ? entityTemplate.category._id : values.template.category._id,
+                            entityTemplate._id ? entityTemplate._id : values.template._id,
+                            draftId,
+                        ),
+                    environment.draftAutoSaveDebounce,
+                );
             }}
             validate={(values) => {
                 const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
@@ -412,15 +420,17 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {entityTemplate.documentTemplatesIds?.length ? (
+                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length ? (
                                                 <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
                                                     <Grid item>
                                                         <Autocomplete
                                                             options={
-                                                                entityTemplate.documentTemplatesIds?.map((fileName) => ({
-                                                                    label: getFileName(fileName),
-                                                                    value: fileName,
-                                                                })) || []
+                                                                (entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.map(
+                                                                    (fileName) => ({
+                                                                        label: getFileName(fileName),
+                                                                        value: fileName,
+                                                                    }),
+                                                                ) || []
                                                             }
                                                             onChange={(_e, selectedOption) => setSelectedFileToExport(selectedOption?.value!)}
                                                             renderInput={(params) => (
