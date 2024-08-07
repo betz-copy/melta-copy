@@ -259,7 +259,7 @@ const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Ui
 export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties: IEntity['properties']) => {
     const patches = createPatchesFromEntity(properties);
 
-    // Due to the fact that 'patchDocument' function can patch only one instance per patch,
+    // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches
     let patchedDocument = await patchDocument(arrayBuffer, { patches, keepOriginalStyles: true });
     let newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
