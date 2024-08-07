@@ -1,10 +1,4 @@
-import {
-    Clear as ClearIcon,
-    Close as CloseIcon,
-    Done as DoneIcon,
-    FileDownloadOutlined as FileDownloadOutlinedIcon,
-    Visibility as VisibilityIcon,
-} from '@mui/icons-material';
+import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon, FileDownloadOutlined as FileDownloadOutlinedIcon } from '@mui/icons-material';
 import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
@@ -70,7 +64,6 @@ const CreateOrEditEntityDetails: React.FC<{
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
     const [selectedFileToExport, setSelectedFileToExport] = useState<string>('');
-    const [exportedFile, setExportedFile] = useState<string>('');
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -279,7 +272,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     ({ documentTemplateId, entityProperties }: { documentTemplateId: string; entityProperties: EntityWizardValues['properties'] }) =>
                         exportEntityToDocumentRequest(documentTemplateId, entityProperties),
                     {
-                        onSuccess: (data) => setExportedFile(data),
+                        onSuccess: (data) => data,
                         onError: () => {
                             toast.error(i18next.t('errorPage.fileDownloadError'));
                         },
@@ -459,23 +452,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 />
                                                             )}
                                                         />
-                                                    </Grid>
-                                                    <Grid item>
-                                                        <Button
-                                                            sx={{
-                                                                borderRadius: '7px',
-                                                                bgcolor: '#EBEFFA',
-                                                                color: (theme) => theme.palette.primary.main,
-                                                                ':hover': { color: 'white' },
-                                                                textWrap: 'nowrap',
-                                                            }}
-                                                            variant="contained"
-                                                            startIcon={<VisibilityIcon />}
-                                                            onClick={() => handleClose()}
-                                                            disabled={!(selectedFileToExport?.length && !values.properties._id)}
-                                                        >
-                                                            {i18next.t('entityPage.preview')}
-                                                        </Button>
                                                     </Grid>
                                                     <Grid item>
                                                         <Button
