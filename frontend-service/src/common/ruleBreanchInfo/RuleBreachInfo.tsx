@@ -5,11 +5,12 @@ import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
 import { IUser } from '../../services/kartoffelService';
+import { IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const RuleBreachInfo: React.FC<{
     originUser?: IUser;
     brokenRules: IRuleBreachPopulated['brokenRules'];
-    actions: IRuleBreachPopulated['actions'];
+    actions: IActionPopulated[];
     isCompact: boolean;
 }> = ({ originUser, brokenRules, actions, isCompact }) => {
     return (

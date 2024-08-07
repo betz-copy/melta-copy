@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
 import { useSelector } from 'react-redux';
-import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
 import { RootState } from '../../../store';
@@ -17,10 +17,7 @@ const ExecWithRuleBreachDialog: React.FC<{
     brokenRules: IRuleBreachPopulated['brokenRules'];
     actionType: ActionTypes;
     actionMetadata: IActionMetadataPopulated;
-    actions?: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions?: IActionPopulated[];
 }> = ({ isSubmitting, onCancel, onSubmit, brokenRules, actionType, actionMetadata, actions }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;

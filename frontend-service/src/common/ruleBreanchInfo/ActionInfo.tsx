@@ -8,6 +8,7 @@ import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '.
 import {
     ActionTypes,
     IActionMetadataPopulated,
+    IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
@@ -24,17 +25,16 @@ import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
 
-export const EntityInfo: React.FC<{
+interface EntityInfoProps {
     entity: IEntity | string | null;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
     entityPropertiesToHighlightColor?: CSSProperties['color'];
-}> = ({
+}
+
+export const EntityInfo: React.FC<EntityInfoProps> = ({
     entity,
     entityTemplate,
     actions,
@@ -113,10 +113,7 @@ export const EntityForBrokenRules: React.FC<{
     ruleTemplate: IMongoRule;
     entity: IEntityForBrokenRules;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
 }> = ({ ruleTemplate, entity, entityTemplate, actions, entityPropertiesToShowTooltipOverride, entityPropertiesToHighlightTooltip }) => {
@@ -138,10 +135,7 @@ export const RelationshipInfo: React.FC<{
     relationshipTemplatePopulated: IMongoRelationshipTemplatePopulated;
     sourceEntity: IEntity | string | null;
     destinationEntity: IEntity | string | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ relationshipTemplatePopulated, sourceEntity, destinationEntity, actions }) => {
     return (
         <>
@@ -160,10 +154,7 @@ export const RelationshipInfo: React.FC<{
 const CreateOrDeleteRelActionInfo: React.FC<{
     actionType: ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship;
     actionMetadata: ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ actionType, actionMetadata, actions }) => {
     const queryClient = useQueryClient();
 
@@ -297,10 +288,7 @@ export const ActionInfo: React.FC<{
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
     actionIndex: number;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions }) => {
     return (
         <Grid container flexDirection="column">
