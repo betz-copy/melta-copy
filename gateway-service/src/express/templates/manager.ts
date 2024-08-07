@@ -33,6 +33,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import logger from '../../utils/logger/logsLogger';
 
 const {
     categoryHasTemplates,
@@ -569,11 +570,13 @@ export class TemplatesManager {
                 ...templateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('Initial mongoDB update worked');
+            logger.info('Initial mongoDB update worked');
+
             return updatedEntityTemplate;
-        } catch (e) {
-            console.error('Initial mongoDB update failed', e);
-            throw e;
+        } catch (error) {
+            logger.error('Initial mongoDB update failed', { error });
+
+            throw error;
         }
     }
 
@@ -596,11 +599,13 @@ export class TemplatesManager {
                 ...rollBackTemplateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('RollBack mongoDB succeeded', rollBackTemplateWithoutProperties);
+            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties });
+
             return rolledBackEntityTemplate;
-        } catch (e) {
-            console.error('RollBack mongoDB update failed', e);
-            throw e;
+        } catch (error) {
+            logger.error('RollBack mongoDB update failed', { error });
+
+            throw error;
         }
     }
 
@@ -617,12 +622,13 @@ export class TemplatesManager {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
             if (neoError.response?.status === 404) {
-                console.error('Neo4j update failed: Node not found');
-                // if not found, it's not an error.
+                logger.error('Neo4j update failed: Node not found', { error: neoError });
                 return templateWithoutProperties;
             }
-            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response?.status);
+
+            logger.error('Neo4j update failed: starting roll-back', { error: neoError });
             await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
+
             throw neoError;
         }
 

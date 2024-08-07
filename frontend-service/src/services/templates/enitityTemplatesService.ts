@@ -45,6 +45,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             required: properties.required.includes(key),
             preview: propertiesPreview.includes(key),
             hide: properties.hide.includes(key),
+            readOnly: value.readOnly || undefined,
             uniqueCheckbox: uniqueConstraints.some((constraint) => constraint.properties.includes(key) && constraint.groupName !== ''),
             groupName: uniqueConstraints.find((constraint) => constraint.properties.includes(key) && constraint.groupName !== '')?.groupName,
             calculateTime: value.calculateTime ?? undefined,
@@ -115,6 +116,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             calculateTime,
             serialStarter,
             hide,
+            readOnly,
             relationshipReference,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
@@ -141,6 +143,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                 minItems: type === 'enumArray' ? 1 : undefined,
+                readOnly: readOnly,
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,

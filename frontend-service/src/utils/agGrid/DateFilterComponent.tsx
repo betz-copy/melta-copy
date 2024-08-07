@@ -36,7 +36,7 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
                 localeText={i18next.t('muiDatePickersLocaleText', { returnObjects: true })}
             >
                 <MobileDatePicker
-                    inputFormat={'dd/MM/yyyy'}
+                    inputFormat="dd/MM/yyyy"
                     value={dateValue}
                     onChange={handleChange}
                     showToolbar

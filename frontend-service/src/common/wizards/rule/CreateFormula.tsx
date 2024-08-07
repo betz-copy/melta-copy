@@ -1,6 +1,18 @@
 import React, { useCallback, useMemo } from 'react';
 import { useQueryClient } from 'react-query';
-import { Query, Builder, Config, ImmutableTree, BuilderProps, MuiConfig, Utils, JsonItem, MuiWidgets, Func } from '@react-awesome-query-builder/mui';
+import {
+    Query,
+    Builder,
+    Config,
+    ImmutableTree,
+    BuilderProps,
+    MuiConfig,
+    Utils,
+    JsonItem,
+    MuiWidgets,
+    Func,
+    TextWidgetProps,
+} from '@react-awesome-query-builder/mui';
 import i18next from 'i18next';
 import { ThemeProvider } from '@mui/material';
 import { StepComponentProps, StepsType } from '../index';
@@ -14,7 +26,6 @@ import { LTRProvider } from '../../../LTRProvider';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
-import { TextWidgetProps } from '@react-awesome-query-builder/mui';
 
 const { MuiTextWidget } = MuiWidgets;
 

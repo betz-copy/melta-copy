@@ -63,6 +63,12 @@ class InstancesController {
         const response = await InstancesManager.exportEntityToDocumentTemplate(req.body);
         res.send(response);
     }
+
+    static async runBulkOfActions(req: Request, res: Response) {
+        const { actionsGroups, ignoredRules } = req.body;
+
+        res.json(await InstancesManager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, ignoredRules, req.user!.id));
+    }
 }
 
 export default InstancesController;

@@ -137,8 +137,12 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             return createRuleBreachRequestRequest(
                 {
                     brokenRules: rawBrokenRules,
-                    actionType,
-                    actionMetadata: actionMetadataWithoutFiles,
+                    actions: [
+                        {
+                            actionType,
+                            actionMetadata: actionMetadataWithoutFiles,
+                        },
+                    ],
                 },
                 entityFormData.attachmentsProperties,
             );

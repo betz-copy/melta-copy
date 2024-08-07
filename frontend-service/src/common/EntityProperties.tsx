@@ -43,7 +43,6 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
         if (format === 'date-time') return new Date(value).toLocaleString('en-uk');
         if (format === 'fileId') return <OpenPreview fileId={value} download={isPrintingMode} />;
         if (format === 'relationshipReference') {
-
             return pureString ? (
                 value.properties[property.relationshipReference!.relatedTemplateField!]
             ) : (
@@ -85,6 +84,7 @@ interface IEntityPropertiesProps {
     textWrap?: boolean;
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
+    pureString?: boolean;
 }
 
 const getPropertyColor = (
@@ -115,6 +115,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     textWrap = false,
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
+    pureString = false,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -140,6 +141,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 const stringFormatValue = formatToString(propertyValue, propertySchema, {
                     keyEnumColors: (propertySchema.enum || propertySchema.items?.enum) && entityTemplate.enumPropertiesColors?.[propertyKey],
                     isPrintingMode,
+                    pureString,
                 });
 
                 const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');

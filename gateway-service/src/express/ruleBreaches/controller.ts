@@ -6,6 +6,10 @@ class RuleBreachesController {
         res.json(await RuleBreachesManager.createRuleBreachRequest(req.body, req.user!.id, req.files as Express.Multer.File[]));
     }
 
+    static async getManyRuleBreachRequests(req: Request, res: Response) {
+        res.json(await RuleBreachesManager.getManyRuleBreachRequests(req.body));
+    }
+
     static async approveRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 

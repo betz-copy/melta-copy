@@ -1,26 +1,26 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { environment } from '../../../globals';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
-import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { environment } from '../../../globals';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
 const { errorCodes } = environment;
 
@@ -33,7 +33,7 @@ const EditEntityDetails: React.FC<{
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: IBrokenRule[];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
 

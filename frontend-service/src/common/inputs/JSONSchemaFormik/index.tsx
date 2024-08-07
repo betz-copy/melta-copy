@@ -120,6 +120,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
+                if (propertySchema.readOnly) {
+                    return {
+                        'ui:options': {
+                            disabled: true,
+                        },
+                    };
+                }
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
                         'ui:options': {

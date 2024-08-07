@@ -19,8 +19,18 @@ const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPer
             const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
             const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
 
-            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
-            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => a.category.localeCompare(b.category));
+            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => {
+                const categoryA = a.category ?? '';
+                const categoryB = b.category ?? '';
+                return categoryA.localeCompare(categoryB);
+            });
+
+            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => {
+                const categoryA = a.category ?? '';
+                const categoryB = b.category ?? '';
+                return categoryA.localeCompare(categoryB);
+            });
+
             return isEqualWith(firstInstancesPermissionsSorted, secondInstancesPermissionsSorted);
         }
 

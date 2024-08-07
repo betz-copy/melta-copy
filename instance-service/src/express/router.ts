@@ -1,11 +1,13 @@
 import { Router } from 'express';
 import entitiesRouter from './entities/router';
 import relationshipsRouter from './relationships/router';
+import bulkActionRouter from './bulkActions/router';
 
 const appRouter = Router();
 
 appRouter.use('/api/instances/entities', entitiesRouter);
 appRouter.use('/api/instances/relationships', relationshipsRouter);
+appRouter.use('/api/instances/bulk-actions', bulkActionRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');
