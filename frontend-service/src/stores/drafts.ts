@@ -15,7 +15,9 @@ export const useDraftIdStore = create<DraftIdState>((set) => ({
 }));
 
 export interface DraftsState {
-    // { [categoryId]: { [templateId]: Draft[] } }
+    // ? the type of the drafts in the local storage is this:
+    // ? { [categoryId]: { [templateId]: Draft[] } }
+
     drafts: Record<string, Record<string, Draft[]> | undefined>;
     createOrUpdateDraft: (categoryId: string, templateId: string, draft: Omit<Draft, 'uniqueId' | 'lastSavedAt'>, uniqueId?: string) => void;
     deleteDraft: (categoryId: string, templateId: string, draftId: string) => void;

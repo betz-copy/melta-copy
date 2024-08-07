@@ -184,6 +184,8 @@ const CreateOrEditEntityDetails: React.FC<{
                 else createMutation({ newEntityData: values });
 
                 if (!draftId) return;
+
+                // ? created via debounce, this counters that (waits for the debounce to complete and then removes the draft)
                 setTimeout(() => deleteDraft(entityTemplate.category._id, entityTemplate._id, draftId), environment.draftAutoSaveDebounce);
             }}
             validate={(values) => {
@@ -399,7 +401,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 </Box>
                                             </Grid>
                                         </Grid>
-                                        {/* TODO color from theme */}
                                         <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
@@ -473,12 +474,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                     },
                                                                 });
 
-                                                                fileDownload(
-                                                                    file,
-                                                                    `${getFileName(selectedFileToExport).split('.')[0]}_${getLongDate(
-                                                                        new Date(),
-                                                                    )}.docx`,
-                                                                );
+                                                                const [fileName, fileExtension] = getFileName(selectedFileToExport).split('.');
+                                                                fileDownload(file, `${fileName}_${getLongDate(new Date())}.${fileExtension}`);
                                                             }}
                                                             disabled={
                                                                 !(selectedFileToExport?.length && !values.properties._id) || isExportToFileLoading

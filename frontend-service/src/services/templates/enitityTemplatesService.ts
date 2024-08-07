@@ -143,7 +143,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                 minItems: type === 'enumArray' ? 1 : undefined,
-                readOnly: readOnly,
+                readOnly,
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -272,11 +272,9 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         }
     }
 
-    if ('documentTemplatesIds' in updatedEntityTemplate && updatedEntityTemplate.documentTemplatesIds) {
-        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId: string | File | { name: string }) => {
-            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
-        });
-    }
+    updatedEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId: string | File | { name: string }) => {
+        if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
+    });
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));

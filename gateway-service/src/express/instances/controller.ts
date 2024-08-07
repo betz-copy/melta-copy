@@ -60,8 +60,7 @@ class InstancesController {
     }
 
     static async exportEntityToDocumentTemplate(req: Request, res: Response) {
-        const response = await InstancesManager.exportEntityToDocumentTemplate(req.body);
-        res.send(response);
+        res.send(await InstancesManager.exportEntityToDocumentTemplate(req.body));
     }
 
     static async runBulkOfActions(req: Request, res: Response) {

@@ -35,6 +35,7 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                 .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
         [displayProperties],
     );
+
     const deleteDraft = useDraftsStore((state) => state.deleteDraft);
 
     return (
@@ -58,7 +59,6 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                                 <Restore />
                             </MeltaTooltip>
                         )}
-
                         <Typography variant="subtitle2">{i18next.t('draftSaveDialog.draft')}</Typography>
                     </Box>
 

@@ -310,7 +310,7 @@ export class TemplatesManager {
     }
 
     static async createEntityTemplate(
-        templateData: Omit<Omit<IEntityTemplateWithConstraints, 'iconFileId'>, 'documentTemplatesIds'>,
+        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
@@ -486,10 +486,9 @@ export class TemplatesManager {
         if (files) {
             if (currTemplate?.documentTemplatesIds) {
                 await deleteFiles(currTemplate.documentTemplatesIds);
-                newDocumentTemplatesIds = await uploadFiles(files);
-            } else {
-                newDocumentTemplatesIds = await uploadFiles(files);
             }
+
+            newDocumentTemplatesIds = await uploadFiles(files);
         } else {
             newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
         }
@@ -498,8 +497,8 @@ export class TemplatesManager {
             id,
             updatedTemplateData,
             currTemplate,
-        ).catch((e) => {
-            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${e}`);
+        ).catch((error) => {
+            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
         });
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {

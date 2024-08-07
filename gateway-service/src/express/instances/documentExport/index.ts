@@ -8,6 +8,7 @@ const {
     service: { jewishDateIndicator, hebrewDateIndicator, maxPatchIterations },
 } = config;
 
+// ! This is commented because this code will be used in the future, it's just not ready right now. contact Rozner about continuing it.
 // const getFieldSegments = (field: string): string[] => {
 //     const listRegex = /<ol>(.*?)<\/ol>/gs;
 //     const listMatches = [...field.matchAll(listRegex)];
