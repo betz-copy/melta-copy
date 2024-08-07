@@ -405,6 +405,8 @@ export class EntityManager {
                         transaction,
                     );
 
+                    console.dir(executionOutput, { depth: null });
+
                     return executionOutput;
                 }
                 return [];
@@ -423,28 +425,24 @@ export class EntityManager {
         const updatedEntities: IEntity[] = [];
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
-            const actions: IAction[] = [
-                {
-                    actionType: ActionTypes.CreateEntity,
-                    actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
-                },
-            ];
+            const action: IAction = {
+                actionType: ActionTypes.CreateEntity,
+                actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
+            };
 
-            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onCreateEntity', userId);
+            const entitiesToUpdate = await this.executeActionsOnCrud(action, 'onCreateEntity', userId);
+
+            const actions = [action];
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: updatedFields } = entityToUpdate;
-                    const currentEntity = await Neo4jClient.readTransaction(
-                        `MATCH (e {_id: '${entityId}'}) RETURN e`,
-                        normalizeReturnedEntity('singleResponse'),
-                    );
+                    const currentEntity = entityId !== '$0._id' ? await this.getEntityById(entityId) : null;
 
                     actions.push({
                         actionType: ActionTypes.UpdateEntity,
                         actionMetadata: {
-                            entityId: currentEntity?.properties._id ?? '$0._id',
-                            before: currentEntity?.properties ?? properties,
+                            entityId,
                             updatedFields,
                             entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
                         } as IUpdateEntityMetadata,
@@ -557,6 +555,8 @@ export class EntityManager {
 
     static async getEntityById(id: string) {
         const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
+
+        console.log({ node });
 
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);

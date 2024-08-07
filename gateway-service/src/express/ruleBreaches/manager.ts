@@ -700,7 +700,9 @@ export class RuleBreachesManager {
     }
 
     public static async populateCreateEntityActionMetadata(actionMetadata: ICreateEntityMetadata): Promise<ICreateEntityMetadataPopulated> {
-        return actionMetadata;
+        const { templateId, properties } = actionMetadata;
+        const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(templateId, properties);
+        return { ...actionMetadata, properties: createdEntityWithPopulatedRelationshipReferences };
     }
 
     public static async populateDuplicateEntityActionMetadata(actionMetadata: IDuplicateEntityMetadata): Promise<IDuplicateEntityMetadataPopulated> {
@@ -716,10 +718,47 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateUpdateEntityActionMetadata(actionMetadata: IUpdateEntityMetadata): Promise<IUpdateEntityMetadataPopulated> {
+    public static async getPopulatedRelationshipReferences(templateId: string, properties: Record<string, any>) {
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+
+        await Promise.all(
+            Object.entries(entityTemplate.properties.properties).map(async ([name, value]) => {
+                const propertyValue = properties[name];
+                if (value.format === 'relationshipReference' && propertyValue) {
+                    // eslint-disable-next-line no-param-reassign
+                    properties[name] = await InstanceManagerService.getEntityInstanceById(propertyValue).catch(() => null);
+                }
+            }),
+        );
+
+        return properties;
+    }
+
+    public static async populateUpdateEntityActionMetadata(
+        actionMetadata: IUpdateEntityMetadata,
+        action?: ICreateEntityMetadata,
+    ): Promise<IUpdateEntityMetadataPopulated> {
         const { entityId, ...restOfMetadata } = actionMetadata;
-        /// i get null when update the created entity and then it doesn't know the id so it makes it null
-        // i can define it $0._id and then get the first place but its ugly
+
+        if (entityId === '$0._id' && action) {
+            const createdEntityWithPopulatedRelationshipReferences = await this.populateCreateEntityActionMetadata(action);
+            const { templateId } = action;
+
+            const populatedUpdatedFields = await this.getPopulatedRelationshipReferences(templateId, actionMetadata.updatedFields);
+
+            return {
+                updatedFields: populatedUpdatedFields,
+                before: actionMetadata.before,
+                entity: {
+                    ...createdEntityWithPopulatedRelationshipReferences,
+                    properties: {
+                        ...createdEntityWithPopulatedRelationshipReferences.properties,
+                        _id: '$0._id',
+                    },
+                },
+            };
+        }
+
         const entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
 
         return {
@@ -744,38 +783,41 @@ export class RuleBreachesManager {
     public static populateActionsMetaData = async (
         actions: IAction[],
     ): Promise<{ actionType: ActionTypes; actionMetadata: IActionMetadataPopulated }[]> => {
-        const populatedActionMetadatasPromises: Promise<IActionMetadataPopulated>[] = [];
+        const populatedActionsMetadataPromises: Promise<IActionMetadataPopulated>[] = [];
 
         if (actions) {
             actions.forEach((action) => {
                 if (action.actionType === ActionTypes.CreateRelationship)
-                    populatedActionMetadatasPromises.push(
+                    populatedActionsMetadataPromises.push(
                         RuleBreachesManager.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata),
                     );
                 else if (action.actionType === ActionTypes.DeleteRelationship)
-                    populatedActionMetadatasPromises.push(
+                    populatedActionsMetadataPromises.push(
                         RuleBreachesManager.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata),
                     );
-                else if (action.actionType === ActionTypes.UpdateEntity)
-                    populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata),
+                else if (action.actionType === ActionTypes.UpdateEntity) {
+                    populatedActionsMetadataPromises.push(
+                        RuleBreachesManager.populateUpdateEntityActionMetadata(
+                            action.actionMetadata as IUpdateEntityMetadata,
+                            actions[0].actionMetadata as unknown as ICreateEntityMetadata,
+                        ),
                     );
-                else if (action.actionType === ActionTypes.UpdateStatus)
-                    populatedActionMetadatasPromises.push(
+                } else if (action.actionType === ActionTypes.UpdateStatus)
+                    populatedActionsMetadataPromises.push(
                         RuleBreachesManager.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
                     );
                 else if (action.actionType === ActionTypes.CreateEntity)
-                    populatedActionMetadatasPromises.push(
+                    populatedActionsMetadataPromises.push(
                         RuleBreachesManager.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata),
                     );
                 else if (action.actionType === ActionTypes.DuplicateEntity)
-                    populatedActionMetadatasPromises.push(
+                    populatedActionsMetadataPromises.push(
                         RuleBreachesManager.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
                     );
             });
         }
 
-        const actionsMetadatas = await Promise.all(populatedActionMetadatasPromises!);
+        const actionsMetadata = await Promise.all(populatedActionsMetadataPromises!);
 
         const populatedActions: {
             actionType: ActionTypes;
@@ -784,7 +826,7 @@ export class RuleBreachesManager {
             ? actions.map((action, index) => {
                   return {
                       actionType: action.actionType,
-                      actionMetadata: actionsMetadatas[index],
+                      actionMetadata: actionsMetadata[index],
                   };
               })
             : [];

@@ -11,6 +11,18 @@ import { IBrokenRule } from '../../express/rules/interfaces';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 
+const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
+    const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
+
+    Object.entries(populatedInstances.properties).forEach(([name, value]) => {
+        if (isIEntity(value)) {
+            populatedInstances.properties[name] = value.properties;
+        }
+    });
+
+    return populatedInstances;
+};
+
 const prepareCodeForActionExecution = async (
     entityTemplate: IMongoEntityTemplate,
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
@@ -100,15 +112,9 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
     transaction: Transaction,
 ): Promise<{ entityId: string; properties: Record<string, any> }[]> => {
-    const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
-
-    Object.entries(populatedInstances.properties).forEach(([name, value]) => {
-        if (isIEntity(value)) {
-            populatedInstances.properties[name] = value.properties;
-        }
-    });
-
+    const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
     const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
+
     const executionOutput: {
         entityId: string;
         properties: Record<string, any>;
@@ -129,6 +135,11 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
             const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
             const entityAfterManipulations = entityToUpdate;
 
+            if (entityToUpdate.entityId === entity.properties._id && crudAction === 'onCreateEntity') {
+                entityAfterManipulations.properties._id = '$0._id';
+                entityAfterManipulations.entityId = '$0._id';
+            }
+
             Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
                 if (name in entityToUpdate.properties) {
                     const propertyValue = entityToUpdate.properties[name];
@@ -147,7 +158,7 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
 
             await validateEntity(entityTemplateOfEntityToUpdate._id, entityAfterManipulations.properties);
 
-            updatedEntities.push(entityToUpdate);
+            updatedEntities.push(entityAfterManipulations);
         }),
     );
 

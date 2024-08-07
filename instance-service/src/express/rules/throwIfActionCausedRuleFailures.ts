@@ -10,7 +10,7 @@ import { ICause } from './interfaces/formulaWithCauses/cause';
 import { filteredMap } from '../../utils/filteredMap';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
-import { IAction } from '../relationships/interfaces/action';
+import { IAction } from '../bulkActions/interface';
 
 const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);

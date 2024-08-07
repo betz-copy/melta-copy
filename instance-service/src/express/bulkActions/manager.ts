@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
 import groupBy from 'lodash.groupby';
+import cloneDeep from 'lodash.clonedeep';
 import Neo4jClient from '../../utils/neo4j';
 import { IRelationship } from '../relationships/interfaces';
 import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from './interface';
@@ -153,9 +154,11 @@ export class BulkActionManager {
     ) {
         const results: (IEntity | IRelationship)[] = [];
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
-        const fixedActions = actions;
+        const fixedActions = cloneDeep(actions);
 
         for (const [index, action] of Object.entries(actions)) {
+            console.log({ index });
+
             switch (action.actionType) {
                 case ActionTypes.CreateEntity: {
                     const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
@@ -213,12 +216,13 @@ export class BulkActionManager {
                     allActivityLogsToCreate.push(...activityLogsToCreate);
                     break;
                 }
+
                 default:
                     break;
             }
         }
 
-        return { results, allActivityLogsToCreate, fixedActions };
+        return { results, allActivityLogsToCreate };
     }
 
     static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
@@ -278,7 +282,7 @@ export class BulkActionManager {
 
                 const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
 
-                const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate, fixedActions }] = await Promise.all([
+                const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate }] = await Promise.all([
                     EntityManager.runRulesOnEntitiesWithRuleReasons(
                         transaction,
                         entitiesIdsRulesReasonsMapBeforeRunActions,
@@ -309,7 +313,7 @@ export class BulkActionManager {
                         if (action.actionType === ActionTypes.UpdateEntity) return { updatedEntityId: results[index].properties._id };
                         return {};
                     }),
-                    fixedActions,
+                    actions,
                 );
 
                 if (!dryRun) {
