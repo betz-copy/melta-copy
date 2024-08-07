@@ -150,8 +150,8 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                 </Grid>
             </Grid>
 
-            <Dialog keepMounted={false} open={open.isOpen} onClose={handleClose} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
-                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={1} />
+            <Dialog keepMounted={false} open={open.isOpen} onClose={handleClose} fullWidth maxWidth="xl" PaperProps={{ style: { height: '84vh' } }}>
+                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} />
             </Dialog>
 
             <IFrameWizard

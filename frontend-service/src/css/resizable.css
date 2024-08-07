@@ -1,25 +1,44 @@
 
 .resizing .box-content {
-    opacity: 0;
-    transition: opacity 0.2s ease;
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 
 .box-content {
-    transition: opacity 0.1s ease;
+  transition: opacity 0.1s ease;
 }
-.layoutRoot {
+.react-resizable {
+  position: relative;
+}
+.react-resizable-handle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSI2cHgiIGhlaWdodD0iNnB4Ij48ZyBvcGFjaXR5PSIwLjMwMiI+PHBhdGggZD0iTSA2IDYgTCAwIDYgTCAwIDQuMiBMIDQgNC4yIEwgNC4yIDQuMiBMIDQuMiAwIEwgNiAwIEwgNiA2IEwgNiA2IFoiIGZpbGw9IiMwMDAwMDAiLz48L2c+PC9zdmc+');
+  background-position: bottom right;
+  padding: 0 3px 3px 0;
+}
+.react-resizable-handle-se {
+  bottom: 0;
+  right: 0;
+  cursor: se-resize;
+}
+/* .layoutRoot {
   display: flex;
   background: #eee;
   margin-bottom: 20px;
   flex-wrap: wrap;
-}
-.absoluteLayout {
+} */
+/* .absoluteLayout {
   height: 600px;
   position: relative;
   justify-content: center;
   align-items: center;
-}
-.scaledLayout {
+} */
+/* .scaledLayout {
   width: 125%;
   left: -12.5vw;
   transform: scale(0.75);
@@ -69,15 +88,15 @@
 
 .custom-box {
   overflow: visible;
-}
-.custom-handle {
+} */
+/* .custom-handle {
   position: absolute;
   width: 8px;
   height: 8px;
   background-color: #1153aa;
   opacity: 0.75;
   border-radius: 4px;
-}
+} */
 /* .custom-handle-sw {
   bottom: -4px;
   left: -4px;
@@ -125,25 +144,7 @@
 .custom-resize-handle-component {
   background-color: red;
 }*/
-.react-resizable {
-  position: relative;
-}
-.react-resizable-handle {
-  position: absolute;
-  width: 20px;
-  height: 20px;
-  background-repeat: no-repeat;
-  background-origin: content-box;
-  box-sizing: border-box;
-  background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2IDYiIHN0eWxlPSJiYWNrZ3JvdW5kLWNvbG9yOiNmZmZmZmYwMCIgeD0iMHB4IiB5PSIwcHgiIHdpZHRoPSI2cHgiIGhlaWdodD0iNnB4Ij48ZyBvcGFjaXR5PSIwLjMwMiI+PHBhdGggZD0iTSA2IDYgTCAwIDYgTCAwIDQuMiBMIDQgNC4yIEwgNC4yIDQuMiBMIDQuMiAwIEwgNiAwIEwgNiA2IEwgNiA2IFoiIGZpbGw9IiMwMDAwMDAiLz48L2c+PC9zdmc+');
-  background-position: bottom right;
-  padding: 0 3px 3px 0;
-}
-.react-resizable-handle-se {
-  bottom: 0;
-  right: 0;
-  cursor: se-resize;
-}
+
 /* .react-resizable-handle-sw {
   bottom: 0;
   left: 0;

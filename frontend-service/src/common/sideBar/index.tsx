@@ -14,6 +14,10 @@ import {
     DialogTitle,
     DialogContent,
     Menu,
+    MenuItem,
+    Paper,
+    ListItemIcon,
+    ListItemText,
 } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
@@ -25,10 +29,12 @@ import {
     Gavel as GavelIcon,
     CalendarMonth as CalendarIcon,
     Code as CodeIcon,
+    ContentCut,
 } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import MenuList from '@mui/material/MenuList';
 import { Drawer } from './SideBar.styled';
 import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
@@ -52,19 +58,19 @@ type SideBarProps = {
     isDrawerOpen: boolean;
 };
 
-const { notifications } = environment;
-const IFramesInSideBar: React.FC<any> = ({
-    // : React.FC<categoriesGroupedByGroupProps> = ({
-    iFrames,
-    activeButton,
-    isDrawerOpen,
-    handleChangeActiveButton,
-}) => {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [showIFrames, setShowIFrames] = useState<boolean>(true);
-    // const [anchorEl  nchorEl] = useState(null);
+const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
+    const theme = useTheme();
+    const [showIFrames, setShowIFrames] = useState<boolean>(false);
 
     const iconButtonRef = useRef(null);
+
+    const handleMouseEnter = () => {
+        setShowIFrames(true);
+    };
+
+    const handleMouseLeave = () => {
+        setShowIFrames(false);
+    };
 
     return (
         <Grid>
@@ -75,17 +81,14 @@ const IFramesInSideBar: React.FC<any> = ({
             >
                 <IconButton
                     ref={iconButtonRef}
-                    onClick={() => {
-                        setShowIFrames(!showIFrames);
-                    }}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
                     sx={{
                         color: '#FFFFFF80',
                         fontFamily: 'Rubik',
                         fontSize: '17px',
                         maxWidth: isDrawerOpen ? 'auto' : '90px',
                     }}
-                    // onMouseEnter={(event) => setAnchorEl(event.currentTarget)}
-                    // onMouseLeave={() => setAnchorEl(null)}
                 >
                     <NavButton
                         to="/iframes"
@@ -97,25 +100,48 @@ const IFramesInSideBar: React.FC<any> = ({
                     </NavButton>
                 </IconButton>
             </Grid>
-            {iFrames?.length && (
-                <Menu anchorEl={iconButtonRef.current} open={showIFrames} onClose={() => setShowIFrames(false)}>
+            {iFrames?.length > 0 && (
+                <Menu
+                    anchorEl={iconButtonRef.current}
+                    open={showIFrames}
+                    onClose={handleMouseLeave}
+                    onMouseEnter={handleMouseEnter}
+                    onMouseLeave={handleMouseLeave}
+                    anchorOrigin={{
+                        vertical: 'top',
+                        horizontal: 'left',
+                    }}
+                    transformOrigin={{
+                        vertical: 'top',
+                        horizontal: 'right',
+                    }}
+                >
                     {iFrames.map((iFrame) => (
-                        <NavButton
-                            key={iFrame._id}
-                            to={`/iframes/${iFrame._id}`}
-                            text={iFrame.name}
-                            isDrawerOpen={isDrawerOpen}
-                            // disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === iFrame._id))}
-                            onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, iFrame._id)}
-                        >
-                            <Typography>{iFrame.name}</Typography>
-                        </NavButton>
+                        <MenuItem key={iFrame._id}>
+                            <NavButton
+                                key={iFrame._id}
+                                to={`/iframes/${iFrame._id}`}
+                                text={iFrame.name}
+                                isDrawerOpen={isDrawerOpen}
+                                onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, iFrame._id)}
+                            >
+                                <ListItemIcon>
+                                    {iFrame.iconFileId ? (
+                                        <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
+                                    ) : (
+                                        <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
+                                    )}
+                                </ListItemIcon>
+                                <ListItemText sx={{ color: theme.palette.primary.main }}>{iFrame.name}</ListItemText>
+                            </NavButton>
+                        </MenuItem>
                     ))}
                 </Menu>
             )}
         </Grid>
     );
 };
+const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 

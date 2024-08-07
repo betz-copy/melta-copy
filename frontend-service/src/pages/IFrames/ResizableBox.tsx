@@ -1,58 +1,89 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
 
 interface ResizeBoxProps {
-    initialHeight: number;
-    initialWidth?: number;
+    // initialHeight: number;
+    // initialWidth?: number;
     maxHeight?: number;
     maxWidth?: number;
-    setWidth?: React.Dispatch<React.SetStateAction<number>>;
-    setHeight: React.Dispatch<React.SetStateAction<number>>;
+    // setWidth?: React.Dispatch<React.SetStateAction<number>>;
+    // setHeight: React.Dispatch<React.SetStateAction<number>>;
     minHeight: number;
     minWidth: number;
+    id: string;
 }
 
 const Resizable: React.FC<ResizeBoxProps> = ({
-    initialHeight,
-    setHeight,
+    // initialHeight,
+    // setHeight,
+    // initialWidth,
+    // setWidth,
     minHeight,
     children,
-    initialWidth,
-    setWidth,
     maxHeight,
     maxWidth,
     minWidth,
+    id,
 }) => {
-    const [isResizing, setIsResizing] = React.useState(false);
+    const localStorageKey = `iFrame-${id}-dimensions`;
+    const loadFlagKey = 'page-load-flag';
 
+    const [isResizing, setIsResizing] = React.useState(false);
+    const getDimensions = () => {
+        const savedDimensions = localStorage.getItem(localStorageKey);
+        console.log({ savedDimensions });
+
+        return savedDimensions ? JSON.parse(savedDimensions) : { width: 900, height: 500 };
+    };
+    const [dimensions, setDimensions] = useState(getDimensions());
+    useEffect(() => {
+        localStorage.setItem(loadFlagKey, 'true');
+
+        const handleBeforeUnload = () => {
+            localStorage.removeItem(localStorageKey);
+            localStorage.removeItem(loadFlagKey);
+        };
+
+        window.addEventListener('beforeunload', handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+        };
+    }, []);
+
+    useEffect(() => {
+        const loadFlag = localStorage.getItem(loadFlagKey);
+        if (!loadFlag) {
+            localStorage.removeItem(localStorageKey);
+            setDimensions({ width: 900, height: 500 });
+        }
+    }, []);
     const onResizeStart = () => {
         setIsResizing(true);
     };
 
     const onResizeStop = (_event, { size }) => {
-        console.log({ size });
-
-        setHeight(size.height);
-        // eslint-disable-next-line no-unused-expressions
-        if (initialWidth) setWidth!(size.width);
+        const newDimensions = { width: size.width, height: size.height };
+        setDimensions(newDimensions);
+        localStorage.setItem(localStorageKey, JSON.stringify(newDimensions));
         setIsResizing(false);
     };
 
     return (
         <ResizableBox
             resizeHandles={['se']}
-            width={initialWidth}
-            height={initialHeight}
+            width={dimensions.width}
+            height={dimensions.height}
             minConstraints={[minWidth, minHeight]}
             maxConstraints={[maxWidth, maxHeight]}
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
             axis="both"
-            className={`box-content ${isResizing ? 'resizing' : ''}`}
+            // className={`box-content ${isResizing ? 'resizing' : ''}`}
         >
-            <Grid paddingBottom="40px" paddingLeft="0px" height="100%" width="100%">
+            <Grid paddingBottom="40px" paddingLeft="0px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
                 {children}
             </Grid>
         </ResizableBox>
