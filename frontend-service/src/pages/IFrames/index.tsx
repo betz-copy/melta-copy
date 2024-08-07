@@ -145,17 +145,17 @@ const IFramesPage: React.FC = () => {
                         // </ResizeBox>
                         <Resizable
                             initialHeight={500}
-                            initialWidth={700}
-                            minHeight={300}
-                            minWidth={300}
+                            initialWidth={900}
+                            minHeight={500}
+                            minWidth={900}
                             setHeight={() => {}}
                             setWidth={() => {}}
                             maxHeight={800}
                             maxWidth={1800}
                         >
-                            {/* <Grid padding={5} height="100%" width="100%"> */}
-                            <IFramePage iFrame={iFrame} isIFramePage={false} />
-                            {/* </Grid> */}
+                            <Grid padding={4} height="100%" width="100%">
+                                <IFramePage iFrame={iFrame} isIFramePage={false} />
+                            </Grid>
                         </Resizable>
                     );
                 }}

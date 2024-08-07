@@ -39,7 +39,6 @@ const Resizable: React.FC<ResizeBoxProps> = ({
         if (initialWidth) setWidth!(size.width);
         setIsResizing(false);
     };
-    console.log({ initialWidth });
 
     return (
         <ResizableBox
@@ -50,9 +49,10 @@ const Resizable: React.FC<ResizeBoxProps> = ({
             maxConstraints={[maxWidth, maxHeight]}
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
+            axis="both"
             className={`box-content ${isResizing ? 'resizing' : ''}`}
         >
-            <Grid padding={5} height="100%" width="100%" className={`box-content ${isResizing ? 'resizing' : ''}`}>
+            <Grid paddingBottom="40px" paddingLeft="0px" height="100%" width="100%">
                 {children}
             </Grid>
         </ResizableBox>

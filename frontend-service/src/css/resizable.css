@@ -1,13 +1,11 @@
 
 .resizing .box-content {
     opacity: 0;
-    transition: opacity 0.8s ease;
+    transition: opacity 0.2s ease;
 }
 
 .box-content {
-    transition: opacity 0.8s ease;
-    /* background-color: #194aeb0a; */
-    /* border-radius: 10px; */
+    transition: opacity 0.1s ease;
 }
 .layoutRoot {
   display: flex;
@@ -80,17 +78,17 @@
   opacity: 0.75;
   border-radius: 4px;
 }
-.custom-handle-sw {
+/* .custom-handle-sw {
   bottom: -4px;
   left: -4px;
   cursor: sw-resize;
-}
-.custom-handle-se {
+} */
+/* .custom-handle-se {
   bottom: -4px;
   right: -4px;
   cursor: se-resize;
-}
-.custom-handle-nw {
+} */
+/* .custom-handle-nw {
   top: -4px;
   left: -4px;
   cursor: nw-resize;
@@ -123,10 +121,10 @@
 }
 .custom-handle-s {
   bottom: -4px;
-}
+} 
 .custom-resize-handle-component {
   background-color: red;
-}
+}*/
 .react-resizable {
   position: relative;
 }
@@ -141,18 +139,18 @@
   background-position: bottom right;
   padding: 0 3px 3px 0;
 }
-.react-resizable-handle-sw {
-  bottom: 0;
-  left: 0;
-  cursor: sw-resize;
-  transform: rotate(90deg);
-}
 .react-resizable-handle-se {
   bottom: 0;
   right: 0;
   cursor: se-resize;
 }
-.react-resizable-handle-nw {
+/* .react-resizable-handle-sw {
+  bottom: 0;
+  left: 0;
+  cursor: sw-resize;
+  transform: rotate(90deg);
+} */
+/* .react-resizable-handle-nw {
   top: 0;
   left: 0;
   cursor: nw-resize;
@@ -191,4 +189,4 @@
 .react-resizable-handle-s {
   bottom: 0;
   transform: rotate(45deg);
-}
+} */
