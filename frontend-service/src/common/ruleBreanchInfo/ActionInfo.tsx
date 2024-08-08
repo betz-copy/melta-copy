@@ -219,7 +219,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                         {actionType === ActionTypes.DuplicateEntity &&
                             i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.duplicatingEntity')}
                     </Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={entity.properties._id.startsWith('$')} />
+                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={!entity.properties._id.startsWith('$')} />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
