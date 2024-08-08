@@ -1,12 +1,23 @@
+/* eslint-disable no-param-reassign */
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { environment } from './globals';
 import { AuthService } from './services/authService';
+import { useWorkspaceStore } from './stores/workspace';
 
 const axios = axiosInstance.create({
     withCredentials: true,
     timeout: 1800000,
     baseURL: '/api',
+});
+
+axios.interceptors.request.use((config) => {
+    const { workspace } = useWorkspaceStore.getState();
+
+    if (!config.headers) config.headers = {};
+    config.headers[environment.workspaceIdHeaderName] = workspace._id;
+
+    return config;
 });
 
 axios.interceptors.response.use(
@@ -19,10 +30,6 @@ axios.interceptors.response.use(
         return Promise.reject(error);
     },
 );
-
-export const updateAxiosWorkspaceHeader = (workspaceId: string) => {
-    axios.defaults.headers[environment.workspaceIdHeaderName] = workspaceId;
-};
 
 if (import.meta.env.DEV && !import.meta.env.VITE_APP_IS_DOCKER) {
     console.log('Development Environment, using axios mock');

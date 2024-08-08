@@ -1,9 +1,9 @@
 import { Box } from '@mui/material';
+import axios from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { updateAxiosWorkspaceHeader } from '../../../axios';
 import { LoadingAnimation } from '../../../common/LoadingAnimation';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
@@ -45,8 +45,6 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         queryFn: () => getFile(path),
     });
 
-    console.log({ workspace });
-
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
             toast.error(i18next.t('failedToGetTemplates'));
@@ -70,8 +68,6 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
 
         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
-
-        updateAxiosWorkspaceHeader(workspace._id);
     }, [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
@@ -79,11 +75,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
 
     if (isLoading) return <LoadingAnimation isLoading={isLoadingWorkspace} />;
 
-    if (isError) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
+    if (isError) return <ErrorPage errorText={i18next.t('errorPage.noPermissionsToWorkspace')} />;
 
-    return (
-        <Box display="flex">
-            <MeltaRoutesInner />
-        </Box>
-    );
+    return <Box display="flex">{currentUser.currentWorkspacePermissions && <MeltaRoutesInner />}</Box>;
 };

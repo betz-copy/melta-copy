@@ -1,4 +1,4 @@
-import { Add, ArrowForward, ManageAccounts } from '@mui/icons-material';
+import { Add, ArrowForward /* ManageAccounts */ } from '@mui/icons-material';
 import { Box, Grid, Slide, SxProps, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
@@ -18,7 +18,7 @@ interface ITopbarProps {
     openPermissionsDialog: () => void;
 }
 
-export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermissionsDialog }) => {
+export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPermissionsDialog */ }) => {
     const currentUser = useUserStore((state) => state.user);
 
     const [location, setLocation] = useLocation();
@@ -55,6 +55,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                     />
                 </Grid>
 
+                {/*
                 <Grid item>
                     <IconButtonWithPopover
                         popoverText={i18next.t('permissions.permissionsManagmentPageTitle')}
@@ -63,6 +64,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                         <ManageAccounts sx={iconStyle} />
                     </IconButtonWithPopover>
                 </Grid>
+                */}
 
                 <Grid item>
                     <IconButtonWithPopover
@@ -76,7 +78,6 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                         <Add sx={iconStyle} />
                     </IconButtonWithPopover>
                 </Grid>
-
                 <Grid item>{loading && <Loading />}</Grid>
             </Grid>
 

@@ -22,9 +22,13 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
-const userId = config.usersService.managersKartoffelIds[0];
-
-export const createInstances = async (workspaceId: string, entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
+export const createInstances = async (
+    workspaceId: string,
+    userId: string,
+    entityTemplates: IMongoEntityTemplate[],
+    chance: Chance.Chance,
+    fileId: string,
+) => {
     const axiosInstance = createAxiosInstance(workspaceId);
 
     JSONSchemaFaker.format('fileId', (_value) => fileId);
@@ -50,6 +54,7 @@ export const createInstances = async (workspaceId: string, entityTemplates: IMon
 
 export const createRelationshipInstances = async (
     workspaceId: string,
+    userId: string,
     entities: { properties: { _id: string }; templateId: string }[],
     relationshipTemplates: IMongoRelationshipTemplate[],
     chance: Chance.Chance,

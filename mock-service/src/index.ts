@@ -102,11 +102,11 @@ const main = async () => {
 
     console.log('Creating entities');
 
-    const createdEntityInstances = await createInstances(mainWorkspace._id, createdEntityTemplates, chance, exampleFileId);
+    const createdEntityInstances = await createInstances(mainWorkspace._id, userIds[0], createdEntityTemplates, chance, exampleFileId);
 
     console.log('Creating relationships');
 
-    await createRelationshipInstances(mainWorkspace._id, createdEntityInstances, createdRelationshipTemplates, chance);
+    await createRelationshipInstances(mainWorkspace._id, userIds[0], createdEntityInstances, createdRelationshipTemplates, chance);
 
     console.log('Creating rules');
 

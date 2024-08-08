@@ -7,7 +7,7 @@ import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
 import RedisClient from './utils/redis';
 
-const { service, redis, logs } = config;
+const { service, logs } = config;
 
 if (logs.enableApm) {
     apm.start({
@@ -20,7 +20,7 @@ if (logs.enableApm) {
 const initializeRedis = async () => {
     logger.info('Connecting to Redis...');
 
-    await RedisClient.initialize(redis.url);
+    await RedisClient.initialize();
 
     logger.info('Redis connection established');
 };

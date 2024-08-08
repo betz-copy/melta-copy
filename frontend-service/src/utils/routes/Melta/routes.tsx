@@ -84,7 +84,6 @@ export const MeltaRoutesInner: React.FC = () => {
     return (
         <>
             <SideBar toggleDrawer={() => setOpen(!open)} isDrawerOpen={open} />
-
             <MainBox
                 id="main-box"
                 ref={(ref) => {
@@ -135,23 +134,21 @@ export const MeltaRoutesInner: React.FC = () => {
                             </Route>
 
                             <Route path="/entity/:entityId">
-                                <Route path="/">
-                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
-                                        <Entity />
-                                    </EntityProtectedRoute>
-                                </Route>
+                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                    <Entity />
+                                </EntityProtectedRoute>
+                            </Route>
 
-                                <Route path="/graph">
-                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
-                                        <Graph />
-                                    </EntityProtectedRoute>
-                                </Route>
+                            <Route path="/entity/:entityId/graph">
+                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                    <Graph />
+                                </EntityProtectedRoute>
+                            </Route>
 
-                                <Route path="/duplicate">
-                                    <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
-                                        <Duplicate />
-                                    </EntityProtectedRoute>
-                                </Route>
+                            <Route path="/entity/:entityId/duplicate">
+                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                    <Duplicate />
+                                </EntityProtectedRoute>
                             </Route>
 
                             {meltaPlus && (

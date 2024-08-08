@@ -294,7 +294,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
         let latestIndex: string | null = null;
 
         if (searchBody.textSearch) {
-            latestIndex = await getLatestTemplateSearchIndex(entityTemplate._id);
+            latestIndex = await getLatestTemplateSearchIndex(this.workspaceId, entityTemplate._id);
 
             if (!latestIndex) {
                 throw new ServiceError(400, `[NEO4J] Global search index not found.`);
@@ -351,7 +351,7 @@ export default class EntityManager extends DefaultManagerNeo4j {
     async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         let latestIndex: string | null = null;
         if (searchBody.textSearch) {
-            latestIndex = await getLatestGlobalSearchIndex();
+            latestIndex = await getLatestGlobalSearchIndex(this.workspaceId);
 
             if (!latestIndex) {
                 throw new ServiceError(400, `[NEO4J] Global search index not found.`);

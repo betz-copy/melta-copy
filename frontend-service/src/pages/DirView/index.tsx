@@ -2,7 +2,6 @@ import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQueries } from 'react-query';
-import { updateAxiosWorkspaceHeader } from '../../axios';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
@@ -39,8 +38,6 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
 
         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
-
-        updateAxiosWorkspaceHeader(currentWorkspace._id);
     }, [currentWorkspace, setWorkspace, currentUser, setUser]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;

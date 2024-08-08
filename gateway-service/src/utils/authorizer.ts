@@ -93,7 +93,7 @@ export class Authorizer extends DefaultController {
 
     async userHasSomePermissions(req: Request) {
         console.log({ userId: req.user!.id, workspaceId: this.workspaceId });
-        console.log(await UserService.getUserPermissions(req.user!.id, [this.workspaceId]));
+        console.log(await WorkspaceService.getById(this.workspaceId));
 
         const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
         console.log({ userWorkspacePermissions });

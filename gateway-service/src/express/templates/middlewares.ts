@@ -54,7 +54,7 @@ export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req
 
     if (
         !Object.entries(userPermissions[workspaceId].instances?.categories ?? {}).some(
-            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope !== PermissionScope.write,
+            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
         )
     ) {
         throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
@@ -73,7 +73,7 @@ export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Req
 
     if (
         !Object.entries(userPermissions[workspaceId].instances?.categories ?? {}).some(
-            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope !== PermissionScope.write,
+            ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
         )
     ) {
         throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);

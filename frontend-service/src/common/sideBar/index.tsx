@@ -80,7 +80,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const workspace = useWorkspaceStore((state) => state.workspace);
 
-    console.log(currentUser.currentWorkspacePermissions);
+    console.log('homo', currentUser.currentWorkspacePermissions);
 
     return (
         <Drawer
@@ -245,13 +245,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {Array.from(
                         categories.values(),
                         (category) =>
-                            Boolean(currentUser.currentWorkspacePermissions.instances?.[category._id]) && (
+                            Boolean(currentUser.currentWorkspacePermissions.instances?.categories[category._id]) && (
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
-                                    disabled={!currentUser.currentWorkspacePermissions.instances?.[category._id]}
                                     onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
                                     isActiveButton={activeButton === category._id}
                                 >
@@ -385,12 +384,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
             </Grid>
 
-            <PermissionsOfUserDialog
+            {/* <PermissionsOfUserDialog
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
                 existingPermissionsOfUser={currentUser}
-            />
+            /> */}
 
             <NotificationsScreen
                 open={isNotificationsScreenOpen}

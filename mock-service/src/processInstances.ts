@@ -105,11 +105,9 @@ const createProcessInstance = (
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
-            const allowedReviewers = userIds.filter((kartoffelId) => !step.reviewers.includes(kartoffelId));
+            const allowedReviewers = userIds.filter((userId) => !step.reviewers.includes(userId));
             if (!allowedReviewers.length) {
-                throw new Error(
-                    `There are not enough kartoffelIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`,
-                );
+                throw new Error(`There are not enough userIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`);
             }
 
             acc[step._id] = [chance.pickone(allowedReviewers)];
