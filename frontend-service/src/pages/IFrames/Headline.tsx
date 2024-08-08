@@ -26,16 +26,6 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     const navigate = useNavigate();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    // const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    // const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-    // const handleCloseMenu = (e: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
-    //     e.stopPropagation();
-    //     setAnchorEl(null);
-    // };
-    // const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    //     event.stopPropagation();
-    //     setAnchorEl(event.currentTarget);
-    // };
     const [isHovered, setIsHovered] = useState(false);
     const [open, setOpen] = useState<{
         isOpen: boolean;
@@ -150,7 +140,13 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                 </Grid>
             </Grid>
 
-            <Dialog keepMounted={false} open={open.isOpen} onClose={handleClose} fullWidth maxWidth="xl" PaperProps={{ style: { height: '84vh' } }}>
+            <Dialog
+                keepMounted={false}
+                open={open.isOpen}
+                onClose={handleClose}
+                maxWidth={false}
+                PaperProps={{ style: { height: '89vh', width: '85vw' } }}
+            >
                 <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} />
             </Dialog>
 

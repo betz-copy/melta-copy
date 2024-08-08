@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame } from '../../../interfaces/iFrames';
+import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
@@ -47,19 +47,33 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
     // console.log({ i });
     // const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
     // useImperativeHandle(ref, () => ({ refetch }));
+
+    // const categories = queryClient.getQueryData('searchIFrames')!;
+    // console.log({ categories });
+    // // queryClient.setQueryData('searchIFrames', mapTemplates(categories));
+
     const { isLoading, mutateAsync } = useMutation(
         (iFrame: IFrameWizardValues) =>
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
-            onSuccess: (data) => {
-                // console.log('shirel ', { data });
+            onSuccess: async (data) => {
+                console.log('shirel ', { data });
+                // const before = await queryClient.getQueryData('searchIFrames');
 
-                // queryClient.setQueryData(['searchIFrames'], (iframes: any) => {
-                //     console.log({ iframes });
+                queryClient.setQueryData(['searchIFrames', ''], (iFrames: any) => {
+                    console.log({ iFrames });
 
-                //     const iFrames = mapTemplates(iframes, 'name');
-                //     iFrames!.set(data._id, data);
-                // });
+                    // const iFrames = mapTemplates(iframes, 'name');
+                    // console.log('2: ', { iFrames });
+                    const updatedIFrames = new Map(iFrames);
+                    const uu = updatedIFrames.set(data._id, data);
+                    // const r = iFrames.set(data._id, data);
+                    console.log({ uu });
+                    // return updateIFrame;
+                });
+                // const after = await queryClient.getQueryData('searchIFrames');
+                // console.log({ before, after });
+
                 // queryClient.invalidateQueries('getIFrame');
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();

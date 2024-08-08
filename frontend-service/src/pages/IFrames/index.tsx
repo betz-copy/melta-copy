@@ -5,9 +5,11 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { Box, CircularProgress, Grid, Pagination } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
+// import { DndProvider, useDrag, useDrop } from 'react-dnd';
+// import { HTML5Backend } from 'react-dnd-html5-backend';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import ResizablePanel from './Resizable';
-import IFramesHeadline from './IFramesHeadline';
+import IFramesPageHeadline from './IFramesHeadline';
 import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
@@ -15,6 +17,34 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { Resizable } from './ResizableBox';
 import { ResizeBox } from '../../common/EntitiesPage/ResizeBox';
+
+// const DraggableIFrame = ({ iFrame, index, moveIFrame }) => {
+//     const [, ref] = useDrag({
+//         type: 'iframe',
+//         item: { index },
+//     });
+
+//     const [, drop] = useDrop({
+//         accept: 'iframe',
+//         hover: (draggedItem: any) => {
+//             if (draggedItem.index !== index) {
+//                 moveIFrame(draggedItem.index, index);
+//                 // eslint-disable-next-line no-param-reassign
+//                 draggedItem.index = index;
+//             }
+//         },
+//     });
+
+//     return (
+//         <div ref={(node) => ref(drop(node))} style={{ marginBottom: 20 }}>
+//             <Resizable minHeight={500} minWidth={1000} maxHeight={800} maxWidth={2000} id={iFrame._id}>
+//                 <Grid padding={2} height="100%" width="100%">
+//                     <IFramePage iFrame={iFrame} isIFramePage={false} />
+//                 </Grid>
+//             </Resizable>
+//         </div>
+//     );
+// };
 
 const IFramesPage: React.FC = () => {
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
@@ -25,81 +55,31 @@ const IFramesPage: React.FC = () => {
         iFrame: null,
     });
     const [searchInput, setSearchInput] = useState<string>();
-    const [iframesRows, set] = useState<IFrame[]>();
-    // const [page, setPage] = useState(0);
-    // const [iFramesRows, setIFramesRows] = useState<any>([]);
-    // const [iframePages, setIframePages] = useState({});
 
     const queryKey = ['searchIFrames', searchInput];
 
     // const { data: allIFrames } = useQuery(['searchIFrames'], () => {
     //     return searchIFrames({});
     // });
-    // const { isLoading } = useQuery(
-    //     queryKey,
-    //     () => {
-    //         // const { cacheBlockSize } = environment.agGrid;
-    //         return searchIFrames({
-    //             search: searchInput,
-    //             skip: page * 4,
-    //             limit: 4,
-    //         });
-    //     },
-    //     {
-    //         onSuccess: (data) => {
-    //             setIframePages((prev) => ({ ...prev, [page]: data }));
-    //         },
-    //         onError: () => {
-    //             toast.error(i18next.t('templateEntitiesAutocomplete.failedToSearchEntities'));
-    //         },
-    //         retry: false,
-    //         keepPreviousData: true,
-    //     },
-    // );
-    // const handlePageNumber = (pageIndex: number) => {
-    //     setPage(pageIndex);
-    // };
-
-    // useEffect(() => {
-    //     if (iframePages[page]) {
-    //         const rows: any = [];
-    //         for (let i = 0; i < iframePages[page].length; i += 2) {
-    //             rows.push(iframePages[page].slice(i, i + 2));
-    //         }
-    //         setIFramesRows(rows);
-    //     }
-    // }, [iframePages[page]]);
-    // const [count, setCount] = useState<number>(0);
-    // useEffect(() => {
-    //     if (searchInput) {
-    //         // console.log(Object.keys(iframePages), { iframePages }, { data });
-
-    //         setCount(Object.keys(iframePages).length);
-
-    //         // setIFramesRows(rows);
-    //     } else if (allIFrames) setCount(Math.ceil(allIFrames!.length / 4));
-    //     else setCount(0);
-    // }, [searchInput]);
-    // console.log({ count });
-
-    // if (isLoading)
-    //     return (
-    //         <Grid>
-    //             <CircularProgress />
-    //         </Grid>
-    //     );
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>
-                <IFramesHeadline
+                <IFramesPageHeadline
                     onSearch={(searchValue) => setSearchInput(searchValue || undefined)}
                     setIFrameWizardDialogState={() => {
                         setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
                     }}
                 />
             </Grid>
-            <Grid style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap', paddingLeft: '15px' }}>
+            {/* <DndProvider backend={HTML5Backend}> */}
+            <Grid
+                style={{
+                    display: 'flex',
+                    flexWrap: 'wrap',
+                    paddingLeft: 20,
+                }}
+            >
                 <InfiniteScroll<IMongoIFrame>
                     queryKey={queryKey}
                     queryFunction={({ pageParam }) => {
@@ -115,7 +95,9 @@ const IFramesPage: React.FC = () => {
                 >
                     {(iFrame) => {
                         return (
-                            <Resizable minHeight={500} minWidth={900} maxHeight={800} maxWidth={1800} id={iFrame._id}>
+                            // <DraggableIFrame key={iFrame._id} iFrame={iFrame} index={index} moveIFrame={moveIFrame} />
+
+                            <Resizable minHeight={500} minWidth={1000} maxHeight={800} maxWidth={2000} id={iFrame._id}>
                                 <Grid padding={2} height="100%" width="100%">
                                     <IFramePage iFrame={iFrame} isIFramePage={false} />
                                 </Grid>
@@ -124,53 +106,7 @@ const IFramesPage: React.FC = () => {
                     }}
                 </InfiniteScroll>
             </Grid>
-
-            {/* <Box position="relative" display="flex" width="100%" flexDirection="column" alignItems="center">
-                <Grid style={{ width: '95%' }}>
-                    <PanelGroup direction="vertical" style={{ height: '1000px' }}>
-                        {iFramesRows.map((iFrameRow, rowIndex: number) => (
-                            <>
-                                <Panel style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                                    <PanelGroup direction="horizontal" style={{ padding: '10px', display: 'flex', flex: 1 }} key={rowIndex}>
-                                        {iFrameRow.map((iframe, colIndex: number) => (
-                                            // eslint-disable-next-line react/no-array-index-key
-                                            <ResizablePanel key={colIndex} isFirst={colIndex === 0}>
-                                                <Box
-                                                    sx={{
-                                                        width: '100%',
-                                                        height: '100%',
-                                                        borderRadius: 3,
-                                                        overflow: 'hidden',
-                                                        display: 'flex',
-                                                        flexDirection: 'column',
-                                                        '&:hover': {
-                                                            border: 0,
-                                                            boxShadow: '-6px 6px 7px 0px #1E277540',
-                                                        },
-                                                    }}
-                                                >
-                                                    <IFramePage iFrame={iframe} isIFramePage={false} />
-                                                </Box>
-                                            </ResizablePanel>
-                                        ))}
-                                    </PanelGroup>
-                                </Panel>
-                                <Grid>{rowIndex < iFramesRows.length - 1 && <PanelResizeHandle className="mx-1 w-2 h-2 bg-slate-300" />}</Grid>
-                            </>
-                        ))}
-                    </PanelGroup>
-                </Grid>
-            </Box> */}
-            {/* <Grid container justifyContent="center" alignItems="center">
-                <Pagination
-                    count={allIFrames ? Math.ceil(allIFrames!.length / 4) : 0}
-                    variant="outlined"
-                    onChange={(_event, index) => {
-                        handlePageNumber(index - 1);
-                    }}
-                />
-            </Grid> */}
-
+            {/* </DndProvider> */}
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}
                 handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}

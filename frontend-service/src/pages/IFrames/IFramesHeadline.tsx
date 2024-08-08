@@ -8,8 +8,9 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import { useLocalStorage } from '../../utils/useLocalStorage';
 
-const IFramesHeadline: React.FC<{
+const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
 }> = ({ onSearch, setIFrameWizardDialogState }) => {
@@ -17,7 +18,21 @@ const IFramesHeadline: React.FC<{
 
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    // const [iFramesToShowCheckbox, setIFramesToShowCheckbox] = useLocalStorage<string[]>('iFramesToShow', iFrames);
 
+    // // const iFramesToShowCheckbox = iFramesIdsToShowCheckbox
+    // //     .map((id) => entityTemplates.get(id))
+    // //     .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+
+    // const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+    //     setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
+    //         const prevTemplates = prevtemplateIdsToShowCheckbox
+    //             .map((id) => entityTemplates.get(id))
+    //             .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+    //         const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
+    //         return updatedTemplates.map((template) => template._id);
+    //     });
+    // };
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
             <Grid container spacing={5} wrap="nowrap" alignItems="center">
@@ -38,7 +53,7 @@ const IFramesHeadline: React.FC<{
 
             <Grid item>
                 {myPermissions.templatesManagementId && (
-                    <IconButton onClick={setIFrameWizardDialogState} >
+                    <IconButton onClick={setIFrameWizardDialogState}>
                         <AddIcon htmlColor="primary" />
                         {/* <Typography fontSize={14} style={{ fontWeight: '500' }}>
                             {i18next.t('wizard.iFrame.addIFrame')}
@@ -50,4 +65,4 @@ const IFramesHeadline: React.FC<{
     );
 };
 
-export default IFramesHeadline;
+export default IFramesPageHeadline;

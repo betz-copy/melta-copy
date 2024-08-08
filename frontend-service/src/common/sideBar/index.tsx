@@ -52,6 +52,8 @@ import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
 import { searchIFrames } from '../../services/iFramesService';
+import { mapTemplates } from '../../utils/templates';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 
 type SideBarProps = {
     toggleDrawer: () => any;
@@ -151,10 +153,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const { data: allIFrames } = useQuery(['searchIFrames'], () => {
-        return searchIFrames({});
+    const { data: allIFrames } = useQuery(['searchIFrames'], async () => {
+        const iFrames = await searchIFrames({});
+        const test = mapTemplates(iFrames, 'name');
+        console.log({ test });
+        return test;
     });
-    const iFramesInSideBar = allIFrames?.filter((iframe) => iframe.placeInSideBar);
+    const iFrameValues: IMongoIFrame[] = allIFrames ? Array.from(allIFrames.values()) : [];
+
+    const iFramesInSideBar = iFrameValues?.filter((iframe) => iframe.placeInSideBar);
+    console.log({ iFrameValues }, { iFramesInSideBar });
 
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 

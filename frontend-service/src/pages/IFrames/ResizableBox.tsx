@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { useDrag } from 'react-dnd';
 
 interface ResizeBoxProps {
     // initialHeight: number;
@@ -15,18 +17,7 @@ interface ResizeBoxProps {
     id: string;
 }
 
-const Resizable: React.FC<ResizeBoxProps> = ({
-    // initialHeight,
-    // setHeight,
-    // initialWidth,
-    // setWidth,
-    minHeight,
-    children,
-    maxHeight,
-    maxWidth,
-    minWidth,
-    id,
-}) => {
+const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, maxWidth, minWidth, id }) => {
     const localStorageKey = `iFrame-${id}-dimensions`;
     const loadFlagKey = 'page-load-flag';
 
@@ -35,7 +26,7 @@ const Resizable: React.FC<ResizeBoxProps> = ({
         const savedDimensions = localStorage.getItem(localStorageKey);
         console.log({ savedDimensions });
 
-        return savedDimensions ? JSON.parse(savedDimensions) : { width: 900, height: 500 };
+        return savedDimensions ? JSON.parse(savedDimensions) : { width: 1000, height: 500 };
     };
     const [dimensions, setDimensions] = useState(getDimensions());
     useEffect(() => {
@@ -70,8 +61,19 @@ const Resizable: React.FC<ResizeBoxProps> = ({
         localStorage.setItem(localStorageKey, JSON.stringify(newDimensions));
         setIsResizing(false);
     };
+    // const [{ opacity }, dragRef] = useDrag(
+    //     () => ({
+    //         type: 'ItemTypes.CARD',
+    //         item: 'dscn,',
+    //         collect: (monitor) => ({
+    //             opacity: monitor.isDragging() ? 0.5 : 1,
+    //         }),
+    //     }),
+    //     [],
+    // );
 
     return (
+        // <div ref={dragRef} style={{ opacity }}>
         <ResizableBox
             resizeHandles={['se']}
             width={dimensions.width}
@@ -83,10 +85,11 @@ const Resizable: React.FC<ResizeBoxProps> = ({
             axis="both"
             // className={`box-content ${isResizing ? 'resizing' : ''}`}
         >
-            <Grid paddingBottom="40px" paddingLeft="0px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
+            <Grid paddingBottom="40px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
                 {children}
             </Grid>
         </ResizableBox>
+        // </div>
     );
 };
 
