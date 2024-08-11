@@ -10,6 +10,7 @@ import { errorMiddleware } from './error';
 import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
 import config from '../config';
+import { StatusCodes } from 'http-status-codes';
 
 class Server {
     private app: express.Application;
@@ -32,7 +33,7 @@ class Server {
         app.use(cookieParser());
 
         app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
-            res.status(200).send('alive');
+            res.status(StatusCodes.OK).send('alive');
         });
 
         app.use(passport.initialize());
@@ -43,7 +44,7 @@ class Server {
         app.use(appRouter);
 
         app.use('*', (_req, res) => {
-            res.status(404).send('Invalid Route');
+            res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
         });
 
         app.use(errorMiddleware);

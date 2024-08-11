@@ -15,6 +15,7 @@ import {
 import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
 import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { StatusCodes } from 'http-status-codes';
 
 const { neo4j } = config;
 
@@ -55,7 +56,7 @@ const createRelationshipAndExpectRuleBlock = async (
         ),
     );
     expect(err).toStrictEqual(
-        new ServiceError(400, '[NEO4J] action is blocked by rules.', {
+        new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: [
                 {
@@ -96,7 +97,7 @@ const createRelationshipAndExpectToSucceed = async (
 const deleteRelationshipAndExpectRuleBlock = async (relationshipId: string, brokenRule: IBrokenRule) => {
     const { err } = await trycatch(() => RelationshipManager.deleteRelationshipById(relationshipId, [], neo4j.mockUserId));
     expect(err).toStrictEqual(
-        new ServiceError(400, '[NEO4J] action is blocked by rules.', {
+        new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: [
                 {

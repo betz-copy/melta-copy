@@ -3,6 +3,7 @@ import relationshipTemplateRouter from './relationshipTemplate/router';
 import ruleRouter from './rule/router';
 import entityTemplateRouter from './entityTemplate/router';
 import categoryRouter from './category/router';
+import { StatusCodes } from 'http-status-codes';
 
 const appRouter = Router();
 
@@ -12,11 +13,11 @@ appRouter.use('/api/templates/entities', entityTemplateRouter);
 appRouter.use('/api/templates/categories', categoryRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
-    res.status(200).send('alive');
+    res.status(StatusCodes.OK).send('alive');
 });
 
 appRouter.use('*', (_req, res) => {
-    res.status(404).send('Invalid Route');
+    res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 
 export default appRouter;

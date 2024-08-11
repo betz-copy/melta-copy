@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import * as express from 'express';
 import logger from '../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     public code;
@@ -15,7 +16,7 @@ export class ServiceError extends Error {
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     /* istanbul ignore else */
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -25,7 +26,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
             message: error.message,
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: error.name,
             message: error.message,
         });
@@ -51,12 +52,12 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
 
 export class RuleBreachDoesNotExistError extends ServiceError {
     constructor(ruleBreach: string, type: 'alert' | 'request') {
-        super(404, `A rule breach ${type} with the id '${ruleBreach}' does not exist`);
+        super(StatusCodes.NOT_FOUND, `A rule breach ${type} with the id '${ruleBreach}' does not exist`);
     }
 }
 
 export class RuleBreachSearchFilterTypeError extends ServiceError {
     constructor(filterType: string) {
-        super(404, `A filter of type '${filterType}' does not exist`);
+        super(StatusCodes.NOT_FOUND, `A filter of type '${filterType}' does not exist`);
     }
 }

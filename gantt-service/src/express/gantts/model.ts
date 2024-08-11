@@ -3,6 +3,7 @@ import * as mongoose from 'mongoose';
 import { IGanttDocument } from './interface';
 import config from '../../config';
 import { ServiceError } from '../error';
+import { StatusCodes } from 'http-status-codes';
 
 const GroupBySchema = new mongoose.Schema(
     {
@@ -93,7 +94,7 @@ const GanttSchema = new mongoose.Schema(
 
 const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: mongoose.HookNextFunction) => {
     if (error.name === 'MongoError' && error.code === 11000) {
-        next(new ServiceError(400, 'gantt with the same name already exists'));
+        next(new ServiceError(StatusCodes.BAD_REQUEST, 'gantt with the same name already exists'));
     } else {
         next(error);
     }

@@ -2,7 +2,7 @@ import { FilterQuery, Document, ClientSession } from 'mongoose';
 
 import EntityTemplateModel from './model';
 import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
 import { sendUpdateIndexesOnUpdateTemplate, sendUpdateIndexesOnDeleteTemplate } from '../externalServices/globalSearchIndexCreator';
 import { withTransaction } from '../../utils/mongoose';
@@ -32,7 +32,7 @@ export class EntityTemplateManager {
     static getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
         return EntityTemplateModel.findById(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }
@@ -96,7 +96,7 @@ export class EntityTemplateManager {
                     session,
                 })
                     .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
-                    .orFail(new ServiceError(404, 'Entity Template not found'))
+                    .orFail(new NotFoundError('Entity Template not found'))
                     .lean()
                     .exec();
             });
@@ -113,7 +113,7 @@ export class EntityTemplateManager {
     static async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
             const deletedEntityTemplate = await EntityTemplateModel.findByIdAndDelete(id, { session })
-                .orFail(new ServiceError(404, 'Entity Template not found'))
+                .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
                 .exec();
 
@@ -170,7 +170,7 @@ export class EntityTemplateManager {
                 session,
             })
                 .populate('category')
-                .orFail(new ServiceError(404, 'Entity Template not found'))
+                .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
                 .exec();
 
@@ -226,7 +226,7 @@ export class EntityTemplateManager {
     static async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
         return EntityTemplateModel.findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }

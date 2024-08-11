@@ -2,6 +2,7 @@ import { ClientSession } from 'mongoose';
 import StepTemplateModel from './model';
 import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
+import { StatusCodes } from 'http-status-codes';
 
 export default class StepTemplateManager {
     static async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
@@ -45,7 +46,7 @@ export default class StepTemplateManager {
         const result = await StepTemplateModel.bulkWrite(bulkWriteOperations, { session });
 
         if ((result?.matchedCount ?? 0) < stepsToUpdate.length) {
-            throw new ServiceError(404, `One or more of the steps to update doesn't exist`);
+            throw new ServiceError(StatusCodes.NOT_FOUND, `One or more of the steps to update doesn't exist`);
         }
 
         let newStepsIds: string[] = [];

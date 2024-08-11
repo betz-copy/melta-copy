@@ -16,6 +16,7 @@ import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { StatusCodes } from 'http-status-codes';
 
 const { neo4j } = config;
 
@@ -54,7 +55,7 @@ const updateEntityAndExpectRuleBlock = async (
     );
 
     expect(err).toStrictEqual(
-        new ServiceError(400, '[NEO4J] action is blocked by rules.', {
+        new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: expect.any(Array),
         }),
@@ -923,7 +924,7 @@ describe('Entity manager test rules', () => {
                 );
 
                 expect(err).toStrictEqual(
-                    new ServiceError(400, '[NEO4J] action is blocked by rules.', {
+                    new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
                         errorCode: config.errorCodes.ruleBlock,
                         brokenRules: {
                             ruleId: startDateSmallerThenEndDateInTrip._id,

@@ -1,6 +1,7 @@
 import { ConsumerMessage } from 'menashmq';
 import { FilesManager } from '../express/files/manager';
 import { ServiceError } from '../express/error';
+import { StatusCodes } from 'http-status-codes';
 
 class PreviewConsumer {
     static async createPreviewQueueReq(msg: ConsumerMessage) {
@@ -11,7 +12,7 @@ class PreviewConsumer {
             msg.ack();
         } catch (err: any) {
             msg.nack(false);
-            throw new ServiceError(500, 'Rabbit consumer error', { error: err });
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Rabbit consumer error', { error: err });
         }
     }
 }

@@ -1,7 +1,7 @@
 import { FilterQuery } from 'mongoose';
 import FolderModel from './model';
 import { IGantt, IGanttDocument, ISearchGanttsBody } from './interface';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
 
 export class GanttManager {
@@ -20,7 +20,7 @@ export class GanttManager {
     }
 
     static getGanttById(ganttId: string) {
-        return FolderModel.findById(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+        return FolderModel.findById(ganttId).orFail(new NotFoundError('Gantt not found')).lean().exec();
     }
 
     static async createGantt(gantt: IGantt) {
@@ -28,12 +28,12 @@ export class GanttManager {
     }
 
     static deleteGantt(ganttId: string) {
-        return FolderModel.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+        return FolderModel.findByIdAndDelete(ganttId).orFail(new NotFoundError('Gantt not found')).lean().exec();
     }
 
     static async updateGantt(ganttId: string, gantt: IGantt) {
         return FolderModel.findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
-            .orFail(new ServiceError(404, 'Gantt not found'))
+            .orFail(new NotFoundError('Gantt not found'))
             .lean()
             .exec();
     }

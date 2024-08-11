@@ -10,8 +10,10 @@ import config from '../src/config';
 import Server from '../src/express/server';
 import { ActionTypes } from '../src/utils/interfaces/actionMetadata';
 import { RuleBreachRequestStatus } from '../src/express/ruleBreachRequests/interface';
+import { StatusCodes } from 'http-status-codes';
 
 const { mongo } = config;
+const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus } = StatusCodes;
 
 const fakeObjectId = '111111111111111111111111';
 const fakeObjectId2 = '222222222222222222222222';
@@ -45,14 +47,14 @@ describe('e2e rule breaches api testing', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(200);
+            const response = await request(app).get('/isAlive').expect(okStatus);
             expect(response.text).toBe('alive');
         });
     });
 
     describe('/unknownRoute', () => {
         it('should return status code 404', async () => {
-            return request(app).get('/unknownRoute').expect(404);
+            return request(app).get('/unknownRoute').expect(notFoundStatus);
         });
     });
 
@@ -62,11 +64,11 @@ describe('e2e rule breaches api testing', () => {
 
             describe('POST /', () => {
                 it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/alerts').send({ test: 'test' }).expect(400);
+                    return request(app).post('/api/rule-breaches/alerts').send({ test: 'test' }).expect(badRequest);
                 });
 
                 it('should fail validation for missing fields', async () => {
-                    return request(app).post('/api/rule-breaches/alerts').send({ originUserId: fakeObjectId }).expect(400);
+                    return request(app).post('/api/rule-breaches/alerts').send({ originUserId: fakeObjectId }).expect(badRequest);
                 });
 
                 it('should create a new rule breach alert', async () => {
@@ -78,7 +80,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(
                         expect.objectContaining({
@@ -99,7 +101,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.DeleteRelationship,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail on rule breach alert without broken rules', async () => {
@@ -111,7 +113,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail on incorrect action type', async () => {
@@ -123,13 +125,13 @@ describe('e2e rule breaches api testing', () => {
                             actionType: 'test',
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
             });
 
             describe('GET /:ruleBreachAlertId', () => {
                 it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/alerts').send({ test: 'test' }).expect(400);
+                    return request(app).post('/api/rule-breaches/alerts').send({ test: 'test' }).expect(badRequest);
                 });
 
                 it('should get rule breach alert by id', async () => {
@@ -141,7 +143,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     const { body: ruleBreachAlert } = await request(app)
                         .post('/api/rule-breaches/alerts')
                         .send({
@@ -150,7 +152,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     await request(app)
                         .post('/api/rule-breaches/alerts')
                         .send({
@@ -159,15 +161,15 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    const { body } = await request(app).get(`/api/rule-breaches/alerts/${ruleBreachAlert._id}`).expect(200);
+                    const { body } = await request(app).get(`/api/rule-breaches/alerts/${ruleBreachAlert._id}`).expect(okStatus);
 
                     expect(body).toEqual(ruleBreachAlert);
                 });
 
                 it('should fail for getting a non-existing rule breach alert', async () => {
-                    return request(app).get(`/api/rule-breaches/alerts/${fakeObjectId}`).expect(404);
+                    return request(app).get(`/api/rule-breaches/alerts/${fakeObjectId}`).expect(notFoundStatus);
                 });
             });
         });
@@ -177,11 +179,11 @@ describe('e2e rule breaches api testing', () => {
 
             describe('POST /', () => {
                 it('should fail validation for unknown fields', async () => {
-                    return request(app).post('/api/rule-breaches/requests').send({ test: 'test' }).expect(400);
+                    return request(app).post('/api/rule-breaches/requests').send({ test: 'test' }).expect(badRequest);
                 });
 
                 it('should fail validation for missing fields', async () => {
-                    return request(app).post('/api/rule-breaches/requests').send({ originUserId: fakeObjectId }).expect(400);
+                    return request(app).post('/api/rule-breaches/requests').send({ originUserId: fakeObjectId }).expect(badRequest);
                 });
 
                 it('should create a new rule breach request', async () => {
@@ -193,7 +195,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.CreateRelationship,
                             actionMetadata: { relationshipTemplateId: fakeObjectId, sourceEntityId: fakeObjectId, destinationEntityId: fakeObjectId },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(
                         expect.objectContaining({
@@ -214,7 +216,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.DeleteRelationship,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail on rule breach request without broken rules', async () => {
@@ -226,7 +228,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail on incorrect action type', async () => {
@@ -238,7 +240,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: 'test',
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(400);
+                        .expect(badRequest);
                 });
             });
 
@@ -254,9 +256,9 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ test: 'test' }).expect(400);
+                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ test: 'test' }).expect(badRequest);
                 });
 
                 it('should fail validation for missing fields', async () => {
@@ -270,9 +272,9 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ reviewerId: fakeObjectId }).expect(400);
+                    await request(app).patch(`/api/rule-breaches/requests/${_id}/status`).send({ reviewerId: fakeObjectId }).expect(badRequest);
                 });
 
                 it('should start rule breach request as pending', async () => {
@@ -284,7 +286,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(expect.objectContaining({ status: RuleBreachRequestStatus.Pending }));
                 });
@@ -300,12 +302,12 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     const { body } = await request(app)
                         .patch(`/api/rule-breaches/requests/${_id}/status`)
                         .send({ reviewerId: fakeObjectId, status: RuleBreachRequestStatus.Approved })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(expect.objectContaining({ status: RuleBreachRequestStatus.Approved, reviewerId: fakeObjectId }));
                 });
@@ -321,7 +323,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     const { body } = await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/action-metadata`)
@@ -334,7 +336,7 @@ describe('e2e rule breaches api testing', () => {
                                 destinationEntityId: fakeObjectId,
                             },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(
                         expect.objectContaining({
@@ -358,12 +360,12 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/action-metadata`)
                         .send({ actionType: 'test', actionMetadata: { relationshipId: fakeObjectId } })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail for update rule breach request with incorrect action metadata', async () => {
@@ -375,12 +377,12 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/action-metadata`)
                         .send({ actionType: ActionTypes.UpdateEntity, actionMetadata: { relationshipId: fakeObjectId } })
-                        .expect(400);
+                        .expect(badRequest);
                 });
             });
 
@@ -394,7 +396,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     const { body } = await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
@@ -405,7 +407,7 @@ describe('e2e rule breaches api testing', () => {
                                 { ruleId: fakeObjectId3, relationshipIds: [fakeObjectId4, fakeObjectId3] },
                             ],
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     expect(body).toEqual(
                         expect.objectContaining({
@@ -427,12 +429,12 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
                         .send({ brokenRules: [{ ruleId: fakeObjectId }] })
-                        .expect(400);
+                        .expect(badRequest);
                 });
 
                 it('should fail for no broken rules', async () => {
@@ -444,12 +446,12 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
                     await request(app)
                         .patch(`/api/rule-breaches/requests/${ruleBreachRequest._id}/broken-rules`)
                         .send({ brokenRules: [] })
-                        .expect(400);
+                        .expect(badRequest);
                 });
             });
 
@@ -463,7 +465,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     const { body: ruleBreachRequest } = await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -472,7 +474,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -481,15 +483,15 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    const { body } = await request(app).get(`/api/rule-breaches/requests/${ruleBreachRequest._id}`).expect(200);
+                    const { body } = await request(app).get(`/api/rule-breaches/requests/${ruleBreachRequest._id}`).expect(okStatus);
 
                     expect(body).toEqual(ruleBreachRequest);
                 });
 
                 it('should fail for getting a non-existing rule breach request', async () => {
-                    return request(app).get(`/api/rule-breaches/requests/${fakeObjectId}`).expect(404);
+                    return request(app).get(`/api/rule-breaches/requests/${fakeObjectId}`).expect(notFoundStatus);
                 });
             });
 
@@ -507,7 +509,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     const { body: ruleBreachRequest1 } = await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -521,7 +523,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId2, updatedFields: { name: 'test2' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     const { body: ruleBreachRequest2 } = await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -533,9 +535,9 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId3, updatedFields: { name: 'test3' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(200);
+                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(okStatus);
 
                     expect(body).toEqual([ruleBreachRequest1, ruleBreachRequest2]);
                 });
@@ -552,7 +554,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -565,7 +567,7 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
                     await request(app)
                         .post('/api/rule-breaches/requests')
                         .send({
@@ -574,9 +576,9 @@ describe('e2e rule breaches api testing', () => {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: { entityId: fakeObjectId, updatedFields: { name: 'test' } },
                         })
-                        .expect(200);
+                        .expect(okStatus);
 
-                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(200);
+                    const { body } = await request(app).get(`/api/rule-breaches/requests/broken-rules/${fakeObjectId4}`).expect(okStatus);
 
                     expect(body).toEqual([]);
                 });

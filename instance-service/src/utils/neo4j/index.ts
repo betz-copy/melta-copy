@@ -5,6 +5,7 @@ import { trycatch } from '../lib';
 import config from '../../config';
 import logger from '../logger/logsLogger';
 import { ServiceError } from '../../express/error';
+import { StatusCodes } from 'http-status-codes';
 
 interface Neo4jAuth {
     username: string;
@@ -59,8 +60,7 @@ class Neo4jClient {
             return result;
         } finally {
             const { err: error } = await trycatch(() => session.close());
-            if (error) 
-                throw new ServiceError(500, 'Failed to close session', { error });
+            if (error) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to close session', { error });
         }
     }
 
@@ -79,8 +79,7 @@ class Neo4jClient {
         } finally {
             const { err: error } = await trycatch(() => session.close());
 
-            if (error) 
-                throw new ServiceError(500, 'Failed to close session', { error });
+            if (error) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to close session', { error });
         }
     }
 

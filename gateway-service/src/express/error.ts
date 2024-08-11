@@ -2,11 +2,36 @@ import axios from 'axios';
 import express from 'express';
 
 import logger from '../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     constructor(public code: number, message: string, public metadata: any = {}) {
         super(message);
         this.code = code;
+        this.metadata = metadata;
+    }
+}
+
+export class NotFoundError extends ServiceError {
+    constructor(message: string, public metadata: object = {}) {
+        super(StatusCodes.NOT_FOUND, message);
+        this.name = 'NotFound';
+        this.metadata = metadata;
+    }
+}
+
+export class ForbiddenError extends ServiceError {
+    constructor(message: string, public metadata: object = {}) {
+        super(StatusCodes.FORBIDDEN, message);
+        this.name = 'Forbidden';
+        this.metadata = metadata;
+    }
+}
+
+export class BadRequestError extends ServiceError {
+    constructor(message: string, public metadata: object = {}) {
+        super(StatusCodes.BAD_REQUEST, message);
+        this.name = 'badRequest';
         this.metadata = metadata;
     }
 }
@@ -28,7 +53,7 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
 
 export const errorMiddleware = async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -39,7 +64,7 @@ export const errorMiddleware = async (error: Error, req: express.Request, res: e
             metadata: error.metadata,
         });
     } else if (['TokenExpiredError', 'JsonWebTokenError'].includes(error.name)) {
-        res.status(401).send({
+        res.status(StatusCodes.UNAUTHORIZED).send({
             type: error.name,
             message: error.message,
         });
@@ -50,7 +75,7 @@ export const errorMiddleware = async (error: Error, req: express.Request, res: e
             metadata: formatAxiosErrorData(error.response.data),
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: 'InternalServerError',
             message: 'internal server error',
         });

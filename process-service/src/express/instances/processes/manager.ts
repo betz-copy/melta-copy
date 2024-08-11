@@ -18,6 +18,7 @@ import { validateStepIds } from './validator.template';
 import { escapeRegExp } from '../../../utils';
 import { IMongoProcessTemplate } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
+import { StatusCodes } from 'http-status-codes';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
 class ProcessInstanceManager {
@@ -69,7 +70,7 @@ class ProcessInstanceManager {
 
     static async updateProcess(id: string, updatedData: UpdateProcessReqBody) {
         const currProcess = await this.getProcessById(id, false);
-        if (currProcess.archived) throw new ServiceError(500, 'Can`t edit an archived process');
+        if (currProcess.archived) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Can`t edit an archived process');
 
         if (!updatedData.steps) {
             return ProcessInstanceModel.findByIdAndUpdate(id, updatedData as Omit<UpdateProcessReqBody, 'steps'>, {
@@ -148,7 +149,8 @@ class ProcessInstanceManager {
 
     static async updateStatus(id: string, status: Status, session?: ClientSession) {
         const { status: currStatus } = await this.getProcessById(id);
-        if (currStatus === status) throw new ServiceError(500, `status of process has not changed, get the same status: ${status}`);
+        if (currStatus === status)
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `status of process has not changed, get the same status: ${status}`);
         return ProcessInstanceModel.findByIdAndUpdate(id, { status, reviewedAt: new Date() }, { session });
     }
 }

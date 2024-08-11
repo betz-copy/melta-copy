@@ -40,6 +40,7 @@ import {
     IProcessStatusUpdateNotificationMetadataPopulated,
 } from '../../../externalServices/notificationService/interfaces/populated';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
+import { StatusCodes } from 'http-status-codes';
 
 export default class ProcessesInstancesManager {
     static async getPropertiesWithEntities(properties: InstanceProperties, template: IProcessDetails['properties'], userId: string) {
@@ -55,7 +56,7 @@ export default class ProcessesInstancesManager {
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await InstanceManagerService.getEntityInstanceById(properties[key]).catch((error) => {
-                if (axios.isAxiosError(error) && error.response?.status === 404) return properties[key];
+                if (axios.isAxiosError(error) && error.response?.status === StatusCodes.NOT_FOUND) return properties[key];
                 throw error;
             });
 
@@ -106,7 +107,7 @@ export default class ProcessesInstancesManager {
             const process = await ProcessManagerService.getProcessInstanceById(id, userId);
             return this.getPopulatedProcess(process, userId);
         } catch (error: any) {
-            if (error instanceof NotFoundError && error.code === 404) return null;
+            if (error instanceof NotFoundError && error.code === StatusCodes.NOT_FOUND) return null;
             throw error;
         }
     }
@@ -147,7 +148,7 @@ export default class ProcessesInstancesManager {
 
         const process = await ProcessManagerService.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((error) => {
-                throw new ServiceError(500, `failed to delete process unused files`, {
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process unused files`, {
                     error,
                 });
             });
@@ -173,7 +174,7 @@ export default class ProcessesInstancesManager {
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
             await deleteFiles(idsToDelete).catch((error) => {
-                throw new ServiceError(500, `failed to delete unused files: ${idsToDelete}`, { error });
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete unused files: ${idsToDelete}`, { error });
             });
     }
 
@@ -211,7 +212,7 @@ export default class ProcessesInstancesManager {
 
         const updatedProcess = await ProcessManagerService.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((error) => {
-                throw new ServiceError(500, `failed to delete process unused files`, { error });
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process unused files`, { error });
             });
             throw error;
         });
@@ -276,7 +277,7 @@ export default class ProcessesInstancesManager {
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await ProcessesInstancesManager.deleteAllProcessFiles(process).catch((error) => {
-            throw new ServiceError(500, `failed to delete process files`, { error });
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process files`, { error });
         });
         await ProcessManagerService.deleteProcessInstance(processId);
 

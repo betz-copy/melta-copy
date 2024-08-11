@@ -8,6 +8,7 @@ import config from './config';
 import logger from './utils/logger/logsLogger';
 import initializeRabbit from './utils/rabbit';
 import { ServiceError } from './express/error';
+import { StatusCodes } from 'http-status-codes';
 
 const { service, neo4j, redis, logs } = config;
 
@@ -44,18 +45,15 @@ const main = async () => {
 
 main().catch((error) => {
     process.exit(1);
-    throw new ServiceError(500, 'Main error', { error });
-
+    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Main error', { error });
 });
 
 process
     .on('unhandledRejection', (reason, p) => {
         process.exit(1);
-        throw new ServiceError(500, 'Unhandled Rejection at Promise', { error: { p, reason } });
-
+        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Unhandled Rejection at Promise', { error: { p, reason } });
     })
     .on('uncaughtException', (error) => {
         process.exit(1);
-        throw new ServiceError(500, 'Uncaught Exception thrown', { error });
-
+        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Uncaught Exception thrown', { error });
     });

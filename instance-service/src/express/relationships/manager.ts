@@ -20,6 +20,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/temp
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
+import { StatusCodes } from 'http-status-codes';
 
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
@@ -97,7 +98,7 @@ export class RelationshipManager {
         );
 
         if (countOfExistingRelationships > 0) {
-            throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
+            throw new ServiceError(StatusCodes.BAD_REQUEST, `[NEO4J] relationship already exists between requested entities.`, {
                 errorCode: config.errorCodes.relationshipAlreadyExists,
             });
         }
@@ -121,7 +122,11 @@ export class RelationshipManager {
             destinationEntityId,
         );
 
-        const { createdRelationship, activityLogsToCreate } = await RelationshipManager.createRelationshipInTransaction(transaction, relationship, userId);
+        const { createdRelationship, activityLogsToCreate } = await RelationshipManager.createRelationshipInTransaction(
+            transaction,
+            relationship,
+            userId,
+        );
 
         const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
             transaction,
@@ -136,7 +141,7 @@ export class RelationshipManager {
             },
         ]);
 
-        return {createdRelationship, activityLogsToCreate};
+        return { createdRelationship, activityLogsToCreate };
     }
 
     static async createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship, userId: string) {
@@ -153,7 +158,7 @@ export class RelationshipManager {
             normalizeReturnedRelationship('singleResponseNotNullable'),
             { relProps: { ...properties, ...generateDefaultProperties() } },
         );
-    
+
         const updatedFields = {
             action: ActionsLog.CREATE_RELATIONSHIP,
             timestamp: new Date(),
@@ -176,7 +181,7 @@ export class RelationshipManager {
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
         });
 
-        return {createdRelationship, activityLogsToCreate};        
+        return { createdRelationship, activityLogsToCreate };
     }
 
     static async createRelationshipByEntityIds(
@@ -186,13 +191,19 @@ export class RelationshipManager {
         userId: string,
     ) {
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const {createdRelationship, activityLogsToCreate} = await RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction, userId);
+            const { createdRelationship, activityLogsToCreate } = await RelationshipManager.createRelationshipByEntityIdsInTransaction(
+                relationship,
+                relationshipTemplate,
+                ignoredRules,
+                transaction,
+                userId,
+            );
 
             const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
             await Promise.all(activityLogsPromises);
 
             return createdRelationship;
-        }); 
+        });
     }
 
     static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {

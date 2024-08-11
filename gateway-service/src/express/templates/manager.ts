@@ -15,7 +15,7 @@ import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../.
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
-import { ServiceError } from '../error';
+import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import PermissionsManager from '../permissions/manager';
 import config from '../../config';
 import { IRule } from './rules/interfaces';
@@ -34,6 +34,7 @@ import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import logger from '../../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 const {
     categoryHasTemplates,
@@ -44,6 +45,8 @@ const {
     relationshipTemplateHasRules,
     ruleHasAlertsOrRequests,
 } = config.errorCodes;
+
+const { NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus } = StatusCodes;
 
 export class TemplatesManager {
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
@@ -240,7 +243,7 @@ export class TemplatesManager {
     static async deleteCategory(id: string) {
         const templates = await EntityTemplateManagerService.searchEntityTemplates({ categoryIds: [id] });
         if (templates.length > 0) {
-            throw new ServiceError(400, 'category still has entity templates', { errorCode: categoryHasTemplates });
+            throw new BadRequestError('category still has entity templates', { errorCode: categoryHasTemplates });
         }
 
         const category = await EntityTemplateManagerService.getCategoryById(id);
@@ -351,7 +354,7 @@ export class TemplatesManager {
             sourceEntityIds: [entityTemplateToDelete._id],
         });
         if (this.entityHasRelationshipNotReference(entityTemplateToDelete, outgoingRelationships)) {
-            throw new ServiceError(400, 'entity template still has outgoing relationships', {
+            throw new BadRequestError('entity template still has outgoing relationships', {
                 errorCode: entityTemplateHasOutgoingRelationships,
             });
         }
@@ -360,7 +363,7 @@ export class TemplatesManager {
             destinationEntityIds: [entityTemplateToDelete._id],
         });
         if (this.entityHasRelationshipNotReference(entityTemplateToDelete, incomingRelationships)) {
-            throw new ServiceError(400, 'entity template still has incoming relationships', {
+            throw new BadRequestError('entity template still has incoming relationships', {
                 errorCode: entityTemplateHasIncomingRelationships,
             });
         }
@@ -369,7 +372,7 @@ export class TemplatesManager {
     static async throwIfEntityTemplateHasInstances(id: string) {
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         if (count > 0) {
-            throw new ServiceError(400, 'entity template still has instances', { errorCode: entityTemplateHasInstances });
+            throw new BadRequestError('entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
     }
 
@@ -435,20 +438,20 @@ export class TemplatesManager {
         const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await EntityTemplateManagerService.getEntityTemplateById(id);
 
-        if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
+        if (currTemplate.disabled === true) throw new BadRequestError('can not update disabled template');
 
         if (count > 0) {
-            if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
+            if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
 
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if (!newValue) throw new ServiceError(400, 'can not remove property');
+                if (!newValue) throw new BadRequestError('can not remove property');
                 if (value.serialCurrent !== undefined) {
                     // eslint-disable-next-line no-param-reassign
                     updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
                 }
-                if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
+                if (value.type !== newValue.type) throw new BadRequestError('can not change property type');
                 if (
                     !(
                         (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
@@ -456,12 +459,12 @@ export class TemplatesManager {
                         value.format === newValue.format
                     )
                 )
-                    throw new ServiceError(400, 'can not change property format');
+                    throw new BadRequestError('can not change property format');
                 if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                    throw new ServiceError(400, 'can not remove options from enum');
-                if (value.serialStarter !== newValue.serialStarter) throw new ServiceError(400, 'can not change property serial starter');
+                    throw new BadRequestError('can not remove options from enum');
+                if (value.serialStarter !== newValue.serialStarter) throw new BadRequestError('can not change property serial starter');
                 if (value.relationshipReference && !_isEqual(value.relationshipReference, newValue.relationshipReference))
-                    throw new ServiceError(400, 'can not change relationship reference fields');
+                    throw new BadRequestError('can not change relationship reference fields');
             });
         }
 
@@ -486,7 +489,7 @@ export class TemplatesManager {
             updatedTemplateData,
             currTemplate,
         ).catch((error) => {
-            throw new ServiceError(400, `Failed to create serial number fields for existing entities: ${error}`);
+            throw new BadRequestError(`Failed to create serial number fields for existing entities: ${error}`);
         });
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
         const updatedTemplate = await EntityTemplateManagerService.updateEntityTemplate(id, {
@@ -519,11 +522,11 @@ export class TemplatesManager {
         field: string,
     ) {
         if (!values.options) {
-            throw new ServiceError(404, 'No options array');
+            throw new NotFoundError('No options array');
         }
         const valueIndex = values.options.indexOf(fieldValue);
         if (valueIndex === -1) {
-            throw new ServiceError(404, 'Field value not found in options array');
+            throw new NotFoundError('Field value not found in options array');
         }
         const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
         let templateEnumFieldValues = [...curentTemplateEnum];
@@ -560,7 +563,7 @@ export class TemplatesManager {
 
             return updatedEntityTemplate;
         } catch (error) {
-            throw new ServiceError(500, 'Initial mongoDB update failed', { error });
+            throw new ServiceError(internalServerErrorStatus, 'Initial mongoDB update failed', { error });
         }
     }
 
@@ -587,7 +590,7 @@ export class TemplatesManager {
 
             return rolledBackEntityTemplate;
         } catch (error) {
-            throw new ServiceError(500, 'RollBack mongoDB update failed', { error });
+            throw new ServiceError(internalServerErrorStatus, 'RollBack mongoDB update failed', { error });
         }
     }
 
@@ -603,12 +606,12 @@ export class TemplatesManager {
         try {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
-            if (neoError.response?.status === 404) {
-                throw new ServiceError(404, 'Neo4j update failed: Node not found', { error: neoError });
+            if (neoError.response?.status === notFoundStatus) {
+                throw new NotFoundError('Neo4j update failed: Node not found', { error: neoError });
             }
             await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
 
-            throw new ServiceError(500, 'Neo4j update failed: starting roll-back', { error: neoError });
+            throw new ServiceError(internalServerErrorStatus, 'Neo4j update failed: starting roll-back', { error: neoError });
         }
 
         const { requiredConstraints, uniqueConstraints } = await InstanceManagerService.getConstraintsOfTemplate(id);
@@ -618,9 +621,7 @@ export class TemplatesManager {
     private static async checkFieldValueUsage(id: string, fieldValue: string, fieldName: string, fieldType: string): Promise<void> {
         const data = await InstanceManagerService.getIfValuefieldIsUsed(id, fieldValue, fieldName, fieldType);
         const cantDeleteFieldValue = Boolean(data);
-        if (cantDeleteFieldValue) {
-            throw new ServiceError(400, 'cant remove used values');
-        }
+        if (cantDeleteFieldValue) throw new BadRequestError('cant remove used values');
     }
 
     static async deleteEntityEnumFieldValue(id: string, values: IUpdateOrDeleteEnumFieldReqData, fieldValue: string) {
@@ -637,9 +638,8 @@ export class TemplatesManager {
         if (getEntityErr) {
             const { response } = getEntityErr as AxiosError;
 
-            if (response?.status === 404) {
-                throw new ServiceError(400, errorMessage);
-            }
+            if (response?.status === notFoundStatus) throw new BadRequestError(errorMessage);
+
             throw getEntityErr;
         }
     }
@@ -653,9 +653,8 @@ export class TemplatesManager {
         const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
         const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
 
-        if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
-            throw new ServiceError(400, 'can not create relationship template with disabled entity');
-        }
+        if (sourceEntityDisabled === true || destinationEntityDisabled === true)
+            throw new BadRequestError('can not create relationship template with disabled entity');
 
         return RelationshipsTemplateManagerService.createRelationshipTemplate(relationshipTemplate);
     }
@@ -675,15 +674,14 @@ export class TemplatesManager {
         const { disabled: sourceEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.sourceEntityId);
         const { disabled: destinationEntityDisabled } = await EntityTemplateManagerService.getEntityTemplateById(currTemplate.destinationEntityId);
 
-        if (sourceEntityDisabled === true || destinationEntityDisabled === true) {
-            throw new ServiceError(400, 'can not update relationship template with disabled entity');
-        }
+        if (sourceEntityDisabled === true || destinationEntityDisabled === true)
+            throw new BadRequestError('can not update relationship template with disabled entity');
 
         if (relationshipCount > 0) {
-            if (updatedFields.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
-            if (updatedFields.sourceEntityId !== currTemplate.sourceEntityId) throw new ServiceError(400, 'can not change source entity template');
+            if (updatedFields.name !== currTemplate.name) throw new BadRequestError('can not change template name');
+            if (updatedFields.sourceEntityId !== currTemplate.sourceEntityId) throw new BadRequestError('can not change source entity template');
             if (updatedFields.destinationEntityId !== currTemplate.destinationEntityId)
-                throw new ServiceError(400, 'can not change destination entity template');
+                throw new BadRequestError('can not change destination entity template');
         }
 
         return RelationshipsTemplateManagerService.updateRelationshipTemplate(templateId, updatedFields);
@@ -700,7 +698,9 @@ export class TemplatesManager {
     static async deleteRelationshipTemplate(templateId: string) {
         const relationshipCount = await InstanceManagerService.getRelationshipsCountByTemplateId(templateId);
         if (relationshipCount !== 0) {
-            throw new ServiceError(400, 'relationship template still has instances', { errorCode: relationshipTemplateHasInstances });
+            throw new BadRequestError('relationship template still has instances', {
+                errorCode: relationshipTemplateHasInstances,
+            });
         }
 
         const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(templateId);
@@ -719,7 +719,7 @@ export class TemplatesManager {
         const dependentRelationships = [...new Set(...dependentRelationshipsToSource, ...dependentRelationshipsToDestination)];
 
         if (dependentRelationships.includes(templateId)) {
-            throw new ServiceError(400, 'relationship template still has rules', { errorCode: relationshipTemplateHasRules });
+            throw new BadRequestError('relationship template still has rules', { errorCode: relationshipTemplateHasRules });
         }
 
         return RelationshipsTemplateManagerService.deleteRelationshipTemplate(templateId);
@@ -754,7 +754,7 @@ export class TemplatesManager {
         const alerts = await RuleBreachService.getRuleBreachAlertsByRuleId(ruleId);
         const requests = await RuleBreachService.getRuleBreachRequestsByRuleId(ruleId);
         if (alerts.length !== 0 || requests.length !== 0) {
-            throw new ServiceError(400, 'rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
+            throw new BadRequestError('rules has alerts/requests', { errorCode: ruleHasAlertsOrRequests });
         }
         return RelationshipsTemplateManagerService.deleteRuleById(ruleId);
     }

@@ -5,6 +5,7 @@ import activityLogSchema from '../utils/rabbit/joi.schema';
 import { basicValidateRequest } from '../utils/joi';
 import { IActivityLog } from '../express/activityLog/interface';
 import { ServiceError } from '../express/error';
+import { StatusCodes } from 'http-status-codes';
 
 class ActivityLogConsumer {
     static async createActivityLog(msg: ConsumerMessage) {
@@ -17,7 +18,7 @@ class ActivityLogConsumer {
             msg.ack();
         } catch (err: any) {
             msg.nack(false);
-            throw new ServiceError(500, `Rabbit consumer error`, { error: err })
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `Rabbit consumer error`, { error: err });
         }
     }
 }

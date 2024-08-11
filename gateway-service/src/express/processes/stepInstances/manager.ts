@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import { ProcessManagerService } from '../../../externalServices/processService';
 import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
@@ -73,7 +74,9 @@ export default class StepsInstancesManager {
             properties: props,
         }).catch((processServiceError) => {
             deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-                throw new ServiceError(500, 'failed to delete files error', { error: { deleteFilesError, processServiceError } });
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to delete files error', {
+                    error: { deleteFilesError, processServiceError },
+                });
             });
             throw processServiceError;
         });

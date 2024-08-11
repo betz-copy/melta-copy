@@ -6,7 +6,7 @@ import { InstanceManagerService } from '../../externalServices/instanceService';
 import { getPermissions, isRuleManager } from '../../externalServices/permissionsService';
 import { deleteFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
-import { ServiceError } from '../error';
+import { BadRequestError, ForbiddenError, ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import {
@@ -135,7 +135,7 @@ export class RuleBreachesManager {
 
     static checkIfRuleBreachRequestIsReviewable(ruleBreachRequest: IRuleBreachRequest) {
         if (ruleBreachRequest.status !== RuleBreachRequestStatus.Pending) {
-            throw new ServiceError(400, 'rule breach requests was already reviewed');
+            throw new BadRequestError('rule breach requests was already reviewed');
         }
     }
 
@@ -434,7 +434,7 @@ export class RuleBreachesManager {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (ruleBreachRequest.originUserId !== user.id) {
-            throw new ServiceError(403, 'only the origin user can cancel rule breach request');
+            throw new ForbiddenError('only the origin user can cancel rule breach request');
         }
 
         return RuleBreachesManager.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
@@ -486,7 +486,7 @@ export class RuleBreachesManager {
             return;
         }
 
-        throw new ServiceError(400, 'shouldnt upload files to create rule breach request if not create/duplicate/update entity');
+        throw new BadRequestError('shouldnt upload files to create rule breach request if not create/duplicate/update entity');
     }
 
     private static async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
@@ -545,7 +545,7 @@ export class RuleBreachesManager {
         const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user.id && !(await isRuleManager(user.id))) {
-            throw new ServiceError(403, 'user does not have permissions to this rule breach request');
+            throw new ForbiddenError('user does not have permissions to this rule breach request');
         }
 
         return RuleBreachesManager.populateRuleBreachRequest(ruleBreachRequest);
@@ -555,7 +555,7 @@ export class RuleBreachesManager {
         const ruleBreachAlert = await RuleBreachService.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user.id && !(await isRuleManager(user.id))) {
-            throw new ServiceError(403, 'user does not have permissions to this rule breach alert');
+            throw new ForbiddenError('user does not have permissions to this rule breach alert');
         }
 
         return RuleBreachesManager.populateRuleBreachAlert(ruleBreachAlert);

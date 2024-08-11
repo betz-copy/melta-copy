@@ -6,6 +6,7 @@ import { streamToBuffer } from '../../utils/fs';
 import { minioClient } from '../../utils/minio/minioClient';
 import { config } from '../../config';
 import { ServiceError } from '../error';
+import { StatusCodes } from 'http-status-codes';
 
 const { rabbit, document } = config;
 
@@ -21,7 +22,7 @@ export class FilesManager {
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
                 await menash.send(rabbit.previewQueue, filePath);
-                throw new ServiceError(404, 'File Not Found');
+                throw new ServiceError(StatusCodes.NOT_FOUND, 'File Not Found');
             }
             throw error;
         }

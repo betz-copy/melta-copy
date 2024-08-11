@@ -5,6 +5,7 @@ import { Action, IUpdateIndexRequest } from './interfaces';
 import { requestSchema } from './validator.schema';
 import logger from '../utils/logger/logsLogger';
 import { ServiceError } from '../error';
+import { StatusCodes } from 'http-status-codes';
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
@@ -35,7 +36,7 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
         }
     } catch (error) {
         msg.nack(false);
-        throw new ServiceError(500, 'Failed to update search index', { error });
+        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to update search index', { error });
     }
 
     logger.info(`Successfully updated search index!`);

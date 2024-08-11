@@ -14,8 +14,11 @@ import ProcessInstanceManager from '../../instances/processes/manager';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongoose';
 import StepTemplateManager from '../steps/manager';
 import config from '../../../config';
+import { StatusCodes } from 'http-status-codes';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
+
+const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
 class ProcessTemplateManager {
     static async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
@@ -37,7 +40,7 @@ class ProcessTemplateManager {
 
     static async throwIfProcessTemplateHasInstances(templateId: string) {
         const processInstances = await ProcessInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
-        if (processInstances) throw new ServiceError(400, 'process template still has instances');
+        if (processInstances) throw new ServiceError(badRequestStatus, 'process template still has instances');
     }
 
     static async deleteProcessTemplate(id: string): Promise<IMongoProcessTemplatePopulated> {
@@ -59,13 +62,13 @@ class ProcessTemplateManager {
         currPropertiesRequired: string[] = [],
     ) {
         if (updatedPropertiesRequired.some((reqField) => !currPropertiesRequired.includes(reqField))) {
-            throw new ServiceError(400, 'can not update required field');
+            throw new ServiceError(badRequestStatus, 'can not update required field');
         }
 
         Object.entries(currProperties).forEach(([key, value]) => {
             const newValue = updatedProperties[key];
-            if (!newValue) throw new ServiceError(400, 'can not remove property');
-            if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
+            if (!newValue) throw new ServiceError(badRequestStatus, 'can not remove property');
+            if (value.type !== newValue.type) throw new ServiceError(badRequestStatus, 'can not change property type');
             if (
                 !(
                     (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
@@ -73,9 +76,9 @@ class ProcessTemplateManager {
                     value.format === newValue.format
                 )
             )
-                throw new ServiceError(400, 'can not change property format');
+                throw new ServiceError(badRequestStatus, 'can not change property format');
             if (value.enum && !value.enum?.every((val) => newValue.enum?.includes(val)))
-                throw new ServiceError(400, 'can not remove options from enum');
+                throw new ServiceError(badRequestStatus, 'can not remove options from enum');
         });
     }
 
@@ -86,7 +89,7 @@ class ProcessTemplateManager {
         }
 
         const { details: updatedDetails, name: updatedName, steps: updatedSteps } = updatedTemplate;
-        if (updatedName !== currTemplate.name) throw new ServiceError(400, 'can not change step template name');
+        if (updatedName !== currTemplate.name) throw new ServiceError(badRequestStatus, 'can not change step template name');
         this.validateProperties(
             updatedDetails.properties.properties,
             currTemplate.details.properties.properties,
@@ -94,12 +97,12 @@ class ProcessTemplateManager {
             currTemplate.details.properties.required,
         );
 
-        if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(400, 'can not delete or add steps');
+        if (updatedSteps.length !== currTemplate.steps.length) throw new ServiceError(badRequestStatus, 'can not delete or add steps');
 
         updatedSteps.forEach((step, index) => {
             const currStep = currTemplate.steps.find((currTemplateStep) => step._id.toString() === currTemplateStep._id.toString());
-            if (!currStep) throw new ServiceError(400, `can not add new step id ${step._id})`);
-            if (step.name !== currStep.name) throw new ServiceError(400, `can not change step[${index}] name`);
+            if (!currStep) throw new ServiceError(badRequestStatus, `can not add new step id ${step._id})`);
+            if (step.name !== currStep.name) throw new ServiceError(badRequestStatus, `can not change step[${index}] name`);
             this.validateProperties(
                 step.properties.properties,
                 currStep.properties.properties,

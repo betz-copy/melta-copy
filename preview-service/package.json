@@ -23,6 +23,7 @@
     "env-var": "^6.3.0",
     "express": "^4.17.1",
     "helmet": "^3.22.0",
+    "http-status-codes": "^2.3.0",
     "joi": "^17.2.1",
     "libreoffice-convert": "^1.4.1",
     "menashmq": "^0.1.6",

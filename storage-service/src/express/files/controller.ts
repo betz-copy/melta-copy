@@ -3,6 +3,7 @@ import * as archiver from 'archiver';
 import { getFileName } from '../../utils/generatePath';
 import { FilesManager } from './manager';
 import { ServiceError } from '../error';
+import { StatusCodes } from 'http-status-codes';
 
 export class FilesController {
     static async downloadFile(req: express.Request, res: express.Response) {
@@ -40,7 +41,7 @@ export class FilesController {
 
             archive.finalize();
         } catch (error) {
-            throw new ServiceError(500, 'Internal Server Error', { error });
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Internal Server Error', { error });
         }
     }
 

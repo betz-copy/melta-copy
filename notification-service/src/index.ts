@@ -6,6 +6,7 @@ import config from './config';
 import NotificationsConsumer from './rabbit/consumer';
 import logger from './utils/logger/logsLogger';
 import { ServiceError } from './express/error';
+import { StatusCodes } from 'http-status-codes';
 
 const { mongo, rabbit, service, logs } = config;
 
@@ -53,5 +54,5 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    throw new ServiceError(500, 'Main error', { error });
+    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Main error', { error });
 });

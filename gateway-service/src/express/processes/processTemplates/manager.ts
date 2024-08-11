@@ -18,6 +18,7 @@ import {
 } from '../../../externalServices/processService/interfaces/processInstance';
 import config from '../../../config';
 import { isProcessManager } from '../../../externalServices/permissionsService';
+import { StatusCodes } from 'http-status-codes';
 
 const { internalSearchPullLimit } = config.processService;
 
@@ -60,7 +61,7 @@ export class ProcessTemplatesManager {
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
             await deleteFiles(idsToDelete).catch((error) => {
-                throw new ServiceError(500, `failed to delete unused icons: ${idsToDelete}`, { error });
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete unused icons: ${idsToDelete}`, { error });
             });
     }
 
@@ -111,7 +112,7 @@ export class ProcessTemplatesManager {
             return step.iconFileId;
         });
         await deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
-            throw new ServiceError(500, 'failed to delete icons images', { error });
+            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to delete icons images', { error });
         });
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

@@ -2,6 +2,7 @@
 import * as express from 'express';
 import { NotificationType } from './notifications/interface';
 import logger from '../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     public code;
@@ -16,7 +17,7 @@ export class ServiceError extends Error {
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     /* istanbul ignore else */
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -26,7 +27,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
             message: error.message,
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: error.name,
             message: error.message,
         });
@@ -51,13 +52,13 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
 
 export class NotificationDoesNotExistError extends ServiceError {
     constructor(notificationId: string) {
-        super(404, `A notification with the id '${notificationId}' does not exist`);
+        super(StatusCodes.NOT_FOUND, `A notification with the id '${notificationId}' does not exist`);
     }
 }
 
 /* istanbul ignore next */
 export class InvalidNotificationTypeError extends ServiceError {
     constructor(type: NotificationType) {
-        super(404, `'${type} is not a valid notification type`);
+        super(StatusCodes.NOT_FOUND, `'${type} is not a valid notification type`);
     }
 }

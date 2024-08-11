@@ -1,24 +1,24 @@
 import { FilterQuery, Document, ClientSession } from 'mongoose';
 import RelationshipTemplateModel from './model';
 import { IRelationshipTemplate } from './interface';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
 
 export class RelationshipTemplateManager {
     static getTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+        return RelationshipTemplateModel.findById(templateId).orFail(new NotFoundError('Relationship Template not found')).lean().exec();
     }
 
     static async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>, session?: ClientSession) {
         return RelationshipTemplateModel.findByIdAndUpdate(templateId, updatedFields, { new: true, session })
-            .orFail(new ServiceError(404, 'Relationship Template not found'))
+            .orFail(new NotFoundError('Relationship Template not found'))
             .lean()
             .exec();
     }
 
     static deleteTemplateById(templateId: string, session?: ClientSession) {
         return RelationshipTemplateModel.findByIdAndDelete(templateId, { session })
-            .orFail(new ServiceError(404, 'Relationship Template not found'))
+            .orFail(new NotFoundError('Relationship Template not found'))
             .lean()
             .exec();
     }
@@ -28,7 +28,7 @@ export class RelationshipTemplateManager {
             .lean()
             .exec();
 
-        if (deletedCount !== templateIds.length) throw new ServiceError(404, 'Some Relationship Templates not found');
+        if (deletedCount !== templateIds.length) throw new NotFoundError('Some Relationship Templates not found');
     }
 
     static async createTemplate(relationshipTemplate: IRelationshipTemplate, session?: ClientSession) {

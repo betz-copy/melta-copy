@@ -5,7 +5,7 @@ import { IRelationship } from '../../externalServices/instanceService/interfaces
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { Scope, getPermissions, isRuleManager } from '../../externalServices/permissionsService';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { ServiceError } from '../error';
+import { ForbiddenError } from '../error';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import PermissionsManager from '../permissions/manager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
@@ -23,9 +23,8 @@ const getCategoryIdFromTemplateId = async (templateId: string) => {
 };
 
 const getCategoryIdsFromTemplateIds = async (templateIds: string[]) => {
-    const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: templateIds});
-    
-    return templates.map((template)=> template.category._id);
+    const templates = await EntityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+    return templates.map((template) => template.category._id);
 };
 
 export const validateUserCanCreateEntityInstance = async (req: Request) => {
@@ -49,7 +48,7 @@ export const validateHasPermissionsToEntitiesInTemplates = async (user: Express.
 
     const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
     if (unauthorizedTemplates.length > 0) {
-        throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
+        throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
     }
 };
 
@@ -83,7 +82,7 @@ const validateUserPermissionForEntityInstance = async (req: Request, permissionT
     );
 
     if (!hasPermission) {
-        throw new ServiceError(403, `User not authorized, does not have ${permissionType.toLowerCase()} permission on category ${categoryId}`);
+        throw new ForbiddenError(`User not authorized, does not have ${permissionType.toLowerCase()} permission on category ${categoryId}`);
     }
 
     (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
@@ -102,18 +101,18 @@ const getCategoriesIdsByEntitiesAndTemplatesIds = async (entitiesIds: string[], 
     const categoriesIds = await getCategoryIdsFromTemplateIds([...templateIds]);
 
     return categoriesIds;
-}
+};
 
 export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
     const permissionType = 'Write';
 
-    const {actionsGroups} = req.body;
+    const { actionsGroups } = req.body;
 
     const { templateIds, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
     const [categoriesIds, permissionsArrOfUser] = await Promise.all([
-        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds), 
-        getPermissions({ userId: req.user!.id })
+        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds),
+        getPermissions({ userId: req.user!.id }),
     ]);
 
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
@@ -123,7 +122,7 @@ export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
     );
 
     if (!hasPermission) {
-        throw new ServiceError(403, `User not authorized, does not have ${permissionType.toLowerCase()} permission on category`);
+        throw new ForbiddenError(`User not authorized, does not have ${permissionType.toLowerCase()} permission on category`);
     }
 
     (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
@@ -146,7 +145,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
     const isAllowedAllTemplates = templateIds.every((templateId) => allAllowedEntityTemplates.includes(templateId));
 
     if (!isAllowedAllTemplates)
-        throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
+        throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
 };
 
 // relationships
@@ -189,6 +188,6 @@ export const validateUserCanIgnoreRules = async (req: Request) => {
     );
 
     if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
-        throw new ServiceError(403, 'a user without rule permissions only ignore "WARNING" rules', {});
+        throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
     }
 };

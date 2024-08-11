@@ -5,6 +5,7 @@ import { addPropertyToRequest } from '../../utils/express';
 import { trycatch } from '../../utils/lib';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
+import { StatusCodes } from 'http-status-codes';
 
 const getRelationshipTemplateByIdOrThrowValidationError = async (templateId: string) => {
     const { result: relationshipTemplate, err: getRelationshipTemplateByIdErr } = await trycatch(() =>
@@ -12,7 +13,7 @@ const getRelationshipTemplateByIdOrThrowValidationError = async (templateId: str
     );
 
     if (getRelationshipTemplateByIdErr || !relationshipTemplate) {
-        if (axios.isAxiosError(getRelationshipTemplateByIdErr) && getRelationshipTemplateByIdErr.response?.status === 404) {
+        if (axios.isAxiosError(getRelationshipTemplateByIdErr) && getRelationshipTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND) {
             throw new ValidationError(`Relationship template doesnt exist (id: "${templateId}")`);
         }
 

@@ -6,6 +6,7 @@ import config from '../../../config';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import { getTemplateAggregation, transaction } from '../../../utils/mongoose';
 import ProcessInstanceManager from '../processes/manager';
+import { StatusCodes } from 'http-status-codes';
 
 export default class StepInstanceManager {
     static async getStepById(id: string): Promise<IMongoStepInstance> {
@@ -14,7 +15,7 @@ export default class StepInstanceManager {
 
     static async getSteps(ids: string[]): Promise<IMongoStepInstance[]> {
         return StepInstanceModel.find({ _id: { $in: ids } })
-            .orFail(new ServiceError(404, 'No matching step Templates found'))
+            .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'No matching step Templates found'))
             .lean();
     }
 
@@ -45,7 +46,7 @@ export default class StepInstanceManager {
         const currProcess = await ProcessInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
-        if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
+        if (currProcess.archived) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, "Can`t edit an archived process's step");
 
         if (!statusReview) {
             return StepInstanceModel.findByIdAndUpdate(

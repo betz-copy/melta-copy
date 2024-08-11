@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import config from '../config';
 import { trycatch } from '../utils';
+import { StatusCodes } from 'http-status-codes';
 
 const {
     kartoffel: { baseUrl, baseEntitiesRoute, fullNameRoute, requestTimeout, digitalIdentityRoute, idRoute, identifierRoute },
@@ -24,7 +25,7 @@ export const wrapKartoffelRequestForUiSearch = async (func: () => Promise<IKarto
 
     if (err) {
         const axiosError = err as AxiosError;
-        if (axiosError?.response?.status === 404) {
+        if (axiosError?.response?.status === StatusCodes.NOT_FOUND) {
             return [];
         }
 

@@ -7,6 +7,7 @@ import { Express } from 'express';
 import mongoose from 'mongoose';
 import Server from '../src/express/server';
 import config from '../src/config';
+import { StatusCodes } from 'http-status-codes';
 // import { sleep } from '../src/utils';
 
 jest.setTimeout(30000);
@@ -19,6 +20,7 @@ const fakeObjectId = '507f1f77bcf86cd799439011';
 const fakeObjectId2 = '507f1f77bcf86cd795443901';
 
 const { mongo } = config;
+const { OK: okStatus, NOT_FOUND: NotFoundStatus, BAD_REQUEST: BadRequestStatus } = StatusCodes;
 
 const initializeMongo = async () => {
     await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
@@ -52,14 +54,14 @@ describe('e2e permissions tests', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(200);
+            const response = await request(app).get('/isAlive').expect(okStatus);
             expect(response.text).toBe('alive');
         });
     });
 
     describe('/unknownRoute', () => {
         it('should return status code 404', () => {
-            return request(app).get('/unknownRoute').expect(404);
+            return request(app).get('/unknownRoute').expect(NotFoundStatus);
         });
     });
 
@@ -67,7 +69,7 @@ describe('e2e permissions tests', () => {
         /* POST */
         describe('POST /api/permissions', () => {
             it('should fail validation for unknown fields', () => {
-                return request(app).post('/api/permissions').send({ test: 'a' }).expect(400);
+                return request(app).post('/api/permissions').send({ test: 'a' }).expect(BadRequestStatus);
             });
 
             it('should create permission', async () => {
@@ -80,9 +82,9 @@ describe('e2e permissions tests', () => {
 
                 const {
                     body: { _id: createdId },
-                } = await request(app).post('/api/permissions').send(permissionData).expect(200);
+                } = await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
-                const getResponse = await request(app).get(`/api/permissions/${createdId}`).expect(200);
+                const getResponse = await request(app).get(`/api/permissions/${createdId}`).expect(okStatus);
                 expect(getResponse.body).toEqual(expect.objectContaining(permissionData));
             });
 
@@ -94,8 +96,8 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(permissionData).expect(400);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(permissionData).expect(BadRequestStatus);
             });
 
             it('should fail creating permission with category: "all" after there is already permission with the same settings exists', async () => {
@@ -113,8 +115,8 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(permission2Data).expect(400);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(permission2Data).expect(BadRequestStatus);
             });
 
             it('should fail creating permission when there is already permission with category: all and the same settings', async () => {
@@ -132,8 +134,8 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(permission2Data).expect(400);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(permission2Data).expect(BadRequestStatus);
             });
 
             it('should fail creating permission with same (userId, resourceType, category) twice', async () => {
@@ -144,18 +146,18 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
                 await request(app)
                     .post('/api/permissions')
                     .send({ ...permissionData, scopes: ['Write'] })
-                    .expect(400);
+                    .expect(BadRequestStatus);
             });
         });
 
         /* POST Authorization */
         describe('POST /api/permissions/:id/authorization', () => {
             it('should fail validation for unknown fields', () => {
-                return request(app).post(`/api/permissions/${fakeObjectId}/authorization`).send({ test: 'a' }).expect(400);
+                return request(app).post(`/api/permissions/${fakeObjectId}/authorization`).send({ test: 'a' }).expect(BadRequestStatus);
             });
 
             it('should fail validation for unknown operation', async () => {
@@ -168,7 +170,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -176,7 +178,7 @@ describe('e2e permissions tests', () => {
                     operation: 'UnknownOperation',
                 };
 
-                await request(app).post(`/api/permissions/${userId}/authorization`).send(checkAuthorizationData).expect(400);
+                await request(app).post(`/api/permissions/${userId}/authorization`).send(checkAuthorizationData).expect(BadRequestStatus);
             });
 
             it('should return true', async () => {
@@ -189,7 +191,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -200,7 +202,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: true }));
             });
@@ -215,7 +217,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -226,7 +228,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: true }));
             });
@@ -241,7 +243,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${fakeObjectId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: false }));
             });
@@ -256,7 +258,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -267,7 +269,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: false }));
             });
@@ -282,7 +284,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Instances',
@@ -293,7 +295,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: false }));
             });
@@ -308,7 +310,7 @@ describe('e2e permissions tests', () => {
                     scopes: ['Read'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -319,7 +321,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: false }));
             });
@@ -333,7 +335,7 @@ describe('e2e permissions tests', () => {
                     category: 'People',
                     scopes: ['Read'],
                 };
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const checkAuthorizationData = {
                     resourceType: 'Templates',
@@ -343,7 +345,7 @@ describe('e2e permissions tests', () => {
                 const checkAuthorizationResponse = await request(app)
                     .post(`/api/permissions/${userId}/authorization`)
                     .send(checkAuthorizationData)
-                    .expect(200);
+                    .expect(okStatus);
 
                 expect(checkAuthorizationResponse.body).toEqual(expect.objectContaining({ authorized: false }));
             });
@@ -352,11 +354,11 @@ describe('e2e permissions tests', () => {
         /* GET */
         describe('GET /api/permissions', () => {
             it('should fail because non empty body', () => {
-                return request(app).get('/api/permissions').send({ test: 'asd' }).expect(400);
+                return request(app).get('/api/permissions').send({ test: 'asd' }).expect(BadRequestStatus);
             });
 
             it('should fail permission doesnt exists', () => {
-                return request(app).get(`/api/permissions/${fakeObjectId}`).expect(404);
+                return request(app).get(`/api/permissions/${fakeObjectId}`).expect(NotFoundStatus);
             });
 
             it('should get all permissions of user', async () => {
@@ -376,10 +378,10 @@ describe('e2e permissions tests', () => {
                     scopes: ['Write'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(okStatus);
 
-                const getResponse = await request(app).get(`/api/permissions/?userId=${userId}`).expect(200);
+                const getResponse = await request(app).get(`/api/permissions/?userId=${userId}`).expect(okStatus);
 
                 expect(getResponse.body.length).toEqual(1);
                 expect(getResponse.body[0]).toEqual(expect.objectContaining(permissionData));
@@ -402,10 +404,10 @@ describe('e2e permissions tests', () => {
                     scopes: ['Write'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(okStatus);
 
-                const getResponse = await request(app).get('/api/permissions/?resourceType=Templates').expect(200);
+                const getResponse = await request(app).get('/api/permissions/?resourceType=Templates').expect(okStatus);
 
                 expect(getResponse.body.length).toEqual(1);
                 expect(getResponse.body[0]).toEqual(expect.objectContaining(permissionData));
@@ -431,10 +433,10 @@ describe('e2e permissions tests', () => {
                     scopes: ['Write'],
                 };
 
-                await request(app).post('/api/permissions').send(permissionData).expect(200);
-                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(200);
+                await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
+                await request(app).post('/api/permissions').send(anotherUserPermissionData).expect(okStatus);
 
-                const getResponse = await request(app).get(`/api/permissions/?category=${firstCategory}`).expect(200);
+                const getResponse = await request(app).get(`/api/permissions/?category=${firstCategory}`).expect(okStatus);
 
                 expect(getResponse.body.length).toEqual(1);
                 expect(getResponse.body[0]).toEqual(expect.objectContaining(permissionData));
@@ -444,7 +446,7 @@ describe('e2e permissions tests', () => {
         /* DELETE */
         describe('DELETE /api/permissions', () => {
             it("should fail because permissions doesn't exists", () => {
-                return request(app).delete(`/api/permissions/${fakeObjectId}`).expect(404);
+                return request(app).delete(`/api/permissions/${fakeObjectId}`).expect(NotFoundStatus);
             });
 
             it('should delete created permission', async () => {
@@ -457,11 +459,11 @@ describe('e2e permissions tests', () => {
 
                 const {
                     body: { _id: createdId },
-                } = await request(app).post('/api/permissions').send(permissionData).expect(200);
+                } = await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
-                await request(app).delete(`/api/permissions/${createdId}`).expect(200);
+                await request(app).delete(`/api/permissions/${createdId}`).expect(okStatus);
 
-                const getResponse = await request(app).get('/api/permissions').expect(200);
+                const getResponse = await request(app).get('/api/permissions').expect(okStatus);
                 expect(getResponse.body.length).toEqual(0);
             });
         });
@@ -469,7 +471,7 @@ describe('e2e permissions tests', () => {
         /* PUT */
         describe('PUT /api/permissions', () => {
             it('should fail because of missing fields', () => {
-                return request(app).put(`/api/permissions/${fakeObjectId}`).send({}).expect(400);
+                return request(app).put(`/api/permissions/${fakeObjectId}`).send({}).expect(BadRequestStatus);
             });
 
             it("should fail because permission doesn't exists", () => {
@@ -477,7 +479,7 @@ describe('e2e permissions tests', () => {
                     resourceType: 'Instances',
                 };
 
-                return request(app).put(`/api/permissions/${fakeObjectId}`).send(updateData).expect(404);
+                return request(app).put(`/api/permissions/${fakeObjectId}`).send(updateData).expect(NotFoundStatus);
             });
 
             it('should update created permission', async () => {
@@ -490,15 +492,15 @@ describe('e2e permissions tests', () => {
 
                 const {
                     body: { _id: createdId },
-                } = await request(app).post('/api/permissions').send(permissionData).expect(200);
+                } = await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const updateData = {
                     resourceType: 'Instances',
                 };
 
-                await request(app).put(`/api/permissions/${createdId}`).send(updateData).expect(200);
+                await request(app).put(`/api/permissions/${createdId}`).send(updateData).expect(okStatus);
 
-                const getResponse = await request(app).get(`/api/permissions/${createdId}`).expect(200);
+                const getResponse = await request(app).get(`/api/permissions/${createdId}`).expect(okStatus);
                 expect(getResponse.body).toEqual(expect.objectContaining(updateData));
             });
 
@@ -512,13 +514,13 @@ describe('e2e permissions tests', () => {
 
                 const {
                     body: { _id: createdId },
-                } = await request(app).post('/api/permissions').send(permissionData).expect(200);
+                } = await request(app).post('/api/permissions').send(permissionData).expect(okStatus);
 
                 const updateData = {
                     category: 'People2',
                 };
 
-                await request(app).put(`/api/permissions/${createdId}`).send(updateData).expect(400);
+                await request(app).put(`/api/permissions/${createdId}`).send(updateData).expect(BadRequestStatus);
             });
         });
     });

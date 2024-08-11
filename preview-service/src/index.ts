@@ -6,6 +6,7 @@ import { minioClient } from './utils/minio/minioClient';
 import logger from './utils/logger/logsLogger';
 import PreviewConsumer from './rabbit/consumer';
 import { ServiceError } from './express/error';
+import { StatusCodes } from 'http-status-codes';
 
 const { logs, rabbit } = config;
 
@@ -50,5 +51,5 @@ const main = async () => {
 
 main().catch((error) => {
     process.exit(1);
-    throw new ServiceError(500, 'Main error', { error });
+    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Main error', { error });
 });

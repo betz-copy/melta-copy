@@ -1,7 +1,7 @@
 import * as assert from 'assert';
 import PermissionModel from './model';
 import { CheckAuthorizationBody, IPermission } from './interface';
-import { ServiceError } from '../error';
+import { BadRequestError, NotFoundError } from '../error';
 
 export class PermissionsManager {
     static getPermissions(query: Partial<IPermission>) {
@@ -10,7 +10,7 @@ export class PermissionsManager {
 
     static getPermissionById(id: string) {
         return PermissionModel.findById(id)
-            .orFail(new ServiceError(404, `cannot find permission with id: ${id}`))
+            .orFail(new NotFoundError(`cannot find permission with id: ${id}`))
             .exec();
     }
 
@@ -20,10 +20,10 @@ export class PermissionsManager {
         const allRelatedPermissions = await PermissionsManager.getPermissions(PermissionWithoutCategory);
         if (category === 'All') {
             if (allRelatedPermissions.length > 0) {
-                throw new ServiceError(400, 'cant create permission for all categories because there is already specefic category permission');
+                throw new BadRequestError('cant create permission for all categories because there is already specefic category permission');
             }
         } else if (PermissionsManager.doesPermissionsContainsAllCategoryPermission(allRelatedPermissions)) {
-            throw new ServiceError(400, `Permission with the same settings already exists for all categories`);
+            throw new BadRequestError(`Permission with the same settings already exists for all categories`);
         }
 
         return PermissionModel.create(permission);
@@ -31,13 +31,13 @@ export class PermissionsManager {
 
     static updatePermission(id: string, updatedPermission: Omit<IPermission, 'id' | 'userId' | 'category'>) {
         return PermissionModel.findOneAndUpdate({ _id: id }, updatedPermission, { new: true })
-            .orFail(new ServiceError(404, `cannot find permission with id: ${id}`))
+            .orFail(new NotFoundError(`cannot find permission with id: ${id}`))
             .exec();
     }
 
     static deletePermission(id: string) {
         return PermissionModel.findByIdAndDelete(id)
-            .orFail(new ServiceError(404, `cannot find permission with id: ${id}`))
+            .orFail(new NotFoundError(`cannot find permission with id: ${id}`))
             .exec();
     }
 

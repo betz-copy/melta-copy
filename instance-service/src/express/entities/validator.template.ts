@@ -23,6 +23,7 @@ import {
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
+import { StatusCodes } from 'http-status-codes';
 
 const { neo4j } = config;
 
@@ -57,7 +58,7 @@ export const getEntityTemplateByIdOrThrowValidationError = async (templateId: st
         EntityTemplateManagerService.getEntityTemplateById(templateId),
     );
     if (getEntityTemplateByIdErr || !entityTemplate) {
-        if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
+        if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND) {
             throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
         }
 

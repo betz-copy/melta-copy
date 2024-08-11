@@ -1,6 +1,7 @@
 /* eslint-disable max-classes-per-file */
 import express from 'express';
 import logger from '../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     constructor(public code: number, message: string, public metadata: object = {}) {
@@ -12,21 +13,21 @@ export class ServiceError extends Error {
 
 export class NotFoundError extends ServiceError {
     constructor(message: string) {
-        super(404, message);
+        super(StatusCodes.NOT_FOUND, message);
         this.name = 'NotFound';
     }
 }
 
 export class ValidationError extends ServiceError {
     constructor(message: string) {
-        super(400, message);
+        super(StatusCodes.BAD_REQUEST, message);
         this.name = 'TemplateValidationError';
     }
 }
 
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -37,12 +38,11 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
             metadata: error.metadata,
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: error.name,
             message: error.message,
         });
     }
-    
     logger.error('error for handling new request', {
         error: {
             request: {

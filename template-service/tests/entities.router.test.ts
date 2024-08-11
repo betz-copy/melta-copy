@@ -11,9 +11,12 @@ import EntityTemplateModel from '../src/express/entityTemplate/model';
 import { IEntityTemplate } from '../src/express/entityTemplate/interface';
 import { ICategory } from '../src/express/category/interface';
 import * as relationshipTemplateManager from '../src/relationshipTemplateManager';
+import { StatusCodes } from 'http-status-codes';
 
 jest.mock('../src/relationshipTemplateManager');
 const relationshipTemplateManagerMocked = jest.mocked(relationshipTemplateManager, true);
+
+const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
 
 const testUrl = 'mongodb://localhost:27017/test';
 
@@ -59,14 +62,14 @@ describe('Router Tests', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(200);
+            const response = await request(app).get('/isAlive').expect(okStatus);
             expect(response.text).toBe('alive');
         });
     });
 
     describe('invalid route', () => {
         it('should return 404', () => {
-            return request(app).get('/unknownRoute').expect(404);
+            return request(app).get('/unknownRoute').expect(notFoundStatus);
         });
     });
 
@@ -75,7 +78,7 @@ describe('Router Tests', () => {
             it('should fail with status code 400 - validation missing fields', async () => {
                 const entityTemplateData = { name: 'test', displayName: 'בדיקה', disabled: false };
                 const response = await request(app).post('/api/entities/templates').send(entityTemplateData);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(JSON.parse(response.text).type).toBe('ValidationError');
             });
 
@@ -93,7 +96,7 @@ describe('Router Tests', () => {
                     },
                 };
                 const response = await request(app).post('/api/entities/templates').send(entityTemplateData);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(JSON.parse(response.text).type).toBe('ValidationError');
             });
 
@@ -101,7 +104,7 @@ describe('Router Tests', () => {
                 const response = await request(app)
                     .post('/api/entities/templates')
                     .send({ ...entityTemplateDefaultData, category: mongoId });
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Category not found');
             });
 
@@ -120,14 +123,14 @@ describe('Router Tests', () => {
                     },
                 };
                 const response = await request(app).post('/api/entities/templates').send(entityTemplateData);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('GET /', () => {
             it('should return empty array with status code 200 ', async () => {
                 const response = await request(app).get(`/api/entities/templates`).query({ search: 'בדיקה' });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toStrictEqual([]);
             });
 
@@ -135,14 +138,14 @@ describe('Router Tests', () => {
                 const category = await CategoryManager.createCategory(categoryDefaultData);
                 await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
                 const response = await request(app).get(`/api/entities/templates`).query({ search: entityTemplateDefaultData.name });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('GET /:templateId', () => {
             it('should fail with status code 404 - entity template not found', async () => {
                 const response = await request(app).get(`/api/entities/templates/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Entity Template not found');
             });
 
@@ -150,7 +153,7 @@ describe('Router Tests', () => {
                 const category = await CategoryManager.createCategory(categoryDefaultData);
                 const entityTemplate = await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: category._id });
                 const response = await request(app).get(`/api/entities/templates/${entityTemplate._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
@@ -160,7 +163,7 @@ describe('Router Tests', () => {
                 relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
 
                 const response = await request(app).delete(`/api/entities/templates/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Entity Template not found');
             });
 
@@ -172,14 +175,14 @@ describe('Router Tests', () => {
                 relationshipTemplateManagerMocked.getRelationshipTemplates.mockResolvedValueOnce([]);
 
                 const response = await request(app).delete(`/api/entities/templates/${entityTemplate._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('PUT /:templateId', () => {
             it('should fail with status code 404 - entity template not found', async () => {
                 const response = await request(app).put(`/api/entities/templates/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Entity Template not found');
             });
 
@@ -196,7 +199,7 @@ describe('Router Tests', () => {
                             },
                         },
                     });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
     });
@@ -206,27 +209,27 @@ describe('Router Tests', () => {
             it('should fail with status code 400 - validation missing fields', async () => {
                 const cateoryData = { name: 'test' };
                 const response = await request(app).post('/api/categories').send(cateoryData);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(JSON.parse(response.text).type).toBe('ValidationError');
             });
 
             it('should create category with status code 200', async () => {
                 const response = await request(app).post('/api/categories').send(categoryDefaultData);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('GET /:categoryId', () => {
             it('should fail with status code 404 - category not found', async () => {
                 const response = await request(app).get(`/api/categories/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Category not found');
             });
 
             it('should find category with status code 200', async () => {
                 const newCategory = await CategoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).get(`/api/categories/${newCategory._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
 
             it('should find all categories with status code 200', async () => {
@@ -237,14 +240,14 @@ describe('Router Tests', () => {
 
                 const response = await request(app).get(`/api/categories`);
                 expect(response.body).toHaveLength(2);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('DELETE /:categoryId', () => {
             it('should fail with status code 404 - category not found', async () => {
                 const response = await request(app).delete(`/api/categories/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Category not found');
             });
 
@@ -253,28 +256,28 @@ describe('Router Tests', () => {
                 await EntityTemplateManager.createTemplate({ ...entityTemplateDefaultData, category: newCategory._id });
 
                 const response = await request(app).delete(`/api/categories/${newCategory._id}`);
-                expect(response.status).toBe(403);
+                expect(response.status).toBe(forbiddenStatus);
                 expect(JSON.parse(response.text).message).toBe('category still has entity templates');
             });
 
             it('should delete category with status code 200', async () => {
                 const newCategory = await CategoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).delete(`/api/categories/${newCategory._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
             });
         });
 
         describe('PUT /:categoryId', () => {
             it('should fail with error 404 - category not found', async () => {
                 const response = await request(app).put(`/api/categories/${mongoId}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(JSON.parse(response.text).message).toBe('Category not found');
             });
 
             it('should update category with status code 200', async () => {
                 const newCategory = await CategoryManager.createCategory(categoryDefaultData);
                 const response = await request(app).put(`/api/categories/${newCategory._id}`).send({ name: 'newName' });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.name).toBe('newName');
             });
         });

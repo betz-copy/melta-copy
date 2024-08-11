@@ -1,6 +1,6 @@
 import CategoryModel from './model';
 import { ICategory } from './interface';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 
 class CategoryManager {
     static getCategories(displayName?: string) {
@@ -10,7 +10,7 @@ class CategoryManager {
     }
 
     static getCategoryById(id: string) {
-        return CategoryModel.findById(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return CategoryModel.findById(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
     static async createCategory(categoryData: ICategory) {
@@ -18,11 +18,11 @@ class CategoryManager {
     }
 
     static async deleteCategory(id: string) {
-        return CategoryModel.findByIdAndDelete(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return CategoryModel.findByIdAndDelete(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
     static async updateCategory(id: string, updatedData: Partial<ICategory>) {
-        return CategoryModel.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return CategoryModel.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 }
 export default CategoryManager;

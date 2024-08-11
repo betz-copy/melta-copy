@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '../../express/error';
 import { EntityTemplateManagerService, IEntityTemplate } from '../../externalServices/templates/entityTemplateService';
 import logger from '../logger/logsLogger';
@@ -63,7 +64,7 @@ async function main() {
                 );
             } catch (error) {
                 throw new ServiceError(
-                    500,
+                    StatusCodes.INTERNAL_SERVER_ERROR,
                     `Failed to update fields that have a date notification in entityTemplate: ${entity._id} - ${entity.name} in properties: ${updatedProperties}`,
                     { error },
                 );

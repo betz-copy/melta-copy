@@ -6,6 +6,7 @@ import config from './config';
 import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 import { ServiceError } from './express/error';
+import { StatusCodes } from 'http-status-codes';
 
 const { service, rabbit, logs } = config;
 
@@ -47,5 +48,5 @@ const main = async () => {
 };
 
 main().catch((error) => {
-    throw new ServiceError(500, `Main error`, { error });
+    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `Main error`, { error });
 });

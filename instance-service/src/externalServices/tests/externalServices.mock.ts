@@ -4,6 +4,7 @@ import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/i
 import { IMongoRule } from '../templates/interfaces/rules';
 import config from '../../config';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/interfaces/relationshipTemplates';
+import { StatusCodes } from 'http-status-codes';
 
 const { url, relationships, entities } = config.templateService;
 
@@ -548,18 +549,20 @@ export const generateTemplates = () => {
 
 export const mockEntityTemplatesRoutes = (mockTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
     entityTemplates.forEach((entityTemplate) => {
-        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(200, entityTemplate);
+        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(StatusCodes.OK, entityTemplate);
     });
 
     mockTemplateManager.onPost(`${url}${entities.searchRoute}`).reply(({ data }) => {
         const { ids } = JSON.parse(data) as Required<Pick<ISearchEntityTemplatesBody, 'ids'>>; // assuming only search by ids
-        return [200, entityTemplates.filter(({ _id }) => ids.includes(_id))];
+        return [StatusCodes.OK, entityTemplates.filter(({ _id }) => ids.includes(_id))];
     });
 };
 
 export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter, relationshipTemplates: IMongoRelationshipTemplate[]) => {
     relationshipTemplates.forEach((relationshipTemplate) => {
-        mockTemplateManager.onGet(`${url}${relationships.getRelationshipByIdRoute}/${relationshipTemplate._id}`).reply(200, relationshipTemplate);
+        mockTemplateManager
+            .onGet(`${url}${relationships.getRelationshipByIdRoute}/${relationshipTemplate._id}`)
+            .reply(StatusCodes.OK, relationshipTemplate);
     });
 
     mockTemplateManager.onPost(`${url}${relationships.searchTemplatesRoute}`).reply(({ data }) => {
@@ -569,7 +572,7 @@ export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter
         >;
 
         return [
-            200,
+            StatusCodes.OK,
             relationshipTemplates.filter(
                 ({ sourceEntityId, destinationEntityId }) =>
                     sourceEntityIds?.includes(sourceEntityId) || destinationEntityIds?.includes(destinationEntityId),
@@ -587,6 +590,6 @@ export const mockRulesRoutes = (mockTemplateManager: MockAdapter, rules: IMongoR
                 disabled: false,
                 entityTemplateIds: [entityTemplateId],
             })
-            .reply(200, rulesByEntityTemplate);
+            .reply(StatusCodes.OK, rulesByEntityTemplate);
     });
 };

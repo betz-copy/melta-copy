@@ -1,6 +1,7 @@
 // eslint-disable-next-line max-classes-per-file
 import * as express from 'express';
 import logger from '../utils/logger/logsLogger';
+import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     public code;
@@ -14,14 +15,14 @@ export class ServiceError extends Error {
 
 export class ValidationError extends ServiceError {
     constructor(message: string) {
-        super(400, message);
+        super(StatusCodes.BAD_REQUEST, message);
         this.name = 'TemplateValidationError';
     }
 }
 
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -31,7 +32,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
             message: error.message,
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: error.name,
             message: error.message,
         });
@@ -58,7 +59,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
 export class NotFoundError extends ServiceError {
     constructor(type: 'process' | 'step', id: string) {
         const msg = `${type} with the id ${id} not found`;
-        super(404, msg);
+        super(StatusCodes.NOT_FOUND, msg);
     }
 }
 
@@ -102,6 +103,6 @@ export class StepNotPartOfProcessError extends ValidationError {
 
 export class NoMatchingStepsError extends ServiceError {
     constructor() {
-        super(404, 'No matching step Templates found');
+        super(StatusCodes.NOT_FOUND, 'No matching step Templates found');
     }
 }

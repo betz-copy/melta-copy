@@ -9,6 +9,7 @@ import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRo
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
+import { StatusCodes } from 'http-status-codes';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -119,7 +120,7 @@ describe('Relationship router', () => {
                     },
                 });
 
-            expect(relationship.statusCode).toBe(400);
+            expect(relationship.statusCode).toBe(StatusCodes.BAD_REQUEST);
             expect(relationship.body.type).toEqual('TemplateValidationError');
             expect(relationship.body.message).toEqual(`Relationship template doesnt exist (id: "${unknownRelId}")`);
         });
@@ -155,7 +156,7 @@ describe('Relationship router', () => {
                     },
                 });
 
-            expect(relationship.statusCode).toBe(400);
+            expect(relationship.statusCode).toBe(StatusCodes.BAD_REQUEST);
             expect(relationship.body.type).toEqual('TemplateValidationError');
             expect(relationship.body.message).toEqual(`Relationship template source/destination id does not match entity source/destination id.`);
         });
@@ -208,7 +209,7 @@ describe('Relationship router', () => {
             it('Should fail to get an existing relationship', async () => {
                 const relationship = await request(app).get(`/api/instances/relationships/${unknownId}`);
 
-                expect(relationship.statusCode).toBe(404);
+                expect(relationship.statusCode).toBe(StatusCodes.NOT_FOUND);
                 expect(relationship.body.type).toEqual('NotFound');
                 expect(relationship.body.message).toEqual(`[NEO4J] relationship "${unknownId}" not found`);
             });
@@ -245,7 +246,7 @@ describe('Relationship router', () => {
                     .put(`/api/instances/relationships/${unknownId}`)
                     .send({ properties: { testProp: 'newTestProp' } });
 
-                expect(relationship.statusCode).toBe(404);
+                expect(relationship.statusCode).toBe(StatusCodes.NOT_FOUND);
                 expect(relationship.body.type).toEqual('NotFound');
                 expect(relationship.body.message).toEqual(`[NEO4J] relationship "${unknownId}" not found`);
             });
@@ -259,7 +260,7 @@ describe('Relationship router', () => {
             it('Should fail to delete an existing relationship', async () => {
                 const relationship = await request(app).put(`/api/instances/relationships/${unknownId}`);
 
-                expect(relationship.statusCode).toBe(404);
+                expect(relationship.statusCode).toBe(StatusCodes.NOT_FOUND);
                 expect(relationship.body.type).toEqual('NotFound');
                 expect(relationship.body.message).toEqual(`[NEO4J] relationship "${unknownId}" not found`);
             });
@@ -271,7 +272,7 @@ describe('Relationship router', () => {
                     .post(`/api/instances/relationships/ids`)
                     .send({ ids: [relId] });
 
-                expect(relationship.statusCode).toBe(200);
+                expect(relationship.statusCode).toBe(StatusCodes.OK);
                 expect(relationship.body).toStrictEqual(expect.arrayContaining([relationshipInstance]));
             });
         });

@@ -30,7 +30,7 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
-import { NotFoundError, ServiceError } from '../error';
+import { NotFoundError, ServiceError, ValidationError } from '../error';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
@@ -49,6 +49,9 @@ import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+import { StatusCodes } from 'http-status-codes';
+
+const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
 export class EntityManager {
     static getRelevantRulesOfEntities = (
@@ -144,7 +147,7 @@ export class EntityManager {
                 templateId: label,
                 property: fixedProperty,
             };
-            throw new ServiceError(400, `[NEO4J] instance is missing required property`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] instance is missing required property`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: requiredConstraint,
                 neo4jMessage,
@@ -165,7 +168,7 @@ export class EntityManager {
                 properties: fixedProperties,
             };
 
-            throw new ServiceError(400, `[NEO4J] instance has duplicates on unique properties`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] instance has duplicates on unique properties`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: uniqueConstraint,
                 neo4jMessage,
@@ -287,7 +290,7 @@ export class EntityManager {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
         if (relatedEntity.templateId !== relatedTemplateId)
-            throw new ServiceError(400, `[NEO4J] Related entity "${relatedEntity.properties._id}" is not of template "${relatedTemplateId}"`);
+            throw new ValidationError(`[NEO4J] Related entity "${relatedEntity.properties._id}" is not of template "${relatedTemplateId}"`);
 
         const relationshipToCreate = {
             sourceEntityId: relationshipTemplateDirection === 'incoming' ? relatedEntity.properties._id : originalEntityId,
@@ -381,7 +384,7 @@ export class EntityManager {
             latestIndex = await getLatestTemplateSearchIndex(entityTemplate._id);
 
             if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
+                throw new ValidationError(`[NEO4J] Global search index not found.`);
             }
         }
 
@@ -438,7 +441,7 @@ export class EntityManager {
             latestIndex = await getLatestGlobalSearchIndex();
 
             if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
+                throw new ValidationError(`[NEO4J] Global search index not found.`);
             }
         }
 
@@ -611,7 +614,7 @@ export class EntityManager {
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
                     errorCode: config.errorCodes.entityHasRelationships,
                 });
             }
@@ -873,7 +876,7 @@ export class EntityManager {
             }
 
             if (entity.properties.disabled) {
-                throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+                throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
             }
 
             const updatedProperties = EntityManager.getUpdatedProperties(
@@ -1133,7 +1136,7 @@ export class EntityManager {
 
     private static throwServiceErrorIfFailedToCreateConstraint(err: unknown, constraint: IConstraint) {
         if (err instanceof Neo4jError && err.code === 'Neo.DatabaseError.Schema.ConstraintCreationFailed') {
-            throw new ServiceError(400, `[NEO4J] failed to create constraint due to existing invalid data`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] failed to create constraint due to existing invalid data`, {
                 errorCode: config.errorCodes.failedToCreateConstraints,
                 constraint,
                 neo4jMessage: err.message,

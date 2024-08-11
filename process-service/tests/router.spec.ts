@@ -15,6 +15,9 @@ import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExa
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 import { ServiceError } from '../src/express/error';
+import { StatusCodes } from 'http-status-codes';
+
+const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus } = StatusCodes;
 
 const testUrl = 'mongodb://localhost:27017/test';
 const randomMongoId = () => {
@@ -108,7 +111,7 @@ describe('Test Process Service', () => {
         describe('/isAlive', () => {
             it('Should return 200 and "alive"', async () => {
                 const response = await request(app).get('/isAlive');
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.text).toBe('alive');
             });
         });
@@ -116,7 +119,7 @@ describe('Test Process Service', () => {
         describe('/Invalid Route', () => {
             it('Should return 404 and "Invalid Route"', async () => {
                 const response = await request(app).get('/invalid-route');
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toBe('Invalid Route');
             });
         });
@@ -125,7 +128,7 @@ describe('Test Process Service', () => {
         describe('POST /api/processes/templates', () => {
             it('Should create a new process template and return 200', async () => {
                 const response = await request(app).post('/api/processes/templates').send(processTemplateExample1);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
 
                 processTemplate = response.body;
                 expect(processTemplate.name).toEqual(processTemplateExample1.name);
@@ -133,7 +136,7 @@ describe('Test Process Service', () => {
             });
             it('Should try create a new process template and return 500 because duplicate error', async () => {
                 const response = await request(app).post('/api/processes/templates').send(processTemplateExample1);
-                expect(response.status).toBe(500);
+                expect(response.status).toBe(internalServerErrorStatus);
                 expect(response.text).toContain('duplicate');
             });
             it('Should try create a new process template and return 500 because duplicate error', async () => {
@@ -141,7 +144,7 @@ describe('Test Process Service', () => {
                     .post('/api/processes/templates')
                     .send({ ...processTemplateExample1, name: 'ChangeChange' });
                 // also need to fail because of steps name duplicate
-                expect(response.status).toBe(500);
+                expect(response.status).toBe(internalServerErrorStatus);
                 expect(response.text).toContain('duplicate');
             });
         });
@@ -149,7 +152,7 @@ describe('Test Process Service', () => {
         describe('GET /api/processes/templates/:id', () => {
             it('Should return 200 and the process template', async () => {
                 const response = await request(app).get(`/api/processes/templates/${processTemplate._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toEqual(processTemplate);
             });
         });
@@ -157,12 +160,12 @@ describe('Test Process Service', () => {
         describe('PUT /api/processes/templates/:id', () => {
             it('Should return validation error', async () => {
                 const response = await request(app).put('/api/processes/templates/1').send({});
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
             });
 
             it('Should try update the process template with wrong body, fail and return 400', async () => {
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(processTemplate);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('is not allowed');
             });
 
@@ -171,7 +174,7 @@ describe('Test Process Service', () => {
                 const newName = `${updatedProcessTemplate.name}change`;
                 updatedProcessTemplate.name = newName;
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.name).toBe(newName);
             });
 
@@ -180,7 +183,7 @@ describe('Test Process Service', () => {
                 const newStepName = `${updatedProcessTemplate.steps[0].name}change`;
                 updatedProcessTemplate.steps[0].name = newStepName;
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.steps[0].name).toBe(newStepName);
             });
 
@@ -188,7 +191,7 @@ describe('Test Process Service', () => {
                 const updatedProcessTemplate = prepareProcessTemplateToUpdate(processTemplate);
                 updatedProcessTemplate.steps = updatedProcessTemplate.steps.splice(1, 1);
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.steps.length).toBe(updatedProcessTemplate.steps.length);
             });
             it('Should update property type, and return 200', async () => {
@@ -204,7 +207,7 @@ describe('Test Process Service', () => {
 
                 updatedProcessTemplate.details.properties.properties[firstPropertyKey].type = newType;
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.details.properties.properties[firstPropertyKey].type).toBe(newType);
             });
             it('Should update the processTemplate, return it and return 200', async () => {
@@ -214,7 +217,7 @@ describe('Test Process Service', () => {
                 updatedProcessTemplate.steps[0].iconFileId = newIconFileId;
                 const response = await request(app).put(`/api/processes/templates/${processTemplate._id}`).send(updatedProcessTemplate);
 
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
 
                 // Extract relevant properties from response.body and processTemplate
                 const { updatedAt, steps, ...responseBodyWithoutUpdatedAt } = response.body;
@@ -254,14 +257,14 @@ describe('Test Process Service', () => {
                 const response = await request(app).post('/api/processes/templates/search').send({
                     displayName: processTemplate.displayName,
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toContainEqual(processTemplate);
             });
             it('Should return empty array and 200', async () => {
                 const response = await request(app).post('/api/processes/templates/search').send({
                     displayName: 'aaaaaaaaaaaaaaaaaaaaa',
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toHaveLength(0);
             });
             it('Should check reviewer permission and return processTemplate with 200', async () => {
@@ -269,14 +272,14 @@ describe('Test Process Service', () => {
                     reviewerId: processTemplate.steps[0].reviewers[0],
                 });
 
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toContainEqual(processTemplate);
             });
             it('Should check reviewer permission and return emptyArray with 200', async () => {
                 const response = await request(app).post('/api/processes/templates/search').send({
                     reviewerId: randomMongoId(),
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toHaveLength(0);
             });
         });
@@ -284,12 +287,12 @@ describe('Test Process Service', () => {
         describe('DELETE /api/processes/templates/:id', () => {
             it('Should return 404', async () => {
                 const response = await request(app).delete(`/api/processes/templates/${randomMongoId()}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toContain('not found');
             });
             it('Should delete the processTemplate and return it with status code 200', async () => {
                 const response = await request(app).delete(`/api/processes/templates/${processTemplate._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toStrictEqual(processTemplate);
             });
         });
@@ -303,9 +306,9 @@ describe('Test Process Service', () => {
             it('Should try create instance with wrong templateId and return 404', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance({ ...processTemplate, _id: randomMongoId() }, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toContain('not found');
-                throw new ServiceError(404, 'Main error', { error: response.error });
+                throw new ServiceError(notFoundStatus, 'Main error', { error: response.error });
             });
 
             it('Should try create instance with wrong stepsTemplateId and return 400', async () => {
@@ -318,7 +321,7 @@ describe('Test Process Service', () => {
                 });
                 const instanceToCreate = prepareDataForCreateProcessInstance({ ...processTemplate, steps: errSteps }, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('TemplateValidationError');
             });
 
@@ -329,14 +332,14 @@ describe('Test Process Service', () => {
                 });
 
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('TemplateValidationError');
             });
 
             it('Should create instance and return 200', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance(processTemplate, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body.name).toBe(instanceToCreate.name);
                 processInstance = response.body;
             });
@@ -344,24 +347,24 @@ describe('Test Process Service', () => {
             it('Should try create the same instance and return 500 with duplicate error', async () => {
                 const instanceToCreate = prepareDataForCreateProcessInstance(processTemplate, processInstanceExample1);
                 const response = await request(app).post('/api/processes/instances').send(instanceToCreate);
-                expect(response.status).toBe(500);
+                expect(response.status).toBe(internalServerErrorStatus);
                 expect(response.text).toContain('duplicate');
             });
         });
         describe('GET /api/processes/instances/:id', () => {
             it('Should get the process instance and return 200', async () => {
                 const response = await request(app).get(`/api/processes/instances/${processInstance._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toStrictEqual(processInstance);
             });
             it('Should return not found error with 404', async () => {
                 const response = await request(app).get(`/api/processes/instances/${randomMongoId()}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toContain('not found');
             });
             it('Should return validation error and 400', async () => {
                 const response = await request(app).get('/api/processes/instances/1');
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('ValidationError');
             });
         });
@@ -372,7 +375,7 @@ describe('Test Process Service', () => {
                     processInstance.steps,
                 );
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('TemplateValidationError');
             });
             it('Should try update process steps ids steps and return 404', async () => {
@@ -385,14 +388,14 @@ describe('Test Process Service', () => {
                 });
                 const updatedData = prepareDataForUpdateProcessInstance(processInstanceExample1, errSteps);
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toContain('No matching step Templates found');
             });
             it('Should return updated process with 200', async () => {
                 const updatedData = prepareDataForUpdateProcessInstance({ ...processInstanceExample1 }, processInstance.steps);
                 const response = await request(app).put(`/api/processes/instances/${processInstance._id}`).send(updatedData);
 
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 const { updatedAt, steps, reviewedAt, ...updatedProcessInstance } = response.body as IMongoProcessInstancePopulated;
                 const { updatedAt: originalUpdatedAt, steps: originalSteps, ...originalProcessWithoutUpdatedAt } = processInstance;
                 expect(updatedProcessInstance).toStrictEqual(originalProcessWithoutUpdatedAt);
@@ -414,35 +417,35 @@ describe('Test Process Service', () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     name: processInstance.name,
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toContainEqual(processInstance);
             });
             it('Should return empty array and 200', async () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     name: 'aaaaaaaaaaaaaaaaaaaaa',
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toHaveLength(0);
             });
             it('should check (instance) reviewer permission and processInstance in array with 200', async () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     reviewerId: processInstance.steps[0].reviewers[0],
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toContainEqual(processInstance);
             });
             it('should check (template) reviewer permission and processInstance in array with 200', async () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     reviewerId: processTemplate.steps[0].reviewers[0],
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toContainEqual(processInstance);
             });
             it('should check reviewer permission and return empty array with 200', async () => {
                 const response = await request(app).post('/api/processes/instances/search').send({
                     reviewerId: randomMongoId(),
                 });
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toHaveLength(0);
             });
         });
@@ -450,19 +453,19 @@ describe('Test Process Service', () => {
         describe('DELETE /api/processes/instances/:id', () => {
             it('Should return 404', async () => {
                 const response = await request(app).delete(`/api/processes/instances/${randomMongoId()}`);
-                expect(response.status).toBe(404);
+                expect(response.status).toBe(notFoundStatus);
                 expect(response.text).toContain('not found');
             });
             it('Should try delete process template and fail because it has instance, return status 400', async () => {
                 const response = await request(app).delete(`/api/processes/templates/${processTemplate._id}`);
 
-                expect(response.status).toBe(400);
+                expect(response.status).toBe(badRequest);
                 expect(response.text).toContain('still has instances');
             });
             it('Should delete the process Instance and return it with status code 200, also should delete steps from steps collection', async () => {
                 const response = await request(app).delete(`/api/processes/instances/${processInstance._id}`);
 
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toStrictEqual(processInstance);
             });
             it('Should delete steps from steps collection', async () => {
@@ -475,7 +478,7 @@ describe('Test Process Service', () => {
             });
             it('Delete process template return it with 200', async () => {
                 const response = await request(app).delete(`/api/processes/templates/${processTemplate._id}`);
-                expect(response.status).toBe(200);
+                expect(response.status).toBe(okStatus);
                 expect(response.body).toStrictEqual(processTemplate);
             });
         });
@@ -493,7 +496,7 @@ describe('Test Process Service', () => {
                     await Promise.all(
                         processInstance.steps.map(async ({ _id }, index) => {
                             const response = await request(app).patch(`/api/processes/instances/steps/${_id}`).send(stepsPropertiesExample1[index]);
-                            expect(response.status).toBe(200);
+                            expect(response.status).toBe(okStatus);
                             expect(response.body.properties).toStrictEqual(stepsPropertiesExample1[index].properties);
                         }),
                     );
@@ -505,7 +508,7 @@ describe('Test Process Service', () => {
                                 .patch(`/api/processes/instances/steps/${_id}`)
                                 .send(errStepsPropertiesExample1[index]);
 
-                            expect(response.status).toBe(400);
+                            expect(response.status).toBe(badRequest);
                             expect(response.text).toContain('TemplateValidationError');
                         }),
                     );
@@ -523,8 +526,8 @@ describe('Test Process Service', () => {
                                     processId: processInstance._id,
                                 },
                             } as UpdateStepReqBody);
-                            
-                        expect(response.status).toBe(200);
+
+                        expect(response.status).toBe(okStatus);
                         expect(response.body.status).toBe(Status.Rejected);
 
                         // eslint-disable-next-line no-await-in-loop
@@ -549,7 +552,7 @@ describe('Test Process Service', () => {
                                 comments,
                             } as UpdateStepReqBody);
 
-                        expect(response.status).toBe(200);
+                        expect(response.status).toBe(okStatus);
                         expect(response.body.status).toBe(Status.Approved);
                         expect(response.body.comments).toBe(comments);
                     }
@@ -577,7 +580,7 @@ describe('Test Process Service', () => {
                                 },
                             });
 
-                        expect(response.status).toBe(400);
+                        expect(response.status).toBe(badRequest);
                         expect(response.text).toContain('not part of');
                     }
                 });

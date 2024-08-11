@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { checkUserAuthorization, getPermissions, ResourceType, Scope } from '../../externalServices/permissionsService';
-import { ServiceError } from '../error';
+import { ForbiddenError } from '../error';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import PermissionsManager from './manager';
 
@@ -19,7 +19,7 @@ export const validateAuthorization = async (
     const authorizationResult = await checkUserAuthorization(user.id, resourceType, relatedCategories, permissionType);
     const { authorized, metadata } = authorizationResult;
     if (!authorized) {
-        throw new ServiceError(403, `User not authorized for ${permissionType} access`, metadata);
+        throw new ForbiddenError(`User not authorized for ${permissionType} access`, metadata);
     }
 };
 
@@ -36,7 +36,7 @@ export const validateUserHasAtLeastSomePermissions = async (req: Request) => {
 
     const permissionsArrOfUser = await getPermissions({ userId: user.id });
     if (permissionsArrOfUser.length === 0) {
-        throw new ServiceError(403, 'user not authorized, needs to have at least one permission');
+        throw new ForbiddenError('user not authorized, needs to have at least one permission');
     }
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
 
