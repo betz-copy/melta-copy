@@ -76,10 +76,20 @@ export const getDatasource = <Data extends any = IEntity>(
             }
 
             const agGridRequest = params.request;
+            const currentPage = params.api.paginationGetCurrentPage();
+            const pageSize = params.api.paginationGetPageSize();
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        {
+                            ...agGridRequest,
+                            quickFilter: quickFilterText,
+                            skip: 0,
+                            limit: (currentPage + 1) * pageSize,
+                        } as IAGGridRequest,
+                        template,
+                    ),
                 ),
             );
 
