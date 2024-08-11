@@ -3,7 +3,10 @@ import FormData from 'form-data';
 import config from '../config';
 import fsCreateReadStream from '../utils/fs';
 
-const { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
+const {
+    service: { docxHeaders },
+    storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
+} = config;
 
 export const uploadFile = async (file: Express.Multer.File) => {
     const formData = new FormData();
@@ -37,9 +40,7 @@ export const uploadFiles = async (files: Express.Multer.File[]) => {
 export const downloadFile = async (path: string) => {
     const { data } = await axios.get<ArrayBuffer>(`${url}/${downloadFileRoute}/${encodeURIComponent(path)}`, {
         responseType: 'arraybuffer',
-        headers: {
-            Accept: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        },
+        ...docxHeaders,
     });
 
     return data;

@@ -183,15 +183,18 @@ const extractTextFromHtml = (html: string, htmlTag: string = 'p'): string => {
     return $(htmlElement).text() ?? html;
 };
 
+const ISODateRegex = /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/;
+const regularDateRegex = /^\d{4}-\d{2}-\d{2}$/;
+
 /**
  * Checks if string is in date format (YYYY-MM-DDTHH:MN:SS.MSSZ)
  * @param strDate string that may be date
  * @returns true if the string is in the form of date. Otherwise, false.
  */
 const isDateWithTime = (strDate: string): boolean => {
-    if (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(strDate)) return false;
-    const d = new Date(strDate);
-    return d instanceof Date && !Number.isNaN(d.getTime()) && d.toISOString() === strDate; // valid date
+    if (!ISODateRegex.test(strDate)) return false;
+    const date = new Date(strDate);
+    return date instanceof Date && !Number.isNaN(date.getTime()) && date.toISOString() === strDate; // valid date
 };
 
 /**
@@ -200,7 +203,7 @@ const isDateWithTime = (strDate: string): boolean => {
  * @returns true if the string is in the form of date. Otherwise, false.
  */
 const isDateWithoutTime = (strDate: string): boolean => {
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(strDate)) return false;
+    if (!regularDateRegex.test(strDate)) return false;
     const date = new Date(strDate);
     const [year, month, day] = strDate.split('-').map(Number);
     return !Number.isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() + 1 === month && date.getDate() === day;
@@ -244,6 +247,7 @@ const createPatchesFromEntity = (properties: IEntity['properties']): Record<stri
         if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
             formattedValue = `${new Date(formattedValue).toLocaleDateString('uk')}, ${new Date(formattedValue).toLocaleTimeString('uk')}`;
         if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
+        if (Array.isArray(trimmedValue)) formattedValue = trimmedValue.join(', ');
 
         patches[key] = {
             type: PatchType.PARAGRAPH,

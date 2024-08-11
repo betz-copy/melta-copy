@@ -14,6 +14,11 @@ const config = {
         maxPatchIterations: env.get('MAX_PATCH_ITERATIONS').default(100).asIntPositive(),
         jewishDateIndicator: env.get('JEWISH_DATE_INDICATOR').default('_jewish_date').asString(),
         hebrewDateIndicator: env.get('HEBREW_DATE_INDICATOR').default('_hebrew_date').asString(),
+        docxHeaders: env.get('DOCX_HEADERS').default({
+            headers: {
+                Accept: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            },
+        }).asJsonObject,
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),

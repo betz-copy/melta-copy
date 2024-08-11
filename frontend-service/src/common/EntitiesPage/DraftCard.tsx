@@ -8,8 +8,10 @@ import { MeltaTooltip } from '../MeltaTooltip';
 import { MenuButton } from '../MenuButton';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import type { Draft } from '../dialogs/entity/draftWarningDialog';
+import '../../css/draft.css';
 
 export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> = ({ draft, openEditDialog }) => {
+    const replaceHtmlTagsRegex = /(<([^>]+)>)/gi;
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const isMenuOpen = Boolean(anchorEl);
 
@@ -21,18 +23,14 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
 
     const { createdAt, disabled, _id, updatedAt, ...displayProperties } = draft.properties;
 
-    const draftProperties = useMemo(
+    const draftPropertiesToDisplayOnHover = useMemo(
         () =>
             Object.values(displayProperties ?? [])
                 .filter(Boolean)
-                .map((displayProperty) =>
-                    displayProperty
-                        .toString()
-                        .replace(/(<([^>]+)>)/gi, '')
-                        .substring(0, 50),
-                )
+                .map((displayProperty) => displayProperty.toString().replace(replaceHtmlTagsRegex, '').substring(0, 50))
                 .join(' / ')
                 .substring(0, 750) || i18next.t('draftSaveDialog.emptyDraft'),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         [displayProperties],
     );
 
@@ -40,18 +38,7 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
 
     return (
         <>
-            <Card
-                sx={{
-                    display: 'flex',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    paddingX: '0.75rem',
-                    paddingY: '0.5rem',
-                    borderRadius: '1rem',
-                    boxShadow: 'rgba(30, 39, 117, 0.3) -2px 2px 6px 0px',
-                    margin: '0.5rem 1rem 0.5rem 0.2rem',
-                }}
-            >
+            <Card className="draft-card">
                 <Box sx={{ width: '12rem' }}>
                     <Box display="flex" alignItems="center" gap="0.25rem">
                         {draft.entityId && (
@@ -62,8 +49,8 @@ export const DraftCard: React.FC<{ draft: Draft; openEditDialog: () => void }> =
                         <Typography variant="subtitle2">{i18next.t('draftSaveDialog.draft')}</Typography>
                     </Box>
 
-                    <MeltaTooltip title={draftProperties}>
-                        <Typography noWrap>{draftProperties}</Typography>
+                    <MeltaTooltip title={draftPropertiesToDisplayOnHover}>
+                        <Typography noWrap>{draftPropertiesToDisplayOnHover}</Typography>
                     </MeltaTooltip>
                 </Box>
 

@@ -24,6 +24,7 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    exportEntityToDocumentSchemaByEntityId,
     exportEntityToDocumentSchema,
     searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
@@ -122,12 +123,14 @@ InstancesRouter.post(
     '/entities/export/document',
     ValidateRequest(exportEntityToDocumentSchema),
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(InstancesController.exportEntityToDocumentTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'entities',
-        responseDataExtractor: undefined,
-    }),
+    wrapController(InstancesController.exportEntityToDocumentTemplate),
+);
+
+InstancesRouter.post(
+    '/entities/export/document/:entityId',
+    ValidateRequest(exportEntityToDocumentSchemaByEntityId),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentSchemaByEntityId),
 );
 
 // relationships (Instances)
@@ -147,10 +150,6 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
-InstancesRouter.post(
-    '/bulk',
-    wrapMiddleware(validateUserCanWriteBulkEntityInstance),
-    wrapController(InstancesController.runBulkOfActions),
-)
+InstancesRouter.post('/bulk', wrapMiddleware(validateUserCanWriteBulkEntityInstance), wrapController(InstancesController.runBulkOfActions));
 
 export default InstancesRouter;

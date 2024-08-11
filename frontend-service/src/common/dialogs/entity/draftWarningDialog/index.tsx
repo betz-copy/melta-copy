@@ -21,21 +21,20 @@ import { DraftsState, useDraftIdStore, useDraftsStore } from '../../../../stores
 export type Draft = EntityWizardValues & { uniqueId: string; lastSavedAt: Date; entityId?: string };
 
 export const DraftWarningDialog: React.FC<{
-    open: boolean;
+    isOpen: boolean;
     handleClose: () => void;
     closeCreateOrEditDialog: () => void;
     values: EntityWizardValues & { entityId?: string };
     isLoading?: boolean;
     isEditMode: boolean;
     originalDrafts: DraftsState['drafts'];
-}> = ({ open, handleClose, closeCreateOrEditDialog, values, isLoading = false, isEditMode, originalDrafts }) => {
+}> = ({ isOpen, handleClose, closeCreateOrEditDialog, values, isLoading = false, isEditMode, originalDrafts }) => {
     const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft);
     const setAllDrafts = useDraftsStore((state) => state.setAllDrafts);
-
     const draftId = useDraftIdStore((state) => state.draftId);
 
     return (
-        <Dialog open={open} maxWidth="xs" fullWidth>
+        <Dialog open={isOpen} maxWidth="xs" fullWidth>
             <Box margin="1rem">
                 <DialogTitle>{i18next.t(`draftSaveDialog.${isEditMode ? 'exitTitle' : 'notSavedTitle'}`)}</DialogTitle>
 
@@ -75,16 +74,14 @@ export const DraftWarningDialog: React.FC<{
                                 variant="contained"
                                 sx={{ borderRadius: '8px' }}
                                 onClick={() => {
-                                    if (!isEditMode) {
-                                        if (draftId) {
-                                            createOrUpdateDraft(values.template.category._id, values.template._id, values, draftId);
-                                            toast.success(i18next.t('draftSaveDialog.success.edit'));
-                                        } else {
-                                            createOrUpdateDraft(values.template.category._id, values.template._id, values);
-                                            toast.success(i18next.t('draftSaveDialog.success.create'));
-                                        }
-                                    } else {
+                                    if (isEditMode) {
                                         setAllDrafts(originalDrafts);
+                                    } else if (draftId) {
+                                        createOrUpdateDraft(values.template.category._id, values.template._id, values, draftId);
+                                        toast.success(i18next.t('draftSaveDialog.success.edit'));
+                                    } else {
+                                        createOrUpdateDraft(values.template.category._id, values.template._id, values);
+                                        toast.success(i18next.t('draftSaveDialog.success.create'));
                                     }
 
                                     handleClose();

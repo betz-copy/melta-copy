@@ -250,7 +250,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 );
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
-                const betterDirty = useMemo(() => {
+                const absoluteDirty = useMemo(() => {
                     // textarea/long-text causes the field to first be undefined, setting dirty to true,
                     // so we check for dirty manually while ignoring these fields
                     // (if the value changes it won't be undefined and it will consider it dirty)
@@ -267,15 +267,15 @@ const CreateOrEditEntityDetails: React.FC<{
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
-                    if (!betterDirty) return;
+                    if (!absoluteDirty) return;
                     createOrUpdateDraftDebounced(values, draftId);
                     // eslint-disable-next-line react-hooks/exhaustive-deps
-                }, [betterDirty, values, draftId]);
+                }, [absoluteDirty, values, draftId]);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
-                    if (betterDirty && !wasDirty) setWasDirty(true);
-                }, [betterDirty]);
+                    if (absoluteDirty && !wasDirty) setWasDirty(true);
+                }, [absoluteDirty]);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 const { isLoading: isExportToFileLoading, mutateAsync: exportMutation } = useMutation(
@@ -436,13 +436,12 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             renderInput={(params) => (
                                                                 <TextField
                                                                     {...params}
-                                                                    size="medium"
+                                                                    size="small"
                                                                     error={Boolean(touched.template && errors.template)}
-                                                                    fullWidth
                                                                     sx={{
                                                                         '& .MuiInputBase-root': {
                                                                             borderRadius: '10px',
-                                                                            width: 300,
+                                                                            width: 250,
                                                                         },
                                                                         '& fieldset': {
                                                                             borderColor: '#CCCFE5',
@@ -564,7 +563,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         )}
 
                         <DraftWarningDialog
-                            open={isDraftDialogOpen}
+                            isOpen={isDraftDialogOpen}
                             handleClose={() => setIsDraftDialogOpen(false)}
                             closeCreateOrEditDialog={handleClose}
                             values={{ ...values, entityId: entityToUpdate?.properties._id }}

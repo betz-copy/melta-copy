@@ -2,6 +2,7 @@ import { promises as fsp } from 'fs';
 import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
+import { InstanceManagerService } from '../../externalServices/instanceService';
 
 class InstancesController {
     static async createEntityInstance(req: Request, res: Response) {
@@ -61,6 +62,15 @@ class InstancesController {
 
     static async exportEntityToDocumentTemplate(req: Request, res: Response) {
         res.send(await InstancesManager.exportEntityToDocumentTemplate(req.body));
+    }
+
+    static async exportEntityToDocumentSchemaByEntityId(req: Request, res: Response) {
+        res.send(
+            await InstancesManager.exportEntityToDocumentTemplate({
+                documentTemplateId: req.query.documentTemplateId as string,
+                entityProperties: (await InstanceManagerService.getEntityInstanceById(req.params.entityId)).properties,
+            }),
+        );
     }
 
     static async runBulkOfActions(req: Request, res: Response) {

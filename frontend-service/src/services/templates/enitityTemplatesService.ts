@@ -272,9 +272,11 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         }
     }
 
-    updatedEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId: string | File | { name: string }) => {
-        if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
-    });
+    if (updatedEntityTemplate.documentTemplatesIds) {
+        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId) => {
+            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
+        });
+    }
 
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
