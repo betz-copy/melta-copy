@@ -64,9 +64,13 @@ export const getDatasource = <Data extends any = IEntity>(
     rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
+    let lastPage = 0;
     return {
         // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
+            lastPage++;
+            if (lastPage === 1) return;
+
             if (rowData && mainEntity) {
                 params.success({
                     rowData,
