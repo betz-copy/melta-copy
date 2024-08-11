@@ -8,6 +8,7 @@ export interface IFrame {
     placeInSideBar?: boolean;
 }
 export interface IMongoIFrame extends IFrame {
+    values(): Iterable<unknown> | ArrayLike<unknown>;
     _id: string;
     createdAt: string;
     updatedAt: string;

@@ -57,24 +57,24 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data) => {
-                console.log('shirel ', { data });
-                // const before = await queryClient.getQueryData('searchIFrames');
+                queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
+                    console.log({ oldData });
 
-                queryClient.setQueryData(['searchIFrames', ''], (iFrames: any) => {
-                    console.log({ iFrames });
+                    // const updatedIFrames = oldData.map((iframe) => (iframe._id === data._id ? data : iframe));
+                    // console.log({ updatedIFrames });
+                    // return updatedIFrames;
+                    // console.log('lllllllllllllllllllllllllllllll ', { iFrames });
+                    if (!oldData) return;
+                    const updatedPages = oldData.pages.map((page) => page.map((iframe) => (iframe._id === data._id ? data : iframe)));
 
-                    // const iFrames = mapTemplates(iframes, 'name');
-                    // console.log('2: ', { iFrames });
-                    const updatedIFrames = new Map(iFrames);
-                    const uu = updatedIFrames.set(data._id, data);
-                    // const r = iFrames.set(data._id, data);
-                    console.log({ uu });
-                    // return updateIFrame;
+                    // eslint-disable-next-line consistent-return
+                    return {
+                        ...oldData,
+                        pages: updatedPages,
+                    };
                 });
-                // const after = await queryClient.getQueryData('searchIFrames');
-                // console.log({ before, after });
-
-                // queryClient.invalidateQueries('getIFrame');
+                // queryClient.invalidateQueries(['searchIFrames', null]);
+                queryClient.invalidateQueries({ queryKey: ['searchIFrames', null], exact: true });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

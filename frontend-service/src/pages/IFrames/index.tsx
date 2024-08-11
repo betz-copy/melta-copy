@@ -17,6 +17,7 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { Resizable } from './ResizableBox';
 import { ResizeBox } from '../../common/EntitiesPage/ResizeBox';
+import { mapTemplates } from '../../utils/templates';
 
 // const DraggableIFrame = ({ iFrame, index, moveIFrame }) => {
 //     const [, ref] = useDrag({
@@ -82,13 +83,18 @@ const IFramesPage: React.FC = () => {
             >
                 <InfiniteScroll<IMongoIFrame>
                     queryKey={queryKey}
-                    queryFunction={({ pageParam }) => {
-                        const skip = pageParam ? pageParam * 4 : 0;
-                        return searchIFrames({ limit: 4, search: searchInput, skip });
+                    queryFunction={async ({ pageParam }) => {
+                        const iFrames = await searchIFrames({ limit: 4, skip: pageParam });
+                        return iFrames;
+                        // return mapTemplates(iFrames);
                     }}
                     onQueryError={(error) => {
                         console.log('Failed loading data:', error);
                         toast.error(i18next.t('iFrames.searchFailed'));
+                    }}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * 4;
+                        return lastPage.length ? nextPage : undefined;
                     }}
                     emptyText={i18next.t('iFrames.noIFramesFound')}
                     useContainer={false}
