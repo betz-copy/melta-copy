@@ -33,8 +33,8 @@ export interface IAGGridSort {
 }
 
 export interface IAGGridRequest {
-    startRow: number;
-    endRow: number;
+    skip: number;
+    limit: number;
     filterModel: IAGGridFilterModel;
     quickFilter?: string;
     sortModel: IAGGridSort[];
