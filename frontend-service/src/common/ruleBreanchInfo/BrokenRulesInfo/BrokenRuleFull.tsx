@@ -1,28 +1,32 @@
-import React, { Key, useState } from 'react';
-import { Box, Collapse, List, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
+import React, { useState } from 'react';
+import { Box, Collapse, List, ListItem, ListItemButton, ListItemIcon, ListItemText } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
+import isEqual from 'lodash.isequal';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { IActionMetadataPopulated, ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
-import { RelationshipInfo } from '../ActionInfo';
-import { populateRelationshipTemplate } from '../../../utils/templates';
+import { EntityForBrokenRules } from '../ActionInfo';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { IEntity } from '../../../interfaces/entities';
 
 export const BrokenRuleFull: React.FC<{
-    brokenRule: IRuleBreachPopulated['brokenRules'][number];
+    brokenRule: IBrokenRulePopulated;
     ruleTemplate: IMongoRule;
-    actionMetadata: IActionMetadataPopulated;
-}> = ({ brokenRule, ruleTemplate, actionMetadata }) => {
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+}> = ({ brokenRule, ruleTemplate, actions }) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
 
-    const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const entityTemplate = entityTemplates.get(ruleTemplate.entityTemplateId)!;
 
     return (
         <>
@@ -41,50 +45,70 @@ export const BrokenRuleFull: React.FC<{
             </ListItemButton>
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <List dense component="div" disablePadding>
-                    {brokenRule.relationships.map((relationship, i) => {
-                        const relationshipTemplate = !relationship
-                            ? null
-                            : Array.from(relationshipTemplates.values()).find(({ _id }) => {
-                                  if (typeof relationship === 'string') {
-                                      return _id === (actionMetadata as ICreateRelationshipMetadataPopulated).relationshipTemplateId;
-                                  }
-                                  return _id === relationship.templateId;
-                              })!;
-                        const relationshipTemplatePopulated = relationshipTemplate
-                            ? populateRelationshipTemplate(relationshipTemplate, entityTemplates)
-                            : null;
+                    {brokenRule.failures.map(({ entity, causes }, i) => {
+                        const causeOfMainEntityIndex = causes.findIndex(({ instance }) => {
+                            const currEntityOfCause = instance.aggregatedRelationship ? instance.aggregatedRelationship.otherEntity : instance.entity;
+                            return isEqual(currEntityOfCause, entity);
+                        });
+                        const causeOfMainEntity = causes[causeOfMainEntityIndex];
 
-                        let key: Key;
-                        if (!relationship) {
-                            key = i;
-                        } else if (typeof relationship === 'string') {
-                            key = relationship;
-                        } else {
-                            key = relationship.properties._id;
-                        }
+                        const causesWithoutMainEntity = causes.slice();
+                        if (causeOfMainEntityIndex > -1) causesWithoutMainEntity.splice(causeOfMainEntityIndex, 1);
+
+                        const mainEntityPropertiesToShowTooltipOverride = [
+                            ...(causeOfMainEntity?.properties || []),
+                            ...(entityTemplate?.propertiesPreview || []),
+                        ];
 
                         return (
-                            <ListItemText key={key} sx={{ pl: 4 }}>
-                                {relationship && (
-                                    <RelationshipInfo
-                                        relationshipTemplatePopulated={relationshipTemplatePopulated!}
-                                        sourceEntity={
-                                            typeof relationship !== 'string'
-                                                ? relationship.sourceEntity
-                                                : (actionMetadata as ICreateRelationshipMetadataPopulated).sourceEntity
-                                        }
-                                        destinationEntity={
-                                            typeof relationship !== 'string'
-                                                ? relationship.destinationEntity
-                                                : (actionMetadata as ICreateRelationshipMetadataPopulated).destinationEntity
-                                        }
+                            // eslint-disable-next-line react/no-array-index-key
+                            <ListItem key={i}>
+                                {'- '}
+                                <ListItemText sx={{ pl: 4 }}>
+                                    <EntityForBrokenRules
+                                        ruleTemplate={ruleTemplate}
+                                        entity={entity}
+                                        entityTemplate={entityTemplate}
+                                        actions={actions}
+                                        entityPropertiesToShowTooltipOverride={[...new Set(mainEntityPropertiesToShowTooltipOverride)]}
+                                        entityPropertiesToHighlightTooltip={causeOfMainEntity?.properties}
                                     />
-                                )}
-                                {!relationship && i18next.t('ruleBreachInfo.unknownRelationship')}
-                            </ListItemText>
+                                    {causesWithoutMainEntity.length > 0 && ': '}
+                                    {causesWithoutMainEntity.map(({ instance, properties }, j) => {
+                                        const entityToShow = (
+                                            instance.aggregatedRelationship ? instance.aggregatedRelationship.otherEntity : instance.entity
+                                        ) as IEntity; // because we excluded causeOfMainEntity from causes
+
+                                        const entityTemplateOfEntityToShow =
+                                            // eslint-disable-next-line no-nested-ternary
+                                            !entityToShow ? null : entityTemplates.get(entityToShow.templateId)!;
+
+                                        const entityPropertiesToShowTooltipOverride = [
+                                            ...properties,
+                                            ...(entityTemplateOfEntityToShow?.propertiesPreview || []),
+                                        ];
+
+                                        return (
+                                            <>
+                                                {j > 0 && ', '}
+                                                <EntityForBrokenRules
+                                                    // eslint-disable-next-line react/no-array-index-key
+                                                    key={j}
+                                                    ruleTemplate={ruleTemplate}
+                                                    entity={entityToShow}
+                                                    entityTemplate={entityTemplateOfEntityToShow}
+                                                    actions={actions}
+                                                    entityPropertiesToShowTooltipOverride={[...new Set(entityPropertiesToShowTooltipOverride)]}
+                                                    entityPropertiesToHighlightTooltip={properties}
+                                                />
+                                            </>
+                                        );
+                                    })}
+                                </ListItemText>
+                            </ListItem>
                         );
                     })}
-                    {brokenRule.relationships.length === 0 && (
+                    {brokenRule.failures.length === 0 && (
                         <ListItemText sx={{ pl: 4 }}>{i18next.t('ruleBreachInfo.noRelevantEntitiesForBrokenRule')}</ListItemText>
                     )}
                 </List>

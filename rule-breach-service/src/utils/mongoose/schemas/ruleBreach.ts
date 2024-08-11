@@ -8,20 +8,28 @@ export const ruleBreachSchemaDefinition: SchemaDefinition = {
     brokenRules: {
         type: [
             {
+                _id: false,
                 ruleId: String,
-                relationshipIds: [String],
+                failures: [Object],
+            },
+        ],
+        required: true,
+    },
+    actions: {
+        type: [
+            {
+                actionType: {
+                    type: String,
+                    required: true,
+                },
+                actionMetadata: {
+                    type: Object,
+                    required: true,
+                },
             },
         ],
         required: true,
         _id: false,
-    },
-    actionType: {
-        type: String,
-        required: true,
-    },
-    actionMetadata: {
-        type: Object,
-        required: true,
     },
 };
 

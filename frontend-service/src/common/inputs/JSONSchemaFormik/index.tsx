@@ -15,6 +15,7 @@ import RjfsSelectWidget from './RjfsSelectWidget';
 import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
+import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -52,10 +53,19 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
         keyword: 'serialStarter',
     });
     ajv.addKeyword({
+        keyword: 'relationshipReference',
+        type: 'string',
+    });
+    ajv.addKeyword({
         keyword: 'serialCurrent',
     });
 
-    const validateFunction = ajv.compile(schema);
+    const schemaToValidate = {
+        ...schema,
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
+    };
+
+    const validateFunction = ajv.compile(schemaToValidate);
     validateFunction(data);
 
     const ajvErrors = validateFunction.errors ?? [];
@@ -77,6 +87,7 @@ interface JSONSchemaFormFormikProps {
     setFieldTouched: FormikHelpers<any>['setFieldTouched'];
     isEditMode?: boolean;
     readonly?: boolean;
+    toPrint?: boolean;
 }
 
 export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
@@ -88,6 +99,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
     touched,
     setFieldTouched,
     isEditMode = false,
+    toPrint = false,
 }) => {
     useEffect(() => {
         // define 100% width to text-area field
@@ -108,6 +120,13 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             id="json-schema"
             schema={schema}
             uiSchema={mapValues(schema.properties, (propertySchema): UiSchema => {
+                if (propertySchema.readOnly) {
+                    return {
+                        'ui:options': {
+                            disabled: true,
+                        },
+                    };
+                }
                 if (propertySchema.serialCurrent !== undefined) {
                     return {
                         'ui:options': {
@@ -127,6 +146,12 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TextAreaWidget',
                         'ui:classNames': 'text-area',
+                        'ui:options': { toPrint },
+                    };
+                }
+                if (propertySchema.format === 'relationshipReference') {
+                    return {
+                        'ui:widget': 'TemplateReferenceWidget',
                     };
                 }
                 return {};
@@ -156,9 +181,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextWidget: RjsfTextWidget,
                 EmailWidget: RjsfTextWidget,
                 TextAreaWidget: RjfsTextAreaWidget,
+                TemplateReferenceWidget: RjfsTemplateReferenceWidget,
             }}
         >
-            <div />
+            <div /> {/* remove the built in submit button */}
         </JSONSchemaForm>
     );
 };

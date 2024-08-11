@@ -1,7 +1,7 @@
 import config from '../config';
 import Neo4jClient from '../utils/neo4j';
 import RedisClient from '../utils/redis';
-import { EntityTemplateManagerService } from '../externalServices/entityTemplateManager';
+import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
 
 const {
@@ -83,8 +83,25 @@ const getTemplatePropertiesIndex = (template: IEntityTemplate) => {
     return templateProperties;
 };
 
+const getRelationshipReferencesPropertiesIndex = async (template: IEntityTemplate) => {
+    const relationshipReferencesProperties: string[] = [];
+
+    await Promise.all(
+        Object.entries(template.properties.properties).map(async ([key, value]) => {
+            if (value.format === 'relationshipReference') {
+                const relatedTemplate = await TemplateManagerService.getEntityTemplateById(value.relationshipReference!.relatedTemplateId);
+                getTemplatePropertiesIndex(relatedTemplate).forEach((innerProperty) =>
+                    relationshipReferencesProperties.push(`${key}.properties.${innerProperty}${config.neo4j.relationshipReferencePropertySuffix}`),
+                );
+            }
+        }),
+    );
+
+    return relationshipReferencesProperties;
+};
+
 export const upsertGlobalSearchIndex = async () => {
-    const templates = await EntityTemplateManagerService.searchEntityTemplates();
+    const templates = await TemplateManagerService.searchEntityTemplates();
 
     const templateIds = templates.map((template) => template._id);
     const allTemplatesProperties = new Set<string>();
@@ -92,6 +109,13 @@ export const upsertGlobalSearchIndex = async () => {
     templates.forEach((template) => {
         getTemplatePropertiesIndex(template).forEach((property) => allTemplatesProperties.add(property));
     });
+
+    await Promise.all(
+        templates.map(async (template) => {
+            const relationshipReferencesProperties = await getRelationshipReferencesPropertiesIndex(template);
+            relationshipReferencesProperties.forEach((property) => allTemplatesProperties.add(property));
+        }),
+    );
 
     await upsertSearchIndex(
         globalSearchKeyName,
@@ -103,14 +127,16 @@ export const upsertGlobalSearchIndex = async () => {
 };
 
 export const upsertChangedTemplateSearchIndex = async (changedTemplateId: string) => {
-    const changedTemplate = await EntityTemplateManagerService.getEntityTemplateById(changedTemplateId);
+    const changedTemplate = await TemplateManagerService.getEntityTemplateById(changedTemplateId);
+    const relationshipReferencesProperties = await getRelationshipReferencesPropertiesIndex(changedTemplate);
+    const allProperties = [...relationshipReferencesProperties, ...getTemplatePropertiesIndex(changedTemplate)];
 
     await upsertSearchIndex(
         `${templateSearchKeyNamePrefix}${changedTemplateId}`,
         `${primaryTemplateSearchIndexPrefix}${changedTemplateId}`,
         `${secondaryTemplateSearchIndexPrefix}${changedTemplateId}`,
         [changedTemplateId],
-        getTemplatePropertiesIndex(changedTemplate),
+        allProperties,
     );
 };
 

@@ -1,0 +1,29 @@
+######### the right script for mongo-shell!!! ##########
+
+db["rule-breach-alerts"].updateMany(
+  { actions: { $exists: false } },
+  [
+    {
+      $set: {
+        actions: [{ actionMetadata: "$actionMetadata", actionType: "$actionType" }]
+      }
+    },
+    {
+      $unset: ["actionMetadata", "actionType"]
+    }
+  ]
+);
+
+db["rule-breach-requests"].updateMany(
+  { actions: { $exists: false } },
+  [
+    {
+      $set: {
+        actions: [{ actionMetadata: "$actionMetadata", actionType: "$actionType" }]
+      }
+    },
+    {
+      $unset: ["actionMetadata", "actionType"]
+    }
+  ]
+);

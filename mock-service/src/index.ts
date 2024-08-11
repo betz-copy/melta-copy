@@ -2,41 +2,36 @@
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import config from './config';
-import { createCategories, getCategories } from './categories';
-import { createEntityTemplates, isEntityTemplateServiceAlive } from './entityTemplates';
+import { createCategories, getCategories } from './templates/categories';
+import { createEntityTemplates } from './templates/entityTemplates';
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
 import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
-import { createRelationshipTemplates, isRelationshipTemplateServiceAlive } from './relationshipTemplates';
+import { createRelationshipTemplates } from './templates/relationshipTemplates';
 import { relationshipTemplates } from './mocks/relationshipTemplates';
 import { createPermissionsBulk, isPermissionServiceAlive } from './permissionsApi';
 import { getPermissionsToCreate } from './mocks/permissionsApi';
-import { createRules } from './rules';
+import { createRules } from './templates/rules';
 import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
 import { getProcessTemplateToCreate } from './mocks/processTemplates';
 import { createProcessInstances } from './processInstances';
 import { isStorageServiceAlive, uploadFile } from './storageService';
 import { createGantts } from './gantts';
+import { isTemplateServiceAlive } from './templates';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
 
-    const { err: entityTemplateServiceAliveErr } = await isEntityTemplateServiceAlive();
-    if (entityTemplateServiceAliveErr) {
+    const { err: templateServiceAliveErr } = await isTemplateServiceAlive();
+    if (templateServiceAliveErr) {
         console.log('Entity Template Service is not alive');
-        throw entityTemplateServiceAliveErr;
+        throw templateServiceAliveErr;
     }
 
     const { err: processServiceAliveErr } = await isProcessServiceAlive();
     if (processServiceAliveErr) {
         console.log('Process Service is not alive');
         throw processServiceAliveErr;
-    }
-
-    const { err: relationshipTemplateServiceAliveErr } = await isRelationshipTemplateServiceAlive();
-    if (relationshipTemplateServiceAliveErr) {
-        console.log('Relationship Template Service is not alive');
-        throw relationshipTemplateServiceAliveErr;
     }
 
     const { err: permissionServiceAliveErr } = await isPermissionServiceAlive();

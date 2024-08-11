@@ -14,11 +14,13 @@ const config = {
         },
         queueName: env.get('RABBIT_QUEUE_NAME').default('search-queue').asString(),
     },
-    entityTemplateService: {
-        url: env.get('ENTITY_TEMPLATE_SERVICE_URL').required().asString(),
-        baseRoute: env.get('ENTITY_TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates/entities').asString(),
-        searchTemplatesRoute: env.get('ENTITY_TEMPLATE_SERVICE_SEARCH_ROUTE').default('/search').asString(),
-        timeout: env.get('ENTITY_TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
+    templateService: {
+        url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        entities: {
+            baseRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
+            searchTemplatesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/search').asString(),
+        },
+        timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
     neo4j: {
         url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),
@@ -32,6 +34,7 @@ const config = {
         globalSearchIndexes: env.get('NEO4J_GLOBAL_SEARCH_INDEXES').default('primaryGlobalSearch,secondaryGlobalSearch').asArray(),
         templateSearchIndexPrefixes: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIXES').default('primaryGlobalSearch_,secondaryGlobalSearch_').asArray(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),

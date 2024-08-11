@@ -1,10 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult, Node, Relationship, Transaction } from 'neo4j-driver';
+import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
-import { IRelationship } from '../../express/relationships/interface';
+import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
-import { IConnection } from '../../express/rules/interfaces';
+import EntityManager from '../../express/entities/manager';
+import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+
+type Node = Neo4jNode<number>;
+type Relationship = Neo4jRelationship<number>;
 
 /**
  *
@@ -51,10 +55,12 @@ type Response<ResType extends ResponseType, Data> = ResType extends 'singleRespo
     : never;
 
 const nodeToEntity = (node: Node): IEntity => {
-    return {
+    const entity = {
         templateId: node.labels[0],
         properties: normalizeFields(node.properties),
     };
+
+    return EntityManager.fixReturnedEntityRefrencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
@@ -70,18 +76,11 @@ export const normalizeReturnedEntity =
     };
 
 export const normalizeResponseCount = (result: QueryResult): number => {
-    return result.records[0].get(0).toNumber();
+    return result.records[0].get(0);
 };
 
-export const normalizeRuleResultAgainstPair = (result: QueryResult): boolean => {
-    return result.records[0].get('doesRuleStillApply');
-};
-
-export const normalizeRuleFailuresAgainstPinnedEntity = (result: QueryResult) => {
-    return result.records.map((resultOfPairRecord) => {
-        const resultOfPair = resultOfPairRecord.toObject();
-        return resultOfPair as { unpinnedRelationshipId: string; unpinnedEntityId: string };
-    });
+export const normalizeRuleResult = (result: QueryResult) => {
+    return result.records[0].toObject() as { value: boolean; formulaCauses: IFormulaCauses };
 };
 
 export const normalizeReturnedRelationship =
@@ -159,9 +158,8 @@ export const normalizeReturnedRelAndEntities =
 
         const connections = validConnections.map((record) => {
             const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
-            const [sourceEntity, destinationEntity] = relationship.start.equals(firstEntity.identity)
-                ? [firstEntity, secondEntity]
-                : [secondEntity, firstEntity];
+            const [sourceEntity, destinationEntity] =
+                relationship.start === firstEntity.identity ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
@@ -179,6 +177,17 @@ export const normalizeReturnedRelAndEntities =
         };
     };
 
+const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {
+    const [sourceNode, destinationNode] = relationship.start === node1.identity ? [node1, node2] : [node2, node1];
+
+    return {
+        templateId: relationship.type,
+        properties: normalizeFields(relationship.properties),
+        sourceEntityId: sourceNode.properties._id,
+        destinationEntityId: destinationNode.properties._id,
+    };
+};
+
 export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWithDirectRelationships[] => {
     return result.records.map((record): IEntityWithDirectRelationships => {
         const { node, relationships } = record.toObject() as {
@@ -187,39 +196,22 @@ export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWi
         };
         return {
             entity: nodeToEntity(node),
-            relationships: relationships?.map(({ relationship, otherEntity }) => {
-                const [sourceEntityId, destinationEntityId] = relationship.start.equals(node.identity)
-                    ? [node.properties._id, otherEntity.properties._id]
-                    : [otherEntity.properties._id, node.properties._id];
-                return {
-                    relationship: {
-                        templateId: relationship.type,
-                        properties: normalizeFields(relationship.properties),
-                        sourceEntityId,
-                        destinationEntityId,
-                    },
-                    otherEntity: nodeToEntity(otherEntity),
-                };
-            }),
+            relationships: relationships?.map(({ relationship, otherEntity }) => ({
+                relationship: formatUndirectedRelationship(relationship, node, otherEntity),
+                otherEntity: nodeToEntity(otherEntity),
+            })),
         };
     });
 };
 
-export const normalizeRelAndEntitiesForRule = (result: QueryResult): IConnection[] => {
+export const normalizeNeighboursOfEntityForRule = (result: QueryResult) => {
     return result.records.map((record) => {
-        const sourceEntity = record.get('s') as Node;
-        const relationship = record.get('r') as Relationship;
-        const destinationEntity = record.get('d') as Node;
+        const relationshipTemplate = record.get('rTemplate') as string;
+        const neighbourOfEntity = record.get('neighbour') as Node;
 
         return {
-            sourceEntity: nodeToEntity(sourceEntity),
-            relationship: {
-                templateId: relationship.type,
-                properties: normalizeFields(relationship.properties),
-                sourceEntityId: sourceEntity.properties._id,
-                destinationEntityId: destinationEntity.properties._id,
-            },
-            destinationEntity: nodeToEntity(destinationEntity),
+            relationshipTemplate,
+            neighbourOfEntity: nodeToEntity(neighbourOfEntity),
         };
     });
 };

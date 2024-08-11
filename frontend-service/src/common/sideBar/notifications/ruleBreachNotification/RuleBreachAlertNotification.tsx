@@ -23,13 +23,7 @@ export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRule
             </Grid>
             <Grid item>
                 <Typography>{i18next.t('ruleBreachAlertNotification.payAttention')}</Typography>
-                <RuleBreachInfo
-                    originUser={alert.originUser}
-                    brokenRules={alert.brokenRules}
-                    actionType={alert.actionType}
-                    actionMetadata={alert.actionMetadata}
-                    isCompact
-                />
+                <RuleBreachInfo originUser={alert.originUser} brokenRules={alert.brokenRules} actions={alert.actions} isCompact />
             </Grid>
         </Grid>
     );

@@ -67,7 +67,11 @@ class Neo4jClient {
     async verifyConnectivity() {
         const { connectionRetries, connectionRetryDelay } = config.neo4j;
 
-        await retry(() => this.driver.verifyConnectivity(), { retries: connectionRetries, delay: connectionRetryDelay, logger: logger.info });
+        await retry(() => this.driver.verifyConnectivity(), {
+            retries: connectionRetries,
+            delay: connectionRetryDelay,
+            logger: logger.info.bind(logger),
+        });
     }
 }
 

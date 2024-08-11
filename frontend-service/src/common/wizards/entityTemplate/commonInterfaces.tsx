@@ -1,3 +1,10 @@
+export interface IRelationshipReference {
+    relationshipTemplateId?: string;
+    relationshipTemplateDirection: 'outgoing' | 'incoming';
+    relatedTemplateId: string;
+    relatedTemplateField: string;
+}
+
 export interface CommonFormInputProperties {
     name: string;
     title: string;
@@ -11,10 +18,12 @@ export interface CommonFormInputProperties {
     isDailyAlert?: boolean | null;
     calculateTime?: boolean | null;
     serialStarter?: number;
+    relationshipReference?: IRelationshipReference;
     required?: boolean;
     preview?: boolean;
     hide?: boolean;
     deleted?: boolean;
+    readOnly?: boolean;
     uniqueCheckbox?: boolean;
     groupName?: string;
 }

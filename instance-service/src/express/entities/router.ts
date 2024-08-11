@@ -13,6 +13,7 @@ import {
     deleteEntityByIdRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     createEntityRequestSchema,
+    getEntitiesByIdsRequestSchema,
     getEntityByIdRequestSchema,
     updateEntityByIdRequestSchema,
     getConstraintsOfTemplateRequestSchema,
@@ -73,6 +74,7 @@ entityRouter.post(
 
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
+entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), wrapController(EntityController.getEntitiesByIds));
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));
 entityRouter.put(

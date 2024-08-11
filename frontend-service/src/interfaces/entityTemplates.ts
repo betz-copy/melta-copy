@@ -12,6 +12,7 @@ export interface IEntitySingleProperty {
         format?: 'fileId';
     };
     minItems?: 1;
+    readOnly?: true;
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
@@ -22,6 +23,12 @@ export interface IEntitySingleProperty {
     serialStarter?: number;
     serialCurrent?: number;
     isNewPropertyWithNameOfDeletedProperty?: boolean;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 
 export interface IEntityTemplate {

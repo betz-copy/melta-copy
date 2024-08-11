@@ -12,7 +12,7 @@ import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { DateTimePickerToolbar } from '@mui/x-date-pickers/DateTimePicker/DateTimePickerToolbar';
 import { BaseToolbarProps } from '@mui/x-date-pickers/internals';
 
-const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
+export const CustomDateTimePickerToolbar = styled(DateTimePickerToolbar)({
     [`& .${dateTimePickerToolbarClasses.timeContainer}`]: {
         direction: 'rtl',
     },
@@ -74,7 +74,7 @@ const getRjfsDateOrDateTimeWidget =
             onFormChangeFunction(currentDate);
         };
 
-        const variant = readonly ? 'standard' : 'outlined';
+        const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
         return (
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}

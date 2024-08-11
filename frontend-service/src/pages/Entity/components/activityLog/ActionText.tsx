@@ -8,6 +8,7 @@ import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTem
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../../../../utils/HtmlTagsStringValue';
+import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -83,6 +84,32 @@ const RelationshipMetadataActionText: React.FC<{
     );
 };
 
+const DuplicateEntityMetadataActionText: React.FC<{
+    actionMetadata: { entityIdDuplicatedFrom: string };
+    entityTemplate: IMongoEntityTemplatePopulated;
+}> = ({ actionMetadata, entityTemplate }) => {
+    const theme = useTheme();
+    const navigate = useNavigate();
+
+    return (
+        <Grid item minWidth="190px">
+            <StyledTypography variant="body2" component="span">
+                {i18next.t('entityPage.activityLog.duplicateEntityFrom')}
+                <StyledTypography
+                    component="span"
+                    display="inline"
+                    variant="body2"
+                    onClick={() => navigate(`/entity/${actionMetadata.entityIdDuplicatedFrom}`)}
+                    style={{ color: theme.palette.primary.main, cursor: 'pointer' }}
+                    borderBottom="1px solid"
+                >
+                    {entityTemplate.displayName}
+                </StyledTypography>
+            </StyledTypography>
+        </Grid>
+    );
+};
+
 const ellipsisStyle: React.CSSProperties = {
     marginLeft: '10px',
     overflow: 'hidden',
@@ -102,14 +129,32 @@ const popperProps = {
     ],
 };
 
-const UpdateTextValue: React.FC<{ value: any; old: boolean }> = ({ value, old }) => {
+const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; entityTemplate: IMongoEntityTemplatePopulated }> = ({
+    value,
+    old,
+    fieldName,
+    entityTemplate,
+}) => {
     const containsHtmlTags = containsHTMLTags(value);
-    const innerContent = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
-    const titleContent = containsHtmlTags ? renderHTML(value) : value;
+    let innerContent: React.ReactNode = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
+    let titleContent: string = containsHtmlTags ? renderHTML(value) : value;
+    const entityTemplateUpdatedField = entityTemplate.properties.properties[fieldName];
+
+    if (entityTemplateUpdatedField.format === 'relationshipReference') {
+        innerContent = (
+            <RelationshipReferenceView
+                entity={value}
+                relatedTemplateId={entityTemplateUpdatedField.relationshipReference!.relatedTemplateId}
+                relatedTemplateField={entityTemplateUpdatedField.relationshipReference!.relatedTemplateField}
+            />
+        );
+        titleContent = '';
+    }
 
     return (
         <MeltaTooltip
             PopperProps={popperProps}
+            disableHoverListener={!titleContent}
             title={
                 <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{value ? titleContent : i18next.t('entityPage.activityLog.emptyField')}</Grid>
             }
@@ -152,7 +197,13 @@ const UpdateEntityMetadataActionText: React.FC<{
                                 : entityTemplate.properties.properties[fieldName].title}
                         </StyledTypography>
                         {[oldValue, newValue].map((value, index) => (
-                            <UpdateTextValue key={value} value={value} old={index === 0} />
+                            <UpdateTextValue
+                                key={value}
+                                value={value}
+                                old={index === 0}
+                                fieldName={field.fieldName}
+                                entityTemplate={entityTemplate}
+                            />
                         ))}
                     </Grid>
                 );
@@ -180,6 +231,10 @@ const ActionText: React.FC<{
                 actionMetadata={metadata as { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] }}
             />
         );
+
+    if (action === 'DUPLICATE_ENTITY')
+        return <DuplicateEntityMetadataActionText entityTemplate={entityTemplate} actionMetadata={metadata as { entityIdDuplicatedFrom: string }} />;
+
     return <EmptyMetadataActionText action={action} />;
 };
 

@@ -1,4 +1,4 @@
-import { EntityTemplateManagerService, IEntityTemplate } from '../../externalServices/entityTemplateService';
+import { EntityTemplateManagerService, IEntityTemplate } from '../../externalServices/templates/entityTemplateService';
 import logger from '../logger/logsLogger';
 
 enum dateNotificationOptions {

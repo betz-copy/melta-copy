@@ -8,6 +8,7 @@ import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
 import { agGridLocaleText } from './agGridLocaleText';
 import { getFileName } from '../getFileName';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -82,6 +83,30 @@ export const fileColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (props.value ? <OpenPreview fileId={props.value} /> : null),
+        filter: 'agTextColumnFilter',
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+export const relatedTemplateColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    hardcodedWidth: number | undefined,
+    relatedTemplateId: string,
+    relatedTemplateField: string,
+    hideColumn = false,
+): ColDef<Data> => {
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+        cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
+            props.value ? (
+                <RelationshipReferenceView entity={props.value} relatedTemplateId={relatedTemplateId} relatedTemplateField={relatedTemplateField} />
+            ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,

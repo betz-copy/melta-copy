@@ -203,6 +203,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         supportChangeToRequiredWithInstances={false}
                                                                         supportArrayFields={false}
                                                                         supportDeleteForExistingInstances={false}
+                                                                        supportRelationshipReference={false}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>
@@ -232,6 +233,7 @@ const AddStepsFields: React.FC<StepComponentProps<ProcessTemplateWizardValues, '
                                                                         supportChangeToRequiredWithInstances={false}
                                                                         supportArrayFields={false}
                                                                         supportDeleteForExistingInstances={false}
+                                                                        supportRelationshipReference={false}
                                                                     />
                                                                 </Grid>
                                                                 <Grid item>

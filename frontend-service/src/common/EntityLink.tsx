@@ -1,6 +1,6 @@
-import { Grid, useTheme } from '@mui/material';
+import React, { CSSProperties } from 'react';
+import { Box, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React from 'react';
 import { useSelector } from 'react-redux';
 import { NavLink } from 'react-router-dom';
 import { IEntity } from '../interfaces/entities';
@@ -12,15 +12,27 @@ import { MeltaTooltip } from './MeltaTooltip';
 interface EntityLinkProps {
     entity: IEntity | null;
     entityTemplate: IMongoEntityTemplatePopulated | null;
+    linkable?: boolean;
+    entityPropertiesToShowTooltipOverride?: string[];
+    entityPropertiesToHighlightTooltip?: string[];
+    entityPropertiesToHighlightColor?: CSSProperties['color'];
+    tooltipHeader?: React.ReactNode;
 }
 
-export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }) => {
+export const EntityLink: React.FC<EntityLinkProps> = ({
+    entity,
+    entityTemplate,
+    linkable = true,
+    entityPropertiesToShowTooltipOverride,
+    entityPropertiesToHighlightTooltip,
+    entityPropertiesToHighlightColor,
+    tooltipHeader,
+}) => {
     const theme = useTheme();
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
-    const link = `/entity/${entity ? entity.properties._id : 'unknownEntity'}`;
     const darkMode = useSelector((state: RootState) => state.darkMode);
-    const tooltip =
+    const entityPropertiesTooltip =
         // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
             ''
@@ -33,17 +45,35 @@ export const EntityLink: React.FC<EntityLinkProps> = ({ entity, entityTemplate }
                     entityTemplate={entityTemplate}
                     darkMode={darkMode}
                     showPreviewPropertiesOnly
+                    overridePropertiesToShow={entityPropertiesToShowTooltipOverride}
+                    propertiesToHighlight={entityPropertiesToHighlightTooltip}
+                    propertiesToHighlightColor={entityPropertiesToHighlightColor}
                     mode="white"
-                    textWrap
                 />
             </Grid>
         );
 
     return (
-        <MeltaTooltip title={tooltip}>
-            <NavLink to={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
-                {linkText}
-            </NavLink>
+        <MeltaTooltip
+            title={
+                <Grid container direction="column" alignItems="center">
+                    {tooltipHeader}
+                    {entityPropertiesTooltip}
+                </Grid>
+            }
+        >
+            {linkable ? (
+                <NavLink
+                    to={`/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
+                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                >
+                    {linkText}
+                </NavLink>
+            ) : (
+                <Box component="span" sx={{ color: theme.palette.primary.main, fontWeight: 'bold', fontSize: '14px' }}>
+                    {linkText}
+                </Box>
+            )}
         </MeltaTooltip>
     );
 };

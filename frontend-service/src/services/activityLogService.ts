@@ -20,12 +20,17 @@ interface IRelationshipMetadata extends IBaseActivityLog {
     metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
 }
 
+interface IDuplicateEntityMetadata extends IBaseActivityLog {
+    action: 'DUPLICATE_ENTITY';
+    metadata: { entityIdDuplicatedFrom: string };
+}
+
 interface IUpdateEntityMetadata extends IBaseActivityLog {
     action: 'UPDATE_ENTITY';
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
 
 const getActivityLogRequest = async (entityId: string, limit: number, skip: number, actions?: string[]) => {
     const { data } = await axios.get<IActivityLog[]>(`${activityLog}/${entityId}`, { params: { limit, skip, actions } });

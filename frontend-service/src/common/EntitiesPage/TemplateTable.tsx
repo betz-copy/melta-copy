@@ -121,6 +121,13 @@ const TemplateTable = forwardRef<
             <Grid container flexDirection="row" alignItems="center">
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                     <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.columns')}
+                        iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <img src="/icons/columns-settings.svg" />
+                    </IconButtonWithPopover>
+                    <IconButtonWithPopover
                         popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                         iconButtonProps={{
                             onClick: () => {
@@ -195,12 +202,9 @@ const TemplateTable = forwardRef<
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}
-                    entity={editDialog.entity!}
-                    onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                    }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    entityToUpdate={editDialog.entity!}
+                    onSuccessUpdate={(entity) => entitiesTableRef.current?.updateRowDataClientSide(entity)}
+                    handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
             </Dialog>
         </Grid>

@@ -27,8 +27,9 @@ interface IStepProps {
 
 export interface IDetailsStepProp extends IStepProps {
     detailsFormikData: FormikProps<ProcessDetailsValues>;
-    isEditMode: boolean | undefined;
+    isEditMode?: boolean;
     processInstance: IMongoProcessInstancePopulated | undefined;
+    toPrint?: boolean;
 }
 
 interface RenderFormStepProps extends IDetailsStepProp {
@@ -67,7 +68,10 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
         const currentTouched: Record<string, any> = getAllFieldsTouched(detailsFormikData.values);
 
         const templateFileProperties = detailsFormikData.values.template
-            ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => (value.type === 'array' && value.items?.format==="fileId") || value.format === "fileId")
+            ? pickBy(
+                  detailsFormikData.values.template.details.properties.properties,
+                  (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+              )
             : undefined;
         const templateEntityReferenceProperties = detailsFormikData.values.template
             ? pickBy(detailsFormikData.values.template.details.properties.properties, (value) => value.format === 'entityReference')

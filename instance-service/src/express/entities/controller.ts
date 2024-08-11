@@ -1,12 +1,15 @@
 import { Request, Response } from 'express';
 import { RequestWithQuery, fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityManager } from './manager';
 
 class EntityController {
     static async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await EntityManager.createEntity(req.body, entityTemplate));
+
+        res.json(
+            await EntityManager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
+        );
     }
 
     static async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -25,9 +28,13 @@ class EntityController {
         res.json(await EntityManager.getEntityById(req.params.id));
     }
 
+    static async getEntitiesByIds(req: Request, res: Response) {
+        res.json(await EntityManager.getEntitiesByIds(req.body.ids));
+    }
+
     static async getExpandedGraphById(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
-        res.json(await EntityManager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap));
+        res.json(await EntityManager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, req.body.userId));
     }
 
     static async deleteEntityById(req: Request, res: Response) {
@@ -39,12 +46,12 @@ class EntityController {
     }
 
     static async updateStatusById(req: Request, res: Response) {
-        res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules));
+        res.json(await EntityManager.updateStatusById(req.params.id, req.body.disabled, req.body.ignoredRules, req.body.userId));
     }
 
     static async updateEntityById(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
-        res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules));
+        res.json(await EntityManager.updateEntityById(req.params.id, req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId));
     }
 
     static async updateEnumFieldValue(req: Request, res: Response) {
@@ -66,7 +73,9 @@ class EntityController {
     }
 
     static async updateConstraintsOfTemplate(req: Request, res: Response) {
-        res.json(await EntityManager.updateConstraintsOfTemplate(req.params.templateId, req.body));
+        const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
+
+        res.json(await EntityManager.updateConstraintsOfTemplate(entityTemplate, req.body.requiredConstraints, req.body.uniqueConstraints));
     }
 
     static async deletePropertiesOfTemplate(req: Request, res: Response) {

@@ -11,6 +11,17 @@ export interface IDeleteRelationshipMetadata {
     destinationEntityId: string;
 }
 
+export interface ICreateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+}
+
+export interface IDuplicateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+    entityIdToDuplicate: string;
+}
+
 export interface IUpdateEntityMetadata {
     entityId: string;
     before?: Record<string, any>;
@@ -21,25 +32,51 @@ export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
 }
-export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata | IUpdateEntityStatusMetadata;
+export type IActionMetadata =
+    | ICreateRelationshipMetadata
+    | IDeleteRelationshipMetadata
+    | ICreateEntityMetadata
+    | IDuplicateEntityMetadata
+    | IUpdateEntityMetadata
+    | IUpdateEntityStatusMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
     DeleteRelationship = 'delete-relationship',
+    CreateEntity = 'create-entity',
+    DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
 }
 
-export interface IBrokenRule {
-    ruleId: string;
-    relationshipIds: string[];
+export interface ICauseInstance {
+    // same format of IVariable in Formula interfaces, but with instance ids
+    entityId: string;
+    aggregatedRelationship?: {
+        relationshipId: string;
+        otherEntityId: string;
+    };
 }
 
-export interface IRuleBreach<T = IActionMetadata> {
-    originUserId: string;
-    brokenRules: IBrokenRule[];
+export interface ICausesOfInstance {
+    instance: ICauseInstance;
+    properties: string[]; // can be empty array, if the only cause is not related to specific property (i.e. count aggregation)
+}
+
+export interface IBrokenRule {
+    ruleId: string;
+    failures: Array<{ entityId: string; causes: ICausesOfInstance[] }>;
+}
+
+export interface IAction {
     actionType: ActionTypes;
-    actionMetadata: T;
+    actionMetadata: IActionMetadata;
+}
+
+export interface IRuleBreach {
+    originUserId: string;
+    actions: IAction[];
+    brokenRules: IBrokenRule[];
     createdAt: Date;
     _id: string;
 }
@@ -51,18 +88,9 @@ export enum RuleBreachRequestStatus {
     Canceled = 'canceled',
 }
 
-export interface IRuleBreachAlert<T = IActionMetadata> extends IRuleBreach<T> {}
-export interface IRuleBreachRequest<T = IActionMetadata> extends IRuleBreach<T> {
+export interface IRuleBreachAlert extends IRuleBreach {}
+export interface IRuleBreachRequest extends IRuleBreach {
     reviewerId?: string;
     reviewedAt?: Date;
     status: RuleBreachRequestStatus;
 }
-
-export const isCreateRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<ICreateRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.CreateRelationship;
-export const isDeleteRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IDeleteRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.DeleteRelationship;
-export const isUpdateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateEntity;
-export const isUpdateEntityStatusRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityStatusMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateStatus;

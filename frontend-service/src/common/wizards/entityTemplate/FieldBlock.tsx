@@ -40,7 +40,9 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportChangeToRequiredWithInstances: boolean;
     supportArrayFields: boolean;
     supportDeleteForExistingInstances: boolean;
+    supportRelationshipReference: boolean;
     supportEditEnum?: boolean;
+    supportUnique?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -63,7 +65,9 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportChangeToRequiredWithInstances,
     supportArrayFields,
     supportDeleteForExistingInstances,
+    supportRelationshipReference,
     supportEditEnum,
+    supportUnique,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -80,6 +84,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         patternCustomErrorMessage: '',
         dateNotification: undefined,
         calculateTime: undefined,
+        relationshipReference: undefined,
         serialStarter: 0,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
@@ -219,6 +224,8 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportArrayFields,
                                                 supportDeleteForExistingInstances,
                                                 supportEditEnum,
+                                                supportRelationshipReference,
+                                                supportUnique,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
