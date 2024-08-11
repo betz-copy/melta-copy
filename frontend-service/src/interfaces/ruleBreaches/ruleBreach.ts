@@ -1,4 +1,4 @@
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../users';
 import { IEntity } from '../entities';
 import { IRelationship } from '../relationships';
 import { ActionTypes, IActionMetadata, IActionMetadataPopulated } from './actionMetadata';

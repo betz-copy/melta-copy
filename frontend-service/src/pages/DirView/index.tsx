@@ -5,6 +5,7 @@ import { useQueries } from 'react-query';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
@@ -15,6 +16,8 @@ import { Workspace } from './Workspace';
 
 const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
 
     const [wizardDialogState, setWizardDialogState] = useState<{ isWizardOpen: boolean; workspace: IWorkspace | null }>({
         isWizardOpen: false,
@@ -30,8 +33,12 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     ]);
 
     useEffect(() => {
-        if (currentWorkspace) setWorkspace(currentWorkspace);
-    }, [currentWorkspace, setWorkspace]);
+        if (!currentWorkspace) return;
+        setWorkspace(currentWorkspace);
+
+        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
+            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+    }, [currentWorkspace, setWorkspace, currentUser, setUser]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;
 

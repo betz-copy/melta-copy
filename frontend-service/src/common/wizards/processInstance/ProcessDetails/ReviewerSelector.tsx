@@ -1,7 +1,7 @@
 import React from 'react';
 import { Chip, Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IUser } from '../../../../services/kartoffelService';
+import { IUser } from '../../../../interfaces/users';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 
 interface ReviewerSelectorProps {
@@ -30,7 +30,7 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                             setDisplayValue('');
                         }}
                         onDisplayValueChange={(_, newDisplayValue) => setDisplayValue(newDisplayValue)}
-                        isOptionDisabled={(option) => combinedReviewers.some((approver) => approver.id === option.id)}
+                        isOptionDisabled={(option) => combinedReviewers.some((approver) => approver._id === option._id)}
                         isError={false}
                         label={i18next.t('wizard.processInstance.addReviewer')}
                         size="small"
@@ -52,12 +52,12 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
                 }}
             >
                 {forcedReviewers?.map((reviewer) => (
-                    <Grid item key={reviewer.id}>
+                    <Grid item key={reviewer._id}>
                         <Chip label={reviewer.fullName} variant="outlined" disabled />
                     </Grid>
                 ))}
                 {reviewers?.map((reviewer) => (
-                    <Grid item key={reviewer.id}>
+                    <Grid item key={reviewer._id}>
                         {isViewMode ? (
                             <Chip label={reviewer.fullName} variant="outlined" />
                         ) : (

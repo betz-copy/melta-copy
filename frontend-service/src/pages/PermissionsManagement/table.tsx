@@ -1,24 +1,24 @@
-import React from 'react';
-import i18next from 'i18next';
-import '@noam7700/ag-grid-enterprise-core';
-import { AgGridReact } from '@ag-grid-community/react';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import { ColDef, GetQuickFilterTextParams, ICellRendererParams, ISetFilterParams, ValueFormatterParams } from '@ag-grid-community/core';
+import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { Chip, Grid, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { Chip, Grid, IconButton } from '@mui/material';
+import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import i18next from 'i18next';
+import React from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import { IUser } from '../../services/kartoffelService';
 import { environment } from '../../globals';
+import { IMongoCategory } from '../../interfaces/categories';
+import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
+import { IUser } from '../../interfaces/users';
 
 const { defaultRowHeight } = environment.agGrid;
 
-const defaultColDef: ColDef<IPermissionsOfUser> = {
+const defaultColDef: ColDef<IUser> = {
     editable: false,
     sortable: true,
     flex: 1,
@@ -33,12 +33,12 @@ const defaultColDef: ColDef<IPermissionsOfUser> = {
 
 const booleanToTextFormatter = (value: boolean) => (value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no'));
 
-const nullableStringToBooleanColDefs = (field: string, headerName: string): ColDef<IPermissionsOfUser> => {
-    const filterParams: ISetFilterParams<IPermissionsOfUser, boolean> = {
+const nullableStringToBooleanColDefs = (field: string, headerName: string): ColDef<IUser> => {
+    const filterParams: ISetFilterParams<IUser, boolean> = {
         values: [true, false],
         suppressMiniFilter: true,
         suppressSelectAll: true,
-        valueFormatter: (params: ValueFormatterParams<IPermissionsOfUser, boolean>) => booleanToTextFormatter(params.value),
+        valueFormatter: (params: ValueFormatterParams<IUser, boolean>) => booleanToTextFormatter(params.value),
     };
 
     return {
@@ -57,23 +57,28 @@ const nullableStringToBooleanColDefs = (field: string, headerName: string): ColD
 
 const columnDefs = (
     categories: IMongoCategory[],
-    onDeletePermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any,
-    onEditPermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any,
-): ColDef<IPermissionsOfUser>[] => [
+    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
+    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
+): ColDef<IUser>[] => [
     {
         field: 'user',
         headerName: i18next.t('permissions.userHeaderName'),
-        valueFormatter: (params: ValueFormatterParams<IPermissionsOfUser, IPermissionsOfUser['user']>) => params.value.displayName,
+        valueFormatter: (params: ValueFormatterParams<IUser, IUser>) => params.value.displayName,
         comparator: (userA: IUser, userB: IUser) => {
             const { displayName: userFullNameA } = userA;
             const { displayName: userFullNameB } = userB;
             return userFullNameA.localeCompare(userFullNameB);
         },
         filter: 'agTextColumnFilter',
-        filterValueGetter: (params) => params.data!.user.displayName.toLowerCase(),
+        filterValueGetter: (params) => params.data!.displayName.toLowerCase(),
         getQuickFilterText: (params) => {
-            const { id, displayName, digitalIdentities } = params.data.user;
-            return `${id} ${displayName} ${digitalIdentities.map(({ uniqueId }) => uniqueId).join(' ')}`;
+            const {
+                _id,
+                displayName,
+                externalMetadata: { digitalIdentitySource },
+            } = params.data;
+
+            return `${_id} ${displayName} ${digitalIdentitySource}`;
         },
     },
     nullableStringToBooleanColDefs('permissionsManagementId', i18next.t('permissions.permissionsManagement')),
@@ -83,7 +88,7 @@ const columnDefs = (
     {
         field: 'instancesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
-        getQuickFilterText: (params: GetQuickFilterTextParams<IPermissionsOfUser, IPermissionsOfUser['instancesPermissions']>) => {
+        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>>) => {
             const permissionsOfCategories = params.value.map(({ category }) => {
                 return (
                     categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
@@ -105,10 +110,7 @@ const columnDefs = (
         //         return category!.displayName;
         //     },
         // },
-        comparator: (
-            instancesPermissionsLHS: IPermissionsOfUser['instancesPermissions'],
-            instancesPermissionsRHS: IPermissionsOfUser['instancesPermissions'],
-        ) => {
+        comparator: (instancesPermissionsLHS: ICompact<IInstancesPermission>, instancesPermissionsRHS: ICompact<IInstancesPermission>) => {
             if (instancesPermissionsLHS.length !== instancesPermissionsRHS.length) {
                 return instancesPermissionsLHS.length > instancesPermissionsRHS.length ? 1 : -1;
             }
@@ -125,7 +127,7 @@ const columnDefs = (
 
             return instancesPermissionsLHSStr.localeCompare(instancesPermissionsRHSStr);
         },
-        cellRenderer: (props: ICellRendererParams<IPermissionsOfUser, IPermissionsOfUser['instancesPermissions']>) => {
+        cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>>) => {
             const instancesPermissionsPopulated = props.value.map(({ _id, category }) => {
                 return {
                     _id,
@@ -159,7 +161,7 @@ const columnDefs = (
         sortable: false,
         filter: false,
         suppressMenu: true,
-        cellRenderer: (props: ICellRendererParams<IPermissionsOfUser>) => {
+        cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
 
             return (
@@ -179,14 +181,14 @@ const columnDefs = (
 ];
 
 const Table: React.FC<{
-    permissionsOfUsers: IPermissionsOfUser[];
+    permissionsOfUsers: IUser[];
     categories: IMongoCategory[];
-    onDeletePermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any;
-    onEditPermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any;
+    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
+    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
 }> = ({ permissionsOfUsers, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
     return (
-        <AgGridReact<IPermissionsOfUser>
+        <AgGridReact<IUser>
             className="ag-theme-material"
             modules={[MenuModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
@@ -194,7 +196,7 @@ const Table: React.FC<{
             defaultColDef={defaultColDef}
             columnDefs={columnDefs(categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
             rowModelType="clientSide"
-            getRowId={({ data: permissionsOfUser }) => permissionsOfUser.user.id}
+            getRowId={({ data: { _id } }) => _id}
             pagination
             paginationAutoPageSize
             rowHeight={defaultRowHeight}
@@ -208,6 +210,7 @@ const Table: React.FC<{
             onFirstDataRendered={(params) => {
                 params.columnApi.autoSizeColumns([
                     'actions',
+                    // TODO-WORKSPACES
                     'permissionsManagementId',
                     'templatesManagementId',
                     'rulesManagementId',

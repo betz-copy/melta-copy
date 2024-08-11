@@ -4,13 +4,17 @@ import { Action, IUpdateIndexRequest } from './interfaces';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
 import logger from '../utils/logger/logsLogger';
+import config from '../config';
+
+const {
+    service: { dbHeaderName },
+} = config;
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
-    // Extract dbHeaderName from msg headers
-    const { dbHeaderName } = msg.properties.headers;
     const { action, templateId }: IUpdateIndexRequest = basicValidateRequest(requestSchema, msgContent);
-    const manager = new Manager(dbHeaderName);
+
+    const manager = new Manager(msg.properties.headers[dbHeaderName]);
 
     try {
         switch (action) {

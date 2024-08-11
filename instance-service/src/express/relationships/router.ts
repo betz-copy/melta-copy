@@ -14,7 +14,7 @@ import RelationshipValidator from './validator.template';
 
 const relationshipRouter: Router = Router();
 const relationshipController = createController(RelationshipController);
-const relationshipValidatorController = createController(RelationshipValidator);
+const relationshipValidatorController = createController(RelationshipValidator, true);
 
 relationshipRouter.post('/ids', ValidateRequest(getRelationshipsByIdsRequestSchema), relationshipController('getRelationshipsByIds'));
 relationshipRouter.get('/count', ValidateRequest(getRelationshipsCountRequestSchema), relationshipController('getRelationshipsCountByTemplateId'));

@@ -34,10 +34,11 @@ export default class RelationshipValidator extends DefaultController<EntityManag
     public async validateRelationship(req: Request) {
         const { templateId, sourceEntityId, destinationEntityId } = req.body.relationshipInstance;
 
-        const relationshipTemplate = await this.getRelationshipTemplateByIdOrThrowValidationError(templateId);
-
-        const sourceEntity = await this.manager.getEntityById(sourceEntityId);
-        const destinationEntity = await this.manager.getEntityById(destinationEntityId);
+        const [relationshipTemplate, sourceEntity, destinationEntity] = await Promise.all([
+            this.getRelationshipTemplateByIdOrThrowValidationError(templateId),
+            this.manager.getEntityById(sourceEntityId),
+            this.manager.getEntityById(destinationEntityId),
+        ]);
 
         if (
             relationshipTemplate.destinationEntityId !== destinationEntity.templateId ||

@@ -1,5 +1,5 @@
 import * as minio from 'minio';
-import { Readable, Stream } from 'stream';
+import { Readable } from 'stream';
 import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
@@ -8,11 +8,7 @@ const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
 export class MinIOClient {
     private minioClient: minio.Client;
 
-    private bucketName: string;
-
-    constructor(bucketName: string) {
-        this.bucketName = bucketName;
-
+    constructor(private bucketName: string) {
         this.minioClient = new minio.Client({
             endPoint,
             port,
@@ -22,7 +18,7 @@ export class MinIOClient {
         });
     }
 
-    private async wrapDBNotExistsError(func: () => Promise<Stream>) {
+    private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
         } catch (err: any) {
@@ -40,15 +36,15 @@ export class MinIOClient {
         }
     }
 
-    downloadFileStream(filePath: string): Promise<Stream> {
-        return this.wrapDBNotExistsError(this.minioClient.getObject.bind(this, this.bucketName, filePath));
+    downloadFileStream(filePath: string) {
+        return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
 
-    uploadFileStream(filePath: Readable, objectName: string, metaData = {}): Promise<Stream> {
-        return this.wrapDBNotExistsError(this.minioClient.putObject.bind(this, this.bucketName, objectName, filePath, metaData));
+    uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
+        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, objectName, filePath, metaData));
     }
 
-    statFile(filePath: string): Promise<Stream> {
-        return this.wrapDBNotExistsError(this.minioClient.statObject.bind(this, this.bucketName, filePath));
+    statFile(filePath: string) {
+        return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }
 }

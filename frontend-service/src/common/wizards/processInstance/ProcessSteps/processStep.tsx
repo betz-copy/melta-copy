@@ -6,14 +6,15 @@ import { Field, Form, Formik } from 'formik';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { FC } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { ProcessStepValues } from '.';
+import { PermissionScope } from '../../../../interfaces/permissions';
 import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IPermissionsOfUser } from '../../../../services/permissionsService';
 import { updateStepRequest } from '../../../../services/processesService';
+import { useUserStore } from '../../../../stores/user';
 import { renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../../BlueTitle';
@@ -109,13 +110,12 @@ export const ProcessStep: FC<ProcessStepProps> = ({
     onStepUpdateSuccess,
     toPrint,
 }) => {
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const currentUser = useUserStore((state) => state.user);
 
     const hasPermissionsToEditStep =
-        (Boolean(myPermissions!.processesManagementId) ||
-            stepTemplate.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id) ||
-            stepInstance.reviewers.some((reviewer) => reviewer.id === myPermissions.user.id)) &&
+        (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            stepTemplate.reviewers.some((reviewer) => reviewer._id === currentUser._id) ||
+            stepInstance.reviewers.some((reviewer) => reviewer._id === currentUser._id)) &&
         !processInstance.archived;
 
     const templateFileProperties = pickBy(

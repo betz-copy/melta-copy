@@ -1,14 +1,14 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import * as Multer from 'multer';
 import { callbackify } from 'util';
 import { config } from '../../config';
-import DefaultController from '../express/controller';
+import { ServiceError } from '../../express/error';
 import { generatePath } from '../generatePath';
 import DefaultManagerMinio from './manager';
 
 const { fileKeyName, filesKeyName } = config.multer;
 
-class MinioStorage extends DefaultManagerMinio {
+export class MinioStorage extends DefaultManagerMinio {
     async handleFile(_req: Request, file: Express.Multer.File) {
         const path = generatePath(file.originalname);
 
@@ -25,16 +25,31 @@ class MinioStorage extends DefaultManagerMinio {
     public _removeFile = callbackify((req: Request, file: Express.Multer.File) => this.removeFile(req, file));
 }
 
-export class MinioMulter extends DefaultController<MinioStorage> {
-    constructor(dbName: string) {
-        super(new MinioStorage(dbName));
+export class MinioMulter {
+    private static async wrapMulterMiddleware(req: Request) {
+        const dbName = req.headers[config.service.dbHeaderName];
+        if (typeof dbName !== 'string') return null;
+
+        const storage = new MinioStorage(dbName);
+
+        if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
+
+        return storage;
     }
 
-    uploadToMinio(_req: Request, _res: Response) {
-        return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
+    static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
+        const storage = await MinioMulter.wrapMulterMiddleware(req);
+
+        if (!storage) return next(new ServiceError(400, 'Invalid database name in header'));
+
+        Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName)(req, res, next);
     }
 
-    uploadBulkToMinio(_req: Request, _res: Response) {
-        return Multer({ storage: this.manager, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
+    static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
+        const storage = await MinioMulter.wrapMulterMiddleware(req);
+
+        if (!storage) return next(new ServiceError(400, 'Invalid database name in header'));
+
+        Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName)(req, res, next);
     }
 }

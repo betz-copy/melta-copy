@@ -12,8 +12,7 @@ export default class FilesController extends DefaultController<FilesManager> {
 
     async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        const stream = await this.manager.downloadFile(path.toString());
-        const fileStats = await this.manager.fileStat(path.toString());
+        const [stream, fileStats] = await Promise.all([this.manager.downloadFile(path.toString()), this.manager.fileStat(path.toString())]);
 
         res.setHeader('Content-Type', fileStats.metaData['content-type']);
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
@@ -55,7 +54,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     }
 
     async uploadFiles(req: express.Request, res: express.Response) {
-        res.json(this.manager.uploadFiles(req.files as express.Multer.File[]));
+        res.json(await this.manager.uploadFiles(req.files as Express.Multer.File[]));
     }
 
     async listFiles(_req: express.Request, res: express.Response) {

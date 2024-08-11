@@ -1,6 +1,6 @@
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
-import { createActivityLog } from '../../externalServices/activityLog/producer';
+import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import {
@@ -22,9 +22,12 @@ import { IRelationship } from './interface';
 export class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    constructor(dbName: string) {
-        super(dbName);
-        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
+    private activityLogProducer: ActivityLogProducer;
+
+    constructor(workspaceId: string) {
+        super(workspaceId);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
     }
 
     async getRelationshipById(id: string) {
@@ -176,13 +179,13 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             },
         };
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             ...updatedFields,
             entityId: createdRelationship.sourceEntityId,
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.destinationEntityId },
         });
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             ...updatedFields,
             entityId: createdRelationship.destinationEntityId,
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
@@ -251,12 +254,12 @@ export class RelationshipManager extends DefaultManagerNeo4j {
                 relationshipId: removedRelationship.properties._id,
             },
         };
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             ...updatedFields,
             entityId: removedRelationship.sourceEntityId,
             metadata: { ...updatedFields.metadata, entityId: removedRelationship.destinationEntityId },
         });
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             ...updatedFields,
             entityId: removedRelationship.destinationEntityId,
             metadata: { ...updatedFields.metadata, entityId: removedRelationship.sourceEntityId },

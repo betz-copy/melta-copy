@@ -1,10 +1,11 @@
+import axios from 'axios';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
 import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
-import { Axios } from './utils/axios';
+import { createAxiosInstance } from './utils/axios';
 
 const { url, baseRoute, isAliveRoute } = config.ganttService;
 
@@ -43,7 +44,14 @@ export interface ISearchGanttsBody {
     step: number;
 }
 
-export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntityTemplate[], relationshipTemplates: IMongoRelationshipTemplate[]) => {
+export const createGantts = (
+    chance: Chance.Chance,
+    workspaceId: string,
+    entityTemplates: IMongoEntityTemplate[],
+    relationshipTemplates: IMongoRelationshipTemplate[],
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const fliesOnId = relationshipTemplates.find(({ name }) => name === 'fliesOn')!._id;
     const flightId = entityTemplates.find(({ name }) => name === 'flight')!._id;
     const tripId = entityTemplates.find(({ name }) => name === 'trip')!._id;
@@ -54,7 +62,7 @@ export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntit
     const gantts = [...hardcodedRealGantts, ...randomGantts];
 
     const promises = gantts.map(async (gantt) => {
-        const { data: createdGantt } = await Axios.post<IMongoGantt>(url + baseRoute, gantt);
+        const { data: createdGantt } = await axiosInstance.post<IMongoGantt>(url + baseRoute, gantt);
         return createdGantt;
     });
 
@@ -62,7 +70,7 @@ export const createGantts = (chance: Chance.Chance, entityTemplates: IMongoEntit
 };
 
 export const isGanttsServiceAlive = async () => {
-    const { result, err } = await trycatch(() => Axios.get(url + isAliveRoute));
+    const { result, err } = await trycatch(() => axios.get(url + isAliveRoute));
 
     return { result, err };
 };

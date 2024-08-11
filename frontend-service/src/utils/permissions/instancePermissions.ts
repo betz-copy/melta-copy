@@ -1,24 +1,15 @@
 import { IMongoCategory } from '../../interfaces/categories';
-import { IPermissionsOfUser, Scope } from '../../services/permissionsService';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const checkUserInstanceOfCategoryPermission = (
-    instancesPermissions: IPermissionsOfUser['instancesPermissions'],
+    instancesPermissions: ISubCompactPermissions['instances'],
     { _id: categoryId }: IMongoCategory,
-    scope: Scope,
-) => {
-    return instancesPermissions.some(({ category, scopes }) => {
-        if (category !== categoryId) return false;
-
-        if (scope === 'Write') return scopes.includes('Write');
-
-        return scopes.includes('Write') || scopes.includes('Read');
-    });
+    scope: PermissionScope,
+): boolean => {
+    return instancesPermissions?.categories[categoryId]?.scope === scope;
 };
 
-export const getUserPermissionScopeOfCategory = (instancesPermissions: IPermissionsOfUser['instancesPermissions'], categoryId: string) => {
-    const permission = instancesPermissions.find(({ category }) => category === categoryId);
-
-    if (permission?.scopes.includes('Write')) return 'Write';
-    if (permission?.scopes.includes('Read')) return 'Read';
-    return undefined;
+export const getUserPermissionScopeOfCategory = (instancesPermissions: ISubCompactPermissions['instances'], categoryId: string) => {
+    return instancesPermissions?.categories[categoryId]?.scope ?? undefined;
 };

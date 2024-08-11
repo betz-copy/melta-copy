@@ -2,9 +2,11 @@ import { Router } from 'express';
 import { wrapController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
 import { WorkspacesController } from './controller';
-import { createOneSchema, deleteOneSchema, getByIdSchema, getDirSchema, getFileSchema, updateOneSchema } from './validator.schema';
+import { createOneSchema, deleteOneSchema, getByIdSchema, getDirSchema, getFileSchema, getWorkspaceIds, updateOneSchema } from './validator.schema';
 
 export const workspacesRouter: Router = Router();
+
+workspacesRouter.get('/:type/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspacesController.getWorkspaceIds));
 
 workspacesRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspacesController.getDir));
 

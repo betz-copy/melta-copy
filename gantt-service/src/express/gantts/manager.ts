@@ -1,13 +1,14 @@
 import { FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
 import { IGantt, ISearchGanttsBody } from './interface';
-import FolderModel from './model';
+import { GanttSchema } from './model';
 
 export default class GanttManager extends DefaultManagerMongo<IGantt> {
     constructor(dbName: string) {
-        super(dbName, FolderModel);
+        super(dbName, config.mongo.ganttsCollectionName, GanttSchema);
     }
 
     async searchGantts({ search, limit, step }: ISearchGanttsBody) {

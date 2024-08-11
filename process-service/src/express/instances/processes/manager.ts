@@ -5,12 +5,11 @@ import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import ajv from '../../../utils/ajv';
 import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
-import DefaultManagerMongo from '../../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, NotFoundError, ServiceError, ValidationError } from '../../error';
 import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
-import StepTemplateManager from '../../templates/steps/manager';
 import { IMongoStepInstance } from '../steps/interface';
 import StepInstanceManager from '../steps/manager';
 import {
@@ -24,21 +23,19 @@ import {
     Status,
     UpdateProcessReqBody,
 } from './interface';
-import ProcessInstanceModel from './model';
+import { ProcessInstanceSchema } from './model';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
-class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
-    private stepInstanceManager: StepInstanceManager;
 
+class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     private processTemplateManager: ProcessTemplateManager;
 
-    private stepTemplateManager: StepTemplateManager;
+    private stepInstanceManager: StepInstanceManager;
 
     constructor(dbName: string) {
-        super(dbName, ProcessInstanceModel);
-        this.stepInstanceManager = new StepInstanceManager(dbName);
+        super(dbName, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
         this.processTemplateManager = new ProcessTemplateManager(dbName);
-        this.stepTemplateManager = new StepTemplateManager(dbName);
+        this.stepInstanceManager = new StepInstanceManager(dbName);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
@@ -69,7 +66,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const { templateId, details, steps }: CreateProcessReqBody = req.body;
 
         const template = await this.processTemplateManager.getProcessTemplateById(templateId, false);
-        const stepTemplates = await this.stepTemplateManager.getStepTemplates(template.steps);
+        const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
 
         ProcessInstanceManager.validateReviewersNotInTemplate(steps, stepTemplates);
         ProcessInstanceManager.validateInstanceProperties(details, template.details.properties);
@@ -82,7 +79,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
         if (steps) {
             const [stepTemplates, stepInstances] = await Promise.all([
-                this.stepTemplateManager.getStepTemplates(template.steps),
+                this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps),
                 this.stepInstanceManager.getSteps(Object.keys(steps)),
             ]);
 
@@ -219,7 +216,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
-            return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);
+            return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, limit, skip);
         }
 
         return this.model

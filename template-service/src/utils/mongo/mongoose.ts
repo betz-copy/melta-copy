@@ -1,14 +1,7 @@
-<<<<<<<< HEAD:template-service/src/utils/mongo/mongoose.ts
-/* eslint-disable no-param-reassign */
-import * as _forEach from 'lodash.foreach';
+import _forEach from 'lodash.foreach';
 import { ClientSession, startSession, Types } from 'mongoose';
 import { trycatch } from '..';
-========
-import { ClientSession, startSession, Types } from 'mongoose';
-import _forEach from 'lodash.foreach';
-import { trycatch } from '.';
-import logger from './logger/logsLogger';
->>>>>>>> origin/master:template-service/src/utils/mongoose.ts
+import logger from '../logger/logsLogger';
 
 export const withTransaction = async <Func extends (session: ClientSession) => Promise<any>>(func: Func): Promise<Awaited<ReturnType<Func>>> => {
     const session = await startSession();

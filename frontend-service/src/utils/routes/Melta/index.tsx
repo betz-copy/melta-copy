@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import axios from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -12,6 +13,7 @@ import { IRuleMap } from '../../../interfaces/rules';
 import ErrorPage from '../../../pages/ErrorPage';
 import { getAllTemplates, GetAllTemplatesType } from '../../../services/templates/getAllTemplates';
 import { getFile } from '../../../services/workspacesService';
+import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../templates';
 import { MeltaRoutesInner } from './routes';
@@ -22,6 +24,8 @@ interface IMeltaRoutesProps {
 
 export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
 
     const queryClient = useQueryClient();
 
@@ -31,6 +35,15 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
     useQuery('getRules', () => undefined, { enabled: false });
     useQuery('getProcessTemplates', () => undefined, { enabled: false });
+
+    const {
+        data: workspace,
+        isLoading: isLoadingWorkspace,
+        isError: isErrorWorkspace,
+    } = useQuery({
+        queryKey: ['workspace', path],
+        queryFn: () => getFile(path),
+    });
 
     const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
         onError: (error) => {
@@ -45,33 +58,24 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
             queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
         },
-    });
-
-    const {
-        data: workspace,
-        isLoading: isLoadingWorkspace,
-        isError: isErrorWorkspace,
-    } = useQuery({
-        queryKey: ['workspace', path],
-        queryFn: () => getFile(path),
+        enabled: Boolean(workspace?._id),
     });
 
     useEffect(() => {
         if (!workspace) return;
 
         setWorkspace(workspace);
-    }, [workspace, setWorkspace]);
+
+        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
+            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+    }, [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);
 
     if (isLoading) return <LoadingAnimation isLoading={isLoadingWorkspace} />;
 
-    if (isError) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
+    if (isError) return <ErrorPage errorText={i18next.t('errorPage.noPermissionsToWorkspace')} />;
 
-    return (
-        <Box display="flex">
-            <MeltaRoutesInner />
-        </Box>
-    );
+    return <Box display="flex">{currentUser.currentWorkspacePermissions && <MeltaRoutesInner />}</Box>;
 };

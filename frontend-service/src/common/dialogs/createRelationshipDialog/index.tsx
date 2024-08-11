@@ -20,6 +20,7 @@ import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBr
 import CreateWithRuleBreachDialog from './CreateWithRuleBreachDialog';
 import { environment } from '../../../globals';
 import { useDarkModeStore } from '../../../stores/darkMode';
+import { PermissionScope } from '../../../interfaces/permissions';
 
 const { errorCodes } = environment;
 
@@ -145,7 +146,7 @@ const SourceOrDestinationEntityInput: React.FC<{
             label={label}
             addNewEntityLabel={addNewEntityLabel}
             hideNonPreview
-            checkUsersPermissions="Write"
+            checkUsersPermissions={PermissionScope.write}
         />
     );
 };

@@ -1,8 +1,6 @@
 import * as mongoose from 'mongoose';
-import config from '../../../config';
-import { IStepTemplate } from './interface';
 
-const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
+export const StepTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -34,7 +32,3 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
         versionKey: false,
     },
 );
-
-const StepTemplateModel = mongoose.model<IStepTemplate>(config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
-
-export default StepTemplateModel;

@@ -1,5 +1,5 @@
 import config from '../config';
-import { Axios } from '../utils/axios';
+import { createAxiosInstance } from '../utils/axios';
 
 const {
     url,
@@ -15,18 +15,14 @@ export interface IMongoCategory extends ICategory {
     _id: string;
 }
 
-export const createCategories = async (categories: ICategory[]) => {
+export const createCategories = async (workspaceId: string, categories: ICategory[]) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = categories.map((category) => {
-        return Axios.post<IMongoCategory>(url + createCategoryRoute, category);
+        return axiosInstance.post<IMongoCategory>(url + createCategoryRoute, category);
     });
 
     const results = await Promise.all(promises);
 
     return results.map((result) => result.data);
-};
-
-export const getCategories = async () => {
-    const result = await Axios.get<IMongoCategory[]>(url + createCategoryRoute);
-
-    return result.data;
 };

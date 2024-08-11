@@ -6,13 +6,9 @@ const {
 } = config;
 
 export default class DefaultExternalServiceRabbit {
-    protected dbName: string;
-
-    constructor(dbName: string) {
-        this.dbName = dbName;
-    }
+    constructor(protected workspaceId: string) {}
 
     protected sendToQueue(queueName: string, content: string | Object | Buffer) {
-        return menash.send(queueName, content, { headers: { [dbHeaderName]: this.dbName } });
+        return menash.send(queueName, content, { headers: { [dbHeaderName]: this.workspaceId } });
     }
 }

@@ -17,9 +17,10 @@ import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
+import { PermissionScope } from '../../interfaces/permissions';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
+import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
@@ -43,12 +44,13 @@ const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
+    const currentUser = useUserStore((state) => state.user);
+
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
@@ -77,6 +79,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
     const workspace = useWorkspaceStore((state) => state.workspace);
+
+    console.log('homo', currentUser.currentWorkspacePermissions);
 
     return (
         <Drawer
@@ -137,7 +141,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
                         <ProfileButton
-                            currentUser={myPermissions.user}
+                            currentUser={currentUser}
                             text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                             isDrawerOpen={isDrawerOpen}
                             onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
@@ -152,7 +156,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         margin: 0,
                                         fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                     }}
-                                >{`${i18next.t('sideBar.hello')} ${myPermissions.user.firstName}, `}</Typography>
+                                >{`${i18next.t('sideBar.hello')} ${currentUser.fullName.split(' ')[0]}, `}</Typography>
                                 <Button
                                     style={{
                                         color: 'white',
@@ -241,13 +245,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {Array.from(
                         categories.values(),
                         (category) =>
-                            Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === category._id)) && (
+                            Boolean(currentUser.currentWorkspacePermissions.instances?.categories[category._id]) && (
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}
                                     text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
-                                    disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
                                     onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
                                     isActiveButton={activeButton === category._id}
                                 >
@@ -325,7 +328,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         />
                     </NavButton>
 
-                    {(myPermissions.templatesManagementId || myPermissions.processesManagementId) && (
+                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"
                             text={i18next.t('pages.systemManagement')}
@@ -340,7 +344,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </NavButton>
                     )}
 
-                    {myPermissions.permissionsManagementId && (
+                    {currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write && (
                         <NavButton
                             to="/permissions-management"
                             text={i18next.t('permissions.permissionsManagmentPageTitle')}
@@ -380,12 +384,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
             </Grid>
 
-            <PermissionsOfUserDialog
+            {/* <PermissionsOfUserDialog
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
-                existingPermissionsOfUser={myPermissions}
-            />
+                existingPermissionsOfUser={currentUser}
+            /> */}
 
             <NotificationsScreen
                 open={isNotificationsScreenOpen}

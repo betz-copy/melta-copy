@@ -1,13 +1,17 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
-import { wrapController } from '../../utils/express';
+import { createWorkspacesController, wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { WorkspaceController } from './controller';
-import { createOneSchema, getByIdSchema, getDirSchema, getFileSchema, updateOneSchema } from './validator.schema';
+import { createOneSchema, getByIdSchema, getDirSchema, getFileSchema, getWorkspaceIds, updateOneSchema } from './validator.schema';
+
+const controller = createWorkspacesController(WorkspaceController);
 
 // TODO stricter user validation
 export const workspaceRouter: Router = Router();
+
+workspaceRouter.get('/:type/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspaceController.getWorkspaceIds));
 
 workspaceRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspaceController.getDir));
 
@@ -19,12 +23,12 @@ workspaceRouter.post(
     '/',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createOneSchema),
-    wrapController(WorkspaceController.createOne),
+    controller('createOne'),
 );
 
 workspaceRouter.put(
     '/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateOneSchema),
-    wrapController(WorkspaceController.updateOne),
+    controller('updateOne'),
 );

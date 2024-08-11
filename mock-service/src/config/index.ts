@@ -4,14 +4,14 @@ import './dotenv';
 const config = {
     service: {
         dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
-        dbMockName: env.get('DB_MOCK_NAME').default('mock-database').asString(),
     },
     seed: env.get('SEED').asFloat(),
-    permissionsService: {
-        url: env.get('PERMISSION_SERVICE_URL').required().asString(),
-        baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
-        isAliveRoute: env.get('PERMISSION_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
-        managersKrtoffelIds: env.get('PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
+    usersService: {
+        url: env.get('USER_SERVICE_URL').required().asString(),
+        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
+        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+        isAliveRoute: env.get('USER_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
+        managersKartoffelIds: env.get('USER_SERVICE_MANAGERS_KARTOFFEL_IDS').required().asArray(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
@@ -28,7 +28,6 @@ const config = {
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),
         isAliveRoute: env.get('PROCESS_SERVICE_IS_ALIVE_ROUTE').default('/isAlive').asString(),
-        reviewersKartoffelIds: env.get('PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS').required().asArray(),
         createProcessTemplateRoute: env.get('CREATE_PROCESS_TEMPLATE_ROUTE').default('/api/processes/templates').asString(),
         processInstanceRoute: env.get('PROCESS_INSTANCE_ROUTE').default('/api/processes/instances').asString(),
         maxNumberOfProcesses: env.get('MAX_NUMBER_OF_PROCESSES').default(50).asInt(),
@@ -60,6 +59,11 @@ const config = {
         isAliveRoute: env.get('GANTT_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
         minNumberOfGantts: env.get('MIN_NUMBER_OF_GANTTS').default(5).asInt(),
         maxNumberOfGantts: env.get('MAX_NUMBER_OF_GANTTS').default(40).asInt(),
+    },
+    workspacesService: {
+        url: env.get('WORKSPACES_SERVICE_URL').required().asString(),
+        baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
+        isAliveRoute: env.get('WORKSPACES_SERVICE_ALIVE_ROUTE').default('/isAlive').asString(),
     },
     requestLimit: env.get('REQUEST_LIMIT').default(10).asInt(),
 };

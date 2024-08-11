@@ -1,8 +1,6 @@
 import mongoose from 'mongoose';
-import config from '../../config';
-import { IMongoCategory } from './interface';
 
-const CategorySchema = new mongoose.Schema(
+export const CategorySchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -28,7 +26,3 @@ const CategorySchema = new mongoose.Schema(
 );
 
 CategorySchema.index({ displayName: 'text' });
-
-const CategoryModel = mongoose.model<IMongoCategory>(config.mongo.categoriesCollectionName, CategorySchema);
-
-export default CategoryModel;

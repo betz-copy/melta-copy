@@ -1,19 +1,17 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { wrapMiddleware } from '../utils/express';
-import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
-import usersRouter from './users/router';
-import permissionsRouter from './permissions/router';
-import templatesRouter from './templates/router';
-import processesRouter from './processes/router';
-import instancesRouter from './instances/router';
-import ActivityLogRouter from './activityLog/router';
-import notificationsRouter from './notifications/router';
-import RulesBreachesRouter from './ruleBreaches/router';
-import GanttsRouter from './gantts/router';
-import { workspaceRouter } from './workspaces/router';
 import config from '../config';
+import { AuthorizerControllerMiddleware } from '../utils/authorizer';
+import ActivityLogRouter from './activityLog/router';
 import flowCubeRouter from './flowCube/router';
+import GanttsRouter from './gantts/router';
+import instancesRouter from './instances/router';
+import notificationsRouter from './notifications/router';
+import processesRouter from './processes/router';
+import RulesBreachesRouter from './ruleBreaches/router';
+import templatesRouter from './templates/router';
+import { usersRouter } from './users/router';
+import { workspaceRouter } from './workspaces/router';
 
 const apiRouter = Router();
 
@@ -31,21 +29,19 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use(
     '/files',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(
     '/preview',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
     createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody, proxyTimeout: config.previewService.requestTimeout }),
 );
 
 apiRouter.use('/processes', processesRouter);
 
 apiRouter.use('/users', usersRouter);
-
-apiRouter.use('/permissions', permissionsRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);
 

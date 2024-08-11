@@ -1,8 +1,8 @@
 import React from 'react';
-import loadingAnimation from '../assets/icons/Melta_Logo.svg';
 import '../css/loading.css';
 import { environment } from '../globals';
 import { useWorkspaceStore } from '../stores/workspace';
+import { CustomImage } from './CustomIcon';
 
 interface ILoadingAnimationProps {
     isLoading?: boolean;
@@ -14,10 +14,11 @@ export const LoadingAnimation: React.FC<ILoadingAnimationProps> = ({ isLoading }
     return (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40vh' }}>
             {!isLoading && (
-                <img
+                <CustomImage
                     className="ld ld-bounce"
-                    src={workspace?.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : loadingAnimation}
+                    imageUrl={workspace?.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : '/icons/Melta_Logo.svg'}
                     width="300px"
+                    preserveColor
                 />
             )}
         </div>

@@ -1,4 +1,3 @@
-import * as Express from 'express';
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
 import { config } from '../../config';
@@ -7,7 +6,11 @@ import { generatePath } from '../../utils/generatePath';
 import logger from '../../utils/logger/logsLogger';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
-const { rabbit, document } = config;
+const {
+    rabbit,
+    document,
+    service: { dbHeaderName },
+} = config;
 
 export class FilesManager extends DefaultManagerMinio {
     uploadFile(file?: Express.Multer.File) {
@@ -20,6 +23,7 @@ export class FilesManager extends DefaultManagerMinio {
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.path),
+                { headers: { [dbHeaderName]: this.workspaceId } },
             );
         return files;
     }
@@ -95,4 +99,3 @@ export class FilesManager extends DefaultManagerMinio {
         });
     }
 }
-

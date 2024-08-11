@@ -6,7 +6,6 @@ import { InstancePropertiesValidationError, ValidationError } from '../../error'
 import { IProcessDetails } from '../../templates/processes/interface';
 import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
-import StepTemplateManager from '../../templates/steps/manager';
 import StepInstanceManager from '../steps/manager';
 import { CreateProcessReqBody, IProcessInstance, InstanceProperties, UpdateProcessReqBody } from './interface';
 import ProcessInstanceManager from './manager';
@@ -14,14 +13,11 @@ import ProcessInstanceManager from './manager';
 export default class ProcessInstanceValidator extends DefaultController<IProcessInstance, ProcessInstanceManager> {
     private stepInstanceManager: StepInstanceManager;
 
-    private stepTemplateManager: StepTemplateManager;
-
     private processTemplateManager: ProcessTemplateManager;
 
     constructor(dbName: string) {
         super(new ProcessInstanceManager(dbName));
         this.stepInstanceManager = new StepInstanceManager(dbName);
-        this.stepTemplateManager = new StepTemplateManager(dbName);
         this.processTemplateManager = new ProcessTemplateManager(dbName);
     }
 
@@ -50,7 +46,7 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
         const { templateId, details, steps }: CreateProcessReqBody = req.body;
 
         const template = await this.processTemplateManager.getProcessTemplateById(templateId, false);
-        const stepTemplates = await this.stepTemplateManager.getStepTemplates(template.steps);
+        const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
 
         this.validateReviewersNotInTemplate(steps, stepTemplates);
         this.validateInstanceProperties(details, template.details.properties);
@@ -63,7 +59,7 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
 
         if (steps) {
             const [stepTemplates, stepInstances] = await Promise.all([
-                this.stepTemplateManager.getStepTemplates(template.steps),
+                this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps),
                 this.stepInstanceManager.getSteps(Object.keys(steps)),
             ]);
 

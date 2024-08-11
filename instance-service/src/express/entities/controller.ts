@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { fetchPropertyFromRequest } from '../../utils/express';
+import { fetchPropertyFromRequest, RequestWithQuery } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import EntityManager from './manager';
 
@@ -12,7 +12,9 @@ class EntityController extends DefaultController<EntityManager> {
     async createEntity(req: Request, res: Response) {
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
 
-        res.json(await this.manager.createEntity(req.body, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId));
+        res.json(
+            await this.manager.createEntity(req.body.properties, entityTemplate, req.body.ignoredRules, req.body.userId, req.body.duplicatedFromId),
+        );
     }
 
     async searchEntitiesOfTemplate(req: Request, res: Response) {
@@ -62,8 +64,8 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.updateEnumFieldValue(req.params.id, newValue, oldValue, field));
     }
 
-    async getIsFieldUsed(req: RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>, res: Response) {
-        const { fieldValue, fieldName, type } = req.query;
+    async getIsFieldUsed(req: Request, res: Response) {
+        const { fieldValue, fieldName, type } = (req as RequestWithQuery<{ fieldValue: string; fieldName: string; type: string }>).query;
         res.json(await this.manager.getIsFieldUsed(req.params.id, fieldValue, fieldName, type));
     }
 

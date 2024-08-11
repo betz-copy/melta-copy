@@ -9,7 +9,7 @@ import {
     IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '.';
-import { IUser } from '../../../express/users/interface';
+import { IUser } from '../../userService/interfaces/users';
 import { IEntity } from '../../instanceService/interfaces/entities';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {

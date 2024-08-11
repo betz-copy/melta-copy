@@ -1,15 +1,16 @@
+import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetadata';
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IBrokenRule, IRuleBreach } from '../../utils/interfaces/ruleBreach';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
 import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
-import RuleBreachRequestsModel from './model';
+import { RuleBreachRequestsSchema } from './model';
 
 export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
     constructor(dbName: string) {
-        super(dbName, RuleBreachRequestsModel);
+        super(dbName, config.mongo.ruleBreachRequestsCollectionName, RuleBreachRequestsSchema);
     }
 
     public async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {

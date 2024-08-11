@@ -1,37 +1,39 @@
 import { Router } from 'express';
-import GanttsController from './controller';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { GanttController } from './controller';
+import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
-import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCanUpdateGantt } from './middlewares';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const GanttsRouter: Router = Router();
+
+const GanttsControllerMiddleware = createWorkspacesController(GanttController);
 
 GanttsRouter.get(
     '/:ganttId',
     ValidateRequest(getGanttByIdSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(GanttsController.getGanttById),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    GanttsControllerMiddleware('getGanttById'),
 );
-GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), wrapController(GanttsController.createGantt));
+GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), GanttsControllerMiddleware('createGantt'));
 GanttsRouter.delete(
     '/:ganttId',
     ValidateRequest(deleteGanttSchema),
     wrapMiddleware(validateUserCanDeleteGantt),
-    wrapController(GanttsController.deleteGantt),
+    GanttsControllerMiddleware('deleteGantt'),
 );
 GanttsRouter.put(
     '/:ganttId',
     ValidateRequest(updateGanttSchema),
     wrapMiddleware(validateUserCanUpdateGantt),
-    wrapController(GanttsController.updateGantt),
+    GanttsControllerMiddleware('updateGantt'),
 );
 GanttsRouter.post(
     '/search',
     ValidateRequest(searchGanttsSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(GanttsController.searchGantts),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    GanttsControllerMiddleware('searchGantts'),
 );
 
 export default GanttsRouter;

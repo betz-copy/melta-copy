@@ -1,10 +1,11 @@
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import config from '../../config';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { IActivityLog } from './interface';
-import ActivityLogModel from './model';
+import { ActivityLogSchema } from './model';
 
 export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
     constructor(dbName: string) {
-        super(dbName, ActivityLogModel);
+        super(dbName, config.mongo.activitiesCollectionName, ActivityLogSchema);
     }
 
     async getActivity(entityId: string, limit: number, skip: number, actions?: string[]) {

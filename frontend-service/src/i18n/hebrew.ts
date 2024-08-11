@@ -138,6 +138,7 @@ export default {
         backToHome: 'לחזרה לעמוד הבית',
         systemUnavailable: 'המערכת לא זמינה כרגע',
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
+        noPermissionsToWorkspace: 'אין לך הרשאות לגשת למרחב עבודה זה',
         disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
         preview: 'קובץ לא נתמך לתצוגה מקדימה',

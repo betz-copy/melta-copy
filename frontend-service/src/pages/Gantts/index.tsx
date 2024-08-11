@@ -12,7 +12,8 @@ import { IGantt } from '../../interfaces/gantts';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { CreateGanttDialog } from './CreateGanttDialog';
-import { IPermissionsOfUser } from '../../services/permissionsService';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.ganttSettings;
 
@@ -21,8 +22,9 @@ interface IGanttsPageProps {
 }
 
 const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [search, setSearch] = useState<string>();
     const [ganttDialogOpen, setGanttDialogOpen] = useState<boolean>(false);
@@ -38,7 +40,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                     <Box>
                         <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
                     </Box>
-                    {myPermissions.templatesManagementId && (
+                    {currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write && (
                         <IconButton onClick={() => setGanttDialogOpen(true)}>
                             <AddCircleIcon color="primary" fontSize="large" />
                         </IconButton>

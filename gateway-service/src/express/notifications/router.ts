@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { validateUserHasAtLeastSomePermissions } from '../permissions/validateAuthorizationMiddleware';
 import NotificationsController from './controller';
 import {
     getMyNotificationCountRequestSchema,
@@ -13,38 +13,40 @@ import {
 
 const notificationsRouter: Router = Router();
 
+const NotificationsControllerMiddleware = createWorkspacesController(NotificationsController);
+
 notificationsRouter.get(
     '/my',
     ValidateRequest(getMyNotificationsRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotifications),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    NotificationsControllerMiddleware('getMyNotifications'),
 );
 
 notificationsRouter.get(
     '/my/count',
     ValidateRequest(getMyNotificationCountRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotificationCount),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    NotificationsControllerMiddleware('getMyNotificationCount'),
 );
 notificationsRouter.post(
     '/my/group-count',
     ValidateRequest(getMyNotificationGroupCountRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.getMyNotificationGroupCount),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    NotificationsControllerMiddleware('getMyNotificationGroupCount'),
 );
 
 notificationsRouter.post(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.notificationsSeen),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    NotificationsControllerMiddleware('notificationsSeen'),
 );
 
 notificationsRouter.post(
     '/seen',
     ValidateRequest(manyNotificationSeenRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(NotificationsController.manyNotificationsSeen),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    NotificationsControllerMiddleware('manyNotificationsSeen'),
 );
 
 export default notificationsRouter;

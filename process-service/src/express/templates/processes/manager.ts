@@ -3,7 +3,7 @@ import { Document, FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
-import DefaultManagerMongo from '../../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { ServiceError, TemplateNotFoundError } from '../../error';
 import ProcessInstanceManager from '../../instances/processes/manager';
 import StepTemplateManager from '../steps/manager';
@@ -16,18 +16,17 @@ import {
     IProcessTemplateSearchProperties,
     ProcessTemplateDocument,
 } from './interface';
-import ProcessTemplateModel from './model';
+import { ProcessTemplateSchema } from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 
 export default class ProcessTemplateManager extends DefaultManagerMongo<IProcessTemplate> {
+    public stepTemplateManager: StepTemplateManager;
+
     private processInstanceManager: ProcessInstanceManager;
 
-    private stepTemplateManager: StepTemplateManager;
-
     constructor(dbName: string) {
-        super(dbName, ProcessTemplateModel);
-        this.processInstanceManager = new ProcessInstanceManager(dbName);
+        super(dbName, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
         this.stepTemplateManager = new StepTemplateManager(dbName);
     }
 
@@ -37,14 +36,19 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
+        console.log('1');
         const templateId: string = await transaction(async (session) => {
+            console.log('2');
             const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);
+            console.log('3');
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
+            console.log('4', _id);
             return _id;
         });
+        console.log('5');
         return this.getProcessTemplateById(templateId);
     }
 
@@ -138,7 +142,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
         if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
         if (reviewerId) {
-            return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
+            return getProcessTemplatesByReviewerIdAggregation(this.model, query, reviewerId, limit, skip);
         }
 
         return this.model.find(query, {}, { limit, skip }).populate(config.processFields.steps).lean().exec();

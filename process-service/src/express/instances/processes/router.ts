@@ -15,7 +15,7 @@ import ProcessInstanceValidator from './validator.template';
 const processInstanceRouter: Router = Router();
 
 const processInstanceRouterController = createController(ProcessInstance);
-const processInstanceValidatorController = createController(ProcessInstanceValidator);
+const processInstanceValidatorController = createController(ProcessInstanceValidator, true);
 
 processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema), processInstanceRouterController('getProcessById'));
 processInstanceRouter.post(

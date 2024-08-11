@@ -1,15 +1,14 @@
-import { Add, ArrowForward, ManageAccounts } from '@mui/icons-material';
+import { Add, ArrowForward /* ManageAccounts */ } from '@mui/icons-material';
 import { Box, Grid, Slide, SxProps, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaIcon } from '../../../common/MeltaIcon';
 import { ProfileButton } from '../../../common/sideBar/ProfileButton';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useMeltaPlusStore } from '../../../stores/meltaPlus';
+import { useUserStore } from '../../../stores/user';
 import { Loading } from './Loading';
 import { Navigation } from './Navigation';
 
@@ -19,11 +18,10 @@ interface ITopbarProps {
     openPermissionsDialog: () => void;
 }
 
-export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermissionsDialog }) => {
-    const [location, setLocation] = useLocation();
+export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPermissionsDialog */ }) => {
+    const currentUser = useUserStore((state) => state.user);
 
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const [location, setLocation] = useLocation();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
@@ -50,13 +48,14 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
             <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={3}>
                 <Grid item>
                     <ProfileButton
-                        currentUser={myPermissions?.user || { user: { firstName: '', lastName: '' } }}
+                        currentUser={currentUser || { user: { fullName: '' } }}
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         isDrawerOpen
                         onClick={() => {}}
                     />
                 </Grid>
 
+                {/*
                 <Grid item>
                     <IconButtonWithPopover
                         popoverText={i18next.t('permissions.permissionsManagmentPageTitle')}
@@ -65,6 +64,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                         <ManageAccounts sx={iconStyle} />
                     </IconButtonWithPopover>
                 </Grid>
+                */}
 
                 <Grid item>
                     <IconButtonWithPopover
@@ -78,7 +78,6 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard, openPermis
                         <Add sx={iconStyle} />
                     </IconButtonWithPopover>
                 </Grid>
-
                 <Grid item>{loading && <Loading />}</Grid>
             </Grid>
 

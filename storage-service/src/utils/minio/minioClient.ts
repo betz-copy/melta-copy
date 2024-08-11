@@ -1,19 +1,15 @@
 import * as http from 'http';
-import { BucketItem, BucketItemStat, Client, CopyConditions } from 'minio';
-import { Readable, Stream } from 'stream';
+import { BucketItem, Client, CopyConditions } from 'minio';
+import { Readable } from 'stream';
 import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
-const { url: endPoint, port, accessKey, secretKey, useSSL ,transportAgent } = config.minio;
+const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
 export class MinIOClient {
     private minioClient: Client;
 
-    private bucketName: string;
-
-    constructor(bucketName: string) {
-        this.bucketName = bucketName;
-
+    constructor(private bucketName: string) {
         this.minioClient = new Client({
             endPoint,
             port,
@@ -24,16 +20,16 @@ export class MinIOClient {
         });
     }
 
-    private async wrapDBNotExistsError(func: () => Promise<any>) {
+    private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
-            return await func();
+            return func();
         } catch (err: any) {
             // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;
 
             // Create the bucket if it doesn't exist
-            if (!(await this.minioClient.bucketExists(this.bucketName))) {
-                await this.minioClient.makeBucket(this.bucketName, '');
+            if (!(await this.bucketExists())) {
+                await this.makeBucket();
                 logger.info(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
@@ -42,12 +38,20 @@ export class MinIOClient {
         }
     }
 
-    downloadFileStream(filePath: string): Promise<Stream> {
-        return this.wrapDBNotExistsError(this.minioClient.getObject.bind(this, this.bucketName, filePath));
+    bucketExists() {
+        return this.minioClient.bucketExists(this.bucketName);
     }
 
-    statFile(filePath: string): Promise<BucketItemStat> {
-        return this.wrapDBNotExistsError(this.minioClient.statObject.bind(this, this.bucketName, filePath));
+    makeBucket() {
+        return this.minioClient.makeBucket(this.bucketName, '');
+    }
+
+    downloadFileStream(filePath: string) {
+        return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
+    }
+
+    statFile(filePath: string) {
+        return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }
 
     getFilesList(recursive = false, prefix = '', startAfter = '') {
@@ -64,36 +68,28 @@ export class MinIOClient {
     }
 
     removeFile(filePath: string) {
-        return this.wrapDBNotExistsError(this.minioClient.removeObject.bind(this, this.bucketName, filePath));
+        return this.wrapDBNotExistsError(() => this.minioClient.removeObject(this.bucketName, filePath));
     }
 
     copyFile(sourceFilePath: string, destinationFilePath: string) {
-        return this.wrapDBNotExistsError(
-            this.minioClient.copyObject.bind(
-                this,
-                this.bucketName,
-                destinationFilePath,
-                `${this.bucketName}/${sourceFilePath}`,
-                new CopyConditions(),
-            ),
+        return this.wrapDBNotExistsError(() =>
+            this.minioClient.copyObject(this.bucketName, destinationFilePath, `${this.bucketName}/${sourceFilePath}`, new CopyConditions()),
         );
     }
 
     removeFiles(filesNamesArray: string[]) {
-        return this.wrapDBNotExistsError(this.minioClient.removeObjects.bind(this, this.bucketName, filesNamesArray));
+        return this.wrapDBNotExistsError(() => this.minioClient.removeObjects(this.bucketName, filesNamesArray));
     }
 
     getDownloadLink(filePath: string, expirationTime = 24 * 60 * 60) {
-        return this.wrapDBNotExistsError(this.minioClient.presignedUrl.bind(this, 'GET', this.bucketName, filePath, expirationTime));
+        return this.wrapDBNotExistsError(() => this.minioClient.presignedUrl('GET', this.bucketName, filePath, expirationTime));
     }
 
     uploadFile(sourceFilePath: string, destinationFilePath: string, metaData = {}) {
-        return this.wrapDBNotExistsError(
-            this.minioClient.fPutObject.bind(this, this.bucketName, destinationFilePath, sourceFilePath, metaData),
-        );
+        return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, metaData = {}) {
-        return this.wrapDBNotExistsError(this.minioClient.putObject.bind(this, this.bucketName, destinationFilePath, fileStream, metaData));
+        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, metaData));
     }
 }

@@ -19,10 +19,12 @@ import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { IPermissionsOfUser } from '../../services/permissionsService';
+import { useUserStore } from '../../stores/user';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
@@ -34,10 +36,13 @@ const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrCategory: boolean,
-    permissionToRelatedCategory?: IPermissionsOfUser['instancesPermissions'][number],
+    categoryId: string,
+    instancesPermissions?: ISubCompactPermissions['instances'],
 ) => {
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
+
+    const permissionToRelatedCategory = instancesPermissions?.categories[categoryId];
 
     if (isEntityDisabled) {
         isEditButtonsDisabled = true;
@@ -45,17 +50,17 @@ export const getButtonState = (
     } else if (!hasWritePermissionToCurrCategory) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissions');
-    } else if (!permissionToRelatedCategory) {
+    } else if (!instancesPermissions) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHavePermissionsToCategory');
-    } else if (permissionToRelatedCategory && !permissionToRelatedCategory.scopes.includes('Write')) {
+    } else if (permissionToRelatedCategory?.scope !== PermissionScope.write) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
     } else {
         disabledButtonText = i18next.t('ruleManagement.create-relationship');
     }
 
-    return { isEditButtonsDisabled, disabledButtonText };
+    return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory };
 };
 
 const ConnectionsTableTitle: React.FC<{
@@ -339,7 +344,7 @@ const Entity: React.FC = () => {
     const queryClient = useQueryClient();
     const { setDisabledActions, setCurrentStep } = useTour();
 
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
@@ -366,7 +371,11 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = checkUserInstanceOfCategoryPermission(instancesPermissions, currentEntityTemplate.category, 'Write');
+    const hasWritePermissionToCurrCategory = checkUserInstanceOfCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances,
+        currentEntityTemplate.category,
+        PermissionScope.write,
+    );
     const populatedRelationshipTemplates = Array.from(relationshipTemplates.values(), (currRelationshipTemplate) =>
         populateRelationshipTemplate(currRelationshipTemplate, entityTemplates),
     );
@@ -506,13 +515,13 @@ const Entity: React.FC = () => {
                             </Box>
                             {categoriesWithConnectionsTemplates?.map(
                                 ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
-                                    const permissionToRelatedCategory = instancesPermissions.find((instance) => instance.category === _id);
-
-                                    const { isEditButtonsDisabled, disabledButtonText } = getButtonState(
+                                    const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
                                         isEntityDisabled,
                                         hasWritePermissionToCurrCategory,
-                                        permissionToRelatedCategory,
+                                        _id,
+                                        currentUser.currentWorkspacePermissions.instances,
                                     );
+
                                     return (
                                         <TabPanel key={_id} value={String(index)}>
                                             {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (

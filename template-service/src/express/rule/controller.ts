@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { IRule } from './interfaces';
+import { IMongoRule } from './interfaces';
 import { RuleManager } from './manager';
 
-class RuleController extends DefaultController<IRule, RuleManager> {
+class RuleController extends DefaultController<IMongoRule, RuleManager> {
     constructor(dbName: string) {
         super(new RuleManager(dbName));
     }

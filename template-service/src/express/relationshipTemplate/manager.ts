@@ -1,13 +1,18 @@
 import { ClientSession, Document, FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import DefaultManagerMongo from '../../utils/mongo/manager';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import { IRelationshipTemplate } from './interface';
-import RelationshipTemplateModel from './model';
+import { IMongoRelationshipTemplate, IRelationshipTemplate } from './interface';
+import { RelationshipTemplateSchema } from './model';
 
-export class RelationshipTemplateManager extends DefaultManagerMongo<IRelationshipTemplate> {
+export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelationshipTemplate> {
     constructor(dbName: string) {
-        super(dbName, RelationshipTemplateModel);
+        super(dbName, config.mongo.relationshipTemplatesCollectionName, RelationshipTemplateSchema);
+    }
+
+    async getTemplateById(templateId: string) {
+        return this.model.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
     }
 
     async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>, session?: ClientSession) {

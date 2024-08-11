@@ -1,7 +1,7 @@
 import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
-import { Scope } from '../../services/permissionsService';
+import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import PermissionViewIcon from './PermissionViewIcon';
@@ -22,7 +22,7 @@ const InstancesPermissionsCard: React.FC<{
         categoryDisplayName: string;
         disabled: boolean;
         permissionType: permissionTypeCheckboxProps;
-        scope?: Scope;
+        scope?: PermissionScope;
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;

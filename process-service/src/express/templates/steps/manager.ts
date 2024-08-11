@@ -1,13 +1,14 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import DefaultManagerMongo from '../../../utils/mongo/manager';
+import config from '../../../config';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
 import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
-import StepTemplateModel from './model';
+import { StepTemplateSchema } from './model';
 
 export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
     constructor(dbName: string) {
-        super(dbName, StepTemplateModel);
+        super(dbName, config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
     }
 
     async getStepTemplate(id: string): Promise<IMongoStepTemplate> {

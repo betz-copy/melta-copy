@@ -2,7 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
@@ -18,11 +18,12 @@ import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { PermissionScope } from '../../interfaces/permissions';
+import { useUserStore } from '../../stores/user';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -39,6 +40,8 @@ const TemplateTable = forwardRef<
         page: string;
     }
 >(({ template, quickFilterText, page }, ref) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const theme = useTheme();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -83,9 +86,12 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const queryClient = useQueryClient();
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
+    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances,
+        template.category,
+        PermissionScope.write,
+    );
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">

@@ -25,7 +25,7 @@ import { EntityValidator } from './validator.template';
 const entityRouter: Router = Router();
 
 const entityController = createController(EntityController);
-const entityValidatorController = createController(EntityValidator);
+const entityValidatorController = createController(EntityValidator, true);
 
 entityRouter.get('/constraints/:templateId', ValidateRequest(getConstraintsOfTemplateRequestSchema), entityController('getConstraintsOfTemplate'));
 entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), entityController('getAllConstraints'));

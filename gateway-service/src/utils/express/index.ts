@@ -1,7 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
+import config from '../../config';
+import { InvalidWorkspaceHeaderError } from '../../express/error';
+import { WorkspaceService } from '../../express/workspaces/service';
 import dataLogger from '../logger/dataLogger';
+import { FunctionKey } from '../types';
+import DefaultController from './controller';
+
+const { dbHeaderName } = config.service;
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -72,3 +78,32 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 };
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
+
+export const getWorkspaceId = async (req: Request) => {
+    const workspaceId = req.headers[dbHeaderName];
+
+    if (typeof workspaceId !== 'string') throw new InvalidWorkspaceHeaderError();
+    await WorkspaceService.getById(workspaceId); // check if workspace exists
+
+    return workspaceId;
+};
+
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
+    controller: { new (workspaceId: string, userId: string): T },
+    isMiddleware = false,
+) => {
+    return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
+        return async (req: Request, res: Response, next: NextFunction) => {
+            const workspaceId = await getWorkspaceId(req).catch(next);
+            if (!workspaceId) return;
+
+            if (isMiddleware) {
+                return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next)
+                    .then(() => next())
+                    .catch(next); // eslint-disable-line new-cap
+            }
+
+            return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+        };
+    };
+};

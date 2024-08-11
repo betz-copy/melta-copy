@@ -31,8 +31,6 @@ export const ChooseColors: React.FC<StepComponentProps<WorkspaceWizardValues>> =
                             newColors[key] = color;
                             setFieldValue('colors', newColors);
                         }}
-                        width="40rem"
-                        allowDelete={false}
                     />
                 </Box>
             ))}
