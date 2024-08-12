@@ -140,10 +140,10 @@ const CreateOrEditEntityDetails: React.FC<{
 
                     setCreateOrUpdateWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: brokenRules,
-                        rawBrokenRules: rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
                         newEntityData,
-                        actions: actions,
+                        actions,
                         rawActions,
                     });
                 }

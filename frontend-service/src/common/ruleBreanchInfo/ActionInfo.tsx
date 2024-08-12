@@ -251,7 +251,7 @@ const UpdateEntityActionInfo: React.FC<{
     const { entity } = actionMetadata;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.get((entity as IEntity).templateId)!;
+    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
 
     return (
         <Grid container direction="column">
