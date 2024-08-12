@@ -2,7 +2,7 @@ import React, { useRef } from 'react';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
 import { CodeEditor } from '../../../../common/inputs/CodeEditor';
-import { generateInterface, generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
+import { generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { Box, Typography } from '@mui/material';
 import { constrainedEditor } from 'constrained-editor-plugin';
@@ -11,10 +11,10 @@ import i18next from 'i18next';
 interface ActionManagementProps {
     entityTemplate: IMongoEntityTemplatePopulated | null;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
+    setEditorContent: React.Dispatch<React.SetStateAction<string>>;
     onValidate?: (markers: editor.IMarker[]) => void;
     forbidden?: boolean;
     value?: string;
-    setEditorContent: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const ActionManagement: React.FC<ActionManagementProps> = ({ entityTemplate, onChange, onValidate, forbidden = false, value, setEditorContent }) => {

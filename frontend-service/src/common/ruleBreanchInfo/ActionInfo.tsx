@@ -258,11 +258,7 @@ const UpdateEntityActionInfo: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <EntityLink
-                        entity={entity as IEntity}
-                        entityTemplate={entityTemplate}
-                        linkable={(entity as IEntity).properties._id !== undefined}
-                    />
+                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={entity!.properties._id !== undefined} />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>

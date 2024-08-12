@@ -5,10 +5,10 @@ import React from 'react';
 interface codeEditorProps {
     language: string;
     style: { height: string; width: string };
-    value?: string;
-    defaultValue?: string;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
     onMount: (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => void;
+    value?: string;
+    defaultValue?: string;
     onValidate?: (markers: editor.IMarker[]) => void;
 }
 

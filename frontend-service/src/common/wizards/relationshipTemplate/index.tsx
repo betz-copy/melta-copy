@@ -13,7 +13,6 @@ import {
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ErrorToast } from '../../ErrorToast';
-import { CodeEditor1 } from './codeEditor';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;
@@ -62,13 +61,8 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
 
 const steps: StepsType<RelationshipTemplateWizardValues> = [
     {
-        label: i18next.t('wizard.relationshipTemplate.details'),
+        label: i18next.t('wizard.relationshipTemplate.title'),
         component: (props, { isEditMode }) => <CreateRelationshipTemplateName {...props} isEditMode={isEditMode} />,
-        validationSchema: createRelationshipTemplateNameSchema,
-    },
-    {
-        label: i18next.t('wizard.relationshipTemplate.action'),
-        component: (props) => <CodeEditor1 {...props} />,
         validationSchema: createRelationshipTemplateNameSchema,
     },
 ];
