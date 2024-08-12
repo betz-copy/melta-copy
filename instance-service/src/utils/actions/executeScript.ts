@@ -1,4 +1,4 @@
-import * as ts from 'typescript';
+import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import format from 'date-fns/format';
@@ -124,6 +124,8 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
         entityId: string;
         properties: Record<string, any>;
     }[] = [];
+
+    console.dir({ executionOutput }, { depth: null });
 
     await Promise.all(
         executionOutput.map(async (entityToUpdate) => {

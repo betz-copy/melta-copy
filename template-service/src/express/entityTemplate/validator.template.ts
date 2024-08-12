@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import * as ts from 'typescript';
+import * as ts from 'typescript-actions';
 import * as fs from 'fs';
 import * as path from 'path';
 import EntityTemplateManager from './manager';
