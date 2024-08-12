@@ -51,14 +51,17 @@ import { getMyNotificationGroupCountRequest } from '../../services/notificationS
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
-import { searchIFrames } from '../../services/iFramesService';
-import { mapTemplates } from '../../utils/templates';
 import { IMongoIFrame } from '../../interfaces/iFrames';
+import { searchIFrames } from '../../services/iFramesService';
 
 type SideBarProps = {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
 };
+interface PaginatedIframes {
+    pages: IMongoIFrame[][];
+    pageParams: any[]; // Adjust this type based on your pageParams type
+}
 
 const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
     const theme = useTheme();
@@ -153,21 +156,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const { data: allIFrames } = useQuery(
-        ['searchIFrames'],
-        async () => {
-            return searchIFrames({});
-        },
-        {
-            // refetchInterval: environment.notifications.updateInterval,
-            refetchOnWindowFocus: true,
-        },
-    );
-    const iFrameValues: IMongoIFrame[] = allIFrames ? Array.from(allIFrames.values()) : [];
+    const { data } = useQuery('allIFrames', () => searchIFrames({}));
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
 
-    const iFramesInSideBar = iFrameValues?.filter((iframe) => iframe.placeInSideBar);
-    console.log({ iFrameValues }, { iFramesInSideBar });
-
+    // refetch();
+    console.log({ iFramesInSidebar });
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
@@ -394,7 +387,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
 
                     <IFramesInSideBar
-                        iFrames={iFramesInSideBar}
+                        iFrames={iFramesInSidebar}
                         activeButton={activeButton}
                         myPermissions={myPermissions}
                         isDrawerOpen={isDrawerOpen}
