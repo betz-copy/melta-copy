@@ -9,6 +9,21 @@ type IWinstonFormat = Logform.Format;
 
 const jsonReplacer = (_key, val) => (val instanceof Error ? { ...val, message: val.message, stack: val.stack } : val);
 
+const consoleFormat: IWinstonFormat = format.combine(
+    format.splat(),
+    format.metadata({
+        fillExcept: ['timestamp', 'level', 'message', 'metadata'],
+    }),
+    format.timestamp(),
+    format.printf(({ timestamp, level, message, metadata = {} }) => {
+        const messageToPrint = typeof message === 'object' ? JSON.stringify(message, jsonReplacer, 2) : message;
+        const metadataToPrint = JSON.stringify(metadata, jsonReplacer, 2);
+        const infoPrefix = `(${logs.extraDefault.environment.toUpperCase()}) ${timestamp} [${level.toUpperCase()}]`;
+
+        return `${infoPrefix}: message - ${messageToPrint}, data - ${metadataToPrint}`;
+    }),
+);
+
 const customFormat: IWinstonFormat = format.combine(
     format.splat(),
     format.metadata({
@@ -18,16 +33,8 @@ const customFormat: IWinstonFormat = format.combine(
         format: logs.format,
     }),
     format.label({ label: 'logs' }),
-    format.printf(({ timestamp, level, message, metadata }) => {
+    format.printf(({ timestamp, level, message, metadata = {} }) => {
         const extra: IExtra = { ...logs.extraDefault };
-
-        if (metadata.error instanceof Error) {
-            // eslint-disable-next-line no-param-reassign
-            metadata.error = Object.getOwnPropertyNames(metadata.error).reduce((acc, key) => {
-                if (key !== 'stack') acc[key] = metadata.error[key];
-                return acc;
-            }, {} as Record<string, any>);
-        }
 
         const printData: IPrintData = {
             timestamp,
@@ -41,6 +48,6 @@ const customFormat: IWinstonFormat = format.combine(
     }),
 );
 
-const logger: Logger = initializeLogger(logs.enableFile, true, logs.enableRotateFile, customFormat, logs.extraDefault.serviceName);
+const logger: Logger = initializeLogger(logs.enableFile, true, logs.enableRotateFile, customFormat, consoleFormat, logs.extraDefault.serviceName);
 
 export default logger;

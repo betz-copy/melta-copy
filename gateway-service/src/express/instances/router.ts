@@ -17,6 +17,7 @@ import {
     validateUserCanSearchEntitiesOfTemplate,
     validateUserCanUpdateOrDeleteRelationshipInstance,
     validateUserCanWriteEntityInstance,
+    validateUserCanWriteBulkEntityInstance,
 } from './middlewares';
 import {
     createEntityInstanceSchema,
@@ -116,5 +117,6 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     InstancesControllerMiddleware('deleteRelationshipInstance'),
 );
+InstancesRouter.post('/bulk', wrapMiddleware(validateUserCanWriteBulkEntityInstance), InstancesControllerMiddleware('runBulkOfActions'));
 
 export default InstancesRouter;

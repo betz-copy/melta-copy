@@ -16,7 +16,6 @@ import {
 import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
 import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
 import {
-    IActionMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IRuleBreachAlertPopulated,
@@ -75,96 +74,137 @@ export class MailManager {
                         <strong> {processName}</strong>
                         {hebrew.deleteProcess.deleteSuccessfully}
                     </p>
-                </body>
-            </html>
-        );
-    }
-
-    private processStatusUpdateMail({ process, status: updateStatus, step }: IProcessStatusUpdateMailNotificationMetadataPopulated) {
-        return (
-            <html>
-                <body dir="rtl">
-                    <h3>
-                        {hebrew.processStatusUpdate.updateStatus} {step ? hebrew.processStatusUpdate.step : hebrew.processStatusUpdate.process}
-                    </h3>
-
-                    {step ? (
-                        <p>
-                            {hebrew.processStatusUpdate.stepStatus} <strong>{step.displayName} </strong>
-                            {hebrew.processStatusUpdate.inProcess}
-                            <strong>{process?.name}</strong>
+                </div>
+                {addedStepsData.length > 0 && (
+                    <div>
+                        <p style={{ textDecoration: 'underline' }}>
+                            <u> {hebrew.processReviwerUpdate.addToReviwers}</u>
                         </p>
-                    ) : (
-                        <p>
-                            {hebrew.processStatusUpdate.processStatus} <strong>{process?.name}</strong>
-                        </p>
-                    )}
-                    <p>
-                        {hebrew.processStatusUpdate.updatedTo}
-                        <strong>{hebrew.status[updateStatus]}</strong>
-                    </p>
-                </body>
-            </html>
-        );
-    }
+                        {addedStepsData.map((step, index) => (
+                            <p key={index}>
+                                <strong>- {step.displayName}</strong>
+                            </p>
+                        ))}
+                    </div>
+                )}
 
-    private archiveProcessMail({ process, isArchived }: IArchiveProcessNotificationMetadataPopulated) {
-        return (
-            <html>
-                <body dir="rtl">
-                    <h3> {isArchived ? hebrew.archiveProcess.sendToArchive : hebrew.archiveProcess.removeFromArchive}</h3>
-                    <p>
-                        {hebrew.archiveProcess.theProcess} <strong>{process?.name} </strong>
-                        {isArchived ? hebrew.archiveProcess.sendToArchiveSuccessfully : hebrew.archiveProcess.removeFromArchiveSuccessfully}
-                    </p>
-                </body>
-            </html>
-        );
-    }
-
-    private processReviewerUpdateMail({
-        process,
-        addedSteps,
-        deletedSteps,
-        unchangedStepIds,
-    }: IProcessReviewerUpdateMailNotificationMetadataPopulated) {
-        const addedStepsData = addedSteps as IMongoStepTemplate[];
-        const deletedStepsData = deletedSteps as IMongoStepTemplate[];
-        if (!unchangedStepIds.length && !addedStepsData.length) {
-            return (
-                <html>
-                    <body dir="rtl">
-                        <h3>{hebrew.processReviwerUpdate.processReviwerUpdate}</h3>
-                        <p>
-                            {hebrew.processReviwerUpdate.removeFromReviwersInProcess}
-                            <strong> {process!.name}</strong>
+                {deletedStepsData.length > 0 && (
+                    <div>
+                        <p style={{ textDecoration: 'underline' }}>
+                            <u> {hebrew.processReviwerUpdate.removeFromReviwers}</u>
                         </p>
-                    </body>
-                </html>
+                        {deletedStepsData.map((step) => (
+                            <p>
+                                <strong>- {step.displayName}</strong>
+                            </p>
+                        ))}
+                    </div>
+                )}
+            </body>
+        </html>
+    );
+};
+
+const EntityLink: React.FC<{ entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({
+    entity,
+    entityTemplate,
+}) => {
+    return (
+        <a
+            href={`${meltaBaseUrl}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
+            target="_blank"
+            style={{ color: '#225AA7', fontWeight: 'bold' }}
+        >
+            {entityTemplate ? entityTemplate.displayName : hebrew.ruleBreach.unknownEntity}
+        </a>
+    );
+};
+
+export const BrokenRulesMassage: React.FC<{ ruleBrokenData: IRule[] }> = ({ ruleBrokenData }) => {
+    return (
+        <>
+            {ruleBrokenData.map((brokenRule) => (
+                <p style={{ direction: 'rtl' }}>
+                    <strong>* {brokenRule.name}</strong> - {brokenRule.description}
+                </p>
+            ))}
+        </>
+    );
+};
+export const getCreateOrDeleteRelActionInfo = async (
+    actionType: ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship,
+    { relationshipTemplateId, sourceEntity, destinationEntity }: ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+) => {
+    const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(relationshipTemplateId);
+    const sourceEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.sourceEntityId);
+    const destinationEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(relationshipTemplate.destinationEntityId);
+    return (
+        <>
+            {actionType === ActionTypes.CreateRelationship ? hebrew.ruleBreach.relationshipCreation : hebrew.ruleBreach.relationshipDeletion}
+            <strong> {relationshipTemplate.displayName} </strong>
+            {hebrew.ruleBreach.fromEntity} <EntityLink entity={sourceEntity} entityTemplate={sourceEntityTemplate!} />
+            {hebrew.ruleBreach.toEntity} <EntityLink entity={destinationEntity} entityTemplate={destinationEntityTemplate!} />
+        </>
+    );
+};
+export const getUpdateEntityActionInfo = async ({ entity }: IUpdateEntityMetadataPopulated) => {
+    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity!.templateId);
+    return (
+        <p>
+            {hebrew.updateEntityActionInfo.updatingEntity} <EntityLink entity={entity} entityTemplate={entityTemplate!} />
+        </p>
+    );
+};
+
+export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpdateEntityStatusMetadataPopulated) => {
+    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity!.templateId);
+    return (
+        <p>
+            {hebrew.updateEntityActionInfo.updatingEntityStatus} <EntityLink entity={entity} entityTemplate={entityTemplate!} />
+            <strong>
+                {disabled ? hebrew.ruleBreach.updateEntityStatusActionInfo.toDisabled : hebrew.ruleBreach.updateEntityStatusActionInfo.toActive}
+            </strong>
+        </p>
+    );
+};
+
+export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
+    return ruleBreach.actions.map((action) => {
+        if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
+            return getCreateOrDeleteRelActionInfo(
+                action.actionType,
+                action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
             );
         }
-        return (
-            <html>
-                <body dir="rtl">
-                    <h3>{hebrew.processReviwerUpdate.processReviwerUpdate}</h3>
-                    <div>
-                        <p>
-                            {hebrew.processReviwerUpdate.inProcess}
-                            <strong> {process!.name}</strong>
-                        </p>
-                    </div>
-                    {addedStepsData.length > 0 && (
-                        <div>
-                            <p style={{ textDecoration: 'underline' }}>
-                                <u> {hebrew.processReviwerUpdate.addToReviwers}</u>
-                            </p>
-                            {addedStepsData.map((step, index) => (
-                                <p key={index}>
-                                    <strong>- {step.displayName}</strong>
-                                </p>
-                            ))}
-                        </div>
-                    )}
+        if (action.actionType === ActionTypes.UpdateEntity) {
+            return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+        }
+
+        if (action.actionType === ActionTypes.UpdateStatus) {
+            return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+        }
+        return null;
+    });
+};
+
+const ruleBreachBodyMassage = async (
+    ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | IRuleBreachRequestPopulated,
+    ruleBrokenData: IRule[],
+) => {
+    return (
+        <>
+            {await getActionsInfoMessages(ruleBreach)}
+            <p>
+                {hebrew.ruleBreach.by}
+                <strong>{ruleBreach.originUser.fullName}</strong>
+            </p>
+            <p>
+                <u>{hebrew.brokenRules.breakingRules}</u>
+            </p>
+            <BrokenRulesMassage ruleBrokenData={ruleBrokenData} />
+        </>
+    );
+};
 
                     {deletedStepsData.length > 0 && (
                         <div>

@@ -110,8 +110,7 @@ const RuleBreachDialog: React.FC<{
                 <RuleBreachInfo
                     originUser={ruleBreach.originUser}
                     brokenRules={ruleBreach.brokenRules}
-                    actionType={ruleBreach.actionType}
-                    actionMetadata={ruleBreach.actionMetadata}
+                    actions={ruleBreach.actions}
                     isCompact={false}
                 />
             </DialogContent>

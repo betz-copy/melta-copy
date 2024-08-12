@@ -4,7 +4,7 @@ import request from 'supertest';
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import config from '../../../config';
-import { IRelationship } from '../interface';
+import { IRelationship } from '../interfaces';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../externalServices/templates/interfaces/relationshipTemplates';

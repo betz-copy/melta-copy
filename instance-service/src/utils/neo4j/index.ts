@@ -69,8 +69,25 @@ export default class Neo4jClient {
         return this.performTransaction('writeTransaction', normalizeResultFunction, cypherQuery, parameters);
     }
 
-    async performComplexReadTransaction<T>(transactionWork: TransactionWork<T>): Promise<T> {
-        return this.performComplexTransaction('readTransaction', transactionWork);
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>, dryRun = false) {
+        const session = this.driver.session({
+            database: this.database,
+            defaultAccessMode: transactionType === 'readTransaction' ? 'READ' : 'WRITE',
+        });
+        const trx = session.beginTransaction();
+
+        try {
+            const result = await transactionWork(trx);
+            if (dryRun) await trx.rollback();
+            else await trx.commit();
+
+            return result;
+        } finally {
+            const { err: error } = await trycatch(() => session.close());
+            if (error) {
+                logger.error('Failed to close session. Possible leak, Error:', { error });
+            }
+        }
     }
 
     async performComplexWriteTransaction<T>(transactionWork: TransactionWork<T>): Promise<T> {

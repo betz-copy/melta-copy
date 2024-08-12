@@ -9,16 +9,24 @@ import {
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
-    updateRuleBreachRequestStatusRequestSchema,
+    getManyRuleBreachesByIds,
 } from './validator.schema';
 
 const RuleBreachRequestsRouter: Router = Router();
 
 const controller = createController(RuleBreachRequestsController);
 
-RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequestsRequestSchema), controller('searchRuleBreachRequests'));
+RuleBreachRequestsRouter.post(
+    '/get-many',
+    ValidateRequest(getManyRuleBreachesByIds),
+    wrapController(RuleBreachRequestsController.getManyRuleBreachRequests),
+);
 
-RuleBreachRequestsRouter.post('/', ValidateRequest(createRuleBreachRequestRequestSchema), controller('createRuleBreachRequest'));
+RuleBreachRequestsRouter.post(
+    '/',
+    ValidateRequest(createRuleBreachRequestRequestSchema),
+    wrapController(RuleBreachRequestsController.createRuleBreachRequest),
+);
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/status',
@@ -29,7 +37,7 @@ RuleBreachRequestsRouter.patch(
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/action-metadata',
     ValidateRequest(updateRuleBreachRequestActionMetadataRequestSchema),
-    controller('updateRuleBreachRequestActionMetadata'),
+    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionsMetadatas),
 );
 
 RuleBreachRequestsRouter.patch(

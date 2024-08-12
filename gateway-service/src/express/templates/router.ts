@@ -149,6 +149,6 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     templatesControllerMiddleware('deleteRuleById'),
 );
-templatesRouter.post('/rules', AuthorizerControllerMiddleware('userCanWriteRules'), TemplatesServiceProxy);
+templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware('userCanWriteRules'), TemplatesServiceProxy);
 
 export default templatesRouter;

@@ -7,11 +7,11 @@ class RuleBreachesController extends DefaultController<RuleBreachesManager> {
         super(new RuleBreachesManager(workspaceId));
     }
 
-    async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await this.manager.createRuleBreachRequest(req.body, req.user!.id, req.files as Express.Multer.File[]));
+    static async getManyRuleBreachRequests(req: Request, res: Response) {
+        res.json(await RuleBreachesManager.getManyRuleBreachRequests(req.body));
     }
 
-    async approveRuleBreachRequest(req: Request, res: Response) {
+    static async approveRuleBreachRequest(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
         res.json(await this.manager.approveRuleBreachRequest(ruleBreachRequestId, req.user!));

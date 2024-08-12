@@ -4,6 +4,8 @@ import initializeLogger, { IExtra } from './loggerFactory';
 
 const { logs } = config;
 
+const jsonReplacer = (_key, val) => (val instanceof Error ? { ...val, message: val.message, stack: val.stack } : val);
+
 const customFormat = format.combine(
     format.label({ label: 'crud' }),
     format.splat(),
@@ -15,10 +17,10 @@ const customFormat = format.combine(
     }),
     format.printf(({ timestamp, level, message, metadata }) => {
         const extra: IExtra = { ...logs.extraDefault };
-        return JSON.stringify({ timestamp, level, extra, message, ...metadata });
+        return JSON.stringify({ timestamp, level, extra, message, ...metadata }, jsonReplacer);
     }),
 );
 
-const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, 'crud');
+const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, customFormat, 'crud');
 
 export default dataLogger;

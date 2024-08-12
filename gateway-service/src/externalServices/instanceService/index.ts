@@ -1,11 +1,19 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IBrokenRule } from '../ruleBreachService/interfaces';
+import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
 const {
-    instanceService: { url, baseEntitiesRoute, baseRelationshipsRoute, baseConstraintsRoute, requestTimeout, searchOfTemplateRoute },
+    instanceService: {
+        url,
+        baseEntitiesRoute,
+        baseRelationshipsRoute,
+        baseBulkActionsRoute,
+        baseConstraintsRoute,
+        requestTimeout,
+        searchOfTemplateRoute,
+    },
 } = config;
 
 export class InstancesService extends DefaultExternalServiceApi {
@@ -132,6 +140,21 @@ export class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    async runBulkOfActions(
+        actionsGroups: IAction[][],
+        dryRun: boolean,
+        userId: string,
+        ignoredRules: IBrokenRule[] = [],
+    ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
+        const { data } = await this.api.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+            `${baseBulkActionsRoute}/bulk`,
+            { actionsGroups, ignoredRules, userId },
+            { params: { dryRun } },
+        );
+
         return data;
     }
 }

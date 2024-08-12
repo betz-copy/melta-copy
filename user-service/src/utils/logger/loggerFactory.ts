@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import 'winston-daily-rotate-file';
 import { Logform, createLogger, Logger, transport, transports } from 'winston';
 import { config } from '../../config';
@@ -23,30 +24,46 @@ const initializeLogger = (
     enableConsole: boolean,
     enableRotateFile: boolean,
     customFormat: IWinstonFormat,
+    consoleFormat: IWinstonFormat,
     label: string,
 ): Logger => {
     const transportsList: transport[] = [];
 
-    if (enableConsole)
-        transportsList.push(
-            new transports.Console({
-                format: customFormat,
-            }),
-        );
+    if (enableConsole) {
+        try {
+            const consoleTransport = new transports.Console({
+                format: consoleFormat,
+            });
+
+            transportsList.push(consoleTransport);
+        } catch (error) {
+            console.error(`Error while initializing console transport: ${error}`);
+        }
+    }
 
     if (enableFile) {
-        const fileTransportSettings = { ...logs.fileSettings, format: customFormat };
-        const fileTransport = new transports.File(fileTransportSettings);
-        transportsList.push(fileTransport);
+        try {
+            const fileTransportSettings = { ...logs.fileSettings, format: customFormat };
+            const fileTransport = new transports.File(fileTransportSettings);
+
+            transportsList.push(fileTransport);
+        } catch (error) {
+            console.error(`Error while initializing file transport: ${error}`);
+        }
     }
 
     if (enableRotateFile) {
-        const fileRotateTransport = new transports.DailyRotateFile({
-            ...logs.fileRotateSettings,
-            filename: `${label}-%DATE%.log`,
-            format: customFormat,
-        });
-        transportsList.push(fileRotateTransport);
+        try {
+            const fileRotateTransport = new transports.DailyRotateFile({
+                ...logs.fileRotateSettings,
+                filename: `${label}-%DATE%.log`,
+                format: customFormat,
+            });
+
+            transportsList.push(fileRotateTransport);
+        } catch (error) {
+            console.error(`Error while initializing rotate file transport: ${error}`);
+        }
     }
 
     return createLogger({

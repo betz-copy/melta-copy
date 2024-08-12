@@ -16,9 +16,14 @@ const relationshipRouter: Router = Router();
 const relationshipController = createController(RelationshipController);
 const relationshipValidatorController = createController(RelationshipValidator, true);
 
-relationshipRouter.post('/ids', ValidateRequest(getRelationshipsByIdsRequestSchema), relationshipController('getRelationshipsByIds'));
-relationshipRouter.get('/count', ValidateRequest(getRelationshipsCountRequestSchema), relationshipController('getRelationshipsCountByTemplateId'));
-relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), relationshipController('getRelationshipById'));
+relationshipRouter.post('/ids', ValidateRequest(getRelationshipsByIdsRequestSchema), wrapController(RelationshipController.getRelationshipsByIds));
+relationshipRouter.get(
+    '/count',
+    ValidateRequest(getRelationshipsCountRequestSchema),
+    wrapController(RelationshipController.getRelationshipsCountByTemplateId),
+);
+relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
+
 relationshipRouter.post(
     '/',
     ValidateRequest(createRelationshipRequestSchema),

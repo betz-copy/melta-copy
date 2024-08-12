@@ -6,18 +6,21 @@ import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui
 import isEqual from 'lodash.isequal';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IBrokenRulePopulated, IEntityForBrokenRules } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
-import { EntityInfo } from '../ActionInfo';
+import { EntityForBrokenRules } from '../ActionInfo';
 import { RuleIcon } from './RuleIcon';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { IEntity } from '../../../interfaces/entities';
 
 export const BrokenRuleFull: React.FC<{
     brokenRule: IBrokenRulePopulated;
     ruleTemplate: IMongoRule;
-    actionType: ActionTypes;
-    actionMetadata: IActionMetadataPopulated;
-}> = ({ brokenRule, ruleTemplate, actionType, actionMetadata }) => {
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+}> = ({ brokenRule, ruleTemplate, actions }) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();
 
@@ -62,12 +65,11 @@ export const BrokenRuleFull: React.FC<{
                             <ListItem key={i}>
                                 {'- '}
                                 <ListItemText sx={{ pl: 4 }}>
-                                    <EntityInfo
+                                    <EntityForBrokenRules
                                         ruleTemplate={ruleTemplate}
                                         entity={entity}
                                         entityTemplate={entityTemplate}
-                                        actionType={actionType}
-                                        actionMetadata={actionMetadata}
+                                        actions={actions}
                                         entityPropertiesToShowTooltipOverride={[...new Set(mainEntityPropertiesToShowTooltipOverride)]}
                                         entityPropertiesToHighlightTooltip={causeOfMainEntity?.properties}
                                     />
@@ -75,7 +77,7 @@ export const BrokenRuleFull: React.FC<{
                                     {causesWithoutMainEntity.map(({ instance, properties }, j) => {
                                         const entityToShow = (
                                             instance.aggregatedRelationship ? instance.aggregatedRelationship.otherEntity : instance.entity
-                                        ) as Exclude<IEntityForBrokenRules, 'created-entity-id'>; // because we excluded causeOfMainEntity from causes
+                                        ) as IEntity; // because we excluded causeOfMainEntity from causes
 
                                         const entityTemplateOfEntityToShow =
                                             // eslint-disable-next-line no-nested-ternary
@@ -89,14 +91,13 @@ export const BrokenRuleFull: React.FC<{
                                         return (
                                             <>
                                                 {j > 0 && ', '}
-                                                <EntityInfo
+                                                <EntityForBrokenRules
                                                     // eslint-disable-next-line react/no-array-index-key
                                                     key={j}
                                                     ruleTemplate={ruleTemplate}
                                                     entity={entityToShow}
                                                     entityTemplate={entityTemplateOfEntityToShow}
-                                                    actionType={actionType}
-                                                    actionMetadata={actionMetadata}
+                                                    actions={actions}
                                                     entityPropertiesToShowTooltipOverride={[...new Set(entityPropertiesToShowTooltipOverride)]}
                                                     entityPropertiesToHighlightTooltip={properties}
                                                 />

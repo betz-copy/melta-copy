@@ -11,8 +11,12 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
         super(dbName, config.mongo.ruleCollectionName, RuleTemplateSchema);
     }
 
-    async getRuleById(templateId: string) {
-        return this.model.findById(templateId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+    static getManyRulesByIds(rulesIds: string[]) {
+        return RuleModel.find({'_id': {$in: rulesIds}}).lean().exec();
+    }
+
+    static async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
+        return RuleModel.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
     }
 
     async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {

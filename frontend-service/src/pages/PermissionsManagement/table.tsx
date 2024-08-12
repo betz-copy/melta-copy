@@ -65,8 +65,8 @@ const columnDefs = (
         headerName: i18next.t('permissions.userHeaderName'),
         valueFormatter: (params: ValueFormatterParams<IUser, IUser>) => params.value.displayName,
         comparator: (userA: IUser, userB: IUser) => {
-            const { displayName: userFullNameA } = userA;
-            const { displayName: userFullNameB } = userB;
+            const userFullNameA = userA?.displayName ?? '';
+            const userFullNameB = userB?.displayName ?? '';
             return userFullNameA.localeCompare(userFullNameB);
         },
         filter: 'agTextColumnFilter',

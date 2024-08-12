@@ -176,6 +176,10 @@ export const environment = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
+        cacheBlockSize: 50,
+        maxBlocksInCache: 10,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 50,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -183,8 +187,8 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
-    createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
+    brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,

@@ -27,8 +27,14 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
         return { rows, lastRowIndex };
     }
 
-    public async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>): Promise<IRuleBreachRequest> {
-        return this.model.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
+    public static async getManyRuleBreachRequests(ids: string[]) {
+        return RuleBreachRequestsModel.find({ _id: { $in: ids } });
+    }
+
+    public static async createRuleBreachRequest(
+        ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>,
+    ): Promise<IRuleBreachRequest> {
+        return RuleBreachRequestsModel.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
     }
 
     public async updateRuleBreachRequestStatus(
@@ -42,13 +48,14 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
             .lean();
     }
 
-    public async updateRuleBreachRequestActionMetadata(
+    public static async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
-        actionType: ActionTypes,
-        actionMetadata: IActionMetadata,
+        actions: {
+            actionType: ActionTypes;
+            actionMetadata: IActionMetadata;
+        }[],
     ): Promise<IRuleBreachRequest> {
-        return this.model
-            .findByIdAndUpdate(ruleBreachRequestId, { actionType, actionMetadata }, { new: true })
+        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }

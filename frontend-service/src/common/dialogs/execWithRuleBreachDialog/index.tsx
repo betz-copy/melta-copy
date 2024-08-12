@@ -41,7 +41,7 @@ const ExecWithRuleBreachDialog: React.FC<{
                     : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
             </DialogTitle>
             <DialogContent>
-                <RuleBreachInfo brokenRules={brokenRules} actionType={actionType} actionMetadata={actionMetadata} isCompact={false} />
+                <RuleBreachInfo brokenRules={brokenRules} actions={[{ actionType, actionMetadata }]} isCompact={false} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{i18next.t('execActionWithRuleBreach.cancel')}</Button>

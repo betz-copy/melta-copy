@@ -64,13 +64,17 @@ const DeleteRelationshipDialog: React.FC<{
         () => {
             return createRuleBreachRequestRequest({
                 brokenRules: deleteWithRuleBreachDialogState.rawBrokenRules!,
-                actionType: ActionTypes.DeleteRelationship,
-                actionMetadata: {
-                    relationshipTemplateId: connectionToDelete!.relationship.templateId,
-                    relationshipId: connectionToDelete!.relationship.properties._id,
-                    sourceEntityId: connectionToDelete!.sourceEntity.properties._id,
-                    destinationEntityId: connectionToDelete!.destinationEntity.properties._id,
-                } as IDeleteRelationshipMetadata,
+                actions: [
+                    {
+                        actionType: ActionTypes.DeleteRelationship,
+                        actionMetadata: {
+                            relationshipTemplateId: connectionToDelete!.relationship.templateId,
+                            relationshipId: connectionToDelete!.relationship.properties._id,
+                            sourceEntityId: connectionToDelete!.sourceEntity.properties._id,
+                            destinationEntityId: connectionToDelete!.destinationEntity.properties._id,
+                        } as IDeleteRelationshipMetadata,
+                    },
+                ],
             });
         },
         {

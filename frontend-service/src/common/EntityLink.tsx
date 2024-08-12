@@ -30,7 +30,6 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     const theme = useTheme();
 
     const linkText = entityTemplate ? entityTemplate.displayName : i18next.t('ruleBreachInfo.updateEntityActionInfo.unknownEntity');
-    const link = `/entity/${entity ? entity.properties._id : 'unknownEntity'}`;
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const entityPropertiesTooltip =
         // eslint-disable-next-line no-nested-ternary
@@ -63,7 +62,10 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             }
         >
             {linkable ? (
-                <Link href={link} style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}>
+                <Link
+                    to={`/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
+                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                >
                     {linkText}
                 </Link>
             ) : (

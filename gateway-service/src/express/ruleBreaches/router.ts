@@ -10,6 +10,7 @@ import {
     cancelRuleBreachRequestRequestSchema,
     createRuleBreachRequestRequestSchema,
     denyRuleBreachRequestRequestSchema,
+    getManyRuleBreachesByIds,
     getRuleBreachAlertByIdRequestSchema,
     getRuleBreachRequestByIdRequestSchema,
     searchRuleBreachAlertsRequestSchema,
@@ -26,6 +27,13 @@ RulesBreachesRouter.post(
     ValidateRequest(createRuleBreachRequestRequestSchema),
     AuthorizerControllerMiddleware('userHasSomePermissions'),
     RulesBreachesControllerMiddleware('createRuleBreachRequest'),
+);
+
+RulesBreachesRouter.post(
+    '/requests/get-many',
+    ValidateRequest(getManyRuleBreachesByIds),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(RuleBreachesController.getManyRuleBreachRequests),
 );
 
 RulesBreachesRouter.post(

@@ -8,8 +8,12 @@ class RuleController extends DefaultController<IMongoRule, RuleManager> {
         super(new RuleManager(dbName));
     }
 
-    async getRuleById(req: Request, res: Response) {
-        res.json(await this.manager.getRuleById(req.params.ruleId));
+    static async getManyRulesByIds(req: Request, res: Response) {
+        res.json(await RuleManager.getManyRulesByIds(req.body.rulesIds));
+    }
+
+    static async updateRuleById(req: Request, res: Response) {
+        res.json(await RuleManager.updateRuleById(req.params.ruleId, req.body));
     }
 
     async updateRuleById(req: Request, res: Response) {

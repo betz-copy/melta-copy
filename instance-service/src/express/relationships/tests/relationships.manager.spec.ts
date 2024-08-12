@@ -2,7 +2,7 @@ import Neo4jClient from '../../../utils/neo4j';
 import { IEntity } from '../../entities/interface';
 import RelationshipManager from '../manager';
 import config from '../../../config';
-import { IRelationship } from '../interface';
+import { IRelationship } from '../interfaces';
 import EntityManager from '../../entities/manager';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';

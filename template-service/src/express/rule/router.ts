@@ -10,17 +10,19 @@ import {
     searchRulesRequestSchema,
     updateRuleByIdRequestSchema,
     updateRuleStatusByIdRequestSchema,
+    deleteRuleByIdRequestSchema,
+    createRuleRequestSchema,
+    searchRulesRequestSchema,
+    getManyRulesByIdsRequestSchema,
 } from './validator.schema';
 
 const RuleRouter: Router = Router();
 
-const controller = createController(RuleController);
-const validateRuleFormulaController = createController(RuleValidator, true);
-
-RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), controller('getRuleById'));
-RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), controller('updateRuleById'));
-RuleRouter.patch('/:ruleId/status', ValidateRequest(updateRuleStatusByIdRequestSchema), controller('updateRuleStatusById'));
-RuleRouter.delete('/:ruleId', ValidateRequest(deleteRuleByIdRequestSchema), controller('deleteRuleById'));
+RuleRouter.get('/:ruleId', ValidateRequest(getRuleByIdRequestSchema), wrapController(RuleController.getRuleById));
+RuleRouter.post('/get-many', ValidateRequest(getManyRulesByIdsRequestSchema), wrapController(RuleController.getManyRulesByIds));
+RuleRouter.put('/:ruleId', ValidateRequest(updateRuleByIdRequestSchema), wrapController(RuleController.updateRuleById));
+RuleRouter.patch('/:ruleId/status', ValidateRequest(updateRuleStatusByIdRequestSchema), wrapController(RuleController.updateRuleStatusById));
+RuleRouter.delete('/:ruleId', ValidateRequest(deleteRuleByIdRequestSchema), wrapController(RuleController.deleteRuleById));
 RuleRouter.post(
     '/',
     ValidateRequest(createRuleRequestSchema),
