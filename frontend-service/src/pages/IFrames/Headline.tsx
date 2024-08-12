@@ -51,19 +51,21 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
         iFrame: null,
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
-        onSuccess: (_data, id) => {
+        onSuccess: (_data, _id) => {
             console.log();
 
-            queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
-                if (!oldData) return;
-                const updatedPages = oldData.pages.map((page) => page.filter((iframe) => iframe._id !== id));
+            // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
+            //     if (!oldData) return;
+            //     const updatedPages = oldData.pages.map((page) => page.filter((iframe) => iframe._id !== id));
 
-                // eslint-disable-next-line consistent-return
-                return {
-                    ...oldData,
-                    pages: updatedPages,
-                };
-            });
+            //     // eslint-disable-next-line consistent-return
+            //     return {
+            //         ...oldData,
+            //         pages: updatedPages,
+            //     };
+            // });
+            queryClient.invalidateQueries('searchIFrames');
+
             queryClient.invalidateQueries('allIFrames');
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             navigate('/iframes');

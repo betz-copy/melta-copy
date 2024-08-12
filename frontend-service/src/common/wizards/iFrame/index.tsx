@@ -47,19 +47,20 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data) => {
-                queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
-                    console.log({ oldData });
+                // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
+                //     console.log({ oldData });
 
-                    if (!oldData) return;
-                    const updatedPages = oldData.pages.map((page) => page.map((iframe) => (iframe._id === data._id ? data : iframe)));
-                    console.log({ updatedPages });
+                //     if (!oldData) return;
+                //     const updatedPages = oldData.pages.map((page) => page.map((iframe) => (iframe._id === data._id ? data : iframe)));
+                //     console.log({ updatedPages });
 
-                    // eslint-disable-next-line consistent-return
-                    return {
-                        ...oldData,
-                        pages: updatedPages,
-                    };
-                });
+                //     // eslint-disable-next-line consistent-return
+                //     return {
+                //         ...oldData,
+                //         pages: updatedPages,
+                //     };
+                // });
+                queryClient.invalidateQueries('searchIFrames');
                 queryClient.setQueryData(['getIFrame', data._id], data);
                 queryClient.invalidateQueries('allIFrames');
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');

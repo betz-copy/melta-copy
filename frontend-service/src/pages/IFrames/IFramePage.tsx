@@ -25,7 +25,6 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true }) 
             navigate('/404');
         },
     });
-    // console.log({ iFrameData });
 
     if (isLoading) {
         return (
