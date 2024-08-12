@@ -8,13 +8,12 @@ export default class RuleBreachRequestsController extends DefaultController<IRul
         super(new RuleBreachRequestsManager(dbName));
     }
 
-    static async getManyRuleBreachRequests(req: Request, res: Response) {
-        const data = await RuleBreachRequestsManager.getManyRuleBreachRequests(req.body.rulesBreachIds);
-        res.json(data);
+    async searchRuleBreachRequests(req: Request, res: Response) {
+        res.json(await this.manager.searchRuleBreachRequests(req.body));
     }
 
-    static async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await RuleBreachRequestsManager.createRuleBreachRequest(req.body));
+    async getManyRuleBreachRequests(req: Request, res: Response) {
+        res.json(await this.manager.getManyRuleBreachRequests(req.body.rulesBreachIds));
     }
 
     async createRuleBreachRequest(req: Request, res: Response) {
@@ -28,11 +27,11 @@ export default class RuleBreachRequestsController extends DefaultController<IRul
         res.json(await this.manager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
     }
 
-    static async updateRuleBreachRequestActionsMetadatas(req: Request, res: Response) {
+    async updateRuleBreachRequestActionsMetadatas(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { actions } = req.body;
 
-        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId, actions));
+        res.json(await this.manager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId, actions));
     }
 
     async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {

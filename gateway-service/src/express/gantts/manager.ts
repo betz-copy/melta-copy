@@ -6,7 +6,7 @@ import { IRelationshipTemplate, RelationshipsTemplateService } from '../../exter
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { ServiceError } from '../error';
-import { getAllowedEntityTemplatesForInstances } from '../instances/middlewares';
+import { InstancesValidator } from '../instances/middlewares';
 
 export class GanttManager extends DefaultManagerProxy<GanttsService> {
     private instancesService: InstancesService;
@@ -15,11 +15,14 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
     private relationshipsTemplateService: RelationshipsTemplateService;
 
+    private instancesValidator: InstancesValidator;
+
     constructor(workspaceId: string) {
         super(new GanttsService(workspaceId));
         this.instancesService = new InstancesService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
+        this.instancesValidator = new InstancesValidator(workspaceId);
     }
 
     private filterGanttWithPermissions(gantt: IMongoGantt, allowedEntityTemplates: IMongoEntityTemplatePopulated[]): IMongoGantt | null {
@@ -34,14 +37,14 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
     }
 
     async searchGantts(searchBody: ISearchGanttsBody, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(this.entityTemplateService, permissionsOfUserId);
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId);
 
         const gantts = await this.service.searchGantts(searchBody);
         return gantts.map((gantt) => this.filterGanttWithPermissions(gantt, allowedEntityTemplates));
     }
 
     async getGanttById(ganttId: string, permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const allowedEntityTemplates = await getAllowedEntityTemplatesForInstances(this.entityTemplateService, permissionsOfUserId);
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(permissionsOfUserId);
 
         const gantt = await this.service.getGanttById(ganttId);
 

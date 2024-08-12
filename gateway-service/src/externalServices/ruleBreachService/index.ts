@@ -10,13 +10,13 @@ export class RuleBreachService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: `${url}${baseRoute}`, timeout: requestTimeout });
     }
 
-    static async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt'>): Promise<IRuleBreachRequest> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachRequest>('/requests', ruleBreachRequestData);
+    async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt'>): Promise<IRuleBreachRequest> {
+        const { data } = await this.api.post<IRuleBreachRequest>('/requests', ruleBreachRequestData);
         return data;
     }
 
-    static async createRuleBreachAlert(ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt'>): Promise<IRuleBreachAlert> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachAlert>('/alerts', ruleBreachAlertData);
+    async createRuleBreachAlert(ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt'>): Promise<IRuleBreachAlert> {
+        const { data } = await this.api.post<IRuleBreachAlert>('/alerts', ruleBreachAlertData);
         return data;
     }
 
@@ -52,19 +52,19 @@ export class RuleBreachService extends DefaultExternalServiceApi {
         return data;
     }
 
-    static async getManyRuleBreaches(rulesBreachIds: string[]): Promise<IRuleBreachRequest[]> {
-        const { data } = await this.ruleBreachService.post<IRuleBreachRequest[]>(`/requests/get-many`, { rulesBreachIds });
+    async getManyRuleBreaches(rulesBreachIds: string[]): Promise<IRuleBreachRequest[]> {
+        const { data } = await this.api.post<IRuleBreachRequest[]>(`/requests/get-many`, { rulesBreachIds });
         return data;
     }
 
-    static async updateRuleBreachRequestActionsMetadata(
+    async updateRuleBreachRequestActionsMetadata(
         ruleBreachRequestId: string,
         actions: {
             actionType: ActionTypes;
             actionMetadata: IActionMetadata;
         }[],
     ): Promise<IRuleBreachRequest> {
-        const { data } = await this.ruleBreachService.patch<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}/action-metadata`, {
+        const { data } = await this.api.patch<IRuleBreachRequest>(`/requests/${ruleBreachRequestId}/action-metadata`, {
             actions,
         });
         return data;

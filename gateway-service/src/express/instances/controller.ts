@@ -58,9 +58,9 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
     }
 
-    static async runBulkOfActions(req: Request, res: Response) {
-        const {actionsGroups, ignoredRules} = req.body;
+    async runBulkOfActions(req: Request, res: Response) {
+        const { actionsGroups, ignoredRules } = req.body;
 
-        res.json(await InstancesManager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, ignoredRules, req.user!.id));
+        res.json(await this.manager.runBulkOfActions(actionsGroups, req.query.dryRun as unknown as boolean, req.user!.id, ignoredRules));
     }
 }

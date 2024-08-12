@@ -18,6 +18,6 @@ const customFormat = format.combine(
     }),
 );
 
-const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, logs.label);
+const dataLogger: Logger = initializeLogger(logs.enableFile, false, logs.enableRotateFile, customFormat, customFormat, logs.label);
 
 export default dataLogger;

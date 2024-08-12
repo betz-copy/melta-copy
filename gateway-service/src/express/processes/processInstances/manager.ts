@@ -194,8 +194,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         oldProperties: Record<string, any>,
         newProperties: Record<string, any>,
     ) {
-        const oldFileIds = new Set<string>(ProcessesInstancesManager.extractFileIdsFromProperties(templateProperties, oldProperties));
-        const newFileIds = new Set<string>(ProcessesInstancesManager.extractFileIdsFromProperties(templateProperties, newProperties));
+        const oldFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, oldProperties));
+        const newFileIds = new Set<string>(this.extractFileIdsFromProperties(templateProperties, newProperties));
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
@@ -268,22 +268,22 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     private async collectFileIdsToDelete(templateId: string, steps: IMongoStepInstance[], details: InstanceProperties) {
         const fileIds: string[] = [];
         const { steps: templateSteps, details: templateDetails } = await this.service.getProcessTemplateById(templateId);
-        fileIds.push(...ProcessesInstancesManager.extractFileIdsFromSteps(templateSteps, steps));
-        fileIds.push(...ProcessesInstancesManager.extractFileIdsFromProperties(templateDetails.properties, details));
+        fileIds.push(...this.extractFileIdsFromSteps(templateSteps, steps));
+        fileIds.push(...this.extractFileIdsFromProperties(templateDetails.properties, details));
         return fileIds;
     }
 
-    private static extractFileIdsFromSteps(templateSteps: IMongoStepTemplate[], steps: IMongoStepInstance[]) {
+    private extractFileIdsFromSteps(templateSteps: IMongoStepTemplate[], steps: IMongoStepInstance[]) {
         const fileIds: string[] = [];
 
         templateSteps.forEach((templateStep, stepIndex) => {
-            fileIds.push(...ProcessesInstancesManager.extractFileIdsFromProperties(templateStep.properties, steps[stepIndex].properties));
+            fileIds.push(...this.extractFileIdsFromProperties(templateStep.properties, steps[stepIndex].properties));
         });
 
         return fileIds;
     }
 
-    private static extractFileIdsFromProperties(templateProperties: IProcessDetails['properties'], instanceProperties: InstanceProperties = {}) {
+    private extractFileIdsFromProperties(templateProperties: IProcessDetails['properties'], instanceProperties: InstanceProperties = {}) {
         const fileIds: string[] = [];
 
         Object.entries(templateProperties.properties).forEach(([key, value]) => {
@@ -359,7 +359,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         }
 
         await this.rabbitManager.createNotification<IProcessStatusUpdateNotificationMetadata, IProcessStatusUpdateNotificationMetadataPopulated>(
-            await ProcessesInstancesManager.getAllReviewersIds(process.steps, true),
+            await this.getAllReviewersIds(process.steps, true),
             NotificationType.processStatusUpdate,
             metadata,
             metadataPopulated,
@@ -368,7 +368,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     async sendDeleteProcessNotification(process: IMongoProcessInstancePopulated) {
         await this.rabbitManager.createNotification<IDeleteProcessNotificationMetadata, IDeleteProcessNotificationMetadataPopulated>(
-            await ProcessesInstancesManager.getAllReviewersIds(process.steps, true),
+            await this.getAllReviewersIds(process.steps, true),
             NotificationType.deleteProcess,
             {
                 processName: process.name,
@@ -379,7 +379,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
     async sendArchiveProcessNotification(process: IMongoProcessInstancePopulated, isArchived: boolean) {
         await this.rabbitManager.createNotification<IArchiveProcessNotificationMetadata, IArchiveProcessNotificationMetadataPopulated>(
-            await ProcessesInstancesManager.getAllReviewersIds(process.steps, true),
+            await this.getAllReviewersIds(process.steps, true),
             NotificationType.archivedProcess,
             {
                 processId: process._id,
@@ -398,10 +398,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         previousSteps?: IGenericStepPopulated[],
     ) {
         const [{ reviewersStepIds, reviewersIds }, { reviewersStepIds: previousReviewersStepIds, reviewersIds: previousReviewersId }] =
-            await Promise.all([
-                ProcessesInstancesManager.getReviewersStepIds(steps),
-                ProcessesInstancesManager.getReviewersStepIds(previousSteps ?? []),
-            ]);
+            await Promise.all([this.getReviewersStepIds(steps), this.getReviewersStepIds(previousSteps ?? [])]);
 
         const combinedReviewersIds = [...new Set([...reviewersIds, ...previousReviewersId])];
         const notifications: Promise<void>[] = [];
@@ -475,26 +472,26 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         await Promise.allSettled(notifications);
     }
 
-    private static async getReviewersStepIds(steps: IGenericStepPopulated[]) {
+    private async getReviewersStepIds(steps: IGenericStepPopulated[]) {
         const reviewersStepIds: Record<string, string[]> = {};
 
-        const reviewersIds = await ProcessesInstancesManager.getAllReviewersIds(steps);
+        const reviewersIds = await this.getAllReviewersIds(steps);
 
         reviewersIds.forEach((reviewerId) => {
-            reviewersStepIds[reviewerId] = ProcessesInstancesManager.getReviewerStepIds(steps, reviewerId);
+            reviewersStepIds[reviewerId] = this.getReviewerStepIds(steps, reviewerId);
         });
 
         return { reviewersStepIds, reviewersIds };
     }
 
-    private static getReviewerStepIds(steps: IGenericStepPopulated[], userId: string) {
+    private getReviewerStepIds(steps: IGenericStepPopulated[], userId: string) {
         return filteredMap(steps, (step) => ({
             include: step.reviewers.some(({ _id }) => _id === userId),
             value: step._id,
         }));
     }
 
-    private static async getAllReviewersIds(steps: IGenericStepPopulated[], withManagers?: boolean) {
+    private async getAllReviewersIds(steps: IGenericStepPopulated[], withManagers?: boolean) {
         const reviewersIds = new Set<string>();
 
         if (withManagers) {

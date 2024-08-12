@@ -1,14 +1,12 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { InstancesService } from '../../externalServices/instanceService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
@@ -39,30 +37,65 @@ import {
     RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import {
-    INotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+    IActionMetadataPopulated,
+    IBrokenRulePopulated,
+    ICauseInstancePopulated,
+    ICausesOfInstancePopulated,
+    ICreateEntityMetadataPopulated,
+    ICreateRelationshipMetadataPopulated,
+    IDeleteRelationshipMetadataPopulated,
+    IDuplicateEntityMetadataPopulated,
+    IEntityForBrokenRules,
+    IRelationshipForBrokenRules,
+    IRuleBreachAlertPopulated,
+    IRuleBreachPopulated,
+    IRuleBreachRequestPopulated,
+    IUpdateEntityMetadataPopulated,
+    IUpdateEntityStatusMetadataPopulated,
+} from '../../externalServices/ruleBreachService/interfaces/populated';
+import DefaultManagerProxy from '../../utils/express/manager';
+import { UsersManager } from '../users/manager';
+import { UserService } from '../../externalServices/userService';
+import { PermissionType, PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import { StorageService } from '../../externalServices/storageService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { InstancesService } from '../../externalServices/instanceService';
+import { RabbitManager } from '../../utils/rabbit';
 
 const { errorCodes } = config;
 
-export class RuleBreachesManager {
-    static async createRuleBreachRequest(
+export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> {
+    private storageService: StorageService;
+
+    private entityTemplateService: EntityTemplateService;
+
+    private instancesService: InstancesService;
+
+    private rabbitManager: RabbitManager;
+
+    constructor(private workspaceId: string) {
+        super(new RuleBreachService(workspaceId));
+        this.storageService = new StorageService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.instancesService = new InstancesService(workspaceId);
+        this.rabbitManager = new RabbitManager(workspaceId);
+    }
+
+    async createRuleBreachRequest(
         ruleBreachRequestData: Omit<IRuleBreachRequest, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
     ): Promise<IRuleBreachRequestPopulated> {
-        await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachRequestData, files);
+        await this.uploadRuleBreachFiles(ruleBreachRequestData, files);
 
         const { result, err } = await trycatch(async () => {
-            const ruleBreachRequest = await RuleBreachService.createRuleBreachRequest({
+            const ruleBreachRequest = await this.service.createRuleBreachRequest({
                 ...ruleBreachRequestData,
                 originUserId: userId,
             });
 
-            const request = await RuleBreachesManager.getRuleBreachRequestById(ruleBreachRequest._id);
+            const request = await this.getRuleBreachRequestById(ruleBreachRequest._id);
 
             await this.sendNotification<IRuleBreachRequestNotificationMetadata, IRuleBreachRequestNotificationMetadataPopulated>(
                 NotificationType.ruleBreachRequest,
@@ -75,30 +108,30 @@ export class RuleBreachesManager {
         });
 
         if (err || !result) {
-            await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachRequestData);
+            await this.deleteRuleBreachFiles(ruleBreachRequestData);
             throw err;
         }
 
         return result;
     }
 
-    static async getManyRuleBreachRequests(body: { rulesBreachIds: string[]; isPopulate: boolean }) {
-        const ruleBreaches = await RuleBreachService.getManyRuleBreaches(body.rulesBreachIds);
+    async getManyRuleBreachRequests(body: { rulesBreachIds: string[]; isPopulate: boolean }) {
+        const ruleBreaches = await this.service.getManyRuleBreaches(body.rulesBreachIds);
         if (!body.isPopulate) return ruleBreaches;
 
-        return Promise.all(ruleBreaches.map((ruleBreach) => RuleBreachesManager.getRuleBreachRequestById(ruleBreach._id)));
+        return Promise.all(ruleBreaches.map((ruleBreach) => this.getRuleBreachRequestById(ruleBreach._id)));
     }
 
-    static async createRuleBreachAlert(
+    async createRuleBreachAlert(
         ruleBreachAlertData: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
         userId: string,
         files: Express.Multer.File[] = [],
     ): Promise<IRuleBreachAlertPopulated> {
-        await RuleBreachesManager.uploadRuleBreachFiles(ruleBreachAlertData, files);
+        await this.uploadRuleBreachFiles(ruleBreachAlertData, files);
 
         const { result, err } = await trycatch(async () => {
-            const rulesBreachAlert = await RuleBreachService.createRuleBreachAlert({ ...ruleBreachAlertData, originUserId: userId });
-            const alert = await RuleBreachesManager.getRuleBreachAlertsById(rulesBreachAlert._id);
+            const rulesBreachAlert = await this.service.createRuleBreachAlert({ ...ruleBreachAlertData, originUserId: userId });
+            const alert = await this.getRuleBreachAlertsById(rulesBreachAlert._id);
 
             await this.sendNotification<IRuleBreachAlertNotificationMetadata, IRuleBreachAlertNotificationMetadataPopulated>(
                 NotificationType.ruleBreachAlert,
@@ -111,7 +144,7 @@ export class RuleBreachesManager {
         });
 
         if (err || !result) {
-            await RuleBreachesManager.deleteRuleBreachFiles(ruleBreachAlertData);
+            await this.deleteRuleBreachFiles(ruleBreachAlertData);
             throw err;
         }
 
@@ -124,77 +157,72 @@ export class RuleBreachesManager {
         }
     }
 
-    static async approveRuleBreachRequest(
+    async approveRuleBreachRequest(
         ruleBreachRequestId: string,
         user: Express.User,
     ): Promise<
         | IRuleBreachRequestPopulated
         | { actionsResults: PromiseSettledResult<(IRelationship | IEntity)[]>[]; ruleBreachRequestPopulated: IRuleBreachRequestPopulated }
     > {
-        const ruleBreachRequest = await RuleBreachService.getRuleBreachRequestById(ruleBreachRequestId);
-        RuleBreachesManager.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
+        const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
+        this.checkIfRuleBreachRequestIsReviewable(ruleBreachRequest);
         let actionsResults;
 
         if (ruleBreachRequest.actions.length > 1) {
-            actionsResults = await InstanceManagerService.runBulkOfActions(
-                [ruleBreachRequest.actions],
-                false,
-                ruleBreachRequest.brokenRules,
-                user.id,
-            );
+            actionsResults = await this.instancesService.runBulkOfActions([ruleBreachRequest.actions], false, user.id, ruleBreachRequest.brokenRules);
         } else
             try {
                 // only 1 action
                 const [{ actionType, actionMetadata }] = ruleBreachRequest.actions;
 
                 if (actionType === ActionTypes.CreateRelationship)
-                    await RuleBreachesManager.createRelationship(
+                    await this.createRelationship(
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as ICreateRelationshipMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
                 else if (actionType === ActionTypes.DeleteRelationship)
-                    await RuleBreachesManager.deleteRelationship(
+                    await this.deleteRelationship(
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IDeleteRelationshipMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
                 else if (actionType === ActionTypes.CreateEntity)
-                    await RuleBreachesManager.createEntity(
+                    await this.createEntity(
                         ruleBreachRequest._id,
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as ICreateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
                 else if (actionType === ActionTypes.DuplicateEntity)
-                    await RuleBreachesManager.duplicateEntity(
+                    await this.duplicateEntity(
                         ruleBreachRequest._id,
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IDuplicateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
                 else if (actionType === ActionTypes.UpdateEntity)
-                    await RuleBreachesManager.updateEntity(
+                    await this.updateEntity(
                         ruleBreachRequest._id,
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IUpdateEntityMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
                 else if (actionType === ActionTypes.UpdateStatus)
-                    await RuleBreachesManager.updateEntityStatus(
+                    await this.updateEntityStatus(
                         ruleBreachRequest.originUserId,
                         { actionMetadata: actionMetadata as IUpdateEntityStatusMetadata, actionType },
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
                 if (error instanceof ServiceError && error.metadata.errorCode === errorCodes.ruleBlock) {
-                    await RuleBreachService.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
+                    await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
                 }
 
                 throw error;
             }
 
-        const updatedRuleBreachRequest = await RuleBreachService.updateRuleBreachRequestStatus(
+        const updatedRuleBreachRequest = await this.service.updateRuleBreachRequestStatus(
             ruleBreachRequestId,
             user.id,
             RuleBreachRequestStatus.Approved,
@@ -238,7 +266,7 @@ export class RuleBreachesManager {
         await this.rabbitManager.createNotification(Array.from(viewers), type, metadata, populatedMetaData);
     }
 
-    private static async createRelationship(
+    private async createRelationship(
         originUserId: string,
         action: {
             actionType: ActionTypes;
@@ -247,6 +275,7 @@ export class RuleBreachesManager {
         brokenRules: IBrokenRule[],
     ) {
         const { relationshipTemplateId, sourceEntityId, destinationEntityId } = action.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
         await instancesManager.createRelationshipInstance(
             { templateId: relationshipTemplateId, sourceEntityId, destinationEntityId, properties: {} as any },
@@ -256,7 +285,7 @@ export class RuleBreachesManager {
         );
     }
 
-    private static async deleteRelationship(
+    private async deleteRelationship(
         originUserId: string,
         action: {
             actionType: ActionTypes;
@@ -264,10 +293,11 @@ export class RuleBreachesManager {
         },
         brokenRules: IBrokenRule[],
     ) {
-        await InstancesManager.deleteRelationshipInstance(action.actionMetadata.relationshipId, brokenRules, originUserId, false);
+        const instancesManager = new InstancesManager(this.workspaceId);
+        await instancesManager.deleteRelationshipInstance(action.actionMetadata.relationshipId, brokenRules, originUserId, false);
     }
 
-    private static async updateEntityStatus(
+    private async updateEntityStatus(
         originUserId: string,
         action: {
             actionType: ActionTypes;
@@ -275,10 +305,11 @@ export class RuleBreachesManager {
         },
         brokenRules: IBrokenRule[],
     ) {
-        await InstancesManager.updateEntityStatus(action.actionMetadata.entityId, action.actionMetadata.disabled, brokenRules, originUserId, false);
+        const instancesManager = new InstancesManager(this.workspaceId);
+        await instancesManager.updateEntityStatus(action.actionMetadata.entityId, action.actionMetadata.disabled, brokenRules, originUserId, false);
     }
 
-    private static async createEntity(
+    private async createEntity(
         _id: string,
         originUserId: string,
         action: {
@@ -288,10 +319,11 @@ export class RuleBreachesManager {
         brokenRules: IBrokenRule[],
     ) {
         const { templateId, properties } = action.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
-        const entity = await InstancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
+        const entity = await instancesManager.createEntityInstance({ templateId, properties }, [], brokenRules, originUserId, false);
 
-        await RuleBreachService.updateRuleBreachRequestActionsMetadata(_id, [
+        await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
                 actionType: action.actionType,
                 actionMetadata: {
@@ -302,7 +334,7 @@ export class RuleBreachesManager {
         ]);
     }
 
-    private static async duplicateEntity(
+    private async duplicateEntity(
         _id: string,
         originUserId: string,
         action: {
@@ -312,6 +344,7 @@ export class RuleBreachesManager {
         brokenRules: IBrokenRule[],
     ) {
         const { templateId, properties, entityIdToDuplicate } = action.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
         const entity = await instancesManager.duplicateEntityInstance(
             entityIdToDuplicate,
@@ -323,7 +356,7 @@ export class RuleBreachesManager {
             false,
         );
 
-        await RuleBreachService.updateRuleBreachRequestActionsMetadata(_id, [
+        await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
                 actionType: action.actionType,
                 actionMetadata: {
@@ -334,7 +367,7 @@ export class RuleBreachesManager {
         ]);
     }
 
-    private static async updateEntity(
+    private async updateEntity(
         _id: string,
         originUserId: string,
         action: {
@@ -344,6 +377,7 @@ export class RuleBreachesManager {
         brokenRules: IBrokenRule[],
     ) {
         const { entityId, updatedFields } = action.actionMetadata;
+        const instancesManager = new InstancesManager(this.workspaceId);
 
         const entity = await this.instancesService.getEntityInstanceById(entityId);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
@@ -360,7 +394,7 @@ export class RuleBreachesManager {
             false,
         );
 
-        await RuleBreachService.updateRuleBreachRequestActionsMetadata(_id, [
+        await this.service.updateRuleBreachRequestActionsMetadata(_id, [
             {
                 actionType: action.actionType,
                 actionMetadata: {
@@ -382,7 +416,7 @@ export class RuleBreachesManager {
 
         const fixedActionsPromises: (IAction | Promise<IAction>)[] = ruleBreachRequest.actions.map((action) => {
             if (action.actionType === ActionTypes.UpdateEntity) {
-                return InstanceManagerService.getEntityInstanceById((action.actionMetadata as IUpdateEntityMetadata).entityId).then((entity) => {
+                return this.instancesService.getEntityInstanceById((action.actionMetadata as IUpdateEntityMetadata).entityId).then((entity) => {
                     return {
                         actionType: action.actionType,
                         actionMetadata: {
@@ -398,8 +432,8 @@ export class RuleBreachesManager {
         const fixedActions = await Promise.all(fixedActionsPromises);
 
         const [updatedRuleBreachRequest] = await Promise.all([
-            RuleBreachService.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
-            RuleBreachService.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions),
+            this.service.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
+            this.service.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions),
         ]);
         const ruleBreachRequestPopulated = await this.populateRuleBreachRequest({
             ...updatedRuleBreachRequest,
@@ -432,17 +466,16 @@ export class RuleBreachesManager {
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
-    private static async uploadRuleBreachFiles(
-        ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
-        files: Express.Multer.File[],
-    ) {
+    private async uploadRuleBreachFiles(ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>, files: Express.Multer.File[]) {
         if (!files.length) return;
+
+        const instancesManager = new InstancesManager(this.workspaceId);
 
         // TODO - support upload files for multiple actions. for now, don't allow in bulk api...
         const [action] = ruleBreach.actions;
 
         if (action.actionType === ActionTypes.CreateEntity) {
-            const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(
+            const { props: propertiesWithFiles } = await instancesManager.uploadInstanceFiles(
                 files,
                 (action.actionMetadata as ICreateEntityMetadata).properties,
             );
@@ -452,7 +485,7 @@ export class RuleBreachesManager {
         }
 
         if (action.actionType === ActionTypes.UpdateEntity) {
-            const { props: updatedFieldsWithFiles } = await InstancesManager.uploadInstanceFiles(
+            const { props: updatedFieldsWithFiles } = await instancesManager.uploadInstanceFiles(
                 files,
                 (action.actionMetadata as IUpdateEntityMetadata).updatedFields,
             );
@@ -484,27 +517,29 @@ export class RuleBreachesManager {
         throw new ServiceError(400, 'shouldnt upload files to create rule breach request if not create/duplicate/update entity');
     }
 
-    private static async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
+    private async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
         // TODO - support delete for multiple actions. for now, don't allow in bulk api...
         const [action] = ruleBreach.actions;
 
+        const instancesManager = new InstancesManager(this.workspaceId);
+
         if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity) {
-            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(
                 (action.actionMetadata as ICreateEntityMetadata | IDuplicateEntityMetadata).templateId,
             );
 
-            const filePropertiesToDelete = InstancesManager.getEntityFileProperties(
+            const filePropertiesToDelete = instancesManager.getEntityFileProperties(
                 (action.actionMetadata as ICreateEntityMetadata | IDuplicateEntityMetadata).properties,
                 entityTemplate,
             );
             const fileIdsToDelete = Object.values(filePropertiesToDelete).flat();
 
-            await deleteFiles(fileIdsToDelete);
+            await this.storageService.deleteFiles(fileIdsToDelete);
         } else if (action.actionType === ActionTypes.UpdateEntity) {
-            const entity = await InstanceManagerService.getEntityInstanceById((action.actionMetadata as IUpdateEntityMetadata).entityId);
-            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+            const entity = await this.instancesService.getEntityInstanceById((action.actionMetadata as IUpdateEntityMetadata).entityId);
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
-            const filePropertiesToDelete = InstancesManager.getEntityFileProperties(
+            const filePropertiesToDelete = instancesManager.getEntityFileProperties(
                 (action.actionMetadata as IUpdateEntityMetadata).updatedFields,
                 entityTemplate,
             );
@@ -577,14 +612,14 @@ export class RuleBreachesManager {
         return updatedAgGridRequest;
     }
 
-    private static populateEntityForBrokenRules(entityId: string, entitiesMap: Map<string, IEntity>): IEntityForBrokenRules {
+    private populateEntityForBrokenRules(entityId: string, entitiesMap: Map<string, IEntity>): IEntityForBrokenRules {
         if (entityId.startsWith(config.ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return entityId;
         }
         return entitiesMap.get(entityId) ?? null;
     }
 
-    private static populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
+    private populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
         if (relationshipId.startsWith(config.ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return relationshipId;
         }
@@ -667,10 +702,10 @@ export class RuleBreachesManager {
 
     private async populateSourceAndDestinationEntities(sourceEntityId: string, destinationEntityId: string) {
         const [sourceEntity, destinationEntity] = await Promise.all([
-            sourceEntityId.startsWith('$') ? sourceEntityId : InstanceManagerService.getEntityInstanceById(sourceEntityId).catch(() => null),
+            sourceEntityId.startsWith('$') ? sourceEntityId : this.instancesService.getEntityInstanceById(sourceEntityId).catch(() => null),
             destinationEntityId.startsWith('$')
                 ? destinationEntityId
-                : InstanceManagerService.getEntityInstanceById(destinationEntityId).catch(() => null),
+                : this.instancesService.getEntityInstanceById(destinationEntityId).catch(() => null),
         ]);
 
         return {
@@ -710,7 +745,7 @@ export class RuleBreachesManager {
 
         const entityToDuplicate = entityIdToDuplicate.startsWith('$')
             ? entityIdToDuplicate
-            : await InstanceManagerService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
+            : await this.instancesService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
 
         return {
             entityToDuplicate,
@@ -742,7 +777,7 @@ export class RuleBreachesManager {
         };
     }
 
-    public static async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
+    public async populateRuleBreach(ruleBreach: IRuleBreach): Promise<IRuleBreachPopulated> {
         const { originUserId, actions, brokenRules, ...restOfRuleBreach } = ruleBreach;
 
         const populatedActionMetadatasPromises: Promise<IActionMetadataPopulated>[] = [];
@@ -751,37 +786,30 @@ export class RuleBreachesManager {
             actions.forEach((action) => {
                 if (action.actionType === ActionTypes.CreateRelationship)
                     populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata),
+                        this.populateCreateRelationshipActionMetadata(action.actionMetadata as ICreateRelationshipMetadata),
                     );
                 else if (action.actionType === ActionTypes.DeleteRelationship)
                     populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata),
+                        this.populateDeleteRelationshipActionMetadata(action.actionMetadata as IDeleteRelationshipMetadata),
                     );
                 else if (action.actionType === ActionTypes.UpdateEntity)
-                    populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata),
-                    );
+                    populatedActionMetadatasPromises.push(this.populateUpdateEntityActionMetadata(action.actionMetadata as IUpdateEntityMetadata));
                 else if (action.actionType === ActionTypes.UpdateStatus)
                     populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
+                        this.populateUpdateEntityStatusActionMetadata(action.actionMetadata as IUpdateEntityStatusMetadata),
                     );
                 else if (action.actionType === ActionTypes.CreateEntity)
-                    populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata),
-                    );
+                    populatedActionMetadatasPromises.push(this.populateCreateEntityActionMetadata(action.actionMetadata as ICreateEntityMetadata));
                 else if (action.actionType === ActionTypes.DuplicateEntity)
                     populatedActionMetadatasPromises.push(
-                        RuleBreachesManager.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
+                        this.populateDuplicateEntityActionMetadata(action.actionMetadata as IDuplicateEntityMetadata),
                     );
             });
         }
 
         const actionsMetadatas = await Promise.all(populatedActionMetadatasPromises!);
 
-        const [populatedBrokenRules, originUser] = await Promise.all([
-            RuleBreachesManager.populateBrokenRules(brokenRules),
-            UsersManager.getUserById(originUserId),
-        ]);
+        const [populatedBrokenRules, originUser] = await Promise.all([this.populateBrokenRules(brokenRules), UsersManager.getUserById(originUserId)]);
 
         const populatedActions =
             actions?.map((action, index) => ({

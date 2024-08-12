@@ -22,6 +22,7 @@ import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { removeTmpFile } from '../../utils/fs';
+import logger from '../../utils/logger/logsLogger';
 import { ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { UsersManager } from '../users/manager';
@@ -31,12 +32,9 @@ import {
     IMongoEntityTemplateWithConstraintsPopulated,
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
-import { ProcessManagerService } from '../../externalServices/processService';
-import ProcessTemplatesManager from '../processes/processTemplates/manager';
-import { isProcessManager } from '../../externalServices/permissionsService';
-import { IPermissionsOfUser } from '../permissions/interfaces';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
-import logger from '../../utils/logger/logsLogger';
+import { getParametersOfFormula } from './rules';
+import { IRule } from './rules/interfaces';
+import { IFormula } from './rules/interfaces/formula';
 
 const {
     categoryHasTemplates,
@@ -639,7 +637,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
 
             logger.error('Neo4j update failed: starting roll-back', { error: neoError });
-            await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
+            await this.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
 
             throw neoError;
         }

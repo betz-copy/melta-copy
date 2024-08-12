@@ -3,15 +3,10 @@ import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
-import {
-    validateUserCanCreateEntityTemplateUnderCategory,
-    validateUserCanCreateRelationshipTemplateUnderCategory,
-    validateUserCanUpdateOrDeleteEntityTemplate,
-    validateUserCanUpdateOrDeleteRelationshipTemplate,
-} from './middlewares';
+import { TemplatesValidator } from './middlewares';
 import {
     createCategorySchema,
     createEntityTemplateSchema,
@@ -43,6 +38,7 @@ const TemplatesServiceProxy = createProxyMiddleware({
 const templatesRouter: Router = Router();
 
 const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
+const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
 
 // all needed categories
 templatesRouter.get('/all', AuthorizerControllerMiddleware('userHasSomePermissions'), templatesControllerMiddleware('getAllAllowedTemplates'));
@@ -74,27 +70,27 @@ templatesRouter.delete(
 templatesRouter.put(
     '/entities/update-enum-field/:id',
     ValidateRequest(updateFieldValueSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteEntityTemplate'),
     templatesControllerMiddleware('updateEntityEnumFieldValue'),
 );
 templatesRouter.patch(
     '/entities/delete-enum-field/:id',
     ValidateRequest(deleteFieldValueSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteEntityTemplate'),
     templatesControllerMiddleware('deleteEntityEnumFieldValue'),
 );
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createEntityTemplateSchema),
-    wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
+    templatesValidatorMiddleware('validateUserCanCreateEntityTemplateUnderCategory'),
     templatesControllerMiddleware('createEntityTemplate'),
 );
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateEntityTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteEntityTemplate'),
     templatesControllerMiddleware('updateEntityTemplate'),
 );
 templatesRouter.patch(
@@ -105,7 +101,7 @@ templatesRouter.patch(
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteEntityTemplate'),
     templatesControllerMiddleware('deleteEntityTemplate'),
 );
 
@@ -113,19 +109,19 @@ templatesRouter.delete(
 templatesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
+    templatesValidatorMiddleware('validateUserCanCreateRelationshipTemplateUnderCategory'),
     templatesControllerMiddleware('createRelationshipTemplate'),
 );
 templatesRouter.put(
     '/relationships/:id',
     ValidateRequest(updateRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteRelationshipTemplate'),
     templatesControllerMiddleware('updateRelationshipTemplate'),
 );
 templatesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
+    templatesValidatorMiddleware('validateUserCanUpdateOrDeleteRelationshipTemplate'),
     templatesControllerMiddleware('deleteRelationshipTemplate'),
 );
 

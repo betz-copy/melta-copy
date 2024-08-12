@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { fetchPropertyFromRequest, RequestWithQuery } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
-import EntityManager from './manager';
+import { EntityManager } from './manager';
 
 class EntityController extends DefaultController<EntityManager> {
     constructor(dbName: string) {

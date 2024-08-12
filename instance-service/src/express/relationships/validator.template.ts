@@ -4,7 +4,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/temp
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
-import EntityManager from '../entities/manager';
+import { EntityManager } from '../entities/manager';
 import { ValidationError } from '../error';
 
 export default class RelationshipValidator extends DefaultController<EntityManager> {

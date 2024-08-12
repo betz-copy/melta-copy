@@ -1,6 +1,7 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
 import config from '../../config';
+import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
@@ -12,17 +13,13 @@ import {
     normalizeReturnedRelationship,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
-import { IRelationship } from './interfaces';
-import { NotFoundError, ServiceError } from '../error';
-import EntityManager from '../entities/manager';
+import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { IEntity } from '../entities/interface';
-import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
+import { EntityManager } from '../entities/manager';
+import { NotFoundError, ServiceError } from '../error';
 import { IBrokenRule } from '../rules/interfaces';
-import config from '../../config';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { createActivityLog } from '../../externalServices/activityLog/producer';
-import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
+import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
+import { IRelationship } from './interfaces';
 
 export class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -72,20 +69,22 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return this.neo4jClient.readTransaction(`MATCH ()-[r: \`${templateId}\`]->() RETURN count(r)`, normalizeResponseCount);
     }
 
-    static async runRulesDependOnRelationship(
+    async runRulesDependOnRelationship(
         transaction: Transaction,
         relationshipTemplate: IMongoRelationshipTemplate,
         sourceEntityId: string,
         destinationEntityId: string,
     ) {
-        const ruleFailuresOnSourceEntityPromise = EntityManager.runRulesOnEntityDependentViaAggregation(
+        const entityManager = new EntityManager(this.workspaceId);
+
+        const ruleFailuresOnSourceEntityPromise = entityManager.runRulesOnEntityDependentViaAggregation(
             transaction,
             sourceEntityId,
             relationshipTemplate.sourceEntityId,
             relationshipTemplate._id,
         );
 
-        const ruleFailuresOnDestinationEntityPromise = EntityManager.runRulesOnEntityDependentViaAggregation(
+        const ruleFailuresOnDestinationEntityPromise = entityManager.runRulesOnEntityDependentViaAggregation(
             transaction,
             destinationEntityId,
             relationshipTemplate.destinationEntityId,
@@ -97,12 +96,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return ruleFailures.flat();
     }
 
-    static async validateCreateRelationshipDuplicate(
-        transaction: Transaction,
-        templateId: string,
-        sourceEntityId: string,
-        destinationEntityId: string,
-    ) {
+    async validateCreateRelationshipDuplicate(transaction: Transaction, templateId: string, sourceEntityId: string, destinationEntityId: string) {
         const countOfExistingRelationships = await runInTransactionAndNormalize(
             transaction,
             `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
@@ -116,7 +110,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         }
     }
 
-    static async createRelationshipByEntityIdsInTransaction(
+    async createRelationshipByEntityIdsInTransaction(
         relationship: IRelationship,
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
@@ -125,7 +119,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
     ) {
         const { templateId, sourceEntityId, destinationEntityId } = relationship;
 
-        await RelationshipManager.validateCreateRelationshipDuplicate(transaction, templateId, sourceEntityId, destinationEntityId);
+        await this.validateCreateRelationshipDuplicate(transaction, templateId, sourceEntityId, destinationEntityId);
 
         const ruleFailuresBeforeAction = await this.runRulesDependOnRelationship(
             transaction,
@@ -134,9 +128,9 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             destinationEntityId,
         );
 
-        const { createdRelationship, activityLogsToCreate } = await RelationshipManager.createRelationshipInTransaction(transaction, relationship, userId);
+        const { createdRelationship, activityLogsToCreate } = await this.createRelationshipInTransaction(transaction, relationship, userId);
 
-        const ruleFailuresAfterAction = await RelationshipManager.runRulesDependOnRelationship(
+        const ruleFailuresAfterAction = await this.runRulesDependOnRelationship(
             transaction,
             relationshipTemplate,
             sourceEntityId,
@@ -149,10 +143,10 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             },
         ]);
 
-        return {createdRelationship, activityLogsToCreate};
+        return { createdRelationship, activityLogsToCreate };
     }
 
-    static async createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship, userId: string) {
+    async createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship, userId: string) {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -166,7 +160,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             normalizeReturnedRelationship('singleResponseNotNullable'),
             { relProps: { ...properties, ...generateDefaultProperties() } },
         );
-    
+
         const updatedFields = {
             action: ActionsLog.CREATE_RELATIONSHIP,
             timestamp: new Date(),
@@ -189,33 +183,41 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             metadata: { ...updatedFields.metadata, entityId: createdRelationship.sourceEntityId },
         });
 
-        return {createdRelationship, activityLogsToCreate};        
+        return { createdRelationship, activityLogsToCreate };
     }
 
-    static async createRelationshipByEntityIds(
+    async createRelationshipByEntityIds(
         relationship: IRelationship,
         relationshipTemplate: IMongoRelationshipTemplate,
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const {createdRelationship, activityLogsToCreate} = await RelationshipManager.createRelationshipByEntityIdsInTransaction(relationship, relationshipTemplate, ignoredRules, transaction, userId);
+        return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            const { createdRelationship, activityLogsToCreate } = await this.createRelationshipByEntityIdsInTransaction(
+                relationship,
+                relationshipTemplate,
+                ignoredRules,
+                transaction,
+                userId,
+            );
 
-            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
+                this.activityLogProducer.createActivityLog(activityLogToCreate),
+            );
             await Promise.all(activityLogsPromises);
 
             return createdRelationship;
-        }); 
+        });
     }
 
-    static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
+    getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
         if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
-            const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4));
+            const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4), 10);
             relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
         }
         if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
-            const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4));
+            const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4), 10);
             relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
         }
 

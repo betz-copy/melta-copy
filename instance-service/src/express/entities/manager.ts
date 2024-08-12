@@ -7,34 +7,32 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import config from '../../config';
-import { IUpdatedFields } from '../../externalServices/activityLog/interface';
+import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
+import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
     generateDefaultProperties,
-    normalizeReturnedRelAndEntities,
-    normalizeReturnedEntity,
-    normalizeResponseCount,
-    normalizeNeighboursOfEntityForRule,
+    getNeo4jDateTime,
     normalizeGetDbConstraints,
     normalizeNeighboursOfEntityForRule,
     normalizeResponseCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
     normalizeSearchWithRelationships,
-    getNeo4jDateTime,
+    runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
 import { NotFoundError, ServiceError } from '../error';
-import { IRelationship } from '../relationships/interface';
+import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
-import { filterDependentRulesOnEntity } from '../rules/getParametersOfFormula';
+import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
@@ -51,28 +49,26 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
-import { NotFoundError, ServiceError } from '../error';
-import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
-import { runRulesOnEntity } from '../rules/runRulesOnEntity';
-import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
-import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import config from '../../config';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
-import { arraysEqualsNonOrdered } from '../../utils/lib';
-import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import RelationshipManager from '../relationships/manager';
-import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
-import { createActivityLog } from '../../externalServices/activityLog/producer';
-import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
-import { IRelationship } from '../relationships/interfaces';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 
-export class EntityManager {
-    static getRelevantRulesOfEntities = (
+export class EntityManager extends DefaultManagerNeo4j {
+    private entityTemplateManagerService: EntityTemplateManagerService;
+
+    private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
+
+    private relationshipManager: RelationshipManager;
+
+    private activityLogProducer: ActivityLogProducer;
+
+    constructor(workspaceId: string) {
+        super(workspaceId);
+        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.relationshipManager = new RelationshipManager(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
+    }
+
+    private getRelevantRulesOfEntities = (
         entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap,
         rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
     ) => {
@@ -116,12 +112,12 @@ export class EntityManager {
         return entitiesRelevantRulesMap;
     };
 
-    static async runRulesOnEntitiesWithRuleReasons(
+    async runRulesOnEntitiesWithRuleReasons(
         transaction: Transaction,
         entitiesIdsRulesReasonsMap: EntitiesIdsRulesReasonsMap,
         rulesByEntityTemplateIds: Record<string, IMongoRule[]>,
     ) {
-        const entitiesRelevantRulesMap = EntityManager.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
+        const entitiesRelevantRulesMap = this.getRelevantRulesOfEntities(entitiesIdsRulesReasonsMap, rulesByEntityTemplateIds);
 
         const ruleFailuresPromises: Promise<IRuleFailure[]>[] = [];
         entitiesRelevantRulesMap.forEach(({ rules }, entityId) => {
@@ -131,14 +127,14 @@ export class EntityManager {
         return (await Promise.all(ruleFailuresPromises)).flat();
     }
 
-    static runRulesOnEntityDependentViaAggregation = async (
+    runRulesOnEntityDependentViaAggregation = async (
         transaction: Transaction,
         entityId: string,
         entityTemplateId: string,
         dependentRelationshipTemplateId: string,
         updatedProperties?: string[],
     ): Promise<IRuleFailure[]> => {
-        const rulesOfEntity = await RelationshipsTemplateManagerService.searchRules({
+        const rulesOfEntity = await this.relationshipsTemplateManagerService.searchRules({
             entityTemplateIds: [entityTemplateId],
         });
 
@@ -147,7 +143,7 @@ export class EntityManager {
         return runRulesOnEntity(transaction, entityId, relevantRules);
     };
 
-    private static throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
+    private throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
         }
@@ -197,7 +193,7 @@ export class EntityManager {
         }
     }
 
-    static async createEntityInTransaction(
+    async createEntityInTransaction(
         transaction: Transaction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
@@ -284,7 +280,7 @@ export class EntityManager {
         return { newEntity, activityLogsToCreate: allActivityLogsToCreate };
     }
 
-    static async getEntityByIdInTransaction(id: string, transaction: Transaction) {
+    async getEntityByIdInTransaction(id: string, transaction: Transaction) {
         const entity = await runInTransactionAndNormalize(
             transaction,
             `MATCH (e {_id: '${id}'}) RETURN e`,
@@ -319,7 +315,13 @@ export class EntityManager {
 
         const relationshipTemplate = await this.relationshipsTemplateManagerService.getRelationshipTemplateById(relationshipTemplateId!);
 
-        return RelationshipManager.createRelationshipByEntityIdsInTransaction(relationshipToCreate, relationshipTemplate, [], transaction, userId);
+        return this.relationshipManager.createRelationshipByEntityIdsInTransaction(
+            relationshipToCreate,
+            relationshipTemplate,
+            [],
+            transaction,
+            userId,
+        );
     }
 
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
@@ -374,25 +376,29 @@ export class EntityManager {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const { newEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(
-                transaction,
-                properties,
-                entityTemplate,
-                userId,
-                duplicatedFromId,
-            );
+        return this.neo4jClient
+            .performComplexTransaction('writeTransaction', async (transaction) => {
+                const { newEntity, activityLogsToCreate } = await this.createEntityInTransaction(
+                    transaction,
+                    properties,
+                    entityTemplate,
+                    userId,
+                    duplicatedFromId,
+                );
 
-            const ruleFailuresAfterAction = await EntityManager.runRulesOnEntity(transaction, newEntity);
+                const ruleFailuresAfterAction = await this.runRulesOnEntity(transaction, newEntity);
 
-            throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: newEntity.properties._id }]);
+                throwIfActionCausedRuleFailures(ignoredRules, [], ruleFailuresAfterAction, [{ createdEntityId: newEntity.properties._id }]);
 
-            const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+                const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
+                    this.activityLogProducer.createActivityLog(activityLogToCreate),
+                );
 
-            await Promise.all(activityLogsPromises);
+                await Promise.all(activityLogsPromises);
 
-            return newEntity;
-        }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
+                return newEntity;
+            })
+            .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
@@ -522,8 +528,8 @@ export class EntityManager {
         return this.neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
-    static async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
-        await Neo4jClient.readTransaction(
+    async getExpandedEntityById(id: string, disabled: boolean | null, templateIds: string[], numOfConnections: number) {
+        await this.neo4jClient.readTransaction(
             `MATCH (p {_id:'${id}'})
              CALL apoc.path.expandConfig(p, {
                 labelFilter: '${templateIds.join('|')}',
@@ -536,12 +542,7 @@ export class EntityManager {
         );
     }
 
-    static async getExpandedGraphById(
-        id: string,
-        reqBody: IGetExpandedEntityBody,
-        entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-        userId: string,
-    ) {
+    async getExpandedGraphById(id: string, reqBody: IGetExpandedEntityBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>, userId: string) {
         const { disabled, templateIds, expandedParams, filters } = reqBody;
         const fixSearchBody = filters ?? {};
         const initialCypherQuery = await expandEntityToNeoQuery(fixSearchBody, id, templateIds, expandedParams, entityTemplatesMap, id);
@@ -567,7 +568,7 @@ export class EntityManager {
             entityTemplatesMap,
         );
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: ActionsLog.VIEW_ENTITY,
             entityId: id,
             metadata: {},
@@ -699,7 +700,7 @@ export class EntityManager {
             return updatedEntity;
         });
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: disabled ? ActionsLog.DISABLE_ENTITY : ActionsLog.ACTIVATE_ENTITY,
             metadata: {},
             entityId: id,
@@ -731,7 +732,7 @@ export class EntityManager {
         );
 
         const ruleFailuresForEachNeighbourPromises = neighboursOfUpdatedEntity.map(async ({ relationshipTemplate, neighbourOfEntity }) => {
-            return EntityManager.runRulesOnEntityDependentViaAggregation(
+            return this.runRulesOnEntityDependentViaAggregation(
                 transaction,
                 neighbourOfEntity.properties._id,
                 neighbourOfEntity.templateId,
@@ -902,13 +903,20 @@ export class EntityManager {
                 );
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-            const {
-                fixedProperties,
-                createdRelationships: newCreatedRelationships,
-                deletedRelationships: newDeletedRelationships,
-            } = await this.handleRelationshipReferenceFieldsChanges(entity, entityTemplate, entityProperties, updatedProperties, transaction, userId);
-            createdRelationships = newCreatedRelationships;
-            deletedRelationships = newDeletedRelationships;
+                const {
+                    fixedProperties,
+                    createdRelationships: newCreatedRelationships,
+                    deletedRelationships: newDeletedRelationships,
+                } = await this.handleRelationshipReferenceFieldsChanges(
+                    entity,
+                    entityTemplate,
+                    entityProperties,
+                    updatedProperties,
+                    transaction,
+                    userId,
+                );
+                createdRelationships = newCreatedRelationships;
+                deletedRelationships = newDeletedRelationships;
 
                 const updatedEntity = await runInTransactionAndNormalize(
                     transaction,
@@ -932,7 +940,7 @@ export class EntityManager {
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
-            throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+                throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
                 const fields = Object.keys(entityTemplate.properties.properties);
                 for (let i = 0; i < fields.length; i++) {
@@ -976,7 +984,7 @@ export class EntityManager {
             createdRelationships.map(async (relationship) => {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                await createActivityLog({
+                await this.activityLogProducer.createActivityLog({
                     action: ActionsLog.CREATE_RELATIONSHIP,
                     entityId: relatedEntityId,
                     metadata: {
@@ -994,7 +1002,7 @@ export class EntityManager {
             deletedRelationships.map(async (relationship) => {
                 const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
 
-                await createActivityLog({
+                await this.activityLogProducer.createActivityLog({
                     action: ActionsLog.DELETE_RELATIONSHIP,
                     entityId: relatedEntityId,
                     metadata: {
@@ -1008,7 +1016,7 @@ export class EntityManager {
             }),
         );
 
-        await createActivityLog({
+        await this.activityLogProducer.createActivityLog({
             action: ActionsLog.UPDATE_ENTITY,
             entityId: id,
             metadata: { updatedFields: activityLogUpdatedFields },

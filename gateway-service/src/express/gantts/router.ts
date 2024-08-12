@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { GanttController } from './controller';
-import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
-import ValidateRequest from '../../utils/joi';
-import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
-import { validateUserCanCreateGantt, validateUserCanDeleteGantt, validateUserCanUpdateGantt } from './middlewares';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import { createWorkspacesController } from '../../utils/express';
+import ValidateRequest from '../../utils/joi';
+import { GanttController } from './controller';
+import { GanttsValidator } from './middlewares';
+import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
 
 const GanttsRouter: Router = Router();
 
 const GanttsControllerMiddleware = createWorkspacesController(GanttController);
+const GanttsValidatorMiddleware = createWorkspacesController(GanttsValidator, true);
 
 GanttsRouter.get(
     '/:ganttId',
@@ -16,17 +17,22 @@ GanttsRouter.get(
     AuthorizerControllerMiddleware('userHasSomePermissions'),
     GanttsControllerMiddleware('getGanttById'),
 );
-GanttsRouter.post('/', ValidateRequest(createGanttSchema), wrapMiddleware(validateUserCanCreateGantt), GanttsControllerMiddleware('createGantt'));
+GanttsRouter.post(
+    '/',
+    ValidateRequest(createGanttSchema),
+    GanttsValidatorMiddleware('validateUserCanCreateGantt'),
+    GanttsControllerMiddleware('createGantt'),
+);
 GanttsRouter.delete(
     '/:ganttId',
     ValidateRequest(deleteGanttSchema),
-    wrapMiddleware(validateUserCanDeleteGantt),
+    GanttsValidatorMiddleware('validateUserCanDeleteGantt'),
     GanttsControllerMiddleware('deleteGantt'),
 );
 GanttsRouter.put(
     '/:ganttId',
     ValidateRequest(updateGanttSchema),
-    wrapMiddleware(validateUserCanUpdateGantt),
+    GanttsValidatorMiddleware('validateUserCanUpdateGantt'),
     GanttsControllerMiddleware('updateGantt'),
 );
 GanttsRouter.post(
