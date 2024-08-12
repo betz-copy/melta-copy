@@ -53,12 +53,24 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
         const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
-
         const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
+        // todo: when a created entity was updated by actions so see who has the updated field and send it as the broken field to highlight it
+
+        // actions.map((action) => {
+        //     if (
+        //         action.actionType === ActionTypes.UpdateEntity &&
+        //         (action.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
+        //     ) {
+        //         const numberPart = entity.slice(1, -4);
+        //         const ii = Number(numberPart) < actions.length ? Number(numberPart) : 0;
+        //         if (ii === actionIndex) {
+        //         }
+        //     }
+        // });
         entityForLink = {
             templateId,
             properties: {
-                // if entity wasnt created yet, put generated properties. if it has, it will override
+                // if entity wasn't created yet, put generated properties. if it has, it will override
                 _id: entity,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
@@ -205,8 +217,6 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
         },
     };
 
-    console.log({ entity });
-
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(templateId)!;
 
@@ -239,15 +249,20 @@ const UpdateEntityActionInfo: React.FC<{
     const queryClient = useQueryClient();
 
     const { entity } = actionMetadata;
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
+    const entityTemplate = !entity ? null : entityTemplates.get((entity as IEntity).templateId)!;
 
     return (
         <Grid container direction="column">
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} />
+                    <EntityLink
+                        entity={entity as IEntity}
+                        entityTemplate={entityTemplate}
+                        linkable={(entity as IEntity).properties._id !== undefined}
+                    />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>

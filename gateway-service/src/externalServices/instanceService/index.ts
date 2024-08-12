@@ -47,12 +47,15 @@ export class InstanceManagerService {
     }
 
     static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
-        const { data } = await this.InstanceManagerApi.post<{ createdEntity: IEntity; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}`, {
-            ...entity,
-            ignoredRules,
-            userId,
-            duplicatedFromId,
-        });
+        const { data } = await this.InstanceManagerApi.post<{ createdEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(
+            `${baseEntitiesRoute}`,
+            {
+                ...entity,
+                ignoredRules,
+                userId,
+                duplicatedFromId,
+            },
+        );
 
         return data;
     }
@@ -158,6 +161,8 @@ export class InstanceManagerService {
         userId: string,
         ignoredRules: IBrokenRule[] = [],
     ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
+        console.log('hii');
+        console.dir({ actionsGroups }, { depth: null });
         const { data } = await this.InstanceManagerApi.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
             `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },

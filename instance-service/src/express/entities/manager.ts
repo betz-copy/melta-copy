@@ -358,7 +358,7 @@ export class EntityManager {
 
     static async handleUpdateEntity(actionMetadata: IUpdateEntityMetadata, transaction: Transaction, userId?: string) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
-            actionMetadata.entityTemplateId ?? (await EntityManager.getEntityById(actionMetadata.entityId)).templateId,
+            actionMetadata.entityTemplateId ?? (await EntityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction)).templateId,
         );
 
         return EntityManager.updateEntityByIdInnerTransaction(
@@ -437,21 +437,26 @@ export class EntityManager {
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: updatedFields } = entityToUpdate;
-                    const currentEntity = entityId !== '$0._id' ? await this.getEntityById(entityId) : null;
-
+                    // const currentEntity = entityId !== '$0._id' ? await this.getEntityById(entityId) : properties;
+                    // todo:compare current to updated properties and put as updated
                     actions.push({
                         actionType: ActionTypes.UpdateEntity,
                         actionMetadata: {
                             entityId,
+                            // updatedFields: this.getUpdatedProperties1(
+                            //     currentEntity ?? properties,
+                            //     updatedFields,
+                            //     currentEntity ? await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId) : entityTemplate,
+                            // ),
                             updatedFields,
-                            entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
+                            // entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
                         } as IUpdateEntityMetadata,
                     });
                 }),
             );
 
             const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
+            return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities, actions };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
@@ -876,6 +881,21 @@ export class EntityManager {
         };
         const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
             return newEntity.properties[key] !== oldEntity.properties[key];
+        });
+
+        const updatedProperties = Object.keys(templateUpdatedProperties);
+        return updatedProperties;
+    }
+
+    public static getUpdatedProperties1(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
+        const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
+            ...entityTemplate.properties.properties,
+            disabled: { title: 'doesntMatter', type: 'boolean' },
+            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+        };
+        const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
+            return newEntity[key] !== oldEntity[key];
         });
 
         const updatedProperties = Object.keys(templateUpdatedProperties);

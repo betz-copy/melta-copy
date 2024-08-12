@@ -197,15 +197,17 @@ export class InstancesManager {
     ) {
         const newInstanceData: IEntity = await InstancesManager.handlePreparationsBeforeCreateEntity(instanceData, files);
 
-        const { createdEntity, updatedEntities } = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+        const { createdEntity, updatedEntities, actions } = await InstanceManagerService.createEntityInstance(
+            newInstanceData,
+            ignoredRules,
+            userId,
+        ).catch(InstancesManager.handleBrokenRulesError);
 
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.CreateEntity,
                             actionMetadata: {
@@ -552,7 +554,11 @@ export class InstancesManager {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await RuleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
-                actions: await RuleBreachesManager.populateActionsMetaData(actions),
+                // in case that entityTemplate has actions
+                ...(actions && {
+                    actions: await RuleBreachesManager.populateActionsMetaData(actions),
+                    rawActions: actions,
+                }),
             });
         }
 

@@ -12,7 +12,7 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterface, generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
+import { generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
 
 const CodeEditorDialog: React.FC<{
     open: boolean;

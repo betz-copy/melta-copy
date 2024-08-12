@@ -21,7 +21,7 @@ import { toastConstraintValidationError } from './toastConstraintValidationError
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
-import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
@@ -50,10 +50,8 @@ const CreateOrEditEntityDetails: React.FC<{
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
         newEntityData?: EntityWizardValues;
-        actions?: {
-            actionType: ActionTypes;
-            actionMetadata: IActionMetadataPopulated;
-        }[];
+        actions?: IActionPopulated[];
+        rawActions?: IAction[];
     }>({ isOpen: false });
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
@@ -138,7 +136,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 }
 
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    const { brokenRules, rawBrokenRules, actions } = errorMetadata;
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
 
                     setCreateOrUpdateWithRuleBreachDialogState({
                         isOpen: true,
@@ -146,6 +144,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         rawBrokenRules: rawBrokenRules,
                         newEntityData,
                         actions: actions,
+                        rawActions,
                     });
                 }
 
@@ -378,6 +377,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                 }
                                 onCreateRuleBreachRequest={() => handleClose()}
                                 actions={createOrUpdateWithRuleBreachDialogState.actions}
+                                rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                             />
                         )}
                     </>

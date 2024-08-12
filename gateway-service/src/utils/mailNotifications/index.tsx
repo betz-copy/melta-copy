@@ -216,14 +216,23 @@ export const getCreateOrDeleteRelActionInfo = async (
         </>
     );
 };
-export const getUpdateEntityActionInfo = async ({ entity }: IUpdateEntityMetadataPopulated) => {
-    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity!.templateId);
-    return (
-        <p>
-            {hebrew.updateEntityActionInfo.updatingEntity} <EntityLink entity={entity} entityTemplate={entityTemplate!} />
-        </p>
-    );
-};
+export const getUpdateEntityActionInfo = async ({ entity }: IUpdateEntityMetadataPopulated) =>
+    // actions: IRuleBreachAlertPopulated['actions'] | IRuleBreachRequestPopulated['actions'],
+    {
+        let entityTemplateId;
+        // optional
+        // if (typeof entity === 'string' && entity.startsWith('$')) {
+        //     const numberPart = parseInt(entity.slice(1, -4), 10);
+        //     entityTemplateId = (actions[numberPart].actionMetadata as ICreateEntityMetadataPopulated).templateId;
+        // }
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityTemplateId ?? (entity! as IEntity).templateId);
+
+        return (
+            <p>
+                {hebrew.updateEntityActionInfo.updatingEntity} <EntityLink entity={entity} entityTemplate={entityTemplate!} />
+            </p>
+        );
+    };
 
 export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpdateEntityStatusMetadataPopulated) => {
     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity!.templateId);

@@ -13,6 +13,8 @@ const RuleBreachInfo: React.FC<{
     actions: IActionPopulated[];
     isCompact: boolean;
 }> = ({ originUser, brokenRules, actions, isCompact }) => {
+    if (!actions) return null;
+
     return (
         <Grid container direction="column" spacing={1}>
             <Grid item>

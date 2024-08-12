@@ -2,6 +2,7 @@
 import { Transaction } from 'neo4j-driver';
 import groupBy from 'lodash.groupby';
 import cloneDeep from 'lodash.clonedeep';
+import pickBy from 'lodash.pickby';
 import Neo4jClient from '../../utils/neo4j';
 import { IRelationship } from '../relationships/interfaces';
 import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from './interface';
@@ -30,6 +31,20 @@ export class BulkActionManager {
         }
 
         return relationshipToReturn;
+    }
+
+    static async fixUpdatedFields(actionMetadata: IUpdateEntityMetadata, transaction: Transaction) {
+        const { entityId, updatedFields } = actionMetadata;
+
+        const entity = await EntityManager.getEntityByIdInTransaction(entityId, transaction);
+        const newEntityProperties = { ...entity.properties, ...updatedFields };
+
+        // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
+        const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
+        return {
+            ...actionMetadata,
+            updatedFields: newEntityPropertiesWithoutNulls,
+        };
     }
 
     static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
@@ -87,7 +102,7 @@ export class BulkActionManager {
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     if (actionMetadata.entityTemplateId) entitiesTemplatesIdsOfRules.add(actionMetadata.entityTemplateId);
-                    else if (!actionMetadata.entityId.startsWith('$') && actionMetadata.entityId.endsWith('._id')) {
+                    else if (!actionMetadata.entityId.startsWith('$')) {
                         const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
@@ -210,7 +225,13 @@ export class BulkActionManager {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     const fixedMetaData = this.getEntityIdByPrevResults(actionMetadata, results);
                     fixedActions[index].actionMetadata = fixedMetaData;
-                    const { updatedEntity, activityLogsToCreate } = await EntityManager.handleUpdateEntity(fixedMetaData, transaction, userId);
+                    const fixedWithUpdatedFields = await this.fixUpdatedFields(fixedMetaData, transaction);
+
+                    const { updatedEntity, activityLogsToCreate } = await EntityManager.handleUpdateEntity(
+                        fixedWithUpdatedFields,
+                        transaction,
+                        userId,
+                    );
 
                     results.push(updatedEntity);
                     allActivityLogsToCreate.push(...activityLogsToCreate);
@@ -246,7 +267,7 @@ export class BulkActionManager {
                             case ActionTypes.UpdateEntity: {
                                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                                 if (actionMetadata.entityTemplateId) entityTemplateIds.push(actionMetadata.entityTemplateId);
-                                else if (!actionMetadata.entityId.startsWith('$') && actionMetadata.entityId.endsWith('._id')) {
+                                else if (!actionMetadata.entityId.startsWith('$')) {
                                     const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                                     entityTemplateIds.push(entityTemplate._id);
