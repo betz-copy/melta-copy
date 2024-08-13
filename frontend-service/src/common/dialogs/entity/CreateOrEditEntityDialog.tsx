@@ -1,9 +1,8 @@
-import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon, FileDownloadOutlined as FileDownloadOutlinedIcon } from '@mui/icons-material';
-import { Autocomplete, Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, TextField, Typography } from '@mui/material';
+import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
-import fileDownload from 'js-file-download';
 import cloneDeep from 'lodash.clonedeep';
 import debounce from 'lodash.debounce';
 import isEqual from 'lodash.isequal';
@@ -20,15 +19,14 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { createEntityRequest, exportEntityToDocumentRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
-import { getLongDate } from '../../../utils/date';
-import { getFileName } from '../../../utils/getFileName';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
+import { ExportFormats } from '../../ExportFormats';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
+import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
@@ -63,7 +61,6 @@ const CreateOrEditEntityDetails: React.FC<{
 
     const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
     const [wasDirty, setWasDirty] = useState(false);
-    const [selectedFileToExport, setSelectedFileToExport] = useState<string>('');
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -277,18 +274,6 @@ const CreateOrEditEntityDetails: React.FC<{
                     if (absoluteDirty && !wasDirty) setWasDirty(true);
                 }, [absoluteDirty]);
 
-                // eslint-disable-next-line react-hooks/rules-of-hooks
-                const { isLoading: isExportToFileLoading, mutateAsync: exportMutation } = useMutation(
-                    ({ documentTemplateId, entityProperties }: { documentTemplateId: string; entityProperties: EntityWizardValues['properties'] }) =>
-                        exportEntityToDocumentRequest(documentTemplateId, entityProperties),
-                    {
-                        onSuccess: (data) => data,
-                        onError: () => {
-                            toast.error(i18next.t('errorPage.fileDownloadError'));
-                        },
-                    },
-                );
-
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
                         schema={schema}
@@ -420,80 +405,14 @@ const CreateOrEditEntityDetails: React.FC<{
                                             paddingTop="25px"
                                             width="100%"
                                         >
-                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length ? (
-                                                <Grid item container xs={6} flexDirection="row" flexWrap="nowrap" spacing={2} alignItems="center">
-                                                    <Grid item>
-                                                        <Autocomplete
-                                                            options={
-                                                                (entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.map(
-                                                                    (fileName) => ({
-                                                                        label: getFileName(fileName),
-                                                                        value: fileName,
-                                                                    }),
-                                                                ) || []
-                                                            }
-                                                            onChange={(_e, selectedOption) => setSelectedFileToExport(selectedOption?.value!)}
-                                                            renderInput={(params) => (
-                                                                <TextField
-                                                                    {...params}
-                                                                    size="small"
-                                                                    error={Boolean(touched.template && errors.template)}
-                                                                    sx={{
-                                                                        '& .MuiInputBase-root': {
-                                                                            borderRadius: '10px',
-                                                                            width: 250,
-                                                                        },
-                                                                        '& fieldset': {
-                                                                            borderColor: '#CCCFE5',
-                                                                            color: '#CCCFE5',
-                                                                        },
-                                                                        '& label': {
-                                                                            color: '#9398C2',
-                                                                        },
-                                                                    }}
-                                                                    helperText={
-                                                                        (touched.template && errors.template?._id) ||
-                                                                        errors.template?.displayName ||
-                                                                        errors.template?.properties
-                                                                    }
-                                                                    name="selectedExportFormat"
-                                                                    variant="outlined"
-                                                                    label={i18next.t('wizard.entityTemplate.exportDocuments')}
-                                                                />
-                                                            )}
-                                                        />
-                                                    </Grid>
-                                                    <Grid item>
-                                                        <Button
-                                                            sx={{
-                                                                borderRadius: '7px',
-                                                                bgcolor: '#EBEFFA',
-                                                                color: (theme) => theme.palette.primary.main,
-                                                                ':hover': { color: 'white' },
-                                                                textWrap: 'nowrap',
-                                                            }}
-                                                            variant="contained"
-                                                            startIcon={isExportToFileLoading ? <CircularProgress /> : <FileDownloadOutlinedIcon />}
-                                                            onClick={async () => {
-                                                                const file = await exportMutation({
-                                                                    documentTemplateId: selectedFileToExport,
-                                                                    entityProperties: {
-                                                                        createdAt: isEditMode ? entityToUpdate?.properties.createdAtd : new Date(),
-                                                                        ...values.properties,
-                                                                    },
-                                                                });
-
-                                                                const [fileName, fileExtension] = getFileName(selectedFileToExport).split('.');
-                                                                fileDownload(file, `${fileName}_${getLongDate(new Date())}.${fileExtension}`);
-                                                            }}
-                                                            disabled={
-                                                                !(selectedFileToExport?.length && !values.properties._id) || isExportToFileLoading
-                                                            }
-                                                        >
-                                                            {i18next.t('entityPage.download')}
-                                                        </Button>
-                                                    </Grid>
-                                                </Grid>
+                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length && isEditMode ? (
+                                                <ExportFormats
+                                                    properties={{
+                                                        createdAt: isEditMode ? entityToUpdate?.properties.createdAt : new Date(),
+                                                        ...values.properties,
+                                                    }}
+                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                />
                                             ) : (
                                                 <Grid item xs={6}>
                                                     <Button

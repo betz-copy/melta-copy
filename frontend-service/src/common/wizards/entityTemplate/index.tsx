@@ -14,7 +14,7 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
-import { ExportFormats } from './ExportFormats';
+import { UploadExportFormats } from './UploadExportFormats';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { mapTemplates } from '../../../utils/templates';
@@ -84,7 +84,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
     },
     {
         label: i18next.t('wizard.entityTemplate.exportDocuments'),
-        component: (props) => <ExportFormats {...props} />,
+        component: (props) => <UploadExportFormats {...props} />,
     },
 ];
 
