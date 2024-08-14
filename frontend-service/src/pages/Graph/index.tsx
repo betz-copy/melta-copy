@@ -31,6 +31,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { GraphFilterBatch } from './GraphFilterBatch';
 import TemplatesSelectGrid from './templatesSelectGrid';
+import { toast } from 'react-toastify';
 
 interface genericMenuState {
     node: NodeObject;
@@ -41,6 +42,7 @@ interface genericMenuState {
 }
 
 const { graphSettings } = environment;
+const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
     const ref = useRef<any>(null);
@@ -74,7 +76,6 @@ const Graph: React.FC = () => {
     const [initialExpandedEntity, setInitialExpandedEntity] = useState<{ entity?: IEntityExpanded; menu?: boolean }>();
     const [currentBatchIndex, setCurrentBatchIndex] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
-    const BATCH_SIZE = is3DGraph ? graphSettings.BatchSize3D : graphSettings.BatchSize2D;
 
     const templateOptions = Array.from(entityTemplates.values());
     const updateGraphSize = () => {
@@ -153,7 +154,7 @@ const Graph: React.FC = () => {
     const createGraphData = async () => {
         let expandedEntity = initialExpandedEntity?.entity;
         const { data } = await getExpandedEntityById();
-        const startIndex = currentBatchIndex * BATCH_SIZE;
+        const startIndex = currentBatchIndex * BatchSize;
         setIsLoading(true);
 
         if (data?.connections.length !== initialExpandedEntity?.entity?.connections.length) {
@@ -164,7 +165,7 @@ const Graph: React.FC = () => {
         let expandedEntityGraphData = expandedEntityToGraphData(
             {
                 ...expandedEntity,
-                connections: expandedEntity?.connections?.slice(startIndex, startIndex + BATCH_SIZE) ?? [],
+                connections: expandedEntity?.connections?.slice(startIndex, startIndex + BatchSize) ?? [],
                 entity: expandedEntity!.entity,
             },
             entityTemplates,
@@ -183,8 +184,15 @@ const Graph: React.FC = () => {
         addNewGraphData(expandedEntityGraphData);
         setShouldZoomToFit(shouldZoom);
 
-        if (currentBatchIndex * BATCH_SIZE < expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex + 1);
-        else setIsLoading(false);
+        if (
+            currentBatchIndex * BatchSize < expandedEntity!.connections.length &&
+            ((is3DGraph && currentBatchIndex * BatchSize < limit3DConnections) || !is3DGraph)
+        )
+            setCurrentBatchIndex(currentBatchIndex + 1);
+        else {
+            setIsLoading(false);
+            if (is3DGraph && currentBatchIndex * BatchSize < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
+        }
     };
 
     useEffect(() => {

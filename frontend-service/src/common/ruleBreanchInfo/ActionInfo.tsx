@@ -214,8 +214,6 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
         },
     };
 
-    console.log({ entity });
-
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(templateId)!;
 
