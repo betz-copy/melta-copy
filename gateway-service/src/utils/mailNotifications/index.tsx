@@ -248,7 +248,7 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
 
 export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
     return Promise.all(
-        ruleBreach.actions.map(async (action) => {
+        ruleBreach.actions.map((action) => {
             if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
                 return getCreateOrDeleteRelActionInfo(
                     action.actionType,
