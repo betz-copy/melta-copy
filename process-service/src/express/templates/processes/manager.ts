@@ -30,7 +30,7 @@ class ProcessTemplateManager {
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await ProcessTemplateModel.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
-            return _id;
+            return _id!.toString();
         });
         return this.getProcessTemplateById(templateId);
     }
@@ -125,7 +125,7 @@ class ProcessTemplateManager {
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
-        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (reviewerId) {
             return getProcessTemplatesByReviewerIdAggregation(query, reviewerId, limit, skip);
         }

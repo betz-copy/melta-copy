@@ -1,8 +1,8 @@
-import * as mongoose from 'mongoose';
-import { IProcessInstance, ProcessInstanceDocument, Status } from './interface';
+import mongoose from 'mongoose';
+import { ProcessInstanceDocument, Status } from './interface';
 import config from '../../../config';
 
-const ProcessInstanceSchema = new mongoose.Schema<IProcessInstance>(
+const ProcessInstanceSchema = new mongoose.Schema(
     {
         templateId: {
             type: String,

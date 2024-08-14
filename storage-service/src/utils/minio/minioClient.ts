@@ -58,7 +58,7 @@ export class MinIOClient {
     }
 
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, metaData = {}) {
-        return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, metaData);
+        return this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, -1, metaData);
     }
 
     downloadFileStream(filePath: string) {

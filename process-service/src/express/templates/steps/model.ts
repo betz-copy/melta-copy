@@ -1,8 +1,8 @@
 import * as mongoose from 'mongoose';
-import { IStepTemplate, StepTemplateDocument } from './interface';
+import { StepTemplateDocument } from './interface';
 import config from '../../../config';
 
-const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
+const StepTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,

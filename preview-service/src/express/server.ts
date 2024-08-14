@@ -1,7 +1,7 @@
 import * as http from 'http';
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as helmet from 'helmet';
+import helmet from 'helmet';
 
 import { once } from 'events';
 import { errorMiddleware } from './error';

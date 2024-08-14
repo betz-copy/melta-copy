@@ -15,7 +15,7 @@ export class RuleBreachRequestsManager {
 
         const [rows, lastRowIndex] = await Promise.all([
             RuleBreachRequestsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
-            RuleBreachRequestsModel.count(query),
+            RuleBreachRequestsModel.countDocuments(query),
         ]);
 
         return { rows, lastRowIndex };

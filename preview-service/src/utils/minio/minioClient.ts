@@ -28,7 +28,7 @@ export class MinIOClient {
     }
 
     async uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
-        return this.minioClient.putObject(this.bucketName, objectName, filePath, metaData);
+        return this.minioClient.putObject(this.bucketName, objectName, filePath, -1, metaData);
     }
 
     statFile(filePath: string) {

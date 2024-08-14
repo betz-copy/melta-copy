@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
 import { IGanttDocument } from './interface';
 import config from '../../config';
@@ -91,7 +91,7 @@ const GanttSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: mongoose.HookNextFunction) => {
+const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: any) => void) => {
     if (error.name === 'MongoError' && error.code === 11000) {
         next(new ServiceError(400, 'gantt with the same name already exists'));
     } else {

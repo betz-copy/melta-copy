@@ -14,7 +14,7 @@ export class RuleBreachAlertsManager {
 
         const [rows, lastRowIndex] = await Promise.all([
             RuleBreachAlertsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
-            RuleBreachAlertsModel.count(query),
+            RuleBreachAlertsModel.countDocuments(query),
         ]);
 
         return { rows, lastRowIndex };

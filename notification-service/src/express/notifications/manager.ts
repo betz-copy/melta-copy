@@ -14,7 +14,7 @@ export class NotificationsManager {
     }
 
     public static async getNotificationCount(query: IBasicNotificationQuery) {
-        return NotificationModel.count(this.handleQuery(query));
+        return NotificationModel.countDocuments(this.handleQuery(query));
     }
 
     public static async getNotificationGroupCount(

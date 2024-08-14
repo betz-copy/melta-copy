@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
 
-import { Action, IActivityLog } from './interface';
+import { IActivityLog } from './interface';
 import config from '../../config';
 
 const ActivityLogSchema = new mongoose.Schema({
@@ -17,7 +17,7 @@ const ActivityLogSchema = new mongoose.Schema({
         required: true,
     },
     action: {
-        type: Action,
+        type: String,
         required: true,
         enum: [
             'DELETE_RELATIONSHIP',

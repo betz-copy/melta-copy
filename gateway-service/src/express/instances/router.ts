@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody, Options } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { wrapController, wrapMiddleware } from '../../utils/express';
@@ -35,7 +35,7 @@ const InstanceManagerProxy = createProxyMiddleware({
     target: instanceService.url,
     onProxyReq: fixRequestBody,
     proxyTimeout: instanceService.requestTimeout,
-});
+} as Options);
 
 const InstancesRouter: Router = Router();
 
@@ -134,10 +134,6 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
-InstancesRouter.post(
-    '/bulk',
-    wrapMiddleware(validateUserCanWriteBulkEntityInstance),
-    wrapController(InstancesController.runBulkOfActions),
-)
+InstancesRouter.post('/bulk', wrapMiddleware(validateUserCanWriteBulkEntityInstance), wrapController(InstancesController.runBulkOfActions));
 
 export default InstancesRouter;

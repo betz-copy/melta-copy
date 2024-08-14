@@ -52,7 +52,7 @@ class ProcessInstanceManager {
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await ProcessInstanceModel.insertMany([{ ...process, steps: stepIds }], { session });
-            return _id;
+            return _id!.toString();
         });
         return this.getProcessById(processId);
     }
@@ -134,7 +134,7 @@ class ProcessInstanceManager {
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
         if (name) query.name = { $regex: escapeRegExp(name) };
-        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(query, reviewerId, limit, skip);

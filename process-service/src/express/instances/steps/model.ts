@@ -1,9 +1,9 @@
 import * as mongoose from 'mongoose';
-import { IStepInstance, StepInstanceDocument } from './interface';
+import { StepInstanceDocument } from './interface';
 import config from '../../../config';
 import { Status } from '../processes/interface';
 
-const StepInstanceSchema = new mongoose.Schema<IStepInstance>(
+const StepInstanceSchema = new mongoose.Schema(
     {
         templateId: {
             type: String,

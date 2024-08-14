@@ -1,7 +1,7 @@
 import axios from 'axios';
 // @ts-ignore
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
-import * as pLimit from 'p-limit';
+import pLimit from 'p-limit';
 import config from './config';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
