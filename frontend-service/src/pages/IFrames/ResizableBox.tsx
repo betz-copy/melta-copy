@@ -18,13 +18,12 @@ interface ResizeBoxProps {
 }
 
 const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, maxWidth, minWidth, id }) => {
-    const localStorageKey = `iFrame-${id}-dimensions`;
+    const localStorageKey = `iFrameDimension_${id}`;
     const loadFlagKey = 'page-load-flag';
 
     const [isResizing, setIsResizing] = React.useState(false);
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
-        console.log({ savedDimensions });
 
         return savedDimensions ? JSON.parse(savedDimensions) : { width: 1000, height: 500 };
     };

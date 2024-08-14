@@ -60,7 +60,6 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                             id="placeInSideBar"
                             name="placeInSideBar"
                             onChange={(event) => {
-                                console.log(event.target.checked);
                                 setIsInSideBar(event.target.checked);
                                 handleChange({ ...values, placeInSideBar: event.target.checked });
                             }}

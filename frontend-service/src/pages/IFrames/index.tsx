@@ -59,10 +59,6 @@ const IFramesPage: React.FC = () => {
 
     const queryKey = ['searchIFrames', searchInput];
 
-    // const { data: allIFrames } = useQuery(['searchIFrames'], () => {
-    //     return searchIFrames({});
-    // });
-
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>
@@ -84,7 +80,7 @@ const IFramesPage: React.FC = () => {
                 <InfiniteScroll<IMongoIFrame>
                     queryKey={queryKey}
                     queryFunction={async ({ pageParam }) => {
-                        const iFrames = await searchIFrames({ limit: 4, skip: pageParam });
+                        const iFrames = await searchIFrames({ search: searchInput, limit: 4, skip: pageParam });
                         return iFrames;
                         // return mapTemplates(iFrames);
                     }}

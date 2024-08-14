@@ -16,9 +16,15 @@ const settingIFramesPermissionsSchema = {
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
     const queryClient = useQueryClient();
-    const allPermissions = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
+    // const allPermissions: IPermissionsOfUser[] | undefined = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
+    // console.log({ allPermissions });
+    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const allowedCategoriesIds = myPermissions?.instancesPermissions
+        .filter((instancesPermission) => instancesPermission.scopes.includes('Write'))
+        .map((instancesPermission) => instancesPermission.category);
+
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const categoriesIds: string[] = Array.from(categories.values()).map(({ _id }) => _id);
+
     const [selectedCategories, setSelectedCategories] = useState(values.categoryIds || []);
     const handleCheckboxChange = (categoryId: string) => {
         setSelectedCategories((prevSelected) =>
@@ -26,7 +32,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
         );
     };
     const handleAllSelected = (allSelected: boolean) => {
-        setSelectedCategories(allSelected ? [...categoriesIds] : []);
+        setSelectedCategories(allSelected ? [...allowedCategoriesIds] : []);
     };
 
     useEffect(() => {
@@ -44,7 +50,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                         label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                         control={
                             <MeltaCheckbox
-                                checked={selectedCategories.length === Array.from(categories.values()).length}
+                                checked={selectedCategories.length === allowedCategoriesIds.length}
                                 onChange={(e) => {
                                     handleAllSelected(e.target.checked);
                                     handleChange({ ...values, categoryIds: selectedCategories });
@@ -53,30 +59,33 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                         }
                     />
                     <Divider />
-                    {Array.from(categories.values(), (currentCategory) => {
-                        return (
-                            // eslint-disable-next-line react/jsx-key
-                            <FormControlLabel
-                                sx={{ paddingLeft: 3 }}
-                                label={currentCategory.displayName}
-                                labelPlacement="end"
-                                // disabled={permissionsManagement.disabled}
-                                control={
-                                    // permissionsManagement.viewMode ? (
-                                    // <PermissionViewIcon checked /> // ={permissionsManagement.checked} />
-                                    // ) : (
-                                    <MeltaCheckbox
-                                        checked={selectedCategories.includes(currentCategory._id)}
-                                        onChange={() => {
-                                            handleCheckboxChange(currentCategory._id);
-                                            handleChange({ ...values, categoryIds: selectedCategories });
-                                        }}
-                                    />
-                                    // )
-                                }
-                            />
-                        );
-                    })}
+                    {Array.from(
+                        categories.values(),
+                        (currentCategory) =>
+                            allowedCategoriesIds.includes(currentCategory._id) && (
+                                // eslint-disable-next-line react/jsx-key
+                                <FormControlLabel
+                                    key={currentCategory._id}
+                                    sx={{ paddingLeft: 3 }}
+                                    label={currentCategory.displayName}
+                                    labelPlacement="end"
+                                    // disabled={permissionsManagement.disabled}
+                                    control={
+                                        // permissionsManagement.viewMode ? (
+                                        // <PermissionViewIcon checked /> // ={permissionsManagement.checked} />
+                                        // ) : (
+                                        <MeltaCheckbox
+                                            checked={selectedCategories.includes(currentCategory._id)}
+                                            onChange={() => {
+                                                handleCheckboxChange(currentCategory._id);
+                                                handleChange({ ...values, categoryIds: selectedCategories });
+                                            }}
+                                        />
+                                        // )
+                                    }
+                                />
+                            ),
+                    )}
                 </FormGroup>
             </CardContent>
         </Card>

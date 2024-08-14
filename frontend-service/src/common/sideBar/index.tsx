@@ -58,10 +58,6 @@ type SideBarProps = {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
 };
-interface PaginatedIframes {
-    pages: IMongoIFrame[][];
-    pageParams: any[]; // Adjust this type based on your pageParams type
-}
 
 const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
     const theme = useTheme();

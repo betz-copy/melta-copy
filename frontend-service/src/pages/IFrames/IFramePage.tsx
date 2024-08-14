@@ -16,13 +16,12 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true }) 
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
-    console.log('hndhggdfdxfgvb ', iFrame?.name);
     const { data: iFrameData, isLoading } = useQuery(['getIFrame', id], async () => getIFrameById(id!), {
         initialData: iFrame,
         retry: false,
         onError: (err) => {
             console.log(err);
-            navigate('/404');
+            if (iFrameId) navigate('/404');
         },
     });
 

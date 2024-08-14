@@ -5,7 +5,7 @@ import PermissionsManager from '../permissions/manager';
 import IFrameManager from './manager';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 
-const validateHasPermissionsToIFrameItems = async (iFrame: IFrame, allowedCategoriesIds: string[]) => {
+const validateHasPermissionsToIFrame = async (iFrame: IFrame, allowedCategoriesIds: string[]) => {
     const unauthorizedCategories = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
 
     if (unauthorizedCategories.length > 0) {
@@ -15,21 +15,21 @@ const validateHasPermissionsToIFrameItems = async (iFrame: IFrame, allowedCatego
     }
 };
 
-export const getAllowedCategoriesForInstances = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
+export const getAllowedCategories = (userPermissions: Omit<IPermissionsOfUser, 'user'>) => {
     return userPermissions.instancesPermissions.filter((permission) => permission.scopes.includes('Read')).map((permission) => permission.category);
 };
 
 export const validateUserHasPermissionsToIFrame = async (userId: string, newIFrame: IFrame | undefined, existingIFrameId: string | undefined) => {
     const userPermissions = await PermissionsManager.getPermissionsOfUserId(userId);
 
-    const allowedCategoriesIds: string[] = getAllowedCategoriesForInstances(userPermissions);
+    const allowedCategoriesIds: string[] = getAllowedCategories(userPermissions);
 
     if (newIFrame) {
-        await validateHasPermissionsToIFrameItems(newIFrame, allowedCategoriesIds);
+        await validateHasPermissionsToIFrame(newIFrame, allowedCategoriesIds);
     }
     if (existingIFrameId) {
         const iFrame = await IFrameManager.getIFrameById(existingIFrameId);
-        await validateHasPermissionsToIFrameItems(iFrame, allowedCategoriesIds);
+        await validateHasPermissionsToIFrame(iFrame, allowedCategoriesIds);
     }
 };
 

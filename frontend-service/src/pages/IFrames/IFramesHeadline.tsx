@@ -1,20 +1,20 @@
 import React from 'react';
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import { useLocalStorage } from '../../utils/useLocalStorage';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
 }> = ({ onSearch, setIFrameWizardDialogState }) => {
-    const theme = useTheme();
+    // const theme = useTheme();
 
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
@@ -31,6 +31,17 @@ const IFramesPageHeadline: React.FC<{
     //             .filter((template): template is IMongoEntityTemplatePopulated => !!template);
     //         const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
     //         return updatedTemplates.map((template) => template._id);
+    //     });
+    // };
+    // const clearIFramesDimensions = () => {
+    //     console.log('kkkkkkkkkkkkkkk');
+
+    //     Object.keys(localStorage).forEach((key) => {
+    //         if (key.startsWith('iFrameDimension_')) {
+    //             console.log({ key });
+
+    //             localStorage.setItem(key, JSON.stringify({ width: 1000, height: 500 }));
+    //         }
     //     });
     // };
     return (
@@ -50,7 +61,18 @@ const IFramesPageHeadline: React.FC<{
                     </Grid>
                 </Grid>
             </Grid>
-
+            {/* <Grid item>
+                <IconButton
+                    onClick={() => {
+                        clearIFramesDimensions();
+                        // onSetStartDate(null);
+                        // onSetEndDate(null);
+                    }}
+                    sx={{ borderRadius: 10, height: '35px', width: '35px' }}
+                >
+                    <FilterAltOffIcon />
+                </IconButton>
+            </Grid> */}
             <Grid item>
                 {myPermissions.templatesManagementId && (
                     <IconButton onClick={setIFrameWizardDialogState}>

@@ -6,7 +6,7 @@ import { IFrame, IFrameDocument } from './interface';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { deleteFile, uploadFile } from '../../externalServices/storageService';
 import { removeTmpFile } from '../../utils/fs';
-import { getAllowedCategoriesForInstances } from './middlewares';
+import { getAllowedCategories } from './middlewares';
 
 export class IFrameManager {
     private static filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
@@ -18,20 +18,29 @@ export class IFrameManager {
     }
 
     static async searchIFrames({ search, limit, skip }: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedCategories: string[] = getAllowedCategoriesForInstances(permissionsOfUserId);
+        const allowedCategories: string[] = getAllowedCategories(permissionsOfUserId);
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
             const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { description: searchRegex }, { url: searchRegex }];
         }
-        const allIFrames = await IFrameModel.find(query).lean().exec();
+        const allIFrames = await IFrameModel.find(query).sort({ createdAt: -1 }).lean().exec();
         const filteredIFrames = this.filterIFramesWithPermissions(allIFrames, allowedCategories);
+
         if (!skip && !limit) return filteredIFrames;
         return filteredIFrames.slice(skip, skip + limit);
     }
 
-    static getIFrameById(iFrameId: string) {
-        return IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+    static async getIFrameById(iFrameId: string) {
+        // , _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+        // const allowedCategories: string[] = getAllowedCategories(permissionsOfUserId);
+        const iFrame = await IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+        // const filteredIFrame = this.filterIFramesWithPermissions(iFrame, allowedCategories);
+        // const isAllowed = iFrame.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId));
+        // console.log({ isAllowed });
+        // return isAllowed ? iFrame : null;
+        // validateHasPermissionsToIFrame(iFrame, allowedCategories);
+        return iFrame;
     }
 
     static async createIFrame(iFrame: IFrame) {
@@ -78,3 +87,9 @@ export class IFrameManager {
 }
 
 export default IFrameManager;
+function validateHasPermissionsToIFrame(
+    iFrame: import('mongoose').FlattenMaps<IFrameDocument> & Required<{ _id: import('mongoose').FlattenMaps<unknown> }>,
+    allowedCategoriesIds: any,
+) {
+    throw new Error('Function not implemented.');
+}
