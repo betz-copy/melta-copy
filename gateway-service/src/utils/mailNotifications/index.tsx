@@ -238,22 +238,24 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
 };
 
 export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
-    return ruleBreach.actions.map((action) => {
-        if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
-            return getCreateOrDeleteRelActionInfo(
-                action.actionType,
-                action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
-            );
-        }
-        if (action.actionType === ActionTypes.UpdateEntity) {
-            return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
-        }
+    return Promise.all(
+        ruleBreach.actions.map((action) => {
+            if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
+                return getCreateOrDeleteRelActionInfo(
+                    action.actionType,
+                    action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                );
+            }
+            if (action.actionType === ActionTypes.UpdateEntity) {
+                return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+            }
 
-        if (action.actionType === ActionTypes.UpdateStatus) {
-            return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
-        }
-        return null;
-    });
+            if (action.actionType === ActionTypes.UpdateStatus) {
+                return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+            }
+            return null;
+        }),
+    );
 };
 
 const ruleBreachBodyMassage = async (
