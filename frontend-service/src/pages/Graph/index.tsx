@@ -96,8 +96,9 @@ const Graph: React.FC = () => {
 
     const resetGraph = (data?: IEntityExpanded, resetData?: true) => {
         setInitialExpandedEntity({ entity: data, menu: false });
-        if (resetData) setGraphData({ nodes: [], links: [] });
         setCurrentBatchIndex(0);
+
+        if (resetData) setGraphData({ nodes: [], links: [] });
     };
 
     const graphEntityTemplateIds = uniqBy(graphData.nodes, ({ templateId }) => templateId).map((element) => element.templateId);
@@ -171,9 +172,11 @@ const Graph: React.FC = () => {
             entityTemplates,
             relationshipTemplates,
         );
+
         if (!initialExpandedEntity?.menu) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
 
         expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
+
         return { expandedEntityGraphData, expandedEntity };
     };
 
