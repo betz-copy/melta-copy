@@ -138,7 +138,6 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
             const entityAfterManipulations = entityToUpdate;
 
             if (entityToUpdate.entityId === entity.properties._id && crudAction === 'onCreateEntity') {
-                entityAfterManipulations.properties._id = '$0._id';
                 entityAfterManipulations.entityId = '$0._id';
             }
 

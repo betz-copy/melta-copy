@@ -26,7 +26,6 @@ export interface IUpdateEntityMetadata {
     entityId: string;
     before?: Record<string, any>;
     updatedFields: Record<string, any>;
-    entityTemplateId?: string;
 }
 
 export interface IUpdateEntityStatusMetadata {

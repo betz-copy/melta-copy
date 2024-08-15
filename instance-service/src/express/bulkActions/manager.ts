@@ -41,19 +41,33 @@ export class BulkActionManager {
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+        const entityAfterManipulations = JSON.parse(JSON.stringify(newEntityPropertiesWithoutNulls));
+
+        Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
+            if (name in newEntityPropertiesWithoutNulls) {
+                const propertyValue = newEntityPropertiesWithoutNulls[name];
+
+                if (value.format === 'relationshipReference') {
+                    entityAfterManipulations[name] = (propertyValue as IEntity).properties._id;
+                }
+            }
+        });
+
         return {
             ...actionMetadata,
-            updatedFields: newEntityPropertiesWithoutNulls,
+            updatedFields: entityAfterManipulations,
         };
     }
 
-    static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
-        const { entityId, updatedFields, entityTemplateId } = actionMetadata;
 
-        if (entityId.startsWith('$') && entityId.endsWith('._id')) {
+    static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
+        const { entityId, updatedFields } = actionMetadata;
+
+        if (entityId.startsWith('$')) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             const createdEntity = results[numberPart] as IEntity;
-            return { entityId: createdEntity.properties._id, before: createdEntity.properties, updatedFields, entityTemplateId };
+            return { entityId: createdEntity.properties._id, before: createdEntity.properties, updatedFields };
         }
 
         return actionMetadata;
@@ -101,8 +115,7 @@ export class BulkActionManager {
                     });
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                    if (actionMetadata.entityTemplateId) entitiesTemplatesIdsOfRules.add(actionMetadata.entityTemplateId);
-                    else if (!actionMetadata.entityId.startsWith('$')) {
+                    if (!actionMetadata.entityId.startsWith('$')) {
                         const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
@@ -226,7 +239,6 @@ export class BulkActionManager {
                     const fixedMetaData = this.getEntityIdByPrevResults(actionMetadata, results);
                     fixedActions[index].actionMetadata = fixedMetaData;
                     const fixedWithUpdatedFields = await this.fixUpdatedFields(fixedMetaData, transaction);
-
                     const { updatedEntity, activityLogsToCreate } = await EntityManager.handleUpdateEntity(
                         fixedWithUpdatedFields,
                         transaction,
@@ -266,8 +278,7 @@ export class BulkActionManager {
 
                             case ActionTypes.UpdateEntity: {
                                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                                if (actionMetadata.entityTemplateId) entityTemplateIds.push(actionMetadata.entityTemplateId);
-                                else if (!actionMetadata.entityId.startsWith('$')) {
+                                if (!actionMetadata.entityId.startsWith('$')) {
                                     const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                                     entityTemplateIds.push(entityTemplate._id);

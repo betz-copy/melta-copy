@@ -358,7 +358,9 @@ export class EntityManager {
 
     static async handleUpdateEntity(actionMetadata: IUpdateEntityMetadata, transaction: Transaction, userId?: string) {
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
-            actionMetadata.entityTemplateId ?? (await EntityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction)).templateId,
+            (
+                await EntityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction)
+            ).templateId,
         );
 
         return EntityManager.updateEntityByIdInnerTransaction(
@@ -436,22 +438,25 @@ export class EntityManager {
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
-                    const { entityId, properties: updatedFields } = entityToUpdate;
-                    // const currentEntity = entityId !== '$0._id' ? await this.getEntityById(entityId) : properties;
-                    // todo:compare current to updated properties and put as updated
-                    actions.push({
-                        actionType: ActionTypes.UpdateEntity,
-                        actionMetadata: {
-                            entityId,
-                            // updatedFields: this.getUpdatedProperties1(
-                            //     currentEntity ?? properties,
-                            //     updatedFields,
-                            //     currentEntity ? await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId) : entityTemplate,
-                            // ),
-                            updatedFields,
-                            // entityTemplateId: currentEntity?.templateId ?? entityTemplate._id, // case of update to the created entity
-                        } as IUpdateEntityMetadata,
-                    });
+                    const { entityId, properties: allProperties } = entityToUpdate;
+
+                    const currentEntity = !entityId.startsWith('$') ? await this.getEntityById(entityId) : null;
+                    const updatedFields: Record<string, any> = this.getUpdatedProperties(
+                        currentEntity ? currentEntity.properties : properties,
+                        allProperties,
+                        currentEntity ? await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId) : entityTemplate,
+                    );
+
+                    // for case that we change by actions and no value was updated
+                    if (Object.entries(updatedFields).length) {
+                        actions.push({
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId,
+                                updatedFields,
+                            } as IUpdateEntityMetadata,
+                        });
+                    }
                 }),
             );
 
@@ -783,9 +788,9 @@ export class EntityManager {
             }
 
             const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
-            const updatedProperties = EntityManager.getUpdatedProperties(
-                entity,
-                { ...entity, properties: { ...entity.properties, disabled, updatedAt: new Date().toISOString() } },
+            const updatedProperties = EntityManager.getKeysOfUpdatedProperties(
+                entity.properties,
+                { ...entity.properties, disabled, updatedAt: new Date().toISOString() },
                 entityTemplate,
             );
 
@@ -872,7 +877,11 @@ export class EntityManager {
         return ruleFailures;
     }
 
-    public static getUpdatedProperties(oldEntity: IEntity, newEntity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    public static getKeysOfUpdatedProperties(
+        oldEntityProperties: Record<string, any>,
+        newEntityProperties: Record<string, any>,
+        entityTemplate: IMongoEntityTemplate,
+    ) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...entityTemplate.properties.properties,
             disabled: { title: 'doesntMatter', type: 'boolean' },
@@ -880,25 +889,21 @@ export class EntityManager {
             updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
         };
         const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
-            return newEntity.properties[key] !== oldEntity.properties[key];
+            return newEntityProperties[key] !== oldEntityProperties[key];
         });
 
         const updatedProperties = Object.keys(templateUpdatedProperties);
         return updatedProperties;
     }
 
-    public static getUpdatedProperties1(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
-        const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
-            ...entityTemplate.properties.properties,
-            disabled: { title: 'doesntMatter', type: 'boolean' },
-            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-        };
-        const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
-            return newEntity[key] !== oldEntity[key];
-        });
+    public static getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
+        const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = Object.keys(templateUpdatedProperties);
+        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
+            acc[property] = newEntity[property];
+            return acc;
+        }, {} as Record<string, any>);
+
         return updatedProperties;
     }
 
@@ -1013,9 +1018,9 @@ export class EntityManager {
             throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
         }
 
-        const updatedProperties = EntityManager.getUpdatedProperties(
-            entity,
-            { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+        const updatedProperties = EntityManager.getKeysOfUpdatedProperties(
+            entity.properties,
+            { ...entityProperties, updatedAt: new Date().toISOString() },
             entityTemplate,
         );
 
@@ -1189,9 +1194,9 @@ export class EntityManager {
                 throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
             }
 
-            const updatedProperties = EntityManager.getUpdatedProperties(
-                entity,
-                { templateId: entity.templateId, properties: { ...entityProperties, updatedAt: new Date().toISOString() } },
+            const updatedProperties = EntityManager.getKeysOfUpdatedProperties(
+                entity.properties,
+                { ...entityProperties, updatedAt: new Date().toISOString() },
                 entityTemplate,
             );
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);

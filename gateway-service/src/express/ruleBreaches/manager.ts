@@ -396,7 +396,7 @@ export class RuleBreachesManager {
                         actionType: action.actionType,
                         actionMetadata: {
                             ...action.actionMetadata,
-                            before,
+                            before: before.properties,
                         },
                     };
                 }
@@ -764,9 +764,10 @@ export class RuleBreachesManager {
         actionMetadata: IUpdateEntityMetadata,
         actions: IAction[],
     ): Promise<IUpdateEntityMetadataPopulated> {
-        const { entityId, ...restOfMetadata } = actionMetadata;
+        const { entityId, before } = actionMetadata;
 
         let entity: IEntity | null;
+        let beforeEntityWithPopulatedRelationshipReferences: IEntity | undefined;
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             entity = actions[numberPart].actionMetadata as IEntity;
@@ -784,10 +785,14 @@ export class RuleBreachesManager {
             actionMetadata.updatedFields,
         );
 
+        if (before) {
+            beforeEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entity!.templateId, before);
+        }
+
         return {
-            ...restOfMetadata,
             updatedFields: updatedEntityWithPopulatedRelationshipReferences,
             entity: { templateId: entity!.templateId, properties: currentEntityWithPopulatedRelationshipReferences },
+            ...(before && { before: beforeEntityWithPopulatedRelationshipReferences }),
         };
     }
 
