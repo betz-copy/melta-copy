@@ -22,32 +22,6 @@ const IFramesPageHeadline: React.FC<{
 
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    // const [iFramesToShowCheckbox, setIFramesToShowCheckbox] = useLocalStorage<string[]>('iFramesToShow', iFrames);
-
-    // // const iFramesToShowCheckbox = iFramesIdsToShowCheckbox
-    // //     .map((id) => entityTemplates.get(id))
-    // //     .filter((template): template is IMongoEntityTemplatePopulated => !!template);
-
-    // const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
-    //     setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
-    //         const prevTemplates = prevtemplateIdsToShowCheckbox
-    //             .map((id) => entityTemplates.get(id))
-    //             .filter((template): template is IMongoEntityTemplatePopulated => !!template);
-    //         const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
-    //         return updatedTemplates.map((template) => template._id);
-    //     });
-    // };
-    // const clearIFramesDimensions = () => {
-    //     console.log('kkkkkkkkkkkkkkk');
-
-    //     Object.keys(localStorage).forEach((key) => {
-    //         if (key.startsWith('iFrameDimension_')) {
-    //             console.log({ key });
-
-    //             localStorage.setItem(key, JSON.stringify({ width: 1000, height: 500 }));
-    //         }
-    //     });
-    // };
 
     const [anchorEl, setAnchorEl] = useState(null);
     const handleOpen = (event) => {
@@ -68,6 +42,7 @@ const IFramesPageHeadline: React.FC<{
         updatedItems.splice(result.destination.index, 0, reorderedItem);
 
         setIFramesOrder(updatedItems);
+        queryClient.setQueryData('allIFrames', updatedItems);
     };
     console.log('hh ', { iFramesOrder });
 

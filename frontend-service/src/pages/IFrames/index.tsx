@@ -58,7 +58,9 @@ const IFramesPage: React.FC = () => {
     const queryClient = useQueryClient();
 
     const queryKey = ['searchIFrames', searchInput];
+    // const [allIFrames, setAllIFrames] = useState();
     const allIFrames = queryClient.getQueryData('allIFrames');
+    // useEffect(() => {}, []);
     console.log({ allIFrames });
 
     const [iFramesOrder, setIFramesOrder] = useState<any>(allIFrames);
@@ -105,7 +107,8 @@ const IFramesPage: React.FC = () => {
                         });
                         // console.log('notice: ', { orderedIFrames });
 
-                        return orderedIFrames;
+                        // return orderedIFrames;
+                        return iFrames;
                         // return mapTemplates(iFrames);
                     }}
                     onQueryError={(error) => {
