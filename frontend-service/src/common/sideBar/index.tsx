@@ -156,7 +156,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
 
     // refetch();
-    console.log({ iFramesInSidebar });
+    // console.log({ iFramesInSidebar });
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);

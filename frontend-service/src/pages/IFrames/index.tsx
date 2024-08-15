@@ -8,7 +8,6 @@ import i18next from 'i18next';
 // import { DndProvider, useDrag, useDrop } from 'react-dnd';
 // import { HTML5Backend } from 'react-dnd-html5-backend';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
-import ResizablePanel from './Resizable';
 import IFramesPageHeadline from './IFramesHeadline';
 import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
@@ -56,8 +55,20 @@ const IFramesPage: React.FC = () => {
         iFrame: null,
     });
     const [searchInput, setSearchInput] = useState<string>();
+    const queryClient = useQueryClient();
 
     const queryKey = ['searchIFrames', searchInput];
+    const allIFrames = queryClient.getQueryData('allIFrames');
+    console.log({ allIFrames });
+
+    const [iFramesOrder, setIFramesOrder] = useState<any>(allIFrames);
+    // let x = allIFrames;
+    useEffect(() => {
+        console.log('rerenderrrrrr', { iFramesOrder });
+        // x = iFramesOrder;
+        queryClient.invalidateQueries(queryKey);
+    }, [iFramesOrder]);
+    console.log('frgfwefjewf ', { iFramesOrder });
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -66,6 +77,11 @@ const IFramesPage: React.FC = () => {
                     onSearch={(searchValue) => setSearchInput(searchValue || undefined)}
                     setIFrameWizardDialogState={() => {
                         setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
+                    }}
+                    iFramesOrder={iFramesOrder}
+                    setIFramesOrder={(newOrder) => {
+                        console.log({ newOrder });
+                        setIFramesOrder(newOrder);
                     }}
                 />
             </Grid>
@@ -81,7 +97,15 @@ const IFramesPage: React.FC = () => {
                     queryKey={queryKey}
                     queryFunction={async ({ pageParam }) => {
                         const iFrames = await searchIFrames({ search: searchInput, limit: 4, skip: pageParam });
-                        return iFrames;
+                        // return iFrames;
+                        console.log({ iFramesOrder });
+
+                        const orderedIFrames = iFrames.sort((a, b) => {
+                            return iFramesOrder.indexOf(a._id) - iFramesOrder.indexOf(b._id);
+                        });
+                        // console.log('notice: ', { orderedIFrames });
+
+                        return orderedIFrames;
                         // return mapTemplates(iFrames);
                     }}
                     onQueryError={(error) => {

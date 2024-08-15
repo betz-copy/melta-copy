@@ -32,6 +32,7 @@ const Category: React.FC = () => {
         `templatesToShow-${categoryId}`,
         categoryTemplates.map((template) => template._id),
     );
+    console.log({ templateIdsToShowCheckbox });
 
     const templatesToShowCheckbox = templateIdsToShowCheckbox
         .map((id) => entityTemplates.get(id))

@@ -87,9 +87,3 @@ export class IFrameManager {
 }
 
 export default IFrameManager;
-function validateHasPermissionsToIFrame(
-    iFrame: import('mongoose').FlattenMaps<IFrameDocument> & Required<{ _id: import('mongoose').FlattenMaps<unknown> }>,
-    allowedCategoriesIds: any,
-) {
-    throw new Error('Function not implemented.');
-}
