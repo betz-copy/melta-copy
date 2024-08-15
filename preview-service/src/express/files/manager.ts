@@ -31,17 +31,17 @@ export class FilesManager {
         const fileStream = await minioClient.downloadFileStream(filePath);
         const fileBuffer = await streamToBuffer(fileStream);
         const convertedBuffer = await libreConvert(fileBuffer, document.previewFileType, undefined);
-        return Readable.from(convertedBuffer);
+        return { previewBuffer: Readable.from(convertedBuffer), fileSize: convertedBuffer.length };
     }
 
-    static async uploadFileToMinio(fileStream: Readable, newFileName: string) {
-        await minioClient.uploadFileStream(fileStream, newFileName, {});
+    static async uploadFileToMinio(fileStream: Readable, newFileName: string, fileSize: number) {
+        await minioClient.uploadFileStream(fileStream, newFileName, fileSize, {});
     }
 
     static async uploadFilePreview(originalFileName: string) {
         const pdfFileName = `${document.previewPrefix}${originalFileName.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
-        const previewBuffer = await this.createFilePreview(originalFileName);
-        const res = await this.uploadFileToMinio(previewBuffer as Readable, pdfFileName);
+        const { previewBuffer, fileSize } = await this.createFilePreview(originalFileName);
+        const res = await this.uploadFileToMinio(previewBuffer as Readable, pdfFileName, fileSize);
         return res;
     }
 }
