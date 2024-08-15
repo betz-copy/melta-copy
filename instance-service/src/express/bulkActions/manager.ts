@@ -48,7 +48,7 @@ export class BulkActionManager {
             if (name in newEntityPropertiesWithoutNulls) {
                 const propertyValue = newEntityPropertiesWithoutNulls[name];
 
-                if (value.format === 'relationshipReference') {
+                if (value.format === 'relationshipReference' && typeof propertyValue !== 'string') {
                     entityAfterManipulations[name] = (propertyValue as IEntity).properties._id;
                 }
             }
@@ -59,7 +59,6 @@ export class BulkActionManager {
             updatedFields: entityAfterManipulations,
         };
     }
-
 
     static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
         const { entityId, updatedFields } = actionMetadata;

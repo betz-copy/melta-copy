@@ -105,11 +105,15 @@ const CreateOrEditEntityDetails: React.FC<{
                 }
 
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
                     setCreateOrUpdateWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
                         newEntityData,
+                        actions,
+                        rawActions,
                     });
                 }
                 toast.error(i18next.t('wizard.entity.failedToEdit'));

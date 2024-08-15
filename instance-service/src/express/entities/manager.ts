@@ -382,20 +382,10 @@ export class EntityManager {
             async (transaction) => {
                 let entity: IEntity | undefined;
 
-                switch (action.actionType) {
-                    case ActionTypes.CreateEntity: {
-                        entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction, userId)).createdEntity;
-                        break;
-                    }
-
-                    case ActionTypes.UpdateEntity: {
-                        entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
-                        break;
-                    }
-
-                    default:
-                        break;
-                }
+                if (action.actionType === ActionTypes.CreateEntity)
+                    entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction, userId)).createdEntity;
+                else if (action.actionType === ActionTypes.UpdateEntity)
+                    entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
 
                 if (entity) {
                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
@@ -406,8 +396,6 @@ export class EntityManager {
                         crudAction,
                         transaction,
                     );
-
-                    console.dir(executionOutput, { depth: null });
 
                     return executionOutput;
                 }
@@ -1150,55 +1138,86 @@ export class EntityManager {
         userId: string,
     ) {
         const updatedEntities: IEntity[] = [];
+        const entity = await this.getEntityById(id);
+
+        if (entity.properties.disabled) {
+            throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+        }
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
-            const actions: IAction[] = [
-                {
-                    actionType: ActionTypes.UpdateEntity,
-                    actionMetadata: {
-                        entityId: id,
-                        before: this.getEntityById(id),
-                        updatedFields: entityProperties,
-                        entityTemplateId: entityTemplate._id,
-                    } as IUpdateEntityMetadata,
-                },
-            ];
+            // const actions: IAction[] = [
+            //     {
+            //         actionType: ActionTypes.UpdateEntity,
+            //         actionMetadata: {
+            //             entityId: id,
+            //             updatedFields: entityProperties,
+            //             entityTemplateId: entityTemplate._id,
+            //         } as IUpdateEntityMetadata,
+            //     },
+            // ];
 
-            const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onUpdateEntity', userId);
+            // const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onUpdateEntity', userId);
+
+            // await Promise.all(
+            //     entitiesToUpdate.map(async (entityToUpdate) => {
+            //         const { entityId, properties: updatedFields } = entityToUpdate;
+            //         const currentEntity = await this.getEntityById(entityId);
+
+            //         actions.push({
+            //             actionType: ActionTypes.UpdateEntity,
+            //             actionMetadata: {
+            //                 entityId,
+            //                 updatedFields,
+            //             } as IUpdateEntityMetadata,
+            //         });
+            //     }),
+            // );
+            const action: IAction = {
+                actionType: ActionTypes.UpdateEntity,
+                actionMetadata: {
+                    entityId: id,
+                    updatedFields: this.getUpdatedProperties(entity.properties, entityProperties, entityTemplate),
+                } as IUpdateEntityMetadata,
+            };
+
+            const entitiesToUpdate = await this.executeActionsOnCrud(action, 'onUpdateEntity', userId);
+
+            const actions = [action];
 
             await Promise.all(
                 entitiesToUpdate.map(async (entityToUpdate) => {
-                    const { entityId, properties: updatedFields } = entityToUpdate;
-                    const currentEntity = await this.getEntityById(entityId);
+                    const { entityId, properties: allProperties } = entityToUpdate;
 
-                    actions.push({
-                        actionType: ActionTypes.UpdateEntity,
-                        actionMetadata: {
-                            entityId,
-                            before: currentEntity.properties,
-                            updatedFields,
-                            entityTemplateId: currentEntity.templateId,
-                        } as IUpdateEntityMetadata,
-                    });
+                    const currentEntity = await this.getEntityById(entityId);
+                    const updatedFields = this.getUpdatedProperties(
+                        currentEntity.properties,
+                        allProperties,
+                        await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId),
+                    );
+
+                    // for case that we change by actions and no value was updated
+                    if (Object.entries(updatedFields).length) {
+                        actions.push({
+                            actionType: ActionTypes.UpdateEntity,
+                            actionMetadata: {
+                                entityId,
+                                updatedFields,
+                            } as IUpdateEntityMetadata,
+                        });
+                    }
                 }),
             );
-
             const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { updatedEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const entity = await this.getEntityByIdInTransaction(id, transaction);
-
-            if (entity.properties.disabled) {
-                throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-            }
-
             const updatedProperties = EntityManager.getKeysOfUpdatedProperties(
                 entity.properties,
                 { ...entityProperties, updatedAt: new Date().toISOString() },
                 entityTemplate,
             );
+
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
             const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
