@@ -454,6 +454,11 @@ export class RuleBreachesManager {
         return RuleBreachesManager.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
     }
 
+    private static removeBasicProperties = (properties: Record<string, any>) => {
+        const { createdAt, updatedAt, _id, disabled, ...rest } = properties;
+        return rest;
+    };
+
     private static async uploadRuleBreachFiles(
         ruleBreach: Omit<IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>,
         files: Express.Multer.File[],
@@ -464,12 +469,23 @@ export class RuleBreachesManager {
         const [action] = ruleBreach.actions;
 
         if (action.actionType === ActionTypes.CreateEntity) {
-            const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(
-                files,
-                (action.actionMetadata as ICreateEntityMetadata).properties,
+            const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
+                (action.actionMetadata as ICreateEntityMetadata).templateId,
             );
-            // eslint-disable-next-line no-param-reassign
-            (action.actionMetadata as ICreateEntityMetadata).properties = propertiesWithFiles;
+            // temp solution
+            const fileProperties = InstancesManager.getEntityFileProperties(
+                this.removeBasicProperties((action.actionMetadata as ICreateEntityMetadata).properties),
+                entityTemplate,
+            );
+
+            if (!fileProperties) {
+                const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(
+                    files,
+                    (action.actionMetadata as ICreateEntityMetadata).properties,
+                );
+                // eslint-disable-next-line no-param-reassign
+                (action.actionMetadata as ICreateEntityMetadata).properties = propertiesWithFiles;
+            }
             return;
         }
 

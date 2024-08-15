@@ -441,7 +441,7 @@ export class EntityManager {
                     const { entityId, properties: allProperties } = entityToUpdate;
 
                     const currentEntity = !entityId.startsWith('$') ? await this.getEntityById(entityId) : null;
-                    const updatedFields: Record<string, any> = this.getUpdatedProperties(
+                    const updatedFields = this.getUpdatedProperties(
                         currentEntity ? currentEntity.properties : properties,
                         allProperties,
                         currentEntity ? await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId) : entityTemplate,

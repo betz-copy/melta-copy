@@ -150,7 +150,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                         },
                     ],
                 },
-                entityFormData.attachmentsProperties,
+                attachmentsProperties,
             );
         },
         {
