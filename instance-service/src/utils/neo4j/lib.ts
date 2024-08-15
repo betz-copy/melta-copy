@@ -49,10 +49,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {

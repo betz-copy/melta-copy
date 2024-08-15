@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody, Options } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import { wrapController, wrapMiddleware } from '../../utils/express';
 import {
@@ -41,11 +41,13 @@ const {
 
 const TemplatesServiceProxy = createProxyMiddleware({
     target: url,
-    onProxyReq: (proxyReq, req, _res) => {
-        fixRequestBody(proxyReq, req);
+    on: {
+        proxyReq: (proxyReq, req, _res) => {
+            fixRequestBody(proxyReq, req);
+        },
     },
     proxyTimeout: requestTimeout,
-} as Options);
+});
 
 const fixDeleteResponseData = (data: IMongoEntityTemplateWithConstraints) => {
     const logData = JSON.parse(JSON.stringify(data));

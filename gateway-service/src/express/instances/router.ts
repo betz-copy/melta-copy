@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody, Options } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { wrapController, wrapMiddleware } from '../../utils/express';
@@ -33,9 +33,11 @@ import ValidateRequest from '../../utils/joi';
 const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
     target: instanceService.url,
-    onProxyReq: fixRequestBody,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: instanceService.requestTimeout,
-} as Options);
+});
 
 const InstancesRouter: Router = Router();
 

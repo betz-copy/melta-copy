@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createProxyMiddleware, fixRequestBody, Options } from 'http-proxy-middleware';
+import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import { wrapMiddleware } from '../utils/express';
 import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
 import usersRouter from './users/router';
@@ -31,7 +31,7 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 apiRouter.use(
     '/files',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody } as Options),
+    createProxyMiddleware({ target: config.storageService.url, on: { proxyReq: fixRequestBody } }),
 );
 
 apiRouter.use(
@@ -39,9 +39,11 @@ apiRouter.use(
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     createProxyMiddleware({
         target: config.previewService.url,
-        onProxyReq: fixRequestBody,
+        on: {
+            proxyReq: fixRequestBody,
+        },
         proxyTimeout: config.previewService.requestTimeout,
-    } as Options),
+    }),
 );
 
 apiRouter.use('/processes', processesRouter);
