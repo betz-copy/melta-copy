@@ -5,10 +5,10 @@ import fileDownload from 'js-file-download';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { exportEntityToDocumentRequest } from '../services/entitiesService';
-import { getLongDate } from '../utils/date';
-import { getFileName } from '../utils/getFileName';
-import { EntityWizardValues } from './dialogs/entity';
+import { exportEntityToDocumentRequest } from '../../../services/entitiesService';
+import { getLongDate } from '../../../utils/date';
+import { getFileName } from '../../../utils/getFileName';
+import { EntityWizardValues } from '.';
 
 export const ExportFormats: React.FC<{
     properties: EntityWizardValues['properties'];

@@ -32,7 +32,7 @@ import TooltipMenuButton from './TooltipMenuButton';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
-import { ExportFormats } from '../../../common/ExportFormats';
+import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,

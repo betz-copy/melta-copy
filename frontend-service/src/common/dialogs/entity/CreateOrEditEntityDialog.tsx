@@ -23,7 +23,7 @@ import { createEntityRequest, updateEntityRequestForMultiple } from '../../../se
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
-import { ExportFormats } from '../../ExportFormats';
+import { ExportFormats } from './ExportFormats';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
