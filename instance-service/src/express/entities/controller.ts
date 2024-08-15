@@ -13,8 +13,6 @@ class EntityController {
     }
 
     static async searchEntitiesOfTemplate(req: Request, res: Response) {
-        console.log('1');
-
         const entityTemplate = fetchPropertyFromRequest<IMongoEntityTemplate>(req, 'entityTemplate');
 
         res.json(await EntityManager.searchEntitiesOfTemplate(req.body, entityTemplate));
