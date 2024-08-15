@@ -5,6 +5,7 @@ import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
+import { useDraftIdStore } from '../../stores/drafts';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -19,6 +20,8 @@ const AddEntityButton: React.FC<{
         isOpen: false,
     });
 
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
     return (
         <>
             <IconButtonWithPopover
@@ -29,6 +32,7 @@ const AddEntityButton: React.FC<{
                 iconButtonProps={{
                     onClick: () => {
                         setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
+                        setDraftId('');
                     },
                     style,
                 }}
@@ -37,8 +41,10 @@ const AddEntityButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-
-            <Dialog open={addEntityWizardState.isOpen} maxWidth="md">
+            <Dialog
+                open={addEntityWizardState.isOpen}
+                maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
+            >
                 <CreateOrEditEntityDetails
                     isEditMode={false}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}

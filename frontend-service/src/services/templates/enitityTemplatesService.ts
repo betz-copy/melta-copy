@@ -13,8 +13,16 @@ export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
-    const { iconFileId, properties, propertiesOrder, propertiesPreview, enumPropertiesColors, uniqueConstraints, ...restOfEntityTemplate } =
-        entityTemplate;
+    const {
+        iconFileId,
+        properties,
+        propertiesOrder,
+        propertiesPreview,
+        enumPropertiesColors,
+        uniqueConstraints,
+        documentTemplatesIds,
+        ...restOfEntityTemplate
+    } = entityTemplate;
 
     const propertiesArray: EntityTemplateFormInputProperties[] = [];
     const attachmentProperties: EntityTemplateFormInputProperties[] = [];
@@ -59,6 +67,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         }
     });
 
+    const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
+
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
         return {
@@ -67,15 +77,16 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             properties: propertiesArray,
             attachmentProperties,
             uniqueConstraints,
+            documentTemplatesIds: documentTemplates,
         };
     }
 
-    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints };
+    return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, documentTemplatesIds: documentTemplates };
 };
 
 export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTemplate => {
     // change to support file types
-    const { properties, attachmentProperties, propertiesTypeOrder, ...restOfProperties } = values;
+    const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
@@ -132,7 +143,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 enum: type === 'enum' ? options : undefined,
                 items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                 minItems: type === 'enumArray' ? 1 : undefined,
-                readOnly: readOnly,
+                readOnly,
                 uniqueItems: type === 'enumArray' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -216,6 +227,11 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     if (newEntityTemplate.icon) {
         formData.append('file', newEntityTemplate.icon.file as File);
     }
+
+    newEntityTemplate.documentTemplatesIds?.forEach((documentTemplateId) => {
+        formData.append('files', documentTemplateId);
+    });
+
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
@@ -255,6 +271,13 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
             formData.append('iconFileId', updatedEntityTemplate.icon.file.name!);
         }
     }
+
+    if (updatedEntityTemplate.documentTemplatesIds) {
+        updatedEntityTemplate.documentTemplatesIds.forEach((documentTemplateId) => {
+            if (documentTemplateId instanceof File) formData.append('files', documentTemplateId);
+        });
+    }
+
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
@@ -267,6 +290,15 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     formData.append('propertiesTypeOrder', JSON.stringify(entityTemplate.propertiesTypeOrder));
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
+    if (updatedEntityTemplate.documentTemplatesIds)
+        formData.append(
+            'documentTemplatesIds',
+            JSON.stringify(
+                updatedEntityTemplate.documentTemplatesIds
+                    .filter((fileTemplate) => !(fileTemplate instanceof File))
+                    .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
+            ),
+        );
     const { data } = await axios.put<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}`, formData);
     return data;
 };
