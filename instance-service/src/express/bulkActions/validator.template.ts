@@ -1,12 +1,12 @@
 import { Request } from 'express';
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import groupBy from 'lodash.groupby';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import EntityManager from '../entities/manager';
 import { ValidationError } from '../error';
 import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
-import Ajv from 'ajv';
-import addFormats from 'ajv-formats';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import groupBy from 'lodash.groupby';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { IEntity } from '../entities/interface';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
@@ -94,8 +94,6 @@ export const validateActionsGroups = async (req: Request) => {
         throw new ValidationError(`General error finding Relationship or Entity`);
     });
 
-    console.log({entities, relationshipTemplates, entitiesTemplates});
-
     const entitiesByEntitiesIds = groupBy(entities, (entity) => entity.properties._id);
     const relationshipTemplatesByRelationshipTemplatesIds = groupBy(relationshipTemplates, (relationshipTemplate) => relationshipTemplate._id);
     const entitiesTemplatesByEntitiesTemplatesIds = groupBy(entitiesTemplates, (entityTemplate) => entityTemplate._id);
@@ -105,14 +103,16 @@ export const validateActionsGroups = async (req: Request) => {
             if (action.actionType === ActionTypes.CreateRelationship) {
                 const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
-                if (!metadata.relationshipTemplateId.startsWith('$')&&
+                if (
+                    !metadata.relationshipTemplateId.startsWith('$') &&
                     !metadata.sourceEntityId.startsWith('$') &&
-                    !metadata.destinationEntityId.startsWith('$')) {
-                        validateRelationship(
-                            relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0], 
-                            entitiesByEntitiesIds[metadata.sourceEntityId][0], 
-                            entitiesByEntitiesIds[metadata.destinationEntityId][0]
-                        );
+                    !metadata.destinationEntityId.startsWith('$')
+                ) {
+                    validateRelationship(
+                        relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0],
+                        entitiesByEntitiesIds[metadata.sourceEntityId][0],
+                        entitiesByEntitiesIds[metadata.destinationEntityId][0],
+                    );
                 }
             } else if (action.actionType === ActionTypes.CreateEntity) {
                 const metadata = action.actionMetadata as ICreateEntityMetadata;
