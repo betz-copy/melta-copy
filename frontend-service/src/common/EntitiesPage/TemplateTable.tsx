@@ -21,7 +21,7 @@ import { getEntityTemplateColor } from '../../utils/colors';
 import { EntityTemplateColor } from '../EntityTemplateColor';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useUserStore } from '../../stores/user';
 
@@ -86,8 +86,8 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances,
+    const userHasWritePermissions = checkUserCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
         template.category,
         PermissionScope.write,
     );

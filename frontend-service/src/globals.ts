@@ -26,6 +26,7 @@ export const environment = {
         ruleBreachesAlerts: '/rule-breaches/alerts',
         workspaces: '/workspaces',
     },
+    defaultTitle: 'Melta',
     workspaceIdHeaderName: 'workspace-id',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {

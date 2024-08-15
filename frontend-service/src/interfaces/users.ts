@@ -25,3 +25,12 @@ export interface IUserSearchBody {
     limit: number;
     step?: number;
 }
+
+export type IExternalUserDigitalIdentity = Pick<IUser, 'fullName' | 'mail' | 'jobTitle' | 'hierarchy' | 'displayName'>;
+
+export interface IExternalUser {
+    kartoffelId: string;
+    digitalIdentities: {
+        [source: string]: IExternalUserDigitalIdentity;
+    };
+}

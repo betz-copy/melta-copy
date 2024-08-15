@@ -16,7 +16,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const { data: permissionsOfUsers, isLoading: isLoadingPermissions } = useQuery('getAllPermissions', () => searchUsersRequest({ limit: 5 }), {
+    const { data: users, isLoading: isLoadingPermissions } = useQuery('getAllUsers', () => searchUsersRequest({ limit: 1000 }), {
         onError: (error) => {
             // eslint-disable-next-line no-console
             console.log('failed loading all permissions:', error);
@@ -27,17 +27,17 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);
     const [deletePermissionDialogState, setDeletePermissionDialogState] = useState<{
         isDialogOpen: boolean;
-        permissionsOfUser: IUser | null;
+        user: IUser | null;
     }>({
         isDialogOpen: false,
-        permissionsOfUser: null,
+        user: null,
     });
     const [editPermissionDialogState, setEditPermissionDialogState] = useState<{
         isDialogOpen: boolean;
-        permissionsOfUser: IUser | null;
+        user: IUser | null;
     }>({
         isDialogOpen: false,
-        permissionsOfUser: null,
+        user: null,
     });
 
     const [quickFilterText, setQuickFilterText] = useState('');
@@ -66,14 +66,12 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                 </Grid>
                 <Grid item xs={12}>
                     {isLoadingPermissions && <CircularProgress size={20} />}
-                    {Boolean(permissionsOfUsers) && Boolean(categories) && (
+                    {Boolean(users) && Boolean(categories) && (
                         <Table
-                            permissionsOfUsers={permissionsOfUsers!}
+                            users={users!}
                             categories={Array.from(categories.values())}
-                            onDeletePermissionsOfUser={(permissionsOfUser) =>
-                                setDeletePermissionDialogState({ isDialogOpen: true, permissionsOfUser })
-                            }
-                            onEditPermissionsOfUser={(permissionsOfUser) => setEditPermissionDialogState({ isDialogOpen: true, permissionsOfUser })}
+                            onDeletePermissionsOfUser={(existingUser) => setDeletePermissionDialogState({ isDialogOpen: true, user: existingUser })}
+                            onEditPermissionsOfUser={(existingUser) => setEditPermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             quickFilterText={quickFilterText}
                         />
                     )}
@@ -81,15 +79,15 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
             </Grid>
             <DeletePermissionsOfUserDialog
                 isOpen={deletePermissionDialogState.isDialogOpen}
-                permissionsOfUser={deletePermissionDialogState.permissionsOfUser}
-                handleClose={() => setDeletePermissionDialogState({ isDialogOpen: false, permissionsOfUser: null })}
+                user={deletePermissionDialogState.user}
+                handleClose={() => setDeletePermissionDialogState({ isDialogOpen: false, user: null })}
             />
             <PermissionsOfUserDialog mode="create" isOpen={isCreatePermissionDialogOpen} handleClose={() => setIsCreatePermissionDialogOpen(false)} />
             <PermissionsOfUserDialog
                 mode="edit"
                 isOpen={editPermissionDialogState.isDialogOpen}
-                handleClose={() => setEditPermissionDialogState({ isDialogOpen: false, permissionsOfUser: null })}
-                existingPermissionsOfUser={editPermissionDialogState.permissionsOfUser || undefined}
+                handleClose={() => setEditPermissionDialogState({ isDialogOpen: false, user: null })}
+                existingUser={editPermissionDialogState.user || undefined}
             />
         </Grid>
     );

@@ -37,6 +37,6 @@ export class UsersController {
     }
 
     static async searchExternalUsers(req: Request, res: Response) {
-        res.json(await UsersManager.searchExternalUsers(req.body.search));
+        res.json(await UsersManager.searchExternalUsers(req.query.search as string));
     }
 }

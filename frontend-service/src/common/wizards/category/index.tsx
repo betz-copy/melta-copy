@@ -50,7 +50,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
 
-                toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccefully' : 'wizard.category.createdSuccefully'));
+                toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccefully' : 'wizard.category.createdSuccessfully'));
                 handleClose();
             },
             onError: (error: AxiosError) => {

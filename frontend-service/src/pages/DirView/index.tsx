@@ -2,6 +2,7 @@ import { Box, Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useQueries } from 'react-query';
+import { environment } from '../../globals';
 import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
@@ -34,7 +35,9 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
 
     useEffect(() => {
         if (!currentWorkspace) return;
+
         setWorkspace(currentWorkspace);
+        document.title = environment.defaultTitle;
 
         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });

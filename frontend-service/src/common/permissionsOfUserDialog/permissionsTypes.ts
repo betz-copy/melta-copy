@@ -7,5 +7,5 @@ export type IFormPermissionsOfUser = {
     doesHaveTemplatesManagement: boolean;
     doesHaveRulesManagement: boolean;
     doesHaveProcessesManagement: boolean;
-    instancesPermissions: ICompact<IInstancesPermission>;
+    categoriesPermissions: ICompact<IInstancesPermission>['categories'];
 };

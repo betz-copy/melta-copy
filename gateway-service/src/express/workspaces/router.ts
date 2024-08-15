@@ -11,7 +11,7 @@ const controller = createWorkspacesController(WorkspaceController);
 // TODO stricter user validation
 export const workspaceRouter: Router = Router();
 
-workspaceRouter.get('/:type/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspaceController.getWorkspaceIds));
+workspaceRouter.post('/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspaceController.getWorkspaceIds));
 
 workspaceRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspaceController.getDir));
 

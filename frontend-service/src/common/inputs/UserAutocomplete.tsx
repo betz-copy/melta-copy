@@ -1,20 +1,21 @@
 import { Autocomplete, AutocompleteProps, SxProps, TextField } from '@mui/material';
-import React, { useState } from 'react';
+import i18next from 'i18next';
+import _debounce from 'lodash.debounce';
+import React, { useMemo, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import _debounce from 'lodash.debounce';
-import i18next from 'i18next';
-import { IUser } from '../../interfaces/users';
+import { IExternalUser, IUser } from '../../interfaces/users';
+import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { searchUsersRequest } from '../../services/userService';
 
-const UserAutocomplete: React.FC<{
-    value: IUser | null;
+interface IUserAutocomplete<TMode = 'internal' | 'external', TUser = TMode extends 'internal' ? IUser : IExternalUser> {
+    mode: TMode;
+    value: TUser | null;
     displayValue?: string;
-    onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
-    onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
-    onBlur?: AutocompleteProps<IUser, undefined, undefined, undefined>['onBlur'];
-    isOptionDisabled?: AutocompleteProps<IUser, undefined, undefined, undefined>['getOptionDisabled'];
+    onChange: AutocompleteProps<TUser, undefined, undefined, undefined>['onChange'];
+    onDisplayValueChange?: AutocompleteProps<TUser, undefined, undefined, undefined>['onInputChange'];
+    onBlur?: AutocompleteProps<TUser, undefined, undefined, undefined>['onBlur'];
+    isOptionDisabled?: AutocompleteProps<TUser, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;
     label?: string;
@@ -22,7 +23,10 @@ const UserAutocomplete: React.FC<{
     helperText?: string;
     minInputLengthToSearch?: number;
     size?: 'small' | 'medium';
-}> = ({
+}
+
+const UserAutocomplete: React.FC<IUserAutocomplete> = ({
+    mode,
     value,
     displayValue,
     onChange,
@@ -37,7 +41,9 @@ const UserAutocomplete: React.FC<{
     minInputLengthToSearch = 2,
     size,
 }) => {
-    const [internalDisplayValue, setInputValue] = useState<string>(value ? value.displayName : '');
+    const user = useMemo(() => (mode === 'internal' ? value : Object.values((value as IExternalUser)?.digitalIdentities ?? {})[0]), [mode, value]);
+
+    const [internalDisplayValue, setInputValue] = useState<string>(user ? user.displayName : '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
 
@@ -45,15 +51,23 @@ const UserAutocomplete: React.FC<{
         data: usersOptions,
         refetch: searchUsersOptions,
         isFetching: isFetchingUsersOptions,
-    } = useQuery(['searchUsers', currentDisplayValue], () => searchUsersRequest({ search: currentDisplayValue, limit: 10 }), {
-        onError: (error) => {
-            console.log('failed to search users. error:', error);
-            toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
+    } = useQuery(
+        ['searchUsers', mode, currentDisplayValue],
+        () => {
+            if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue);
+            return searchUsersRequest({ search: currentDisplayValue, limit: 10 });
         },
-        enabled: false,
-        retry: false,
-        initialData: [],
-    });
+        {
+            onError: (error) => {
+                console.log('failed to search users. error:', error);
+                toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
+            },
+            enabled: false,
+            retry: false,
+            initialData: [] as IUser[] | IExternalUser[],
+        },
+    );
+
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
     const readOnlyInputLabelProps: SxProps = {
         sx: {
@@ -92,9 +106,15 @@ const UserAutocomplete: React.FC<{
                 disabled={disabled}
                 onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={(option) => option.displayName}
+                getOptionLabel={(option) => {
+                    if (mode === 'external') return getDisplayNameFromExternalUser(option);
+                    return option.displayName;
+                }}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
+                isOptionEqualToValue={(option, currValue) => {
+                    if (mode === 'external') return option.kartoffelId === currValue.kartoffelId;
+                    return option._id === currValue._id;
+                }}
                 options={usersOptions!}
                 loading={isFetchingUsersOptions}
                 loadingText={i18next.t('userAutocomplete.loading')}

@@ -9,7 +9,7 @@ import { emptyEntityTemplate, EntityWizardValues } from '.';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -39,12 +39,20 @@ const ChooseTemplate: React.FC<{
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
             return (
                 entity.category._id === categoryId &&
-                checkUserInstanceOfCategoryPermission(currentUser.currentWorkspacePermissions.instances, entity.category, PermissionScope.write)
+                checkUserCategoryPermission(
+                    currentUser.currentWorkspacePermissions.instances?.categories ?? {},
+                    entity.category,
+                    PermissionScope.write,
+                )
             );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return checkUserInstanceOfCategoryPermission(currentUser.currentWorkspacePermissions.instances, entity.category, PermissionScope.write);
+            return checkUserCategoryPermission(
+                currentUser.currentWorkspacePermissions.instances?.categories ?? {},
+                entity.category,
+                PermissionScope.write,
+            );
         });
     }
 

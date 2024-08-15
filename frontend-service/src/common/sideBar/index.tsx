@@ -80,8 +80,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const workspace = useWorkspaceStore((state) => state.workspace);
 
-    console.log('homo', currentUser.currentWorkspacePermissions);
-
     return (
         <Drawer
             ref={drawerRef}
@@ -360,11 +358,22 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
                 </Grid>
 
-                <DrawerDivider />
+                {Object.keys(currentUser.permissions).length && (
+                    <>
+                        <DrawerDivider />
 
-                <NavButton to={`~${workspace?.path}`} text={i18next.t('workspaces.goBack')} isDrawerOpen={isDrawerOpen} onChangeToActive={() => {}}>
-                    <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
-                </NavButton>
+                        <Grid container item paddingY="0.5rem" justifyContent="center">
+                            <NavButton
+                                to={`~${workspace?.path}`}
+                                text={i18next.t('workspaces.goBack')}
+                                isDrawerOpen={isDrawerOpen}
+                                onChangeToActive={() => {}}
+                            >
+                                <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
+                            </NavButton>
+                        </Grid>
+                    </>
+                )}
 
                 <Grid item>
                     <IconButton
@@ -384,12 +393,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
             </Grid>
 
-            {/* <PermissionsOfUserDialog
+            <PermissionsOfUserDialog
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
-                existingPermissionsOfUser={currentUser}
-            /> */}
+                existingUser={currentUser}
+            />
 
             <NotificationsScreen
                 open={isNotificationsScreenOpen}

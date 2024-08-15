@@ -1,5 +1,5 @@
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, GetQuickFilterTextParams, ICellRendererParams, ISetFilterParams, ValueFormatterParams } from '@ag-grid-community/core';
+import { ColDef, GetQuickFilterTextParams, ICellRendererParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
@@ -15,8 +15,12 @@ import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 
 const { defaultRowHeight } = environment.agGrid;
+
+const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
 const defaultColDef: ColDef<IUser> = {
     editable: false,
@@ -31,46 +35,16 @@ const defaultColDef: ColDef<IUser> = {
     menuTabs: ['filterMenuTab'],
 };
 
-const booleanToTextFormatter = (value: boolean) => (value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no'));
-
-const nullableStringToBooleanColDefs = (field: string, headerName: string): ColDef<IUser> => {
-    const filterParams: ISetFilterParams<IUser, boolean> = {
-        values: [true, false],
-        suppressMiniFilter: true,
-        suppressSelectAll: true,
-        valueFormatter: (params: ValueFormatterParams<IUser, boolean>) => booleanToTextFormatter(params.value),
-    };
-
-    return {
-        colId: field, // used for autoSizeColumns onFirstDataRendered
-        field,
-        headerName,
-        valueFormatter: (params) => booleanToTextFormatter(params.value),
-        getQuickFilterText: (params) => booleanToTextFormatter(params.value),
-        filter: 'agSetColumnFilter',
-        filterValueGetter: (params) => Boolean(params.getValue(field)),
-        filterParams,
-        minWidth: undefined,
-        flex: 0,
-    };
-};
-
 const columnDefs = (
+    workspaceId: string,
     categories: IMongoCategory[],
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
 ): ColDef<IUser>[] => [
     {
-        field: 'user',
+        field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
-        valueFormatter: (params: ValueFormatterParams<IUser, IUser>) => params.value.displayName,
-        comparator: (userA: IUser, userB: IUser) => {
-            const userFullNameA = userA?.displayName ?? '';
-            const userFullNameB = userB?.displayName ?? '';
-            return userFullNameA.localeCompare(userFullNameB);
-        },
         filter: 'agTextColumnFilter',
-        filterValueGetter: (params) => params.data!.displayName.toLowerCase(),
         getQuickFilterText: (params) => {
             const {
                 _id,
@@ -81,15 +55,36 @@ const columnDefs = (
             return `${_id} ${displayName} ${digitalIdentitySource}`;
         },
     },
-    nullableStringToBooleanColDefs('permissionsManagementId', i18next.t('permissions.permissionsManagement')),
-    nullableStringToBooleanColDefs('templatesManagementId', i18next.t('permissions.templatesManagement')),
-    nullableStringToBooleanColDefs('rulesManagementId', i18next.t('permissions.rulesManagement')),
-    nullableStringToBooleanColDefs('processesManagementId', i18next.t('permissions.processesManagement')),
+    translatedEnumColDef(
+        'permissionsManagement',
+        (params) => params.data?.permissions[workspaceId].permissions?.scope ?? '',
+        { title: i18next.t('permissions.permissionsManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'templatesManagement',
+        (params) => params.data?.permissions[workspaceId].templates?.scope ?? '',
+        { title: i18next.t('permissions.templatesManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'rulesManagement',
+        (params) => params.data?.permissions[workspaceId].rules?.scope ?? '',
+        { title: i18next.t('permissions.rulesManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'processesManagement',
+        (params) => params.data?.permissions[workspaceId].processes?.scope ?? '',
+        { title: i18next.t('permissions.processesManagement') },
+        scopesTranslation,
+    ),
     {
-        field: 'instancesPermissions',
+        field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
-        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>>) => {
-            const permissionsOfCategories = params.value.map(({ category }) => {
+        valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
+        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
+            const permissionsOfCategories = Object.keys(params.value).map((category) => {
                 return (
                     categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
                         _id: category,
@@ -110,27 +105,22 @@ const columnDefs = (
         //         return category!.displayName;
         //     },
         // },
-        comparator: (instancesPermissionsLHS: ICompact<IInstancesPermission>, instancesPermissionsRHS: ICompact<IInstancesPermission>) => {
-            if (instancesPermissionsLHS.length !== instancesPermissionsRHS.length) {
-                return instancesPermissionsLHS.length > instancesPermissionsRHS.length ? 1 : -1;
-            }
+        comparator: (
+            categoriesPermissionsLHS: ICompact<IInstancesPermission>['categories'],
+            categoriesPermissionsRHS: ICompact<IInstancesPermission>['categories'],
+        ) => {
+            const lhs = Object.keys(categoriesPermissionsLHS);
+            const rhs = Object.keys(categoriesPermissionsRHS);
+
+            if (lhs.length !== rhs.length) return lhs.length > rhs.length ? 1 : -1;
 
             // else, compare by categories ids (sorted in each). not important, just be deterministic
-            const instancesPermissionsLHSStr = instancesPermissionsLHS
-                .map(({ category }) => category)
-                .sort()
-                .join(',');
-            const instancesPermissionsRHSStr = instancesPermissionsLHS
-                .map(({ category }) => category)
-                .sort()
-                .join(',');
-
-            return instancesPermissionsLHSStr.localeCompare(instancesPermissionsRHSStr);
+            return lhs.sort().join(',').localeCompare(rhs.sort().join(','));
         },
-        cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>>) => {
-            const instancesPermissionsPopulated = props.value.map(({ _id, category }) => {
+        cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
+            const categoriesPermissionsPopulated = Object.keys(props.value).map((category) => {
                 return {
-                    _id,
+                    _id: category,
                     category: categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
                         _id: category,
                         name: category,
@@ -140,12 +130,12 @@ const columnDefs = (
             });
 
             // sort just for fun, same as comparator's sorting
-            instancesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
+            categoriesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
             return (
                 <ScrollContainer horizontal vertical={false}>
                     <Grid container spacing={1} wrap="nowrap">
-                        {instancesPermissionsPopulated.map(({ _id, category }) => (
+                        {categoriesPermissionsPopulated.map(({ _id, category }) => (
                             <Grid item key={_id}>
                                 <Chip label={category.displayName} />
                             </Grid>
@@ -181,20 +171,22 @@ const columnDefs = (
 ];
 
 const Table: React.FC<{
-    permissionsOfUsers: IUser[];
+    users: IUser[];
     categories: IMongoCategory[];
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
-}> = ({ permissionsOfUsers, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
+}> = ({ users, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     return (
         <AgGridReact<IUser>
             className="ag-theme-material"
             modules={[MenuModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
-            rowData={permissionsOfUsers}
+            rowData={users}
             defaultColDef={defaultColDef}
-            columnDefs={columnDefs(categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
+            columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
             rowModelType="clientSide"
             getRowId={({ data: { _id } }) => _id}
             pagination
@@ -210,11 +202,12 @@ const Table: React.FC<{
             onFirstDataRendered={(params) => {
                 params.columnApi.autoSizeColumns([
                     'actions',
-                    // TODO-WORKSPACES
-                    'permissionsManagementId',
-                    'templatesManagementId',
-                    'rulesManagementId',
-                    'processesManagmentId',
+                    'displayName',
+                    'permissionsManagement',
+                    'templatesManagement',
+                    'rulesManagement',
+                    'processesManagement',
+                    'categoriesPermissions',
                 ]);
             }}
             quickFilterText={quickFilterText}

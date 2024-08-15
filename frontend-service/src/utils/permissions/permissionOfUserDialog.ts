@@ -1,30 +1,32 @@
 import isEqualWith from 'lodash.isequalwith';
 import { IFormPermissionsOfUser } from '../../common/permissionsOfUserDialog/permissionsTypes';
 import { ICategoryMap } from '../../interfaces/categories';
+import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 
-const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
+export const doesUserHaveNoPermissions = (permissions: IFormPermissionsOfUser) => {
     return (
         !permissions.doesHavePermissionsManagement &&
         !permissions.doesHaveTemplatesManagement &&
         !permissions.doesHaveRulesManagement &&
         !permissions.doesHaveProcessesManagement &&
-        permissions.instancesPermissions.length === 0
+        Object.keys(permissions.categoriesPermissions).length === 0
     );
 };
-const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) =>
+
+export const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPermissions: IFormPermissionsOfUser) =>
     isEqualWith(currentPermissions, newPermissions, (firstValue, secondValue) => {
         if (Array.isArray(firstValue) && Array.isArray(secondValue)) {
-            const firstInstancesPermissions = firstValue as IFormPermissionsOfUser['instancesPermissions'];
-            const secondInstancesPermissions = secondValue as IFormPermissionsOfUser['instancesPermissions'];
+            const firstCategoriesPermissions = firstValue as IFormPermissionsOfUser['categoriesPermissions'];
+            const secondCategoriesPermissions = secondValue as IFormPermissionsOfUser['categoriesPermissions'];
 
-            const firstInstancesPermissionsSorted = firstInstancesPermissions.sort((a, b) => {
+            const firstInstancesPermissionsSorted = firstCategoriesPermissions.sort((a, b) => {
                 const categoryA = a.category ?? '';
                 const categoryB = b.category ?? '';
                 return categoryA.localeCompare(categoryB);
             });
 
-            const secondInstancesPermissionsSorted = secondInstancesPermissions.sort((a, b) => {
+            const secondInstancesPermissionsSorted = secondCategoriesPermissions.sort((a, b) => {
                 const categoryA = a.category ?? '';
                 const categoryB = b.category ?? '';
                 return categoryA.localeCompare(categoryB);
@@ -36,23 +38,16 @@ const isPermissionsChanged = (currentPermissions: IFormPermissionsOfUser, newPer
         return undefined;
     });
 
-const permissionsToFormPermissions = ({
+export const permissionsToFormPermissions = (user: IUser, permissions: ISubCompactPermissions): IFormPermissionsOfUser => ({
     user,
-    permissionsManagementId,
-    templatesManagementId,
-    rulesManagementId,
-    processesManagementId,
-    instancesPermissions,
-}: IPermissionsOfUser): IFormPermissionsOfUser => ({
-    user,
-    doesHavePermissionsManagement: Boolean(permissionsManagementId),
-    doesHaveTemplatesManagement: Boolean(templatesManagementId),
-    doesHaveRulesManagement: Boolean(rulesManagementId),
-    doesHaveProcessesManagement: Boolean(processesManagementId),
-    instancesPermissions: instancesPermissions.map(({ category, scopes }) => ({ category, scopes })),
+    doesHavePermissionsManagement: Boolean(permissions.permissions?.scope),
+    doesHaveTemplatesManagement: Boolean(permissions.templates?.scope),
+    doesHaveRulesManagement: Boolean(permissions.rules?.scope),
+    doesHaveProcessesManagement: Boolean(permissions.processes?.scope),
+    categoriesPermissions: permissions.instances?.categories ?? {},
 });
 
-const getPermissionsToDeleteUpdateAndCreate = (
+export const getPermissionsToDeleteUpdateAndCreate = (
     formPermissionsOfUser: Omit<IFormPermissionsOfUser, 'user'> & { user: IUser },
     categories: ICategoryMap,
     existingPermissionsOfUser?: IPermissionsOfUser,
@@ -137,5 +132,3 @@ const getPermissionsToDeleteUpdateAndCreate = (
 
     return { permissionsIdsToDelete, permissionsToCreate, permissionsToUpdate };
 };
-
-export { doesUserHaveNoPermissions, isPermissionsChanged, permissionsToFormPermissions, getPermissionsToDeleteUpdateAndCreate };

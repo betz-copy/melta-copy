@@ -6,7 +6,7 @@ import { createOneSchema, deleteOneSchema, getByIdSchema, getDirSchema, getFileS
 
 export const workspacesRouter: Router = Router();
 
-workspacesRouter.get('/:type/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspacesController.getWorkspaceIds));
+workspacesRouter.post('/ids', ValidateRequest(getWorkspaceIds), wrapController(WorkspacesController.getWorkspaceIds));
 
 workspacesRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspacesController.getDir));
 

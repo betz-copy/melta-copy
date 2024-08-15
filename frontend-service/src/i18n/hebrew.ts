@@ -315,6 +315,10 @@ export default {
             read: 'קריאה',
             write: 'עריכה',
         },
+        scopes: {
+            read: 'קריאה',
+            write: 'עריכה',
+        },
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',

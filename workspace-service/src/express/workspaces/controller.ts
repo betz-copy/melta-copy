@@ -3,7 +3,7 @@ import { WorkspacesManager } from './manager';
 
 export class WorkspacesController {
     static async getWorkspaceIds(req: Request, res: Response) {
-        res.json(await WorkspacesManager.getWorkspaceIds(req.body.path));
+        res.json(await WorkspacesManager.getWorkspaceIds(req.body.type));
     }
 
     static async getDir(req: Request, res: Response) {

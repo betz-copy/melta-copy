@@ -1,6 +1,6 @@
-import React from 'react';
 import { Chip, Grid } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import { IUser } from '../../../../interfaces/users';
 import UserAutocomplete from '../../../inputs/UserAutocomplete';
 
@@ -22,15 +22,16 @@ export const ReviewerSelector: React.FC<ReviewerSelectorProps> = ({ forcedReview
             {!isViewMode && (
                 <Grid item paddingBottom="1rem" paddingRight={2}>
                     <UserAutocomplete
+                        mode="internal"
                         value={null}
                         displayValue={displayValue}
                         onChange={(_, selectedUser, reason) => {
                             if (reason !== 'selectOption' || !selectedUser) return;
-                            onAdd(selectedUser, reviewers);
+                            onAdd(selectedUser as IUser, reviewers);
                             setDisplayValue('');
                         }}
                         onDisplayValueChange={(_, newDisplayValue) => setDisplayValue(newDisplayValue)}
-                        isOptionDisabled={(option) => combinedReviewers.some((approver) => approver._id === option._id)}
+                        isOptionDisabled={(option) => combinedReviewers.some((approver) => approver._id === (option as IUser)._id)}
                         isError={false}
                         label={i18next.t('wizard.processInstance.addReviewer')}
                         size="small"

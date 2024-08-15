@@ -142,7 +142,7 @@ const Graph: React.FC = () => {
     const setGraphDataOnStart = async () => {
         const { data: initialExpandedEntity } = await getExpandedEntityById();
         const expandedEntityGraphData = getGraphDataWithNodeSizes(
-            expandedEntityToGraphData(initialExpandedEntity!, entityTemplates, relationshipTemplates),
+            await expandedEntityToGraphData(initialExpandedEntity!, entityTemplates, relationshipTemplates),
         );
 
         expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;

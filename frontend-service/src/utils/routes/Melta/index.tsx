@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import axios from 'axios';
 import i18next from 'i18next';
 import React, { useEffect, useMemo } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -65,6 +64,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         if (!workspace) return;
 
         setWorkspace(workspace);
+        document.title = workspace.name;
 
         if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
             setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });

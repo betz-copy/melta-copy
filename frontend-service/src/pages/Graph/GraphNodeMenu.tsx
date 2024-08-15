@@ -55,8 +55,8 @@ const GraphNodeMenu: React.FC<{
             ),
         {
             enabled: false,
-            onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
+            onSuccess: async (data) => {
+                const newGraphData = await expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
                 addNewGraphData(newGraphData);
             },

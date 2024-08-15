@@ -13,13 +13,13 @@ const workspaceSchema = Joi.object({
     logoFileId: Joi.string(),
 });
 
-// GET /api/workspaces/:type/ids
+// POST /api/workspaces/ids
 export const getWorkspaceIds = Joi.object({
     query: {},
-    body: {},
-    params: {
+    body: {
         type: workspaceSchema.extract('type'),
     },
+    params: {},
 });
 
 // POST /api/workspaces/dir

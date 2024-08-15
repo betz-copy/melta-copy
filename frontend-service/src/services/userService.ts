@@ -2,7 +2,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 import { ICompactPermissions } from '../interfaces/permissions/permissions';
-import { IUser, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
 
 const { users } = environment.api;
 
@@ -37,6 +37,7 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
 };
 
 export const searchExternalUsersRequest = async (search: string) => {
-    const { data } = await axios.get<IUser[]>(`${users}/external`, { params: { search } });
+    if (search.length < 2) return [];
+    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search } });
     return data;
 };

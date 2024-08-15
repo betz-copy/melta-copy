@@ -25,7 +25,7 @@ import { IRelationship } from '../../interfaces/relationships';
 import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
-import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
@@ -371,8 +371,8 @@ const Entity: React.FC = () => {
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
-    const hasWritePermissionToCurrCategory = checkUserInstanceOfCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances,
+    const hasWritePermissionToCurrCategory = checkUserCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
         currentEntityTemplate.category,
         PermissionScope.write,
     );

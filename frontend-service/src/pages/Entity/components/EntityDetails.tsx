@@ -26,7 +26,7 @@ import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreac
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
@@ -133,8 +133,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserInstanceOfCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances,
+    const canWriteInstance = checkUserCategoryPermission(
+        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
         entityTemplate.category,
         PermissionScope.write,
     );

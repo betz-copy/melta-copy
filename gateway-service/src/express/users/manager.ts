@@ -137,6 +137,7 @@ export class UsersManager {
             hierarchy,
             jobTitle,
             mail,
+            displayName: `${fullName} - ${hierarchy}/${jobTitle}`,
         };
     }
 }
