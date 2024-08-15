@@ -34,7 +34,11 @@ const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
     target: instanceService.url,
     on: {
-        proxyReq: fixRequestBody,
+        proxyReq: (proxyReq, req, _res) => {
+            console.log('1');
+
+            fixRequestBody(proxyReq, req);
+        },
     },
     proxyTimeout: instanceService.requestTimeout,
 });
