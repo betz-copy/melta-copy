@@ -1,5 +1,5 @@
 import { FileDownloadOutlined } from '@mui/icons-material';
-import { Autocomplete, Button, CircularProgress, Grid, TextField } from '@mui/material';
+import { Autocomplete, Button, CircularProgress, Grid, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { useState } from 'react';
@@ -16,6 +16,8 @@ export const ExportFormats: React.FC<{
     disabled?: boolean;
     justifyContent?: React.CSSProperties['justifyContent'];
 }> = ({ properties, documentTemplateIds = [], disabled = false, justifyContent }) => {
+    const theme = useTheme();
+
     const [selectedFileToExport, setSelectedFileToExport] = useState('');
 
     const { isLoading: isExportToFileLoading, mutate: exportMutation } = useMutation(
@@ -72,7 +74,7 @@ export const ExportFormats: React.FC<{
                     sx={{
                         borderRadius: '0.5rem',
                         bgcolor: '#EBEFFA',
-                        color: (theme) => theme.palette.primary.main,
+                        color: theme.palette.primary.main,
                         ':hover': { color: 'white' },
                         textWrap: 'nowrap',
                     }}
