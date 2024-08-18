@@ -71,10 +71,12 @@ const TemplateTable = forwardRef<
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
+        isEditMode: boolean;
         entity?: IEntity;
         wizardValues?: EntityWizardValues;
     }>({
         isOpen: false,
+        isEditMode: true,
     });
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -180,11 +182,14 @@ const TemplateTable = forwardRef<
                                 draft={draft}
                                 openEditDialog={() => {
                                     setDraftId(draft.uniqueId);
+                                    setExternalErrors({ files: false, unique: {} });
                                     setEditDialog({
                                         isOpen: true,
-                                        entity: {
-                                            templateId: draft.template._id,
+                                        isEditMode: false,
+                                        wizardValues: {
+                                            template: template,
                                             properties: { ...draft.properties, _id: draft.entityId!, createdAt: '', updatedAt: '', disabled: false },
+                                            attachmentsProperties: draft.attachmentsProperties,
                                         },
                                     });
                                 }}
@@ -218,6 +223,7 @@ const TemplateTable = forwardRef<
                             setDraftId('');
                             setEditDialog({
                                 isOpen: true,
+                                isEditMode: true,
                                 entity: currEntity,
                             });
                             setExternalErrors({ files: false, unique: {} });
@@ -236,13 +242,14 @@ const TemplateTable = forwardRef<
             </Box>
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode
+                    isEditMode={editDialog.isEditMode}
                     entityTemplate={template}
                     initialCurrValues={editDialog.wizardValues}
                     entityToUpdate={editDialog.entity!}
                     onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
+                        if (editDialog.isEditMode) entitiesTableRef.current?.updateRowDataClientSide(entity);
+                        else entitiesTableRef.current?.refreshServerSide();
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
                     }}

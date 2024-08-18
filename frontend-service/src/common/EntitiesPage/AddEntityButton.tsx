@@ -21,7 +21,7 @@ const AddEntityButton: React.FC<{
         isOpen: boolean;
         initialStep?: number;
         initialValues?: EntityWizardValues;
-        initalCurrValues?: EntityWizardValues;
+        initialCurrValues?: EntityWizardValues;
     }>({
         isOpen: false,
     });
@@ -61,7 +61,7 @@ const AddEntityButton: React.FC<{
                 <CreateOrEditEntityDetails
                     isEditMode={false}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
-                    initialCurrValues={addEntityWizardState.initalCurrValues}
+                    initialCurrValues={addEntityWizardState.initialCurrValues}
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {} });
@@ -74,7 +74,7 @@ const AddEntityButton: React.FC<{
                             ...prev,
                             isOpen: true,
                             initialStep: 1,
-                            initalCurrValues: currEntityValues,
+                            initialCurrValues: currEntityValues,
                         }))
                     }
                     externalErrors={externalErrors}
