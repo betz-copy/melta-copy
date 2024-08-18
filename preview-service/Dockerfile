@@ -28,7 +28,7 @@ RUN apk add --no-cache \
     && fc-cache -f
 
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
-RUN npm install --omit=dev --silent
+RUN npm install --production=false --silent
 # --production (in npm install) shouldnt be because need to run build typescript
 
 COPY . .
