@@ -1,15 +1,15 @@
+export interface IRelationshipReference {
+    relationshipTemplateId?: string;
+    relationshipTemplateDirection: 'outgoing' | 'incoming';
+    relatedTemplateId: string;
+    relatedTemplateField: string;
+}
+
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;
     enum?: string[];
-    items?: {
-        type: 'string';
-        enum?: string[];
-        format?: 'fileId';
-    };
-    minItems?: 1;
-    uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;
@@ -17,12 +17,21 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    relationshipReference?: IRelationshipReference;
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
+    minItems?: 1;
+    uniqueItems?: true;
 }
 
 export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
+    documentTemplatesIds?: string[];
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;

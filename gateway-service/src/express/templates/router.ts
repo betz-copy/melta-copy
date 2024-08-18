@@ -96,7 +96,12 @@ templatesRouter.patch(
 );
 templatesRouter.post(
     '/entities',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    wrapMulter(
+        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
+            { name: 'file', maxCount: 1 },
+            { name: 'files' },
+        ]),
+    ),
     ValidateRequest(createEntityTemplateSchema),
     wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
     wrapController(TemplatesController.createEntityTemplate, {
@@ -108,7 +113,12 @@ templatesRouter.post(
 );
 templatesRouter.put(
     '/entities/:id',
-    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    wrapMulter(
+        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
+            { name: 'file', maxCount: 1 },
+            { name: 'files' },
+        ]),
+    ),
     ValidateRequest(updateEntityTemplateSchema),
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.updateEntityTemplate, {
@@ -175,6 +185,12 @@ templatesRouter.delete(
     }),
 );
 
+templatesRouter.get(
+    '/relationships/all',
+    wrapMiddleware(validateUserIsTemplatesManager),
+    wrapController(TemplatesController.getAllRelationshipTemplates),
+);
+
 // rules (templates)
 templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.patch(
@@ -189,6 +205,7 @@ templatesRouter.delete(
     ValidateRequest(deleteRuleByIdRequestSchema),
     wrapController(TemplatesController.deleteRuleById),
 );
+templatesRouter.post('/rules/get-many', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
 
 export default templatesRouter;

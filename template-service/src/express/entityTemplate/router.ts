@@ -9,6 +9,7 @@ import {
     createEntityTemplateSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
+    getTemplatesUsingRelationshipReferanceSchema,
 } from './validator.schema';
 
 const entityTemplateRouter: Router = Router();
@@ -19,6 +20,12 @@ entityTemplateRouter.get(
     '/:templateId',
     ValidateRequest(getEntityTemplateByIdSchema),
     wrapController(EntityTemplateController.getEntityTemplateById),
+);
+
+entityTemplateRouter.get(
+    '/related/:relatedTemplateId',
+    ValidateRequest(getTemplatesUsingRelationshipReferanceSchema),
+    wrapController(EntityTemplateController.getTemplatesUsingRelationshipReferance),
 );
 
 entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), wrapController(EntityTemplateController.createEntityTemplate));

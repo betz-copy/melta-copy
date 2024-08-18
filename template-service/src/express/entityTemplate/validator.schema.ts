@@ -27,6 +27,13 @@ export const getEntityTemplateByIdSchema = Joi.object({
     params: { templateId: MongoIdSchema.required() },
 });
 
+// GET /api/entities/templates/related/:relatedTemplateId
+export const getTemplatesUsingRelationshipReferanceSchema = Joi.object({
+    query: {},
+    body: {},
+    params: { relatedTemplateId: MongoIdSchema.required() },
+});
+
 // DELETE /api/entities/templates/:templateId
 export const deleteEntityTemplateSchema = Joi.object({
     body: {},
@@ -47,6 +54,7 @@ export const createEntityTemplateSchema = Joi.object({
         propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
+        documentTemplatesIds: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {},
@@ -64,6 +72,7 @@ export const updateEntityTemplateSchema = Joi.object({
         propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
+        documentTemplatesIds: Joi.array().items(Joi.string()),
     }).min(1),
     query: {},
     params: {

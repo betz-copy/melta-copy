@@ -70,10 +70,19 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const fixFileProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
+const fixComplexProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
     const { properties } = template.properties;
     Object.entries(properties).forEach(([key, value]) => {
-        if (value.format === 'fileId') {
+        if (value.format === 'relationshipReference') {
+            rows.forEach((row) => {
+                if (row[key] && row[key].properties) {
+                    row[key] = {
+                        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+                        hyperlink: `${config.service.meltaBaseUrl}/entity/${row[key].properties._id}`,
+                    };
+                }
+            });
+        } else if (value.format === 'fileId') {
             rows.forEach((row) => {
                 if (row[key]) {
                     row[key] = {
@@ -126,4 +135,4 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
     });
 };
 
-export { styleAWorksheet, cerateWorksheet, createWorkbook, fixFileProperties };
+export { styleAWorksheet, cerateWorksheet, createWorkbook, fixComplexProperties };

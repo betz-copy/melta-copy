@@ -15,7 +15,7 @@ import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { DuplicateTopBar } from './DuplicateTopBar';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -117,7 +117,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(entityTemplate.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -144,9 +144,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 variant="h6"
                                                             />
                                                             <JSONSchemaFormik
-                                                                schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(
-                                                                    entityTemplate.properties,
-                                                                )}
+                                                                schema={filterFieldsFromPropertiesSchema(entityTemplate.properties)}
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}

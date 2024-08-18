@@ -68,11 +68,15 @@ export interface IBrokenRule {
     failures: Array<{ entityId: string; causes: ICausesOfInstance[] }>;
 }
 
-export interface IRuleBreach<T = IActionMetadata> {
-    originUserId: string;
-    brokenRules: IBrokenRule[];
+export interface IAction {
     actionType: ActionTypes;
-    actionMetadata: T;
+    actionMetadata: IActionMetadata;
+}
+
+export interface IRuleBreach {
+    originUserId: string;
+    actions: IAction[];
+    brokenRules: IBrokenRule[];
     createdAt: Date;
     _id: string;
 }
@@ -84,22 +88,9 @@ export enum RuleBreachRequestStatus {
     Canceled = 'canceled',
 }
 
-export interface IRuleBreachAlert<T = IActionMetadata> extends IRuleBreach<T> {}
-export interface IRuleBreachRequest<T = IActionMetadata> extends IRuleBreach<T> {
+export interface IRuleBreachAlert extends IRuleBreach {}
+export interface IRuleBreachRequest extends IRuleBreach {
     reviewerId?: string;
     reviewedAt?: Date;
     status: RuleBreachRequestStatus;
 }
-
-export const isCreateRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<ICreateRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.CreateRelationship;
-export const isDeleteRelationshipRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IDeleteRelationshipMetadata> =>
-    ruleBreach.actionType === ActionTypes.DeleteRelationship;
-export const isCreateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<ICreateEntityMetadata> =>
-    ruleBreach.actionType === ActionTypes.CreateEntity;
-export const isDuplicateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IDuplicateEntityMetadata> =>
-    ruleBreach.actionType === ActionTypes.DuplicateEntity;
-export const isUpdateEntityRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateEntity;
-export const isUpdateEntityStatusRuleBreach = (ruleBreach: Partial<IRuleBreach>): ruleBreach is IRuleBreach<IUpdateEntityStatusMetadata> =>
-    ruleBreach.actionType === ActionTypes.UpdateStatus;

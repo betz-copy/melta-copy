@@ -28,7 +28,7 @@ export default class TemplatesController {
 
     // entityTemplates
     static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createEntityTemplate(req.body, req.file));
+        res.json(await TemplatesManager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
     static async deleteEntityTemplate(req: Request, res: Response) {
@@ -36,7 +36,7 @@ export default class TemplatesController {
     }
 
     static async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.file));
+        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
     static async updateEntityTemplateStatus(req: Request, res: Response) {
@@ -64,6 +64,10 @@ export default class TemplatesController {
 
     static async updateRelationshipTemplate(req: Request, res: Response) {
         res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
+    }
+
+    static async getAllRelationshipTemplates(_req: Request, res: Response) {
+        res.json(await TemplatesManager.getAllRelationshipTemplates());
     }
 
     // rules

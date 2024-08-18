@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { IRelationshipTemplate } from './interface';
+import { IMongoRelationshipTemplate } from './interface';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 import config from '../../config';
 
@@ -22,6 +22,10 @@ const RelationshipTemplateSchema = new mongoose.Schema(
             type: mongoose.Schema.Types.ObjectId,
             required: true,
         },
+        isProperty: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
@@ -38,7 +42,7 @@ RelationshipTemplateSchema.index({ displayName: 1, sourceEntityId: 1, destinatio
 RelationshipTemplateSchema.index({ sourceEntityId: 1 });
 RelationshipTemplateSchema.index({ destinationEntityId: 1 });
 
-const RelationshipTemplateModel = mongoose.model<IRelationshipTemplate & mongoose.Document>(
+const RelationshipTemplateModel = mongoose.model<IMongoRelationshipTemplate>(
     config.mongo.relationshipTemplatesCollectionName,
     RelationshipTemplateSchema,
 );

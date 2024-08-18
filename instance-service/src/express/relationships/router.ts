@@ -21,6 +21,7 @@ relationshipRouter.get(
     wrapController(RelationshipController.getRelationshipsCountByTemplateId),
 );
 relationshipRouter.get('/:id', ValidateRequest(getRelationshipByIdRequestSchema), wrapController(RelationshipController.getRelationshipById));
+
 relationshipRouter.post(
     '/',
     ValidateRequest(createRelationshipRequestSchema),

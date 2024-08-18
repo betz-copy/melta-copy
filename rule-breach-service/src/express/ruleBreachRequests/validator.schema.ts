@@ -14,6 +14,24 @@ export const searchRuleBreachRequestsRequestSchema = joi.object({
     params: {},
 });
 
+// POST /api/rule-breaches/getMany
+export const getManyRuleBreachesByIds = joi.object({
+    query: {},
+    body: {
+        rulesBreachIds: joi.array().items(mongoIdSchema),
+    },
+    params: {},
+});
+
+// POST /api
+export const getManyRuleBreachRequests = joi.object({
+    query: {},
+    body: {
+        rulesBreachIds: joi.array().items(mongoIdSchema),
+    },
+    params: {},
+});
+
 // POST /api/rule-breaches/requests
 export const createRuleBreachRequestRequestSchema = joi.object({
     query: {},
@@ -40,11 +58,13 @@ export const updateRuleBreachRequestStatusRequestSchema = joi.object({
 export const updateRuleBreachRequestActionMetadataRequestSchema = joi.object({
     query: {},
     body: {
-        actionType: joi
-            .string()
-            .valid(...Object.values(ActionTypes))
-            .required(),
-        actionMetadata: joi.custom(validateActionMetadata).required(),
+        actions: joi.array().items({
+            actionType: joi
+                .string()
+                .valid(...Object.values(ActionTypes))
+                .required(),
+            actionMetadata: joi.custom(validateActionMetadata).required(),
+        }),
     },
     params: {
         ruleBreachRequestId: mongoIdSchema.required(),

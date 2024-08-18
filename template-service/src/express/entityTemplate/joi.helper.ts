@@ -10,10 +10,15 @@ const { notifications } = config;
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('text-area', /.*/);
+ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
     keyword: 'dateNotification',
+    type: 'string',
+});
+ajv.addKeyword({
+    keyword: 'relationshipReference',
     type: 'string',
 });
 ajv.addKeyword({
@@ -27,7 +32,7 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -43,6 +48,7 @@ const propertiesArraySchema = Joi.array()
                 .when('pattern', { is: Joi.exist(), then: Joi.forbidden() })
                 .when('enum', { is: Joi.exist(), then: Joi.forbidden() }),
             enum: Joi.array().items(Joi.string()).when('type', { not: 'string', then: Joi.forbidden() }),
+            readOnly: Joi.valid(true),
             pattern: Joi.string().when('type', { not: 'string', then: Joi.forbidden() }),
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
             items: Joi.object({
@@ -75,6 +81,12 @@ const propertiesArraySchema = Joi.array()
             isDailyAlert: Joi.boolean()
                 .when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() })
                 .when('type', { not: 'string', then: Joi.forbidden() }),
+            relationshipReference: Joi.object({
+                relationshipTemplateId: Joi.string(),
+                relationshipTemplateDirection: Joi.string().valid('outgoing', 'incoming').required(),
+                relatedTemplateId: Joi.string().required(),
+                relatedTemplateField: Joi.string().required(),
+            }).when('format', { is: 'relationshipReference', then: Joi.required(), otherwise: Joi.forbidden() }),
             calculateTime: Joi.boolean().when('format', { not: Joi.valid('date', 'date-time'), then: Joi.forbidden() }),
             serialStarter: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),
             serialCurrent: Joi.number().when('type', { not: 'number', then: Joi.forbidden() }),

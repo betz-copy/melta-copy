@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { MongoIdSchema, ColorSchema, ExtendedJoi, iconFileSchema } from '../../utils/joi';
+import { ColorSchema, documentTemplateSchema, ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
 
 // POST /api/templates/categories
 export const createCategorySchema = Joi.object({
@@ -53,7 +53,7 @@ export const createEntityTemplateSchema = Joi.object({
     },
     query: {},
     params: {},
-    file: iconFileSchema,
+    files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(documentTemplateSchema) },
 });
 
 // PUT /api/templates/entities/update-enum-field/:id
@@ -94,12 +94,13 @@ export const updateEntityTemplateSchema = Joi.object({
         propertiesPreview: ExtendedJoi.stringToArray().required(),
         enumPropertiesColors: ExtendedJoi.stringToObject(),
         uniqueConstraints: ExtendedJoi.stringToArray().required(),
+        documentTemplatesIds: ExtendedJoi.stringToArray(),
     },
     query: {},
     params: {
         id: MongoIdSchema.required(),
     },
-    file: iconFileSchema,
+    files: { file: Joi.array().items(iconFileSchema).length(1), files: Joi.array().items(documentTemplateSchema) },
 });
 
 // PATCH /api/templates/entities/:id/status

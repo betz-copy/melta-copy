@@ -23,6 +23,8 @@ import { ImageWithDisable } from '../ImageWithDisable';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { EntityWizardValues } from '../dialogs/entity';
+import { DraftCard } from './DraftCard';
+import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -84,6 +86,11 @@ const TemplateTable = forwardRef<
     const queryClient = useQueryClient();
     const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
+
+    const drafts = useDraftsStore((state) => state.drafts);
+
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -160,6 +167,32 @@ const TemplateTable = forwardRef<
                 </Grid>
             </Grid>
 
+            <Grid container direction="row" width="90vw" wrap="nowrap" sx={{ overflowX: 'auto', marginBottom: '0.5rem' }}>
+                {drafts[template.category._id]?.[template._id]
+                    ?.sort((a, b) => {
+                        if (a.entityId && !b.entityId) return -1;
+                        if (!a.entityId && b.entityId) return 1;
+                        return 0;
+                    })
+                    .map((draft) => (
+                        <Grid item key={draft.uniqueId}>
+                            <DraftCard
+                                draft={draft}
+                                openEditDialog={() => {
+                                    setDraftId(draft.uniqueId);
+                                    setEditDialog({
+                                        isOpen: true,
+                                        entity: {
+                                            templateId: draft.template._id,
+                                            properties: { ...draft.properties, _id: draft.entityId!, createdAt: '', updatedAt: '', disabled: false },
+                                        },
+                                    });
+                                }}
+                            />
+                        </Grid>
+                    ))}
+            </Grid>
+
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
@@ -182,6 +215,7 @@ const TemplateTable = forwardRef<
                     }}
                     editRowButtonProps={{
                         onClick: (currEntity) => {
+                            setDraftId('');
                             setEditDialog({
                                 isOpen: true,
                                 entity: currEntity,
@@ -200,7 +234,7 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} maxWidth="md">
+            <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
                     entityTemplate={template}

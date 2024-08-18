@@ -64,35 +64,47 @@ export const getDatasource = <Data extends any = IEntity>(
     rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
+    let lastPage = 0;
     return {
+        // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
+            lastPage++;
+            if (lastPage === 1) return;
+
+            if (rowData && mainEntity) {
+                params.success({
+                    rowData,
+                    rowCount: rowData.length,
+                });
+                return;
+            }
+
             const agGridRequest = params.request;
+            const currentPage = params.api.paginationGetCurrentPage();
+            const pageSize = params.api.paginationGetPageSize();
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        {
+                            ...agGridRequest,
+                            quickFilter: quickFilterText,
+                            skip: 0,
+                            limit: (currentPage + 1) * pageSize,
+                        } as IAGGridRequest,
+                        template,
+                    ),
                 ),
             );
+
             if (err || !data) {
                 onFail?.(err);
                 params.fail();
                 return;
             }
-
-            let filteredRowData: IEntity[] = data.entities.map(({ entity }) => entity);
-            if (rowData && mainEntity) {
-                const rowDataIds =
-                    rowData.map((connection) => {
-                        if (connection.destinationEntity.properties._id === mainEntity.entity.properties._id)
-                            return connection.sourceEntity.properties._id;
-                        return connection.destinationEntity.properties._id;
-                    }) ?? [];
-                filteredRowData = filteredRowData.filter((entity) => rowDataIds.includes(entity.properties._id));
-            }
-
             params.success({
-                rowData: filteredRowData,
-                rowCount: filteredRowData.length,
+                rowData: data.entities.map(({ entity }) => entity),
+                rowCount: data.count,
             });
         },
     };
@@ -117,12 +129,13 @@ const getRowModelProps = <Data extends any = IEntity>(
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
+    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
     if (rowModelType === 'serverSide') {
         return {
             rowModelType,
             serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-            cacheBlockSize: 50,
-            maxBlocksInCache: 10,
+            cacheBlockSize,
+            maxBlocksInCache,
             pagination: true,
             paginationPageSize,
         };
@@ -133,10 +146,10 @@ const getRowModelProps = <Data extends any = IEntity>(
         rowModelType: 'serverSide',
         pagination: false,
         serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize: 50,
-        maxBlocksInCache: 10,
-        maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 50,
+        cacheBlockSize,
+        maxBlocksInCache,
+        maxConcurrentDatasourceRequests,
+        infiniteInitialRowCount,
     };
 };
 
@@ -269,6 +282,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     if (!gridApi) return;
                     const isSideBarOpen = gridApi.isToolPanelShowing();
                     gridApi.setSideBarVisible(!isSideBarOpen);
+                    // eslint-disable-next-line no-unused-expressions
                     isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
             };

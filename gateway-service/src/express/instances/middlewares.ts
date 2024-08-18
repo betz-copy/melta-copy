@@ -11,6 +11,8 @@ import PermissionsManager from '../permissions/manager';
 import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
+import { IAction } from '../../externalServices/ruleBreachService/interfaces';
+import { InstancesManager } from './manager';
 
 // entities
 const getCategoryIdFromTemplateId = async (templateId: string) => {
@@ -18,6 +20,12 @@ const getCategoryIdFromTemplateId = async (templateId: string) => {
     const { category } = template;
 
     return category._id;
+};
+
+const getCategoryIdsFromTemplateIds = async (templateIds: string[]) => {
+    const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: templateIds});
+    
+    return templates.map((template)=> template.category._id);
 };
 
 export const validateUserCanCreateEntityInstance = async (req: Request) => {
@@ -85,6 +93,42 @@ export const validateUserCanWriteEntityInstance = async (req: Request) => {
     await validateUserPermissionForEntityInstance(req, 'Write');
 };
 
+const getCategoriesIdsByEntitiesAndTemplatesIds = async (entitiesIds: string[], templateIdsFromReq: string[]) => {
+    const templateIds = new Set<string>([...templateIdsFromReq]);
+
+    const entities = await InstanceManagerService.getEntityInstancesByIds(entitiesIds);
+    entities.forEach((entity) => templateIds.add(entity.templateId));
+
+    const categoriesIds = await getCategoryIdsFromTemplateIds([...templateIds]);
+
+    return categoriesIds;
+}
+
+export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
+    const permissionType = 'Write';
+
+    const {actionsGroups} = req.body;
+
+    const { templateIds, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
+
+    const [categoriesIds, permissionsArrOfUser] = await Promise.all([
+        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds), 
+        getPermissions({ userId: req.user!.id })
+    ]);
+
+    const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
+
+    const hasPermission = permissionsOfUserId.instancesPermissions.every(
+        ({ category, scopes }) => !categoriesIds.includes(category) || scopes.includes(permissionType),
+    );
+
+    if (!hasPermission) {
+        throw new ServiceError(403, `User not authorized, does not have ${permissionType.toLowerCase()} permission on category`);
+    }
+
+    (req as RequestWithPermissionsOfUserId).permissionsOfUserId = permissionsOfUserId;
+};
+
 export const validateUserCanReadEntityInstance = async (req: Request) => {
     await validateUserPermissionForEntityInstance(req, 'Read');
 };
@@ -94,6 +138,7 @@ export const validateUserCanGetExpandedEntity = async (req: Request) => {
         body: { templateIds },
         permissionsOfUserId,
     } = req as RequestWithPermissionsOfUserId;
+    req.body.userId = req.user!.id;
 
     const allAllowedEntityTemplates = (await TemplatesManager.getAllAllowedEntityTemplates(permissionsOfUserId)).map(
         (entityTemplate) => entityTemplate._id,

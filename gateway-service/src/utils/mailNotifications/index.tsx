@@ -1,12 +1,11 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { renderToString } from 'react-dom/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { renderToString } from 'react-dom/server';
 import React from 'react';
 import config from '../../config';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
 import {
-    IActionMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
     IRuleBreachAlertPopulated,
@@ -175,10 +174,13 @@ export const processReviewerUpdateMail = ({
     );
 };
 
-const EntityLink: React.FC<{ entity: IEntity | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({ entity, entityTemplate }) => {
+const EntityLink: React.FC<{ entity: IEntity | string | null; entityTemplate: IMongoEntityTemplatePopulated | null }> = ({
+    entity,
+    entityTemplate,
+}) => {
     return (
         <a
-            href={`${meltaBaseUrl}/entity/${entity ? entity.properties._id : 'unknownEntity'}`}
+            href={`${meltaBaseUrl}/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
             target="_blank"
             style={{ color: '#225AA7', fontWeight: 'bold' }}
         >
@@ -235,35 +237,34 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
     );
 };
 
-export const getActionInfoMessage = async (
-    ruleBreach: IRuleBreachAlertPopulated<IActionMetadataPopulated> | IRuleBreachRequestPopulated<IActionMetadataPopulated>,
-) => {
-    if (ruleBreach.actionType === ActionTypes.CreateRelationship || ruleBreach.actionType === ActionTypes.DeleteRelationship) {
-        return getCreateOrDeleteRelActionInfo(
-            ruleBreach.actionType,
-            ruleBreach.actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
-        );
-    }
-    if (ruleBreach.actionType === ActionTypes.UpdateEntity) {
-        return getUpdateEntityActionInfo(ruleBreach.actionMetadata as IUpdateEntityMetadataPopulated);
-    }
-
-    if (ruleBreach.actionType === ActionTypes.UpdateStatus) {
-        return getUpdateEntityStatusActionInfo(ruleBreach.actionMetadata as IUpdateEntityStatusMetadataPopulated);
-    }
-    return null;
+export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
+    return Promise.all(
+        ruleBreach.actions.map((action) => {
+            switch (action.actionType) {
+                case ActionTypes.CreateRelationship:
+                case ActionTypes.DeleteRelationship:
+                    return getCreateOrDeleteRelActionInfo(
+                        action.actionType,
+                        action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                    );
+                case ActionTypes.UpdateEntity:
+                    return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+                case ActionTypes.UpdateStatus:
+                    return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+                default:
+                    return null;
+            }
+        }),
+    );
 };
 
 const ruleBreachBodyMassage = async (
-    ruleBreach:
-        | IRuleBreachAlertPopulated<IActionMetadataPopulated>
-        | IRuleBreachRequestPopulated<IActionMetadataPopulated>
-        | IRuleBreachRequestPopulated<IActionMetadataPopulated>,
+    ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | IRuleBreachRequestPopulated,
     ruleBrokenData: IRule[],
 ) => {
     return (
         <>
-            {await getActionInfoMessage(ruleBreach)}
+            {await getActionsInfoMessages(ruleBreach)}
             <p>
                 {hebrew.ruleBreach.by}
                 <strong>{ruleBreach.originUser.fullName}</strong>

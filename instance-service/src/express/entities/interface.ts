@@ -1,4 +1,4 @@
-import { IRelationship } from '../relationships/interface';
+import { IRelationship } from '../relationships/interfaces';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 
 export interface IEntity {
@@ -106,3 +106,28 @@ export interface IGetExpandedEntityBody {
     expandedParams: { [entityId: string]: number };
     filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
 }
+
+export enum RunRuleReason {
+    dependentViaAggregation = 'dependentViaAggregation',
+    dependentOnEntity = 'dependentOnEntity'
+}
+
+// reasons which rules to run on each entity
+// entityId -> reasons[], entityTemplateId
+export type EntitiesIdsRulesReasonsMap = Map<
+    string,
+    {
+        reasons: (
+            | {
+                  type: RunRuleReason.dependentViaAggregation;
+                  dependentRelationshipTemplateId: string;
+                  updatedProperties?: string[] | undefined;
+              }
+            | {
+                  type: RunRuleReason.dependentOnEntity;
+                  updatedProperties?: string[] | undefined;
+              }
+        )[];
+        entityTemplateId: string;
+    }
+>;

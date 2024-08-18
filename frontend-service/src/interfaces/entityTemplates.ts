@@ -13,6 +13,7 @@ export interface IEntitySingleProperty {
         format?: 'fileId';
     };
     minItems?: 1;
+    readOnly?: true;
     uniqueItems?: true;
     pattern?: string;
     patternCustomErrorMessage?: string;
@@ -22,6 +23,12 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 
 export interface IEntityTemplate {
@@ -41,6 +48,7 @@ export interface IEntityTemplate {
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     uniqueConstraints: IUniqueConstraintOfTemplate[];
+    documentTemplatesIds?: string[];
 }
 
 export interface IEntityTemplatePopulated extends Omit<IEntityTemplate, 'category'> {

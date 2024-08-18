@@ -1,11 +1,12 @@
 import React, { useState, CSSProperties } from 'react';
 import i18next from 'i18next';
 import { Dialog } from '@mui/material';
-import { EntityWizardValues } from '../dialogs/entity';
+import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
 import { toast } from 'react-toastify';
+import { useDraftIdStore } from '../../stores/drafts';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -29,6 +30,8 @@ const AddEntityButton: React.FC<{
     });
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
     return (
         <>
             <IconButtonWithPopover
@@ -42,6 +45,7 @@ const AddEntityButton: React.FC<{
                         setExternalErrors({ files: false, unique: {} });
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         toast.dismiss();
+                        setDraftId('');
                     },
                     style,
                 }}
@@ -50,34 +54,13 @@ const AddEntityButton: React.FC<{
             >
                 {children}
             </IconButtonWithPopover>
-
-            <Dialog open={addEntityWizardState.isOpen} maxWidth="md">
+            <Dialog
+                open={addEntityWizardState.isOpen}
+                maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}
+            >
                 <CreateOrEditEntityDetails
                     isEditMode={false}
-                    entityTemplate={
-                        addEntityWizardState.initialValues?.template || {
-                            _id: '',
-                            displayName: '',
-                            name: '',
-                            category: {
-                                _id: '',
-                                name: '',
-                                displayName: '',
-                                color: '',
-                            },
-                            properties: {
-                                properties: {},
-                                required: [],
-                                type: 'object',
-                                hide: [],
-                            },
-                            propertiesOrder: [],
-                            propertiesTypeOrder: ['properties', 'attachmentProperties'],
-                            propertiesPreview: [],
-                            uniqueConstraints: [],
-                            disabled: false,
-                        }
-                    }
+                    entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initalCurrValues}
                     onSuccessUpdate={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));

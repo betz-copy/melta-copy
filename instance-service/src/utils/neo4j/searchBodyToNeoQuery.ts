@@ -165,6 +165,13 @@ const filterOfFieldToNeoQuery = (
     parametersParentVariableName: string,
     fieldTemplate: IEntitySingleProperty,
 ): CypherQueryWithParameters => {
+    let filterField = field;
+    if (fieldTemplate.format === 'relationshipReference') {
+        filterField = `\`${field}.properties.${fieldTemplate.relationshipReference!.relatedTemplateField}${
+            config.neo4j.relationshipReferencePropertySuffix
+        }\``;
+    }
+
     const queries: CypherQueryWithParameters[] = Object.entries(filterOfField).map(([key, filterRhs]) => {
         const filterType = key as keyof IFilterOfField;
 
@@ -178,7 +185,7 @@ const filterOfFieldToNeoQuery = (
             case '$lte':
                 if (fieldTemplate.type !== 'array') {
                     partFilterOfFieldQuery = simplePartFilterOfFieldToNeoQuery(
-                        field,
+                        filterField,
                         filterType,
                         filterRhs,
                         `${parametersParentVariableName}.\`${filterType}\``,
@@ -187,7 +194,7 @@ const filterOfFieldToNeoQuery = (
                     break;
                 }
                 partFilterOfFieldQuery = simplePartFilterOfArrayFieldToNeoQuery(
-                    field,
+                    filterField,
                     filterType as '$eq' | '$ne',
                     filterRhs,
                     `${parametersParentVariableName}.\`${filterType}\``,
@@ -195,23 +202,23 @@ const filterOfFieldToNeoQuery = (
                 break;
 
             case '$eqi':
-                partFilterOfFieldQuery = caseInsensitiveEqualFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$eqi\``);
+                partFilterOfFieldQuery = caseInsensitiveEqualFilterOfField(filterField, filterRhs, `${parametersParentVariableName}.\`$eqi\``);
                 break;
 
             case '$rgx':
-                partFilterOfFieldQuery = regexFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$rgx\``);
+                partFilterOfFieldQuery = regexFilterOfField(filterField, filterRhs, `${parametersParentVariableName}.\`$rgx\``);
                 break;
 
             case '$in':
                 if (fieldTemplate.type !== 'array') {
-                    partFilterOfFieldQuery = inFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
+                    partFilterOfFieldQuery = inFilterOfField(filterField, filterRhs, `${parametersParentVariableName}.\`$in\``, fieldTemplate);
                     break;
                 }
-                partFilterOfFieldQuery = inFilterOfArrayField(field, filterRhs, `${parametersParentVariableName}.\`$in\``);
+                partFilterOfFieldQuery = inFilterOfArrayField(filterField, filterRhs, `${parametersParentVariableName}.\`$in\``);
                 break;
 
             case '$not':
-                partFilterOfFieldQuery = notFilterOfField(field, filterRhs, `${parametersParentVariableName}.\`$not\``, fieldTemplate);
+                partFilterOfFieldQuery = notFilterOfField(filterField, filterRhs, `${parametersParentVariableName}.\`$not\``, fieldTemplate);
                 break;
 
             default:
