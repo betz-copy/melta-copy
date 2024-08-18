@@ -30,6 +30,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
                                 <Grid marginBottom={2}>
                                     <UserAutocomplete
+                                        mode="internal"
                                         value={null}
                                         onChange={(_e, chosenUser, reason) => {
                                             if (reason !== 'selectOption' || !chosenUser) return;

@@ -118,7 +118,7 @@ const columnDefs = (
             return lhs.sort().join(',').localeCompare(rhs.sort().join(','));
         },
         cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
-            const categoriesPermissionsPopulated = Object.keys(props.value).map((category) => {
+            const categoriesPermissionsPopulated = Object.keys(props.value ?? {}).map((category) => {
                 return {
                     _id: category,
                     category: categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {

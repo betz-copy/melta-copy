@@ -62,6 +62,7 @@ const getFilteredInstances = async (
 };
 
 const sendNotificationsForEntityTemplate = async (
+    workspaceId: string,
     instancesService: InstancesService,
     rabbitManager: RabbitManager,
     entityTemplate: IMongoEntityTemplatePopulated,
@@ -69,6 +70,7 @@ const sendNotificationsForEntityTemplate = async (
     const today = new Date();
 
     const userIdsWithPermission = await UsersManager.searchUserIds({
+        workspaceId,
         permissions: {
             [PermissionType.instances]: {
                 categories: {
@@ -141,7 +143,7 @@ export const checkForDateNotifications = async () => {
                     const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
                     await Promise.all(
                         allEntityTemplates.map((entityTemplate) =>
-                            sendNotificationsForEntityTemplate(instancesService, rabbitManager, entityTemplate),
+                            sendNotificationsForEntityTemplate(workspaceId, instancesService, rabbitManager, entityTemplate),
                         ),
                     );
                 } catch (error) {

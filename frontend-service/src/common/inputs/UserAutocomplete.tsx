@@ -41,7 +41,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     minInputLengthToSearch = 2,
     size,
 }) => {
-    const user = useMemo(() => (mode === 'internal' ? value : Object.values((value as IExternalUser)?.digitalIdentities ?? {})[0]), [mode, value]);
+    const user = useMemo(
+        () => (mode === 'internal' ? (value as IUser) : Object.values((value as IExternalUser)?.digitalIdentities ?? {})[0]),
+        [mode, value],
+    );
 
     const [internalDisplayValue, setInputValue] = useState<string>(user ? user.displayName : '');
 
@@ -58,8 +61,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             return searchUsersRequest({ search: currentDisplayValue, limit: 10 });
         },
         {
-            onError: (error) => {
-                console.log('failed to search users. error:', error);
+            onError: () => {
                 toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
             },
             enabled: false,
@@ -69,30 +71,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const readOnlyInputLabelProps: SxProps = {
-        sx: {
-            '&.Mui-focused': {
-                color: 'rgba(0, 0, 0, 0.6)',
-            },
-        },
-    };
-    const readOnlyValueSx: SxProps = {
-        '& .MuiOutlinedInput-root.Mui-focused': {
-            '& > fieldset': {
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                borderWidth: '1px',
-            },
-        },
-        '& .MuiOutlinedInput-root:hover': {
-            '& > fieldset': {
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                borderWidth: '1px',
-            },
-        },
-    };
+
     return (
-        <MeltaTooltip title={value?.displayName || ''} sx={{ maxWidth: 'none' }}>
-            <Autocomplete
+        <MeltaTooltip title={user?.displayName || ''} sx={{ maxWidth: 'none' }}>
+            <Autocomplete<IUser | IExternalUser>
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={onChange}
@@ -107,13 +89,13 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
                 getOptionLabel={(option) => {
-                    if (mode === 'external') return getDisplayNameFromExternalUser(option);
-                    return option.displayName;
+                    if (mode === 'external') return (option as IExternalUser).kartoffelId;
+                    return (option as IUser).displayName;
                 }}
                 getOptionDisabled={isOptionDisabled}
                 isOptionEqualToValue={(option, currValue) => {
-                    if (mode === 'external') return option.kartoffelId === currValue.kartoffelId;
-                    return option._id === currValue._id;
+                    if (mode === 'external') return (option as IExternalUser).kartoffelId === (currValue as IExternalUser).kartoffelId;
+                    return (option as IUser)._id === (currValue as IUser)._id;
                 }}
                 options={usersOptions!}
                 loading={isFetchingUsersOptions}
@@ -127,8 +109,34 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                         helperText={helperText}
                         label={label}
                         InputProps={{ ...params.InputProps, readOnly, endAdornment: (readOnly || disabled) && undefined }}
-                        InputLabelProps={{ ...(params.InputLabelProps, readOnly && readOnlyInputLabelProps) }}
-                        sx={readOnly ? readOnlyValueSx : {}}
+                        InputLabelProps={{
+                            ...(params.InputLabelProps,
+                            readOnly && {
+                                sx: {
+                                    '&.Mui-focused': {
+                                        color: 'rgba(0, 0, 0, 0.6)',
+                                    },
+                                },
+                            }),
+                        }}
+                        sx={
+                            readOnly
+                                ? {
+                                      '& .MuiOutlinedInput-root.Mui-focused': {
+                                          '& > fieldset': {
+                                              borderColor: 'rgba(0, 0, 0, 0.23)',
+                                              borderWidth: '1px',
+                                          },
+                                      },
+                                      '& .MuiOutlinedInput-root:hover': {
+                                          '& > fieldset': {
+                                              borderColor: 'rgba(0, 0, 0, 0.23)',
+                                              borderWidth: '1px',
+                                          },
+                                      },
+                                  }
+                                : {}
+                        }
                     />
                 )}
                 readOnly={readOnly}

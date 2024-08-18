@@ -17,9 +17,10 @@ export class UsersManager {
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 
-    static async SearchBaseUsers(
+    static async searchBaseUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
+        workspaceId: string | undefined,
         limit: number,
         step: number,
     ): Promise<IBaseUser[]> {
@@ -37,8 +38,8 @@ export class UsersManager {
             ];
         }
 
-        if (permissions) {
-            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions);
+        if (permissions || workspaceId) {
+            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceId);
             const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
             query._id = { $in: [...usersIds] };
         }
@@ -53,20 +54,22 @@ export class UsersManager {
     static async searchUserIds(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
+        workspaceId: string | undefined,
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const baseUsers = await this.SearchBaseUsers(search, permissions, limit, step);
+        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
         return baseUsers.map(({ _id }) => _id);
     }
 
     static async searchUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
+        workspaceId: string | undefined,
         limit: number,
         step: number,
     ): Promise<IUser[]> {
-        const baseUsers = await this.SearchBaseUsers(search, permissions, limit, step);
+        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
         return this.appendPermissionsToUsers(baseUsers);
     }
 

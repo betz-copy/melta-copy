@@ -9,20 +9,27 @@ import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IUser } from '../../interfaces/users';
 import { searchUsersRequest } from '../../services/userService';
+import { useWorkspaceStore } from '../../stores/workspace';
 import DeletePermissionsOfUserDialog from './deleteDialog';
 import Table from './table';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const { data: users, isLoading: isLoadingPermissions } = useQuery('getAllUsers', () => searchUsersRequest({ limit: 1000 }), {
-        onError: (error) => {
-            // eslint-disable-next-line no-console
-            console.log('failed loading all permissions:', error);
-            toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
+    const { data: users, isLoading: isLoadingUsers } = useQuery(
+        'getAllUsers',
+        () => searchUsersRequest({ workspaceId: workspace._id, limit: 1000 }),
+        {
+            onError: (error) => {
+                // eslint-disable-next-line no-console
+                console.log('failed loading all users:', error);
+                toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
+            },
         },
-    });
+    );
 
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);
     const [deletePermissionDialogState, setDeletePermissionDialogState] = useState<{
@@ -65,7 +72,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                     </Grid>
                 </Grid>
                 <Grid item xs={12}>
-                    {isLoadingPermissions && <CircularProgress size={20} />}
+                    {isLoadingUsers && <CircularProgress size={20} />}
                     {Boolean(users) && Boolean(categories) && (
                         <Table
                             users={users!}

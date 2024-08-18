@@ -358,7 +358,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
                 </Grid>
 
-                {Object.keys(currentUser.permissions).length && (
+                {Object.keys(currentUser.permissions).length > 1 && (
                     <>
                         <DrawerDivider />
 

@@ -1,4 +1,4 @@
-import { ICompactPermissions } from './permissions/permissions';
+import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
     _id: string;
@@ -21,7 +21,8 @@ export interface IUser extends IBaseUser {
 
 export interface IUserSearchBody {
     search?: string;
-    permissions?: ICompactPermissions;
+    permissions?: ISubCompactPermissions;
+    workspaceId?: string;
     limit: number;
     step?: number;
 }

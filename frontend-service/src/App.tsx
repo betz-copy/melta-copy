@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { useLocation } from 'wouter';
 import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
 import './css/loading.css';
@@ -15,10 +16,13 @@ import ErrorPage from './pages/ErrorPage';
 import { AuthService } from './services/authService';
 import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
 import { getMyUserRequest } from './services/userService';
+import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
+
+    const [_, navigate] = useLocation();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -51,6 +55,12 @@ const App: React.FC = () => {
             try {
                 const userFromDb = await getMyUserRequest();
                 setUser({ ...user, ...userFromDb });
+
+                const workspaceIds = Object.keys(userFromDb.permissions);
+                if (workspaceIds.length === 1) {
+                    const workspace = await getById(workspaceIds[0]);
+                    navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
+                }
             } catch (error) {
                 setIsErrorMyUser(true);
             }
@@ -59,7 +69,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser]);
+    }, [setUser, navigate]);
 
     if (isLoadingUser) <LoadingAnimation />;
 

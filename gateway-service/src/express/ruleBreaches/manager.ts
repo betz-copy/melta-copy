@@ -251,6 +251,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         NotificationMetadataPopulated extends INotificationMetadataPopulated,
     >(type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated, extraViewers: string[] = []) {
         const userIdsWithPermission = await UsersManager.searchUserIds({
+            workspaceId: this.workspaceId,
             permissions: {
                 [PermissionType.rules]: {
                     scope: PermissionScope.write,

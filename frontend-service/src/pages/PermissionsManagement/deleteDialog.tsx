@@ -5,32 +5,21 @@ import { toast } from 'react-toastify';
 
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IUser } from '../../interfaces/users';
-
-const deleteAllPermissionsOfUserRequest = async ({ permissionsManagementId, templatesManagementId, instancesPermissions }: IPermissionsOfUser) => {
-    const permissionsOfUsersIds: string[] = instancesPermissions.map(({ _id }) => _id);
-    if (permissionsManagementId) {
-        permissionsOfUsersIds.push(permissionsManagementId);
-    }
-    if (templatesManagementId) {
-        permissionsOfUsersIds.push(templatesManagementId);
-    }
-
-    return deletePermissionsBulkRequest(permissionsOfUsersIds);
-};
+import { deletePermissionsFromMetadata } from '../../services/userService';
 
 const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void }> = ({ isOpen, handleClose, user }) => {
     const queryClient = useQueryClient();
     const { mutateAsync: deleteAllPermissionsOfUser, isLoading: isLoadingDeleteAllPermissionsOfUser } = useMutation(
-        () => deleteAllPermissionsOfUserRequest(user!),
+        () => deletePermissionsFromMetadata({ userId: user!._id, workspaceId: '', type: '' }, {}),
         {
             onError: (error) => {
                 console.log('failed to delete permission. error:', error);
                 toast.error(i18next.t('permissions.failedToDeleteUser'));
             },
             onSuccess: (_data) => {
-                queryClient.setQueryData<IUser[]>('getAllUsers', (oldPermissions) => {
-                    if (!oldPermissions) throw new Error('should contain existing permissions when deleting');
-                    return oldPermissions.filter(({ user }) => user.id !== user?.user.id);
+                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
+                    if (!oldUsers) throw new Error('should contain existing users when deleting');
+                    return oldUsers.filter(({ _id }) => _id !== user!._id);
                 });
                 toast.success(i18next.t('permissions.succeededToDeleteUser'));
             },

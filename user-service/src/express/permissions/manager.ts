@@ -72,13 +72,16 @@ export class PermissionsManager {
         await PermissionsModel.updateMany(query, { $unset: { metadata } }).lean().exec();
     }
 
-    static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions): Promise<IPermission[]> {
+    static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions, workspaceId?: string): Promise<IPermission[]> {
+        const query: FilterQuery<IPermission> = { workspaceId };
         const subQueries: FilterQuery<IPermission>[] = [];
 
-        typedObjectEntries(subCompactPermissions).forEach(async ([type, metadata]) => {
+        typedObjectEntries(subCompactPermissions).forEach(([type, metadata]) => {
             subQueries.push({ type, metadata });
         });
 
-        return PermissionsModel.find({ $or: subQueries }).lean().exec();
+        if (subQueries.length) query.$or = subQueries;
+
+        return PermissionsModel.find(query).lean().exec();
     }
 }

@@ -36,7 +36,6 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    // TODO return proper permissions type
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {
         return UserService.syncUserPermissions(userId, permissions);
     }

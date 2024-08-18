@@ -11,15 +11,15 @@ export class UsersController {
     }
 
     static async searchUserIds(req: Request, res: Response) {
-        const { search, permissions, limit, step } = req.body;
+        const { search, permissions, workspaceId, limit, step } = req.body;
 
-        res.json(await UsersManager.searchUserIds(search, permissions, limit, step));
+        res.json(await UsersManager.searchUserIds(search, permissions, workspaceId, limit, step));
     }
 
     static async searchUsers(req: Request, res: Response) {
-        const { search, permissions, limit, step } = req.body;
+        const { search, permissions, workspaceId, limit, step } = req.body;
 
-        res.json(await UsersManager.searchUsers(search, permissions, limit, step));
+        res.json(await UsersManager.searchUsers(search, permissions, workspaceId, limit, step));
     }
 
     static async createUser(req: Request, res: Response) {

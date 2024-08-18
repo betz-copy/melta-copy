@@ -34,6 +34,7 @@ export const searchUsersRequestSchema = joi.object({
     body: joi.object({
         search: joi.string(),
         permissions: SubCompactPermissionSchema,
+        workspaceId: mongoIdSchema,
         limit: joi.number().integer().min(1).max(maxFindLimit).required(),
         step: joi.number().integer().min(0).default(0),
     }),

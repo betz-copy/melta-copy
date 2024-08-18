@@ -323,8 +323,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     }
 
     private async sendNewProcessNotification(process: IMongoProcessInstancePopulated) {
-        // TODO-WORKSPACES - get by workspace id
         const processesManagersIds = await UsersManager.searchUserIds({
+            workspaceId: this.workspaceId,
             permissions: {
                 [PermissionType.processes]: {
                     scope: PermissionScope.write,
@@ -495,8 +495,8 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const reviewersIds = new Set<string>();
 
         if (withManagers) {
-            // TODO-WORKSPACES - get by workspace id
             const userIdsWithPermission = await UsersManager.searchUserIds({
+                workspaceId: this.workspaceId,
                 permissions: {
                     [PermissionType.processes]: {
                         scope: PermissionScope.write,
