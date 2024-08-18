@@ -294,7 +294,7 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
         formData.append(
             'documentTemplatesIds',
             JSON.stringify(
-                updatedEntityTemplate.documentTemplatesIds
+                [...updatedEntityTemplate.documentTemplatesIds]
                     .filter((fileTemplate) => !(fileTemplate instanceof File))
                     .map((fileTemplate: string | { name: string }) => (typeof fileTemplate === 'string' ? fileTemplate : fileTemplate.name)),
             ),
