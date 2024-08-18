@@ -21,6 +21,7 @@ const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValu
 
 const searchIFrames = async (query: ISearchIFramesBody) => {
     const { data } = await axios.post<IMongoIFrame[]>(`${iFrames}/search`, query);
+    // const { l } = query;
     console.log({ data });
 
     return data;
@@ -35,12 +36,10 @@ const getIFrameById = async (id: string) => {
 const createIFrame = async (newIFrame: IFrameWizardValues) => {
     const formData = new FormData();
 
+    const { name, url, categoryIds, description, apiToken, placeInSideBar } = newIFrame;
     if (newIFrame.icon) {
         formData.append('file', newIFrame.icon.file as File);
     }
-    const { name, url, categoryIds, description, apiToken, placeInSideBar } = newIFrame;
-    // console.log({ newIFrame });
-
     formData.append('name', name);
     formData.append('url', url);
     formData.append('categoryIds', JSON.stringify(categoryIds));
@@ -48,7 +47,7 @@ const createIFrame = async (newIFrame: IFrameWizardValues) => {
     if (description) formData.append('description', description);
     if (apiToken) formData.append('apiToken', apiToken);
 
-    // console.log('hwlooooo', ...formData);
+    console.log('hwlooooo', ...formData);
     const { data } = await axios.post<IMongoIFrame>(iFrames, formData);
 
     return data;

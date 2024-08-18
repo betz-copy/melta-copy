@@ -5,6 +5,8 @@ import { IFrameManager } from './manager';
 class IFrameController {
     static async searchIFrames(req: Request, res: Response) {
         const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        console.log({ body });
+
         res.json(await IFrameManager.searchIFrames(body, permissionsOfUserId));
     }
 
@@ -17,7 +19,9 @@ class IFrameController {
     }
 
     static async createIFrame(req: Request, res: Response) {
-        res.json(await IFrameManager.createIFrame(req.body));
+        console.log(req.file);
+
+        res.json(await IFrameManager.createIFrame(req.body, req.file));
     }
 
     static async deleteIFrame(req: Request, res: Response) {

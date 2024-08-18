@@ -1,4 +1,4 @@
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import IFrameModel from './model';
@@ -17,18 +17,29 @@ export class IFrameManager {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    static async searchIFrames({ search, limit, skip }: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
+    static async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const allowedCategories: string[] = getAllowedCategories(permissionsOfUserId);
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
             const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { description: searchRegex }, { url: searchRegex }];
         }
-        const allIFrames = await IFrameModel.find(query).sort({ createdAt: -1 }).lean().exec();
-        const filteredIFrames = this.filterIFramesWithPermissions(allIFrames, allowedCategories);
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
+        const iFrames = await IFrameModel.find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
+            .lean()
+            .exec();
+        console.log({ iFrames }, { ids });
+        const filteredIFrames = this.filterIFramesWithPermissions(iFrames, allowedCategories);
+        if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
+        // console.log({ filteredIFrames }, { orderedIFrames });
+        return filteredIFrames;
 
-        if (!skip && !limit) return filteredIFrames;
-        return filteredIFrames.slice(skip, skip + limit);
+        // return filteredIFrames;
+        // const allIFrames = await IFrameModel.find(query).sort({ createdAt: -1 }).lean().exec();
+        // const filteredIFrames = this.filterIFramesWithPermissions(allIFrames, allowedCategories);
+
+        // if (!skip && !limit) return filteredIFrames;
+        // return filteredIFrames.slice(skip, skip + limit);
     }
 
     static async getIFrameById(iFrameId: string) {
@@ -43,8 +54,14 @@ export class IFrameManager {
         return iFrame;
     }
 
-    static async createIFrame(iFrame: IFrame) {
-        return IFrameModel.create(iFrame);
+    static async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
+        let newIFrame;
+        if (file) {
+            const newFileId = await uploadFile(file);
+            await removeTmpFile(file.path);
+            newIFrame = { ...iFrameData, iconFileId: newFileId };
+        } else newIFrame = { ...iFrameData, iconFileId: null };
+        return IFrameModel.create(newIFrame);
     }
 
     static deleteIFrame(iFrameId: string) {

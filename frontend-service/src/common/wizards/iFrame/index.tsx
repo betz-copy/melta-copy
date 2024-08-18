@@ -11,7 +11,6 @@ import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
 import { ChooseIFrameIcon } from './ChooseIcon';
-import { mapTemplates } from '../../../utils/templates';
 
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
@@ -62,7 +61,18 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
                 // });
                 queryClient.invalidateQueries('searchIFrames');
                 queryClient.setQueryData(['getIFrame', data._id], data);
-                queryClient.invalidateQueries('allIFrames');
+                console.log('new iframe created');
+                queryClient.setQueryData('allIFrames', (oldData) => {
+                    if (Array.isArray(oldData)) {
+                        console.log([data, ...oldData]);
+
+                        return [data, ...oldData];
+                    }
+                    console.log({ oldData });
+
+                    return [data];
+                });
+                // queryClient.invalidateQueries('allIFrames');
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

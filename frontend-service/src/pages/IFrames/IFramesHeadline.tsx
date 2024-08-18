@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Grid, IconButton } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
-import { Menu, MenuItem, Button, List, ListItem } from '@mui/material';
+import { Menu, Button, List, ListItem, Grid, IconButton } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
@@ -18,8 +16,6 @@ const IFramesPageHeadline: React.FC<{
     iFramesOrder: any;
     setIFramesOrder: (value) => void;
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
-    // const theme = useTheme();
-
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
@@ -60,7 +56,14 @@ const IFramesPageHeadline: React.FC<{
                 <Grid item>
                     <Button onClick={handleOpen}>Open Draggable List</Button>
 
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={handleClose}
+                        sx={{
+                            maxHeight: 350,
+                        }}
+                    >
                         <DragDropContext onDragEnd={handleOnDragEnd}>
                             <Droppable droppableId="items">
                                 {(provided) => (

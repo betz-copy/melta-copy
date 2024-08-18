@@ -116,6 +116,9 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                         vertical: 'top',
                         horizontal: 'right',
                     }}
+                    sx={{
+                        maxHeight: 350,
+                    }}
                 >
                     {iFrames.map((iFrame) => (
                         <MenuItem key={iFrame._id}>

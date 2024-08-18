@@ -1,50 +1,16 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { Box, CircularProgress, Grid, Pagination } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-// import { DndProvider, useDrag, useDrop } from 'react-dnd';
-// import { HTML5Backend } from 'react-dnd-html5-backend';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import IFramesPageHeadline from './IFramesHeadline';
-import { IFrame, IMongoIFrame } from '../../interfaces/iFrames';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { Resizable } from './ResizableBox';
-import { ResizeBox } from '../../common/EntitiesPage/ResizeBox';
-import { mapTemplates } from '../../utils/templates';
-
-// const DraggableIFrame = ({ iFrame, index, moveIFrame }) => {
-//     const [, ref] = useDrag({
-//         type: 'iframe',
-//         item: { index },
-//     });
-
-//     const [, drop] = useDrop({
-//         accept: 'iframe',
-//         hover: (draggedItem: any) => {
-//             if (draggedItem.index !== index) {
-//                 moveIFrame(draggedItem.index, index);
-//                 // eslint-disable-next-line no-param-reassign
-//                 draggedItem.index = index;
-//             }
-//         },
-//     });
-
-//     return (
-//         <div ref={(node) => ref(drop(node))} style={{ marginBottom: 20 }}>
-//             <Resizable minHeight={500} minWidth={1000} maxHeight={800} maxWidth={2000} id={iFrame._id}>
-//                 <Grid padding={2} height="100%" width="100%">
-//                     <IFramePage iFrame={iFrame} isIFramePage={false} />
-//                 </Grid>
-//             </Resizable>
-//         </div>
-//     );
-// };
 
 const IFramesPage: React.FC = () => {
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
@@ -58,19 +24,37 @@ const IFramesPage: React.FC = () => {
     const queryClient = useQueryClient();
 
     const queryKey = ['searchIFrames', searchInput];
-    // const [allIFrames, setAllIFrames] = useState();
     const allIFrames = queryClient.getQueryData('allIFrames');
-    // useEffect(() => {}, []);
+    // const [allIFrames, setAllIFrames] = useState<any>();
     console.log({ allIFrames });
 
-    const [iFramesOrder, setIFramesOrder] = useState<any>(allIFrames);
-    // let x = allIFrames;
+    const iFramesOrderRef = useRef<any>();
+    const [iFramesOrder, setIFramesOrder] = useState<any>();
+    // useEffect(() => {
+    //     setAllIFrames();
+    // }, []);
+
     useEffect(() => {
-        console.log('rerenderrrrrr', { iFramesOrder });
-        // x = iFramesOrder;
-        queryClient.invalidateQueries(queryKey);
-    }, [iFramesOrder]);
-    console.log('frgfwefjewf ', { iFramesOrder });
+        if (allIFrames) {
+            console.log('helooooo');
+            setIFramesOrder(allIFrames);
+            iFramesOrderRef.current = allIFrames;
+            queryClient.invalidateQueries(queryKey);
+        }
+    }, [allIFrames]);
+    // useEffect(() => {
+
+    //     setIFramesOrder(allIFrames);
+    // }, [allIFrames]);
+    // console.log('jaws', { iFramesOrder }, iFramesOrderRef.current);
+
+    // useEffect(() => {
+    //     console.log('rerenderrrrrr', { iFramesOrder });
+    //     iFramesOrderRef.current = iFramesOrder;
+    //     queryClient.invalidateQueries(queryKey);
+    // }, [iFramesOrder]);
+
+    console.log('frgfwefjewf ', { iFramesOrder }, iFramesOrderRef.current);
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -81,13 +65,10 @@ const IFramesPage: React.FC = () => {
                         setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
                     }}
                     iFramesOrder={iFramesOrder}
-                    setIFramesOrder={(newOrder) => {
-                        console.log({ newOrder });
-                        setIFramesOrder(newOrder);
-                    }}
+                    setIFramesOrder={setIFramesOrder}
                 />
             </Grid>
-            {/* <DndProvider backend={HTML5Backend}> */}
+
             <Grid
                 style={{
                     display: 'flex',
@@ -98,18 +79,22 @@ const IFramesPage: React.FC = () => {
                 <InfiniteScroll<IMongoIFrame>
                     queryKey={queryKey}
                     queryFunction={async ({ pageParam }) => {
-                        const iFrames = await searchIFrames({ search: searchInput, limit: 4, skip: pageParam });
-                        // return iFrames;
-                        console.log({ iFramesOrder });
+                        console.log('kdkdkdkd', { iFramesOrderRef });
 
-                        const orderedIFrames = iFrames.sort((a, b) => {
-                            return iFramesOrder.indexOf(a._id) - iFramesOrder.indexOf(b._id);
+                        const index = pageParam ?? 0;
+                        console.log({ index });
+                        const r = iFramesOrderRef.current;
+                        console.log({ r });
+
+                        const currentOrder = r.slice(index, index + 4);
+
+                        console.log({ currentOrder });
+
+                        const iFrames = await searchIFrames({
+                            search: searchInput,
+                            ids: currentOrder.map((item) => item._id),
                         });
-                        // console.log('notice: ', { orderedIFrames });
-
-                        // return orderedIFrames;
                         return iFrames;
-                        // return mapTemplates(iFrames);
                     }}
                     onQueryError={(error) => {
                         console.log('Failed loading data:', error);
@@ -124,8 +109,6 @@ const IFramesPage: React.FC = () => {
                 >
                     {(iFrame) => {
                         return (
-                            // <DraggableIFrame key={iFrame._id} iFrame={iFrame} index={index} moveIFrame={moveIFrame} />
-
                             <Resizable minHeight={500} minWidth={1000} maxHeight={800} maxWidth={2000} id={iFrame._id}>
                                 <Grid padding={2} height="100%" width="100%">
                                     <IFramePage iFrame={iFrame} isIFramePage={false} />
@@ -135,7 +118,6 @@ const IFramesPage: React.FC = () => {
                     }}
                 </InfiniteScroll>
             </Grid>
-            {/* </DndProvider> */}
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}
                 handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}

@@ -47,7 +47,7 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
         const loadFlag = localStorage.getItem(loadFlagKey);
         if (!loadFlag) {
             localStorage.removeItem(localStorageKey);
-            setDimensions({ width: 900, height: 500 });
+            setDimensions({ width: 1000, height: 500 });
         }
     }, []);
     const onResizeStart = () => {
@@ -60,19 +60,8 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
         localStorage.setItem(localStorageKey, JSON.stringify(newDimensions));
         setIsResizing(false);
     };
-    // const [{ opacity }, dragRef] = useDrag(
-    //     () => ({
-    //         type: 'ItemTypes.CARD',
-    //         item: 'dscn,',
-    //         collect: (monitor) => ({
-    //             opacity: monitor.isDragging() ? 0.5 : 1,
-    //         }),
-    //     }),
-    //     [],
-    // );
 
     return (
-        // <div ref={dragRef} style={{ opacity }}>
         <ResizableBox
             resizeHandles={['se']}
             width={dimensions.width}
@@ -88,7 +77,6 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
                 {children}
             </Grid>
         </ResizableBox>
-        // </div>
     );
 };
 

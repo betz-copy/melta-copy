@@ -15,6 +15,7 @@ export interface ISearchIFramesBody {
     search?: string;
     limit: number;
     skip: number;
+    ids?: string[];
 }
 
 export class IFramesService {

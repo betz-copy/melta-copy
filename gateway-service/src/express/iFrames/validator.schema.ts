@@ -54,6 +54,7 @@ export const searchIFramesSchema = Joi.object({
         search: Joi.string(),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
+        ids: Joi.array().items(Joi.string()), // .default([]),
     },
     params: {},
 });

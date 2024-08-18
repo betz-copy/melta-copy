@@ -52,8 +52,6 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (_data, _id) => {
-            console.log();
-
             // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
             //     if (!oldData) return;
             //     const updatedPages = oldData.pages.map((page) => page.filter((iframe) => iframe._id !== id));
@@ -65,7 +63,6 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
             //     };
             // });
             queryClient.invalidateQueries('searchIFrames');
-
             queryClient.invalidateQueries('allIFrames');
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             navigate('/iframes');
@@ -105,11 +102,8 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                                     textAlign: 'right',
                                     padding: 20,
                                     fontWeight: 'bold',
-                                    // width: '20%',
                                 }}
                                 fontSize="20px"
-                                // overflow="hidden"
-                                // textOverflow="ellipsis"
                             >
                                 {iFrame.name}
                             </Typography>
