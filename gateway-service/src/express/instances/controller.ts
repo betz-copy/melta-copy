@@ -39,7 +39,7 @@ class InstancesController {
     }
 
     static async deleteEntityInstance(req: Request, res: Response) {
-        res.json(await InstancesManager.deleteEntityInstance(req.params.id, req.user!.id));
+        res.json(await InstancesManager.deleteEntityInstance(req.params.id));
     }
 
     static async createRelationshipInstance(req: Request, res: Response) {

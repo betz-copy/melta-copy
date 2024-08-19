@@ -478,9 +478,9 @@ export class InstancesManager {
         return deleteFiles(fileIdsToRemove);
     }
 
-    static async deleteEntityInstance(id: string, userId: string) {
+    static async deleteEntityInstance(id: string) {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const deletedInstance = await InstanceManagerService.deleteEntityInstance(id, userId);
+        const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
 
         const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 

@@ -26,7 +26,6 @@ import {
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
-    isIEntity,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
@@ -44,7 +43,7 @@ import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import RelationshipManager from '../relationships/manager';
 import { getExpandedFilteredGraphRecursively, expandEntityToNeoQuery } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
-import { executeActionAndUpdateRelevantEntities, executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
+import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IMongoEntityTemplate, IEntitySingleProperty, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
@@ -687,11 +686,9 @@ export class EntityManager {
         return RelationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    static async deleteEntityById(id: string, deleteAllRelationships: boolean, userId: string) {
+    static async deleteEntityById(id: string, deleteAllRelationships: boolean) {
         try {
             return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const updatedEntities: IEntity[] = [];
-
                 const entityToDelete = await this.getEntityByIdInTransaction(id, transaction);
                 const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityToDelete.templateId);
 
@@ -718,28 +715,7 @@ export class EntityManager {
                     throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
                 }
 
-                const populatedInstances = this.fixReturnedEntityReferencesFields(entityToDelete);
-
-                Object.entries(populatedInstances.properties).forEach(([name, value]) => {
-                    if (isIEntity(value)) {
-                        populatedInstances.properties[name] = value.properties;
-                    }
-                });
-
-                if (entityTemplate.actions) {
-                    const entitiesToUpdate = await executeActionAndUpdateRelevantEntities(
-                        entityTemplate,
-                        entityToDelete,
-                        'onDeleteEntity',
-                        transaction,
-                        [],
-                        userId,
-                    );
-
-                    updatedEntities.push(...entitiesToUpdate);
-                }
-
-                return { id, updatedEntities };
+                return id;
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {

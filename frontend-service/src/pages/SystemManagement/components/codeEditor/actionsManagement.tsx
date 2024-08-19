@@ -122,10 +122,6 @@ const ActionManagement: React.FC<ActionManagementProps> = ({ entityTemplate, onC
         `function onUpdateEntity(${entityName}: ${entityName}): void {`,
         '',
         '}',
-        '',
-        `function onDeleteEntity(${entityName}: ${entityName}): void {`,
-        '',
-        '}',
     ].join('\n');
 
     return (

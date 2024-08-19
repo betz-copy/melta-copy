@@ -320,7 +320,7 @@ describe('Entity manager', () => {
         });
 
         it('Delete an entity (deleteAllRelationships=false)', async () => {
-            const res = await EntityManager.deleteEntityById(id, false, neo4j.mockUserId);
+            const res = await EntityManager.deleteEntityById(id, false);
 
             expect(res).toStrictEqual(id);
         });
@@ -347,13 +347,13 @@ describe('Entity manager', () => {
             });
 
             it('Delete an entity (deleteAllRelationships=false - but has connections)', async () => {
-                await expect(() => EntityManager.deleteEntityById(id, false, neo4j.mockUserId)).rejects.toThrowError(
+                await expect(() => EntityManager.deleteEntityById(id, false)).rejects.toThrowError(
                     `[NEO4J] entity "${id}" has existing relationships. Delete them first.`,
                 );
             });
 
             it('Delete an entity (deleteAllRelationships=true)', async () => {
-                const res = await EntityManager.deleteEntityById(id, true, neo4j.mockUserId);
+                const res = await EntityManager.deleteEntityById(id, true);
 
                 expect(res).toStrictEqual(id);
             });

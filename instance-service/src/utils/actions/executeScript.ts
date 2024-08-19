@@ -8,7 +8,6 @@ import { IEntity, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
-import { IBrokenRule } from '../../express/rules/interfaces';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 
@@ -59,52 +58,6 @@ export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
     } catch (error) {
         throw new ServiceError(400, `Error executing VM code: ${error}`);
     }
-};
-
-export const executeActionAndUpdateRelevantEntities = async (
-    entityTemplate: IMongoEntityTemplate,
-    entity: IEntity,
-    crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
-    transaction: Transaction,
-    ignoredRules: IBrokenRule[],
-    userId: string,
-): Promise<IEntity[]> => {
-    console.log({ ignoredRules });
-
-    const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
-    const executionOutput: { entityId: string; properties: Record<string, any> }[] = executeActionCodeInVM(entity, jsCode);
-    const updatedEntities: IEntity[] = [];
-
-    await Promise.all(
-        executionOutput.map(async (entityToUpdate) => {
-            if (entityToUpdate.entityId === undefined) {
-                throw new ServiceError(400, 'cant create new entity by code');
-            }
-
-            const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
-            const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
-            Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
-                if (value.format === 'relationshipReference' && name in entityToUpdate.properties) {
-                    // eslint-disable-next-line no-param-reassign
-                    entityToUpdate.properties[name] = entityToUpdate.properties[name]._id;
-                }
-            });
-
-            await validateEntity(entityTemplateOfEntityToUpdate._id, entityToUpdate.properties);
-
-            const { updatedEntity } = await EntityManager.updateEntityByIdInnerTransaction(
-                entityToUpdate.entityId,
-                entityToUpdate.properties,
-                entityTemplateOfEntityToUpdate,
-                transaction,
-                userId,
-            );
-
-            updatedEntities.push(updatedEntity);
-        }),
-    );
-
-    return updatedEntities;
 };
 
 export const executeActionCodeAndGetEntitiesToUpdate = async (

@@ -76,10 +76,8 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async deleteEntityInstance(id: string, userId: string) {
-        const { data } = await this.InstanceManagerApi.delete<{ deletedEntityId: string; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`, {
-            data: { userId },
-        });
+    static async deleteEntityInstance(id: string) {
+        const { data } = await this.InstanceManagerApi.delete<{ deletedEntityId: string; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }
