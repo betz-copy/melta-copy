@@ -4,11 +4,13 @@ import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { Menu, Button, List, ListItem, Grid, IconButton } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import { searchIFrames } from '../../services/iFramesService';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -20,6 +22,13 @@ const IFramesPageHeadline: React.FC<{
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [anchorEl, setAnchorEl] = useState(null);
+    const resetIFramesDimensions = () => {
+        iFramesOrder.forEach((iFrame) => {
+            localStorage.removeItem(`iFrameDimension_${iFrame._id}`);
+        });
+        // queryClient.setQueryData('allIFrames', () => searchIFrames({}));
+        window.location.reload();
+    };
     const handleOpen = (event) => {
         setAnchorEl(event.currentTarget);
     };
@@ -106,18 +115,12 @@ const IFramesPageHeadline: React.FC<{
                     </Grid>
                 </Grid>
             </Grid>
-            {/* <Grid item>
-        <IconButton
-            onClick={() => {
-                clearIFramesDimensions();
-                // onSetStartDate(null);
-                // onSetEndDate(null);
-            }}
-            sx={{ borderRadius: 10, height: '35px', width: '35px' }}
-        >
-            <FilterAltOffIcon />
-        </IconButton>
-    </Grid> */}
+            <Grid item>
+                <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
+                    <FilterAltOffIcon />
+                </IconButton>
+            </Grid>
+
             <Grid item>
                 {myPermissions.templatesManagementId && (
                     <IconButton onClick={setIFrameWizardDialogState}>

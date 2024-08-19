@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { useDrag } from 'react-dnd';
 
 interface ResizeBoxProps {
     // initialHeight: number;
@@ -19,7 +18,7 @@ interface ResizeBoxProps {
 
 const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, maxWidth, minWidth, id }) => {
     const localStorageKey = `iFrameDimension_${id}`;
-    const loadFlagKey = 'page-load-flag';
+    // const loadFlagKey = 'page-load-flag';
 
     const [isResizing, setIsResizing] = React.useState(false);
     const getDimensions = () => {
@@ -28,28 +27,28 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
         return savedDimensions ? JSON.parse(savedDimensions) : { width: 1000, height: 500 };
     };
     const [dimensions, setDimensions] = useState(getDimensions());
-    useEffect(() => {
-        localStorage.setItem(loadFlagKey, 'true');
+    // useEffect(() => {
+    //     localStorage.setItem(loadFlagKey, 'true');
 
-        const handleBeforeUnload = () => {
-            localStorage.removeItem(localStorageKey);
-            localStorage.removeItem(loadFlagKey);
-        };
+    //     const handleBeforeUnload = () => {
+    //         localStorage.removeItem(localStorageKey);
+    //         localStorage.removeItem(loadFlagKey);
+    //     };
 
-        window.addEventListener('beforeunload', handleBeforeUnload);
+    //     window.addEventListener('beforeunload', handleBeforeUnload);
 
-        return () => {
-            window.removeEventListener('beforeunload', handleBeforeUnload);
-        };
-    }, []);
+    //     return () => {
+    //         window.removeEventListener('beforeunload', handleBeforeUnload);
+    //     };
+    // }, []);
 
-    useEffect(() => {
-        const loadFlag = localStorage.getItem(loadFlagKey);
-        if (!loadFlag) {
-            localStorage.removeItem(localStorageKey);
-            setDimensions({ width: 1000, height: 500 });
-        }
-    }, []);
+    // useEffect(() => {
+    //     const loadFlag = localStorage.getItem(loadFlagKey);
+    //     if (!loadFlag) {
+    //         localStorage.removeItem(localStorageKey);
+    //         setDimensions({ width: 1000, height: 500 });
+    //     }
+    // }, []);
     const onResizeStart = () => {
         setIsResizing(true);
     };

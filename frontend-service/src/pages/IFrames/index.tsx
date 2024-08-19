@@ -24,7 +24,7 @@ const IFramesPage: React.FC = () => {
     const queryClient = useQueryClient();
 
     const queryKey = ['searchIFrames', searchInput];
-    const allIFrames = queryClient.getQueryData('allIFrames');
+    const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
     // const [allIFrames, setAllIFrames] = useState<any>();
     console.log({ allIFrames });
 
@@ -37,25 +37,40 @@ const IFramesPage: React.FC = () => {
     useEffect(() => {
         if (allIFrames) {
             console.log('helooooo', { allIFrames });
-
             setIFramesOrder(allIFrames);
             iFramesOrderRef.current = allIFrames;
             queryClient.invalidateQueries(queryKey);
         }
     }, [allIFrames]);
-    // useEffect(() => {
-
-    //     setIFramesOrder(allIFrames);
-    // }, [allIFrames]);
-    // console.log('jaws', { iFramesOrder }, iFramesOrderRef.current);
-
-    // useEffect(() => {
-    //     console.log('rerenderrrrrr', { iFramesOrder });
-    //     iFramesOrderRef.current = iFramesOrder;
-    //     queryClient.invalidateQueries(queryKey);
-    // }, [iFramesOrder]);
+    console.log({ iFramesOrder });
 
     console.log('frgfwefjewf ', { iFramesOrder }, iFramesOrderRef.current);
+
+    // const [dimensions, setDimensions] = useState({
+    //     minHeight: 0,
+    //     minWidth: 0,
+    //     maxHeight: 0,
+    //     maxWidth: 0,
+    // });
+
+    // useEffect(() => {
+    //     const calculateDimensions = () => {
+    //         const vw = window.innerWidth;
+    //         const vh = window.innerHeight;
+    //         setDimensions({
+    //             minHeight: vh * 0.5,
+    //             minWidth: vw * 0.47,
+    //             maxHeight: vh * 0.8,
+    //             maxWidth: vw * 0.94,
+    //         });
+    //     };
+
+    //     calculateDimensions();
+
+    //     window.addEventListener('resize', calculateDimensions);
+
+    //     return () => window.removeEventListener('resize', calculateDimensions);
+    // }, []);
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -71,6 +86,7 @@ const IFramesPage: React.FC = () => {
             </Grid>
 
             <Grid
+                container
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',

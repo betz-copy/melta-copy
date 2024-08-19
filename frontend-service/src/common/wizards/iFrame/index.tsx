@@ -61,7 +61,6 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
                 // });
                 queryClient.invalidateQueries(['searchIFrames', null]);
                 queryClient.setQueryData(['getIFrame', data._id], data);
-                // queryClient.invalidateQueries('allIFrames');
                 queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                     if (!oldData) {
                         return [data];
@@ -80,8 +79,9 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
                     const updatedData = [...oldData];
                     updatedData[index] = data;
                     console.log({ index }, { updatedData });
-                    return updatedData;
+                    return [...updatedData];
                 });
+                queryClient.invalidateQueries('allIFrames');
 
                 // queryClient.setQueryData('allIFrames', (oldData) => {
                 //     if (Array.isArray(oldData)) {
