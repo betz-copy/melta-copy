@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { renderToString } from 'react-dom/server';
 // eslint-disable-next-line import/no-extraneous-dependencies
+import { renderToString } from 'react-dom/server';
 import React from 'react';
 import config from '../../config';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
@@ -243,20 +243,20 @@ export const getUpdateEntityStatusActionInfo = async ({ entity, disabled }: IUpd
 export const getActionsInfoMessages = async (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) => {
     return Promise.all(
         ruleBreach.actions.map((action) => {
-            if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
-                return getCreateOrDeleteRelActionInfo(
-                    action.actionType,
-                    action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
-                );
+            switch (action.actionType) {
+                case ActionTypes.CreateRelationship:
+                case ActionTypes.DeleteRelationship:
+                    return getCreateOrDeleteRelActionInfo(
+                        action.actionType,
+                        action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                    );
+                case ActionTypes.UpdateEntity:
+                    return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+                case ActionTypes.UpdateStatus:
+                    return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+                default:
+                    return null;
             }
-            if (action.actionType === ActionTypes.UpdateEntity) {
-                return getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
-            }
-
-            if (action.actionType === ActionTypes.UpdateStatus) {
-                return getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
-            }
-            return null;
         }),
     );
 };

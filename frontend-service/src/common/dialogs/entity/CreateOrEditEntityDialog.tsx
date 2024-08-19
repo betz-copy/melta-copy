@@ -1,28 +1,35 @@
-import React, { useEffect, useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button, IconButton } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
+import { Clear as ClearIcon, Close as CloseIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, IconButton, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import cloneDeep from 'lodash.clonedeep';
+import debounce from 'lodash.debounce';
+import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation } from 'react-query';
 import { useNavigate } from 'react-router-dom';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
-import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { toast } from 'react-toastify';
+import { v4 as uuid } from 'uuid';
 import { EntityWizardValues } from '.';
-import { JSONSchemaFormik, ajvValidate } from '../../inputs/JSONSchemaFormik';
-import { BlueTitle } from '../../BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from './toastConstraintValidationError';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
-import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ChooseTemplate } from './ChooseTemplate';
+import { IEntity } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
+import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
+import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { BlueTitle } from '../../BlueTitle';
+import { ExportFormats } from './ExportFormats';
+import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
+import { ChooseTemplate } from './ChooseTemplate';
+import { DraftWarningDialog } from './draftWarningDialog';
+import { toastConstraintValidationError } from './toastConstraintValidationError';
 
 const { errorCodes } = environment;
 
@@ -53,6 +60,9 @@ const CreateOrEditEntityDetails: React.FC<{
         actions?: IActionPopulated[];
         rawActions?: IAction[];
     }>({ isOpen: false });
+
+    const [isDraftDialogOpen, setIsDraftDialogOpen] = useState(false);
+    const [wasDirty, setWasDirty] = useState(false);
 
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
 
@@ -120,6 +130,7 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
+
     const navigate = useNavigate();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
@@ -156,15 +167,44 @@ const CreateOrEditEntityDetails: React.FC<{
             },
         },
     );
+
+    const drafts = useDraftsStore((state) => state.drafts);
+    const createOrUpdateDraft = useDraftsStore((state) => state.createOrUpdateDraft);
+    const deleteDraft = useDraftsStore((state) => state.deleteDraft);
+
+    const draftId = useDraftIdStore((state) => state.draftId);
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const originalDrafts = useMemo(() => cloneDeep(drafts), []);
+
+    const currentDraft = useMemo(
+        () => drafts[entityTemplate.category._id]?.[entityTemplate._id]?.find(({ uniqueId }) => uniqueId === draftId),
+        [drafts, entityTemplate._id, entityTemplate.category._id, draftId],
+    );
+
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
             onSubmit={async (values) => {
-                if (isEditMode) updateMutation({ newEntityData: values });
+                if (isEditMode && entityToUpdate?.properties._id) updateMutation({ newEntityData: values });
                 else createMutation({ newEntityData: values });
+
+                if (!draftId) return;
+
+                // ? created via debounce, this counters that (waits for the debounce to complete and then removes the draft)
+                setTimeout(
+                    () =>
+                        deleteDraft(
+                            entityTemplate.category._id ? entityTemplate.category._id : values.template.category._id,
+                            entityTemplate._id ? entityTemplate._id : values.template._id,
+                            draftId,
+                        ),
+                    environment.draftAutoSaveDebounce,
+                );
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(values.template.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -172,12 +212,12 @@ const CreateOrEditEntityDetails: React.FC<{
                 return { properties: propertiesErrors };
             }}
         >
-            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty }) => {
+            {({ setFieldValue, values, errors, touched, setFieldTouched, dirty, initialValues: formInitialValues }) => {
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
-                const isPropertiesFirst = values.template?.propertiesTypeOrder[0] === 'properties';
-                const schema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(values.template.properties);
+                const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
+                const schema = filterFieldsFromPropertiesSchema(values.template.properties);
 
                 // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
@@ -192,15 +232,57 @@ const CreateOrEditEntityDetails: React.FC<{
                             setFieldValue(`properties.${field}`, [itemFieldProperties[0]]);
                         }
                     });
-
-                    if (!isEditMode) {
-                        Object.entries(schema.properties).forEach(([propertyName, propertyValues]) => {
-                            if (propertyValues.serialCurrent !== undefined) {
-                                setFieldValue(`properties.${propertyName}`, propertyValues.serialCurrent);
-                            }
-                        });
-                    }
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
                 }, [values.template]);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps
+                const createOrUpdateDraftDebounced = useCallback(
+                    debounce((newValues: EntityWizardValues, newDraftId: string) => {
+                        let uniqueDraftId = newDraftId;
+
+                        if (!newDraftId) {
+                            const createdDraftId = uuid();
+                            setDraftId(createdDraftId);
+                            uniqueDraftId = createdDraftId;
+                        }
+
+                        createOrUpdateDraft(
+                            newValues.template.category._id,
+                            newValues.template._id,
+                            { ...newValues, entityId: entityToUpdate?.properties._id },
+                            uniqueDraftId,
+                        );
+                    }, environment.draftAutoSaveDebounce),
+                    [],
+                );
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                const absoluteDirty = useMemo(() => {
+                    // textarea/long-text causes the field to first be undefined, setting dirty to true,
+                    // so we check for dirty manually while ignoring these fields
+                    // (if the value changes it won't be undefined and it will consider it dirty)
+                    const valuePropsToFilter = { ...values.properties };
+                    const initialValuePropsToFilter = { ...formInitialValues.properties };
+
+                    Object.keys(valuePropsToFilter).forEach((key) => (valuePropsToFilter[key] === undefined ? delete valuePropsToFilter[key] : {}));
+                    Object.keys(initialValuePropsToFilter).forEach((key) =>
+                        initialValuePropsToFilter[key] === undefined ? delete initialValuePropsToFilter[key] : {},
+                    );
+
+                    return !isEqual(valuePropsToFilter, initialValuePropsToFilter);
+                }, [formInitialValues, values]);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    if (!absoluteDirty) return;
+                    createOrUpdateDraftDebounced(values, draftId);
+                    // eslint-disable-next-line react-hooks/exhaustive-deps
+                }, [absoluteDirty, values, draftId]);
+
+                // eslint-disable-next-line react-hooks/rules-of-hooks
+                useEffect(() => {
+                    if (absoluteDirty && !wasDirty) setWasDirty(true);
+                }, [absoluteDirty]);
 
                 const propertiesComp = values.template?._id && (
                     <JSONSchemaFormik
@@ -251,6 +333,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         ))}
                     </>
                 );
+
                 return (
                     <>
                         <Form>
@@ -260,28 +343,39 @@ const CreateOrEditEntityDetails: React.FC<{
                                         <Grid item container xs={12}>
                                             <Grid container flexDirection="column">
                                                 <Box width="100%">
-                                                    <Grid item container justifyContent="space-between">
-                                                        <BlueTitle
-                                                            title={`${isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')} ${
-                                                                values.template?.displayName || i18next.t('wizard.entity.createNewEntity')
-                                                            }`}
-                                                            component="h6"
-                                                            variant="h6"
-                                                            style={{ fontWeight: '600', fontSize: '20px' }}
-                                                        />
+                                                    <Grid item container flexDirection="row" flexWrap="nowrap" justifyContent="space-between">
+                                                        <Grid item>
+                                                            <BlueTitle
+                                                                title={`${
+                                                                    isEditMode ? i18next.t('actions.editment') : i18next.t('actions.createment')
+                                                                } ${values.template?.displayName || i18next.t('wizard.entity.createNewEntity')}`}
+                                                                component="h6"
+                                                                variant="h6"
+                                                                style={{ fontWeight: '600', fontSize: '20px', marginTop: '0.25rem' }}
+                                                            />
+                                                        </Grid>
+
+                                                        {currentDraft && (
+                                                            <Grid item container xs={8} justifyContent="right">
+                                                                <Typography color="#53566E" marginTop="0.5rem" fontWeight={100}>
+                                                                    {i18next.t('draftSaveDialog.lastSavedAt', {
+                                                                        date: new Date(currentDraft.lastSavedAt).toLocaleString('he'),
+                                                                    })}
+                                                                </Typography>
+                                                            </Grid>
+                                                        )}
+
                                                         <Grid item>
                                                             <IconButton
-                                                                aria-label="close"
-                                                                onClick={() => handleClose()}
+                                                                onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
                                                                 sx={{
-                                                                    color: (theme) => theme.palette.grey[500],
+                                                                    color: (theme) => theme.palette.primary.main,
                                                                 }}
                                                             >
                                                                 <CloseIcon />
                                                             </IconButton>
                                                         </Grid>
                                                     </Grid>
-
                                                     {!entityTemplate._id && (
                                                         <Grid item marginTop="20px">
                                                             <ChooseTemplate
@@ -294,7 +388,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     )}
                                                 </Box>
                                                 <Box width="95%" maxWidth="95%" paddingLeft="20px">
-                                                    <Grid marginTop="20px" marginBottom="20px">
+                                                    <Grid marginTop="20px" style={{ overflowY: 'scroll', maxHeight: '37rem' }}>
                                                         {isPropertiesFirst ? propertiesComp : propertiesFilesComp}
                                                     </Grid>
                                                     {templateFileKeys.length > 0 && (
@@ -304,47 +398,61 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             </Grid>
                                                         </Grid>
                                                     )}
-
                                                     <Grid marginTop="20px" marginBottom="20px">
                                                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                                                     </Grid>
                                                 </Box>
                                             </Grid>
                                         </Grid>
+                                        <Divider orientation="horizontal" style={{ alignSelf: 'stretch', width: '100%' }} />
                                         <Grid
                                             container
                                             item
                                             flexDirection="row"
                                             flexWrap="nowrap"
                                             justifyContent="space-between"
-                                            padding="25px 15px 0px 15px"
+                                            alignItems="center"
+                                            paddingTop="25px"
+                                            width="100%"
                                         >
-                                            <Grid item>
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    variant="outlined"
-                                                    startIcon={<ClearIcon />}
-                                                    onClick={() => handleClose()}
-                                                >
-                                                    {i18next.t('entityPage.cancel')}
-                                                </Button>
-                                            </Grid>
-                                            <Grid item>
-                                                <Button
-                                                    style={{ borderRadius: '7px' }}
-                                                    type="submit"
-                                                    variant="contained"
-                                                    startIcon={
-                                                        isUpdateLoading || isCreateLoading ? (
-                                                            <CircularProgress sx={{ color: 'white' }} size={20} />
-                                                        ) : (
-                                                            <DoneIcon />
-                                                        )
-                                                    }
-                                                    disabled={!dirty || isUpdateLoading || isCreateLoading}
-                                                >
-                                                    {i18next.t('entityPage.save')}
-                                                </Button>
+                                            {(entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds)?.length && isEditMode ? (
+                                                <ExportFormats
+                                                    properties={{
+                                                        createdAt: isEditMode ? entityToUpdate?.properties.createdAt : new Date(),
+                                                        ...values.properties,
+                                                    }}
+                                                    documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
+                                                />
+                                            ) : (
+                                                <Grid item xs={6}>
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        variant="outlined"
+                                                        startIcon={<ClearIcon />}
+                                                        onClick={() => (wasDirty ? setIsDraftDialogOpen(true) : handleClose())}
+                                                    >
+                                                        {i18next.t('entityPage.cancel')}
+                                                    </Button>
+                                                </Grid>
+                                            )}
+                                            <Grid item xs={6} container justifyContent="space-between">
+                                                <Grid item container flexDirection="row" justifyContent="right">
+                                                    <Button
+                                                        style={{ borderRadius: '7px' }}
+                                                        type="submit"
+                                                        variant="contained"
+                                                        startIcon={
+                                                            isUpdateLoading || isCreateLoading ? (
+                                                                <CircularProgress sx={{ color: 'white' }} size={20} />
+                                                            ) : (
+                                                                <DoneIcon />
+                                                            )
+                                                        }
+                                                        disabled={!dirty || isUpdateLoading || isCreateLoading}
+                                                    >
+                                                        {i18next.t('entityPage.save')}
+                                                    </Button>
+                                                </Grid>
                                             </Grid>
                                         </Grid>
                                     </Grid>
@@ -384,6 +492,15 @@ const CreateOrEditEntityDetails: React.FC<{
                                 rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                             />
                         )}
+
+                        <DraftWarningDialog
+                            isOpen={isDraftDialogOpen}
+                            handleClose={() => setIsDraftDialogOpen(false)}
+                            closeCreateOrEditDialog={handleClose}
+                            values={{ ...values, entityId: entityToUpdate?.properties._id }}
+                            isEditMode={isEditMode}
+                            originalDrafts={originalDrafts}
+                        />
                     </>
                 );
             }}

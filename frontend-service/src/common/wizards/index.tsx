@@ -67,7 +67,7 @@ const Wizard = <T extends object>({
     return (
         <Dialog
             open={open}
-            maxWidth="md"
+            maxWidth="lg"
             fullWidth
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
             style={{ height: '80%', margin: 'auto' }}

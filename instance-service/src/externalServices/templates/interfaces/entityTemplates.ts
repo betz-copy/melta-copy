@@ -31,6 +31,7 @@ export interface IEntityTemplate {
     name: string;
     displayName: string;
     iconFileId?: string;
+    documentTemplatesIds?: string[];
     properties: {
         type: 'object';
         properties: Record<string, IEntitySingleProperty>;

@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
 import axios from '../axios';
 import { environment } from '../globals';
@@ -231,5 +232,10 @@ export const getEntityById = async (entityId: string) => {
 
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
+    return data;
+};
+
+export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
+    const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
     return data;
 };

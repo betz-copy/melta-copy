@@ -52,6 +52,9 @@ const EntityTemplateSchema = new mongoose.Schema(
         actions: {
             type: String,
         },
+        documentTemplatesIds: {
+            type: [String],
+        },
     },
     {
         timestamps: true,

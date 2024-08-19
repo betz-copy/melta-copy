@@ -33,6 +33,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
+    documentTemplatesIds?: string[];
 }
 
 export interface ISearchEntityTemplatesBody {

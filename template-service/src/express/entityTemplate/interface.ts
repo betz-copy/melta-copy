@@ -49,6 +49,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     iconFileId: string | null;
     actions?: string;
+    documentTemplatesIds?: string[];
 }
 
 export interface IMongoEntityTemplate extends IEntityTemplate, Document<string> {

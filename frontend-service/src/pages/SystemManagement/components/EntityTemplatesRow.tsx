@@ -34,6 +34,7 @@ import { environment } from '../../../globals';
 import { CodeEditorDialog } from './codeEditor';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getFileName } from '../../../utils/getFileName';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -245,6 +246,35 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 </Grid>
                             </Grid>
                         ))}
+                    {!!entityTemplate.documentTemplatesIds?.length && (
+                        <Grid item container justifyContent="space-between">
+                            <Grid item color="#9398C2">
+                                <Typography>{i18next.t('wizard.entityTemplate.exportDocuments')}</Typography>
+                            </Grid>
+                        </Grid>
+                    )}
+                    {entityTemplate.documentTemplatesIds?.map((documentTemplateId) => (
+                        <Grid key={documentTemplateId} item container gap="5px">
+                            <Grid item flexBasis="4%" color="#9398C2">
+                                <Typography>-</Typography>
+                            </Grid>
+                            <Grid item color="#53566E">
+                                <MeltaTooltip title={getFileName(documentTemplateId)}>
+                                    <Typography
+                                        style={{
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            width: '175px',
+                                            textAlign: 'right',
+                                        }}
+                                    >
+                                        {getFileName(documentTemplateId)}
+                                    </Typography>
+                                </MeltaTooltip>
+                            </Grid>
+                        </Grid>
+                    ))}
                 </Grid>
             }
             onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}

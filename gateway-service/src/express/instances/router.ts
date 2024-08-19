@@ -16,7 +16,7 @@ import {
     validateUserCanUpdateOrDeleteRelationshipInstance,
     validateUserCanWriteBulkEntityInstance,
 } from './middlewares';
-import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
+import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
 import {
     createEntityInstanceSchema,
@@ -24,6 +24,8 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    exportEntityToDocumentSchemaByEntityId,
+    exportEntityToDocumentSchema,
     searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -115,6 +117,20 @@ InstancesRouter.patch(
         indexName: 'entities',
         responseDataExtractor: undefined,
     }),
+);
+
+InstancesRouter.post(
+    '/entities/export/document',
+    ValidateRequest(exportEntityToDocumentSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentTemplate),
+);
+
+InstancesRouter.post(
+    '/entities/export/document/:entityId',
+    ValidateRequest(exportEntityToDocumentSchemaByEntityId),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentSchemaByEntityId),
 );
 
 // relationships (Instances)
