@@ -11,6 +11,33 @@ export class WorkspacesManager {
         return workspaces.map(({ _id }) => _id);
     }
 
+    static async getWorkspaceHierarchyIds(workspaceId: string) {
+        let { path } = await WorkspacesManager.getById(workspaceId);
+
+        const queries: FilterQuery<IWorkspace>[] = [];
+
+        while (path !== '') {
+            const lastSlashIndex = path.lastIndexOf('/');
+            const parentPath = path.substring(0, lastSlashIndex);
+
+            queries.unshift({ name: path.substring(lastSlashIndex + 1, path.length), path: parentPath === '' ? '/' : parentPath });
+
+            path = parentPath;
+        }
+
+        queries.unshift({ name: '', path: '/' });
+
+        return Promise.all(
+            queries.map(async (query) => {
+                const { _id } = await WorkspacesModel.findOne({ ...query, type: WorkspaceTypes.dir }, { _id: 1 })
+                    .orFail(new PathDoesNotExistError(`${query.path}/${query.name}`))
+                    .lean()
+                    .exec();
+                return _id;
+            }),
+        );
+    }
+
     static async getFile(path: IWorkspace['path']) {
         const { dir, name, ext } = parsePath(path);
 

@@ -1,6 +1,6 @@
 import * as joi from 'joi';
 import { mongoIdSchema } from '../../utils/joi/schemas';
-import { CompactNullablePermissionsSchema } from '../../utils/joi/schemas/permission/compact';
+import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';
 import { PermissionTypeOptions } from './interface';
 
 // GET /api/permissions/compact/find-by-user-id/:userId
@@ -28,7 +28,7 @@ export const syncCompactPermissionsRequestSchema = joi.object({
 export const deletePermissionsFromMetadataRequestSchema = joi.object({
     query: {},
     body: {
-        metadata: CompactNullablePermissionsSchema,
+        metadata: SubCompactNullablePermissionSchema.required(),
         query: {
             workspaceId: mongoIdSchema.required(),
             type: joi

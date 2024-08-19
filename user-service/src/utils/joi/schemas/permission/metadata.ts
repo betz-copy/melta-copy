@@ -9,7 +9,7 @@ export const getPermissionMetadataSchema = (classHierarchy: readonly string[], a
     };
 
     if (className) {
-        schema[className] = joi.object().pattern(joi.string(), getPermissionMetadataSchema(restOfHierarchy));
+        schema[className] = joi.object().pattern(joi.string(), getPermissionMetadataSchema(restOfHierarchy, allowNull));
     }
 
     return allowNull ? joi.object(schema).allow(null) : joi.object(schema);

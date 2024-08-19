@@ -44,5 +44,6 @@ const getSubCompactPermissionSchema = (allowNull = false) => {
 };
 
 export const SubCompactPermissionSchema = getSubCompactPermissionSchema();
+export const SubCompactNullablePermissionSchema = getSubCompactPermissionSchema(true);
 export const CompactPermissionsSchema = joi.object().pattern(joi.string(), getSubCompactPermissionSchema());
 export const CompactNullablePermissionsSchema = joi.object().pattern(joi.string(), getSubCompactPermissionSchema(true));

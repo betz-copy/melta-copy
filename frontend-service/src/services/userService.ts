@@ -1,7 +1,6 @@
-/* eslint-disable no-promise-executor-return */
 import axios from '../axios';
 import { environment } from '../globals';
-import { ICompact, ICompactNullablePermissions, ICompactPermissions, IPermission } from '../interfaces/permissions/permissions';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
@@ -33,7 +32,7 @@ export const updateUserExternalMetadataRequest = async (userId: string, kartoffe
 };
 
 export const syncUserPermissionsRequest = async (userId: string, permissions: ICompactNullablePermissions) => {
-    const { data } = await axios.post<IUser>(`${users}/${userId}/permissions/sync`, permissions);
+    const { data } = await axios.post<ICompactPermissions>(`${users}/${userId}/permissions/sync`, permissions);
     return data;
 };
 
@@ -45,7 +44,7 @@ export const searchExternalUsersRequest = async (search: string) => {
 
 export const deletePermissionsFromMetadata = async (
     query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
-    metadata: RecursiveNullable<ICompact<IPermission>>,
+    metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
     return data;

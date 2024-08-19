@@ -6,6 +6,10 @@ export class WorkspacesController {
         res.json(await WorkspacesManager.getWorkspaceIds(req.body.type));
     }
 
+    static async getWorkspaceHierarchyIds(req: Request, res: Response) {
+        res.json(await WorkspacesManager.getWorkspaceHierarchyIds(req.params.id));
+    }
+
     static async getDir(req: Request, res: Response) {
         res.json(await WorkspacesManager.getDir(req.body.path));
     }

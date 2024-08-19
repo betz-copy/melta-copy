@@ -1,5 +1,6 @@
 import axios from 'axios';
 import express from 'express';
+import { PermissionScope } from '../externalServices/userService/interfaces/permissions';
 
 import logger from '../utils/logger/logsLogger';
 
@@ -76,5 +77,11 @@ export class UserNotFoundError extends ServiceError {
 export class UserNotAuthorizedError extends ServiceError {
     constructor() {
         super(403, 'User not authorized');
+    }
+}
+
+export class UserIncorrectScopeError extends ServiceError {
+    constructor(neededScope?: PermissionScope, userScope?: PermissionScope) {
+        super(403, `User scope is ${userScope} but ${neededScope} is needed`);
     }
 }

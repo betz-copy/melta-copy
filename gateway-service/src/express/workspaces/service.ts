@@ -14,6 +14,11 @@ export class WorkspaceService {
         return data;
     }
 
+    static async getWorkspaceHierarchyIds(id: string) {
+        const { data } = await this.api.get<string[]>(`/${id}/ids/hierarchy`);
+        return data;
+    }
+
     static async getDir(path: IWorkspace['path']) {
         const { data } = await this.api.post<IWorkspace[]>('/dir', { path });
         return data;

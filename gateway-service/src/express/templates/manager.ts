@@ -275,7 +275,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await UsersManager.deletePermissionsFromMetadata(
             { workspaceId: this.workspaceId, type: PermissionType.instances },
-            { categories: { [id]: null } },
+            { instances: { categories: { [id]: null } } },
         ).catch(() => {});
     }
 

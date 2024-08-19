@@ -64,5 +64,5 @@ export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompact
 };
 
 export const PermissionsManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
-    return protectedRoute(children, permissions.processes?.scope !== PermissionScope.write);
+    return protectedRoute(children, permissions.permissions?.scope !== PermissionScope.write);
 };

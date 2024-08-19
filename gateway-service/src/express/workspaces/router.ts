@@ -4,7 +4,15 @@ import config from '../../config';
 import { createWorkspacesController, wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { WorkspaceController } from './controller';
-import { createOneSchema, getByIdSchema, getDirSchema, getFileSchema, getWorkspaceIds, updateOneSchema } from './validator.schema';
+import {
+    createOneSchema,
+    getByIdSchema,
+    getDirSchema,
+    getFileSchema,
+    getWorkspaceHierarchyIdsSchema,
+    getWorkspaceIds,
+    updateOneSchema,
+} from './validator.schema';
 
 const controller = createWorkspacesController(WorkspaceController);
 
@@ -16,6 +24,12 @@ workspaceRouter.post('/ids', ValidateRequest(getWorkspaceIds), wrapController(Wo
 workspaceRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspaceController.getDir));
 
 workspaceRouter.post('/file', ValidateRequest(getFileSchema), wrapController(WorkspaceController.getFile));
+
+workspaceRouter.get(
+    '/:id/ids/hierarchy',
+    ValidateRequest(getWorkspaceHierarchyIdsSchema),
+    wrapController(WorkspaceController.getWorkspaceHierarchyIds),
+);
 
 workspaceRouter.get('/:id', ValidateRequest(getByIdSchema), wrapController(WorkspaceController.getById));
 

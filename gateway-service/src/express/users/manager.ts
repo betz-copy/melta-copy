@@ -2,10 +2,10 @@ import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';
 import {
-    ICompact,
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
+    ISubCompactPermissions,
 } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
@@ -42,7 +42,7 @@ export class UsersManager {
 
     static async deletePermissionsFromMetadata(
         query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
-        metadata: RecursiveNullable<ICompact<IPermission>>,
+        metadata: RecursiveNullable<ISubCompactPermissions>,
     ) {
         return UserService.deletePermissionsFromMetadata(query, metadata);
     }
@@ -77,6 +77,8 @@ export class UsersManager {
     }
 
     private static kartoffelUserToExternalUserData(kartoffelUser: IKartoffelUser): IExternalUser {
+        console.log({ kartoffelUser });
+
         const digitalIdentities: IExternalUser['digitalIdentities'] = {};
 
         if (!kartoffelUser.digitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);

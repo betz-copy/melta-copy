@@ -40,6 +40,15 @@ export const getFileSchema = Joi.object({
     params: {},
 });
 
+// GET /api/workspaces/:id/ids/hierarchy
+export const getWorkspaceHierarchyIdsSchema = Joi.object({
+    query: {},
+    body: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
 // GET /api/workspaces/:id
 export const getByIdSchema = Joi.object({
     query: {},

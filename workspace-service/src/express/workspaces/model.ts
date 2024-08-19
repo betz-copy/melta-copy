@@ -15,6 +15,7 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
             type: String,
             required: true,
         },
+        // Materialized paths pattern
         path: {
             type: String,
             required: true,

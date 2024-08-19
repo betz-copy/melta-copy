@@ -11,6 +11,10 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
         res.json(await WorkspaceManager.getWorkspaceIds(req.body.type));
     }
 
+    static async getWorkspaceHierarchyIds(req: Request, res: Response) {
+        res.json(await WorkspaceManager.getWorkspaceHierarchyIds(req.params.id));
+    }
+
     static async getDir(req: Request, res: Response) {
         res.json(await WorkspaceManager.getDir(req.body.path));
     }

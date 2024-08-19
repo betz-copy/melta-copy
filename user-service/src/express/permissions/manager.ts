@@ -1,11 +1,11 @@
 import { FilterQuery } from 'mongoose';
-import { typedObjectEntries } from '../../utils';
+import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
-import { SinglePermissionOfTypePerUserError } from './errors';
-import { IPermission, ICompactPermissions, ICompactNullablePermissions, ISubCompactPermissions, ICompact } from './interface/permissions';
-import { PermissionsModel } from './model';
-import { UsersManager } from '../users/manager';
 import { RecursiveNullable } from '../../utils/types';
+import { UsersManager } from '../users/manager';
+import { SinglePermissionOfTypePerUserError } from './errors';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interface/permissions';
+import { PermissionsModel } from './model';
 
 export class PermissionsManager {
     static async getCompactPermissions(permissions: IPermission[]): Promise<ICompactPermissions> {
@@ -67,9 +67,11 @@ export class PermissionsManager {
 
     static async deletePermissionsFromMetadata(
         query: Pick<IPermission, 'type' | 'workspaceId'> & { userId?: IPermission['userId'] },
-        metadata: RecursiveNullable<ICompact<IPermission>>,
+        metadata: RecursiveNullable<ISubCompactPermissions>,
     ): Promise<void> {
-        await PermissionsModel.updateMany(query, { $unset: { metadata } }).lean().exec();
+        await PermissionsModel.updateMany(query, { $unset: flattenObject(metadata[query.type]!, ['metadata']) })
+            .lean()
+            .exec();
     }
 
     static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions, workspaceId?: string): Promise<IPermission[]> {

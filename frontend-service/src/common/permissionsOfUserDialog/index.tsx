@@ -3,19 +3,24 @@ import { useTour } from '@reactour/tour';
 import { Form, Formik, FormikProps } from 'formik';
 import i18next from 'i18next';
 import _cloneDeep from 'lodash.clonedeep';
+import _isEqual from 'lodash.isequal';
 import React, { useMemo } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import * as Yup from 'yup';
 import { ICategoryMap } from '../../interfaces/categories';
-import { PermissionScope } from '../../interfaces/permissions';
+import { PermissionScope, PermissionType } from '../../interfaces/permissions';
 import { IUser } from '../../interfaces/users';
-import { syncUserPermissionsRequest } from '../../services/userService';
+import { createUserRequest, deletePermissionsFromMetadata, syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
-import { checkUserCategoryPermission, getUserPermissionScopeOfCategory } from '../../utils/permissions/instancePermissions';
+import {
+    checkUserCategoryPermission,
+    getCategoryPermissionsToSyncAndDelete,
+    getUserPermissionScopeOfCategory,
+} from '../../utils/permissions/instancePermissions';
 import { didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 import UserAutocomplete from '../inputs/UserAutocomplete';
 import InstancesPermissionsCard from './instancesPermissionsCard';
@@ -56,54 +61,78 @@ const PermissionsOfUserDialog: React.FC<{
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
-    const { mutateAsync: createOrEditPermissionsOfUser } = useMutation(
-        (formUser: IUser) => syncUserPermissionsRequest(formUser._id, formUser.permissions),
+    const { mutate: createUser } = useMutation(
+        (formUser: IUser) =>
+            // TODO-WORKSPACES only add permissions if user already exists
+            createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),
         {
             onError: (error) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to upsert permission. error:', error);
-                if (mode === 'create') {
-                    toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
-                } else {
-                    toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
-                }
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
             onSuccess: (newUser) => {
                 queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
-                    if (!oldUsers) throw new Error('should contain existing permissions when creating/updating permissions of user');
+                    if (!oldUsers) throw new Error('should contain existing users when creating user');
+                    return [newUser, ...oldUsers];
+                });
+
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
+                handleClose();
+            },
+        },
+    );
+
+    const { mutate: syncUserPermissions } = useMutation(
+        async (formUser: IUser) => {
+            const {
+                permissions: {
+                    [workspace._id]: { instances, ...permissions },
+                },
+            } = formUser;
+
+            const { categoryPermissionsToSync, categoryPermissionsToDelete } = getCategoryPermissionsToSyncAndDelete(instances);
+
+            if (Object.keys(categoryPermissionsToDelete).length) {
+                await deletePermissionsFromMetadata(
+                    { workspaceId: workspace._id, type: PermissionType.instances, userId: formUser._id },
+                    { instances: { categories: categoryPermissionsToDelete } },
+                );
+            }
+
+            return syncUserPermissionsRequest(formUser._id, {
+                [workspace._id]: { ...permissions, instances: { categories: categoryPermissionsToSync } },
+            });
+        },
+        {
+            onError: (error) => {
+                // eslint-disable-next-line no-console
+                console.log('failed to upsert permission. error:', error);
+                toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToEditPermissionsOfUser'));
+            },
+            onSuccess: (newPermissions) => {
+                if (!existingUser) return;
+
+                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
+                    if (!oldUsers) throw new Error('should contain existing users when updating permissions of user');
                     const newUsers = [...oldUsers];
+                    const existingUserIndex = newUsers.findIndex(({ _id }) => _id === existingUser._id);
 
-                    if (existingUser) {
-                        const existingUserIndex = newUsers.findIndex(({ _id }) => _id === newUser._id);
-
-                        if (userHasNoPermissions(newUser.permissions)) {
-                            newUsers.splice(existingUserIndex, 1);
-                        } else {
-                            newUsers[existingUserIndex] = newUser;
-                        }
-                    } else {
-                        newUsers.unshift(newUser);
-                    }
+                    if (userHasNoPermissions(newPermissions[workspace._id])) newUsers.splice(existingUserIndex, 1);
+                    else newUsers[existingUserIndex] = { ...existingUser, permissions: newPermissions };
 
                     return newUsers;
                 });
 
-                if (newUser._id === currentUser._id) {
-                    if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-                        setUser({
-                            ...currentUser,
-                            permissions: { ...currentUser.permissions, [workspace._id]: newUser },
-                            currentWorkspacePermissions: currentUser.permissions[workspace._id],
-                        });
+                if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
+                    setUser({
+                        ...currentUser,
+                        permissions: { ...currentUser.permissions, ...newPermissions },
+                        currentWorkspacePermissions: newPermissions[workspace._id],
+                    });
                 }
 
-                if (mode === 'create') {
-                    toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
-                }
-                if (mode === 'edit') {
-                    toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
-                }
-
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
                 handleClose();
             },
         },
@@ -133,8 +162,8 @@ const PermissionsOfUserDialog: React.FC<{
                     return {};
                 }}
                 onSubmit={(formUser) => {
-                    console.log('homo', formUser);
-                    // createOrEditPermissionsOfUser(formPermissionsOfUser as Omit<IFormPermissionsOfUser, 'user'> & { user: IUser })
+                    if (mode === 'create') createUser(formUser);
+                    else syncUserPermissions(formUser);
                 }}
             >
                 {(formikProps: FormikProps<IUser>) => {
@@ -142,7 +171,7 @@ const PermissionsOfUserDialog: React.FC<{
                     const categoriesPermissions = currentPermissions?.instances?.categories ?? {};
 
                     const handleManagementPermissionCheck = (path: string, checked: boolean) => {
-                        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : { scope: null });
+                        formikProps.setFieldValue(path, checked ? { scope: PermissionScope.write } : null);
                     };
 
                     return (
@@ -230,20 +259,10 @@ const PermissionsOfUserDialog: React.FC<{
                                                         mode === 'view'
                                                             ? () => {}
                                                             : (_e, checked: boolean) => {
-                                                                  if (checked) {
-                                                                      formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
-                                                                          ...categoriesPermissions,
-                                                                          [currCategory._id]: { scope: PermissionScope.read },
-                                                                      });
-                                                                      return;
-                                                                  }
-
-                                                                  const newCategoriesPermissions = { ...categoriesPermissions };
-                                                                  delete newCategoriesPermissions[currCategory._id];
-                                                                  formikProps.setFieldValue(
-                                                                      `${permissionsPath}.instances.categories`,
-                                                                      newCategoriesPermissions,
-                                                                  );
+                                                                  formikProps.setFieldValue(`${permissionsPath}.instances.categories`, {
+                                                                      ...categoriesPermissions,
+                                                                      [currCategory._id]: checked ? { scope: PermissionScope.read } : null,
+                                                                  });
                                                               },
                                                 },
                                                 write: {
@@ -268,13 +287,15 @@ const PermissionsOfUserDialog: React.FC<{
                                                 : {
                                                       indeterminate:
                                                           Object.keys(categoriesPermissions).length > 0 &&
-                                                          Object.keys(categoriesPermissions).length < categories.size,
+                                                          Object.values(categoriesPermissions).filter(
+                                                              (categoryPermission) => categoryPermission?.scope !== PermissionScope.write,
+                                                          ).length < categories.size,
                                                       permissionType: {
                                                           write: {
                                                               checked:
                                                                   Object.keys(categoriesPermissions).length === categories.size &&
                                                                   Object.values(categoriesPermissions).every(
-                                                                      ({ scope }) => scope === PermissionScope.write,
+                                                                      (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
                                                                   ),
                                                               onChange: (_e, checked) => {
                                                                   formikProps.setFieldValue(
@@ -293,7 +314,9 @@ const PermissionsOfUserDialog: React.FC<{
                                                           read: {
                                                               checked:
                                                                   Object.keys(categoriesPermissions).length === categories.size &&
-                                                                  Object.values(categoriesPermissions).every(({ scope }) => scope),
+                                                                  Object.values(categoriesPermissions).every(
+                                                                      (categoryPermission) => categoryPermission?.scope,
+                                                                  ),
                                                               onChange: (_e, checked) => {
                                                                   formikProps.setFieldValue(
                                                                       `${permissionsPath}.instances.categories`,
@@ -317,7 +340,9 @@ const PermissionsOfUserDialog: React.FC<{
 
                                                                               return [
                                                                                   categoryId,
-                                                                                  { ...categoriesPermissions[categoryId], scope: newScope },
+                                                                                  newScope
+                                                                                      ? { ...categoriesPermissions[categoryId], scope: newScope }
+                                                                                      : null,
                                                                               ];
                                                                           }),
                                                                       ),

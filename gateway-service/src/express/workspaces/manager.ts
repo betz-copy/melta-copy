@@ -15,6 +15,10 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return WorkspaceService.getWorkspaceIds(type);
     }
 
+    static async getWorkspaceHierarchyIds(id: string) {
+        return WorkspaceService.getWorkspaceHierarchyIds(id);
+    }
+
     static async getDir(path: IWorkspace['path']) {
         return WorkspaceService.getDir(path);
     }

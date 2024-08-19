@@ -2,7 +2,16 @@ import { Router } from 'express';
 import { wrapController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
 import { WorkspacesController } from './controller';
-import { createOneSchema, deleteOneSchema, getByIdSchema, getDirSchema, getFileSchema, getWorkspaceIds, updateOneSchema } from './validator.schema';
+import {
+    createOneSchema,
+    deleteOneSchema,
+    getByIdSchema,
+    getDirSchema,
+    getFileSchema,
+    getWorkspaceHierarchyIdsSchema,
+    getWorkspaceIds,
+    updateOneSchema,
+} from './validator.schema';
 
 export const workspacesRouter: Router = Router();
 
@@ -11,6 +20,12 @@ workspacesRouter.post('/ids', ValidateRequest(getWorkspaceIds), wrapController(W
 workspacesRouter.post('/dir', ValidateRequest(getDirSchema), wrapController(WorkspacesController.getDir));
 
 workspacesRouter.post('/file', ValidateRequest(getFileSchema), wrapController(WorkspacesController.getFile));
+
+workspacesRouter.get(
+    '/:id/ids/hierarchy',
+    ValidateRequest(getWorkspaceHierarchyIdsSchema),
+    wrapController(WorkspacesController.getWorkspaceHierarchyIds),
+);
 
 workspacesRouter.get('/:id', ValidateRequest(getByIdSchema), wrapController(WorkspacesController.getById));
 

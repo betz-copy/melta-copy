@@ -1,4 +1,4 @@
-import { Autocomplete, AutocompleteProps, SxProps, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
 import React, { useMemo, useState } from 'react';
