@@ -10,6 +10,9 @@ import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import config from '../../config';
+
+const { brokenRulesFakeEntityIdPrefix } = config;
 
 const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
     const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
@@ -21,6 +24,10 @@ const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
     });
 
     return populatedInstances;
+};
+
+const generateFakeEntityId = (index: number) => {
+    return `${brokenRulesFakeEntityIdPrefix}${index}._id`;
 };
 
 const prepareCodeForActionExecution = async (
@@ -79,8 +86,6 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
         properties: Record<string, any>;
     }[] = [];
 
-    console.dir({ executionOutput }, { depth: null });
-
     await Promise.all(
         executionOutput.map(async (entityToUpdate) => {
             if (entityToUpdate.entityId === undefined) {
@@ -92,7 +97,7 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
             const entityAfterManipulations = entityToUpdate;
 
             if (entityToUpdate.entityId === entity.properties._id && crudAction === 'onCreateEntity') {
-                entityAfterManipulations.entityId = '$0._id';
+                entityAfterManipulations.entityId = generateFakeEntityId(0);
             }
 
             Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {

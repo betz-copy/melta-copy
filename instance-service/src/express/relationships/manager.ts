@@ -21,6 +21,8 @@ import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
 import { IEntity } from '../entities/interface';
 
+const { brokenRulesFakeEntityIdPrefix } = config;
+
 export class RelationshipManager {
     static async getRelationshipById(id: string) {
         const relationship = await Neo4jClient.readTransaction(
@@ -207,11 +209,11 @@ export class RelationshipManager {
 
     static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
-        if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
+        if (relationship.destinationEntityId.startsWith(brokenRulesFakeEntityIdPrefix) && relationship.destinationEntityId.endsWith('._id')) {
             const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4), 10);
             relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
         }
-        if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
+        if (relationship.sourceEntityId.startsWith(brokenRulesFakeEntityIdPrefix) && relationship.sourceEntityId.endsWith('._id')) {
             const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4), 10);
             relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
         }

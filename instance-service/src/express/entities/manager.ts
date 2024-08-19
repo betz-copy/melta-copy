@@ -54,6 +54,8 @@ import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, 
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import BulkActionManager from '../bulkActions/manager';
 
+const { brokenRulesFakeEntityIdPrefix } = config;
+
 export class EntityManager {
     static getRelevantRulesOfEntities = (
         entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap,
@@ -438,7 +440,7 @@ export class EntityManager {
                 entitiesToUpdate.map(async (entityToUpdate) => {
                     const { entityId, properties: allProperties } = entityToUpdate;
 
-                    const currentEntity = !entityId.startsWith('$') ? await this.getEntityById(entityId) : null;
+                    const currentEntity = !entityId.startsWith(brokenRulesFakeEntityIdPrefix) ? await this.getEntityById(entityId) : null;
                     const updatedFields = this.getUpdatedProperties(
                         currentEntity ? currentEntity.properties : properties,
                         allProperties,
@@ -1139,7 +1141,7 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        const updatedEntities: IEntity[] = [];
+        // const updatedEntities: IEntity[] = [];
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = await this.relationshipReferenceObjectToId(entity);
 
@@ -1184,8 +1186,8 @@ export class EntityManager {
                     }
                 }),
             );
-            const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            return { updatedEntity: resultsOfBulkActions[0] as IEntity, updatedEntities };
+            const [updatedEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            return { updatedEntity, updatedEntities };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
@@ -1213,7 +1215,7 @@ export class EntityManager {
 
             await Promise.all(activityLogsPromises);
 
-            return { updatedEntity, updatedEntities };
+            return { updatedEntity, updatedEntities: [] };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 

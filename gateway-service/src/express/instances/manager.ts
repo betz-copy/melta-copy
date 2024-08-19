@@ -32,7 +32,7 @@ import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet 
 import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
 
-const { errorCodes } = config;
+const { errorCodes, ruleBreachService } = config;
 
 export class InstancesManager {
     static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
@@ -579,11 +579,11 @@ export class InstancesManager {
                 } else if (action.actionType === ActionTypes.CreateRelationship) {
                     const { destinationEntityId, sourceEntityId } = action.actionMetadata as ICreateRelationshipMetadata;
 
-                    if (!destinationEntityId.startsWith('$')) entitiesIds.add(destinationEntityId);
-                    if (!sourceEntityId.startsWith('$')) entitiesIds.add(sourceEntityId);
+                    if (!destinationEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(destinationEntityId);
+                    if (!sourceEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(sourceEntityId);
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
-                    if (!entityId.startsWith('$')) entitiesIds.add(entityId);
+                    if (!entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(entityId);
                 }
             }),
         );

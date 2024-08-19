@@ -82,12 +82,12 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 
         tooltipHeader = (
             <Typography variant="body2" fontStyle="italic">
-                {entityForLink.properties._id.startsWith('&')
+                {entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
                     ? i18next.t('ruleBreachInfo.theEntityThatIsSupposedToBeCreated')
                     : i18next.t('ruleBreachInfo.theEntityThatWasCreated')}
             </Typography>
         );
-        linkable = entityForLink.properties._id.startsWith('&');
+        linkable = entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
@@ -229,7 +229,11 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                         {actionType === ActionTypes.DuplicateEntity &&
                             i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.duplicatingEntity')}
                     </Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={!entity.properties._id.startsWith('$')} />
+                    <EntityLink
+                        entity={entity}
+                        entityTemplate={entityTemplate}
+                        linkable={!entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                    />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>

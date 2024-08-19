@@ -23,15 +23,18 @@ import { IMongoEntityTemplate } from '../../externalServices/templates/interface
 import RelationshipManager from '../relationships/manager';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { createActivityLog } from '../../externalServices/activityLog/producer';
+import config from '../../config';
+
+const { brokenRulesFakeEntityIdPrefix } = config;
 
 export class BulkActionManager {
     static getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
         const relationshipToReturn: IRelationship = relationship;
-        if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
+        if (relationship.destinationEntityId.startsWith(brokenRulesFakeEntityIdPrefix) && relationship.destinationEntityId.endsWith('._id')) {
             const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4), 10);
             relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
         }
-        if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
+        if (relationship.sourceEntityId.startsWith(brokenRulesFakeEntityIdPrefix) && relationship.sourceEntityId.endsWith('._id')) {
             const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4), 10);
             relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
         }
@@ -69,7 +72,7 @@ export class BulkActionManager {
     static getEntityIdByPrevResults(actionMetadata: IUpdateEntityMetadata, results: (IEntity | IRelationship)[]): IUpdateEntityMetadata {
         const { entityId, updatedFields } = actionMetadata;
 
-        if (entityId.startsWith('$')) {
+        if (entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             const createdEntity = results[numberPart] as IEntity;
             return { entityId: createdEntity.properties._id, before: createdEntity.properties, updatedFields };
@@ -104,7 +107,7 @@ export class BulkActionManager {
                             entityTemplateId: relationshipTemplate.destinationEntityId,
                         },
                     ].filter(({ entityId }) => {
-                        return !entityId.startsWith('$'); // then it's entity that will be created in prev actions, so cant run rule on entity that doesnt exist
+                        return !entityId.startsWith(brokenRulesFakeEntityIdPrefix); // then it's entity that will be created in prev actions, so cant run rule on entity that doesnt exist
                     });
 
                     entitiesDatas.forEach((entityData) => {
@@ -122,7 +125,7 @@ export class BulkActionManager {
                     });
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                    if (!actionMetadata.entityId.startsWith('$')) {
+                    if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                         const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
@@ -305,7 +308,7 @@ export class BulkActionManager {
             },
             [ActionTypes.UpdateEntity]: async (action) => {
                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
-                if (!actionMetadata.entityId.startsWith('$')) {
+                if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                     const entity = await EntityManager.getEntityById(actionMetadata.entityId);
                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
                     entityTemplateIds.push(entityTemplate._id);

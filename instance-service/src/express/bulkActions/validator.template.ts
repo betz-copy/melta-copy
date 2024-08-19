@@ -10,6 +10,9 @@ import { EntityTemplateManagerService } from '../../externalServices/templates/e
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { IEntity } from '../entities/interface';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import config from '../../config';
+
+const { brokenRulesFakeEntityIdPrefix } = config;
 
 const ajv = new Ajv();
 
@@ -104,9 +107,9 @@ export const validateActionsGroups = async (req: Request) => {
                 const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
                 if (
-                    !metadata.relationshipTemplateId.startsWith('$') &&
-                    !metadata.sourceEntityId.startsWith('$') &&
-                    !metadata.destinationEntityId.startsWith('$')
+                    !metadata.relationshipTemplateId.startsWith(brokenRulesFakeEntityIdPrefix) &&
+                    !metadata.sourceEntityId.startsWith(brokenRulesFakeEntityIdPrefix) &&
+                    !metadata.destinationEntityId.startsWith(brokenRulesFakeEntityIdPrefix)
                 ) {
                     validateRelationship(
                         relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0],
@@ -117,7 +120,7 @@ export const validateActionsGroups = async (req: Request) => {
             } else if (action.actionType === ActionTypes.CreateEntity) {
                 const metadata = action.actionMetadata as ICreateEntityMetadata;
 
-                if (!metadata.templateId.startsWith('$')) {
+                if (!metadata.templateId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                     validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
                 }
             }
