@@ -22,7 +22,7 @@ import { toastConstraintValidationError } from '../../../common/dialogs/entity/t
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
@@ -43,6 +43,8 @@ const DuplicateEntity: React.FC<{}> = () => {
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
+        actions?: IActionPopulated[];
+        rawActions?: IAction[];
     }>({ isOpen: false });
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
@@ -61,10 +63,14 @@ const DuplicateEntity: React.FC<{}> = () => {
                 }
 
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
                     setDuplicateEntityWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
+                        actions,
+                        rawActions,
                     });
                 }
 
@@ -246,6 +252,8 @@ const DuplicateEntity: React.FC<{}> = () => {
                                     setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
                                     navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
                                 }}
+                                actions={duplicateEntityWithRuleBreachDialogState.actions}
+                                rawActions={duplicateEntityWithRuleBreachDialogState.rawActions}
                             />
                         )}
                     </>

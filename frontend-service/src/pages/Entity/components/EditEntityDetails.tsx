@@ -19,7 +19,7 @@ import { environment } from '../../../globals';
 import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { errorCodes } = environment;
@@ -35,6 +35,8 @@ const EditEntityDetails: React.FC<{
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IBrokenRule[];
         updateEntityFormData?: EntityWizardValues;
+        actions?: IActionPopulated[];
+        rawActions?: IAction[];
     }>({ isOpen: false });
 
     const templateFilesProperties = pickBy(
@@ -72,11 +74,15 @@ const EditEntityDetails: React.FC<{
                 }
 
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
                     setUpdateWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
                         updateEntityFormData: newEntityDate,
+                        actions,
+                        rawActions,
                     });
                 }
                 toast.error(i18next.t('wizard.entity.failedToEdit'));
@@ -227,6 +233,8 @@ const EditEntityDetails: React.FC<{
                                     }))
                                 }
                                 onCreateRuleBreachRequest={() => onCancelUpdate()}
+                                actions={updateWithRuleBreachDialogState.actions}
+                                rawActions={updateWithRuleBreachDialogState.rawActions}
                             />
                         )}
                     </>

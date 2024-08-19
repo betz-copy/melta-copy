@@ -51,7 +51,7 @@ import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import { ActionTypes, IAction, ICreateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
+import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import BulkActionManager from '../bulkActions/manager';
 
@@ -382,10 +382,13 @@ export class EntityManager {
             async (transaction) => {
                 let entity: IEntity | undefined;
 
-                if (action.actionType === ActionTypes.CreateEntity)
+                if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity)
                     entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction, userId)).createdEntity;
-                else if (action.actionType === ActionTypes.UpdateEntity)
-                    entity = (await this.handleUpdateEntity(action.actionMetadata as IUpdateEntityMetadata, transaction)).updatedEntity;
+                else if (action.actionType === ActionTypes.UpdateEntity) {
+                    const actionMetaDate = action.actionMetadata as IUpdateEntityMetadata;
+                    const fixedWithUpdatedFields = await BulkActionManager.fixUpdatedFields(actionMetaDate, transaction);
+                    entity = (await this.handleUpdateEntity(fixedWithUpdatedFields, transaction)).updatedEntity;
+                }
 
                 if (entity) {
                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
@@ -415,11 +418,19 @@ export class EntityManager {
         const updatedEntities: IEntity[] = [];
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
-            const action: IAction = {
-                actionType: ActionTypes.CreateEntity,
-                actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
-            };
-
+            const action: IAction = duplicatedFromId
+                ? {
+                      actionType: ActionTypes.DuplicateEntity,
+                      actionMetadata: {
+                          templateId: entityTemplate._id,
+                          properties,
+                          entityIdToDuplicate: duplicatedFromId,
+                      } as IDuplicateEntityMetadata,
+                  }
+                : {
+                      actionType: ActionTypes.CreateEntity,
+                      actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
+                  };
             const entitiesToUpdate = await this.executeActionsOnCrud(action, 'onCreateEntity', userId);
 
             const actions = [action];
@@ -1130,6 +1141,23 @@ export class EntityManager {
         return { updatedEntity, activityLogsToCreate };
     }
 
+    static async relationshipReferenceObjectToId(entity: IEntity) {
+        const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
+        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
+
+        Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
+            if (name in entity.properties) {
+                const propertyValue = entity.properties[name];
+
+                if (value.format === 'relationshipReference' && typeof propertyValue !== 'string') {
+                    entityAfterManipulations[name] = (propertyValue as IEntity).properties._id;
+                }
+            }
+        });
+
+        return { ...entity, properties: entityAfterManipulations } as IEntity;
+    }
+
     static async updateEntityById(
         id: string,
         entityProperties: Record<string, any>,
@@ -1139,44 +1167,18 @@ export class EntityManager {
     ) {
         const updatedEntities: IEntity[] = [];
         const entity = await this.getEntityById(id);
+        const unPopulatedEntity = await this.relationshipReferenceObjectToId(entity);
 
         if (entity.properties.disabled) {
             throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
         }
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
-            // const actions: IAction[] = [
-            //     {
-            //         actionType: ActionTypes.UpdateEntity,
-            //         actionMetadata: {
-            //             entityId: id,
-            //             updatedFields: entityProperties,
-            //             entityTemplateId: entityTemplate._id,
-            //         } as IUpdateEntityMetadata,
-            //     },
-            // ];
-
-            // const entitiesToUpdate = await this.executeActionsOnCrud(actions[0], 'onUpdateEntity', userId);
-
-            // await Promise.all(
-            //     entitiesToUpdate.map(async (entityToUpdate) => {
-            //         const { entityId, properties: updatedFields } = entityToUpdate;
-            //         const currentEntity = await this.getEntityById(entityId);
-
-            //         actions.push({
-            //             actionType: ActionTypes.UpdateEntity,
-            //             actionMetadata: {
-            //                 entityId,
-            //                 updatedFields,
-            //             } as IUpdateEntityMetadata,
-            //         });
-            //     }),
-            // );
             const action: IAction = {
                 actionType: ActionTypes.UpdateEntity,
                 actionMetadata: {
                     entityId: id,
-                    updatedFields: this.getUpdatedProperties(entity.properties, entityProperties, entityTemplate),
+                    updatedFields: this.getUpdatedProperties(unPopulatedEntity.properties, entityProperties, entityTemplate),
                 } as IUpdateEntityMetadata,
             };
 
@@ -1189,8 +1191,9 @@ export class EntityManager {
                     const { entityId, properties: allProperties } = entityToUpdate;
 
                     const currentEntity = await this.getEntityById(entityId);
+                    const unPopulatedCurr = await this.relationshipReferenceObjectToId(currentEntity);
                     const updatedFields = this.getUpdatedProperties(
-                        currentEntity.properties,
+                        unPopulatedCurr.properties,
                         allProperties,
                         await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId),
                     );

@@ -2,6 +2,7 @@ import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import format from 'date-fns/format';
+import { isDate } from 'date-fns';
 import { generateInterfaceWithRelationships } from './generateInterfaceFromJsonSchema';
 import { IEntity, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
@@ -148,10 +149,10 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
                     if (value.format === 'relationshipReference') {
                         entityAfterManipulations.properties[name] = propertyValue._id;
                     }
-                    if (value.format === 'date-time') {
+                    if (value.format === 'date-time' && isDate(propertyValue)) {
                         entityAfterManipulations.properties[name] = propertyValue.toISOString();
                     }
-                    if (value.format === 'date') {
+                    if (value.format === 'date' && isDate(propertyValue)) {
                         entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
                     }
                 }

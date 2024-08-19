@@ -5,7 +5,14 @@ import cloneDeep from 'lodash.clonedeep';
 import pickBy from 'lodash.pickby';
 import Neo4jClient from '../../utils/neo4j';
 import { IRelationship } from '../relationships/interfaces';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata, IUpdateEntityMetadata } from './interface';
+import {
+    ActionTypes,
+    IAction,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+} from './interface';
 import EntityManager from '../entities/manager';
 import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
@@ -81,6 +88,8 @@ export class BulkActionManager {
             actions.map(async (action) => {
                 if (action.actionType === ActionTypes.CreateEntity) {
                     entitiesTemplatesIdsOfRules.add((action.actionMetadata as ICreateEntityMetadata).templateId);
+                } else if (action.actionType === ActionTypes.DuplicateEntity) {
+                    entitiesTemplatesIdsOfRules.add((action.actionMetadata as IDuplicateEntityMetadata).templateId);
                 } else if (action.actionType === ActionTypes.CreateRelationship) {
                     const actionMetadata = action.actionMetadata as ICreateRelationshipMetadata;
 
@@ -133,7 +142,11 @@ export class BulkActionManager {
     ) => {
         const entitiesIdsRulesReasonsMapAfterRunActions: EntitiesIdsRulesReasonsMap = new Map();
         actions.forEach((action, i) => {
-            if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.UpdateEntity) {
+            if (
+                action.actionType === ActionTypes.CreateEntity ||
+                action.actionType === ActionTypes.UpdateEntity ||
+                action.actionType === ActionTypes.DuplicateEntity
+            ) {
                 const entity = results[i] as IEntity;
 
                 const entityData = {
@@ -203,7 +216,23 @@ export class BulkActionManager {
 
                     break;
                 }
+                case ActionTypes.DuplicateEntity: {
+                    const actionMetadata = action.actionMetadata as IDuplicateEntityMetadata;
 
+                    const { createdEntity, activityLogsToCreate } = await EntityManager.createEntityInTransaction(
+                        transaction,
+                        actionMetadata.properties,
+                        entitiesTemplatesByIds.get(actionMetadata.templateId)!,
+                        userId,
+                        actionMetadata.entityIdToDuplicate,
+                    );
+
+                    results.push(createdEntity);
+
+                    allActivityLogsToCreate.push(...activityLogsToCreate);
+
+                    break;
+                }
                 case ActionTypes.CreateRelationship: {
                     const actionMetadata = action.actionMetadata as ICreateRelationshipMetadata;
                     const relationship: IRelationship = {
@@ -275,6 +304,10 @@ export class BulkActionManager {
                                 entityTemplateIds.push((action.actionMetadata as ICreateEntityMetadata).templateId);
                                 break;
 
+                            case ActionTypes.DuplicateEntity:
+                                entityTemplateIds.push((action.actionMetadata as IDuplicateEntityMetadata).templateId);
+                                break;
+
                             case ActionTypes.UpdateEntity: {
                                 const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                                 if (!actionMetadata.entityId.startsWith('$')) {
@@ -339,7 +372,8 @@ export class BulkActionManager {
                     ruleFailuresBeforeAll,
                     ruleFailuresAfterAll,
                     actions.map((action, index) => {
-                        if (action.actionType === ActionTypes.CreateEntity) return { createdEntityId: results[index].properties._id };
+                        if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity)
+                            return { createdEntityId: results[index].properties._id };
                         if (action.actionType === ActionTypes.CreateRelationship) return { createdRelationshipId: results[index].properties._id };
                         if (action.actionType === ActionTypes.UpdateEntity) return { updatedEntityId: results[index].properties._id };
                         return {};
