@@ -565,8 +565,6 @@ export class EntityManager {
     static async getEntityById(id: string) {
         const node = await Neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
-        console.log({ node });
-
         if (!node) {
             throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
         }
