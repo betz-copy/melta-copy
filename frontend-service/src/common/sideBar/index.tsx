@@ -1,24 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
-    Divider,
-    IconButton,
-    Grid,
-    Box,
-    Slide,
-    Fade,
-    Button,
-    useTheme,
-    Typography,
-    Collapse,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    Menu,
-    MenuItem,
-    Paper,
-    ListItemIcon,
-    ListItemText,
-} from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -29,12 +10,11 @@ import {
     Gavel as GavelIcon,
     CalendarMonth as CalendarIcon,
     Code as CodeIcon,
-    ContentCut,
 } from '@mui/icons-material';
+import LinkIcon from '@mui/icons-material/Link';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import MenuList from '@mui/material/MenuList';
 import { Drawer } from './SideBar.styled';
 import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
@@ -97,7 +77,7 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
                     >
-                        <CodeIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                        <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>
                 </IconButton>
             </Grid>

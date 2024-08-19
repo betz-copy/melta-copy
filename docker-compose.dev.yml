@@ -156,7 +156,7 @@ services:
 
   template-service:
     ports:
-      - 10000:8000
+      - 1000:8000
     restart: always
     volumes:
       - logs:/usr/src/app/logs

@@ -28,7 +28,7 @@ const IFramesPage: React.FC = () => {
     // const [allIFrames, setAllIFrames] = useState<any>();
     console.log({ allIFrames });
 
-    const iFramesOrderRef = useRef<any>();
+    const iFramesOrderRef = useRef<any>(null);
     const [iFramesOrder, setIFramesOrder] = useState<any>();
     // useEffect(() => {
     //     setAllIFrames();
@@ -36,7 +36,8 @@ const IFramesPage: React.FC = () => {
 
     useEffect(() => {
         if (allIFrames) {
-            console.log('helooooo');
+            console.log('helooooo', { allIFrames });
+
             setIFramesOrder(allIFrames);
             iFramesOrderRef.current = allIFrames;
             queryClient.invalidateQueries(queryKey);
@@ -82,11 +83,9 @@ const IFramesPage: React.FC = () => {
                         console.log('kdkdkdkd', { iFramesOrderRef });
 
                         const index = pageParam ?? 0;
-                        console.log({ index });
-                        const r = iFramesOrderRef.current;
-                        console.log({ r });
+                        console.log(iFramesOrderRef.current, { allIFrames });
 
-                        const currentOrder = r.slice(index, index + 4);
+                        const currentOrder = iFramesOrderRef.current.slice(index, index + 4);
 
                         console.log({ currentOrder });
 

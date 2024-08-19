@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame, IFrameMap } from '../../../interfaces/iFrames';
+import { IFrame, IFrameMap, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
@@ -45,7 +45,7 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
         (iFrame: IFrameWizardValues) =>
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
-            onSuccess: async (data) => {
+            onSuccess: async (data: IMongoIFrame) => {
                 // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
                 //     console.log({ oldData });
 
@@ -59,20 +59,42 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
                 //         pages: updatedPages,
                 //     };
                 // });
-                queryClient.invalidateQueries('searchIFrames');
+                queryClient.invalidateQueries(['searchIFrames', null]);
                 queryClient.setQueryData(['getIFrame', data._id], data);
-                console.log('new iframe created');
-                queryClient.setQueryData('allIFrames', (oldData) => {
-                    if (Array.isArray(oldData)) {
-                        console.log([data, ...oldData]);
+                // queryClient.invalidateQueries('allIFrames');
+                queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                    if (!oldData) {
+                        return [data];
+                    }
 
+                    // Check if the iframe already exists
+                    const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
+
+                    if (index === -1) {
+                        // If iframe does not exist, add it to the array
                         return [data, ...oldData];
                     }
-                    console.log({ oldData });
+                    // If iframe exists, update it
+                    console.log('hi im updated');
 
-                    return [data];
+                    const updatedData = [...oldData];
+                    updatedData[index] = data;
+                    console.log({ index }, { updatedData });
+                    return updatedData;
                 });
-                // queryClient.invalidateQueries('allIFrames');
+
+                // queryClient.setQueryData('allIFrames', (oldData) => {
+                //     if (Array.isArray(oldData)) {
+                //         console.log({ data });
+
+                //         console.log([data, ...oldData]);
+
+                //         return [data, ...oldData];
+                //     }
+                //     console.log({ oldData });
+
+                //     return [data];
+                // });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

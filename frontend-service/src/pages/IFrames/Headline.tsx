@@ -62,7 +62,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
             //         pages: updatedPages,
             //     };
             // });
-            queryClient.invalidateQueries('searchIFrames');
+            queryClient.invalidateQueries(['searchIFrames', null]);
             queryClient.invalidateQueries('allIFrames');
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             navigate('/iframes');
