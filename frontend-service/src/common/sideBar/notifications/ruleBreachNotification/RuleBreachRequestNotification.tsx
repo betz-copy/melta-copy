@@ -22,7 +22,7 @@ export const RuleBreachRequestNotification: React.FC<{
                 </Typography>
             </Grid>
             <Grid item>
-                <RuleBreachInfo originUser={request.originUser} brokenRules={request.brokenRules} actions={request.actions} isCompact />;
+                <RuleBreachInfo originUser={request.originUser} brokenRules={request.brokenRules} actions={request.actions} isCompact />
             </Grid>
         </Grid>
     );

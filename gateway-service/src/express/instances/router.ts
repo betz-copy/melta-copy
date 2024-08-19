@@ -16,7 +16,7 @@ import {
     validateUserCanUpdateOrDeleteRelationshipInstance,
     validateUserCanWriteBulkEntityInstance,
 } from './middlewares';
-import { validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
+import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
 import InstancesController from './controller';
 import {
     createEntityInstanceSchema,
@@ -24,6 +24,8 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    exportEntityToDocumentSchemaByEntityId,
+    exportEntityToDocumentSchema,
     searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -117,6 +119,20 @@ InstancesRouter.patch(
     }),
 );
 
+InstancesRouter.post(
+    '/entities/export/document',
+    ValidateRequest(exportEntityToDocumentSchema),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentTemplate),
+);
+
+InstancesRouter.post(
+    '/entities/export/document/:entityId',
+    ValidateRequest(exportEntityToDocumentSchemaByEntityId),
+    wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    wrapController(InstancesController.exportEntityToDocumentSchemaByEntityId),
+);
+
 // relationships (Instances)
 InstancesRouter.get('/relationships/count', wrapMiddleware(validateUserIsTemplatesManager), InstanceManagerProxy);
 InstancesRouter.post(
@@ -134,10 +150,6 @@ InstancesRouter.delete(
     wrapMiddleware(validateUserCanIgnoreRules),
     wrapController(InstancesController.deleteRelationshipInstance),
 );
-InstancesRouter.post(
-    '/bulk',
-    wrapMiddleware(validateUserCanWriteBulkEntityInstance),
-    wrapController(InstancesController.runBulkOfActions),
-)
+InstancesRouter.post('/bulk', wrapMiddleware(validateUserCanWriteBulkEntityInstance), wrapController(InstancesController.runBulkOfActions));
 
 export default InstancesRouter;
