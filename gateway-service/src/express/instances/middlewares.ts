@@ -23,9 +23,9 @@ const getCategoryIdFromTemplateId = async (templateId: string) => {
 };
 
 const getCategoryIdsFromTemplateIds = async (templateIds: string[]) => {
-    const templates = await EntityTemplateManagerService.searchEntityTemplates({ids: templateIds});
-    
-    return templates.map((template)=> template.category._id);
+    const templates = await EntityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+
+    return templates.map((template) => template.category._id);
 };
 
 export const validateUserCanCreateEntityInstance = async (req: Request) => {
@@ -102,18 +102,18 @@ const getCategoriesIdsByEntitiesAndTemplatesIds = async (entitiesIds: string[], 
     const categoriesIds = await getCategoryIdsFromTemplateIds([...templateIds]);
 
     return categoriesIds;
-}
+};
 
 export const validateUserCanWriteBulkEntityInstance = async (req: Request) => {
     const permissionType = 'Write';
 
-    const {actionsGroups} = req.body;
+    const { actionsGroups } = req.body;
 
     const { templateIds, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
 
     const [categoriesIds, permissionsArrOfUser] = await Promise.all([
-        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds), 
-        getPermissions({ userId: req.user!.id })
+        getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds),
+        getPermissions({ userId: req.user!.id }),
     ]);
 
     const permissionsOfUserId = PermissionsManager.buildPermissionsOfUserId(permissionsArrOfUser);
