@@ -791,24 +791,32 @@ export class RuleBreachesManager {
             entity = await InstanceManagerService.getEntityInstanceById(entityId).catch(() => null);
         }
 
-        const currentEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
-            entity!.templateId,
-            entity!.properties,
-        );
+        if (entity) {
+            const currentEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
+                entity!.templateId,
+                entity!.properties,
+            );
 
-        const updatedEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
-            entity!.templateId,
-            actionMetadata.updatedFields,
-        );
+            const updatedEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
+                entity!.templateId,
+                actionMetadata.updatedFields,
+            );
 
-        if (before) {
-            beforeEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entity!.templateId, before);
+            if (before) {
+                beforeEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entity!.templateId, before);
+            }
+
+            return {
+                updatedFields: updatedEntityWithPopulatedRelationshipReferences,
+                entity: { templateId: entity!.templateId, properties: currentEntityWithPopulatedRelationshipReferences },
+                ...(before && { before: beforeEntityWithPopulatedRelationshipReferences }),
+            };
         }
+        const { entityId: id, ...restOfMetadata } = actionMetadata;
 
         return {
-            updatedFields: updatedEntityWithPopulatedRelationshipReferences,
-            entity: { templateId: entity!.templateId, properties: currentEntityWithPopulatedRelationshipReferences },
-            ...(before && { before: beforeEntityWithPopulatedRelationshipReferences }),
+            ...restOfMetadata,
+            entity,
         };
     }
 
