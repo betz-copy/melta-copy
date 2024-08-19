@@ -32,17 +32,10 @@ import ValidateRequest from '../../utils/joi';
 
 const { instanceService } = config;
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceService.url,
+    target: `${instanceService.url}${instanceService.instanceRoute}`,
+    changeOrigin: true,
     on: {
-        proxyReq: (proxyReq, req, _res) => {
-            fixRequestBody(proxyReq, req);
-        },
-        proxyRes: (proxyRes, req, _res) => {
-            console.log('proxyRes received:', {
-                statusCode: proxyRes.statusCode,
-                url: req.url,
-            });
-        },
+        proxyReq: fixRequestBody,
     },
     proxyTimeout: instanceService.requestTimeout,
 });
