@@ -9,7 +9,6 @@ import {
     Air as FluidSimulationIcon,
     Gavel as GavelIcon,
     CalendarMonth as CalendarIcon,
-    Code as CodeIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 import i18next from 'i18next';
@@ -42,7 +41,7 @@ type SideBarProps = {
 const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
     const theme = useTheme();
     const [showIFrames, setShowIFrames] = useState<boolean>(false);
-
+    const navigate = useNavigate();
     const iconButtonRef = useRef(null);
 
     const handleMouseEnter = () => {
@@ -98,26 +97,20 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                     }}
                     sx={{
                         maxHeight: 350,
+                        // backgroundColor: '#EBEFFA',
                     }}
                 >
                     {iFrames.map((iFrame) => (
                         <MenuItem key={iFrame._id}>
-                            <NavButton
-                                key={iFrame._id}
-                                to={`/iframes/${iFrame._id}`}
-                                text={iFrame.name}
-                                isDrawerOpen={isDrawerOpen}
-                                onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, iFrame._id)}
-                            >
-                                <ListItemIcon>
-                                    {iFrame.iconFileId ? (
-                                        <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
-                                    ) : (
-                                        <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
-                                    )}
-                                </ListItemIcon>
-                                <ListItemText sx={{ color: theme.palette.primary.main }}>{iFrame.name}</ListItemText>
-                            </NavButton>
+                            <Button onClick={() => navigate(`/iframes/${iFrame._id}`)} sx={{ alignItems: 'end' }}>
+                                {iFrame.iconFileId ? (
+                                    <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
+                                ) : (
+                                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
+                                )}
+
+                                <Grid sx={{ paddingLeft: '10px', textTransform: 'none' }}> {iFrame.name}</Grid>
+                            </Button>
                         </MenuItem>
                     ))}
                 </Menu>

@@ -70,6 +70,8 @@ export default {
         archived: 'הכנס לארכיון',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
+        expansion: 'הרחבה',
+        favourites: 'מועדפים',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -377,7 +379,8 @@ export default {
         iFrame: {
             title: 'יצירת כרטיסיית קישור חיצוני',
             createdSuccessfully: 'כרטיסיית קישור חיצוני נוצרה בהצלחה',
-            editedSuccefully: 'כרטיסיית קישור חיצוני  עודכנה בהצלחה',
+            editedSuccefully: 'כרטיסיית קישור חיצוני עודכנה בהצלחה',
+            createdSuccefully: 'כרטיסיית קישור חיצוני נוצרה בהצלחה',
             failedToCreate: 'נכשל ליצור כרטיסיית קישור חיצוני ',
             failedToEdit: 'נכשל בעריכת כרטיסיית קישור חיצוני',
             deletedSuccessfully: 'כרטיסיית קישור חיצוני נמחקה בהצלחה',
@@ -388,7 +391,7 @@ export default {
             settingPermissions: 'הגדרת הרשאות גישה',
             selectCategories: 'הרשאות גישה',
             name: 'שם',
-            url: 'כתובת',
+            url: 'כתובת האתר',
             description: 'תיאור',
             placeInSideBar: 'למקם בסרגל צידי',
             addIFrame: 'הוסף קישור חיצוני',
@@ -628,6 +631,7 @@ export default {
         invalidSerialStarter: 'חייב להיות גדול או שווה ל0',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
+        oneCategory: 'חובה קטגוריה אחת לפחות',
         oneStep: 'לפחות שלב אחד',
         oneStepApprover: 'לפחות מאשר שלב אחד',
         requiredFile: 'קובץ חובה',
@@ -875,6 +879,10 @@ export default {
         approvedProcesses: 'תהליכים מאושרים',
         rejectedProcesses: 'תהליכים דחויים',
         archivedProcesses: 'תהליכים בארכיון',
+    },
+    iFrames: {
+        searchFailed: 'נכשל לחפש קישורים חיצוניים',
+        noIFramesFound: 'לא נמצאו קישורים חיצוניים',
     },
     gantts: {
         searchFailed: 'נכשל לחפש טבלאות',

@@ -10,12 +10,14 @@ import { useNavigate } from 'react-router-dom';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import Iframe from 'react-iframe';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { ErrorToast } from '../../common/ErrorToast';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { deleteIFrame, iFrameObjectToIFrameForm } from '../../services/iFramesService';
+import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IFrameWizard } from '../../common/wizards/iFrame';
@@ -27,6 +29,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isHovered, setIsHovered] = useState(false);
+    const [placeInSideBar, setPlaceInSideBar] = useState<boolean>(iFrame.placeInSideBar ?? false);
     const [open, setOpen] = useState<{
         isOpen: boolean;
     }>({ isOpen: false });
@@ -51,19 +54,12 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
         iFrame: null,
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
-        onSuccess: (_data, _id) => {
-            // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
-            //     if (!oldData) return;
-            //     const updatedPages = oldData.pages.map((page) => page.filter((iframe) => iframe._id !== id));
-
-            //     // eslint-disable-next-line consistent-return
-            //     return {
-            //         ...oldData,
-            //         pages: updatedPages,
-            //     };
-            // });
+        onSuccess: (data) => {
             queryClient.invalidateQueries(['searchIFrames', null]);
-            queryClient.invalidateQueries('allIFrames');
+            queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                if (!oldData) return [];
+                return oldData.filter((iframe) => iframe._id !== data._id);
+            });
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             navigate('/iframes');
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
@@ -133,7 +129,20 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                                     </>
                                 )}
                                 <Grid>
-                                    <MeltaTooltip title={i18next.t('actions.הרחבה')}>
+                                    <MeltaTooltip title={i18next.t('actions.favourites')}>
+                                        <IconButton
+                                            onClick={async () => {
+                                                setPlaceInSideBar(!placeInSideBar);
+                                                await updateIFrame(iFrame._id, { ...iFrame, placeInSideBar: !placeInSideBar });
+                                                queryClient.invalidateQueries('allIFrames');
+                                            }}
+                                        >
+                                            {placeInSideBar ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon color="primary" />}
+                                        </IconButton>
+                                    </MeltaTooltip>
+                                </Grid>
+                                <Grid>
+                                    <MeltaTooltip title={i18next.t('actions.expansion')}>
                                         <IconButton onClick={() => setOpen({ isOpen: true })}>
                                             <OpenInFullIcon color="primary" />
                                         </IconButton>

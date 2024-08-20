@@ -61,6 +61,8 @@ export class IFrameManager {
             await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
+        console.log({ newIFrame });
+
         return IFrameModel.create(newIFrame);
     }
 

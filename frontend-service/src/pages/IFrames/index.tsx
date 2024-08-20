@@ -25,15 +25,10 @@ const IFramesPage: React.FC = () => {
 
     const queryKey = ['searchIFrames', searchInput];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
-    // const [allIFrames, setAllIFrames] = useState<any>();
     console.log({ allIFrames });
 
     const iFramesOrderRef = useRef<any>(null);
     const [iFramesOrder, setIFramesOrder] = useState<any>();
-    // useEffect(() => {
-    //     setAllIFrames();
-    // }, []);
-
     useEffect(() => {
         if (allIFrames) {
             console.log('helooooo', { allIFrames });
@@ -45,32 +40,6 @@ const IFramesPage: React.FC = () => {
     console.log({ iFramesOrder });
 
     console.log('frgfwefjewf ', { iFramesOrder }, iFramesOrderRef.current);
-
-    // const [dimensions, setDimensions] = useState({
-    //     minHeight: 0,
-    //     minWidth: 0,
-    //     maxHeight: 0,
-    //     maxWidth: 0,
-    // });
-
-    // useEffect(() => {
-    //     const calculateDimensions = () => {
-    //         const vw = window.innerWidth;
-    //         const vh = window.innerHeight;
-    //         setDimensions({
-    //             minHeight: vh * 0.5,
-    //             minWidth: vw * 0.47,
-    //             maxHeight: vh * 0.8,
-    //             maxWidth: vw * 0.94,
-    //         });
-    //     };
-
-    //     calculateDimensions();
-
-    //     window.addEventListener('resize', calculateDimensions);
-
-    //     return () => window.removeEventListener('resize', calculateDimensions);
-    // }, []);
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -86,23 +55,22 @@ const IFramesPage: React.FC = () => {
             </Grid>
 
             <Grid
-                container
+                // container
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
                     paddingLeft: 20,
+                    width: '100%',
                 }}
             >
                 <InfiniteScroll<IMongoIFrame>
                     queryKey={queryKey}
                     queryFunction={async ({ pageParam }) => {
                         console.log('kdkdkdkd', { iFramesOrderRef });
-
-                        const index = pageParam ?? 0;
                         console.log(iFramesOrderRef.current, { allIFrames });
 
+                        const index = pageParam ?? 0;
                         const currentOrder = iFramesOrderRef.current.slice(index, index + 4);
-
                         console.log({ currentOrder });
 
                         const iFrames = await searchIFrames({
@@ -124,7 +92,7 @@ const IFramesPage: React.FC = () => {
                 >
                     {(iFrame) => {
                         return (
-                            <Resizable minHeight={500} minWidth={1000} maxHeight={800} maxWidth={2000} id={iFrame._id}>
+                            <Resizable minHeight={500} minWidth={900} maxHeight={800} maxWidth={1800} id={iFrame._id}>
                                 <Grid padding={2} height="100%" width="100%">
                                     <IFramePage iFrame={iFrame} isIFramePage={false} />
                                 </Grid>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { Menu, Button, List, ListItem, Grid, IconButton } from '@mui/material';
+import { Menu, Button, List, ListItem, Grid, IconButton, FormControl, Select, Box } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
@@ -10,7 +10,6 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import { searchIFrames } from '../../services/iFramesService';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -21,7 +20,7 @@ const IFramesPageHeadline: React.FC<{
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
-    const [anchorEl, setAnchorEl] = useState(null);
+    // const [anchorEl, setAnchorEl] = useState(null);
     const resetIFramesDimensions = () => {
         iFramesOrder.forEach((iFrame) => {
             localStorage.removeItem(`iFrameDimension_${iFrame._id}`);
@@ -29,13 +28,13 @@ const IFramesPageHeadline: React.FC<{
         // queryClient.setQueryData('allIFrames', () => searchIFrames({}));
         window.location.reload();
     };
-    const handleOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+    // const handleOpen = (event) => {
+    //     setAnchorEl(event.currentTarget);
+    // };
 
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
+    // const handleClose = () => {
+    //     setAnchorEl(null);
+    // };
 
     const handleOnDragEnd = (result) => {
         if (!result.destination) return;
@@ -63,25 +62,52 @@ const IFramesPageHeadline: React.FC<{
                     />
                 </Grid>
                 <Grid item>
-                    <Button onClick={handleOpen}>Open Draggable List</Button>
-
-                    <Menu
-                        anchorEl={anchorEl}
-                        open={Boolean(anchorEl)}
-                        onClose={handleClose}
+                    <Select
+                        displayEmpty
+                        renderValue={() => <Box>סידור מופעים </Box>}
+                        MenuProps={{
+                            PaperProps: {
+                                style: {
+                                    height: '180px',
+                                    width: '180px',
+                                    backgroundColor: '#EBEFFA',
+                                    borderRadius: '0px 0px 10px 10px',
+                                    padding: '5px, 10px',
+                                    boxShadow: '-2px 2px 4px 0px #1E27754D',
+                                    top: '39px',
+                                    gap: '15px',
+                                },
+                                sx: {
+                                    overflowY: 'overlay',
+                                    '::-webkit-scrollbar-track': {
+                                        marginY: '1rem',
+                                        bgcolor: '#EBEFFA',
+                                        borderRadius: '5px',
+                                    },
+                                    '::-webkit-scrollbar-thumb': { background: '' },
+                                },
+                            },
+                        }}
                         sx={{
-                            maxHeight: 350,
+                            fontFamily: 'Rubik',
+                            fontSize: '14px',
+                            fontWeight: 400,
+                            boxShadow: 'none',
+
+                            '& .MuiOutlinedInput-notchedOutline': {
+                                display: 'none',
+                            },
+                            background: '#EBEFFA',
+                            maxWidth: '130px',
+                            maxHeight: '35px',
+                            color: '#1E2775',
+                            padding: '6.99px, 13.98px',
                         }}
                     >
                         <DragDropContext onDragEnd={handleOnDragEnd}>
                             <Droppable droppableId="items">
                                 {(provided) => (
-                                    <List
-                                        // key={provided.droppableProps['data-rbd-droppable-id']}
-                                        {...provided.droppableProps}
-                                        ref={provided.innerRef}
-                                        style={{ padding: '8px', width: '200px' }}
-                                    >
+                                    <List {...provided.droppableProps} ref={provided.innerRef} style={{ padding: '8px', width: '200px' }}>
                                         {iFramesOrder.map(({ _id, name }, index) => (
                                             <Draggable key={_id} draggableId={_id} index={index}>
                                                 {(provided) => (
@@ -107,7 +133,7 @@ const IFramesPageHeadline: React.FC<{
                                 )}
                             </Droppable>
                         </DragDropContext>
-                    </Menu>
+                    </Select>
                 </Grid>
                 <Grid item>
                     <Grid container wrap="nowrap" gap="15px">

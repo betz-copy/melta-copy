@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
-import { IFrame, IFrameMap, IMongoIFrame } from '../../../interfaces/iFrames';
+import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
 import { createIFrame, updateIFrame } from '../../../services/iFramesService';
 import { CreateIFrameDetails, createIFrameDetailsSchema } from './CreateIFrameDetails';
 import { settingIFramesPermissionsSchema, SettingIFramesPermissions } from './SettingPermissions';
@@ -81,7 +81,7 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
                     console.log({ index }, { updatedData });
                     return [...updatedData];
                 });
-                queryClient.invalidateQueries('allIFrames');
+                // queryClient.invalidateQueries('allIFrames');
 
                 // queryClient.setQueryData('allIFrames', (oldData) => {
                 //     if (Array.isArray(oldData)) {
@@ -95,6 +95,7 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
 
                 //     return [data];
                 // });
+
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

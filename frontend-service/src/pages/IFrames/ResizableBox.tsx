@@ -24,7 +24,7 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
 
-        return savedDimensions ? JSON.parse(savedDimensions) : { width: 1000, height: 500 };
+        return savedDimensions ? JSON.parse(savedDimensions) : { width: 900, height: 500 };
     };
     const [dimensions, setDimensions] = useState(getDimensions());
     // useEffect(() => {

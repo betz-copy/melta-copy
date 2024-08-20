@@ -11,13 +11,11 @@ import { ICategoryMap } from '../../../interfaces/categories';
 // import { Category } from '@mui/icons-material';
 
 const settingIFramesPermissionsSchema = {
-    categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneField')).required(i18next.t('validation.required')),
+    categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
 };
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
     const queryClient = useQueryClient();
-    // const allPermissions: IPermissionsOfUser[] | undefined = queryClient.getQueryData<IPermissionsOfUser[]>('getAllPermissions');
-    // console.log({ allPermissions });
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const allowedCategoriesIds = myPermissions?.instancesPermissions
         .filter((instancesPermission) => instancesPermission.scopes.includes('Write'))
@@ -45,7 +43,6 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>
-                    {/* {PermissionsManagement && } */}
                     <FormControlLabel
                         label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                         control={
@@ -63,17 +60,12 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                         categories.values(),
                         (currentCategory) =>
                             allowedCategoriesIds.includes(currentCategory._id) && (
-                                // eslint-disable-next-line react/jsx-key
                                 <FormControlLabel
                                     key={currentCategory._id}
                                     sx={{ paddingLeft: 3 }}
                                     label={currentCategory.displayName}
                                     labelPlacement="end"
-                                    // disabled={permissionsManagement.disabled}
                                     control={
-                                        // permissionsManagement.viewMode ? (
-                                        // <PermissionViewIcon checked /> // ={permissionsManagement.checked} />
-                                        // ) : (
                                         <MeltaCheckbox
                                             checked={selectedCategories.includes(currentCategory._id)}
                                             onChange={() => {
@@ -81,12 +73,16 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                                 handleChange({ ...values, categoryIds: selectedCategories });
                                             }}
                                         />
-                                        // )
                                     }
                                 />
                             ),
                     )}
                 </FormGroup>
+                {touched.categoryIds && errors.categoryIds && (
+                    <Typography color="error" sx={{ mt: 2 }}>
+                        {errors.categoryIds}
+                    </Typography>
+                )}
             </CardContent>
         </Card>
     );
