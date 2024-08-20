@@ -1,21 +1,22 @@
 import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { IExternalUser, IUser } from '../../interfaces/users';
+import { IUser } from '../../interfaces/users';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-interface IUserAutocomplete<TMode = 'internal' | 'external', TUser = TMode extends 'internal' ? IUser : IExternalUser> {
+interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     mode: TMode;
-    value: TUser | null;
+    value: IUser | null;
     displayValue?: string;
-    onChange: AutocompleteProps<TUser, undefined, undefined, undefined>['onChange'];
-    onDisplayValueChange?: AutocompleteProps<TUser, undefined, undefined, undefined>['onInputChange'];
-    onBlur?: AutocompleteProps<TUser, undefined, undefined, undefined>['onBlur'];
-    isOptionDisabled?: AutocompleteProps<TUser, undefined, undefined, undefined>['getOptionDisabled'];
+    onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
+    onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
+    onBlur?: AutocompleteProps<IUser, undefined, undefined, undefined>['onBlur'];
+    isOptionDisabled?: AutocompleteProps<IUser, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;
     label?: string;
@@ -41,12 +42,8 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     minInputLengthToSearch = 2,
     size,
 }) => {
-    const user = useMemo(
-        () => (mode === 'internal' ? (value as IUser) : Object.values((value as IExternalUser)?.digitalIdentities ?? {})[0]),
-        [mode, value],
-    );
-
-    const [internalDisplayValue, setInputValue] = useState<string>(user ? user.displayName : '');
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
 
@@ -57,7 +54,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     } = useQuery(
         ['searchUsers', mode, currentDisplayValue],
         () => {
-            if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue);
+            if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
             return searchUsersRequest({ search: currentDisplayValue, limit: 10 });
         },
         {
@@ -66,15 +63,15 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             },
             enabled: false,
             retry: false,
-            initialData: [] as IUser[] | IExternalUser[],
+            initialData: [],
         },
     );
 
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
 
     return (
-        <MeltaTooltip title={user?.displayName || ''} sx={{ maxWidth: 'none' }}>
-            <Autocomplete<IUser | IExternalUser>
+        <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
+            <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
                 onChange={onChange}
@@ -88,16 +85,16 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 disabled={disabled}
                 onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={(option) => {
-                    if (mode === 'external') return (option as IExternalUser).kartoffelId;
-                    return (option as IUser).displayName;
-                }}
+                getOptionLabel={({ displayName }) => displayName}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => {
-                    if (mode === 'external') return (option as IExternalUser).kartoffelId === (currValue as IExternalUser).kartoffelId;
-                    return (option as IUser)._id === (currValue as IUser)._id;
-                }}
-                options={usersOptions!}
+                isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
+                options={
+                    (usersOptions?.sort((a, b) => {
+                        if (!a.fullName || !a.jobTitle || !a.hierarchy || !a.mail) return 1;
+                        if (!b.fullName || !b.jobTitle || !b.hierarchy || !b.mail) return -1;
+                        return 0;
+                    }) as IUser[]) ?? []
+                }
                 loading={isFetchingUsersOptions}
                 loadingText={i18next.t('userAutocomplete.loading')}
                 noOptionsText={i18next.t('userAutocomplete.noOptions')}

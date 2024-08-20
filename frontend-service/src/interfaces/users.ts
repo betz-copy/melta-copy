@@ -27,11 +27,5 @@ export interface IUserSearchBody {
     step?: number;
 }
 
-export type IExternalUserDigitalIdentity = Pick<IUser, 'fullName' | 'mail' | 'jobTitle' | 'hierarchy' | 'displayName'>;
-
-export interface IExternalUser {
-    kartoffelId: string;
-    digitalIdentities: {
-        [source: string]: IExternalUserDigitalIdentity;
-    };
-}
+export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
+    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;

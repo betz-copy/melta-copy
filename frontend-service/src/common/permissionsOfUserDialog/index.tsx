@@ -63,7 +63,6 @@ const PermissionsOfUserDialog: React.FC<{
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
-            // TODO-WORKSPACES only add permissions if user already exists
             createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),
         {
             onError: (error) => {
@@ -101,7 +100,10 @@ const PermissionsOfUserDialog: React.FC<{
             }
 
             return syncUserPermissionsRequest(formUser._id, {
-                [workspace._id]: { ...permissions, instances: { categories: categoryPermissionsToSync } },
+                [workspace._id]: {
+                    ...permissions,
+                    instances: Object.keys(categoryPermissionsToSync).length ? { categories: categoryPermissionsToSync } : null,
+                },
             });
         },
         {
@@ -118,7 +120,7 @@ const PermissionsOfUserDialog: React.FC<{
                     const newUsers = [...oldUsers];
                     const existingUserIndex = newUsers.findIndex(({ _id }) => _id === existingUser._id);
 
-                    if (userHasNoPermissions(newPermissions[workspace._id])) newUsers.splice(existingUserIndex, 1);
+                    if (userHasNoPermissions(newPermissions[workspace._id] ?? {})) newUsers.splice(existingUserIndex, 1);
                     else newUsers[existingUserIndex] = { ...existingUser, permissions: newPermissions };
 
                     return newUsers;
@@ -186,12 +188,13 @@ const PermissionsOfUserDialog: React.FC<{
                                     <UserAutocomplete
                                         mode={existingUser ? 'internal' : 'external'}
                                         value={formikProps.values}
-                                        onChange={(_e, chosenUser) => formikProps.setValues(chosenUser)}
-                                        onBlur={(event) => formikProps.handleBlur(event)}
+                                        onChange={(_e, chosenUser) => formikProps.setValues(chosenUser ?? defaultEmptyUser)}
+                                        onBlur={formikProps.handleBlur}
                                         readOnly={mode === 'view'}
                                         disabled={mode === 'edit'}
                                         isError={Boolean(formikProps.touched.fullName && formikProps.errors.fullName)}
                                         helperText={formikProps.touched.fullName ? formikProps.errors.fullName : ''}
+                                        isOptionDisabled={(option) => !option.fullName || !option.jobTitle || !option.hierarchy || !option.mail}
                                     />
                                 </Box>
 

@@ -7,11 +7,10 @@ import {
     IPermission,
     ISubCompactPermissions,
 } from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IBaseUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
+import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
-import { IExternalUser, IExternalUserDigitalIdentity } from './interfaces';
 
 export class UsersManager {
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
@@ -26,10 +25,36 @@ export class UsersManager {
         return UserService.searchUsers(searchBody);
     }
 
-    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions): Promise<IUser> {
-        const digitalIdentity = await this.getExternalUserDigitalIdentity(kartoffelId, digitalIdentitySource);
+    private static validateDigitalIdentity(
+        kartoffelId: string,
+        digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
+    ) {
+        if (!digitalIdentity.fullName || !digitalIdentity.hierarchy || !digitalIdentity.jobTitle || !digitalIdentity.mail) {
+            throw new KartoffelUserMissingDataError(kartoffelId);
+        }
+    }
 
-        return UserService.createUser({ ...digitalIdentity, permissions, externalMetadata: { kartoffelId, digitalIdentitySource }, preferences: {} });
+    static async createUser(kartoffelId: string, digitalIdentitySource: string, permissions: ICompactPermissions): Promise<IUser> {
+        const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => {});
+
+        if (existingUser?.externalMetadata.digitalIdentitySource === digitalIdentitySource) {
+            const newPermissions = await UsersManager.syncUserPermissions(existingUser._id, permissions);
+            return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
+        }
+
+        const { _id, displayName, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
+            kartoffelId,
+            digitalIdentitySource,
+        );
+
+        UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
+
+        return UserService.createUser({
+            ...(digitalIdentity as IUser),
+            permissions,
+            externalMetadata: { kartoffelId, digitalIdentitySource },
+            preferences: {},
+        });
     }
 
     static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
@@ -50,17 +75,19 @@ export class UsersManager {
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
 
-        const digitalIdentity = await this.getExternalUserDigitalIdentity(
+        const { _id, displayName, permissions, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
             user.externalMetadata.kartoffelId,
             user.externalMetadata.digitalIdentitySource,
         );
+
+        UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
 
         if (objectContains(user, digitalIdentity)) return user;
 
         return UserService.updateUser(userId, digitalIdentity);
     }
 
-    static async searchExternalUsers(search: string): Promise<IExternalUser[]> {
+    static async searchExternalUsers(search: string, workspaceId?: string): Promise<IExternalUser[]> {
         let kartoffelUsers: IKartoffelUser[];
 
         if (Kartoffel.isDomainUser(search)) {
@@ -73,54 +100,36 @@ export class UsersManager {
             kartoffelUsers = await Kartoffel.getUsersByName(search);
         }
 
-        return Promise.all(kartoffelUsers.map((kartoffelUser) => this.kartoffelUserToExternalUserData(kartoffelUser)));
+        const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
+
+        return normalizedKartoffelUsers.filter(
+            (normalizedKartoffelUser) =>
+                !normalizedKartoffelUser.permissions[workspaceId || ''] ||
+                normalizedKartoffelUser.externalMetadata.digitalIdentitySource !== normalizedKartoffelUser.existingDigitalIdentitySource,
+        );
     }
 
-    private static kartoffelUserToExternalUserData(kartoffelUser: IKartoffelUser): IExternalUser {
-        console.log({ kartoffelUser });
-
-        const digitalIdentities: IExternalUser['digitalIdentities'] = {};
-
+    private static kartoffelUserToUser(kartoffelUser: IKartoffelUser): Promise<IExternalUser>[] {
         if (!kartoffelUser.digitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
-        let completedDigitalIdentities = 0;
-
-        kartoffelUser.digitalIdentities.forEach((kartoffelDigitalIdentity) => {
-            if (!kartoffelDigitalIdentity.source) return;
-
-            try {
-                digitalIdentities[kartoffelDigitalIdentity.source] = this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(
-                    kartoffelDigitalIdentity,
-                    kartoffelUser,
-                );
-            } catch {
-                return;
-            }
-
-            completedDigitalIdentities++;
-        });
-
-        if (!completedDigitalIdentities) throw new KartoffelUserMissingDataError(kartoffelUser._id);
-
-        return {
-            kartoffelId: kartoffelUser._id,
-            digitalIdentities,
-        };
+        return kartoffelUser.digitalIdentities.map((kartoffelDigitalIdentity) =>
+            this.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser),
+        );
     }
 
-    private static async getExternalUserDigitalIdentity(kartoffelId: string, digitalIdentitySource: string): Promise<IExternalUserDigitalIdentity> {
+    private static async getExternalUserDigitalIdentity(kartoffelId: string, digitalIdentitySource: string): Promise<IExternalUser> {
         const kartoffelUser = await Kartoffel.getUserById(kartoffelId);
 
         const kartoffelDigitalIdentity = kartoffelUser.digitalIdentities?.find((digitalIdentity) => digitalIdentity.source === digitalIdentitySource);
         if (!kartoffelDigitalIdentity) throw new DigitalIdentitySourceDoesNotExistsError(digitalIdentitySource, kartoffelUser._id);
 
-        return this.kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(kartoffelDigitalIdentity, kartoffelUser);
+        return this.kartoffelUserDigitalIdentityToExternalUser(kartoffelDigitalIdentity, kartoffelUser);
     }
 
-    private static kartoffelUserDigitalIdentityToExternalUserDigitalIdentity(
+    private static async kartoffelUserDigitalIdentityToExternalUser(
         digitalIdentity: IKartoffelUserDigitalIdentity,
         kartoffelUser: IKartoffelUser,
-    ): IExternalUserDigitalIdentity {
+    ): Promise<IExternalUser> {
         const fullName =
             kartoffelUser.fullName || (kartoffelUser.firstName && kartoffelUser.lastName)
                 ? `${kartoffelUser.firstName} ${kartoffelUser.lastName}`
@@ -129,16 +138,26 @@ export class UsersManager {
         const jobTitle = digitalIdentity.role?.jobTitle || kartoffelUser.jobTitle;
         const mail = digitalIdentity.mail || kartoffelUser.mail;
 
-        if (!fullName || !hierarchy || !jobTitle || !mail) {
-            throw new KartoffelUserMissingDataError(kartoffelUser._id);
-        }
+        const kartoffelId = kartoffelUser._id || kartoffelUser.id;
+
+        if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
+
+        const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({} as IUser));
 
         return {
+            _id: kartoffelId,
             fullName,
             hierarchy,
             jobTitle,
             mail,
-            displayName: `${fullName} - ${hierarchy}/${jobTitle}`,
+            displayName: `[${digitalIdentity.source}] ${fullName} - ${hierarchy}/${jobTitle}`,
+            externalMetadata: {
+                kartoffelId,
+                digitalIdentitySource: digitalIdentity.source,
+            },
+            preferences: {},
+            permissions: existingUser.permissions || {},
+            existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };
     }
 }

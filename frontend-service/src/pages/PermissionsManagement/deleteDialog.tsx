@@ -5,12 +5,17 @@ import { toast } from 'react-toastify';
 
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IUser } from '../../interfaces/users';
-import { deletePermissionsFromMetadata } from '../../services/userService';
+import { syncUserPermissionsRequest } from '../../services/userService';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void }> = ({ isOpen, handleClose, user }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const queryClient = useQueryClient();
     const { mutateAsync: deleteAllPermissionsOfUser, isLoading: isLoadingDeleteAllPermissionsOfUser } = useMutation(
-        () => deletePermissionsFromMetadata({ userId: user!._id, workspaceId: '', type: '' }, {}),
+        () =>
+            syncUserPermissionsRequest(user!._id, {
+                [workspace._id]: { permissions: null, rules: null, instances: null, processes: null, templates: null },
+            }),
         {
             onError: (error) => {
                 console.log('failed to delete permission. error:', error);

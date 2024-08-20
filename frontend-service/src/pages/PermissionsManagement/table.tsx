@@ -5,6 +5,7 @@ import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
@@ -55,6 +56,12 @@ const columnDefs = (
             return `${_id} ${displayName} ${digitalIdentitySource}`;
         },
     },
+    {
+        field: 'externalMetadata.digitalIdentitySource',
+        headerName: i18next.t('permissions.sourceHeaderName'),
+        filter: 'agTextColumnFilter',
+        hide: true,
+    },
     translatedEnumColDef(
         'permissionsManagement',
         (params) => params.data?.permissions[workspaceId].permissions?.scope ?? '',
@@ -84,7 +91,7 @@ const columnDefs = (
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
-            const permissionsOfCategories = Object.keys(params.value).map((category) => {
+            const permissionsOfCategories = Object.keys(params.value ?? {}).map((category) => {
                 return (
                     categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
                         _id: category,
@@ -151,6 +158,7 @@ const columnDefs = (
         sortable: false,
         filter: false,
         suppressMenu: true,
+        suppressColumnsToolPanel: true,
         cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
 
@@ -182,7 +190,7 @@ const Table: React.FC<{
     return (
         <AgGridReact<IUser>
             className="ag-theme-material"
-            modules={[MenuModule, SetFilterModule, ClientSideRowModelModule]}
+            modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
             rowData={users}
             defaultColDef={defaultColDef}
@@ -203,12 +211,26 @@ const Table: React.FC<{
                 params.columnApi.autoSizeColumns([
                     'actions',
                     'displayName',
+                    'source',
                     'permissionsManagement',
                     'templatesManagement',
                     'rulesManagement',
                     'processesManagement',
                     'categoriesPermissions',
                 ]);
+            }}
+            sideBar={{
+                toolPanels: [
+                    {
+                        id: 'columns',
+                        labelDefault: 'Columns',
+                        labelKey: 'columns',
+                        iconKey: 'columns',
+                        toolPanel: 'agColumnsToolPanel',
+                        toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
+                    },
+                ],
+                position: 'left',
             }}
             quickFilterText={quickFilterText}
             localeText={i18next.t('agGridLocaleText', { returnObjects: true })}

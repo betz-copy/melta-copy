@@ -15,7 +15,7 @@ export const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: strin
             },
             externalMetadata: {
                 kartoffelId,
-                digitalIdentitySource: 'סייבר',
+                digitalIdentitySource: 'es_name', // must match kartoffel mock source
             },
             permissions: getPermissionsToCreate(rootWorkspaceId, mainWorkspaceId, categories),
         };

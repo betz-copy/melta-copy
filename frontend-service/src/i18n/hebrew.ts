@@ -280,6 +280,7 @@ export default {
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
+        sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
         permissionsManagmentPageTitle: 'ניהול הרשאות',

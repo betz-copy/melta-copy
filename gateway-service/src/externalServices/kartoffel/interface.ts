@@ -23,6 +23,7 @@ export interface IKartoffelUserDigitalIdentity {
 
 export interface IKartoffelUser {
     _id: string;
+    id?: string;
     displayName?: string;
     entityType?: string;
     identityCard?: string;

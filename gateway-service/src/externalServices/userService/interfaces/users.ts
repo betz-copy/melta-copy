@@ -26,3 +26,6 @@ export interface IUserSearchBody {
     limit: number;
     step?: number;
 }
+
+export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
+    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>> & { existingDigitalIdentitySource?: string };

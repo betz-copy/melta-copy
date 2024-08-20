@@ -84,6 +84,7 @@ export const deletePermissionsFromMetadataRequestSchema = joi.object({
 export const searchExternalUsersRequestSchema = joi.object({
     query: {
         search: joi.string().required(),
+        workspaceId: MongoIdSchema,
     },
     body: {},
     params: {},

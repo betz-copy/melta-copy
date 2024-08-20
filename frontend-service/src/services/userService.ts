@@ -36,9 +36,9 @@ export const syncUserPermissionsRequest = async (userId: string, permissions: IC
     return data;
 };
 
-export const searchExternalUsersRequest = async (search: string) => {
+export const searchExternalUsersRequest = async (search: string, workspaceId?: string) => {
     if (search.length < 2) return [];
-    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search } });
+    const { data } = await axios.get<IExternalUser[]>(`${users}/external`, { params: { search, workspaceId } });
     return data;
 };
 

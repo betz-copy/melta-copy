@@ -20,7 +20,7 @@ import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
-    const [isErrorMyUser, setIsErrorMyUser] = useState(false);
+    const [isErrorMyUser, setIsErrorMyUser] = useState(true);
 
     const [_, navigate] = useLocation();
 
@@ -42,6 +42,7 @@ const App: React.FC = () => {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
+        enabled: !isErrorMyUser,
     });
 
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -50,7 +51,7 @@ const App: React.FC = () => {
         const initUser = async () => {
             const user = AuthService.getUser();
 
-            if (!user) return;
+            if (!user || user.id === environment.unauthorizedId) return;
 
             try {
                 const userFromDb = await getMyUserRequest();
@@ -61,11 +62,11 @@ const App: React.FC = () => {
                     const workspace = await getById(workspaceIds[0]);
                     navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
                 }
-            } catch (error) {
-                setIsErrorMyUser(true);
-            }
 
-            setIsLoadingUser(false);
+                setIsErrorMyUser(false);
+            } finally {
+                setIsLoadingUser(false);
+            }
         };
 
         initUser();
