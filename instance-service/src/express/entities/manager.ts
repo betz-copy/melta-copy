@@ -409,17 +409,26 @@ export class EntityManager {
         );
     }
 
-    static async createEntity(
+    static buildOneAction = async (
+        crudAction: 'onCreateEntity' | 'onUpdateEntity',
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        ignoredRules: IBrokenRule[],
-        userId: string,
+        entity?: IEntity,
         duplicatedFromId?: string,
-    ) {
-        const updatedEntities: IEntity[] = [];
+    ): Promise<IAction> => {
+        if (crudAction === 'onUpdateEntity') {
+            return {
+                actionType: ActionTypes.UpdateEntity,
+                actionMetadata: {
+                    entityId: entity?.properties._id,
+                    updatedFields: this.getUpdatedProperties(entity?.properties!, properties, entityTemplate),
+                    before: entity?.properties,
+                } as IUpdateEntityMetadata,
+            };
+        }
 
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
-            const action: IAction = duplicatedFromId
+        if (crudAction === 'onCreateEntity') {
+            return duplicatedFromId
                 ? {
                       actionType: ActionTypes.DuplicateEntity,
                       actionMetadata: {
@@ -432,33 +441,83 @@ export class EntityManager {
                       actionType: ActionTypes.CreateEntity,
                       actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
                   };
-            const entitiesToUpdate = await this.executeActionsOnCrud(action, 'onCreateEntity', userId);
+        }
 
-            const actions = [action];
+        throw new Error('Invalid crudAction');
+    };
 
-            await Promise.all(
-                entitiesToUpdate.map(async (entityToUpdate) => {
-                    const { entityId, properties: allProperties } = entityToUpdate;
+    static buildUpdatedActions = async (
+        properties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplate,
+        entitiesToUpdate: {
+            entityId: string;
+            properties: Record<string, any>;
+        }[],
+    ) => {
+        const actions: IAction[] = [];
+        let updatedFields: Record<string, any> = {};
+        let before: Record<string, any>;
 
-                    const currentEntity = !entityId.startsWith(brokenRulesFakeEntityIdPrefix) ? await this.getEntityById(entityId) : null;
-                    const updatedFields = this.getUpdatedProperties(
-                        currentEntity ? currentEntity.properties : properties,
+        await Promise.all(
+            entitiesToUpdate.map(async (entityToUpdate) => {
+                const { entityId, properties: allProperties } = entityToUpdate;
+
+                const currentEntity = !entityId.startsWith(brokenRulesFakeEntityIdPrefix) ? await this.getEntityById(entityId) : null;
+                if (currentEntity) {
+                    const unPopulatedCurr = await this.relationshipReferenceObjectToId(currentEntity);
+                    updatedFields = this.getUpdatedProperties(
+                        unPopulatedCurr.properties,
                         allProperties,
-                        currentEntity ? await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId) : entityTemplate,
+                        await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId),
                     );
+                    before = currentEntity.properties;
+                } else {
+                    updatedFields = this.getUpdatedProperties(properties, allProperties, entityTemplate);
+                    before = properties;
+                }
 
-                    // for case that we change by actions and no value was updated
-                    if (Object.entries(updatedFields).length) {
-                        actions.push({
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: {
-                                entityId,
-                                updatedFields,
-                            } as IUpdateEntityMetadata,
-                        });
-                    }
-                }),
-            );
+                // for case that we change by actions and no value was updated
+                if (Object.entries(updatedFields).length) {
+                    actions.push({
+                        actionType: ActionTypes.UpdateEntity,
+                        actionMetadata: {
+                            entityId,
+                            updatedFields,
+                            before,
+                        } as IUpdateEntityMetadata,
+                    });
+                }
+            }),
+        );
+
+        return actions;
+    };
+
+    static buildActionsArray = async (
+        crudAction: 'onCreateEntity' | 'onUpdateEntity',
+        properties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplate,
+        entity?: IEntity,
+        duplicatedFromId?: string,
+    ) => {
+        const action = await EntityManager.buildOneAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
+        const entitiesToUpdate = await this.executeActionsOnCrud(action, crudAction, '');
+        const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate);
+        const actions = [action, ...actionsOfUpdatedEntities];
+        return actions;
+    };
+
+    static async createEntity(
+        properties: IEntity['properties'],
+        entityTemplate: IMongoEntityTemplate,
+        ignoredRules: IBrokenRule[],
+        userId: string,
+        duplicatedFromId?: string,
+    ) {
+        const updatedEntities: IEntity[] = [];
+
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
+            const actions = await this.buildActionsArray('onCreateEntity', properties, entityTemplate, undefined, duplicatedFromId);
 
             const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities, actions };
@@ -1141,7 +1200,6 @@ export class EntityManager {
         ignoredRules: IBrokenRule[],
         userId: string,
     ) {
-        // const updatedEntities: IEntity[] = [];
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = await this.relationshipReferenceObjectToId(entity);
 
@@ -1150,44 +1208,10 @@ export class EntityManager {
         }
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
-            const action: IAction = {
-                actionType: ActionTypes.UpdateEntity,
-                actionMetadata: {
-                    entityId: id,
-                    updatedFields: this.getUpdatedProperties(unPopulatedEntity.properties, entityProperties, entityTemplate),
-                } as IUpdateEntityMetadata,
-            };
-
-            const entitiesToUpdate = await this.executeActionsOnCrud(action, 'onUpdateEntity', userId);
-
-            const actions = [action];
-
-            await Promise.all(
-                entitiesToUpdate.map(async (entityToUpdate) => {
-                    const { entityId, properties: allProperties } = entityToUpdate;
-
-                    const currentEntity = await this.getEntityById(entityId);
-                    const unPopulatedCurr = await this.relationshipReferenceObjectToId(currentEntity);
-                    const updatedFields = this.getUpdatedProperties(
-                        unPopulatedCurr.properties,
-                        allProperties,
-                        await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId),
-                    );
-
-                    // for case that we change by actions and no value was updated
-                    if (Object.entries(updatedFields).length) {
-                        actions.push({
-                            actionType: ActionTypes.UpdateEntity,
-                            actionMetadata: {
-                                entityId,
-                                updatedFields,
-                            } as IUpdateEntityMetadata,
-                        });
-                    }
-                }),
-            );
+            const actions = await this.buildActionsArray('onUpdateEntity', entityProperties, entityTemplate, unPopulatedEntity);
             const [updatedEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            return { updatedEntity, updatedEntities };
+
+            return { updatedEntity, updatedEntities, actions };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
@@ -1212,7 +1236,6 @@ export class EntityManager {
             throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
 
             const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
-
             await Promise.all(activityLogsPromises);
 
             return { updatedEntity, updatedEntities: [] };

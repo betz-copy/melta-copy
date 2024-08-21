@@ -75,7 +75,7 @@ export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
                 message: (error as unknown as Error).message,
             });
 
-        throw new ServiceError(400, `Error executing VM code: ${error}`);
+        throw new ServiceError(400, `Error executing VM code  of actions: ${error}`);
     }
 };
 

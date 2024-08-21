@@ -61,11 +61,14 @@ export class InstanceManagerService {
     }
 
     static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.put<{ updatedEntity: IEntity; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`, {
-            ...entity,
-            ignoredRules,
-            userId,
-        });
+        const { data } = await this.InstanceManagerApi.put<{ updatedEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(
+            `${baseEntitiesRoute}/${id}`,
+            {
+                ...entity,
+                ignoredRules,
+                userId,
+            },
+        );
 
         return data;
     }

@@ -359,15 +359,18 @@ export class InstancesManager {
             properties: newInstanceProperties,
         };
 
-        const createInstanceOutput = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
-        const { createdEntity, updatedEntities } = createInstanceOutput;
+        const { createdEntity, updatedEntities, actions } = await InstanceManagerService.createEntityInstance(
+            newInstanceData,
+            ignoredRules,
+            userId,
+            id,
+        ).catch(InstancesManager.handleBrokenRulesError);
+
         if (createAlert && ignoredRules.length) {
             await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.DuplicateEntity,
                             actionMetadata: {
@@ -414,7 +417,7 @@ export class InstancesManager {
 
         InstancesManager.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
-        const { updatedEntity, updatedEntities } = await InstanceManagerService.updateEntityInstance(
+        const { updatedEntity, updatedEntities, actions } = await InstanceManagerService.updateEntityInstance(
             id,
             {
                 templateId: updatedInstanceData.templateId,
@@ -459,7 +462,7 @@ export class InstancesManager {
             await RuleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: {

@@ -417,7 +417,6 @@ export class RuleBreachesManager {
 
         const fixedActionsPromises = await this.addBeforeFieldToUpdateAction(ruleBreachRequest.actions);
         const fixedActions = await Promise.all(fixedActionsPromises);
-        await RuleBreachService.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions);
 
         const [updatedRuleBreachRequest] = await Promise.all([
             RuleBreachService.updateRuleBreachRequestStatus(ruleBreachRequest._id, user.id, type),
