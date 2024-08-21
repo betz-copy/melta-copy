@@ -25,21 +25,37 @@ const IFramesPage: React.FC = () => {
 
     const queryKey = ['searchIFrames', searchInput];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
-    console.log({ allIFrames });
+    const [iFramesOrder, setIFramesOrder] = useState<any>(null);
+    const localStorageKey = 'iFramesOrder';
+        queryClient.invalidateQueries(queryKey);
 
-    const iFramesOrderRef = useRef<any>(null);
-    const [iFramesOrder, setIFramesOrder] = useState<any>();
     useEffect(() => {
+        console.log('refreshhhhhhhhh');
+
         if (allIFrames) {
             console.log('helooooo', { allIFrames });
-            setIFramesOrder(allIFrames);
-            iFramesOrderRef.current = allIFrames;
             queryClient.invalidateQueries(queryKey);
         }
     }, [allIFrames]);
-    console.log({ iFramesOrder });
 
-    console.log('frgfwefjewf ', { iFramesOrder }, iFramesOrderRef.current);
+    useEffect(() => {
+        console.log('nice to meet you');
+
+        const order = localStorage.getItem(localStorageKey);
+        if (!order) {
+            const iFramesData = allIFrames?.map(({ name, _id }) => ({ name, id: _id })) || [];
+
+            localStorage.setItem(localStorageKey, JSON.stringify(iFramesData));
+        }
+        const order2 = localStorage.getItem(localStorageKey);
+        setIFramesOrder(JSON.parse(localStorage.getItem(localStorageKey)!));
+        console.log({ order2 }, { iFramesOrder });
+    }, []);
+
+    useEffect(() => {
+        console.log('i think the order change ', { iFramesOrder });
+        queryClient.invalidateQueries(queryKey);
+    }, [iFramesOrder]);
 
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -63,43 +79,61 @@ const IFramesPage: React.FC = () => {
                     width: '100%',
                 }}
             >
-                <InfiniteScroll<IMongoIFrame>
-                    queryKey={queryKey}
-                    queryFunction={async ({ pageParam }) => {
-                        console.log('kdkdkdkd', { iFramesOrderRef });
-                        console.log(iFramesOrderRef.current, { allIFrames });
+                {iFramesOrder && (
+                    <InfiniteScroll<IMongoIFrame>
+                        queryKey={queryKey}
+                        queryFunction={async ({ pageParam }) => {
+                            console.log('kdkdkdkd', { iFramesOrder });
 
-                        const index = pageParam ?? 0;
-                        const currentOrder = iFramesOrderRef.current.slice(index, index + 4);
-                        console.log({ currentOrder });
+                            const index = pageParam ?? 0;
+                            // const z = iFramesOrder;
+                            // const currentOrder = z.slice(index, index + 4);
+                            const currentOrder = iFramesOrder.slice(index, index + 4);
+                            const iFramesIdsOrder = currentOrder.map((iFrame) => iFrame.id);
 
-                        const iFrames = await searchIFrames({
-                            search: searchInput,
-                            ids: currentOrder.map((item) => item._id),
-                        });
-                        return iFrames;
-                    }}
-                    onQueryError={(error) => {
-                        console.log('Failed loading data:', error);
-                        toast.error(i18next.t('iFrames.searchFailed'));
-                    }}
-                    getNextPageParam={(lastPage, allPages) => {
-                        const nextPage = allPages.length * 4;
-                        return lastPage.length ? nextPage : undefined;
-                    }}
-                    emptyText={i18next.t('iFrames.noIFramesFound')}
-                    useContainer={false}
-                >
-                    {(iFrame) => {
-                        return (
-                            <Resizable minHeight={500} minWidth={900} maxHeight={800} maxWidth={1800} id={iFrame._id}>
-                                <Grid padding={2} height="100%" width="100%">
-                                    <IFramePage iFrame={iFrame} isIFramePage={false} />
-                                </Grid>
-                            </Resizable>
-                        );
-                    }}
-                </InfiniteScroll>
+                            console.log({ currentOrder }, { iFramesIdsOrder });
+
+                            const iFrames = await searchIFrames({
+                                search: searchInput,
+                                // ids: currentOrder.map((item) => item._id),
+                                ids: iFramesIdsOrder,
+                            });
+                            return iFrames;
+                            //   console.log('kdkdkdkd', { iFramesOrderRef });
+                            //   console.log(iFramesOrderRef.current, { allIFrames });
+
+                            //   const index = pageParam ?? 0;
+                            //   const currentOrder = iFramesOrderRef.current.slice(index, index + 4);
+                            //   console.log({ currentOrder });
+
+                            //   const iFrames = await searchIFrames({
+                            //       search: searchInput,
+                            //       ids: currentOrder.map((item) => item._id),
+                            //   });
+                            //   return iFrames;
+                        }}
+                        onQueryError={(error) => {
+                            console.log('Failed loading data:', error);
+                            toast.error(i18next.t('iFrames.searchFailed'));
+                        }}
+                        getNextPageParam={(lastPage, allPages) => {
+                            const nextPage = allPages.length * 4;
+                            return lastPage.length ? nextPage : undefined;
+                        }}
+                        emptyText={i18next.t('iFrames.noIFramesFound')}
+                        useContainer={false}
+                    >
+                        {(iFrame) => {
+                            return (
+                                <Resizable minHeight={500} minWidth={900} maxHeight={800} maxWidth={1800} id={iFrame._id}>
+                                    <Grid padding={2} height="100%" width="100%">
+                                        <IFramePage iFrame={iFrame} isIFramePage={false} />
+                                    </Grid>
+                                </Resizable>
+                            );
+                        }}
+                    </InfiniteScroll>
+                )}
             </Grid>
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}

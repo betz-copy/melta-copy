@@ -46,56 +46,40 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                // queryClient.setQueryData(['searchIFrames', null], (oldData: any) => {
-                //     console.log({ oldData });
-
-                //     if (!oldData) return;
-                //     const updatedPages = oldData.pages.map((page) => page.map((iframe) => (iframe._id === data._id ? data : iframe)));
-                //     console.log({ updatedPages });
-
-                //     // eslint-disable-next-line consistent-return
-                //     return {
-                //         ...oldData,
-                //         pages: updatedPages,
-                //     };
-                // });
                 queryClient.invalidateQueries(['searchIFrames', null]);
+
                 queryClient.setQueryData(['getIFrame', data._id], data);
+
+                const iFramesOrder = localStorage.getItem('iFramesOrder');
+
+                if (iFramesOrder) {
+                    let iFramesStored = JSON.parse(iFramesOrder);
+                    const index = iFramesStored.findIndex((iFrame) => iFrame.id === data._id);
+
+                    if (index !== -1) {
+                        iFramesStored[index] = { ...iFramesStored[index], name: data.name };
+                    } else {
+                        iFramesStored = [{ name: data.name, id: data._id }, ...iFramesStored];
+                    }
+
+                    localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
+                } else localStorage.setItem('iFramesOrder', JSON.stringify([{ name: data.name, id: data._id }]));
+
                 queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                     if (!oldData) {
                         return [data];
                     }
 
-                    // Check if the iframe already exists
                     const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
 
                     if (index === -1) {
-                        // If iframe does not exist, add it to the array
                         return [data, ...oldData];
                     }
-                    // If iframe exists, update it
-                    console.log('hi im updated');
-
                     const updatedData = [...oldData];
                     updatedData[index] = data;
-                    console.log({ index }, { updatedData });
+                    // console.log({ index }, { updatedData });
                     return [...updatedData];
                 });
-                // queryClient.invalidateQueries('allIFrames');
-
-                // queryClient.setQueryData('allIFrames', (oldData) => {
-                //     if (Array.isArray(oldData)) {
-                //         console.log({ data });
-
-                //         console.log([data, ...oldData]);
-
-                //         return [data, ...oldData];
-                //     }
-                //     console.log({ oldData });
-
-                //     return [data];
-                // });
-
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
                 handleClose();
             },

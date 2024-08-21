@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -10,6 +10,8 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
+import { IMongoIFrame } from '../../interfaces/iFrames';
+import { LocalStorage } from '../../utils/localStorage';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -19,36 +21,32 @@ const IFramesPageHeadline: React.FC<{
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const localStorageKey = 'iFramesOrder';
+    // const [allIFrames] = useState(queryClient.getQueryData<IMongoIFrame[]>('allIFrames'));
 
-    // const [anchorEl, setAnchorEl] = useState(null);
     const resetIFramesDimensions = () => {
-        iFramesOrder.forEach((iFrame) => {
+        iFramesOrder?.forEach((iFrame) => {
             localStorage.removeItem(`iFrameDimension_${iFrame._id}`);
         });
-        // queryClient.setQueryData('allIFrames', () => searchIFrames({}));
+        LocalStorage.remove(localStorageKey);
         window.location.reload();
     };
-    // const handleOpen = (event) => {
-    //     setAnchorEl(event.currentTarget);
-    // };
-
-    // const handleClose = () => {
-    //     setAnchorEl(null);
-    // };
 
     const handleOnDragEnd = (result) => {
         if (!result.destination) return;
 
-        const updatedItems = Array.from(iFramesOrder);
-        console.log({ updatedItems });
+        const updatedItems = iFramesOrder;
 
         const [reorderedItem] = updatedItems.splice(result.source.index, 1);
         updatedItems.splice(result.destination.index, 0, reorderedItem);
 
+        LocalStorage.set(localStorageKey, updatedItems);
         setIFramesOrder(updatedItems);
-        queryClient.setQueryData('allIFrames', updatedItems);
+        console.log('change', { iFramesOrder }, LocalStorage.get(localStorageKey));
+
+        queryClient.invalidateQueries(['searchIFrames', null]);
+
     };
-    console.log('hh ', { iFramesOrder });
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
@@ -108,11 +106,11 @@ const IFramesPageHeadline: React.FC<{
                             <Droppable droppableId="items">
                                 {(provided) => (
                                     <List {...provided.droppableProps} ref={provided.innerRef} style={{ padding: '8px', width: '200px' }}>
-                                        {iFramesOrder.map(({ _id, name }, index) => (
-                                            <Draggable key={_id} draggableId={_id} index={index}>
+                                        {iFramesOrder.map(({ id, name }, index) => (
+                                            <Draggable key={id} draggableId={id} index={index}>
                                                 {(provided) => (
                                                     <ListItem
-                                                        key={_id}
+                                                        key={id}
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
