@@ -193,6 +193,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',

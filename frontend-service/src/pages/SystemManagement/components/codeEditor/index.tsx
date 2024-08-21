@@ -28,6 +28,9 @@ const CodeEditorDialog: React.FC<{
     const [editorValue, setEditorValue] = useState('');
 
     const defaultCode = [
+        '/// To throw a custom error in your code, use the following syntax:',
+        '// throw new CustomError("Your error message")',
+        '',
         `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
@@ -79,7 +82,10 @@ const CodeEditorDialog: React.FC<{
 
     const onValidate = (markers: editor.IMarker[]) => {
         const unusedPropertyErrorCode = '6133';
-        const marker = markers.filter((marker) => marker.code !== unusedPropertyErrorCode);
+        const noTypeGivenErrorCode = '7044';
+        const marker = markers.filter((marker) => {
+            marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode;
+        });
         const hasErrorMarkers = marker.length > 0;
 
         setValidationErrors(hasErrorMarkers);
@@ -133,6 +139,7 @@ const CodeEditorDialog: React.FC<{
                     forbidden={isImportUsing}
                     value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
                     setEditorContent={setEditorValue}
+                    defaultCode={defaultCode}
                 />
             </DialogContent>
             <DialogActions>

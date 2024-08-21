@@ -114,6 +114,11 @@ const CreateOrEditEntityDetails: React.FC<{
                     return;
                 }
 
+                if (errorMetadata?.errorCode === errorCodes.actionsCustomError) {
+                    toast.error(errorMetadata?.message);
+                    return;
+                }
+
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
 
@@ -147,6 +152,11 @@ const CreateOrEditEntityDetails: React.FC<{
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     toastConstraintValidationError(errorMetadata, newEntityData.template);
+                    return;
+                }
+
+                if (errorMetadata?.errorCode === errorCodes.actionsCustomError) {
+                    toast.error(errorMetadata?.message);
                     return;
                 }
 

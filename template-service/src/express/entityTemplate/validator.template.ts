@@ -10,6 +10,9 @@ import { addPropertyToRequest } from '../../utils/express';
 
 const cleanActionCode = async (action: string, entityTemplate: IEntityTemplatePopulated) => {
     const defaultCode = [
+        '/// To throw a custom error in your code, use the following syntax:',
+        '// throw new CustomError("Your error message")',
+        '',
         `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
@@ -82,16 +85,7 @@ function traverse(
     });
 }
 
-export const validateActionAst = async (req: Request) => {
-    const { actions } = req.body;
-    const { templateId } = req.params;
-
-    const entityTemplate = await EntityTemplateManager.getTemplateById(templateId);
-
-    const filename = 'test.ts';
-
-    const sourceFile = ts.createSourceFile(filename, actions, ts.ScriptTarget.ES5);
-
+const compileTsCode = (filename: string, sourceFile: ts.SourceFile) => {
     const options: ts.CompilerOptions = {
         target: ts.ScriptTarget.ES5,
         module: ts.ModuleKind.CommonJS,
@@ -132,16 +126,35 @@ export const validateActionAst = async (req: Request) => {
             if (diagnostic.file) {
                 const { line, character } = ts.getLineAndCharacterOfPosition(diagnostic.file, diagnostic.start!);
                 const message = ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n');
-                console.log(`${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
+                throw new ServiceError(400, `${diagnostic.file.fileName} (${line + 1},${character + 1}): ${message}`);
             } else {
-                console.log(ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
+                throw new ServiceError(400, ts.flattenDiagnosticMessageText(diagnostic.messageText, '\n'));
             }
         }
     });
+};
 
+export const validateActionAst = async (req: Request) => {
+    const { actions } = req.body;
+    const { templateId } = req.params;
+
+    const entityTemplate = await EntityTemplateManager.getTemplateById(templateId);
     const errors: string[] = [];
     const countNumOfOccurrences: Record<string, number> = {};
     const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity', 'onDeleteEntity'];
+    const filename = 'ast.ts';
+    const customErrorCode = [
+        'class CustomError extends Error {',
+        '   constructor(message: string) {',
+        '       super(message);',
+        '       this.name = "CustomError";',
+        '    }',
+        '}',
+    ].join('\n');
+    const code = `${customErrorCode}\n${actions}`;
+
+    const sourceFile = ts.createSourceFile(filename, code, ts.ScriptTarget.ES5);
+    compileTsCode(filename, sourceFile);
 
     traverse(sourceFile, new Set<string>(), errors, nameOfFunctionMustBe, countNumOfOccurrences);
 

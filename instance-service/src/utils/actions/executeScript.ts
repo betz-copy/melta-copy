@@ -34,7 +34,13 @@ const prepareCodeForActionExecution = async (
     entityTemplate: IMongoEntityTemplate,
     crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
 ) => {
-    const updateEntityFunction = [
+    const defaultCode = [
+        'class CustomError extends Error {',
+        '   constructor(message: string) {',
+        '       super(message);',
+        '       this.name = "CustomError";',
+        '    }',
+        '}',
         `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
         'const actions: any[] = [];',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
@@ -49,7 +55,7 @@ const prepareCodeForActionExecution = async (
         '}',
     ].join('\n');
 
-    const code = `${updateEntityFunction}\n${entityTemplate.actions}\n${getActionsFunction}`;
+    const code = `${defaultCode}\n${entityTemplate.actions}\n${getActionsFunction}`;
     const jsCode = ts.transpile(code);
 
     return jsCode;
@@ -63,6 +69,12 @@ export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
         const executionOutput: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
         return executionOutput;
     } catch (error) {
+        if ((error as unknown as Error).name === 'CustomError')
+            throw new ServiceError(400, `Error executing VM code of actions`, {
+                errorCode: config.errorCodes.actionsCustomError,
+                message: (error as unknown as Error).message,
+            });
+
         throw new ServiceError(400, `Error executing VM code: ${error}`);
     }
 };

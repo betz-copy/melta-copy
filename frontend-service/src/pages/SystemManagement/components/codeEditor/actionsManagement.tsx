@@ -12,108 +12,123 @@ interface ActionManagementProps {
     entityTemplate: IMongoEntityTemplatePopulated | null;
     onChange: (value: string | undefined, event: editor.IModelContentChangedEvent) => void;
     setEditorContent: React.Dispatch<React.SetStateAction<string>>;
+    defaultCode: string;
     onValidate?: (markers: editor.IMarker[]) => void;
     forbidden?: boolean;
     value?: string;
 }
 
-const ActionManagement: React.FC<ActionManagementProps> = ({ entityTemplate, onChange, onValidate, forbidden = false, value, setEditorContent }) => {
+const ActionManagement: React.FC<ActionManagementProps> = ({
+    entityTemplate,
+    onChange,
+    onValidate,
+    defaultCode,
+    forbidden = false,
+    value,
+    setEditorContent,
+}) => {
     const entityName = entityTemplate?.name;
     const entityProperties = entityTemplate?.properties.properties;
     const monacoRef = useRef<editor.IStandaloneCodeEditor | null>(null);
     const constrainedInstanceRef = useRef(null);
+    const generatedInterface = generateInterfaceWithRelationships(entityProperties!, entityName!);
 
     const handleEditorDidMount = (editorDefs: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-        // eslint-disable-next-line no-param-reassign
         editorDefs.getDomNode()!.style.direction = 'ltr';
         monacoRef.current = editorDefs;
         setEditorContent(monacoRef.current.getValue());
 
-        // const constrainedInstance = constrainedEditor(monaco);
-        // const model = editorDefs.getModel();
-        // const readonlyProperties = 4;
-        // const propertiesInterface = Object.keys(entityTemplate?.properties.properties!).length + readonlyProperties;
-        // const updateEntityFunction = 7;
-        // const numLineAfterDefaultLines = propertiesInterface + updateEntityFunction;
+        const constrainedInstance = constrainedEditor(monaco);
+        const model = editorDefs.getModel();
+        constrainedInstance.initializeIn(editorDefs);
 
-        // constrainedInstance.initializeIn(editorDefs);
+        const updateEntityFunctionNumLines = 5;
+        const numLinesOfInterface = generatedInterface.split('\n');
+        const numLineAfterDefaultLines = numLinesOfInterface.length + updateEntityFunctionNumLines;
 
-        // const addRestrictions = (content: string) => {
-        //     const lines = content.split('\n');
-        //     const restrictions: { range: (number | undefined)[]; allowMultiline: boolean; label: string }[] = [];
+        const getFunctionDefinitionsLineNumbers = (lines: string[]): number[] => {
+            return lines.reduce<number[]>((acc, line, index) => {
+                if (line.includes('function onCreateEntity') || line.includes('function onUpdateEntity')) {
+                    acc.push(index + 1);
+                }
+                return acc;
+            }, []);
+        };
 
-        //     const functionDefinitionsLineNumbers: number[] = [];
-        //     lines.forEach((line, index) => {
-        //         if (
-        //             line.includes('function onCreateEntity') ||
-        //             line.includes('function onUpdateEntity') ||
-        //             line.includes('function onDeleteEntity')
-        //         ) {
-        //             functionDefinitionsLineNumbers.push(index + 1);
-        //         }
-        //     });
+        const createRestrictionsForFunctionDefinitions = (functionDefinitionsLineNumbers: number[], numLineAfterDefaultLines: number) => {
+            const restrictions: { range: (number | undefined)[]; allowMultiline: boolean; label: string }[] = [];
 
-        //     const numLinesBetweenOnCerateFuncAndDefaultLines = functionDefinitionsLineNumbers[0] - numLineAfterDefaultLines;
+            const numLinesBetweenOnCreateFuncAndDefaultLines = functionDefinitionsLineNumbers[0] - numLineAfterDefaultLines;
 
-        //     for (let i = numLineAfterDefaultLines; i < numLineAfterDefaultLines + numLinesBetweenOnCerateFuncAndDefaultLines; i++) {
-        //         restrictions.push({
-        //             range: [i, 1, i, model?.getLineMaxColumn(i)],
-        //             allowMultiline: true,
-        //             label: `editableArea${i}`,
-        //         });
-        //     }
+            // restrict lines between the default lines and the first function definition
+            for (let i = numLineAfterDefaultLines; i < numLineAfterDefaultLines + numLinesBetweenOnCreateFuncAndDefaultLines; i++) {
+                restrictions.push({
+                    range: [i, 1, i, model?.getLineMaxColumn(i)],
+                    allowMultiline: true,
+                    label: `editableArea${i}`,
+                });
+            }
 
-        //     for (let i = 0; i < functionDefinitionsLineNumbers.length + 1; i++) {
-        //         const start = functionDefinitionsLineNumbers[i] + 1;
-        //         const endLine = functionDefinitionsLineNumbers[i + 1] ? functionDefinitionsLineNumbers[i + 1] - 1 : model?.getLineCount();
-        //         for (let startLine = start; (endLine as unknown as number) - startLine >= 0; startLine++) {
-        //             restrictions.push({
-        //                 range: [startLine, 1, startLine, model?.getLineMaxColumn(startLine)],
-        //                 allowMultiline: true,
-        //                 label: `editableArea${i}`,
-        //             });
-        //         }
-        //     }
-        //     constrainedInstance.addRestrictionsTo(model, restrictions);
-        // };
-        // // that lines add editable lines: restrictions contains all editable lines
-        // if (entityTemplate?.actions) {
-        //     addRestrictions(value!);
-        // } else {
-        //     const lines = [
-        //         { label: 'beforeFunctionOnCreateEntity', offset: 0 },
-        //         { label: 'onCreateEntity', offset: 2 },
-        //         { label: 'beforeFunctionOnUpdateEntity', offset: 4 },
-        //         { label: 'onUpdateEntity', offset: 6 },
-        //         { label: 'beforeFunctionOnDeleteEntity', offset: 8 },
-        //         { label: 'onDeleteEntity', offset: 10 },
-        //     ];
+            // restrict lines for each function definition block
+            for (let i = 0; i < functionDefinitionsLineNumbers.length + 1; i++) {
+                const start = functionDefinitionsLineNumbers[i] + 1;
+                const endLine = functionDefinitionsLineNumbers[i + 1] ? functionDefinitionsLineNumbers[i + 1] - 1 : model?.getLineCount();
+                for (let startLine = start; (endLine as unknown as number) - startLine >= 0; startLine++) {
+                    restrictions.push({
+                        range: [startLine, 1, startLine, model?.getLineMaxColumn(startLine)],
+                        allowMultiline: true,
+                        label: `editableArea${i}`,
+                    });
+                }
+            }
 
-        //     const restrictions = lines.map((line) => {
-        //         const lineNum = numLineAfterDefaultLines + line.offset;
-        //         const maxColumn = model?.getLineMaxColumn(lineNum);
-        //         return {
-        //             range: [lineNum, 1, lineNum, maxColumn],
-        //             allowMultiline: true,
-        //             label: line.label,
-        //         };
-        //     });
+            return restrictions;
+        };
 
-        //     constrainedInstance.addRestrictionsTo(model, restrictions);
-        // }
+        const createDefaultRestrictions = (numLineAfterDefaultLines: number) => {
+            const lines = [
+                { label: 'beforeFunctionOnCreateEntity', offset: 0 },
+                { label: 'onCreateEntity', offset: 2 },
+                { label: 'beforeFunctionOnUpdateEntity', offset: 4 },
+                { label: 'onUpdateEntity', offset: 6 },
+            ];
 
-        // constrainedInstanceRef.current = constrainedInstance;
+            return lines.map((line) => {
+                const lineNum = numLineAfterDefaultLines + line.offset;
+                const maxColumn = model?.getLineMaxColumn(lineNum);
+                return {
+                    range: [lineNum, 1, lineNum, maxColumn],
+                    allowMultiline: true,
+                    label: line.label,
+                };
+            });
+        };
 
-        // const entityInterface = generateInterface(entityProperties!, entityName!);
-        // monaco.languages.typescript.typescriptDefaults.addExtraLib(entityInterface, 'ts:entity/x.d.ts');
+        // add editable lines: restrictions contains all editable lines
+        if (entityTemplate?.actions) {
+            const functionDefinitionsLineNumbers = getFunctionDefinitionsLineNumbers(editorDefs.getValue().split('\n'));
+            const restrictions = createRestrictionsForFunctionDefinitions(functionDefinitionsLineNumbers, numLineAfterDefaultLines);
+            constrainedInstance.addRestrictionsTo(model, restrictions);
+        } else {
+            const restrictions = createDefaultRestrictions(numLineAfterDefaultLines);
+            constrainedInstance.addRestrictionsTo(model, restrictions);
+        }
+
+        constrainedInstanceRef.current = constrainedInstance;
+
+        const customErrorLib = `
+        class CustomError extends Error {
+            constructor(message: string) {
+                super(message);
+                this.name = "CustomError";
+            }
+        }
+        `;
+        monaco.languages.typescript.typescriptDefaults.addExtraLib(customErrorLib, 'ts:custom-error-lib.d.ts');
     };
 
     const defaultValue = [
-        `${generateInterfaceWithRelationships(entityProperties!, entityName!)}`,
-        '',
-        'function updateEntity(entityId: string, properties: Record<string, any>): void {',
-        '  // updates entity in data base',
-        '}',
+        `${defaultCode}`,
         '',
         `function onCreateEntity(${entityName}: ${entityName}): void {`,
         '',
