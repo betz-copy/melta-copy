@@ -134,7 +134,7 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
         },
     );
 
-    const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+    const templateTablesRefs = useRef<TemplateTablesViewRef['templateTablesRefs']>({});
 
     useImperativeHandle(ref, () => ({
         refetch: refetchTemplatesFilteredByCount,

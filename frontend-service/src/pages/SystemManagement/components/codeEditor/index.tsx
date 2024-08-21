@@ -140,6 +140,7 @@ const CodeEditorDialog: React.FC<{
                     value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
                     setEditorContent={setEditorValue}
                     defaultCode={defaultCode}
+                    crudActions={['onCreateEntity', 'onUpdateEntity']}
                 />
             </DialogContent>
             <DialogActions>
