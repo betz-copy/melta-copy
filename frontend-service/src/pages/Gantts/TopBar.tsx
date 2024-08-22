@@ -79,7 +79,8 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                     }
                 />
 
-                {currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write && (
+                {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                    currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                     <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                         <Swap
                             condition={edit}

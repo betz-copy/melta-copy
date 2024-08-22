@@ -14,6 +14,7 @@ import React from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
+import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -64,25 +65,25 @@ const columnDefs = (
     },
     translatedEnumColDef(
         'permissionsManagement',
-        (params) => params.data?.permissions[workspaceId].permissions?.scope ?? '',
+        (params) => (params.data?.permissions[workspaceId].permissions?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
         { title: i18next.t('permissions.permissionsManagement') },
         scopesTranslation,
     ),
     translatedEnumColDef(
         'templatesManagement',
-        (params) => params.data?.permissions[workspaceId].templates?.scope ?? '',
+        (params) => (params.data?.permissions[workspaceId].templates?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
         { title: i18next.t('permissions.templatesManagement') },
         scopesTranslation,
     ),
     translatedEnumColDef(
         'rulesManagement',
-        (params) => params.data?.permissions[workspaceId].rules?.scope ?? '',
+        (params) => (params.data?.permissions[workspaceId].rules?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
         { title: i18next.t('permissions.rulesManagement') },
         scopesTranslation,
     ),
     translatedEnumColDef(
         'processesManagement',
-        (params) => params.data?.permissions[workspaceId].processes?.scope ?? '',
+        (params) => (params.data?.permissions[workspaceId].processes?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
         { title: i18next.t('permissions.processesManagement') },
         scopesTranslation,
     ),
@@ -91,15 +92,18 @@ const columnDefs = (
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
-            const permissionsOfCategories = Object.keys(params.value ?? {}).map((category) => {
-                return (
-                    categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
-                        _id: category,
-                        name: category,
-                        displayName: category,
-                    }
-                );
-            });
+            const permissionsOfCategories =
+                params.data.permissions[workspaceId].admin?.scope === PermissionScope.write
+                    ? Object.keys(params.value ?? {}).map((category) => {
+                          return (
+                              categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
+                                  _id: category,
+                                  name: category,
+                                  displayName: category,
+                              }
+                          );
+                      })
+                    : categories;
             return permissionsOfCategories.map(({ displayName }) => displayName).join(' ');
         },
         filter: false, // todo: do set filter with `.includes` logic
@@ -162,12 +166,14 @@ const columnDefs = (
         cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
 
+            const isAdmin = data?.permissions[workspaceId].admin?.scope === PermissionScope.write;
+
             return (
                 <div>
-                    <IconButton color="primary" onClick={() => onEditPermissionsOfUser(data!)}>
+                    <IconButton color="primary" onClick={() => onEditPermissionsOfUser(data!)} disabled={isAdmin}>
                         <EditIcon />
                     </IconButton>
-                    <IconButton color="primary" onClick={() => onDeletePermissionsOfUser(data!)}>
+                    <IconButton color="primary" onClick={() => onDeletePermissionsOfUser(data!)} disabled={isAdmin}>
                         <DeleteIcon />
                     </IconButton>
                 </div>

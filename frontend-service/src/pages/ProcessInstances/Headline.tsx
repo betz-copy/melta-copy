@@ -81,7 +81,8 @@ const ProcessInstancesHeadline: React.FC<{
             </Grid>
 
             <Grid item>
-                {currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write && (
+                {(currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+                    currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                     <AddProcessButton style={{ background: theme.palette.primary.main, borderRadius: '5px', height: '35px' }}>
                         <AddIcon htmlColor="white" />
                         <Typography fontSize={14} style={{ fontWeight: '500', padding: '0 10px', color: 'white' }}>

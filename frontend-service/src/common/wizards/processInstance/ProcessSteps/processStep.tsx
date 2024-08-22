@@ -114,6 +114,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
 
     const hasPermissionsToEditStep =
         (currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ||
             stepTemplate.reviewers.some((reviewer) => reviewer._id === currentUser._id) ||
             stepInstance.reviewers.some((reviewer) => reviewer._id === currentUser._id)) &&
         !processInstance.archived;

@@ -327,7 +327,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     </NavButton>
 
                     {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
-                        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write) && (
+                        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"
                             text={i18next.t('pages.systemManagement')}
@@ -342,7 +343,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </NavButton>
                     )}
 
-                    {currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write && (
+                    {(currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/permissions-management"
                             text={i18next.t('permissions.permissionsManagmentPageTitle')}

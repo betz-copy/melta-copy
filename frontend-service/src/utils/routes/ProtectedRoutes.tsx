@@ -9,7 +9,7 @@ import { ISubCompactPermissions } from '../../interfaces/permissions/permissions
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
-    if (isAllowed) {
+    if (!isAllowed) {
         return <Redirect href="/" replace />;
     }
 
@@ -24,7 +24,10 @@ export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissi
     const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
-    return protectedRoute(children, !permissions.instances?.categories[categoryId]);
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]?.scope),
+    );
 };
 
 export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({
@@ -56,13 +59,21 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
 
     const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
 
-    return protectedRoute(children, !permissions.instances?.categories[currentEntityTemplate?.category._id ?? '']);
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[currentEntityTemplate?.category._id ?? '']),
+    );
 };
 
 export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
-    return protectedRoute(children, permissions.templates?.scope !== PermissionScope.write && permissions.processes?.scope !== PermissionScope.write);
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write ||
+            permissions.templates?.scope === PermissionScope.write ||
+            permissions.processes?.scope === PermissionScope.write,
+    );
 };
 
 export const PermissionsManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
-    return protectedRoute(children, permissions.permissions?.scope !== PermissionScope.write);
+    return protectedRoute(children, permissions.admin?.scope === PermissionScope.write || permissions.permissions?.scope === PermissionScope.write);
 };

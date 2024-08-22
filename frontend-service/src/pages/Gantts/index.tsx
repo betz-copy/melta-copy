@@ -40,7 +40,8 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                     <Box>
                         <GlobalSearchBar onSearch={(searchValue) => setSearch(searchValue || undefined)} />
                     </Box>
-                    {currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write && (
+                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <IconButton onClick={() => setGanttDialogOpen(true)}>
                             <AddCircleIcon color="primary" fontSize="large" />
                         </IconButton>

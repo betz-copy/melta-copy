@@ -31,11 +31,21 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
     };
 
     const tabsPermissionsMapping: Record<string, boolean> = {
-        categories: currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write,
-        entityTemplates: currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write,
-        relationshipTemplates: currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write,
-        rules: currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write,
-        processTemplates: currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write,
+        categories:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        entityTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        relationshipTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        rules:
+            currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        processTemplates:
+            currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
     };
 
     return (

@@ -199,49 +199,58 @@ const PermissionsOfUserDialog: React.FC<{
                                 </Box>
 
                                 {/* dont show management permissions to regular user (if dont have at all) */}
-                                {!(
+                                {(!(
                                     mode === 'view' &&
                                     currentPermissions?.permissions?.scope !== PermissionScope.write &&
                                     currentPermissions?.templates?.scope !== PermissionScope.write &&
                                     currentPermissions?.processes?.scope !== PermissionScope.write &&
                                     currentPermissions?.rules?.scope !== PermissionScope.write
-                                ) && (
+                                ) ||
+                                    currentPermissions?.admin?.scope === PermissionScope.write) && (
                                     <Box margin={1}>
                                         <ManagementPermissionsCard
                                             permissionsManagement={{
-                                                checked: currentPermissions?.permissions?.scope === PermissionScope.write,
+                                                checked:
+                                                    currentPermissions?.permissions?.scope === PermissionScope.write ||
+                                                    currentPermissions?.admin?.scope === PermissionScope.write,
                                                 onChange:
                                                     mode === 'view'
                                                         ? () => {}
                                                         : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.permissions`, checked),
-                                                disabled: formikProps.isSubmitting,
+                                                disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                                 viewMode: mode === 'view',
                                             }}
                                             templatesManagement={{
-                                                checked: currentPermissions?.templates?.scope === PermissionScope.write,
+                                                checked:
+                                                    currentPermissions?.templates?.scope === PermissionScope.write ||
+                                                    currentPermissions?.admin?.scope === PermissionScope.write,
                                                 onChange:
                                                     mode === 'view'
                                                         ? () => {}
                                                         : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.templates`, checked),
-                                                disabled: formikProps.isSubmitting,
+                                                disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                                 viewMode: mode === 'view',
                                             }}
                                             rulesManagement={{
-                                                checked: currentPermissions?.rules?.scope === PermissionScope.write,
+                                                checked:
+                                                    currentPermissions?.rules?.scope === PermissionScope.write ||
+                                                    currentPermissions?.admin?.scope === PermissionScope.write,
                                                 onChange:
                                                     mode === 'view'
                                                         ? () => {}
                                                         : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.rules`, checked),
-                                                disabled: formikProps.isSubmitting,
+                                                disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                                 viewMode: mode === 'view',
                                             }}
                                             processesManagement={{
-                                                checked: currentPermissions?.processes?.scope === PermissionScope.write,
+                                                checked:
+                                                    currentPermissions?.processes?.scope === PermissionScope.write ||
+                                                    currentPermissions?.admin?.scope === PermissionScope.write,
                                                 onChange:
                                                     mode === 'view'
                                                         ? () => {}
                                                         : (_e, checked) => handleManagementPermissionCheck(`${permissionsPath}.processes`, checked),
-                                                disabled: formikProps.isSubmitting,
+                                                disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                                 viewMode: mode === 'view',
                                             }}
                                         />
@@ -253,7 +262,7 @@ const PermissionsOfUserDialog: React.FC<{
                                         categoriesCheckboxProps={Array.from(categories.values(), (currCategory) => ({
                                             categoryId: currCategory._id,
                                             categoryDisplayName: currCategory.displayName,
-                                            disabled: formikProps.isSubmitting,
+                                            disabled: formikProps.isSubmitting || currentPermissions?.admin?.scope === PermissionScope.write,
                                             scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                                             permissionType: {
                                                 read: {
@@ -296,10 +305,11 @@ const PermissionsOfUserDialog: React.FC<{
                                                       permissionType: {
                                                           write: {
                                                               checked:
-                                                                  Object.keys(categoriesPermissions).length === categories.size &&
-                                                                  Object.values(categoriesPermissions).every(
-                                                                      (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
-                                                                  ),
+                                                                  (Object.keys(categoriesPermissions).length === categories.size &&
+                                                                      Object.values(categoriesPermissions).every(
+                                                                          (categoryPermission) => categoryPermission?.scope === PermissionScope.write,
+                                                                      )) ||
+                                                                  currentPermissions?.admin?.scope === PermissionScope.write,
                                                               onChange: (_e, checked) => {
                                                                   formikProps.setFieldValue(
                                                                       `${permissionsPath}.instances.categories`,
@@ -316,10 +326,11 @@ const PermissionsOfUserDialog: React.FC<{
                                                           },
                                                           read: {
                                                               checked:
-                                                                  Object.keys(categoriesPermissions).length === categories.size &&
-                                                                  Object.values(categoriesPermissions).every(
-                                                                      (categoryPermission) => categoryPermission?.scope,
-                                                                  ),
+                                                                  (Object.keys(categoriesPermissions).length === categories.size &&
+                                                                      Object.values(categoriesPermissions).every(
+                                                                          (categoryPermission) => categoryPermission?.scope,
+                                                                      )) ||
+                                                                  currentPermissions?.admin?.scope === PermissionScope.write,
                                                               onChange: (_e, checked) => {
                                                                   formikProps.setFieldValue(
                                                                       `${permissionsPath}.instances.categories`,

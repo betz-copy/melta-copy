@@ -32,7 +32,9 @@ const ProcessesList: React.FC<{
 
     const currentUser = useUserStore((state) => state.user);
 
-    const hasPermissionsToEditDetails = currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write;
+    const hasPermissionsToEditDetails =
+        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
 
     const getStatusFilter = (status: Status | 'all' | undefined) => {
         if (status === 'all') return [Status.Approved, Status.Pending, Status.Rejected];

@@ -116,7 +116,8 @@ const RuleBreachDialog: React.FC<{
             </DialogContent>
             {breachType === 'request' &&
                 (ruleBreach as IRuleBreachRequestPopulated).status === RuleBreachRequestStatus.Pending &&
-                (currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write ? (
+                (currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write ||
+                currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ? (
                     <DialogActions style={{ justifyContent: 'space-evenly' }}>
                         <Button
                             variant="contained"
