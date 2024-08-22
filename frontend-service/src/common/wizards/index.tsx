@@ -8,6 +8,7 @@ import { ObjectShape } from 'yup/lib/object';
 import { useSelector } from 'react-redux';
 import { Stepper } from './stepper';
 import { RootState } from '../../store';
+import { IFrameWizardValues } from './iFrame';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -23,6 +24,10 @@ export type WizardBaseType<T extends object> = {
     initialValues?: T;
     initalStep?: number;
     isEditMode?: boolean;
+};
+
+export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
+    setIFramesOrder: (value: { name: string; id: string }[]) => void;
 };
 
 export type StepsType<T extends object> = {

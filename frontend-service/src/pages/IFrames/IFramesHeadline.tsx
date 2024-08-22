@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { Menu, Button, List, ListItem, Grid, IconButton, FormControl, Select, Box } from '@mui/material';
+import { List, ListItem, Grid, IconButton, FormControl, Select, Box } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { TopBarGrid } from '../../common/TopBar';
@@ -10,7 +10,6 @@ import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { LocalStorage } from '../../utils/localStorage';
 
 const IFramesPageHeadline: React.FC<{
@@ -22,11 +21,11 @@ const IFramesPageHeadline: React.FC<{
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const localStorageKey = 'iFramesOrder';
-    // const [allIFrames] = useState(queryClient.getQueryData<IMongoIFrame[]>('allIFrames'));
+    console.log({ iFramesOrder });
 
     const resetIFramesDimensions = () => {
         iFramesOrder?.forEach((iFrame) => {
-            localStorage.removeItem(`iFrameDimension_${iFrame._id}`);
+            localStorage.removeItem(`iFrameDimension_${iFrame.id}`);
         });
         LocalStorage.remove(localStorageKey);
         window.location.reload();
@@ -35,17 +34,13 @@ const IFramesPageHeadline: React.FC<{
     const handleOnDragEnd = (result) => {
         if (!result.destination) return;
 
-        const updatedItems = iFramesOrder;
+        const updatedItems = [...iFramesOrder];
 
         const [reorderedItem] = updatedItems.splice(result.source.index, 1);
         updatedItems.splice(result.destination.index, 0, reorderedItem);
 
         LocalStorage.set(localStorageKey, updatedItems);
         setIFramesOrder(updatedItems);
-        console.log('change', { iFramesOrder }, LocalStorage.get(localStorageKey));
-
-        queryClient.invalidateQueries(['searchIFrames', null]);
-
     };
 
     return (

@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { IFrameWizardBaseType, StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
@@ -31,13 +31,39 @@ const steps: StepsType<IFrameWizardValues> = [
         component: (props) => <ChooseIFrameIcon {...props} />,
     },
 ];
+const updateIFramesOrderOnLocalStorage = (data) => {
+    const iFramesOrder = localStorage.getItem('iFramesOrder');
 
-const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
+    if (iFramesOrder) {
+        let iFramesStored = JSON.parse(iFramesOrder);
+        const index = iFramesStored.findIndex((iFrame) => iFrame.id === data._id);
+
+        if (index !== -1) {
+            iFramesStored[index] = { ...iFramesStored[index], name: data.name };
+        } else {
+            iFramesStored = [{ name: data.name, id: data._id }, ...iFramesStored];
+        }
+
+        localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
+    } else localStorage.setItem('iFramesOrder', JSON.stringify([{ name: data.name, id: data._id }]));
+
+    // setIFramesOrder();
+};
+const IFrameWizard: React.FC<{
+    open: boolean;
+    handleClose: () => void;
+    initialValues?: any;
+    initalStep?: number;
+    isEditMode?: boolean;
+    setIFramesOrder: (value: any) => void;
+}> = ({
+    //  React.FC<WizardBaseType<IFrameWizardValues>> = ({
     open,
     handleClose,
     initalStep = 0,
     initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', apiToken: '', placeInSideBar: false },
     isEditMode = false,
+    setIFramesOrder,
 }) => {
     const queryClient = useQueryClient();
 
@@ -46,25 +72,18 @@ const IFrameWizard: React.FC<WizardBaseType<IFrameWizardValues>> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                queryClient.invalidateQueries(['searchIFrames', null]);
+                queryClient.invalidateQueries(['searchIFrames']);
 
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
-                const iFramesOrder = localStorage.getItem('iFramesOrder');
+                updateIFramesOrderOnLocalStorage(data);
+                console.log(typeof setIFramesOrder);
 
-                if (iFramesOrder) {
-                    let iFramesStored = JSON.parse(iFramesOrder);
-                    const index = iFramesStored.findIndex((iFrame) => iFrame.id === data._id);
+                const a = JSON.parse(localStorage.getItem('iFramesOrder')!);
 
-                    if (index !== -1) {
-                        iFramesStored[index] = { ...iFramesStored[index], name: data.name };
-                    } else {
-                        iFramesStored = [{ name: data.name, id: data._id }, ...iFramesStored];
-                    }
+                console.log({ a });
 
-                    localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
-                } else localStorage.setItem('iFramesOrder', JSON.stringify([{ name: data.name, id: data._id }]));
-
+                setIFramesOrder(a!);
                 queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                     if (!oldData) {
                         return [data];

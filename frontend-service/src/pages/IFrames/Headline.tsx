@@ -22,7 +22,7 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { CustomIcon } from '../../common/CustomIcon';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 
-const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
+const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value) => void }> = ({ iFrame, setIFramesOrder }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const navigate = useNavigate();
@@ -169,6 +169,10 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame }> = ({ iFrame }) => {
                 handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}
                 initialValues={iFrameObjectToIFrameForm(iFrameWizardDialogState.iFrame)}
                 isEditMode={Boolean(iFrameWizardDialogState.iFrame)}
+                setIFramesOrder={(val) => {
+                    console.log({ val });
+                    if (setIFramesOrder) setIFramesOrder(val);
+                }}
             />
             <AreYouSureDialog
                 open={deleteIFrameDialogState.isDialogOpen}

@@ -30,7 +30,6 @@ import { getMyNotificationGroupCountRequest } from '../../services/notificationS
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { searchIFrames } from '../../services/iFramesService';
 
 type SideBarProps = {
@@ -127,6 +126,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+
+    const allIFrames = queryClient.getQueryData(['searchIFrames']);
+    console.log({ allIFrames });
 
     const { data } = useQuery('allIFrames', () => searchIFrames({}));
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);

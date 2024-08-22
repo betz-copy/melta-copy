@@ -10,9 +10,10 @@ import IFrameHeadline from './Headline';
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
     isIFramePage?: boolean;
+    setIFramesOrder?: (value) => void;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder }) => {
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
@@ -56,7 +57,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true }) 
         </Grid>
     ) : (
         <>
-            <IFrameHeadline iFrame={iFrameData!} />
+            <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} />
             <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={1} />
         </>
     );
