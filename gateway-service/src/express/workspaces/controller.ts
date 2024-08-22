@@ -16,7 +16,7 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     static async getDir(req: Request, res: Response) {
-        res.json(await WorkspaceManager.getDir(req.body.path));
+        res.json(await WorkspaceManager.getDir(req.body.path, req.user!.id));
     }
 
     static async getFile(req: Request, res: Response) {
@@ -28,7 +28,7 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     async createOne(req: Request, res: Response) {
-        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[]));
+        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[], req.user!.id));
     }
 
     async updateOne(req: Request, res: Response) {

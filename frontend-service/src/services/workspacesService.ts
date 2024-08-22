@@ -22,6 +22,11 @@ export const getById = async (id: string) => {
     return data;
 };
 
+export const getWorkspaceHierarchyIds = async (id: string) => {
+    const { data } = await axios.get<string[]>(`${workspaces}/${id}/ids/hierarchy`);
+    return data;
+};
+
 const generateFormData = (workspace: WorkspaceWizardValues, appendFiles: (formData: FormData) => void) => {
     const formData = new FormData();
 

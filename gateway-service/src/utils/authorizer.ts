@@ -86,15 +86,18 @@ export class Authorizer extends DefaultController {
             if (currentPermissions.scope !== permission?.scope) throw new UserIncorrectScopeError(currentPermissions.scope, permission?.scope);
         });
 
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId];
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
     }
 
     // private async authorizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
 
     async userHasSomePermissions(req: Request) {
-        const { [this.workspaceId]: userWorkspacePermissions } = await UserService.getUserPermissions(req.user!.id, [this.workspaceId]);
-        if (!userWorkspacePermissions) throw new UserNotAuthorizedError();
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userWorkspacePermissions;
+        const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
+        workspaceHierarchyIds.push(this.workspaceId);
+
+        const userPermissions = await UserService.getUserPermissions(req.user!.id, workspaceHierarchyIds);
+        if (!Object.keys(userPermissions)) throw new UserNotAuthorizedError();
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
     }
 
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {

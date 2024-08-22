@@ -11,7 +11,7 @@ import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTempla
 import { IRuleMap } from '../../../interfaces/rules';
 import ErrorPage from '../../../pages/ErrorPage';
 import { getAllTemplates, GetAllTemplatesType } from '../../../services/templates/getAllTemplates';
-import { getFile } from '../../../services/workspacesService';
+import { getFile, getWorkspaceHierarchyIds } from '../../../services/workspacesService';
 import { useUserStore } from '../../../stores/user';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { mapTemplates } from '../../templates';
@@ -61,13 +61,28 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     });
 
     useEffect(() => {
-        if (!workspace) return;
+        const handleWorkspace = async () => {
+            if (!workspace) return;
 
-        setWorkspace(workspace);
-        document.title = workspace.name;
+            setWorkspace(workspace);
+            document.title = workspace.name;
 
-        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
-            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+            const hierarchyIds = await getWorkspaceHierarchyIds(workspace._id);
+
+            for (const workspaceId of Object.keys(currentUser.permissions)) {
+                const index = hierarchyIds.findIndex((hierarchyId) => hierarchyId === workspaceId);
+
+                if (index !== -1) {
+                    currentUser.permissions[workspace._id] = currentUser.permissions[hierarchyIds[index]];
+                    break;
+                }
+            }
+
+            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
+                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });
+        };
+
+        handleWorkspace();
     }, [workspace, setWorkspace, currentUser, setUser]);
 
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);

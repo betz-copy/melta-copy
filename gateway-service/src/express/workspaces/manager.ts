@@ -1,5 +1,8 @@
 import { StorageService } from '../../externalServices/storageService';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import DefaultManagerProxy from '../../utils/express/manager';
+import { UserNotAuthorizedError } from '../error';
+import { UsersManager } from '../users/manager';
 import { IWorkspace } from './interface';
 import { WorkspaceService } from './service';
 
@@ -19,8 +22,25 @@ export class WorkspaceManager extends DefaultManagerProxy {
         return WorkspaceService.getWorkspaceHierarchyIds(id);
     }
 
-    static async getDir(path: IWorkspace['path']) {
-        return WorkspaceService.getDir(path);
+    static async getDir(path: IWorkspace['path'], userId: string) {
+        const [workspace, workspaces, { permissions }] = await Promise.all([
+            this.getFile(path),
+            WorkspaceService.getDir(path),
+            UsersManager.getUserById(userId),
+        ]);
+
+        const hierarchy = [...(await this.getWorkspaceHierarchyIds(workspace._id)), workspace._id];
+        if (hierarchy.some((id) => permissions[id])) return workspaces;
+
+        const allPermissionsHierarchies = new Set(
+            (await Promise.all(Object.keys(permissions).map((id) => this.getWorkspaceHierarchyIds(id)))).flat(),
+        );
+
+        const allowedWorkspaces = workspaces.filter(({ _id }) => permissions[_id] || allPermissionsHierarchies.has(_id));
+
+        if (!allowedWorkspaces.length) throw new UserNotAuthorizedError();
+
+        return allowedWorkspaces;
     }
 
     static async getFile(path: IWorkspace['path']) {
@@ -42,10 +62,16 @@ export class WorkspaceManager extends DefaultManagerProxy {
         );
     }
 
-    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
+    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[], userId: string) {
         const fileProperties = await this.uploadFilesWrapper(files);
 
-        return WorkspaceService.createOne({ ...workspace, ...fileProperties });
+        const createdWorkspace = await WorkspaceService.createOne({ ...workspace, ...fileProperties });
+
+        await UsersManager.syncUserPermissions(userId, { [createdWorkspace._id]: { admin: { scope: PermissionScope.write } } }).catch(() => {
+            console.log(`failed to sync user permissions for userId ${userId} and workspaceId ${createdWorkspace._id}`); // eslint-disable-line no-console
+        });
+
+        return createdWorkspace;
     }
 
     private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
