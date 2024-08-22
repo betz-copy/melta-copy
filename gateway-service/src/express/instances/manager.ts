@@ -19,7 +19,7 @@ import {
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { deleteFiles, downloadFile, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
+import { downloadFile, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
 import {
     EntityTemplateManagerService,
     IEntityTemplatePopulated,
@@ -33,6 +33,7 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { getFilesIdsFromRabbit, sendFilesIdToRabbit } from '../../utils/deleteUnusedFiles';
 
 const { errorCodes } = config;
 
@@ -222,6 +223,8 @@ export class InstancesManager {
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+        console.log('deleteUnusedFiles start');
+
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
@@ -242,7 +245,11 @@ export class InstancesManager {
             return [];
         }
 
-        return deleteFiles(fileIdsToDelete);
+        console.log('deleteUnusedFiles', { fileIdsToDelete });
+
+        await sendFilesIdToRabbit(fileIdsToDelete);
+        await getFilesIdsFromRabbit();
+        return fileIdsToDelete;
     }
 
     static async exportEntityToDocumentTemplate({
@@ -473,6 +480,8 @@ export class InstancesManager {
     }
 
     private static async deleteAllEntityFiles(currentEntity: IEntity) {
+        console.log('deleteUnusedFiles start');
+
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
         const filePropertiesToRemove = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
@@ -482,12 +491,16 @@ export class InstancesManager {
             return [];
         }
 
-        return deleteFiles(fileIdsToRemove);
+        console.log('deleteUnusedFiles', { fileIdsToRemove });
+        await sendFilesIdToRabbit(fileIdsToRemove);
+        await getFilesIdsFromRabbit();
+        return fileIdsToRemove;
     }
 
     static async deleteEntityInstance(id: string) {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
+        console.log('deleteUnusedFiles deleteEntityInstance');
 
         const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 

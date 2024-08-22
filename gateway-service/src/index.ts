@@ -27,6 +27,8 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
+    await menash.declareQueue(rabbit.deleteUnusedFilesQueue);
+
     logger.info('Rabbit initialized');
 };
 
