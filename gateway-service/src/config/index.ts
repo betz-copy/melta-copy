@@ -51,7 +51,7 @@ const config = {
                 .default('/status')
                 .asString(),
         },
-        requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
@@ -71,53 +71,53 @@ const config = {
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
-        requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
+        requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
+        searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(50000).asIntPositive(),
     },
     permissionService: {
         baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
         baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
-        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
+        requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(500000).asIntPositive(),
     },
     activityLogService: {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),
         baseRoute: env.get('ACTIVITY_LOG_SERVICE_BASE_ROUTE').default('/api/activity-log').asString(),
-        requestTimeout: env.get('ACTIVITY_LOG_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('ACTIVITY_LOG_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
     },
     notificationService: {
         url: env.get('NOTIFICATION_SERVICE_URL').required().asString(),
         baseRoute: env.get('NOTIFICATION_SERVICE_BASE_ROUTE').default('/api/notifications').asString(),
-        requestTimeout: env.get('NOTIFICATION_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('NOTIFICATION_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
     },
     ruleBreachService: {
         url: env.get('RULE_BREACH_SERVICE_URL').required().asString(),
         baseRoute: env.get('RULE_BREACH_SERVICE_BASE_ROUTE').default('/api/rule-breaches').asString(),
-        requestTimeout: env.get('RULE_BREACH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('RULE_BREACH_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
         brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     },
     processService: {
         url: env.get('PROCESS_SERVICE_URL').required().asString(),
         templatesBaseRoute: env.get('PROCESSES_SERVICE_TEMPLATES_BASE_ROUTE').default('/api/processes/templates').asString(),
         instancesBaseRoute: env.get('PROCESSES_SERVICE_INSTANCES_BASE_ROUTE').default('/api/processes/instances').asString(),
-        requestTimeout: env.get('PROCESS_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('PROCESS_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
         internalSearchPullLimit: env.get('PROCESS_SERVICE_INTERNAL_SEARCH_PULL_LIMIT').default(1000).asIntPositive(),
     },
     ganttService: {
         url: env.get('GANTT_SERVICE_URL').required().asString(),
         baseRoute: env.get('GANTT_SERVICE_BASE_ROUTE').default('/api/gantts').asString(),
-        requestTimeout: env.get('GANTT_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('GANTT_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
     },
     previewService: {
         url: env.get('PREVIEW_SERVICE_URL').required().asString(),
         baseRoute: env.get('PREVIEW_SERVICE_BASE_ROUTE').default('/api/preview').asString(),
-        requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(50000).asIntPositive(),
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
         baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
-        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(50000).asIntPositive(),
         identifierRoute: env.get('KARTOFFEL_FIND_USER_BY_IDENTIFIER_ROUTE').default('/identifier').asString(),
         digitalIdentityRoute: env.get('KARTOFFEL_FIND_USER_BY_DIGITAL_IDENTITY_ROUTE').default('/digitalIdentity').asString(),
         idRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
@@ -148,6 +148,8 @@ const config = {
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
+        enableApm: env.get('ENABLE_APM').default('false').asBool(),
+        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
         label: env.get('LOG_LABEL').default('gateway').asString(),
@@ -173,6 +175,7 @@ const config = {
         dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
         dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
+    brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
 };
 
 export default config;

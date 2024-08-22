@@ -79,7 +79,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 1024m
+          memory: 2048m
 
   logstash:
     image: logstash:8.13.0
@@ -102,21 +102,21 @@ services:
         limits:
           memory: 1024m
 
-  kibana:
-    image: kibana:8.13.0
-    container_name: kibana
-    volumes:
-      - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
-      - kibana_data:/usr/share/kibana/data
-    ports:
-      - 5601:5601
-    depends_on:
-      - elastic
-    restart: always
-    deploy:
-      resources:
-        limits:
-          memory: 1024m
+  # kibana:
+  #   image: kibana:8.13.0
+  #   container_name: kibana
+  #   volumes:
+  #     - ./elk/kibana.yml:/usr/share/kibana/config/kibana.yml
+  #     - kibana_data:/usr/share/kibana/data
+  #   ports:
+  #     - 5601:5601
+  #   depends_on:
+  #     - elastic
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       limits:
+  #         memory: 1024m
 
   filebeat:
     image: docker.elastic.co/beats/filebeat:8.5.1
@@ -156,7 +156,7 @@ services:
 
   template-service:
     ports:
-      - 8002:8000
+      - 8013:8000
     restart: always
     volumes:
       - logs:/usr/src/app/logs
@@ -191,7 +191,7 @@ services:
 
   nginx:
     ports:
-      - 80:80
+      - 81:80
     restart: always
     volumes:
       - logs:/usr/src/app/logs
@@ -210,6 +210,8 @@ services:
       - logs:/usr/src/app/logs
 
   rule-breach-service:
+    ports:
+      - 8012:8000 
     restart: always
     volumes:
       - logs:/usr/src/app/logs
