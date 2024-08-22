@@ -136,7 +136,7 @@ export class InstancesManager {
     static getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
         return objectFilter(entityProperties, (key) => {
             const propertyTemplate = template.properties.properties[key];
-            return propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId';
+            return propertyTemplate && (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId');
         });
     }
 
@@ -223,8 +223,6 @@ export class InstancesManager {
     }
 
     private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
-        console.log('deleteUnusedFiles start');
-
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
@@ -244,8 +242,6 @@ export class InstancesManager {
         if (fileIdsToDelete.length === 0) {
             return [];
         }
-
-        console.log('deleteUnusedFiles', { fileIdsToDelete });
 
         await sendFilesIdToRabbit(fileIdsToDelete);
         await getFilesIdsFromRabbit();
@@ -480,8 +476,6 @@ export class InstancesManager {
     }
 
     private static async deleteAllEntityFiles(currentEntity: IEntity) {
-        console.log('deleteUnusedFiles start');
-
         const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
 
         const filePropertiesToRemove = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
@@ -491,7 +485,6 @@ export class InstancesManager {
             return [];
         }
 
-        console.log('deleteUnusedFiles', { fileIdsToRemove });
         await sendFilesIdToRabbit(fileIdsToRemove);
         await getFilesIdsFromRabbit();
         return fileIdsToRemove;
@@ -500,7 +493,6 @@ export class InstancesManager {
     static async deleteEntityInstance(id: string) {
         const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
         const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
-        console.log('deleteUnusedFiles deleteEntityInstance');
 
         const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
 
