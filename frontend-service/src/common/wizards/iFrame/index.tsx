@@ -31,33 +31,23 @@ const steps: StepsType<IFrameWizardValues> = [
         component: (props) => <ChooseIFrameIcon {...props} />,
     },
 ];
-const updateIFramesOrderOnLocalStorage = (data) => {
+const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame) => {
     const iFramesOrder = localStorage.getItem('iFramesOrder');
 
     if (iFramesOrder) {
         let iFramesStored = JSON.parse(iFramesOrder);
-        const index = iFramesStored.findIndex((iFrame) => iFrame.id === data._id);
+        const index = iFramesStored.findIndex((iFrameId) => iFrameId === data._id);
 
-        if (index !== -1) {
-            iFramesStored[index] = { ...iFramesStored[index], name: data.name };
-        } else {
-            iFramesStored = [{ name: data.name, id: data._id }, ...iFramesStored];
+        if (index === -1) {
+            console.log('not exist');
+
+            iFramesStored = [data._id, ...iFramesStored];
+
+            localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
         }
-
-        localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
-    } else localStorage.setItem('iFramesOrder', JSON.stringify([{ name: data.name, id: data._id }]));
-
-    // setIFramesOrder();
+    } else localStorage.setItem('iFramesOrder', JSON.stringify([data._id]));
 };
-const IFrameWizard: React.FC<{
-    open: boolean;
-    handleClose: () => void;
-    initialValues?: any;
-    initalStep?: number;
-    isEditMode?: boolean;
-    setIFramesOrder: (value: any) => void;
-}> = ({
-    //  React.FC<WizardBaseType<IFrameWizardValues>> = ({
+const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
     open,
     handleClose,
     initalStep = 0,
@@ -77,13 +67,8 @@ const IFrameWizard: React.FC<{
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
                 updateIFramesOrderOnLocalStorage(data);
-                console.log(typeof setIFramesOrder);
 
-                const a = JSON.parse(localStorage.getItem('iFramesOrder')!);
-
-                console.log({ a });
-
-                setIFramesOrder(a!);
+                setIFramesOrder(JSON.parse(localStorage.getItem('iFramesOrder')!));
                 queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                     if (!oldData) {
                         return [data];
@@ -96,7 +81,6 @@ const IFrameWizard: React.FC<{
                     }
                     const updatedData = [...oldData];
                     updatedData[index] = data;
-                    // console.log({ index }, { updatedData });
                     return [...updatedData];
                 });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');

@@ -10,7 +10,7 @@ import { getAllowedCategories } from './middlewares';
 
 export class IFrameManager {
     private static filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
-        return allIFrames.filter((iframe) => iframe.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId)));
+        return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId)));
     }
 
     static escapeRegExp(text: string) {
@@ -28,10 +28,11 @@ export class IFrameManager {
         const iFrames = await IFrameModel.find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
             .lean()
             .exec();
-        console.log({ iFrames }, { ids });
         const filteredIFrames = this.filterIFramesWithPermissions(iFrames, allowedCategories);
+        console.log({ filteredIFrames });
+
         if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
-        // console.log({ filteredIFrames }, { orderedIFrames });
+
         return filteredIFrames;
 
         // return filteredIFrames;

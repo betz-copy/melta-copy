@@ -23,26 +23,20 @@ const IFramesPage: React.FC = () => {
     const [searchInput, setSearchInput] = useState<string>();
     const queryClient = useQueryClient();
 
-    const [iFramesOrder, setIFramesOrder] = useState<{ name: string; id: string }[]>([]);
+    const [iFramesOrder, setIFramesOrder] = useState<string[]>([]);
     const queryKey = ['searchIFrames', searchInput, iFramesOrder];
-    const allIFrames = queryClient.getQueryData<IMongoIFrame[]>(['allIFrames', iFramesOrder]);
+    const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
+
     const localStorageKey = 'iFramesOrder';
 
     useEffect(() => {
-        console.log('wwwww');
+        console.log('lioraaa', { allIFrames });
 
-        const storedOrder = localStorage.getItem(localStorageKey);
-        if (storedOrder) {
-            setIFramesOrder(JSON.parse(storedOrder));
-        } else {
-            const iFramesData = allIFrames?.map(({ name, _id }) => ({ name, id: _id })) || [];
-            localStorage.setItem(localStorageKey, JSON.stringify(iFramesData));
-            setIFramesOrder(iFramesData);
-        }
+        const iFramesData = allIFrames?.map(({ _id }) => _id) || [];
+        localStorage.setItem(localStorageKey, JSON.stringify(iFramesData));
+        setIFramesOrder(iFramesData);
     }, [allIFrames, queryClient]);
-    useEffect(() => {
-        console.log('kkkk', { iFramesOrder });
-    }, [iFramesOrder]);
+
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>
@@ -69,14 +63,12 @@ const IFramesPage: React.FC = () => {
                         queryKey={queryKey}
                         queryFunction={async ({ pageParam }) => {
                             const index = pageParam ?? 0;
-                            console.log({ index });
 
                             const currentOrder = iFramesOrder.slice(index, index + 4);
-                            const iFramesIdsOrder = currentOrder.map((iFrame) => iFrame.id);
 
                             return searchIFrames({
                                 search: searchInput,
-                                ids: iFramesIdsOrder,
+                                ids: currentOrder.map((iFrameId) => iFrameId),
                             });
                         }}
                         onQueryError={(error) => {
@@ -107,10 +99,7 @@ const IFramesPage: React.FC = () => {
                 handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}
                 initialValues={iFrameObjectToIFrameForm(iFrameWizardDialogState.iFrame)}
                 isEditMode={Boolean(iFrameWizardDialogState.iFrame)}
-                setIFramesOrder={(value) => {
-                    console.log({ value });
-                    // setIFramesOrder(value);
-                }}
+                setIFramesOrder={() => {}}
             />
         </Grid>
     );

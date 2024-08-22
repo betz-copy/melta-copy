@@ -156,7 +156,7 @@ const PermissionsOfUserDialog: React.FC<{
 
                     return newPermissions;
                 });
-
+                queryClient.invalidateQueries('allIFrames');
                 if (newPermissionsOfUser.user.id === currentUser.id) {
                     queryClient.setQueryData<IPermissionsOfUser>('getMyPermissions', newPermissionsOfUser);
                 }

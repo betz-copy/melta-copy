@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, Menu, MenuItem, ListItemIcon, ListItemText } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
@@ -127,14 +127,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
-    const allIFrames = queryClient.getQueryData(['searchIFrames']);
-    console.log({ allIFrames });
+    const iFramesStored = localStorage.getItem('iFramesOrder');
+    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+    // console.log('hello from sidebar', JSON.parse(iFramesStored!), { data });
 
-    const { data } = useQuery('allIFrames', () => searchIFrames({}));
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
 
-    // refetch();
-    // console.log({ iFramesInSidebar });
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);

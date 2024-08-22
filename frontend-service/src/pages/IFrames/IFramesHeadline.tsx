@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
@@ -11,6 +11,7 @@ import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
+import { IMongoIFrame } from '../../interfaces/iFrames';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -21,11 +22,14 @@ const IFramesPageHeadline: React.FC<{
     const queryClient = useQueryClient();
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const localStorageKey = 'iFramesOrder';
-    console.log({ iFramesOrder });
+    const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+    useEffect(() => {
+        setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
+    }, [iFramesOrder]);
 
     const resetIFramesDimensions = () => {
-        iFramesOrder?.forEach((iFrame) => {
-            localStorage.removeItem(`iFrameDimension_${iFrame.id}`);
+        iFramesOrder?.forEach((iFrameId: string) => {
+            localStorage.removeItem(`iFrameDimension_${iFrameId}`);
         });
         LocalStorage.remove(localStorageKey);
         window.location.reload();
@@ -34,13 +38,17 @@ const IFramesPageHeadline: React.FC<{
     const handleOnDragEnd = (result) => {
         if (!result.destination) return;
 
-        const updatedItems = [...iFramesOrder];
+        const updatedItems: string[] = [...iFramesOrder];
 
         const [reorderedItem] = updatedItems.splice(result.source.index, 1);
         updatedItems.splice(result.destination.index, 0, reorderedItem);
 
         LocalStorage.set(localStorageKey, updatedItems);
         setIFramesOrder(updatedItems);
+
+        queryClient.setQueryData('allIFrames', (oldData: any) => {
+            return updatedItems.map((id) => oldData.find((iFrame) => iFrame._id === id));
+        });
     };
 
     return (
@@ -101,11 +109,11 @@ const IFramesPageHeadline: React.FC<{
                             <Droppable droppableId="items">
                                 {(provided) => (
                                     <List {...provided.droppableProps} ref={provided.innerRef} style={{ padding: '8px', width: '200px' }}>
-                                        {iFramesOrder.map(({ id, name }, index) => (
-                                            <Draggable key={id} draggableId={id} index={index}>
+                                        {allIFramesAllowed?.map((iFrame, index) => (
+                                            <Draggable key={iFrame._id} draggableId={iFrame._id} index={index}>
                                                 {(provided) => (
                                                     <ListItem
-                                                        key={id}
+                                                        key={iFrame._id}
                                                         ref={provided.innerRef}
                                                         {...provided.draggableProps}
                                                         {...provided.dragHandleProps}
@@ -116,7 +124,7 @@ const IFramesPageHeadline: React.FC<{
                                                             ...provided.draggableProps.style,
                                                         }}
                                                     >
-                                                        {name}
+                                                        {iFrame.name}
                                                     </ListItem>
                                                 )}
                                             </Draggable>
