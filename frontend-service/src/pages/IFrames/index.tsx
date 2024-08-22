@@ -64,12 +64,14 @@ const IFramesPage: React.FC = () => {
                         queryFunction={async ({ pageParam }) => {
                             const index = pageParam ?? 0;
 
-                            const currentOrder = iFramesOrder.slice(index, index + 4);
-
-                            return searchIFrames({
-                                search: searchInput,
-                                ids: currentOrder.map((iFrameId) => iFrameId),
-                            });
+                            if (searchInput) {
+                                const currentOrder = iFramesOrder.slice(index, index + 4);
+                                return searchIFrames({
+                                    search: searchInput,
+                                    ids: currentOrder.map((iFrameId) => iFrameId),
+                                });
+                            }
+                            return allIFrames!.slice(index, index + 4);
                         }}
                         onQueryError={(error) => {
                             console.log('Failed loading data:', error);
