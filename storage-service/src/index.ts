@@ -1,19 +1,12 @@
-import * as apm from 'elastic-apm-node';
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio';
 import logger from './utils/logger/logsLogger';
 
-const { logs, rabbit } = config;
+const { rabbit } = config;
 
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');

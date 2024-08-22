@@ -1,20 +1,12 @@
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import axios from 'axios';
-import apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
-const { service, rabbit, logs } = config;
-
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
+const { service, rabbit } = config;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
