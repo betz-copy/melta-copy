@@ -5,6 +5,7 @@ import Server from './express/server';
 import config from './config';
 import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
+import DeleteFilesConsumer from './utils/rabbit/consumer';
 
 const { service, rabbit, logs } = config;
 
@@ -27,7 +28,16 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
-    await menash.declareQueue(rabbit.deleteUnusedFilesQueue);
+    await menash.declareTopology({
+        queues: [{ name: rabbit.deleteUnusedFilesQueue, options: { durable: true, prefetch: 1 } }], // num of unack messages fetched at a time
+        consumers: [
+            {
+                queueName: rabbit.deleteUnusedFilesQueue,
+                onMessage: DeleteFilesConsumer.createDeleteFilesQueueReq,
+                options: { noAck: false },
+            },
+        ], // ack message only after processed
+    });
 
     logger.info('Rabbit initialized');
 };

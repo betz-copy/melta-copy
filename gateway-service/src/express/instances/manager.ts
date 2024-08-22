@@ -33,9 +33,9 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
-import { getFilesIdsFromRabbit, sendFilesIdToRabbit } from '../../utils/deleteUnusedFiles';
+import { menash } from 'menashmq';
 
-const { errorCodes } = config;
+const { errorCodes, rabbit } = config;
 
 export class InstancesManager {
     static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
@@ -243,8 +243,7 @@ export class InstancesManager {
             return [];
         }
 
-        await sendFilesIdToRabbit(fileIdsToDelete);
-        await getFilesIdsFromRabbit();
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
         return fileIdsToDelete;
     }
 
@@ -485,8 +484,7 @@ export class InstancesManager {
             return [];
         }
 
-        await sendFilesIdToRabbit(fileIdsToRemove);
-        await getFilesIdsFromRabbit();
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
         return fileIdsToRemove;
     }
 
