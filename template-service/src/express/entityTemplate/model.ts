@@ -47,6 +47,9 @@ export const EntityTemplateSchema = new mongoose.Schema(
         iconFileId: {
             type: String,
         },
+        documentTemplatesIds: {
+            type: [String],
+        },
     },
     {
         timestamps: true,

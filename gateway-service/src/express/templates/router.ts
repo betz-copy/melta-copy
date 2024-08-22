@@ -81,14 +81,14 @@ templatesRouter.patch(
 );
 templatesRouter.post(
     '/entities',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
     ValidateRequest(createEntityTemplateSchema),
     templatesValidatorMiddleware('validateUserCanCreateEntityTemplateUnderCategory'),
     templatesControllerMiddleware('createEntityTemplate'),
 );
 templatesRouter.put(
     '/entities/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
     ValidateRequest(updateEntityTemplateSchema),
     templatesValidatorMiddleware('validateUserCanUpdateOrDeleteEntityTemplate'),
     templatesControllerMiddleware('updateEntityTemplate'),

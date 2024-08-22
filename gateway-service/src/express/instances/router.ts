@@ -13,6 +13,8 @@ import {
     deleteEntityInstanceSchema,
     deleteRelationshipSchema,
     exportEntitiesSchema,
+    exportEntityToDocumentSchema,
+    exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -91,6 +93,20 @@ InstancesRouter.patch(
     ValidateRequest(updateEntityStatusSchema),
     InstancesValidatorMiddleware('validateUserCanWriteEntityInstance'),
     InstancesControllerMiddleware('updateEntityStatus'),
+);
+
+InstancesRouter.post(
+    '/entities/export/document',
+    ValidateRequest(exportEntityToDocumentSchema),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    InstancesControllerMiddleware('exportEntityToDocumentTemplate'),
+);
+
+InstancesRouter.post(
+    '/entities/export/document/:entityId',
+    ValidateRequest(exportEntityToDocumentSchemaByEntityId),
+    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    InstancesControllerMiddleware('exportEntityToDocumentSchemaByEntityId'),
 );
 
 // relationships (Instances)

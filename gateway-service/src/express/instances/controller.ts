@@ -58,6 +58,19 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.updateEntityStatus(req.params.id, disabled, ignoredRules, req.user!.id));
     }
 
+    async exportEntityToDocumentTemplate(req: Request, res: Response) {
+        res.send(await this.manager.exportEntityToDocumentTemplate(req.body));
+    }
+
+    async exportEntityToDocumentSchemaByEntityId(req: Request, res: Response) {
+        res.send(
+            await this.manager.exportEntityToDocumentTemplate({
+                documentTemplateId: req.query.documentTemplateId as string,
+                entityProperties: (await this.manager.service.getEntityInstanceById(req.params.entityId)).properties,
+            }),
+        );
+    }
+
     async runBulkOfActions(req: Request, res: Response) {
         const { actionsGroups, ignoredRules } = req.body;
 

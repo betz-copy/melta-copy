@@ -245,22 +245,24 @@ export class MailManager {
     }
 
     private async getActionsInfoMessages(ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated) {
-        return ruleBreach.actions.map((action) => {
-            if (action.actionType === ActionTypes.CreateRelationship || action.actionType === ActionTypes.DeleteRelationship) {
-                return this.getCreateOrDeleteRelActionInfo(
-                    action.actionType,
-                    action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
-                );
-            }
-            if (action.actionType === ActionTypes.UpdateEntity) {
-                return this.getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
-            }
-
-            if (action.actionType === ActionTypes.UpdateStatus) {
-                return this.getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
-            }
-            return null;
-        });
+        return Promise.all(
+            ruleBreach.actions.map((action) => {
+                switch (action.actionType) {
+                    case ActionTypes.CreateRelationship:
+                    case ActionTypes.DeleteRelationship:
+                        return this.getCreateOrDeleteRelActionInfo(
+                            action.actionType,
+                            action.actionMetadata as unknown as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated,
+                        );
+                    case ActionTypes.UpdateEntity:
+                        return this.getUpdateEntityActionInfo(action.actionMetadata as unknown as IUpdateEntityMetadataPopulated);
+                    case ActionTypes.UpdateStatus:
+                        return this.getUpdateEntityStatusActionInfo(action.actionMetadata as unknown as IUpdateEntityStatusMetadataPopulated);
+                    default:
+                        return null;
+                }
+            }),
+        );
     }
 
     private async ruleBreachBodyMassage(

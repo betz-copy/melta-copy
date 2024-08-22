@@ -94,6 +94,8 @@ export default {
         deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
         updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
         atLeastOneItem: 'חייב להיות ערך אחד לפחות',
+        preview: 'תצוגה מקדימה',
+        download: 'הורדת הקובץ',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -231,7 +233,27 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+    },
+    draftSaveDialog: {
+        exitTitle: 'בחרת לצאת ללא שמירת השינויים',
+        exitDescription: 'האם ברצונך לשמור את השינויים?',
+        notSavedTitle: 'בחרת לצאת ללא יצירת היישות',
+        notSavedDescription:
+            'קיימת טיוטה של היישות אשר נשמרת על העמדה שלך בלבד!\nעל מנת ליצור את היישות ולהוסיפה לטבלה יש למלא את כל שדות החובה.\nניתן להשלים פעולה זו במועד מאוחר יותר',
+        exit: 'יציאה ללא שמירה',
+        save: 'שמירה',
+        saveAsDraft: 'שמירה כטיוטה',
+        backToEdit: 'חזרה לעריכה',
+        draft: 'טיוטה',
+        editDraft: 'שחזור מקריסה',
         enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
+        emptyDraft: 'טיוטה ריקה',
+        lastSavedAt: 'נשמר לאחרונה ב-{{date}}',
+        success: {
+            create: 'הטיוטה נוצרה בהצלחה',
+            edit: 'הטיוטה עודכנה בהצלחה',
+            delete: 'הטיוטה נמחקה בהצלחה',
+        },
     },
     templateEntitiesAutocomplete: {
         label: 'ישות',
@@ -389,6 +411,10 @@ export default {
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
+            exportDocuments: 'פורמטים לייצוא',
+            // eslint-disable-next-line quotes
+            exportDocumentsInfo:
+                'העלאת פורמט קובץ מאפשרת יצירת מבנה קובץ בו התוכן יוחלף בהתאם לשדות היישות. הוספת {{  }} מסביב לשם השדה כפי שמופיע בהגדרות הישות: {{ שם השדה באנגלית }}  בקובץ ה-word יאפשר החלפת טקסט זה בערך המוזן ע"י המשתמש לאחר מילוי היישות.',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',

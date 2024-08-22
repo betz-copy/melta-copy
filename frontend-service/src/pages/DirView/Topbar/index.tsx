@@ -48,7 +48,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
             <Grid container item alignItems="center" flexWrap="nowrap" spacing={1} xs={3}>
                 <Grid item>
                     <ProfileButton
-                        currentUser={currentUser || { user: { fullName: '' } }}
+                        currentUser={currentUser}
                         text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                         isDrawerOpen
                         onClick={() => {}}

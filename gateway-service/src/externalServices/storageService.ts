@@ -1,10 +1,12 @@
 import FormData from 'form-data';
-import fsCreateReadStream from '../utils/fs';
-
 import config from '../config';
 import DefaultExternalServiceApi from '../utils/express/externalService';
+import fsCreateReadStream from '../utils/fs';
 
-const { url, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
+const {
+    service: { docxHeaders },
+    storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
+} = config;
 
 export class StorageService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -38,6 +40,23 @@ export class StorageService extends DefaultExternalServiceApi {
         });
 
         return data.map(({ path }) => path);
+    }
+
+    async downloadFile(path: string) {
+        const { data } = await this.api.get<ArrayBuffer>(`${downloadFileRoute}/${encodeURIComponent(path)}`, {
+            responseType: 'arraybuffer',
+            ...docxHeaders,
+        });
+
+        return data;
+    }
+
+    async downloadFiles(paths: string[]) {
+        const { data } = await this.api.get(`${downloadFileRoute}/zip/`, {
+            params: { path: paths.join('?') },
+            responseType: 'stream',
+        });
+        return data;
     }
 
     async deleteFile(fileId: string) {

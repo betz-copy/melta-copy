@@ -1,5 +1,6 @@
 import axios from 'axios';
-import apm from 'elastic-apm-node';
+import 'elastic-apm-node/start';
+
 import config from './config';
 import Server from './express/server';
 import logger from './utils/logger/logsLogger';
@@ -7,15 +8,7 @@ import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
 import RedisClient from './utils/redis';
 
-const { service, logs } = config;
-
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
+const { service } = config;
 
 const initializeRedis = async () => {
     logger.info('Connecting to Redis...');

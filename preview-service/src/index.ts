@@ -1,4 +1,4 @@
-import * as apm from 'elastic-apm-node';
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
 import { config } from './config';
 import { Server } from './express/server';
@@ -6,18 +6,9 @@ import PreviewConsumer from './rabbit/consumer';
 import logger from './utils/logger/logsLogger';
 
 const {
-    logs,
     rabbit,
     service: { port: servicePort },
 } = config;
-
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
 
 const initializeRabbitReceiver = async () => {
     logger.info('Connecting to Rabbit for receiving messages...');

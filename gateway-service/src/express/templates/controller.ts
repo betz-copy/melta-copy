@@ -1,8 +1,8 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { TemplatesManager } from './manager';
-import DefaultController from '../../utils/express/controller';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import { TemplatesManager } from './manager';
 
 export default class TemplatesController extends DefaultController<TemplatesManager> {
     constructor(workspaceId: string) {
@@ -33,7 +33,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
 
     // entityTemplates
     async createEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.createEntityTemplate(req.body, req.file));
+        res.json(await this.manager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
     async deleteEntityTemplate(req: Request, res: Response) {
@@ -41,7 +41,7 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.file));
+        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
     async updateEntityTemplateStatus(req: Request, res: Response) {

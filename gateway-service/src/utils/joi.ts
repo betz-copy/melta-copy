@@ -74,6 +74,12 @@ export const iconFileSchema = fileSchema.keys({
         .required(),
 });
 
+export const documentTemplateSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(docx)$/)
+        .required(),
+});
+
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,

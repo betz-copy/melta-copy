@@ -334,14 +334,14 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     async createEntityTemplate(
-        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
-        file?: Express.Multer.File,
+        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(templateData.category);
         let iconFileId: string | null;
         if (file) {
-            iconFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await this.storageService.uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else {
             iconFileId = null;
         }
@@ -353,6 +353,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            documentTemplatesIds: files ? await this.storageService.uploadFiles(files) : undefined,
         });
 
         await this.instancesService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
@@ -452,7 +453,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        file?: Express.Multer.File,
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
@@ -495,14 +496,25 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 await this.storageService.deleteFile(currTemplate.iconFileId);
             }
 
-            iconFileId = await this.storageService.uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await this.storageService.uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await this.storageService.deleteFile(currTemplate.iconFileId);
 
             iconFileId = null;
         } else {
             iconFileId = currTemplate.iconFileId;
+        }
+
+        let newDocumentTemplatesIds: string[] | undefined;
+        if (files) {
+            if (currTemplate?.documentTemplatesIds) {
+                await this.storageService.deleteFiles(currTemplate.documentTemplatesIds);
+            }
+
+            newDocumentTemplatesIds = await this.storageService.uploadFiles(files);
+        } else {
+            newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
@@ -517,6 +529,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            documentTemplatesIds: newDocumentTemplatesIds,
         });
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,

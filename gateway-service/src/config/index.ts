@@ -12,6 +12,14 @@ const config = {
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
         searchEntitiesChunkSize: env.get('SEARCH_ENTITIES_CHUNK_SIZE').default(50).asIntPositive(),
         excelFilePath: env.get('EXCEL_FILE_PATH').default('/usr/src/app').asString(),
+        maxPatchIterations: env.get('MAX_PATCH_ITERATIONS').default(100).asIntPositive(),
+        jewishDateIndicator: env.get('JEWISH_DATE_INDICATOR').default('_jewish_date').asString(),
+        hebrewDateIndicator: env.get('HEBREW_DATE_INDICATOR').default('_hebrew_date').asString(),
+        docxHeaders: env.get('DOCX_HEADERS').default({
+            headers: {
+                Accept: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            },
+        }).asJsonObject,
     },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
@@ -47,7 +55,6 @@ const config = {
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
-
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('/api/files').asString(),
@@ -57,6 +64,7 @@ const config = {
         deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('/api/files/delete-bulk').asString(),
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('/api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
+        requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
@@ -148,8 +156,6 @@ const config = {
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
-        enableApm: env.get('ENABLE_APM').default('true').asBool(),
-        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
         label: env.get('LOG_LABEL').default('gateway').asString(),

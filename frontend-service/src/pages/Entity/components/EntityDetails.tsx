@@ -14,6 +14,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityPropertiesInternal } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
@@ -259,7 +260,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                             </Grid>
                         </Grid>
 
-                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column">
+                        <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column" spacing={2}>
                             <Grid item width="100%">
                                 <EntityPropertiesInternal
                                     entityTemplate={entityTemplate}
@@ -278,10 +279,23 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     mode="normal"
                                 />
                             </Grid>
-                            <Grid container marginTop="20px">
-                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled}> </EntityDisableCheckbox>
+
+                            <Grid item>
+                                <EntityDisableCheckbox isEntityDisabled={isEntityDisabled} />
                             </Grid>
-                            <Grid marginTop="20px" container item justifyContent="space-between">
+
+                            {entityTemplate.documentTemplatesIds?.length ? (
+                                <Grid item>
+                                    <ExportFormats
+                                        properties={expandedEntity.entity.properties}
+                                        documentTemplateIds={entityTemplate.documentTemplatesIds}
+                                        disabled={isEntityDisabled}
+                                        justifyContent="flex-end"
+                                    />
+                                </Grid>
+                            ) : null}
+
+                            <Grid container item justifyContent="space-between">
                                 <EntityDates
                                     createdAt={expandedEntity.entity.properties.createdAt}
                                     updatedAt={expandedEntity.entity.properties.updatedAt}

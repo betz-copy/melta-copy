@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
@@ -31,6 +32,7 @@ import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
 import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
+import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 
 const { errorCodes } = config;
@@ -258,6 +260,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         return this.storageService.deleteFiles(fileIdsToDelete);
+    }
+
+    async exportEntityToDocumentTemplate({
+        documentTemplateId,
+        entityProperties,
+    }: {
+        documentTemplateId: string;
+        entityProperties: IEntity['properties'];
+    }) {
+        return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

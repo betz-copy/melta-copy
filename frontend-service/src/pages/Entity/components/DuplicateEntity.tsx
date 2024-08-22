@@ -20,7 +20,7 @@ import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplat
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
 
@@ -104,7 +104,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(entityTemplate.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -131,9 +131,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 variant="h6"
                                                             />
                                                             <JSONSchemaFormik
-                                                                schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(
-                                                                    entityTemplate.properties,
-                                                                )}
+                                                                schema={filterFieldsFromPropertiesSchema(entityTemplate.properties)}
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}
