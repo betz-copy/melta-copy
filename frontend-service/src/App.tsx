@@ -20,7 +20,8 @@ import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
-    const [isErrorMyUser, setIsErrorMyUser] = useState(true);
+    const [isLoadingUser, setIsLoadingUser] = useState(true);
+    const [isErrorMyUser, setIsErrorMyUser] = useState(false);
 
     const [_, navigate] = useLocation();
 
@@ -42,16 +43,19 @@ const App: React.FC = () => {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
-        enabled: !isErrorMyUser,
+        enabled: !isLoadingUser && !isErrorMyUser,
     });
-
-    const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
 
-            if (!user || user.id === environment.unauthorizedId) return;
+            const isUserUnauthorized = user?.id === environment.unauthorizedId;
+
+            if (!user || isUserUnauthorized) {
+                if (isUserUnauthorized) setIsErrorMyUser(true);
+                return;
+            }
 
             try {
                 const userFromDb = await getMyUserRequest();
@@ -62,21 +66,21 @@ const App: React.FC = () => {
                     const workspace = await getById(workspaceIds[0]);
                     navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
                 }
-
-                setIsErrorMyUser(false);
-            } finally {
-                setIsLoadingUser(false);
+            } catch {
+                setIsErrorMyUser(true);
             }
+
+            setIsLoadingUser(false);
         };
 
         initUser();
     }, [setUser, navigate]);
 
-    if (isLoadingUser) <LoadingAnimation />;
+    if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
+
+    if (isLoadingUser) return <LoadingAnimation isLoading={isLoadingUser} />;
 
     if (!currentUser) return <span>unauthorized</span>;
-
-    if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 
     if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 

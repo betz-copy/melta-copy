@@ -13,10 +13,10 @@ export const LoadingAnimation: React.FC<ILoadingAnimationProps> = ({ isLoading }
 
     return (
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40vh' }}>
-            {!isLoading && (
+            {isLoading && (
                 <CustomImage
                     className="ld ld-bounce"
-                    imageUrl={workspace?.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : '/icons/Melta_Logo.svg'}
+                    imageUrl={workspace.logoFileId ? `/api${environment.api.storage}/${workspace.logoFileId}` : '/icons/Melta_Logo.svg'}
                     width="300px"
                     preserveColor
                 />

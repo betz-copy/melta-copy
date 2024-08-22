@@ -73,7 +73,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     const isLoading = useMemo(() => isLoadingAllTemplates || isLoadingWorkspace, [isLoadingAllTemplates, isLoadingWorkspace]);
     const isError = useMemo(() => isErrorAllTemplates || isErrorWorkspace, [isErrorAllTemplates, isErrorWorkspace]);
 
-    if (isLoading) return <LoadingAnimation isLoading={isLoadingWorkspace} />;
+    if (isLoading) return <LoadingAnimation isLoading={isLoading} />;
 
     if (isError) return <ErrorPage errorText={i18next.t('errorPage.noPermissionsToWorkspace')} />;
 
