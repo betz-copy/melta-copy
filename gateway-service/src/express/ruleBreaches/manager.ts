@@ -257,7 +257,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                     scope: PermissionScope.write,
                 },
             },
-            limit: config.instanceService.searchEntitiesFlowMaxLimit,
+            limit: 1000,
         });
 
         const viewers = new Set<string>(userIdsWithPermission);
@@ -846,11 +846,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     public async populateRulesBreachRequests(ruleBreachRequests: IRuleBreachRequest[]): Promise<IRuleBreachRequestPopulated[]> {
-        return Promise.all(ruleBreachRequests.map(this.populateRuleBreachRequest));
+        return Promise.all(ruleBreachRequests.map((request) => this.populateRuleBreachRequest(request)));
     }
 
     public async populateRulesBreachAlerts(ruleBreachAlerts: IRuleBreachAlert[]): Promise<IRuleBreachAlertPopulated[]> {
-        return Promise.all(ruleBreachAlerts.map(this.populateRuleBreachAlert));
+        return Promise.all(ruleBreachAlerts.map((alert) => this.populateRuleBreachAlert(alert)));
     }
 }
 
