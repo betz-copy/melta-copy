@@ -83,10 +83,10 @@ const CodeEditorDialog: React.FC<{
     const onValidate = (markers: editor.IMarker[]) => {
         const unusedPropertyErrorCode = '6133';
         const noTypeGivenErrorCode = '7044';
-        const marker = markers.filter((marker) => {
-            marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode;
+        const filteredMarkers = markers.filter((marker) => {
+            return marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode;
         });
-        const hasErrorMarkers = marker.length > 0;
+        const hasErrorMarkers = filteredMarkers.length > 0;
 
         setValidationErrors(hasErrorMarkers);
     };

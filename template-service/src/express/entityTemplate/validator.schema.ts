@@ -73,6 +73,7 @@ export const updateEntityTemplateSchema = Joi.object({
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
+        actions: Joi.string(),
     }).min(1),
     query: {},
     params: {
