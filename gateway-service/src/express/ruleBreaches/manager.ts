@@ -6,6 +6,7 @@ import { ServiceError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
+import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     INotificationMetadata,
@@ -53,15 +54,14 @@ import {
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
-import DefaultManagerProxy from '../../utils/express/manager';
-import { UsersManager } from '../users/manager';
-import { UserService } from '../../externalServices/userService';
-import { PermissionType, PermissionScope } from '../../externalServices/userService/interfaces/permissions';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { InstancesService } from '../../externalServices/instanceService';
+import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import { Authorizer } from '../../utils/authorizer';
+import DefaultManagerProxy from '../../utils/express/manager';
 import { RabbitManager } from '../../utils/rabbit';
+import { UsersManager } from '../users/manager';
 
 const { errorCodes } = config;
 
@@ -72,6 +72,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     private instancesService: InstancesService;
 
+    private authorizer: Authorizer;
+
     private rabbitManager: RabbitManager;
 
     constructor(private workspaceId: string) {
@@ -79,6 +81,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         this.storageService = new StorageService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
+        this.authorizer = new Authorizer(workspaceId, '');
         this.rabbitManager = new RabbitManager(workspaceId);
     }
 
@@ -576,8 +579,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (user && ruleBreachRequest.originUserId !== user.id) {
-            const userPermissions = await UserService.getUserPermissions(user.id);
-            if (userPermissions[this.workspaceId].rules?.scope !== PermissionScope.write) {
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
                 throw new ServiceError(403, 'user does not have permissions to this rule breach request');
             }
         }
@@ -589,8 +592,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachAlert = await this.service.getRuleBreachAlertById(ruleBreachAlertId);
 
         if (user && ruleBreachAlert.originUserId !== user.id) {
-            const userPermissions = await UserService.getUserPermissions(user.id);
-            if (userPermissions[this.workspaceId].rules?.scope !== PermissionScope.write) {
+            const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
                 throw new ServiceError(403, 'user does not have permissions to this rule breach request');
             }
         }
@@ -599,8 +602,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     private async agGridSearchRuleBreachesOfUser(agGridRequest: IAgGridRequest, user: Express.User): Promise<IAgGridRequest> {
-        const userPermissions = await UserService.getUserPermissions(user.id);
-        if (userPermissions[this.workspaceId].rules?.scope === PermissionScope.write) return agGridRequest;
+        const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
+        if (userPermissions.admin?.scope || userPermissions.rules?.scope === PermissionScope.write) return agGridRequest;
 
         const updatedAgGridRequest: IAgGridRequest = { ...agGridRequest };
 

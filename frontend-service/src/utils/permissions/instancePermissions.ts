@@ -3,11 +3,15 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
 export const checkUserCategoryPermission = (
-    categoriesPermissions: ICompact<IInstancesPermission>['categories'],
+    permissions: ISubCompactPermissions,
     { _id: categoryId }: IMongoCategory,
     scope: PermissionScope,
 ): boolean => {
-    return categoriesPermissions[categoryId]?.scope === scope || categoriesPermissions[categoryId]?.scope === PermissionScope.write;
+    return (
+        Boolean(permissions?.admin) ||
+        permissions?.instances?.categories[categoryId]?.scope === scope ||
+        permissions?.instances?.categories[categoryId]?.scope === PermissionScope.write
+    );
 };
 
 export const getUserPermissionScopeOfCategory = (categoriesPermissions: ICompact<IInstancesPermission>['categories'], categoryId: string) => {

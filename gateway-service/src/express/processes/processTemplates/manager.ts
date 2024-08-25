@@ -13,8 +13,8 @@ import {
 } from '../../../externalServices/processService/interfaces/processTemplate';
 import { IMongoStepTemplate, IStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { StorageService } from '../../../externalServices/storageService';
-import { UserService } from '../../../externalServices/userService';
 import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
+import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
 import logger from '../../../utils/logger/logsLogger';
@@ -128,9 +128,9 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
     async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, userId: string) {
         const query: ISearchProcessTemplatesBody = { ...searchBody };
 
-        const userPermissions = await UserService.getUserPermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
 
-        if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
+        if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
             query.reviewerId = userId;
         }
 

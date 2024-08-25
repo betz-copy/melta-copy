@@ -74,30 +74,36 @@ export class Authorizer extends DefaultController {
     //     return original;
     // }
 
-    private async authorizeUser(req: Request, userId: string, authPermissions: ISubCompactPermissions) {
+    async getWorkspacePermissions(userId: string) {
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
         workspaceHierarchyIds.push(this.workspaceId);
 
         const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
 
+        if (!Object.keys(userPermissions)) throw new UserNotAuthorizedError();
+
+        return userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
+    }
+
+    private async authorizeUser(req: Request, userId: string, authPermissions: ISubCompactPermissions) {
+        const workspacePermissions = await this.getWorkspacePermissions(userId);
+
         typedObjectEntries(authPermissions).forEach(([type, permission]) => {
-            const currentPermissions = userPermissions[this.workspaceId][type];
+            const currentPermissions = workspacePermissions?.[type] || workspacePermissions?.admin;
+
             if (!currentPermissions) throw new UserNotAuthorizedError();
-            if (currentPermissions.scope !== permission?.scope) throw new UserIncorrectScopeError(currentPermissions.scope, permission?.scope);
+
+            if (currentPermissions.scope !== PermissionScope.write && currentPermissions.scope !== permission?.scope)
+                throw new UserIncorrectScopeError(currentPermissions.scope, permission?.scope);
         });
 
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = workspacePermissions;
     }
 
     // private async authorizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
 
     async userHasSomePermissions(req: Request) {
-        const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
-        workspaceHierarchyIds.push(this.workspaceId);
-
-        const userPermissions = await UserService.getUserPermissions(req.user!.id, workspaceHierarchyIds);
-        if (!Object.keys(userPermissions)) throw new UserNotAuthorizedError();
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.user!.id);
     }
 
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {

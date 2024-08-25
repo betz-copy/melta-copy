@@ -236,16 +236,16 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
     async createGantt(gantt: IGantt) {
         await this.validateTemplatesDataOfGantt(gantt);
-        return this.createGantt(gantt);
+        return this.service.createGantt(gantt);
     }
 
     deleteGantt(ganttId: string) {
-        return this.deleteGantt(ganttId);
+        return this.service.deleteGantt(ganttId);
     }
 
     async updateGantt(ganttId: string, gantt: IGantt) {
         await this.validateTemplatesDataOfGantt(gantt);
-        return this.updateGantt(ganttId, gantt);
+        return this.service.updateGantt(ganttId, gantt);
     }
 }
 

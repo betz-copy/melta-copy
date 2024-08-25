@@ -8,6 +8,7 @@ import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { getWorkspacePermissions } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
 import { Topbar } from './Topbar';
@@ -34,13 +35,19 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
     ]);
 
     useEffect(() => {
-        if (!currentWorkspace) return;
+        const handleWorkspace = async () => {
+            if (!currentWorkspace) return;
 
-        setWorkspace(currentWorkspace);
-        document.title = environment.defaultTitle;
+            setWorkspace(currentWorkspace);
+            document.title = environment.defaultTitle;
 
-        if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
-            setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+            currentUser.permissions[currentWorkspace._id] = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
+
+            if (currentUser.currentWorkspacePermissions !== currentUser.permissions[currentWorkspace._id])
+                setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[currentWorkspace._id] });
+        };
+
+        handleWorkspace();
     }, [currentWorkspace, setWorkspace, currentUser, setUser]);
 
     if (isError) return <ErrorPage errorText={i18next.t('workspaces.requestedWorkspaceDoesntExist')} />;

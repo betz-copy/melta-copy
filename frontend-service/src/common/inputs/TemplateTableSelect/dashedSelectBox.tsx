@@ -27,11 +27,7 @@ const DashedSelectBox: React.FC<{
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserCategoryPermission(
-              currentUser.currentWorkspacePermissions.instances?.categories ?? {},
-              entityTemplate.category,
-              checkUsersPermissions,
-          );
+        : checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, checkUsersPermissions);
 
     const disabled = !entityTemplate || userHasPermissions === false;
 

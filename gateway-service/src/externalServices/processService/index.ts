@@ -1,12 +1,12 @@
 import config from '../../config';
+import { NotFoundError } from '../../express/processes/error';
+import { Authorizer } from '../../utils/authorizer';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
+import { PermissionScope } from '../userService/interfaces/permissions';
 import { IMongoProcessInstanceWithSteps, IProcessInstance, ISearchProcessInstancesBody } from './interfaces/processInstance';
 import { IMongoProcessTemplateWithSteps, IProcessTemplateWithSteps, ISearchProcessTemplatesBody } from './interfaces/processTemplate';
 import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance';
 import { IMongoStepTemplate } from './interfaces/stepTemplate';
-import { NotFoundError } from '../../express/processes/error';
-import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { UserService } from '../userService';
-import { PermissionScope } from '../userService/interfaces/permissions';
 
 const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
@@ -28,9 +28,9 @@ export class ProcessService extends DefaultExternalServiceApi {
         const query: ISearchProcessTemplatesBody = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
-            const userPermissions = await UserService.getUserPermissions(userId);
+            const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
 
-            if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
+            if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
                 query.reviewerId = userId;
             }
         }
@@ -64,9 +64,9 @@ export class ProcessService extends DefaultExternalServiceApi {
         const query: ISearchProcessInstancesBody = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
-            const userPermissions = await UserService.getUserPermissions(userId);
+            const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
 
-            if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) {
+            if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
                 query.reviewerId = userId;
             }
         }

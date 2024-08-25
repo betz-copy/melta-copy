@@ -372,7 +372,7 @@ const Entity: React.FC = () => {
     const currentEntityTemplate = entityTemplates.get(expandedEntity.entity.templateId)!;
 
     const hasWritePermissionToCurrCategory = checkUserCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
+        currentUser.currentWorkspacePermissions,
         currentEntityTemplate.category,
         PermissionScope.write,
     );

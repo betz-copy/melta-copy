@@ -3,13 +3,13 @@ import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
 
-export const userHasNoPermissions = ({ permissions, templates, processes, rules, instances }: ISubCompactPermissions) => {
+export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
-        permissions?.scope !== PermissionScope.write &&
-        templates?.scope !== PermissionScope.write &&
-        processes?.scope !== PermissionScope.write &&
-        rules?.scope !== PermissionScope.write &&
-        Object.keys(instances?.categories ?? {}).length === 0
+        permissions?.permissions?.scope !== PermissionScope.write &&
+        permissions?.templates?.scope !== PermissionScope.write &&
+        permissions?.processes?.scope !== PermissionScope.write &&
+        permissions?.rules?.scope !== PermissionScope.write &&
+        Object.keys(permissions?.instances?.categories ?? {}).length === 0
     );
 };
 

@@ -9,6 +9,7 @@ import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ActionMenu } from './ActionMenu';
 import './actionMenu.css';
+import { useUserStore } from '../../../stores/user';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;
@@ -28,6 +29,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
         [name, path, type, colors, iconFileId, logoFileId, _id],
     );
 
+    const currentUser = useUserStore((state) => state.user);
     const setWorkspace = useWorkspaceStore((state) => state.setWorkspace);
 
     const workspaceIcon = useMemo(() => {
@@ -103,12 +105,14 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                         {name}
                     </Typography>
 
-                    <ActionMenu
-                        workspace={minimalWorkspace}
-                        openEditWizard={() => openWizard?.(minimalWorkspace)}
-                        setMovedWorkspace={setMovedWorkspace}
-                        isMovedWorkspace={isMovedWorkspace ?? false}
-                    />
+                    {currentUser.currentWorkspacePermissions?.admin && (
+                        <ActionMenu
+                            workspace={minimalWorkspace}
+                            openEditWizard={() => openWizard?.(minimalWorkspace)}
+                            setMovedWorkspace={setMovedWorkspace}
+                            isMovedWorkspace={isMovedWorkspace ?? false}
+                        />
+                    )}
                 </Card>
             </Link>
         </MeltaTooltip>

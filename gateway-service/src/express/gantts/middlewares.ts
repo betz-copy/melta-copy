@@ -1,7 +1,6 @@
 import { Request } from 'express';
 import { GanttsService, IGantt } from '../../externalServices/ganttsService';
-import { UserService } from '../../externalServices/userService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { ServiceError } from '../error';
 import { InstancesValidator } from '../instances/middlewares';
@@ -11,10 +10,13 @@ export class GanttsValidator extends DefaultController {
 
     private instancesValidator: InstancesValidator;
 
-    constructor(private workspaceId: string) {
+    private authorizer: Authorizer;
+
+    constructor(workspaceId: string) {
         super(null);
         this.ganttsService = new GanttsService(workspaceId);
         this.instancesValidator = new InstancesValidator(workspaceId);
+        this.authorizer = new Authorizer(workspaceId, '');
     }
 
     private async validateHasPermissionsToGanttItems(gantt: IGantt, allowedEntityTemplateIds: string[]) {
@@ -29,14 +31,13 @@ export class GanttsValidator extends DefaultController {
         }
     }
 
-    async validateUserHasPermissionsToGantt(userId: string, newGantt: IGantt | undefined, existingGanttId: string | undefined) {
-        const userPermissions = await UserService.getUserPermissions(userId);
+    async validateUserHasPermissionsToGantt(req: Request, newGantt: IGantt | undefined, existingGanttId: string | undefined) {
+        const [userPermissions] = await Promise.all([
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+            this.authorizer.userCanWriteTemplates(req),
+        ]);
 
-        if (userPermissions[this.workspaceId].templates?.scope !== PermissionScope.write) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `user is not templates manager to create/update/delete gantts` });
-        }
-
-        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions[this.workspaceId]);
+        const allowedEntityTemplates = await this.instancesValidator.getAllowedEntityTemplatesForInstances(userPermissions);
         const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         if (newGantt) {
@@ -49,14 +50,14 @@ export class GanttsValidator extends DefaultController {
     }
 
     async validateUserCanCreateGantt(req: Request) {
-        await this.validateUserHasPermissionsToGantt(req.user!.id, req.body, undefined);
+        await this.validateUserHasPermissionsToGantt(req, req.body, undefined);
     }
 
     async validateUserCanUpdateGantt(req: Request) {
-        await this.validateUserHasPermissionsToGantt(req.user!.id, req.body, req.params.ganttId);
+        await this.validateUserHasPermissionsToGantt(req, req.body, req.params.ganttId);
     }
 
     async validateUserCanDeleteGantt(req: Request) {
-        await this.validateUserHasPermissionsToGantt(req.user!.id, undefined, req.params.ganttId);
+        await this.validateUserHasPermissionsToGantt(req, undefined, req.params.ganttId);
     }
 }

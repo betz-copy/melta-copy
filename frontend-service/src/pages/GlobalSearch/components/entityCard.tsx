@@ -70,7 +70,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const currentUser = useUserStore((state) => state.user);
 
     const userHasWritePermissions = checkUserCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
+        currentUser.currentWorkspacePermissions,
         entityTemplate.category,
         PermissionScope.write,
     );

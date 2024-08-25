@@ -266,7 +266,7 @@ const PermissionsOfUserDialog: React.FC<{
                                             scope: getUserPermissionScopeOfCategory(categoriesPermissions, currCategory._id),
                                             permissionType: {
                                                 read: {
-                                                    checked: checkUserCategoryPermission(categoriesPermissions, currCategory, PermissionScope.read),
+                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.read),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}
@@ -278,7 +278,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                               },
                                                 },
                                                 write: {
-                                                    checked: checkUserCategoryPermission(categoriesPermissions, currCategory, PermissionScope.write),
+                                                    checked: checkUserCategoryPermission(currentPermissions, currCategory, PermissionScope.write),
                                                     onChange:
                                                         mode === 'view'
                                                             ? () => {}

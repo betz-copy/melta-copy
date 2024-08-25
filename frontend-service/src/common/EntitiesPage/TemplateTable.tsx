@@ -88,11 +88,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const userHasWritePermissions = checkUserCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
-        template.category,
-        PermissionScope.write,
-    );
+    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
 
     const drafts = useDraftsStore((state) => state.drafts);
 

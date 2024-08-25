@@ -12,8 +12,6 @@ interface BoxProps {
 export const Box: React.FC<BoxProps> = ({ children, header, addingIcon, onHover }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    if (Array.isArray(children) && !children.length) return null;
-
     return (
         <Card
             onMouseEnter={() => (onHover ? onHover(true) : '')}

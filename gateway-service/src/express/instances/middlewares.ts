@@ -5,9 +5,8 @@ import { IRelationship } from '../../externalServices/instanceService/interfaces
 import { IAction } from '../../externalServices/ruleBreachService/interfaces';
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { UserService } from '../../externalServices/userService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
-import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { ServiceError } from '../error';
@@ -24,12 +23,15 @@ export class InstancesValidator extends DefaultController {
 
     private relationshipsTemplateService: RelationshipsTemplateService;
 
-    constructor(private workspaceId: string) {
+    private authorizer: Authorizer;
+
+    constructor(workspaceId: string) {
         super(null);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
         this.instancesManager = new InstancesManager(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
+        this.authorizer = new Authorizer(workspaceId, '');
     }
 
     // entities
@@ -48,10 +50,10 @@ export class InstancesValidator extends DefaultController {
 
         const [categoryId, userPermissions] = await Promise.all([
             this.getCategoryIdFromTemplateId(templateId),
-            UserService.getUserPermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
-        if (!Object.keys(userPermissions[this.workspaceId].instances?.categories ?? {}).includes(categoryId)) {
+        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId)) {
             throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
         }
     }
@@ -59,15 +61,13 @@ export class InstancesValidator extends DefaultController {
     async getAllowedEntityTemplatesForInstances(
         userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId'],
     ): Promise<IMongoEntityTemplatePopulated[]> {
-        if (!userPermissions.instances) return [];
-        const allowedCategories = Object.keys(userPermissions.instances.categories);
-        return this.entityTemplateService.searchEntityTemplates({ categoryIds: allowedCategories });
+        if (!userPermissions.admin && !userPermissions.instances) return [];
+        const allowedCategories = Object.keys(userPermissions.instances?.categories ?? {});
+        return this.entityTemplateService.searchEntityTemplates(userPermissions.admin ? {} : { categoryIds: allowedCategories });
     }
 
     async validateHasPermissionsToEntitiesInTemplates(user: Express.User, templateIds: string[]) {
-        const userPermissions = await UserService.getUserPermissions(user.id);
-
-        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(userPermissions[this.workspaceId]);
+        const allowedEntityTemplates = await this.getAllowedEntityTemplatesForInstances(await this.authorizer.getWorkspacePermissions(user.id));
         const allowedEntityTemplateIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
@@ -90,22 +90,24 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, permissionType: PermissionScope) {
+    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
         const instanceId = req.params.id;
 
         const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
-        const userPermissions = await UserService.getUserPermissions(req.user!.id);
+
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         if (
-            !Object.entries(userPermissions[this.workspaceId].instances?.categories ?? {}).some(
-                ([category, { scope }]) => category === categoryId && (scope === permissionType || scope === PermissionScope.write),
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([category, { scope }]) => category === categoryId && (scope === permissionScope || scope === PermissionScope.write),
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${permissionType} permission on category ${categoryId}`);
+            throw new ServiceError(403, `user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
         }
 
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId];
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
 
     async validateUserCanWriteEntityInstance(req: Request) {
@@ -130,18 +132,19 @@ export class InstancesValidator extends DefaultController {
 
         const [categoriesIds, userPermissions] = await Promise.all([
             this.getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds, templateIds),
-            UserService.getUserPermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         if (
-            !Object.entries(userPermissions[this.workspaceId].instances?.categories ?? {}).some(
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
                 ([categoryId, { scope }]) => categoriesIds.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
             throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${categoriesIds}`);
         }
 
-        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions[this.workspaceId];
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
     }
 
     async validateUserCanReadEntityInstance(req: Request) {
@@ -184,11 +187,12 @@ export class InstancesValidator extends DefaultController {
     async validateUserCanCreateRelationshipInstance(req: Request) {
         const [relatedCategories, userPermissions] = await Promise.all([
             this.getRelatedCategoriesFromRelationshipInstance(req.body.relationshipInstance),
-            UserService.getUserPermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         if (
-            !Object.entries(userPermissions[this.workspaceId].instances?.categories ?? {}).some(
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
@@ -201,11 +205,12 @@ export class InstancesValidator extends DefaultController {
 
         const [relatedCategories, userPermissions] = await Promise.all([
             this.getRelatedCategoriesFromRelationshipInstance(relationshipInstance),
-            UserService.getUserPermissions(req.user!.id),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
         ]);
 
         if (
-            !Object.entries(userPermissions[this.workspaceId].instances?.categories ?? {}).some(
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
@@ -220,9 +225,9 @@ export class InstancesValidator extends DefaultController {
 
         if (!user) throw new Error('req.user is undefined');
 
-        const userPermissions = await UserService.getUserPermissions(user.id);
+        const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 
-        if (userPermissions[this.workspaceId].rules?.scope !== PermissionScope.write) {
+        if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
             throw new ServiceError(403, 'user not authorized', { metadata: 'user does not have write permission on rules' });
         }
 

@@ -66,18 +66,21 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
                 </Grid>
                 */}
 
-                <Grid item>
-                    <IconButtonWithPopover
-                        popoverText={i18next.t('workspaces.createNew')}
-                        iconButtonProps={{
-                            onClick: openWizard,
-                            sx: iconButtonStyle,
-                        }}
-                        disabled={loading}
-                    >
-                        <Add sx={iconStyle} />
-                    </IconButtonWithPopover>
-                </Grid>
+                {currentUser.currentWorkspacePermissions?.admin && (
+                    <Grid item>
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('workspaces.createNew')}
+                            iconButtonProps={{
+                                onClick: openWizard,
+                                sx: iconButtonStyle,
+                            }}
+                            disabled={loading}
+                        >
+                            <Add sx={iconStyle} />
+                        </IconButtonWithPopover>
+                    </Grid>
+                )}
+
                 <Grid item>{loading && <Loading />}</Grid>
             </Grid>
 

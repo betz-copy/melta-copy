@@ -773,7 +773,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async getAllowedEntitiesTemplates(userPermissions: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
         const searchBody: ISearchEntityTemplatesBody = {};
 
-        if (!userPermissions.templates && userPermissions.instances) {
+        if (!userPermissions.admin && !userPermissions.templates && userPermissions.instances) {
             searchBody.categoryIds = Object.keys(userPermissions.instances.categories);
         }
 

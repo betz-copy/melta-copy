@@ -10,9 +10,10 @@ import { IProcessTemplateMap } from '../../interfaces/processes/processTemplate'
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { IRuleMap } from '../../interfaces/rules';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
-import { getFile, getWorkspaceHierarchyIds } from '../../services/workspacesService';
+import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
+import { getWorkspacePermissions } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
@@ -67,16 +68,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             setWorkspace(workspace);
             document.title = workspace.name;
 
-            const hierarchyIds = await getWorkspaceHierarchyIds(workspace._id);
-
-            for (const workspaceId of Object.keys(currentUser.permissions)) {
-                const index = hierarchyIds.findIndex((hierarchyId) => hierarchyId === workspaceId);
-
-                if (index !== -1) {
-                    currentUser.permissions[workspace._id] = currentUser.permissions[hierarchyIds[index]];
-                    break;
-                }
-            }
+            currentUser.permissions[workspace._id] = await getWorkspacePermissions(workspace._id, currentUser.permissions);
 
             if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
                 setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });

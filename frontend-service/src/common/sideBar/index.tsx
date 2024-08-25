@@ -243,7 +243,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {Array.from(
                         categories.values(),
                         (category) =>
-                            Boolean(currentUser.currentWorkspacePermissions.instances?.categories[category._id]) && (
+                            Boolean(
+                                currentUser.currentWorkspacePermissions.admin ||
+                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id],
+                            ) && (
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}

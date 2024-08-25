@@ -134,11 +134,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserCategoryPermission(
-        currentUser.currentWorkspacePermissions.instances?.categories ?? {},
-        entityTemplate.category,
-        PermissionScope.write,
-    );
+    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>

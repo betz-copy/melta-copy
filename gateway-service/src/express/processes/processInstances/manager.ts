@@ -31,9 +31,9 @@ import { IMongoStepInstance } from '../../../externalServices/processService/int
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { StorageService } from '../../../externalServices/storageService';
 import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
-import { UserService } from '../../../externalServices/userService';
 import { PermissionScope, PermissionType } from '../../../externalServices/userService/interfaces/permissions';
 import { filteredMap } from '../../../utils';
+import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
 import logger from '../../../utils/logger/logsLogger';
@@ -78,7 +78,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (entityProperties.length === 0) return properties;
 
-        const userPermissionPromise = await UserService.getUserPermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
@@ -88,15 +88,13 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
             if (typeof entity === 'string') return;
 
-            const entityTemplatePromise = this.entityTemplateService.getEntityTemplateById(entity.templateId);
-            const [entityTemplate, userPermission] = await Promise.all([entityTemplatePromise, userPermissionPromise]);
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
 
             updatedProperties[key] = {
                 entity,
                 userHavePermission: Boolean(
-                    Object.keys(userPermission[this.workspaceId].instances?.categories ?? {}).find(
-                        (categoryId) => categoryId === entityTemplate!.category._id,
-                    ),
+                    userPermissions.admin?.scope ||
+                        Object.keys(userPermissions.instances?.categories ?? {}).find((categoryId) => categoryId === entityTemplate.category._id),
                 ),
                 entityTemplate,
             } as IReferencedEntityForProcess;
@@ -314,9 +312,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     async searchProcessInstances(searchBody: ISearchProcessInstancesBody, userId: string) {
         const query: ISearchProcessInstancesBody = { ...searchBody };
 
-        const userPermissions = await UserService.getUserPermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
 
-        if (userPermissions[this.workspaceId].processes?.scope !== PermissionScope.write) query.reviewerId = userId;
+        if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) query.reviewerId = userId;
 
         const processes = await this.service.searchProcessInstances(query);
         return Promise.all(processes.map((process) => this.getPopulatedProcess(process, userId)));
