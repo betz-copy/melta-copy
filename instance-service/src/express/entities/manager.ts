@@ -497,11 +497,12 @@ export class EntityManager {
         crudAction: 'onCreateEntity' | 'onUpdateEntity',
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
+        userId: string,
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
         const action = await EntityManager.buildOneAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
-        const entitiesToUpdate = await this.executeActionsOnCrud(action, crudAction, '');
+        const entitiesToUpdate = await this.executeActionsOnCrud(action, crudAction, userId);
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate);
         const actions = [action, ...actionsOfUpdatedEntities];
         return actions;
@@ -514,13 +515,11 @@ export class EntityManager {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        const updatedEntities: IEntity[] = [];
-
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
-            const actions = await this.buildActionsArray('onCreateEntity', properties, entityTemplate, undefined, duplicatedFromId);
+            const actions = await this.buildActionsArray('onCreateEntity', properties, entityTemplate, userId, undefined, duplicatedFromId);
 
-            const resultsOfBulkActions = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            return { createdEntity: resultsOfBulkActions[0] as IEntity, updatedEntities, actions };
+            const [createdEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            return { createdEntity, updatedEntities, actions };
         }
 
         return Neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
@@ -539,7 +538,7 @@ export class EntityManager {
 
             await Promise.all(activityLogsPromises);
 
-            return { createdEntity, updatedEntities };
+            return { createdEntity, updatedEntities: [] };
         }).catch(EntityManager.throwServiceErrorIfFailedConstraintsValidation); // constraint validation is performed on end of transaction
     }
 
@@ -1208,7 +1207,7 @@ export class EntityManager {
         }
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
-            const actions = await this.buildActionsArray('onUpdateEntity', entityProperties, entityTemplate, unPopulatedEntity);
+            const actions = await this.buildActionsArray('onUpdateEntity', entityProperties, entityTemplate, userId, unPopulatedEntity);
             const [updatedEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
 
             return { updatedEntity, updatedEntities, actions };
