@@ -1,34 +1,23 @@
-import * as ts from 'typescript';
+import * as ts from 'typescript-actions';
 
-export const isBodyFunctionHasContent = (code: string, functionName: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity') => {
+export const isBodyFunctionHasContent = (code: string, functionName: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity'): boolean => {
     const sourceFile = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.Latest, true);
 
-    function isFunctionExists(node: ts.Node, name: string): node is ts.FunctionDeclaration {
-        return ts.isFunctionDeclaration(node) && node.name?.text === name;
-    }
+    const isFunctionExists = (node: ts.Node, name: string): node is ts.FunctionDeclaration =>
+        ts.isFunctionDeclaration(node) && node.name?.text === name;
 
-    function hasNonEmptyBody(func: ts.FunctionDeclaration): boolean {
-        if (!func.body) return false;
-
-        for (const statement of func.body.statements) {
-            const statementText = statement.getText().trim();
-            if (statementText.length > 0) {
-                return true;
-            }
-        }
-
-        return false;
-    }
+    const hasNonEmptyBody = (func: ts.FunctionDeclaration): boolean =>
+        !!func.body && func.body.statements.some((statement) => statement.getText().trim().length > 0);
 
     let functionFound = false;
 
-    function visit(node: ts.Node) {
+    const visit = (node: ts.Node) => {
         if (isFunctionExists(node, functionName)) {
             functionFound = hasNonEmptyBody(node);
-            return;
+        } else {
+            ts.forEachChild(node, visit);
         }
-        ts.forEachChild(node, visit);
-    }
+    };
 
     visit(sourceFile);
     return functionFound;
