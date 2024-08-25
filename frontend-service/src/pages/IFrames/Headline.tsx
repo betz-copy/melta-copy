@@ -55,7 +55,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (data) => {
-            queryClient.invalidateQueries(['searchIFrames', null]);
+            queryClient.invalidateQueries('searchIFrames');
             queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                 if (!oldData) return [];
                 return oldData.filter((iframe) => iframe._id !== data._id);
@@ -133,8 +133,21 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                                         <IconButton
                                             onClick={async () => {
                                                 setPlaceInSideBar(!placeInSideBar);
-                                                await updateIFrame(iFrame._id, { ...iFrame, placeInSideBar: !placeInSideBar });
-                                                queryClient.invalidateQueries('allIFrames');
+                                                await updateIFrame(iFrame._id, {
+                                                    ...iFrame,
+                                                    placeInSideBar: !placeInSideBar,
+                                                });
+                                                queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                                                    if (!oldData) {
+                                                        return [];
+                                                    }
+
+                                                    const index = oldData.findIndex((existingIframe) => existingIframe._id === iFrame._id);
+                                                    const updatedData = [...oldData];
+                                                    updatedData[index] = { ...iFrame, placeInSideBar: !placeInSideBar };
+                                                    return [...updatedData];
+                                                });
+                                                // queryClient.setQueryData(['getIFrame', iFrame._id], { ...iFrame, placeInSideBar: !placeInSideBar });
                                             }}
                                         >
                                             {placeInSideBar ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon color="primary" />}
@@ -170,7 +183,6 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                 initialValues={iFrameObjectToIFrameForm(iFrameWizardDialogState.iFrame)}
                 isEditMode={Boolean(iFrameWizardDialogState.iFrame)}
                 setIFramesOrder={(val) => {
-                    console.log({ val });
                     if (setIFramesOrder) setIFramesOrder(val);
                 }}
             />

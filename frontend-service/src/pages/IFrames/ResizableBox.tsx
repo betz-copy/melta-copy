@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
+import { BorderColor } from '@mui/icons-material';
 // eslint-disable-next-line import/no-extraneous-dependencies
 
 interface ResizeBoxProps {
@@ -27,28 +28,7 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
         return savedDimensions ? JSON.parse(savedDimensions) : { width: 900, height: 500 };
     };
     const [dimensions, setDimensions] = useState(getDimensions());
-    // useEffect(() => {
-    //     localStorage.setItem(loadFlagKey, 'true');
 
-    //     const handleBeforeUnload = () => {
-    //         localStorage.removeItem(localStorageKey);
-    //         localStorage.removeItem(loadFlagKey);
-    //     };
-
-    //     window.addEventListener('beforeunload', handleBeforeUnload);
-
-    //     return () => {
-    //         window.removeEventListener('beforeunload', handleBeforeUnload);
-    //     };
-    // }, []);
-
-    // useEffect(() => {
-    //     const loadFlag = localStorage.getItem(loadFlagKey);
-    //     if (!loadFlag) {
-    //         localStorage.removeItem(localStorageKey);
-    //         setDimensions({ width: 1000, height: 500 });
-    //     }
-    // }, []);
     const onResizeStart = () => {
         setIsResizing(true);
     };
@@ -70,7 +50,10 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
             axis="both"
-            // className={`box-content ${isResizing ? 'resizing' : ''}`}
+            style={{
+                borderRadius: '12px', // Apply border-radius to ResizableBox
+                overflow: 'hidden', // Ensure content doesn't overflow the rounded corners
+            }}
         >
             <Grid paddingBottom="40px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
                 {children}

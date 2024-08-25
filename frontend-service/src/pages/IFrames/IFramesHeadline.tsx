@@ -47,7 +47,7 @@ const IFramesPageHeadline: React.FC<{
         setIFramesOrder(updatedItems);
 
         queryClient.setQueryData('allIFrames', (oldData: any) => {
-            return updatedItems.map((id) => oldData.find((iFrame) => iFrame._id === id));
+            return updatedItems.map((id) => oldData.find((iFrame: IMongoIFrame) => iFrame._id === id));
         });
     };
 

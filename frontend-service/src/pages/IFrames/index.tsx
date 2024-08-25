@@ -32,9 +32,9 @@ const IFramesPage: React.FC = () => {
     useEffect(() => {
         console.log('lioraaa', { allIFrames });
 
-        const iFramesData = allIFrames?.map(({ _id }) => _id) || [];
-        localStorage.setItem(localStorageKey, JSON.stringify(iFramesData));
-        setIFramesOrder(iFramesData);
+        const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
+        localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
+        setIFramesOrder(iFramesIds);
     }, [allIFrames, queryClient]);
 
     return (

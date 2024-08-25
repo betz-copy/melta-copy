@@ -61,6 +61,7 @@ const deleteIFrame = async (iFrameId: string) => {
 
 const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     const formData = new FormData();
+    console.log({ updatedIFrame });
 
     const { name, url, categoryIds, description, apiToken, placeInSideBar } = updatedIFrame;
 

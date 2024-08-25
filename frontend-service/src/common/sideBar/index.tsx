@@ -39,16 +39,19 @@ type SideBarProps = {
 
 const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
     const theme = useTheme();
-    const [showIFrames, setShowIFrames] = useState<boolean>(false);
+
     const navigate = useNavigate();
     const iconButtonRef = useRef(null);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const open = Boolean(anchorEl);
 
-    const handleMouseEnter = () => {
-        setShowIFrames(true);
+    const handleContextMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
+        event.preventDefault();
+        setAnchorEl(event.currentTarget); // Set the clicked position as anchor
     };
 
-    const handleMouseLeave = () => {
-        setShowIFrames(false);
+    const handleCloseMenu = () => {
+        setAnchorEl(null);
     };
 
     return (
@@ -60,8 +63,7 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
             >
                 <IconButton
                     ref={iconButtonRef}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    onContextMenu={handleContextMenu} // Show menu on right-click
                     sx={{
                         color: '#FFFFFF80',
                         fontFamily: 'Rubik',
@@ -81,11 +83,9 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
             </Grid>
             {iFrames?.length > 0 && (
                 <Menu
-                    anchorEl={iconButtonRef.current}
-                    open={showIFrames}
-                    onClose={handleMouseLeave}
-                    onMouseEnter={handleMouseEnter}
-                    onMouseLeave={handleMouseLeave}
+                    anchorEl={anchorEl}
+                    open={open}
+                    onClose={handleCloseMenu}
                     anchorOrigin={{
                         vertical: 'top',
                         horizontal: 'left',
@@ -96,7 +96,6 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                     }}
                     sx={{
                         maxHeight: 350,
-                        // backgroundColor: '#EBEFFA',
                     }}
                 >
                     {iFrames.map((iFrame) => (
@@ -128,7 +127,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const iFramesStored = localStorage.getItem('iFramesOrder');
-    const { data } = useQuery(['allIFrames'], () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
 
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
 

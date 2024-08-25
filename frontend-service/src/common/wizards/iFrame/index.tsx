@@ -62,7 +62,9 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                queryClient.invalidateQueries(['searchIFrames']);
+                console.log({ data });
+
+                queryClient.invalidateQueries('searchIFrames');
 
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
@@ -77,10 +79,14 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                     const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
 
                     if (index === -1) {
+                        console.log('-1!!!!', { data });
+
                         return [data, ...oldData];
                     }
                     const updatedData = [...oldData];
                     updatedData[index] = data;
+                    console.log({ updatedData });
+
                     return [...updatedData];
                 });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');

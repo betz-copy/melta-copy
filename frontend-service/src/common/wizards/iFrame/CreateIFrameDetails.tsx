@@ -34,6 +34,8 @@ const createIFrameDetailsSchema = {
 };
 
 const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
+    console.log({ values });
+
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item>
