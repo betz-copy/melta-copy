@@ -125,7 +125,7 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
                     if (value.format === 'date' && isDate(propertyValue)) {
                         entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
                     }
-                    if (value.serialCurrent && value.serialCurrent !== propertyValue) {
+                    if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue) {
                         throw new ServiceError(400, "can't change serial number properties");
                     }
                 }
