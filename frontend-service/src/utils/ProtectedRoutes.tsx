@@ -3,10 +3,10 @@ import { AxiosError } from 'axios';
 import React, { isValidElement } from 'react';
 import { useQuery } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
+import { IEntityTemplateMap } from '../interfaces/entityTemplates';
+import { PermissionScope } from '../interfaces/permissions';
+import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
     if (!isAllowed) {

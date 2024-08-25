@@ -5,36 +5,36 @@ import React, { lazy, Suspense, useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { Route, Switch, useLocation, useRoute } from 'wouter';
-import { SideBar } from '../../../common/sideBar';
-import { TopBar } from '../../../common/TopBar';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { MainBox } from '../../../Main.styled';
-import ScrollToTop from '../../../ScrollToTop';
-import { useMeltaPlusStore } from '../../../stores/meltaPlus';
-import { useUserStore } from '../../../stores/user';
-import { LocalStorage } from '../../localStorage';
+import { SideBar } from '../../common/sideBar';
+import { TopBar } from '../../common/TopBar';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { MainBox } from '../../Main.styled';
+import ScrollToTop from '../../ScrollToTop';
+import { useMeltaPlusStore } from '../../stores/meltaPlus';
+import { useUserStore } from '../../stores/user';
+import { LocalStorage } from '../../utils/localStorage';
 import {
     CategoryProtectedRoute,
     EntityProtectedRoute,
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
-} from '../ProtectedRoutes';
+} from '../../utils/ProtectedRoutes';
 
-const GlobalSearch = lazy(() => import('../../../pages/GlobalSearch'));
-const Category = lazy(() => import('../../../pages/Category'));
-const SystemManagement = lazy(() => import('../../../pages/SystemManagement'));
-const PermissionsManagement = lazy(() => import('../../../pages/PermissionsManagement'));
-const RuleManagement = lazy(() => import('../../../pages/RuleManagement'));
-const Gantts = lazy(() => import('../../../pages/Gantts'));
-const GanttPage = lazy(() => import('../../../pages/Gantts/GanttPage'));
-const ProcessInstancesPage = lazy(() => import('../../../pages/ProcessInstances'));
-const Unavailable = lazy(() => import('../../../pages/Unavailable'));
-const ErrorPage = lazy(() => import('../../../pages/ErrorPage'));
-const Entity = lazy(() => import('../../../pages/Entity'));
-const Graph = lazy(() => import('../../../pages/Graph'));
-const Duplicate = lazy(() => import('../../../pages/Entity/components/DuplicateEntity'));
+const GlobalSearch = lazy(() => import('../GlobalSearch'));
+const Category = lazy(() => import('../Category'));
+const SystemManagement = lazy(() => import('../SystemManagement'));
+const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
+const RuleManagement = lazy(() => import('../RuleManagement'));
+const Gantts = lazy(() => import('../Gantts'));
+const GanttPage = lazy(() => import('../Gantts/GanttPage'));
+const ProcessInstancesPage = lazy(() => import('../ProcessInstances'));
+const Unavailable = lazy(() => import('../Unavailable'));
+const ErrorPage = lazy(() => import('../ErrorPage'));
+const Entity = lazy(() => import('../Entity'));
+const Graph = lazy(() => import('../Graph'));
+const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
-const FluidSimulation = lazy(() => import('../../../pages/MeltaPlus/FluidSimulation'));
+const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 
 export const MeltaRoutesInner: React.FC = () => {
     const [title, setTitle] = useState('');

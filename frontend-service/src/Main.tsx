@@ -7,7 +7,7 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { Route, Switch } from 'wouter';
 import { WorkspaceTypes } from './interfaces/workspaces';
 import DirView from './pages/DirView';
-import { MeltaRoutes } from './utils/routes/Melta';
+import { MeltaRoutes } from './pages/MeltaRoutes';
 
 const cacheRtl = createCache({
     key: 'muirtl',
