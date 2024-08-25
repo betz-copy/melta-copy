@@ -3,7 +3,7 @@ import './dotenv';
 
 const config = {
     service: {
-        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
     },
     seed: env.get('SEED').asFloat(),
     usersService: {

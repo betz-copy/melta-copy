@@ -4,8 +4,8 @@ import { IMongoEntityTemplate } from './interface';
 import { EntityTemplateManager } from './manager';
 
 class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
-    constructor(dbName: string) {
-        super(new EntityTemplateManager(dbName));
+    constructor(workspaceId: string) {
+        super(new EntityTemplateManager(workspaceId));
     }
 
     async searchEntityTemplates(req: Request, res: Response) {

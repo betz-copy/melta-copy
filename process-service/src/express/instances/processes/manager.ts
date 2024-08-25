@@ -32,10 +32,10 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     private stepInstanceManager: StepInstanceManager;
 
-    constructor(dbName: string) {
-        super(dbName, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
-        this.processTemplateManager = new ProcessTemplateManager(dbName);
-        this.stepInstanceManager = new StepInstanceManager(dbName);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
+        this.processTemplateManager = new ProcessTemplateManager(workspaceId);
+        this.stepInstanceManager = new StepInstanceManager(workspaceId);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {

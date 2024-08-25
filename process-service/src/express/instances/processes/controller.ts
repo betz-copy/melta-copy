@@ -4,8 +4,8 @@ import { IProcessInstance } from './interface';
 import ProcessInstanceManager from './manager';
 
 export default class ProcessInstanceController extends DefaultController<IProcessInstance, ProcessInstanceManager> {
-    constructor(dbName: string) {
-        super(new ProcessInstanceManager(dbName));
+    constructor(workspaceId: string) {
+        super(new ProcessInstanceManager(workspaceId));
     }
 
     async getProcessById(req: Request, res: Response) {

@@ -10,9 +10,9 @@ import { ValidationError } from '../error';
 export default class RelationshipValidator extends DefaultController<EntityManager> {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    constructor(dbName: string) {
-        super(new EntityManager(dbName));
-        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
+    constructor(workspaceId: string) {
+        super(new EntityManager(workspaceId));
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
     }
 
     private async getRelationshipTemplateByIdOrThrowValidationError(templateId: string) {

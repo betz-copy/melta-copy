@@ -30,21 +30,21 @@ export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
 };
 
 export const createController = <T extends InstanceType<typeof DefaultController<any>>>(
-    controller: { new (dbName: string): T },
+    controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return (req: Request, res: Response, next: NextFunction) => {
-            const dbName = req.headers[config.service.dbHeaderName];
-            if (typeof dbName !== 'string') return next(new ServiceError(400, 'Invalid database name in header'));
+            const workspaceId = req.headers[config.service.workspaceIdHeaderName];
+            if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
 
             if (isMiddleware) {
-                return (new controller(dbName)[funcName] as Function)(req, res, next)
+                return (new controller(workspaceId)[funcName] as Function)(req, res, next)
                     .then(() => next())
                     .catch(next); // eslint-disable-line new-cap
             }
 
-            return (new controller(dbName)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+            return (new controller(workspaceId)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
 };

@@ -7,8 +7,8 @@ import { IGantt, ISearchGanttsBody } from './interface';
 import { GanttSchema } from './model';
 
 export default class GanttManager extends DefaultManagerMongo<IGantt> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.ganttsCollectionName, GanttSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.ganttsCollectionName, GanttSchema);
     }
 
     async searchGantts({ search, limit, step }: ISearchGanttsBody) {

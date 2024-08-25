@@ -6,7 +6,7 @@ import logger from '../utils/logger/logsLogger';
 import config from '../config';
 
 const {
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 class NotificationsConsumer {
@@ -15,7 +15,7 @@ class NotificationsConsumer {
             const msgContent = msg.getContent();
             const value = basicValidateRequest(notificationSchema, msgContent);
 
-            const manager = new NotificationsManager(msg.properties.headers[dbHeaderName]);
+            const manager = new NotificationsManager(msg.properties.headers[workspaceIdHeaderName]);
 
             await manager.createNotification(value);
 

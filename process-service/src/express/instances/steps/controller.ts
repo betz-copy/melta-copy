@@ -4,8 +4,8 @@ import { IStepInstance } from './interface';
 import StepInstanceManager from './manager';
 
 export default class StepInstanceController extends DefaultController<IStepInstance, StepInstanceManager> {
-    constructor(dbName: string) {
-        super(new StepInstanceManager(dbName));
+    constructor(workspaceId: string) {
+        super(new StepInstanceManager(workspaceId));
     }
 
     async getStepById(req: Request, res: Response) {

@@ -4,8 +4,8 @@ import { IGantt } from './interface';
 import GanttManager from './manager';
 
 export default class GanttController extends DefaultController<IGantt, GanttManager> {
-    constructor(dbName: string) {
-        super(new GanttManager(dbName));
+    constructor(workspaceId: string) {
+        super(new GanttManager(workspaceId));
     }
 
     async searchGantts(req: Request, res: Response) {

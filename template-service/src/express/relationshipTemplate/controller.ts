@@ -4,8 +4,8 @@ import { IMongoRelationshipTemplate } from './interface';
 import { RelationshipTemplateManager } from './manager';
 
 class RelationshipTemplateController extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
-    constructor(dbName: string) {
-        super(new RelationshipTemplateManager(dbName));
+    constructor(workspaceId: string) {
+        super(new RelationshipTemplateManager(workspaceId));
     }
 
     async getTemplateById(req: Request, res: Response) {

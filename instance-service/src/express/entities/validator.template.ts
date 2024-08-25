@@ -58,11 +58,11 @@ export class EntityValidator extends DefaultController {
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
 
-    constructor(dbName: string) {
+    constructor(workspaceId: string) {
         super(undefined);
 
-        this.entityTemplateManagerService = new EntityTemplateManagerService(dbName);
-        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(dbName);
+        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
     }
 
     private async getEntityTemplateByIdOrThrowValidationError(templateId: string) {

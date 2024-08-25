@@ -10,7 +10,7 @@ import DefaultManagerMinio from '../../utils/minio/manager';
 const {
     rabbit,
     document,
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 const libreConvert = promisify(libreoffice.convert);
@@ -24,7 +24,7 @@ export class FilesManager extends DefaultManagerMinio {
             return Readable.from(fileBuffer);
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
-                await menash.send(rabbit.previewQueue, filePath, { headers: { [dbHeaderName]: this.workspaceId } });
+                await menash.send(rabbit.previewQueue, filePath, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
                 throw new ServiceError(404, 'File Not Found');
             }
             throw error;

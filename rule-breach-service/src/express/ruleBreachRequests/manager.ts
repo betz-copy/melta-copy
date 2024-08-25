@@ -9,8 +9,8 @@ import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
 import { RuleBreachRequestsSchema } from './model';
 
 export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.ruleBreachRequestsCollectionName, RuleBreachRequestsSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.ruleBreachRequestsCollectionName, RuleBreachRequestsSchema);
     }
 
     public async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {

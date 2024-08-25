@@ -8,8 +8,8 @@ import { IRuleBreachAlert } from './interface';
 import { RuleBreachAlertsSchema } from './model';
 
 export default class RuleBreachAlertsManager extends DefaultManagerMongo<IRuleBreachAlert> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.ruleBreachAlertsCollectionName, RuleBreachAlertsSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.ruleBreachAlertsCollectionName, RuleBreachAlertsSchema);
     }
 
     public async searchRuleBreachAlerts(agGridRequest: IAgGridRequest) {

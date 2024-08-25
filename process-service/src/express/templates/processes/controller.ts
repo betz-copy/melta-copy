@@ -4,8 +4,8 @@ import { IProcessTemplate } from './interface';
 import ProcessTemplateManager from './manager';
 
 export default class ProcessTemplateController extends DefaultController<IProcessTemplate, ProcessTemplateManager> {
-    constructor(dbName: string) {
-        super(new ProcessTemplateManager(dbName));
+    constructor(workspaceId: string) {
+        super(new ProcessTemplateManager(workspaceId));
     }
 
     async getTemplateById(req: Request, res: Response) {

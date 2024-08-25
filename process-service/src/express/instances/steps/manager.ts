@@ -10,8 +10,8 @@ import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqB
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
     }
 
     validateStepIds(validStepIds: string[], stepIdsToCheck: string[]) {
@@ -52,7 +52,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
-        const processInstanceManager = new ProcessInstanceManager(this.dbName);
+        const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
         const currProcess = await processInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);

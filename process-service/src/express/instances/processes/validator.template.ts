@@ -15,10 +15,10 @@ export default class ProcessInstanceValidator extends DefaultController<IProcess
 
     private processTemplateManager: ProcessTemplateManager;
 
-    constructor(dbName: string) {
-        super(new ProcessInstanceManager(dbName));
-        this.stepInstanceManager = new StepInstanceManager(dbName);
-        this.processTemplateManager = new ProcessTemplateManager(dbName);
+    constructor(workspaceId: string) {
+        super(new ProcessInstanceManager(workspaceId));
+        this.stepInstanceManager = new StepInstanceManager(workspaceId);
+        this.processTemplateManager = new ProcessTemplateManager(workspaceId);
     }
 
     validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {

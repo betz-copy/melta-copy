@@ -4,8 +4,8 @@ import { INotification } from './interface';
 import { NotificationsManager } from './manager';
 
 class NotificationsController extends DefaultController<INotification, NotificationsManager> {
-    constructor(dbName: string) {
-        super(new NotificationsManager(dbName));
+    constructor(workspaceId: string) {
+        super(new NotificationsManager(workspaceId));
     }
 
     async getNotifications(req: Request, res: Response) {

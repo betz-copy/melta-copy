@@ -5,7 +5,7 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         meltaBaseUrl: env.get('SYSTEM_MELTA_BASE_URL').required().asString(),
-        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),

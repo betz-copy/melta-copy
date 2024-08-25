@@ -5,7 +5,7 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
-        dbHeaderName: env.get('DB_HEADER_NAME').default('dbName').asString(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
     },
     notifications: {
         dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),

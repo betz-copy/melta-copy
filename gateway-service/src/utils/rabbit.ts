@@ -6,7 +6,7 @@ import { IMailNotificationMetadataPopulated } from './mailNotifications/interfac
 
 const {
     rabbit,
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 export class RabbitManager {
@@ -18,10 +18,10 @@ export class RabbitManager {
     >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated) {
         if (!viewers.length) return;
 
-        await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [dbHeaderName]: this.workspaceId } });
+        await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
         const mailData = await new MailManager(this.workspaceId).createMail({ viewers, type, populatedMetaData });
 
-        await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [dbHeaderName]: this.workspaceId } });
+        await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 }

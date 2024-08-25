@@ -27,10 +27,10 @@ export class MinioStorage extends DefaultManagerMinio {
 
 export class MinioMulter {
     private static async wrapMulterMiddleware(req: Request) {
-        const dbName = req.headers[config.service.dbHeaderName];
-        if (typeof dbName !== 'string') return null;
+        const workspaceId = req.headers[config.service.workspaceIdHeaderName];
+        if (typeof workspaceId !== 'string') return null;
 
-        const storage = new MinioStorage(dbName);
+        const storage = new MinioStorage(workspaceId);
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
 
@@ -40,7 +40,7 @@ export class MinioMulter {
     static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
-        if (!storage) return next(new ServiceError(400, 'Invalid database name in header'));
+        if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
 
         Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName)(req, res, next);
     }
@@ -48,7 +48,7 @@ export class MinioMulter {
     static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
-        if (!storage) return next(new ServiceError(400, 'Invalid database name in header'));
+        if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
 
         Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName)(req, res, next);
     }

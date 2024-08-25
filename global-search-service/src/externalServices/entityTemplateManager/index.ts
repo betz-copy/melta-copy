@@ -13,8 +13,8 @@ const {
 } = config;
 
 export class TemplateManagerService extends DefaultExternalService {
-    constructor(dbName: string) {
-        super(dbName, axios.create({ baseURL: url, timeout }));
+    constructor(workspaceId: string) {
+        super(workspaceId, axios.create({ baseURL: url, timeout }));
     }
 
     async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}): Promise<IEntityTemplate[]> {

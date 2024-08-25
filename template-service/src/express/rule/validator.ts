@@ -124,9 +124,9 @@ const formulaSchema = Joi.alternatives(
 export class RuleValidator extends DefaultController<IMongoRelationshipTemplate, RelationshipTemplateManager> {
     private entityTemplateManager: EntityTemplateManager;
 
-    constructor(dbName: string) {
-        super(new RelationshipTemplateManager(dbName));
-        this.entityTemplateManager = new EntityTemplateManager(dbName);
+    constructor(workspaceId: string) {
+        super(new RelationshipTemplateManager(workspaceId));
+        this.entityTemplateManager = new EntityTemplateManager(workspaceId);
     }
 
     private joiValidateNoConvert = (schema: Joi.AnySchema<any>, data: any) =>

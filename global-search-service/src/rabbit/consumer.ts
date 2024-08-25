@@ -7,14 +7,14 @@ import logger from '../utils/logger/logsLogger';
 import config from '../config';
 
 const {
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
     const msgContent = msg.getContent();
     const { action, templateId }: IUpdateIndexRequest = basicValidateRequest(requestSchema, msgContent);
 
-    const manager = new Manager(msg.properties.headers[dbHeaderName]);
+    const manager = new Manager(msg.properties.headers[workspaceIdHeaderName]);
 
     try {
         switch (action) {

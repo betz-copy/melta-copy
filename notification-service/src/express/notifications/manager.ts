@@ -7,8 +7,8 @@ import { IBasicNotificationQuery, INotification, INotificationCountGroups, INoti
 import { NotificationsSchema } from './model';
 
 export class NotificationsManager extends DefaultManagerMongo<INotification> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.notificationsCollectionName, NotificationsSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.notificationsCollectionName, NotificationsSchema);
     }
 
     public async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {

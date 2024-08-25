@@ -6,8 +6,8 @@ import { IStepInstance, UpdateStepReqBody } from './interface';
 import StepInstanceManager from './manager';
 
 export default class StepInstanceValidator extends DefaultController<IStepInstance, StepInstanceManager> {
-    constructor(dbName: string) {
-        super(new StepInstanceManager(dbName));
+    constructor(workspaceId: string) {
+        super(new StepInstanceManager(workspaceId));
     }
 
     public async validateStepInstance(req: Request) {

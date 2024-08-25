@@ -7,8 +7,8 @@ import { IMongoRule, IRule } from './interfaces';
 import { RuleTemplateSchema } from './model';
 
 export class RuleManager extends DefaultManagerMongo<IMongoRule> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.ruleCollectionName, RuleTemplateSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.ruleCollectionName, RuleTemplateSchema);
     }
 
     async getRuleById(ruleId: string) {

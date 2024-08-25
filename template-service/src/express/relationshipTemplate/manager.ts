@@ -7,8 +7,8 @@ import { IMongoRelationshipTemplate, IRelationshipTemplate } from './interface';
 import { RelationshipTemplateSchema } from './model';
 
 export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelationshipTemplate> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.relationshipTemplatesCollectionName, RelationshipTemplateSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.relationshipTemplatesCollectionName, RelationshipTemplateSchema);
     }
 
     async getTemplateById(templateId: string) {

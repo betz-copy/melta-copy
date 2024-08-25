@@ -5,8 +5,8 @@ import { ICategory, IMongoCategory } from './interface';
 import { CategorySchema } from './model';
 
 class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.categoriesCollectionName, CategorySchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.categoriesCollectionName, CategorySchema);
     }
 
     async getCategories(displayName?: string) {

@@ -7,8 +7,8 @@ import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './inter
 import { StepTemplateSchema } from './model';
 
 export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
     }
 
     async getStepTemplate(id: string): Promise<IMongoStepTemplate> {

@@ -5,8 +5,8 @@ import { IMongoCategory } from './interface';
 import CategoryManager from './manager';
 
 class CategoriesController extends DefaultController<IMongoCategory, CategoryManager> {
-    constructor(dbName: string) {
-        super(new CategoryManager(dbName));
+    constructor(workspaceId: string) {
+        super(new CategoryManager(workspaceId));
     }
 
     async getCategories(req: Request, res: Response) {

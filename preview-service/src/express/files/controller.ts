@@ -3,8 +3,8 @@ import DefaultController from '../../utils/express/controller';
 import { FilesManager } from './manager';
 
 export class FilesController extends DefaultController<FilesManager> {
-    constructor(dbName: string) {
-        super(new FilesManager(dbName));
+    constructor(workspaceId: string) {
+        super(new FilesManager(workspaceId));
     }
 
     async getFilePreview(req: Request, res: Response) {

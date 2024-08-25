@@ -9,7 +9,7 @@ import DefaultManagerMinio from '../../utils/minio/manager';
 const {
     rabbit,
     document,
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 export class FilesManager extends DefaultManagerMinio {
@@ -23,7 +23,7 @@ export class FilesManager extends DefaultManagerMinio {
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.path),
-                { headers: { [dbHeaderName]: this.workspaceId } },
+                { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
         return files;
     }

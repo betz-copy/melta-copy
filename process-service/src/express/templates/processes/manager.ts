@@ -25,9 +25,9 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
 
     private processInstanceManager: ProcessInstanceManager;
 
-    constructor(dbName: string) {
-        super(dbName, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
-        this.stepTemplateManager = new StepTemplateManager(dbName);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
+        this.stepTemplateManager = new StepTemplateManager(workspaceId);
     }
 
     async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {

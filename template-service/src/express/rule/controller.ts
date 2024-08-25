@@ -4,8 +4,8 @@ import { IMongoRule } from './interfaces';
 import { RuleManager } from './manager';
 
 class RuleController extends DefaultController<IMongoRule, RuleManager> {
-    constructor(dbName: string) {
-        super(new RuleManager(dbName));
+    constructor(workspaceId: string) {
+        super(new RuleManager(workspaceId));
     }
 
     async getRuleById(req: Request, res: Response) {

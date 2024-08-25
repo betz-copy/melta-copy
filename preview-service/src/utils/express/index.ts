@@ -4,13 +4,13 @@ import { ServiceError } from '../../express/error';
 import { FunctionKey } from '../types';
 import DefaultController from './controller';
 
-export const createController = <T extends InstanceType<typeof DefaultController<any>>>(controller: { new (dbName: string): T }) => {
+export const createController = <T extends InstanceType<typeof DefaultController<any>>>(controller: { new (workspaceId: string): T }) => {
     return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
         return (req: Request, res: Response, next: NextFunction) => {
-            const dbName = req.headers[config.service.dbHeaderName];
-            if (typeof dbName !== 'string') return next(new ServiceError(400, 'Invalid database name in header'));
+            const workspaceId = req.headers[config.service.workspaceIdHeaderName];
+            if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
 
-            return (new controller(dbName)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
+            return (new controller(workspaceId)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
         };
     };
 };

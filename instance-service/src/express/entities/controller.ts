@@ -5,8 +5,8 @@ import DefaultController from '../../utils/express/controller';
 import { EntityManager } from './manager';
 
 class EntityController extends DefaultController<EntityManager> {
-    constructor(dbName: string) {
-        super(new EntityManager(dbName));
+    constructor(workspaceId: string) {
+        super(new EntityManager(workspaceId));
     }
 
     async createEntity(req: Request, res: Response) {

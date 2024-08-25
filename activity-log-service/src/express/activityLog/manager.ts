@@ -4,8 +4,8 @@ import { IActivityLog } from './interface';
 import { ActivityLogSchema } from './model';
 
 export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
-    constructor(dbName: string) {
-        super(dbName, config.mongo.activitiesCollectionName, ActivityLogSchema);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.activitiesCollectionName, ActivityLogSchema);
     }
 
     async getActivity(entityId: string, limit: number, skip: number, actions?: string[]) {

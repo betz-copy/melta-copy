@@ -15,10 +15,10 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     private relationshipTemplateManager: RelationshipTemplateManager;
 
-    constructor(dbName: string) {
-        super(dbName, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
-        this.globalSearchIndexCreator = new GlobalSearchIndexCreator(dbName);
-        this.relationshipTemplateManager = new RelationshipTemplateManager(dbName);
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
+        this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
+        this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
     }
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {

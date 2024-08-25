@@ -7,8 +7,8 @@ export default class RedisClient {
 
     private prefix: string;
 
-    constructor(dbName: string) {
-        this.prefix = dbName;
+    constructor(workspaceId: string) {
+        this.prefix = workspaceId;
     }
 
     public static async initialize() {
@@ -22,17 +22,17 @@ export default class RedisClient {
         return `${this.prefix}:${key}`;
     }
 
-    // Function to set a key with a dynamic prefix (dbName)
+    // Function to set a key with a dynamic prefix (workspaceId)
     public async set(key: string, value) {
         await RedisClient.redisClient.set(this.addPrefixToKey(key), value);
     }
 
-    // Function to get a key with a dynamic prefix (dbName)
+    // Function to get a key with a dynamic prefix (workspaceId)
     public async get(key: string) {
         return RedisClient.redisClient.get(this.addPrefixToKey(key));
     }
 
-    // Function to delete a key with a dynamic prefix (dbName)
+    // Function to delete a key with a dynamic prefix (workspaceId)
     public async del(key: string) {
         await RedisClient.redisClient.del(this.addPrefixToKey(key));
     }

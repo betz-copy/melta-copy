@@ -19,10 +19,10 @@ export default class Manager extends DefaultManagerNeo4j {
 
     private redisClient: RedisClient;
 
-    constructor(dbName: string) {
-        super(dbName);
-        this.templateManagerService = new TemplateManagerService(dbName);
-        this.redisClient = new RedisClient(dbName);
+    constructor(workspaceId: string) {
+        super(workspaceId);
+        this.templateManagerService = new TemplateManagerService(workspaceId);
+        this.redisClient = new RedisClient(workspaceId);
     }
 
     private async createIndex(indexName: string, labels: string[], properties: string[]) {

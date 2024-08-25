@@ -5,8 +5,8 @@ import { RelationshipManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 
 class RelationshipController extends DefaultController<RelationshipManager> {
-    constructor(dbName: string) {
-        super(new RelationshipManager(dbName));
+    constructor(workspaceId: string) {
+        super(new RelationshipManager(workspaceId));
     }
 
     async createRelationship(req: Request, res: Response) {

@@ -2,15 +2,15 @@ import { AxiosInstance } from 'axios';
 import config from '../config';
 
 const {
-    service: { dbHeaderName },
+    service: { workspaceIdHeaderName },
 } = config;
 
 export default abstract class DefaultExternalService {
     public api: AxiosInstance;
 
-    constructor(dbName: string, axiosInstance: AxiosInstance) {
+    constructor(workspaceId: string, axiosInstance: AxiosInstance) {
         this.api = axiosInstance;
-        // Add the database header to axios requests
-        this.api.defaults.headers[dbHeaderName] = dbName;
+        // Add the workspace id header to axios requests
+        this.api.defaults.headers[workspaceIdHeaderName] = workspaceId;
     }
 }

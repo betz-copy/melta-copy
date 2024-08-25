@@ -4,8 +4,8 @@ import { IActivityLog } from './interface';
 import ActivityLogManager from './manager';
 
 export default class ActivityLogController extends DefaultController<IActivityLog, ActivityLogManager> {
-    constructor(dbName: string) {
-        super(new ActivityLogManager(dbName));
+    constructor(workspaceId: string) {
+        super(new ActivityLogManager(workspaceId));
     }
 
     async getActivity(req: Request, res: Response) {

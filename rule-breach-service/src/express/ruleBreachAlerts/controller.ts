@@ -4,8 +4,8 @@ import { IRuleBreachAlert } from './interface';
 import RuleBreachAlertsManager from './manager';
 
 export default class RuleBreachAlertsController extends DefaultController<IRuleBreachAlert, RuleBreachAlertsManager> {
-    constructor(dbName: string) {
-        super(new RuleBreachAlertsManager(dbName));
+    constructor(workspaceId: string) {
+        super(new RuleBreachAlertsManager(workspaceId));
     }
 
     async searchRuleBreachAlerts(req: Request, res: Response) {
