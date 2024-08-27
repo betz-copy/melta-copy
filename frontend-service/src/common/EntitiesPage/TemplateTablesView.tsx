@@ -10,6 +10,7 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
@@ -27,11 +28,27 @@ const TemplateTablesViewResults = forwardRef<
 >(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
     const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
+    const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
+
+    useEffect(() => {
+        if (Array.isArray(updatedEntities)) {
+            updatedEntities.forEach((entity) => {
+                const reference = templateTablesRefs.current[entity.templateId];
+                if (reference) {
+                    reference.updateRowDataClientSide(entity);
+                } else {
+                    console.warn(`No reference found for templateId ${entity.templateId}`);
+                }
+            });
+        } else {
+            console.warn('updatedEntities is not an array:', updatedEntities);
+        }
+    }, [updatedEntities]);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -68,6 +85,7 @@ const TemplateTablesViewResults = forwardRef<
                         template={template}
                         quickFilterText={searchInput}
                         page={pageType}
+                        setUpdatedEntities={setUpdatedEntities}
                     />
                 </Grid>
             ))}

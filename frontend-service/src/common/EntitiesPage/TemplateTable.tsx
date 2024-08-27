@@ -31,6 +31,7 @@ const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 export type TemplateTableRef = {
     getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'] | undefined;
+    updateRowDataClientSide: (entity: IEntity) => void;
 };
 
 const TemplateTable = forwardRef<
@@ -39,8 +40,9 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
+        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
->(({ template, quickFilterText, page }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const theme = useTheme();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -48,6 +50,7 @@ const TemplateTable = forwardRef<
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
         getSortModel: () => entitiesTableRef.current?.getSortModel(),
+        updateRowDataClientSide: (entity: IEntity) => entitiesTableRef.current?.updateRowDataClientSide(entity),
     }));
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
@@ -239,8 +242,7 @@ const TemplateTable = forwardRef<
                     entityToUpdate={editDialog.entity!}
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity.updatedEntity);
-                        if (entity.updatedEntities.length)
-                            entity.updatedEntities.map((entityToUpdate) => entitiesTableRef.current?.updateRowDataClientSide(entityToUpdate));
+                        setUpdatedEntities((prev) => [...prev, ...entity.updatedEntities]);
                     }}
                     handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
