@@ -77,7 +77,7 @@ const config = {
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
     },
     userService: {
-        url: env.get('USER_SERVICE_BASE_URL').required().asString(),
+        url: env.get('USER_SERVICE_URL').required().asString(),
         usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
         permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),

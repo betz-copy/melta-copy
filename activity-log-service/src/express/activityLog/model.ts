@@ -34,4 +34,6 @@ export const ActivityLogSchema = new mongoose.Schema({
     },
 });
 
+ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
+
 ActivityLogSchema.index({ entityId: 1, userId: 1 }, { unique: true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY' } } });
