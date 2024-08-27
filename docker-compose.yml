@@ -161,13 +161,13 @@ services:
     volumes:
       - ./nginx:/etc/nginx/conf.d
 
-  mailer-service:
-    image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
-    environment:
-      PORT: 8000
-      MAIL_HOSTS: ${MAIL_HOSTS}
-      MAIL_USER: ${MAIL_USER}
-      MAIL_PASS: ${MAIL_PASS}
-      USE_AUTH: "true"
-      RABBIT_URI: ${RABBIT_URL}
-      REDIS_CONNECTION_URI: ${REDIS_HOST}
+  # mailer-service:
+  #   image: registry.gitlab.com/yesodot/rnd/terminal-rabaz/dropbox/microservices/mailer-service:latest
+  #   environment:
+  #     PORT: 8000
+  #     MAIL_HOSTS: ${MAIL_HOSTS}
+  #     MAIL_USER: ${MAIL_USER}
+  #     MAIL_PASS: ${MAIL_PASS}
+  #     USE_AUTH: "true"
+  #     RABBIT_URI: ${RABBIT_URL}
+  #     REDIS_CONNECTION_URI: ${REDIS_HOST}

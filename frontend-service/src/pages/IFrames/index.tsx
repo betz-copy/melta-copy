@@ -51,6 +51,8 @@ const IFramesPage: React.FC = () => {
             </Grid>
 
             <Grid
+                container
+                spacing={2}
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
