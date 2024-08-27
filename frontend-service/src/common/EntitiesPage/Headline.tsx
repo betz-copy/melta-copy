@@ -108,21 +108,25 @@ const EntitiesPageHeadline: React.FC<{
     const darkMode = useSelector((state: RootState) => state.darkMode);
     const theme = useTheme();
 
-    const onSuccessCreate = (entity: IEntity) => {
-        if (viewModeProps.viewMode === 'templates-tables-view') {
-            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+const onSuccessCreate = (entity: IEntity) => {
+    const handleTemplatesTablesView = () => {
+        const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+
             if (template) {
-                try {
-                    refreshServerSide(template._id);
-                } catch {
-                    onAddEntity(entity.templateId);
-                }
+            try {
+                refreshServerSide(template._id);
+            } catch {
+                onAddEntity(entity.templateId);
             }
-        } else {
-            onAddEntity(entity.properties._id);
         }
     };
 
+    if (viewModeProps.viewMode === 'templates-tables-view') {
+        handleTemplatesTablesView();
+    } else {
+        onAddEntity(entity.properties._id);
+    }
+};
     return (
         <Grid
             container

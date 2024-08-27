@@ -1,6 +1,12 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
 import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
+import pickBy from 'lodash.pickby';
+import i18next from 'i18next';
+import { Form, Formik } from 'formik';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
@@ -9,12 +15,6 @@ import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchema
 import { BlueTitle } from '../../../common/BlueTitle';
 import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { Form, Formik } from 'formik';
-import i18next from 'i18next';
-import pickBy from 'lodash.pickby';
-import React, { useState } from 'react';
-import { useMutation } from 'react-query';
-import { toast } from 'react-toastify';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
@@ -139,7 +139,7 @@ const EditEntityDetails: React.FC<{
                                                     values={values}
                                                     setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                     errors={errors.properties ?? {}}
-                                                    uniqueErrors={{ ...externalErrors.unique }}
+                                                    uniqueErrors={externalErrors.unique}
                                                     touched={touched.properties ?? {}}
                                                     setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                     isEditMode

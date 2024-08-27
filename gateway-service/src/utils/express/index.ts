@@ -74,14 +74,16 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
 
 const handleMulterErrors = (err, _req, res, next) => {
-    if (err) {
-        if (err.code === 'LIMIT_FILE_SIZE') {
-            return res.status(413).json({ error: 'File too large', details: err.message });
-        }
-        return res.status(500).json({ error: 'File upload error', details: err.message });
+    if (!err) {
+        return next();
     }
-    next();
+
+    const statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 500;
+    const errorMessage = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : 'File upload error';
+
+    return res.status(statusCode).json({ error: errorMessage, details: err.message });
 };
+
 
 export const wrapMulter = (upload: any) => {
     return (req: Request, res: Response, next: NextFunction) => {

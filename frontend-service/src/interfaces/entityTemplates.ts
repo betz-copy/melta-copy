@@ -2,7 +2,6 @@ import { IMongoCategory } from './categories';
 import { IUniqueConstraintOfTemplate } from './entities';
 
 export interface IEntitySingleProperty {
-    unique: any;
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
     format?: string;

@@ -181,7 +181,6 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
             experimental_defaultFormStateBehavior={{
                 emptyObjectFields: 'skipEmptyDefaults', // library has for array a default empty array ([]). disable this
             }}
-            noValidate
             validator={validator}
             extraErrors={mergedErrors}
             tagName="div"

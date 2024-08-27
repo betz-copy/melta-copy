@@ -46,9 +46,11 @@ const EntitiesPage: React.FC<{
     });
 
     const [searchInput, setSearchInput] = useState(urlSearchParams.get('search')!);
-    const [loading, setLoading] = useState<Record<string, boolean>>({});
 
     const queryClient = useQueryClient();
+
+    const viewMode = urlSearchParams.get('viewMode');
+    const isTableView = viewMode === 'templates-tables-view';
 
     useEffect(() => {
         setSearchInput(urlSearchParams.get('search') || '');
@@ -81,11 +83,10 @@ const EntitiesPage: React.FC<{
 
     const onSearch = (newSearchInput: string) => {
         if (urlSearchParams.get('search') === newSearchInput) {
-            if (urlSearchParams.get('viewMode') === 'templates-tables-view') {
+            if (isTableView) 
                 templateTablesViewRef.current?.refetch();
-            } else {
+             else 
                 cardsViewRef.current?.refetch();
-            }
         }
 
         setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), search: newSearchInput });
@@ -114,36 +115,41 @@ const EntitiesPage: React.FC<{
                         isLoadingExcel: isLoadingExcelExport,
                     }}
                     onAddEntity={(id?: string) => {
-                        if (urlSearchParams.get('viewMode') === 'templates-tables-view') {
-                            if (id) {
-                                setLoading((prev) => ({ ...prev, [id]: true }));
-                                queryClient
-                                    .invalidateQueries(['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput])
-                                    .finally(() => setLoading((prev) => ({ ...prev, [id]: false })));
-                                if (templateTablesViewRef.current?.templateTablesRefs?.[id])
-                                    templateTablesViewRef.current?.templateTablesRefs?.[id].scrollIntoView();
-                            } else queryClient.resetQueries({ queryKey: ['filterEmptyTemplateTablesOnGlobalSearch'] });
-                        } else if (id) {
-                            setLoading((prev) => ({ ...prev, [id]: true }));
-                            queryClient
-                                .invalidateQueries(['searchEntities', templatesToShowCheckbox.map(({ _id }) => _id), searchInput])
-                                .finally(() => setLoading((prev) => ({ ...prev, [id]: false })));
-                        } else queryClient.resetQueries({ queryKey: ['searchEntities'] });
+                        if (id) {                    
+                            const queryKey = isTableView 
+                                ? ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput]
+                                : ['searchEntities', templatesToShowCheckbox.map(({ _id }) => _id), searchInput];
+                    
+                            queryClient.invalidateQueries(queryKey)
+                                .finally(() => {
+                                    if (isTableView && templateTablesViewRef.current?.templateTablesRefs?.[id]) {
+                                        templateTablesViewRef.current.templateTablesRefs[id].scrollIntoView();
+                                    }
+                                });
+                        } else {
+                            const queryKey = isTableView 
+                                ? ['filterEmptyTemplateTablesOnGlobalSearch'] 
+                                : ['searchEntities'];
+                            
+                            queryClient.resetQueries({ queryKey });
+                        }
                     }}
+                    
                     viewModeProps={{
-                        viewMode: urlSearchParams.get('viewMode') as 'templates-tables-view' | 'cards-view',
+                        viewMode: viewMode as 'templates-tables-view' | 'cards-view',
                         setViewMode: (newViewMode) => setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
                     }}
                     pageTitle={pageTitle}
                     refreshServerSide={(templateId: string) => {
-                        templateTablesViewRef.current?.templateTablesRefs?.[templateId].refreshServerSide();
-                        templateTablesViewRef?.current?.templateTablesRefs?.[templateId].scrollIntoView();
+                        const ref = templateTablesViewRef.current?.templateTablesRefs?.[templateId];
+                        ref!.refreshServerSide();
+                        ref!.scrollIntoView();
                     }}
                 />
             </Box>
 
             <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
-                {urlSearchParams.get('viewMode') === 'templates-tables-view' && (
+                {isTableView && (
                     <TemplateTablesView
                         ref={templateTablesViewRef}
                         templates={templatesToShowCheckbox}
@@ -151,7 +157,7 @@ const EntitiesPage: React.FC<{
                         pageType={pageType}
                     />
                 )}
-                {urlSearchParams.get('viewMode') === 'cards-view' && (
+                {viewMode === 'cards-view' && (
                     <CardsView
                         ref={cardsViewRef}
                         templateIds={templatesToShowCheckbox.map(({ _id }) => _id)}

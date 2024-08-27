@@ -51,7 +51,7 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePo
 };
 
 const convertIEntityToEntityWizardValues = (
-    entityToUpdate: IEntity | EntityWizardValues,
+    entityToUpdate: IEntity,
     entityTemplate: IMongoEntityTemplatePopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
@@ -118,18 +118,19 @@ const CreateOrEditEntityDetails: React.FC<{
     const { templateFileKeys: initialTemplateFileKeys } = getEntityTemplateFilesFieldsInfo(entityTemplate);
     let entityId = entityToUpdate?.properties._id;
 
-    let initialValues: EntityWizardValues;
-    if (entityToUpdate) {
-        initialValues = convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
-    } else {
-        initialValues = {
-            properties: {
-                disabled: false,
-            },
-            attachmentsProperties: {},
-            template: entityTemplate,
-        };
-    }
+    const initialValues = useMemo(() => {
+        if (entityToUpdate) {
+            return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
+        } else {
+            return {
+                properties: {
+                    disabled: false,
+                },
+                attachmentsProperties: {},
+                template: entityTemplate,
+            };
+        }
+    }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
         if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -138,13 +139,14 @@ const CreateOrEditEntityDetails: React.FC<{
             const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
             const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
             constraintPropsDisplayNames.forEach((uniqueProp) => {
+                const [propKey, propTitle] = uniqueProp.split('-');
                 setExternalErrors((prev) => ({
                     ...prev,
                     unique: {
                         ...prev.unique,
-                        [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
-                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                        )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                        [propKey]: `${i18next.t(
+                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`
+                        )} ${propTitle}`,
                     },
                 }));
             });
@@ -180,8 +182,8 @@ const CreateOrEditEntityDetails: React.FC<{
             createEntityRequest(newEntityData, ignoredRules),
         {
             onSuccess: (currEntity: IEntity) => {
-                if (onSuccessCreate) onSuccessCreate(currEntity);
-                if (onSuccessUpdate) onSuccessUpdate(currEntity);
+                onSuccessCreate?.(currEntity);
+                onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
             },
             onError: (err: AxiosError, { newEntityData }) => {
@@ -554,7 +556,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             Object.keys(errors).length > 0
                                                                 ? ''
                                                                 : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                        }
+                                                        }                                                        
                                                         disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}
