@@ -27,54 +27,49 @@ const entityRouter: Router = Router();
 const entityController = createController(EntityController);
 const entityValidatorController = createController(EntityValidator, true);
 
-entityRouter.get('/constraints/:templateId', ValidateRequest(getConstraintsOfTemplateRequestSchema), entityController('getConstraintsOfTemplate'));
-entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), entityController('getAllConstraints'));
+entityRouter.get('/constraints/:templateId', ValidateRequest(getConstraintsOfTemplateRequestSchema), entityController.getConstraintsOfTemplate);
+entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), entityController.getAllConstraints);
 entityRouter.put(
     '/constraints/:templateId',
     ValidateRequest(updateConstraintsOfTemplateRequestSchema),
-    entityValidatorController('validateConstraintsOfTemplate'),
-    entityController('updateConstraintsOfTemplate'),
+    entityValidatorController.validateConstraintsOfTemplate,
+    entityController.updateConstraintsOfTemplate,
 );
 entityRouter.post(
     '/constraints/enumerate-new-serial-number-fields/:templateId',
     ValidateRequest(enumerateNewSerialNumberFieldsRequestSchema),
-    entityController('enumerateNewSerialNumberFields'),
+    entityController.enumerateNewSerialNumberFields,
 );
 
 entityRouter.post(
     '/search/template/:templateId',
     ValidateRequest(searchEntitiesOfTemplateRequestSchema),
-    entityValidatorController('validateSearchEntitiesOfTemplateBody'),
-    entityController('searchEntitiesOfTemplate'),
+    entityValidatorController.validateSearchEntitiesOfTemplateBody,
+    entityController.searchEntitiesOfTemplate,
 );
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
-    entityValidatorController('validateSearchBatchBody'),
-    entityController('searchEntitiesBatch'),
+    entityValidatorController.validateSearchBatchBody,
+    entityController.searchEntitiesBatch,
 );
 
-entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController('updateEnumFieldValue'));
-entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController('getIsFieldUsed'));
+entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
+entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),
-    entityValidatorController('validateFilterBatchBody'),
-    entityController('getExpandedGraphById'),
+    entityValidatorController.validateFilterBatchBody,
+    entityController.getExpandedGraphById,
 );
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController('validateEntity'), entityController('createEntity'));
-entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController('getEntityById'));
-entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController('getEntitiesByIds'));
-entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController('deleteEntityById'));
-entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController('deleteEntitiesByTemplateId'));
-entityRouter.put(
-    '/:id',
-    ValidateRequest(updateEntityByIdRequestSchema),
-    entityValidatorController('validateEntity'),
-    entityController('updateEntityById'),
-);
-entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController('updateStatusById'));
+entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntity, entityController.createEntity);
+entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
+entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
+entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
+entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
+entityRouter.put('/:id', ValidateRequest(updateEntityByIdRequestSchema), entityValidatorController.validateEntity, entityController.updateEntityById);
+entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 
 export default entityRouter;

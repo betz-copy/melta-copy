@@ -17,22 +17,22 @@ const processInstanceRouter: Router = Router();
 const processInstanceRouterController = createController(ProcessInstance);
 const processInstanceValidatorController = createController(ProcessInstanceValidator, true);
 
-processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema), processInstanceRouterController('getProcessById'));
+processInstanceRouter.get('/:id', ValidateRequest(getInstanceByIdRequestSchema), processInstanceRouterController.getProcessById);
 processInstanceRouter.post(
     '/',
     ValidateRequest(createInstanceRequestSchema),
-    processInstanceValidatorController('validateCreateProcessInstance'),
-    processInstanceRouterController('createProcess'),
+    processInstanceValidatorController.validateCreateProcessInstance,
+    processInstanceRouterController.createProcess,
 );
-processInstanceRouter.post('/search', ValidateRequest(searchInstanceRequestSchema), processInstanceRouterController('searchProcesses'));
-processInstanceRouter.delete('/:id', ValidateRequest(deleteInstanceByIdRequestSchema), processInstanceRouterController('deleteProcess'));
+processInstanceRouter.post('/search', ValidateRequest(searchInstanceRequestSchema), processInstanceRouterController.searchProcesses);
+processInstanceRouter.delete('/:id', ValidateRequest(deleteInstanceByIdRequestSchema), processInstanceRouterController.deleteProcess);
 processInstanceRouter.put(
     '/:id',
     ValidateRequest(updateInstanceByIdRequestSchema),
-    processInstanceValidatorController('validateUpdateProcessInstance'),
-    processInstanceRouterController('updateProcess'),
+    processInstanceValidatorController.validateUpdateProcessInstance,
+    processInstanceRouterController.updateProcess,
 );
 
-processInstanceRouter.patch('/archive/:id', ValidateRequest(archivedProcessRequestSchema), processInstanceRouterController('archiveProcess'));
+processInstanceRouter.patch('/archive/:id', ValidateRequest(archivedProcessRequestSchema), processInstanceRouterController.archiveProcess);
 
 export default processInstanceRouter;

@@ -10,18 +10,18 @@ const StepInstanceRouter: Router = Router();
 const stepInstanceController = createController(StepInstanceController);
 const stepInstanceValidatorController = createController(StepInstanceValidator, true);
 
-StepInstanceRouter.get('/:id', ValidateRequest(getStepByIdRequestSchema), stepInstanceController('getStepById'));
+StepInstanceRouter.get('/:id', ValidateRequest(getStepByIdRequestSchema), stepInstanceController.getStepById);
 StepInstanceRouter.get(
     '/:id/step-template',
     ValidateRequest(getTemplateByInstanceIdRequestSchema),
-    stepInstanceController('getStepTemplateByStepInstanceId'),
+    stepInstanceController.getStepTemplateByStepInstanceId,
 );
 
 StepInstanceRouter.patch(
     '/:id',
     ValidateRequest(updateStepSchema),
-    stepInstanceValidatorController('validateStepInstance'),
-    stepInstanceController('updateStep'),
+    stepInstanceValidatorController.validateStepInstance,
+    stepInstanceController.updateStep,
 );
 
 export default StepInstanceRouter;

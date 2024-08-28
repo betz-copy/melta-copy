@@ -14,7 +14,7 @@ StepInstanceRouter.patch(
     '/:stepId',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateStepSchema),
-    StepInstanceControllerMiddleware('updateStep'),
+    StepInstanceControllerMiddleware.updateStep,
 );
 
 export default StepInstanceRouter;

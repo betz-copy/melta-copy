@@ -12,8 +12,8 @@ const bulkActionValidatorMiddleware = createController(BulkActionValidator, true
 bulkActionRouter.post(
     '/bulk',
     ValidateRequest(runBulkOfActionsInMultipleTransactionsSchema),
-    bulkActionValidatorMiddleware('validateActionsGroups'),
-    bulkActionControllerMiddleware('runBulkOfActionsInMultipleTransactions'),
+    bulkActionValidatorMiddleware.validateActionsGroups,
+    bulkActionControllerMiddleware.runBulkOfActionsInMultipleTransactions,
 );
 
 export default bulkActionRouter;

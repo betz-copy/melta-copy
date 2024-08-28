@@ -18,35 +18,35 @@ const NotificationsControllerMiddleware = createWorkspacesController(Notificatio
 notificationsRouter.get(
     '/my',
     ValidateRequest(getMyNotificationsRequestSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    NotificationsControllerMiddleware('getMyNotifications'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    NotificationsControllerMiddleware.getMyNotifications,
 );
 
 notificationsRouter.get(
     '/my/count',
     ValidateRequest(getMyNotificationCountRequestSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    NotificationsControllerMiddleware('getMyNotificationCount'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    NotificationsControllerMiddleware.getMyNotificationCount,
 );
 notificationsRouter.post(
     '/my/group-count',
     ValidateRequest(getMyNotificationGroupCountRequestSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    NotificationsControllerMiddleware('getMyNotificationGroupCount'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    NotificationsControllerMiddleware.getMyNotificationGroupCount,
 );
 
 notificationsRouter.post(
     '/:notificationId/seen',
     ValidateRequest(notificationSeenRequestSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    NotificationsControllerMiddleware('notificationsSeen'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    NotificationsControllerMiddleware.notificationsSeen,
 );
 
 notificationsRouter.post(
     '/seen',
     ValidateRequest(manyNotificationSeenRequestSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    NotificationsControllerMiddleware('manyNotificationsSeen'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    NotificationsControllerMiddleware.manyNotificationsSeen,
 );
 
 export default notificationsRouter;

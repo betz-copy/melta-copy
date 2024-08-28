@@ -29,13 +29,13 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use(
     '/files',
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
 );
 
 apiRouter.use(
     '/preview',
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody, proxyTimeout: config.previewService.requestTimeout }),
 );
 

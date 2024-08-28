@@ -22,7 +22,7 @@ export const workspaceRouter: Router = Router();
 workspaceRouter.post(
     '/ids',
     ValidateRequest(getWorkspaceIds),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
     wrapController(WorkspaceController.getWorkspaceIds),
 );
 
@@ -42,14 +42,14 @@ workspaceRouter.post(
     '/',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createOneSchema),
-    AuthorizerControllerMiddleware('userCanWriteWorkspaces'),
-    controller('createOne'),
+    AuthorizerControllerMiddleware.userCanWriteWorkspaces,
+    controller.createOne,
 );
 
 workspaceRouter.put(
     '/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateOneSchema),
-    AuthorizerControllerMiddleware('userCanWriteWorkspaces'),
-    controller('updateOne'),
+    AuthorizerControllerMiddleware.userCanWriteWorkspaces,
+    controller.updateOne,
 );

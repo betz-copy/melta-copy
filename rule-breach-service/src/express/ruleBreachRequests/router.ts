@@ -17,36 +17,36 @@ const RuleBreachRequestsRouter: Router = Router();
 
 const controller = createController(RuleBreachRequestsController);
 
-RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequestsRequestSchema), controller('searchRuleBreachRequests'));
+RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequestsRequestSchema), controller.searchRuleBreachRequests);
 
-RuleBreachRequestsRouter.post('/get-many', ValidateRequest(getManyRuleBreachesByIds), controller('getManyRuleBreachRequests'));
+RuleBreachRequestsRouter.post('/get-many', ValidateRequest(getManyRuleBreachesByIds), controller.getManyRuleBreachRequests);
 
-RuleBreachRequestsRouter.post('/', ValidateRequest(createRuleBreachRequestRequestSchema), controller('createRuleBreachRequest'));
+RuleBreachRequestsRouter.post('/', ValidateRequest(createRuleBreachRequestRequestSchema), controller.createRuleBreachRequest);
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/status',
     ValidateRequest(updateRuleBreachRequestStatusRequestSchema),
-    controller('updateRuleBreachRequestStatus'),
+    controller.updateRuleBreachRequestStatus,
 );
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/action-metadata',
     ValidateRequest(updateRuleBreachRequestActionMetadataRequestSchema),
-    controller('updateRuleBreachRequestActionsMetadatas'),
+    controller.updateRuleBreachRequestActionsMetadatas,
 );
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/broken-rules',
     ValidateRequest(updateRuleBreachRequestBrokenRulesRequestSchema),
-    controller('updateRuleBreachRequestBrokenRules'),
+    controller.updateRuleBreachRequestBrokenRules,
 );
 
-RuleBreachRequestsRouter.get('/:ruleBreachRequestId', ValidateRequest(getRuleBreachRequestByIdRequestSchema), controller('getRuleBreachRequestById'));
+RuleBreachRequestsRouter.get('/:ruleBreachRequestId', ValidateRequest(getRuleBreachRequestByIdRequestSchema), controller.getRuleBreachRequestById);
 
 RuleBreachRequestsRouter.get(
     '/broken-rules/:ruleId',
     ValidateRequest(getRuleBreachRequestsByRuleIdRequestSchema),
-    controller('getRuleBreachRequestsByRuleId'),
+    controller.getRuleBreachRequestsByRuleId,
 );
 
 export default RuleBreachRequestsRouter;

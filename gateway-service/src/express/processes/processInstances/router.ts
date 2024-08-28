@@ -19,33 +19,33 @@ const InstancesRouter: Router = Router();
 
 const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
 
-InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware('getProcessInstance'));
+InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(
     '/',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createProcessInstanceSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    InstancesControllerMiddleware('createProcessInstance'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.createProcessInstance,
 );
-InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), InstancesControllerMiddleware('searchProcessInstances'));
+InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), InstancesControllerMiddleware.searchProcessInstances);
 InstancesRouter.put(
     '/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateProcessInstanceSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    InstancesControllerMiddleware('updateProcessInstance'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.updateProcessInstance,
 );
 InstancesRouter.delete(
     '/:id',
     ValidateRequest(deleteProcessInstanceSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    InstancesControllerMiddleware('deleteProcessInstance'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.deleteProcessInstance,
 );
 InstancesRouter.patch(
     '/archive/:id',
     ValidateRequest(archivedProcessStatusSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    InstancesControllerMiddleware('archiveProcess'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.archiveProcess,
 );
 
 export default InstancesRouter;

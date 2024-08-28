@@ -13,9 +13,9 @@ const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidat
 FlowCubeRouter.post(
     '/:workspaceId/entities/search/template/:templateId',
     ValidateRequest(searchFlowCubeRequestSchema),
-    InstancesValidatorMiddleware('validateUserCanSearchEntitiesOfTemplate'),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     wrapMiddleware(translateWorkspaceParameter),
-    FlowCubeControllerMiddleware('searchFlowCube'),
+    FlowCubeControllerMiddleware.searchFlowCube,
 );
 
 export default FlowCubeRouter;

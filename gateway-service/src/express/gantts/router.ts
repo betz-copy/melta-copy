@@ -14,32 +14,32 @@ const GanttsValidatorMiddleware = createWorkspacesController(GanttsValidator, tr
 GanttsRouter.get(
     '/:ganttId',
     ValidateRequest(getGanttByIdSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    GanttsControllerMiddleware('getGanttById'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    GanttsControllerMiddleware.getGanttById,
 );
 GanttsRouter.post(
     '/',
     ValidateRequest(createGanttSchema),
-    GanttsValidatorMiddleware('validateUserCanCreateGantt'),
-    GanttsControllerMiddleware('createGantt'),
+    GanttsValidatorMiddleware.validateUserCanCreateGantt,
+    GanttsControllerMiddleware.createGantt,
 );
 GanttsRouter.delete(
     '/:ganttId',
     ValidateRequest(deleteGanttSchema),
-    GanttsValidatorMiddleware('validateUserCanDeleteGantt'),
-    GanttsControllerMiddleware('deleteGantt'),
+    GanttsValidatorMiddleware.validateUserCanDeleteGantt,
+    GanttsControllerMiddleware.deleteGantt,
 );
 GanttsRouter.put(
     '/:ganttId',
     ValidateRequest(updateGanttSchema),
-    GanttsValidatorMiddleware('validateUserCanUpdateGantt'),
-    GanttsControllerMiddleware('updateGantt'),
+    GanttsValidatorMiddleware.validateUserCanUpdateGantt,
+    GanttsControllerMiddleware.updateGantt,
 );
 GanttsRouter.post(
     '/search',
     ValidateRequest(searchGanttsSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    GanttsControllerMiddleware('searchGantts'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    GanttsControllerMiddleware.searchGantts,
 );
 
 export default GanttsRouter;

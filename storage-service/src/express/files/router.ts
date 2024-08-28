@@ -9,19 +9,19 @@ const filesRouter: Router = Router();
 
 const filesController = createController(FilesController);
 
-filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController('downloadZip'));
+filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController.downloadZip);
 
-filesRouter.get('/', filesController('listFiles'));
-filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController('downloadFile'));
-filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController('fileStat'));
+filesRouter.get('/', filesController.listFiles);
+filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController.downloadFile);
+filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController.fileStat);
 
-filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), filesController('deleteFiles'));
-filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController('deleteFile'));
+filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.deleteFiles);
+filesRouter.delete('/:path', ValidateRequest(defaultSchema), filesController.deleteFile);
 
-filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController('duplicateFile'));
-filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController('duplicateFiles'));
+filesRouter.post('/duplicate/:path', ValidateRequest(defaultSchema), filesController.duplicateFile);
+filesRouter.post('/duplicate-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.duplicateFiles);
 
-filesRouter.post('/bulk', MinioMulter.uploadToMinio, ValidateRequest(uploadFilesRequestSchema), filesController('uploadFiles'));
-filesRouter.post('/', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFileRequestSchema), filesController('uploadFile'));
+filesRouter.post('/bulk', MinioMulter.uploadToMinio, ValidateRequest(uploadFilesRequestSchema), filesController.uploadFiles);
+filesRouter.post('/', MinioMulter.uploadBulkToMinio, ValidateRequest(uploadFileRequestSchema), filesController.uploadFile);
 
 export { filesRouter };

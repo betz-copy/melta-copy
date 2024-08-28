@@ -37,26 +37,26 @@ const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidat
 InstancesRouter.post(
     '/entities/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
-    InstancesValidatorMiddleware('validateUserCanSearchEntitiesBatch'),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
     InstanceManagerProxy,
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
-    InstancesValidatorMiddleware('validateUserCanSearchEntitiesOfTemplate'),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstanceManagerProxy,
 );
 InstancesRouter.post(
     '/entities/export',
-    InstancesValidatorMiddleware('validateUserCanExportEntities'),
+    InstancesValidatorMiddleware.validateUserCanExportEntities,
     ValidateRequest(exportEntitiesSchema),
-    InstancesControllerMiddleware('exportEntities'),
+    InstancesControllerMiddleware.exportEntities,
 );
-InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware('validateUserCanReadEntityInstance'), InstanceManagerProxy);
+InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/expanded/:id',
-    InstancesValidatorMiddleware('validateUserCanReadEntityInstance'),
-    InstancesValidatorMiddleware('validateUserCanGetExpandedEntity'),
+    InstancesValidatorMiddleware.validateUserCanReadEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanGetExpandedEntity,
     InstanceManagerProxy,
 );
 
@@ -64,72 +64,68 @@ InstancesRouter.post(
     '/entities',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createEntityInstanceSchema),
-    InstancesValidatorMiddleware('validateUserCanCreateEntityInstance'),
-    InstancesControllerMiddleware('createEntityInstance'),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    InstancesControllerMiddleware.createEntityInstance,
 );
 InstancesRouter.put(
     '/entities/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
-    InstancesValidatorMiddleware('validateUserCanWriteEntityInstance'),
-    InstancesValidatorMiddleware('validateUserCanIgnoreRules'),
-    InstancesControllerMiddleware('updateEntityInstance'),
+    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesControllerMiddleware.updateEntityInstance,
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateEntityInstanceSchema),
-    InstancesValidatorMiddleware('validateUserCanWriteEntityInstance'),
-    InstancesControllerMiddleware('duplicateEntityInstance'),
+    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesControllerMiddleware.duplicateEntityInstance,
 );
 InstancesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityInstanceSchema),
-    InstancesValidatorMiddleware('validateUserCanWriteEntityInstance'),
-    InstancesControllerMiddleware('deleteEntityInstance'),
+    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesControllerMiddleware.deleteEntityInstance,
 );
 InstancesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityStatusSchema),
-    InstancesValidatorMiddleware('validateUserCanWriteEntityInstance'),
-    InstancesControllerMiddleware('updateEntityStatus'),
+    InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
+    InstancesControllerMiddleware.updateEntityStatus,
 );
 
 InstancesRouter.post(
     '/entities/export/document',
     ValidateRequest(exportEntityToDocumentSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    InstancesControllerMiddleware('exportEntityToDocumentTemplate'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    InstancesControllerMiddleware.exportEntityToDocumentTemplate,
 );
 
 InstancesRouter.post(
     '/entities/export/document/:entityId',
     ValidateRequest(exportEntityToDocumentSchemaByEntityId),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    InstancesControllerMiddleware('exportEntityToDocumentSchemaByEntityId'),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    InstancesControllerMiddleware.exportEntityToDocumentSchemaByEntityId,
 );
 
 // relationships (Instances)
-InstancesRouter.get('/relationships/count', AuthorizerControllerMiddleware('userCanReadTemplates'), InstanceManagerProxy);
+InstancesRouter.get('/relationships/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 InstancesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipSchema),
-    InstancesValidatorMiddleware('validateUserCanCreateRelationshipInstance'),
-    InstancesValidatorMiddleware('validateUserCanIgnoreRules'),
-    InstancesControllerMiddleware('createRelationshipInstance'),
+    InstancesValidatorMiddleware.validateUserCanCreateRelationshipInstance,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesControllerMiddleware.createRelationshipInstance,
 );
-InstancesRouter.put('/relationships/:id', InstancesValidatorMiddleware('validateUserCanUpdateOrDeleteRelationshipInstance'), InstanceManagerProxy);
+InstancesRouter.put('/relationships/:id', InstancesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipInstance, InstanceManagerProxy);
 InstancesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipSchema),
-    InstancesValidatorMiddleware('validateUserCanUpdateOrDeleteRelationshipInstance'),
-    InstancesValidatorMiddleware('validateUserCanIgnoreRules'),
-    InstancesControllerMiddleware('deleteRelationshipInstance'),
+    InstancesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipInstance,
+    InstancesValidatorMiddleware.validateUserCanIgnoreRules,
+    InstancesControllerMiddleware.deleteRelationshipInstance,
 );
-InstancesRouter.post(
-    '/bulk',
-    InstancesValidatorMiddleware('validateUserCanWriteBulkEntityInstance'),
-    InstancesControllerMiddleware('runBulkOfActions'),
-);
+InstancesRouter.post('/bulk', InstancesValidatorMiddleware.validateUserCanWriteBulkEntityInstance, InstancesControllerMiddleware.runBulkOfActions);
 
 export default InstancesRouter;

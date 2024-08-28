@@ -30,22 +30,30 @@ export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
 };
 
 export const createController = <T extends InstanceType<typeof DefaultController<any>>>(
-    controller: { new (workspaceId: string): T },
+    Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
-    return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
-        return (req: Request, res: Response, next: NextFunction) => {
-            const workspaceId = req.headers[config.service.workspaceIdHeaderName];
-            if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
+    return new Proxy(
+        {},
+        {
+            get: (_, funcName: string) => {
+                return (req: Request, res: Response, next: NextFunction) => {
+                    const workspaceId = req.headers[config.service.workspaceIdHeaderName];
 
-            if (isMiddleware) {
-                return (new controller(workspaceId)[funcName] as Function)(req, res, next)
-                    .then(() => next())
-                    .catch(next); // eslint-disable-line new-cap
-            }
+                    if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
 
-            return (new controller(workspaceId)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
-        };
+                    if (isMiddleware) return (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+
+                    return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                };
+            },
+        },
+    ) as {
+        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
+            req: Request,
+            res: Response,
+            next: NextFunction,
+        ) => void;
     };
 };
 

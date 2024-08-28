@@ -16,22 +16,22 @@ const entityTemplateRouter: Router = Router();
 
 const controller = createController(EntityTemplateController);
 
-entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller('searchEntityTemplates'));
+entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
 
-entityTemplateRouter.get('/:templateId', ValidateRequest(getEntityTemplateByIdSchema), controller('getEntityTemplateById'));
+entityTemplateRouter.get('/:templateId', ValidateRequest(getEntityTemplateByIdSchema), controller.getEntityTemplateById);
 
 entityTemplateRouter.get(
     '/related/:relatedTemplateId',
     ValidateRequest(getTemplatesUsingRelationshipReferanceSchema),
-    controller('getTemplatesUsingRelationshipReferance'),
+    controller.getTemplatesUsingRelationshipReferance,
 );
 
-entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), controller('createEntityTemplate'));
+entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), controller.createEntityTemplate);
 
-entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller('deleteEntityTemplate'));
+entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 
-entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), controller('updateEntityTemplate'));
+entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), controller.updateEntityTemplate);
 
-entityTemplateRouter.patch('/:templateId/status', ValidateRequest(updateEntityTemplateStatusSchema), controller('updateEntityTemplateStatus'));
+entityTemplateRouter.patch('/:templateId/status', ValidateRequest(updateEntityTemplateStatusSchema), controller.updateEntityTemplateStatus);
 
 export default entityTemplateRouter;

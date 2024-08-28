@@ -89,22 +89,33 @@ export const getWorkspaceId = async (req: Request) => {
 };
 
 export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
-    controller: { new (workspaceId: string, userId: string): T },
+    Controller: { new (workspaceId: string): T },
     isMiddleware = false,
 ) => {
-    return (funcName: FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>) => {
-        return async (req: Request, res: Response, next: NextFunction) => {
-            const workspaceId = await getWorkspaceId(req).catch(next);
-            if (!workspaceId) return;
+    return new Proxy(
+        {},
+        {
+            get: (_, funcName: string) => {
+                return async (req: Request, res: Response, next: NextFunction) => {
+                    const workspaceId = await getWorkspaceId(req).catch(next);
 
-            if (isMiddleware) {
-                return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next)
-                    .then(() => next())
-                    .catch(next); // eslint-disable-line new-cap
-            }
+                    if (!workspaceId) return;
 
-            return (new controller(workspaceId, req.user!.id)[funcName] as Function)(req, res, next).catch(next); // eslint-disable-line new-cap
-        };
+                    if (isMiddleware) {
+                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        return;
+                    }
+
+                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                };
+            },
+        },
+    ) as {
+        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
+            req: Request,
+            res: Response,
+            next: NextFunction,
+        ) => void;
     };
 };
 

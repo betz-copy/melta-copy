@@ -24,29 +24,29 @@ const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplate
 TemplatesRouter.get(
     '/:id',
     ValidateRequest(getTemplateByIdSchema),
-    AuthorizerControllerMiddleware('userCanReadProcesses'),
-    TemplatesControllerMiddleware('getTemplateById'),
+    AuthorizerControllerMiddleware.userCanReadProcesses,
+    TemplatesControllerMiddleware.getTemplateById,
 );
 TemplatesRouter.post(
     '/',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createProcessTemplateSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    TemplatesControllerMiddleware('createProcessTemplate'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.createProcessTemplate,
 );
-TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), TemplatesControllerMiddleware('searchProcessTemplates'));
+TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), TemplatesControllerMiddleware.searchProcessTemplates);
 TemplatesRouter.delete(
     '/:id',
     ValidateRequest(deleteProcessTemplateSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    TemplatesControllerMiddleware('deleteProcessTemplate'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.deleteProcessTemplate,
 );
 TemplatesRouter.put(
     '/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateProcessTemplateSchema),
-    AuthorizerControllerMiddleware('userCanWriteProcesses'),
-    TemplatesControllerMiddleware('updateProcessTemplate'),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.updateProcessTemplate,
 );
 
 export default TemplatesRouter;
