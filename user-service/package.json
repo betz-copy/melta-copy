@@ -18,6 +18,7 @@
   "author": "Who",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.5",
     "dotenv": "^8.2.0",
     "elastic-apm-node": "^4.5.2",
     "env-var": "^7.0.0",
