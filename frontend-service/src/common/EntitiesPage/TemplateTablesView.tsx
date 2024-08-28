@@ -41,12 +41,8 @@ const TemplateTablesViewResults = forwardRef<
                 const reference = templateTablesRefs.current[entity.templateId];
                 if (reference) {
                     reference.updateRowDataClientSide(entity);
-                } else {
-                    console.warn(`No reference found for templateId ${entity.templateId}`);
                 }
             });
-        } else {
-            console.warn('updatedEntities is not an array:', updatedEntities);
         }
     }, [updatedEntities]);
 

@@ -109,16 +109,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             closeDeleteDialog();
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
         },
-        onSuccess: (data) => {
-            console.log({ data });
-            // if (data.updatedEntities.length)
-            //     queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
-            //         return {
-            //             ...expandedEntity,
-            //             entity: data,
-            //         };
-            //     });
-            //// todo: update updatedEntities
+        onSuccess: () => {
             toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
             closeDeleteDialog();
             navigate(`/category/${currentEntityTemplate?.category._id}`);
@@ -131,7 +122,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 entityTemplate={entityTemplate}
                 entity={expandedEntity.entity}
                 onSuccessUpdate={(data) => {
-                    //// todo: update updatedEntities by actions
                     setIsEditMode(false);
                     queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
                         return {

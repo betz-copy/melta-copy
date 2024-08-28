@@ -242,7 +242,7 @@ const TemplateTable = forwardRef<
                     entityToUpdate={editDialog.entity!}
                     onSuccessUpdate={(entity) => {
                         entitiesTableRef.current?.updateRowDataClientSide(entity.updatedEntity);
-                        setUpdatedEntities((prev) => [...prev, ...entity.updatedEntities]);
+                        setUpdatedEntities(entity.updatedEntities);
                     }}
                     handleClose={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
                 />
