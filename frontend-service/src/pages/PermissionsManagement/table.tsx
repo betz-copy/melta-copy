@@ -93,7 +93,7 @@ const columnDefs = (
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
             const permissionsOfCategories =
-                params.data.permissions[workspaceId].admin?.scope === PermissionScope.write
+                params.data?.permissions[workspaceId].admin?.scope === PermissionScope.write
                     ? Object.keys(params.value ?? {}).map((category) => {
                           return (
                               categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {

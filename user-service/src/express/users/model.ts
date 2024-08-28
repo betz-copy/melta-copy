@@ -7,18 +7,22 @@ const UserSchema = new mongoose.Schema(
         fullName: {
             type: String,
             required: true,
+            index: true,
         },
         jobTitle: {
             type: String,
             required: true,
+            index: true,
         },
         hierarchy: {
             type: String,
             required: true,
+            index: true,
         },
         mail: {
             type: String,
             required: true,
+            index: true,
         },
         preferences: {
             darkMode: {
@@ -30,10 +34,12 @@ const UserSchema = new mongoose.Schema(
                 type: String,
                 required: true,
                 unique: true,
+                index: true,
             },
             digitalIdentitySource: {
                 type: String,
                 required: true,
+                index: true,
             },
         },
     },

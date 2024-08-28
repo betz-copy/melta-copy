@@ -128,7 +128,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
     async searchProcessTemplates(searchBody: ISearchProcessTemplatesBody, userId: string) {
         const query: ISearchProcessTemplatesBody = { ...searchBody };
 
-        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
         if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
             query.reviewerId = userId;

@@ -31,7 +31,7 @@ export class InstancesValidator extends DefaultController {
         this.instancesService = new InstancesService(workspaceId);
         this.instancesManager = new InstancesManager(workspaceId);
         this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
-        this.authorizer = new Authorizer(workspaceId, '');
+        this.authorizer = new Authorizer(workspaceId);
     }
 
     // entities

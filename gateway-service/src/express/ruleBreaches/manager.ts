@@ -81,7 +81,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         this.storageService = new StorageService(workspaceId);
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.instancesService = new InstancesService(workspaceId);
-        this.authorizer = new Authorizer(workspaceId, '');
+        this.authorizer = new Authorizer(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
     }
 

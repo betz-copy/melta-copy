@@ -28,7 +28,7 @@ export class ProcessService extends DefaultExternalServiceApi {
         const query: ISearchProcessTemplatesBody = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
-            const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
+            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
             if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
                 query.reviewerId = userId;
@@ -64,7 +64,7 @@ export class ProcessService extends DefaultExternalServiceApi {
         const query: ISearchProcessInstancesBody = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
-            const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
+            const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
             if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) {
                 query.reviewerId = userId;

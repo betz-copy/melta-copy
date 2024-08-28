@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import config from '../../config';
-import { createWorkspacesController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, translateWorkspaceParameter, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
@@ -15,9 +14,7 @@ FlowCubeRouter.post(
     '/:workspaceId/entities/search/template/:templateId',
     ValidateRequest(searchFlowCubeRequestSchema),
     InstancesValidatorMiddleware('validateUserCanSearchEntitiesOfTemplate'),
-    wrapMiddleware(async (req) => {
-        req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
-    }),
+    wrapMiddleware(translateWorkspaceParameter),
     FlowCubeControllerMiddleware('searchFlowCube'),
 );
 

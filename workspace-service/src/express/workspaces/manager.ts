@@ -8,6 +8,7 @@ import { WorkspacesModel } from './model';
 export class WorkspacesManager {
     static async getWorkspaceIds(type: IWorkspace['type']) {
         const workspaces = await WorkspacesModel.find({ type }, { _id: 1 }).lean().exec();
+
         return workspaces.map(({ _id }) => _id);
     }
 
@@ -62,18 +63,20 @@ export class WorkspacesManager {
         return WorkspacesModel.findById(id).orFail(new DocumentNotFoundError(id)).lean().exec();
     }
 
-    static async validateRoot(path: IWorkspace['path'], type: IWorkspace['type']) {
+    static validateRoot(path: IWorkspace['path'], type: IWorkspace['type']) {
         if (path === '/' && type !== WorkspaceTypes.dir) throw new WorkspaceUnderRootMustBeDirError();
     }
 
     static async createOne(workspace: Omit<IWorkspace, '_id'>) {
-        await Promise.all([WorkspacesManager.handleDirExists(workspace.path), WorkspacesManager.validateRoot(workspace.path, workspace.type)]);
+        WorkspacesManager.validateRoot(workspace.path, workspace.type);
+        await WorkspacesManager.handleDirExists(workspace.path);
 
         return WorkspacesModel.create(workspace);
     }
 
     static async updateOne(id: string, workspace: Omit<IWorkspace, '_id'>) {
-        await Promise.all([WorkspacesManager.handleDirExists(workspace.path), WorkspacesManager.validateRoot(workspace.path, workspace.type)]);
+        WorkspacesManager.validateRoot(workspace.path, workspace.type);
+        await WorkspacesManager.handleDirExists(workspace.path);
 
         return transaction(async (session) => {
             if (workspace.type === WorkspaceTypes.dir) {

@@ -13,7 +13,7 @@ export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: IS
 export class Authorizer extends DefaultController {
     // private workspacePermissions: ISubCompactPermissions;
 
-    constructor(private workspaceId: string, _userId: string) {
+    constructor(private workspaceId: string) {
         super(null);
 
         // Authorizer.getWorkspacePermissions(workspaceId, userId).then((permissions) => {

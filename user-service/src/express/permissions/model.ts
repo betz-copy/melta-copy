@@ -10,15 +10,18 @@ const PermissionSchema = new Schema(
         userId: {
             type: String,
             required: true,
+            index: true,
         },
         workspaceId: {
             type: String,
             required: true,
+            index: true,
         },
         type: {
             type: String,
             enum: PermissionTypeOptions,
             required: true,
+            index: true,
         },
         metadata: {
             type: Object,

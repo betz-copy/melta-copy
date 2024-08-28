@@ -16,7 +16,7 @@ export class GanttsValidator extends DefaultController {
         super(null);
         this.ganttsService = new GanttsService(workspaceId);
         this.instancesValidator = new InstancesValidator(workspaceId);
-        this.authorizer = new Authorizer(workspaceId, '');
+        this.authorizer = new Authorizer(workspaceId);
     }
 
     private async validateHasPermissionsToGanttItems(gantt: IGantt, allowedEntityTemplateIds: string[]) {

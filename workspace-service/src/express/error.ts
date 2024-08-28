@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import * as express from 'express';
+import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
     public code: number;
@@ -52,7 +53,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
         });
     }
 
-    console.log('Request failed with error: ', error);
+    logger.error('Request failed with error: ', error);
 
     next();
 };

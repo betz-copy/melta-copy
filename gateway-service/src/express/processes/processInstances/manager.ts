@@ -78,7 +78,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         if (entityProperties.length === 0) return properties;
 
-        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
@@ -312,7 +312,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     async searchProcessInstances(searchBody: ISearchProcessInstancesBody, userId: string) {
         const query: ISearchProcessInstancesBody = { ...searchBody };
 
-        const userPermissions = await new Authorizer(this.workspaceId, '').getWorkspacePermissions(userId);
+        const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
 
         if (!userPermissions.admin?.scope && userPermissions.processes?.scope !== PermissionScope.write) query.reviewerId = userId;
 
