@@ -147,7 +147,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                                                     updatedData[index] = { ...iFrame, placeInSideBar: !placeInSideBar };
                                                     return [...updatedData];
                                                 });
-                                                // queryClient.setQueryData(['getIFrame', iFrame._id], { ...iFrame, placeInSideBar: !placeInSideBar });
+                                                queryClient.setQueryData(['getIFrame', iFrame._id], { ...iFrame, placeInSideBar: !placeInSideBar });
                                             }}
                                         >
                                             {placeInSideBar ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon color="primary" />}

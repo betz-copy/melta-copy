@@ -51,13 +51,12 @@ const IFramesPage: React.FC = () => {
             </Grid>
 
             <Grid
-                container
-                spacing={2}
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    paddingLeft: 20,
+                    paddingLeft: 30,
                     width: '100%',
+                    boxSizing: 'border-box',
                 }}
             >
                 {iFramesOrder && (
@@ -88,7 +87,7 @@ const IFramesPage: React.FC = () => {
                     >
                         {(iFrame) => {
                             return (
-                                <Resizable minHeight={500} minWidth={900} maxHeight={800} maxWidth={1800} id={iFrame._id}>
+                                <Resizable id={iFrame._id}>
                                     <Grid padding={2} height="100%" width="100%">
                                         <IFramePage iFrame={iFrame} isIFramePage={false} setIFramesOrder={setIFramesOrder} />
                                     </Grid>

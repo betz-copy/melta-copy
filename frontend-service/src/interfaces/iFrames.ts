@@ -19,5 +19,3 @@ export interface ISearchIFramesBody {
     skip?: number;
     ids?: string[];
 }
-
-export type IFrameMap = Map<string, IMongoIFrame>;

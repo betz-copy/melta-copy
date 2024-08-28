@@ -50,7 +50,6 @@ const cacheRtl = createCache({
 
 const Main = () => {
     const [open, setOpen] = useState(false);
-    // const [activeTheme, setActiveTheme] = useState(lightTheme);
     const [title, setTitle] = useState('');
     const navigate = useNavigate();
     const { setIsOpen, setCurrentStep } = useTour();
@@ -114,7 +113,10 @@ const Main = () => {
                     ref={(ref) => {
                         if (ref) setPageScrollTarget(ref as HTMLElement);
                     }}
-                    style={{ overflowY: matchPath('/entity/:entityId/graph', window.location.pathname) ? 'hidden' : 'auto', overflowAnchor: 'none' }}
+                    style={{
+                        overflowY: matchPath('/entity/:entityId/graph', window.location.pathname) ? 'hidden' : 'auto',
+                        overflowAnchor: 'none',
+                    }}
                 >
                     <Box>
                         <Suspense fallback={<div />}>
@@ -151,7 +153,15 @@ const Main = () => {
                                     }
                                 />
                                 <Route path="/iframes" element={<IFrames />} />
-                                <Route path="/iframes/:iFrameId" element={<IFramePage />} />
+                                <Route
+                                    path="/iframes/:iFrameId"
+                                    element={
+                                        <>
+                                            <TopBar title={title} boxStyle={{ marginBottom: 0 }} />
+                                            <IFramePage setTitle={setTitle} />
+                                        </>
+                                    }
+                                />
                                 <Route
                                     path="/gantts"
                                     element={

@@ -11,13 +11,27 @@ interface NavButtonProps {
     text: string;
     disabled?: boolean;
     onChangeToActive: (boolean) => void;
+    onMouseLeave?: any;
+    onMouseHover?: any;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
+const NavButton: React.FC<NavButtonProps> = ({
+    to,
+    isDrawerOpen,
+    text,
+    children,
+    disabled = false,
+    onChangeToActive,
+    onMouseHover: onMouseOver,
+    onMouseLeave,
+}) => {
     return (
         <StyledLink
             to={to}
             onClick={(e) => {
+                console.log('1');
+
+                onMouseLeave();
                 if (disabled) e.preventDefault();
             }}
             className="nav-button"
@@ -42,6 +56,13 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
                                     backgroundColor: isActive ? '#ffffffcc' : 'transparent',
                                     borderRadius: '20px',
                                     height: '32px',
+                                }}
+                                // onMouseOver={onMouseOver}
+                                onMouseEnter={onMouseOver}
+                                // onMouseLeave={onMouseLeave}
+                                // onMouseDown={onMouseLeave}
+                                onClick={() => {
+                                    console.log('helooooo');
                                 }}
                                 className="child"
                             >

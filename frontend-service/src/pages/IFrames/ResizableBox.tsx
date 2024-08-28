@@ -2,32 +2,29 @@ import React, { useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
-import { BorderColor } from '@mui/icons-material';
-// eslint-disable-next-line import/no-extraneous-dependencies
 
 interface ResizeBoxProps {
-    // initialHeight: number;
-    // initialWidth?: number;
-    maxHeight?: number;
-    maxWidth?: number;
-    // setWidth?: React.Dispatch<React.SetStateAction<number>>;
-    // setHeight: React.Dispatch<React.SetStateAction<number>>;
-    minHeight: number;
-    minWidth: number;
     id: string;
 }
 
-const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, maxWidth, minWidth, id }) => {
+const Resizable: React.FC<ResizeBoxProps> = ({ children, id }) => {
     const localStorageKey = `iFrameDimension_${id}`;
-    // const loadFlagKey = 'page-load-flag';
 
-    const [isResizing, setIsResizing] = React.useState(false);
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+
+    const maxWidth = screenWidth - 160;
+    const maxHeight = screenHeight - 140;
+    const defaultWidth = maxWidth / 2;
+    const defaultHight = screenHeight / 2;
+
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
 
-        return savedDimensions ? JSON.parse(savedDimensions) : { width: 900, height: 500 };
+        return savedDimensions ? JSON.parse(savedDimensions) : { width: defaultWidth, height: defaultHight };
     };
     const [dimensions, setDimensions] = useState(getDimensions());
+    const [isResizing, setIsResizing] = React.useState(false);
 
     const onResizeStart = () => {
         setIsResizing(true);
@@ -45,14 +42,14 @@ const Resizable: React.FC<ResizeBoxProps> = ({ minHeight, children, maxHeight, m
             resizeHandles={['se']}
             width={dimensions.width}
             height={dimensions.height}
-            minConstraints={[minWidth, minHeight]}
+            minConstraints={[defaultWidth, defaultHight]}
             maxConstraints={[maxWidth, maxHeight]}
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
             axis="both"
             style={{
-                borderRadius: '12px', // Apply border-radius to ResizableBox
-                overflow: 'hidden', // Ensure content doesn't overflow the rounded corners
+                borderRadius: '12px',
+                overflow: 'hidden',
             }}
         >
             <Grid paddingBottom="40px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>

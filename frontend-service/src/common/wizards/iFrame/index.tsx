@@ -79,7 +79,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                     const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
 
                     if (index === -1) {
-                        console.log('-1!!!!', { data });
+                        console.log('create a new iframe ', { data });
 
                         return [data, ...oldData];
                     }

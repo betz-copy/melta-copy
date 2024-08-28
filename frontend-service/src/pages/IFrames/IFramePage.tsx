@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Iframe from 'react-iframe';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useQuery } from 'react-query';
@@ -11,9 +11,10 @@ interface IFramePageProps {
     iFrame?: IMongoIFrame;
     isIFramePage?: boolean;
     setIFramesOrder?: (value) => void;
+    setTitle?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder, setTitle }) => {
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
@@ -25,6 +26,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
             if (iFrameId) navigate('/404');
         },
     });
+    useEffect(() => setTitle && setTitle(iFrameData?.name ?? ''), [setTitle, iFrameData]);
 
     if (isLoading) {
         return (
@@ -36,24 +38,13 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
 
     return isIFramePage ? (
         <Grid
-            dir="rtl"
             style={{
-                position: 'absolute',
-                left: 0,
-                right: 70,
-                bottom: -3,
-                top: -4,
+                height: 'calc(100vh - 58px)',
+                width: '100%',
+                overflow: 'hidden',
             }}
         >
-            <Grid
-                item
-                style={{
-                    height: '100%',
-                    width: '100%',
-                }}
-            >
-                <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" />
-            </Grid>
+            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
         </Grid>
     ) : (
         <>

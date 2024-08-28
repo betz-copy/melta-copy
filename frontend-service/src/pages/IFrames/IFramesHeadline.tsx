@@ -5,6 +5,7 @@ import { useQueryClient } from 'react-query';
 import { List, ListItem, Grid, IconButton, FormControl, Select, Box } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
+import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
 import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
@@ -144,17 +145,14 @@ const IFramesPageHeadline: React.FC<{
             </Grid>
             <Grid item>
                 <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
-                    <FilterAltOffIcon />
+                    <FilterAltOffIcon sx={{ fontSize: '26px' }} />
                 </IconButton>
             </Grid>
 
             <Grid item>
                 {myPermissions.templatesManagementId && (
                     <IconButton onClick={setIFrameWizardDialogState}>
-                        <AddIcon htmlColor="primary" />
-                        {/* <Typography fontSize={14} style={{ fontWeight: '500' }}>
-                {i18next.t('wizard.iFrame.addIFrame')}
-            </Typography> */}
+                        <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
                     </IconButton>
                 )}
             </Grid>
