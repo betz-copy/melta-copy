@@ -11,68 +11,9 @@ import DefaultController from './express/controller';
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
 
 export class Authorizer extends DefaultController {
-    // private workspacePermissions: ISubCompactPermissions;
-
     constructor(private workspaceId: string) {
         super(null);
-
-        // Authorizer.getWorkspacePermissions(workspaceId, userId).then((permissions) => {
-        //     this.workspacePermissions = permissions;
-        // });
     }
-
-    // private static async getWorkspacePermissions(workspaceId: string, userId: string): Promise<ISubCompactPermissions> {
-    //     const workspace = await WorkspaceService.getById(workspaceId);
-    //
-    //     const workspaceHierarchyIds = workspace.path.split('/');
-    //     workspaceHierarchyIds.push(workspaceId);
-    //
-    //     const permissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
-    //
-    //     const workspacePermissions: ISubCompactPermissions = {};
-    //
-    //     workspaceHierarchyIds.forEach((id) => {
-    //         if (!permissions[id]) return;
-    //         this.mergeSubCompactPermissions(workspacePermissions, permissions[id]);
-    //     });
-    //
-    //     return workspacePermissions;
-    // }
-    //
-    // private static mergeSubCompactPermissions(original: ISubCompactPermissions, addition: ISubCompactPermissions) {
-    //     Object.keys(addition).forEach((permissionType) => {
-    //         if (!original[permissionType]) {
-    //             original[permissionType] = addition[permissionType];
-    //             return;
-    //         }
-    //
-    //         original[permissionType] = this.mergeCompactPermission(original[permissionType], addition[permissionType]);
-    //     });
-    // }
-    //
-    // private static mergeCompactPermission(original: ICompact<IPermission>, addition: ICompact<IPermission>): ICompact<IPermission> {
-    //     if (original.scope === PermissionScope.write || addition.scope === PermissionScope.write) return { scope: PermissionScope.write };
-    //     if (addition.scope) original.scope = addition.scope;
-    //
-    //     Object.keys(addition).forEach((subClass) => {
-    //         if (subClass === 'scope') return;
-    //         if (!original[subClass]) {
-    //             original[subClass] = addition[subClass];
-    //             return;
-    //         }
-    //
-    //         Object.keys(addition[subClass]).forEach((id) => {
-    //             if (!original[subClass][id]) {
-    //                 original[subClass][id] = addition[subClass][id];
-    //                 return;
-    //             }
-    //
-    //             original[subClass][id] = this.mergeCompactPermission(original[subClass][id], addition[subClass][id]);
-    //         });
-    //     });
-    //
-    //     return original;
-    // }
 
     async getWorkspacePermissions(userId: string) {
         const workspaceHierarchyIds = await WorkspaceService.getWorkspaceHierarchyIds(this.workspaceId);
@@ -99,8 +40,6 @@ export class Authorizer extends DefaultController {
 
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = workspacePermissions;
     }
-
-    // private async authorizeCompactPermission(permission: ICompact<IPermission>, authPermission: ICompact<IPermission>) {}
 
     async userHasSomePermissions(req: Request) {
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.user!.id);
