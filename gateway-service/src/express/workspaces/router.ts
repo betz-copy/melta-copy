@@ -33,16 +33,10 @@ workspaceRouter.post('/file', ValidateRequest(getFileSchema), wrapController(Wor
 workspaceRouter.get(
     '/:id/ids/hierarchy',
     ValidateRequest(getWorkspaceHierarchyIdsSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
     wrapController(WorkspaceController.getWorkspaceHierarchyIds),
 );
 
-workspaceRouter.get(
-    '/:id',
-    ValidateRequest(getByIdSchema),
-    AuthorizerControllerMiddleware('userHasSomePermissions'),
-    wrapController(WorkspaceController.getById),
-);
+workspaceRouter.get('/:id', ValidateRequest(getByIdSchema), wrapController(WorkspaceController.getById));
 
 workspaceRouter.post(
     '/',

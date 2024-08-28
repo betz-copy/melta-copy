@@ -12,5 +12,5 @@ export const getWorkspacePermissions = async (workspaceId: string, permissions: 
         }
     }
 
-    throw new Error('permission in hierarchy has not been found');
+    return permissions[workspaceId];
 };
