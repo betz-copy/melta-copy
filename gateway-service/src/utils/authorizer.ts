@@ -141,6 +141,14 @@ export class Authorizer extends DefaultController {
     async userCanReadRules(req: Request) {
         await this.wrapAuthMiddleware(req, { [PermissionType.rules]: { scope: PermissionScope.read } });
     }
+
+    async userCanWriteWorkspaces(req: Request) {
+        await this.wrapAuthMiddleware(req, { [PermissionType.admin]: { scope: PermissionScope.write } });
+    }
+
+    async userCanReadWorkspaces(req: Request) {
+        await this.wrapAuthMiddleware(req, { [PermissionType.admin]: { scope: PermissionScope.read } });
+    }
 }
 
 export const AuthorizerControllerMiddleware = createWorkspacesController(Authorizer, true);
