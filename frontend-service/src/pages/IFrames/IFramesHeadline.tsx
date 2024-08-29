@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { List, ListItem, Grid, IconButton, FormControl, Select, Box } from '@mui/material';
+import { List, ListItem, Grid, IconButton, FormControl, Select, Box, MenuItem } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
@@ -13,6 +13,7 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
+import { MenuItemContent, SelectOptionsMenuItems } from '../../common/SelectCheckbox';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -66,7 +67,7 @@ const IFramesPageHeadline: React.FC<{
                 <Grid item>
                     <Select
                         displayEmpty
-                        renderValue={() => <Box>סידור מופעים </Box>}
+                        renderValue={() => <Box>{i18next.t('iFrames.arrangementIFrames')}</Box>}
                         MenuProps={{
                             PaperProps: {
                                 style: {
@@ -89,13 +90,16 @@ const IFramesPageHeadline: React.FC<{
                                     '::-webkit-scrollbar-thumb': { background: '' },
                                 },
                             },
+                            transformOrigin: {
+                                vertical: 'top',
+                                horizontal: 120,
+                            },
                         }}
                         sx={{
                             fontFamily: 'Rubik',
                             fontSize: '14px',
                             fontWeight: 400,
                             boxShadow: 'none',
-
                             '& .MuiOutlinedInput-notchedOutline': {
                                 display: 'none',
                             },
@@ -112,21 +116,19 @@ const IFramesPageHeadline: React.FC<{
                                     <List {...provided.droppableProps} ref={provided.innerRef} style={{ padding: '8px', width: '200px' }}>
                                         {allIFramesAllowed?.map((iFrame, index) => (
                                             <Draggable key={iFrame._id} draggableId={iFrame._id} index={index}>
-                                                {(provided) => (
-                                                    <ListItem
-                                                        key={iFrame._id}
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        style={{
-                                                            padding: '8px',
-                                                            marginBottom: '4px',
-                                                            backgroundColor: '#f0f0f0',
-                                                            ...provided.draggableProps.style,
+                                                {(draggableProvided) => (
+                                                    <MenuItem
+                                                        ref={draggableProvided.innerRef}
+                                                        {...draggableProvided.draggableProps}
+                                                        {...draggableProvided.dragHandleProps}
+                                                        sx={{
+                                                            textOverflow: 'ellipsis',
+                                                            overflow: 'hidden',
+                                                            padding: '5px',
                                                         }}
                                                     >
-                                                        {iFrame.name}
-                                                    </ListItem>
+                                                        <MenuItemContent label={iFrame.name} order={index} isDraggable />
+                                                    </MenuItem>
                                                 )}
                                             </Draggable>
                                         ))}

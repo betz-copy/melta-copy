@@ -47,10 +47,14 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
             <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
         </Grid>
     ) : (
-        <>
-            <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} />
-            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={1} />
-        </>
+        <Grid container width="100%" height="100%" flexDirection="column" flexWrap="nowrap">
+            <Grid item>
+                <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} />
+            </Grid>
+            <Grid item width="100%" height="100%">
+                <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
+            </Grid>
+        </Grid>
     );
 };
 export default IFramePage;

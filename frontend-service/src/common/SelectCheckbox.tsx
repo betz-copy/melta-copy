@@ -27,7 +27,7 @@ import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 
 export const MenuItemContent: React.FC<{
-    checked: boolean;
+    checked?: boolean;
     indeterminate?: boolean;
     label: string;
     order: number;
@@ -53,7 +53,7 @@ export const MenuItemContent: React.FC<{
                     {isDraggable && <img src="/icons/draggable-icon.svg" />}
                 </Grid>
             )}
-            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            {checked && <MeltaCheckbox checked={checked} indeterminate={indeterminate} />}
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>

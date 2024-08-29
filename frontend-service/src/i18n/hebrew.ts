@@ -881,6 +881,7 @@ export default {
         archivedProcesses: 'תהליכים בארכיון',
     },
     iFrames: {
+        arrangementIFrames: 'סידור מופעים',
         searchFailed: 'נכשל לחפש קישורים חיצוניים',
         noIFramesFound: 'לא נמצאו קישורים חיצוניים',
     },

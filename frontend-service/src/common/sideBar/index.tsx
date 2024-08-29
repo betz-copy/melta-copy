@@ -1,20 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {
-    Divider,
-    IconButton,
-    Grid,
-    Box,
-    Slide,
-    Fade,
-    Button,
-    useTheme,
-    Typography,
-    Menu,
-    MenuItem,
-    ListItemIcon,
-    ListItemText,
-    Popover,
-} from '@mui/material';
+import React, { useRef, useState } from 'react';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, MenuItem, Popover } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -126,7 +111,7 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                             // backgroundColor: '#EBEFFA',
                         }}
                     > */}
-                {iFrames.map((iFrame) => (
+                {iFrames?.map((iFrame) => (
                     <MenuItem
                         key={iFrame._id}
                         onClick={() => {

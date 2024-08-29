@@ -18,14 +18,16 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id }) => {
     const defaultWidth = maxWidth / 2;
     const defaultHight = screenHeight / 2;
 
+    const [isResizing, setIsResizing] = React.useState(false);
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
 
-        return savedDimensions ? JSON.parse(savedDimensions) : { width: defaultWidth, height: defaultHight };
+        if (savedDimensions) return JSON.parse(savedDimensions);
+        localStorage.setItem(localStorageKey, JSON.stringify({ width: defaultWidth, height: defaultHight }));
+        return { width: defaultWidth, height: defaultHight };
     };
-    const [dimensions, setDimensions] = useState(getDimensions());
-    const [isResizing, setIsResizing] = React.useState(false);
 
+    const [dimensions, setDimensions] = useState(getDimensions());
     const onResizeStart = () => {
         setIsResizing(true);
     };
@@ -48,11 +50,10 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id }) => {
             onResizeStop={onResizeStop}
             axis="both"
             style={{
-                borderRadius: '12px',
-                overflow: 'hidden',
+                margin: '6px',
             }}
         >
-            <Grid paddingBottom="40px" height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
+            <Grid container height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
                 {children}
             </Grid>
         </ResizableBox>

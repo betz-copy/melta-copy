@@ -67,6 +67,23 @@ const Main = () => {
 
     const toggleDrawer = () => {
         setOpen(!open);
+        console.log({ open });
+        const x = 100;
+        Object.keys(localStorage)
+            .filter((key) => key.startsWith('iFrameDimension_'))
+            .forEach((key) => {
+                const value = JSON.parse(localStorage.getItem(key)!);
+                if (value) {
+                    if (open) {
+                        value.width += x;
+                        value.height += x;
+                    } else {
+                        value.width -= x;
+                        value.height -= x;
+                    }
+                    localStorage.setItem(key, JSON.stringify(value));
+                }
+            });
     };
 
     // TODO - implement when dark mode will be supported

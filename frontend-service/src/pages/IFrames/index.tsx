@@ -30,8 +30,6 @@ const IFramesPage: React.FC = () => {
     const localStorageKey = 'iFramesOrder';
 
     useEffect(() => {
-        console.log('lioraaa', { allIFrames });
-
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
         localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
         setIFramesOrder(iFramesIds);
@@ -88,7 +86,15 @@ const IFramesPage: React.FC = () => {
                         {(iFrame) => {
                             return (
                                 <Resizable id={iFrame._id}>
-                                    <Grid padding={2} height="100%" width="100%">
+                                    <Grid
+                                        item
+                                        height="100%"
+                                        width="100%"
+                                        style={{
+                                            borderRadius: '25px',
+                                            overflow: 'hidden',
+                                        }}
+                                    >
                                         <IFramePage iFrame={iFrame} isIFramePage={false} setIFramesOrder={setIFramesOrder} />
                                     </Grid>
                                 </Resizable>
