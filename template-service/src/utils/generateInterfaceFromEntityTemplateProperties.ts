@@ -26,7 +26,9 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     if (items?.format === 'fileId') {
         return 'string[]';
     }
+
     const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
+
     return `(${arrayOptions})[]`;
 };
 
@@ -43,11 +45,7 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
 
         switch (type) {
             case 'number':
-                if (serialCurrent) {
-                    dynamicInterface[`readonly ${propertyName}`] = 'number';
-                } else {
-                    dynamicInterface[propertyName] = 'number';
-                }
+                dynamicInterface[`${serialCurrent ? 'readonly ' : ''}${propertyName}`] = 'number';
                 break;
             case 'boolean':
                 dynamicInterface[propertyName] = 'boolean';
@@ -69,7 +67,7 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
     ].join('\n');
 };
 
-async function getAllRelatedEntities(entityId, relatedEntities: IEntityTemplatePopulated[] = []) {
+const getAllRelatedEntities = async (entityId: string, relatedEntities: IEntityTemplatePopulated[] = []) => {
     const entityTemplate = await EntityTemplateManager.getTemplateById(entityId);
     if (!entityTemplate) return relatedEntities;
     if (!relatedEntities.some((entity) => entity._id === entityTemplate._id)) relatedEntities.push(entityTemplate);
@@ -87,16 +85,13 @@ async function getAllRelatedEntities(entityId, relatedEntities: IEntityTemplateP
     );
 
     return relatedEntities;
-}
+};
 
 export const generateInterfaceWithRelationships = async (id: string) => {
-    const interfaces: string[] = [];
-
     const entityAndAllRelatedEntities = await getAllRelatedEntities(id);
-    await Promise.all(
+    const interfaces = await Promise.all(
         entityAndAllRelatedEntities.map(async (entity) => {
-            const generatedInterface = await generateInterface(entity.properties.properties, entity.name);
-            interfaces.push(generatedInterface);
+            return generateInterface(entity.properties.properties, entity.name);
         }),
     );
 
