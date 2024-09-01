@@ -1,3 +1,4 @@
+import { isAxiosError } from 'axios';
 import { PermissionScope } from '../express/permissions/interface';
 import { ICompactPermissions, ISubCompactPermissions } from '../express/permissions/interface/permissions';
 import { config } from './config';
@@ -41,7 +42,10 @@ const main = async () => {
     await Promise.all(
         oldPermissionsToNewPermissions(oldPermissionsOfUser).map(async (createUserBody) =>
             createNewUser(createUserBody).catch((err) => {
-                console.log(`failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `, err);
+                console.log(
+                    `failed to convert user ${createUserBody.kartoffelId} with source ${createUserBody.digitalIdentitySource} `,
+                    isAxiosError(err) ? err.response?.data : err,
+                );
             }),
         ),
     );

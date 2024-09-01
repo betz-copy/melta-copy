@@ -7,7 +7,7 @@ import { IPermissionsOfUser } from './old_interfaces';
 export const getOldPermissionsOfUsers = async () => {
     const { data } = await axios.get<IPermissionsOfUser[]>(`${config.oldMeltaUrl}/api/permissions`, {
         headers: {
-            Authorization: config.bearerToken,
+            Cookie: config.oldAuth,
         },
     });
     return data;
@@ -16,7 +16,7 @@ export const getOldPermissionsOfUsers = async () => {
 export const createNewUser = async (body: { kartoffelId: string; digitalIdentitySource: string; permissions: ICompactPermissions }) => {
     const { data } = await axios.post<IUser>(`${config.newMeltaUrl}/api/users`, body, {
         headers: {
-            Authorization: config.bearerToken,
+            Cookie: config.newAuth,
         },
     });
     return data;
