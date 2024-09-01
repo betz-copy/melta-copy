@@ -14,14 +14,19 @@ interface NavButtonProps {
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, isActive: boolean) => {
+        if (disabled) {
+            e.preventDefault();
+        } else {
+            // eslint-disable-next-line no-lonely-if
+            if (!isActive) {
+                sessionStorage.clear();
+            }
+        }
+    };
+
     return (
-        <StyledLink
-            to={to}
-            onClick={(e) => {
-                if (disabled) e.preventDefault();
-            }}
-            className="nav-button"
-        >
+        <StyledLink to={to} onClick={(e) => handleClick(e, false)} className="nav-button">
             {({ isActive }) => {
                 onChangeToActive(isActive);
                 return (

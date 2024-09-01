@@ -58,7 +58,15 @@ const TemplateTable = forwardRef<
     }));
 
     const handleExpandClick = () => {
-        setIsExpand(!isExpand);
+        setIsExpand((prevExpand) => {
+            const newExpandState = !prevExpand;
+
+            sessionStorage.setItem(`isExpand-${template._id}`, newExpandState.toString());
+            sessionStorage.setItem(`currentPage-${page}-${template._id}`, '0');
+            sessionStorage.setItem(`scrollPosition-${template._id}`, '0');
+            sessionStorage.setItem(`resizeHeight-${template._id}`, '650');
+            return newExpandState;
+        });
     };
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
