@@ -56,6 +56,8 @@ export default {
         columns: 'עמודות',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
+    noSearchLeft: 'אין עוד תוצאות',
+    failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
         edit: 'עריכה',
         editment: 'עריכת',

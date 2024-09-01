@@ -73,7 +73,7 @@ const ProcessTemplatesRow: React.FC = () => {
             </Grid>
             <InfiniteScroll<IMongoProcessTemplatePopulated>
                 queryKey={['searchProcessTemplates', searchText]}
-                queryFunction={async ({ pageParam }) =>
+                queryFunction={({ pageParam }) =>
                     Array.from(processTemplates.values())
                         .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
                         .splice(pageParam, infiniteScrollPageCount)
@@ -81,14 +81,14 @@ const ProcessTemplatesRow: React.FC = () => {
                 onQueryError={(error) => {
                     // eslint-disable-next-line no-console
                     console.log('failed to search process templates error:', error);
-                    toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                    toast.error(i18next.t('failedToLoadResults'));
                 }}
                 getItemId={(processTemplate) => processTemplate._id}
                 getNextPageParam={(lastPage, allPages) => {
                     const nextPage = allPages.length * infiniteScrollPageCount;
                     return lastPage.length ? nextPage : undefined;
                 }}
-                endText={i18next.t('entitiesCardView.noSearchLeft')}
+                endText={i18next.t('noSearchLeft')}
                 emptyText={i18next.t('failedToGetTemplates')}
                 useContainer={false}
             >

@@ -225,9 +225,9 @@ export class TemplatesManager {
     static async getAllowedCategories(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
         const { instancesPermissions } = permissionsOfUserId;
         const allowedCategoriesIds = instancesPermissions.map((permission) => permission.category);
-        const categories = EntityTemplateManagerService.getAllCategories();
+        const categories = await EntityTemplateManagerService.getAllCategories();
 
-        return (await categories).filter((category) => allowedCategoriesIds.includes(category._id));
+        return categories.filter((category) => allowedCategoriesIds.includes(category._id));
     }
 
     static async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
@@ -315,17 +315,7 @@ export class TemplatesManager {
 
     static async searchEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>, searchQuery: ISearchEntityTemplatesBody) {
         const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId, searchQuery);
-        const allConstraints = await InstanceManagerService.getAllConstraints();
-
-        const entityTemplatesWithConstraints: IMongoEntityTemplateWithConstraintsPopulated[] = allowedEntityTemplates.map((entityTemplate) => {
-            const constraintsOfTemplate = allConstraints.find(({ templateId }) => templateId === entityTemplate._id);
-            return TemplatesManager.populateTemplateConstraints(
-                entityTemplate,
-                constraintsOfTemplate?.requiredConstraints ?? [],
-                constraintsOfTemplate?.uniqueConstraints ?? [],
-            );
-        });
-
+        const entityTemplatesWithConstraints = await TemplatesManager.getAndPopulateAllTemplatesConstraints(allowedEntityTemplates);
         return entityTemplatesWithConstraints;
     }
 

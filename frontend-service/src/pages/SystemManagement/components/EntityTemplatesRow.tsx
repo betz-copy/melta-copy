@@ -553,7 +553,7 @@ const EntityTemplatesRow: React.FC = () => {
                         entityTemplates: IMongoEntityTemplatePopulated[];
                     }>
                         queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
-                        queryFunction={async ({ pageParam }) =>
+                        queryFunction={({ pageParam }) =>
                             getEntityTemplatesToShowGroupedByCategories(
                                 Array.from(entityTemplates.values())
                                     .filter(
@@ -571,14 +571,14 @@ const EntityTemplatesRow: React.FC = () => {
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
                             console.log('failed to search process templates error:', error);
-                            toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                            toast.error(i18next.t('failedToLoadResults'));
                         }}
                         getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
                         getNextPageParam={(lastPage, allPages) => {
                             const nextPage = allPages.length * infiniteScrollPageCount;
                             return lastPage.length ? nextPage : undefined;
                         }}
-                        endText={i18next.t('entitiesCardView.noSearchLeft')}
+                        endText={i18next.t('noSearchLeft')}
                         emptyText={i18next.t('failedToGetTemplates')}
                         useContainer={false}
                     >

@@ -264,7 +264,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
                     queryKey={['searchRelationshipTemplates', searchText]}
-                    queryFunction={async ({ pageParam }) => {
+                    queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({
                                 relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
@@ -279,14 +279,14 @@ const RelationshipTemplatesRow: React.FC = () => {
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
                         console.log('failed to search process templates error:', error);
-                        toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                        toast.error(i18next.t('failedToLoadResults'));
                     }}
                     getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}
                     getNextPageParam={(lastPage, allPages) => {
                         const nextPage = allPages.length * infiniteScrollPageCount;
                         return lastPage.length ? nextPage : undefined;
                     }}
-                    endText={i18next.t('entitiesCardView.noSearchLeft')}
+                    endText={i18next.t('noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}
                     useContainer={false}
                 >

@@ -183,7 +183,7 @@ const RulesRow: React.FC = () => {
             <Grid item container direction="row" gap="30px" marginTop="30px">
                 <InfiniteScroll<IMongoRule>
                     queryKey={['searchRulesTemplates', searchText]}
-                    queryFunction={async ({ pageParam }) =>
+                    queryFunction={({ pageParam }) =>
                         Array.from(rules.values())
                             .filter(({ name }) => searchText === '' || name.includes(searchText))
                             .splice(pageParam, infiniteScrollPageCount)
@@ -191,14 +191,14 @@ const RulesRow: React.FC = () => {
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
                         console.log('failed to search process templates error:', error);
-                        toast.error(i18next.t('entitiesCardView.failedToLoadResults'));
+                        toast.error(i18next.t('failedToLoadResults'));
                     }}
                     getItemId={(rule) => rule._id}
                     getNextPageParam={(lastPage, allPages) => {
                         const nextPage = allPages.length * infiniteScrollPageCount;
                         return lastPage.length ? nextPage : undefined;
                     }}
-                    endText={i18next.t('entitiesCardView.noSearchLeft')}
+                    endText={i18next.t('noSearchLeft')}
                     emptyText={i18next.t('failedToGetTemplates')}
                     useContainer={false}
                 >
