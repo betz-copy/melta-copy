@@ -10,6 +10,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
     workspace: {
         _id: '',
         name: '',
+        displayName: '',
         path: '',
         type: WorkspaceTypes.dir,
         colors: {

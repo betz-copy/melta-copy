@@ -1,9 +1,10 @@
 import * as Joi from 'joi';
-import { FilePathSchema, HexColorSchema, MongoIdSchema } from '../../utils/joi';
+import { FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
 import { Colors, WorkspaceTypes } from './interface';
 
 const workspaceSchema = Joi.object({
-    name: Joi.string().required(),
+    name: WorkspaceNameSchema,
+    displayName: Joi.string().required(),
     path: FilePathSchema.required(),
     type: Joi.string()
         .valid(...Object.values(WorkspaceTypes))

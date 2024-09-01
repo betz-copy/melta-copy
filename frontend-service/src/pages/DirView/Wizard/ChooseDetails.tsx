@@ -6,10 +6,12 @@ import * as Yup from 'yup';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { StepComponentProps } from '../../../common/wizards/index';
 import { WorkspaceTypes } from '../../../interfaces/workspaces';
+import { workspaceNameValidation } from '../../../utils/validation';
 import { WorkspaceWizardValues } from './index';
 
 export const chooseDetailsSchema = {
-    name: Yup.string().required(i18next.t('validation.required')),
+    name: Yup.string().matches(workspaceNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
+    displayName: Yup.string().required(i18next.t('validation.required')),
     type: Yup.string().oneOf(Object.values(WorkspaceTypes), i18next.t('validation.required')),
 };
 
@@ -22,11 +24,22 @@ export const ChooseDetails: React.FC<StepComponentProps<WorkspaceWizardValues, '
             <Grid item>
                 <TextField
                     name="name"
-                    label={i18next.t('wizard.displayName')}
+                    label={i18next.t('wizard.name')}
                     value={values.name}
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
                     helperText={touched.name && errors.name}
+                />
+            </Grid>
+
+            <Grid item>
+                <TextField
+                    name="displayName"
+                    label={i18next.t('wizard.displayName')}
+                    value={values.displayName}
+                    onChange={handleChange}
+                    error={touched.displayName && Boolean(errors.displayName)}
+                    helperText={touched.displayName && errors.displayName}
                 />
             </Grid>
 

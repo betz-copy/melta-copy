@@ -1,9 +1,10 @@
 import Joi from 'joi';
-import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
 import { WorkspaceTypes } from './interface';
 
 const workspaceSchema = Joi.object({
-    name: Joi.string().required(),
+    name: WorkspaceNameSchema,
+    displayName: Joi.string().required(),
     path: FilePathSchema.required(),
     type: Joi.string()
         .valid(...Object.values(WorkspaceTypes))

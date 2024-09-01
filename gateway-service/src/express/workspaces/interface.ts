@@ -12,6 +12,7 @@ export enum WorkspaceTypes {
 export interface IWorkspace {
     _id: string;
     name: string;
+    displayName: string;
     path: string;
     type: WorkspaceTypes;
     colors: Record<Colors, HexColor>;

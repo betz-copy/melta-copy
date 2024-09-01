@@ -4,6 +4,7 @@ export const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
     return [
         {
             name: '504',
+            displayName: '504',
             path: '/',
             type: WorkspaceTypes.dir,
             colors: {
@@ -12,6 +13,7 @@ export const getWorkspacesToCreate = (): Omit<IWorkspace, '_id'>[] => {
         },
         {
             name: 'operational',
+            displayName: 'Operational',
             path: '/504',
             type: WorkspaceTypes.mlt,
             colors: {

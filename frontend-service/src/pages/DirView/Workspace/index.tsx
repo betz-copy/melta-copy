@@ -19,14 +19,14 @@ interface IWorkspaceProps {
 }
 
 export const Workspace: React.FC<IWorkspaceProps> = ({
-    workspace: { name, path, type, colors, iconFileId, logoFileId, _id },
+    workspace: { name, displayName, path, type, colors, iconFileId, logoFileId, _id },
     openWizard,
     setMovedWorkspace,
     isMovedWorkspace,
 }) => {
     const minimalWorkspace = useMemo(
-        () => ({ name, path, type, colors, iconFileId, logoFileId, _id }),
-        [name, path, type, colors, iconFileId, logoFileId, _id],
+        () => ({ name, displayName, path, type, colors, iconFileId, logoFileId, _id }),
+        [name, displayName, path, type, colors, iconFileId, logoFileId, _id],
     );
 
     const currentUser = useUserStore((state) => state.user);
@@ -71,7 +71,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
     }, [type, iconFileId, colors]);
 
     return (
-        <MeltaTooltip title={name} placement="bottom">
+        <MeltaTooltip title={displayName} placement="bottom">
             <Link
                 href={!isMovedWorkspace ? `${path}${path === '/' ? '' : '/'}${name}${type}` : ' '}
                 replace={Boolean(isMovedWorkspace)}
@@ -102,7 +102,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                             textAlign: 'center',
                         }}
                     >
-                        {name}
+                        {displayName}
                     </Typography>
 
                     {currentUser.currentWorkspacePermissions?.admin && (
