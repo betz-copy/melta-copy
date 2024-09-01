@@ -46,6 +46,7 @@ const Category: React.FC = () => {
             return updatedTemplates.map((template) => template._id);
         });
     };
+
     useEffect(() => {
         setCategoryTemplatesId((prevCategoryTemplatesId) => {
             const relevantTemplates = Array.from(entityTemplates.values()).filter((template) => template.category._id === category._id);

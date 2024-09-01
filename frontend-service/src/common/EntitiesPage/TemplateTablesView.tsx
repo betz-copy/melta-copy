@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
@@ -9,9 +9,7 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { environment } from '../../globals';
 
-const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
@@ -26,36 +24,14 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
-    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
-    const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
 
-    useEffect(() => {
-        const observer = new IntersectionObserver((entries) => {
-            const first = entries[0];
-            if (first.isIntersecting) {
-                setVisibleTemplatesCount((prevCount) => prevCount + tablesPerLoadingChunkSize);
-            }
-        });
-
-        const currentLoader = loaderRef.current;
-        if (currentLoader) {
-            observer.observe(currentLoader);
-        }
-
-        return () => {
-            if (currentLoader) {
-                observer.unobserve(currentLoader);
-            }
-        };
-    }, []);
-
     return (
         <Grid container direction="column" spacing={1}>
-            {templates.slice(0, visibleTemplatesCount).map((template) => (
+            {templates.map((template) => (
                 <Grid item key={template._id}>
                     <TemplateTable
                         ref={(el) => {
@@ -71,11 +47,6 @@ const TemplateTablesViewResults = forwardRef<
                     />
                 </Grid>
             ))}
-            {visibleTemplatesCount < templates.length && (
-                <Grid item container justifyContent="center" ref={loaderRef}>
-                    <CircularProgress />
-                </Grid>
-            )}
         </Grid>
     );
 });
