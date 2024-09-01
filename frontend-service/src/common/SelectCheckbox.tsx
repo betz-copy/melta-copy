@@ -22,25 +22,29 @@ import {
 import { IoIosArrowDown, IoIosArrowBack, IoIosArrowUp } from 'react-icons/io';
 import { useSelector } from 'react-redux';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
+import { Hive as HiveIcon } from '@mui/icons-material';
 import { RootState } from '../store';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
+import { CustomIcon } from './CustomIcon';
 
 export const MenuItemContent: React.FC<{
-    checked?: boolean;
+    checked?: boolean | null;
     indeterminate?: boolean;
     label: string;
     order: number;
     isDraggable?: boolean;
     group?: boolean;
     insideGroup?: boolean;
-}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
+    iconFileId?: string;
+}> = ({ checked = null, iconFileId = null, indeterminate, label, isDraggable, group, insideGroup }) => {
+    const theme = useTheme();
     return (
         <>
             {!group && (
                 <Grid
                     style={{
-                        width: '24px',
+                        width: '30px',
                         height: '24px',
                         gap: '2px',
                         display: 'flex',
@@ -53,7 +57,12 @@ export const MenuItemContent: React.FC<{
                     {isDraggable && <img src="/icons/draggable-icon.svg" />}
                 </Grid>
             )}
-            {checked && <MeltaCheckbox checked={checked} indeterminate={indeterminate} />}
+            {checked !== null && <MeltaCheckbox checked={checked} indeterminate={indeterminate} />}
+            {iconFileId === '' ? (
+                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+            ) : (
+                <CustomIcon color={theme.palette.primary.main} iconUrl={iconFileId!} height="15px" width="15px" />
+            )}
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>

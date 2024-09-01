@@ -111,7 +111,7 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                             // backgroundColor: '#EBEFFA',
                         }}
                     > */}
-                {iFrames?.map((iFrame) => (
+                {/* {iFrames?.map((iFrame) => (
                     <MenuItem
                         key={iFrame._id}
                         onClick={() => {
@@ -128,7 +128,7 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
 
                         <Grid sx={{ paddingLeft: '10px', textTransform: 'none' }}> {iFrame.name}</Grid>
                     </MenuItem>
-                ))}
+                ))} */}
                 {/* </Menu> */}
                 {/* )} */}
 

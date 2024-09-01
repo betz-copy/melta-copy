@@ -1,5 +1,5 @@
 /* eslint-disable react/no-array-index-key */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
@@ -12,7 +12,7 @@ import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { Resizable } from './ResizableBox';
 
-const IFramesPage: React.FC = () => {
+const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
         iFrame: IMongoIFrame | null;
@@ -28,13 +28,28 @@ const IFramesPage: React.FC = () => {
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
 
     const localStorageKey = 'iFramesOrder';
-
     useEffect(() => {
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
         localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
         setIFramesOrder(iFramesIds);
     }, [allIFrames, queryClient]);
 
+    useEffect(() => {
+        const open: string = localStorage.getItem('isSideBarOpen') ?? 'false';
+        Object.keys(localStorage)
+            .filter((key) => key.startsWith('iFrameDimension_'))
+            .forEach((key) => {
+                const value = JSON.parse(localStorage.getItem(key)!);
+                if (isSideBarOpen) {
+                    value.width *= 0.9;
+                } else if (open === 'true' && !isSideBarOpen) {
+                    value.width /= 0.9;
+                }
+
+                localStorage.setItem(key, JSON.stringify(value));
+            });
+        localStorage.setItem('isSideBarOpen', `${isSideBarOpen}`);
+    }, [isSideBarOpen]);
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>
@@ -52,7 +67,7 @@ const IFramesPage: React.FC = () => {
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    paddingLeft: 30,
+                    paddingLeft: 20,
                     width: '100%',
                     boxSizing: 'border-box',
                 }}
@@ -85,13 +100,13 @@ const IFramesPage: React.FC = () => {
                     >
                         {(iFrame) => {
                             return (
-                                <Resizable id={iFrame._id}>
+                                <Resizable id={iFrame._id} isSideBarOpen={isSideBarOpen}>
                                     <Grid
                                         item
                                         height="100%"
                                         width="100%"
                                         style={{
-                                            borderRadius: '25px',
+                                            borderRadius: '18px',
                                             overflow: 'hidden',
                                         }}
                                     >

@@ -12,9 +12,10 @@ interface IFramePageProps {
     isIFramePage?: boolean;
     setIFramesOrder?: (value) => void;
     setTitle?: React.Dispatch<React.SetStateAction<string>>;
+    setIconFileId?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder, setTitle }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder, setTitle, setIconFileId }) => {
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
@@ -26,7 +27,13 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
             if (iFrameId) navigate('/404');
         },
     });
-    useEffect(() => setTitle && setTitle(iFrameData?.name ?? ''), [setTitle, iFrameData]);
+    useEffect(() => {
+        console.log({ setTitle });
+        if (setTitle && setIconFileId) {
+            setTitle(iFrameData?.name ?? '');
+            setIconFileId(iFrameData?.iconFileId ?? '');
+        }
+    }, [setTitle, iFrameData]);
 
     if (isLoading) {
         return (

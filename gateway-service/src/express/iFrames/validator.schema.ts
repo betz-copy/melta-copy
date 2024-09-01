@@ -5,7 +5,6 @@ const iFrameSchema = Joi.object({
     name: Joi.string().required(),
     url: Joi.string().required(),
     categoryIds: ExtendedJoi.stringToArray(),
-    description: Joi.string(),
     apiToken: Joi.string(),
     iconFileId: Joi.string().allow(null),
     placeInSideBar: ExtendedJoi.boolean(),

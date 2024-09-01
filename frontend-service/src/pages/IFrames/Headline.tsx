@@ -115,14 +115,14 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                                         <Grid>
                                             <MeltaTooltip title={i18next.t('actions.delete')}>
                                                 <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
-                                                    <DeleteIcon color="primary" />
+                                                    <DeleteIcon color="primary" fontSize="small" />
                                                 </IconButton>
                                             </MeltaTooltip>
                                         </Grid>
                                         <Grid>
                                             <MeltaTooltip title={i18next.t('actions.edit')}>
                                                 <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
-                                                    <EditIcon color="primary" />
+                                                    <EditIcon color="primary" fontSize="small" />
                                                 </IconButton>
                                             </MeltaTooltip>
                                         </Grid>
@@ -150,14 +150,18 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                                                 queryClient.setQueryData(['getIFrame', iFrame._id], { ...iFrame, placeInSideBar: !placeInSideBar });
                                             }}
                                         >
-                                            {placeInSideBar ? <FavoriteIcon color="primary" /> : <FavoriteBorderIcon color="primary" />}
+                                            {placeInSideBar ? (
+                                                <FavoriteIcon color="primary" fontSize="small" />
+                                            ) : (
+                                                <FavoriteBorderIcon color="primary" fontSize="small" />
+                                            )}
                                         </IconButton>
                                     </MeltaTooltip>
                                 </Grid>
                                 <Grid>
                                     <MeltaTooltip title={i18next.t('actions.expansion')}>
                                         <IconButton onClick={() => setOpen({ isOpen: true })}>
-                                            <OpenInFullIcon color="primary" />
+                                            <OpenInFullIcon color="primary" fontSize="small" />
                                         </IconButton>
                                     </MeltaTooltip>
                                 </Grid>
@@ -172,9 +176,14 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                 open={open.isOpen}
                 onClose={handleClose}
                 maxWidth={false}
-                PaperProps={{ style: { height: '89vh', width: '85vw' } }}
+                PaperProps={{
+                    style: {
+                        height: '89vh',
+                        width: '85vw',
+                    },
+                }}
             >
-                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} />
+                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} allowFullScreen />
             </Dialog>
 
             <IFrameWizard

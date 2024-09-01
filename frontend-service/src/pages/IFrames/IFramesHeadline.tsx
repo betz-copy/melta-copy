@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { List, ListItem, Grid, IconButton, FormControl, Select, Box, MenuItem } from '@mui/material';
+import { List, Grid, IconButton, Select, Box, MenuItem } from '@mui/material';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
@@ -13,7 +12,7 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { MenuItemContent, SelectOptionsMenuItems } from '../../common/SelectCheckbox';
+import { MenuItemContent } from '../../common/SelectCheckbox';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -55,7 +54,7 @@ const IFramesPageHeadline: React.FC<{
 
     return (
         <TopBarGrid sx={{ height: '3.6rem' }} dir="rtl" container justifyContent="space-between" alignItems="center" wrap="nowrap">
-            <Grid container spacing={5} wrap="nowrap" alignItems="center">
+            <Grid container spacing={3} wrap="nowrap" alignItems="center">
                 <Grid item>
                     <BlueTitle
                         title={i18next.t('pages.iFrames')}
@@ -72,13 +71,10 @@ const IFramesPageHeadline: React.FC<{
                             PaperProps: {
                                 style: {
                                     height: '180px',
-                                    width: '180px',
+                                    width: '190px',
                                     backgroundColor: '#EBEFFA',
                                     borderRadius: '0px 0px 10px 10px',
-                                    padding: '5px, 10px',
                                     boxShadow: '-2px 2px 4px 0px #1E27754D',
-                                    top: '39px',
-                                    gap: '15px',
                                 },
                                 sx: {
                                     overflowY: 'overlay',
@@ -92,7 +88,7 @@ const IFramesPageHeadline: React.FC<{
                             },
                             transformOrigin: {
                                 vertical: 'top',
-                                horizontal: 120,
+                                horizontal: 130,
                             },
                         }}
                         sx={{
@@ -104,16 +100,13 @@ const IFramesPageHeadline: React.FC<{
                                 display: 'none',
                             },
                             background: '#EBEFFA',
-                            maxWidth: '130px',
                             maxHeight: '35px',
-                            color: '#1E2775',
-                            padding: '6.99px, 13.98px',
                         }}
                     >
                         <DragDropContext onDragEnd={handleOnDragEnd}>
                             <Droppable droppableId="items">
                                 {(provided) => (
-                                    <List {...provided.droppableProps} ref={provided.innerRef} style={{ padding: '8px', width: '200px' }}>
+                                    <List {...provided.droppableProps} ref={provided.innerRef}>
                                         {allIFramesAllowed?.map((iFrame, index) => (
                                             <Draggable key={iFrame._id} draggableId={iFrame._id} index={index}>
                                                 {(draggableProvided) => (
@@ -124,10 +117,15 @@ const IFramesPageHeadline: React.FC<{
                                                         sx={{
                                                             textOverflow: 'ellipsis',
                                                             overflow: 'hidden',
-                                                            padding: '5px',
+                                                            padding: '8px',
                                                         }}
                                                     >
-                                                        <MenuItemContent label={iFrame.name} order={index} isDraggable />
+                                                        <MenuItemContent
+                                                            label={iFrame.name}
+                                                            iconFileId={iFrame.iconFileId ?? ''}
+                                                            order={index}
+                                                            isDraggable
+                                                        />
                                                     </MenuItem>
                                                 )}
                                             </Draggable>
@@ -145,18 +143,20 @@ const IFramesPageHeadline: React.FC<{
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid item>
-                <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
-                    <FilterAltOffIcon sx={{ fontSize: '26px' }} />
-                </IconButton>
-            </Grid>
 
-            <Grid item>
-                {myPermissions.templatesManagementId && (
-                    <IconButton onClick={setIFrameWizardDialogState}>
-                        <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
+            <Grid container justifyContent="flex-end" alignItems="center">
+                <Grid item>
+                    <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
+                        <FilterAltOffIcon sx={{ fontSize: '26px' }} />
                     </IconButton>
-                )}
+                </Grid>
+                <Grid item>
+                    {myPermissions.templatesManagementId && (
+                        <IconButton onClick={setIFrameWizardDialogState}>
+                            <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
+                        </IconButton>
+                    )}
+                </Grid>
             </Grid>
         </TopBarGrid>
     );

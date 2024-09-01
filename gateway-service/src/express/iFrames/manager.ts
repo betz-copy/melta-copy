@@ -22,7 +22,7 @@ export class IFrameManager {
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
             const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
-            query.$or = [{ name: searchRegex }, { description: searchRegex }, { url: searchRegex }];
+            query.$or = [{ name: searchRegex }, { url: searchRegex }];
         }
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         const iFrames = await IFrameModel.find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })

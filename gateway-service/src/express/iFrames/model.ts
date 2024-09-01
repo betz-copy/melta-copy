@@ -14,9 +14,6 @@ const IFrameSchema = new mongoose.Schema(
             type: String,
             required: true,
         },
-        description: {
-            type: String,
-        },
         categoryIds: {
             type: [String] || String,
             require: true,
