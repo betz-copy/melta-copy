@@ -39,6 +39,7 @@ const config = {
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates').asString(),
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
@@ -52,10 +53,10 @@ const config = {
                 .asString(),
         },
         requestTimeout: env.get('ENTITY_TEMPLATE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        templateRoute: '/api/templates',
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('STORAGE_SERVICE_BASE_ROUTE').default('/api/files').asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),
         uploadFilesRoute: env.get('STORAGE_SERVICE_UPLOAD_FILES_ROUTE').default('api/files/bulk').asString(),
         downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').default('api/files').asString(),
@@ -67,6 +68,7 @@ const config = {
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('INSTANCE_SERVICE_BASE_ROUTE').default('/api/instances').asString(),
         baseEntitiesRoute: env.get('INSTANCE_SERVICE_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
         baseRelationshipsRoute: env.get('INSTANCE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
@@ -74,7 +76,6 @@ const config = {
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
-        instanceRoute: '/api/instances',
     },
     permissionService: {
         baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
@@ -86,7 +87,6 @@ const config = {
         url: env.get('ACTIVITY_LOG_SERVICE_URL').required().asString(),
         baseRoute: env.get('ACTIVITY_LOG_SERVICE_BASE_ROUTE').default('/api/activity-log').asString(),
         requestTimeout: env.get('ACTIVITY_LOG_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        activityLogRoute: '/api/activity-log',
     },
     notificationService: {
         url: env.get('NOTIFICATION_SERVICE_URL').required().asString(),
@@ -115,7 +115,6 @@ const config = {
         url: env.get('PREVIEW_SERVICE_URL').required().asString(),
         baseRoute: env.get('PREVIEW_SERVICE_BASE_ROUTE').default('/api/preview').asString(),
         requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        previewRoute: '/api/preview',
     },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {

@@ -3,7 +3,7 @@ FROM node:22-alpine as build
 WORKDIR /usr/src/app
 
 COPY ["package.json", "package-lock.json", ".npmrc", "./"]
-RUN npm install
+RUN npm install --silent
 
 COPY . .
 

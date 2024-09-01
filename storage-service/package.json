@@ -17,7 +17,6 @@
   "author": "Unknown",
   "license": "ISC",
   "dependencies": {
-    "@types/jszip": "^3.4.1",
     "archiver": "^7.0.1",
     "body-parser": "^1.20.2",
     "colorspace": "^1.1.4",
@@ -25,6 +24,7 @@
     "elastic-apm-node": "^4.7.3",
     "env-var": "^7.5.0",
     "express": "^4.19.2",
+    "glob": "^11.0.0",
     "helmet": "^7.1.0",
     "joi": "^17.13.3",
     "jszip": "^3.10.1",
@@ -39,7 +39,6 @@
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
     "@types/body-parser": "^1.19.5",
-    "@types/dotenv": "^8.2.0",
     "@types/express": "^4.17.21",
     "@types/morgan": "^1.9.9",
     "@types/multer": "^1.4.11",

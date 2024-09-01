@@ -35,12 +35,13 @@ import {
 import { IMongoEntityTemplateWithConstraints } from './interfaces';
 
 const {
-    templateService: { url, requestTimeout, templateRoute },
+    templateService: { url, requestTimeout, baseRoute },
     service: { uploadsFolderPath },
 } = config;
 
 const TemplatesServiceProxy = createProxyMiddleware({
-    target: `${url}${templateRoute}`,
+    target: `${url}${baseRoute}`,
+    changeOrigin: true,
     on: {
         proxyReq: fixRequestBody,
     },

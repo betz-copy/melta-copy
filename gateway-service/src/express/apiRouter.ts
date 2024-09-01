@@ -31,14 +31,19 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 apiRouter.use(
     '/files',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: `${config.previewService.url}${config.previewService.previewRoute}`, on: { proxyReq: fixRequestBody } }),
+    createProxyMiddleware({
+        target: `${config.storageService.url}${config.storageService.baseRoute}`,
+        changeOrigin: true,
+        on: { proxyReq: fixRequestBody },
+    }),
 );
 
 apiRouter.use(
     '/preview',
     wrapMiddleware(validateUserHasAtLeastSomePermissions),
     createProxyMiddleware({
-        target: `${config.previewService.url}${config.previewService.previewRoute}`,
+        target: `${config.previewService.url}${config.previewService.baseRoute}`,
+        changeOrigin: true,
         on: {
             proxyReq: fixRequestBody,
         },
