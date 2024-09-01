@@ -40,6 +40,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                 return (
                     <MeltaIcon
                         iconUrl={iconFileId}
+                        workspaceId={_id}
                         style={{
                             ...defaultIconStyle,
                             width: '9.5rem',
@@ -57,6 +58,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                         {iconFileId && (
                             <CustomIcon
                                 iconUrl={iconFileId}
+                                workspaceId={_id}
                                 height="65px"
                                 width="65px"
                                 style={{ position: 'absolute', transform: 'translate(-50%, -50%)', top: '51.5%', left: '50%' }}
@@ -68,7 +70,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
             default:
                 return null;
         }
-    }, [type, iconFileId, colors]);
+    }, [type, iconFileId, colors, _id]);
 
     return (
         <MeltaTooltip title={displayName} placement="bottom">

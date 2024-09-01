@@ -13,9 +13,10 @@ interface CustomImageProps {
     preserveColor?: boolean;
     style?: CSSProperties;
     className?: string;
+    workspaceId?: string;
 }
 
-export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style, className }) => {
+export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, height, color, preserveColor, style, className, workspaceId }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const currentWorkspace = useWorkspaceStore((state) => state.workspace);
 
@@ -23,7 +24,7 @@ export const CustomImage: React.FC<CustomImageProps> = ({ imageUrl, width, heigh
         queryKey: ['getCustomImage', imageUrl],
         queryFn: async () => {
             if (!imageUrl.startsWith('/api/files')) return imageUrl;
-            return apiUrlToImageSource(imageUrl as ApiUrl);
+            return apiUrlToImageSource(imageUrl as ApiUrl, workspaceId);
         },
         enabled: !imageUrl.startsWith('/api/files') || Boolean(currentWorkspace._id),
     });
@@ -46,7 +47,7 @@ interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {
     iconUrl: string;
 }
 
-export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, preserveColor = false, style }) => {
+export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, preserveColor = false, style, workspaceId }) => {
     return (
         <CustomImage
             imageUrl={`/api${environment.api.storage}/${iconUrl}`}
@@ -55,6 +56,7 @@ export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, 
             color={color}
             preserveColor={preserveColor}
             style={style}
+            workspaceId={workspaceId}
         />
     );
 };
