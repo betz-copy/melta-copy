@@ -12,7 +12,10 @@ interface UserAvatarProps {
 
 const getNameInitials = (user: IUser): string => {
     const names = user.fullName?.split(' ') ?? [];
-    return names.map((name) => name.charAt(0)).join('');
+
+    if (names.length < 3) return names.map((name) => name.charAt(0)).join('');
+
+    return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`;
 };
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
