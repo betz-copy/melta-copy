@@ -67,19 +67,25 @@ const Main = () => {
         setOpen(!open);
     };
 
-    const handleScroll = () => {
-        if (pageScrollTarget) {
-            sessionStorage.setItem(`scrollPosition-${location.pathname}`, pageScrollTarget.scrollTop.toString());
-        }
-    };
-
     useEffect(() => {
-        const savedScrollPosition = sessionStorage.getItem(`scrollPosition-${location.pathname}`);
-        console.log({ savedScrollPosition });
+        const savedScrollPosition = sessionStorage.getItem(`scrollPosition-${window.location.pathname}`);
 
         if (savedScrollPosition && pageScrollTarget) {
-            pageScrollTarget.scrollTo(0, parseInt(savedScrollPosition, 10));
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    pageScrollTarget.scrollTo({
+                        top: parseInt(savedScrollPosition, 10),
+                        behavior: 'smooth',
+                    });
+                });
+            }, 150);
         }
+
+        const handleScroll = () => {
+            if (pageScrollTarget) {
+                sessionStorage.setItem(`scrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
+            }
+        };
 
         if (pageScrollTarget) {
             pageScrollTarget.addEventListener('scroll', handleScroll);
@@ -90,7 +96,7 @@ const Main = () => {
                 pageScrollTarget.removeEventListener('scroll', handleScroll);
             }
         };
-    }, [pageScrollTarget, location.pathname]);
+    }, [pageScrollTarget, window.location.pathname]);
 
     // TODO - implement when dark mode will be supported
     // const handleToggleTheme = () => {
