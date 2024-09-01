@@ -64,7 +64,7 @@ const App: React.FC = () => {
                 const workspaceIds = Object.keys(userFromDb.permissions);
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);
-                    navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
+                    if (workspace.name !== '' && workspace.path !== '/') navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
                 }
             } catch {
                 setIsErrorMyUser(true);
