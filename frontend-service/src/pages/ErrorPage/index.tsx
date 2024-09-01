@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { useLocation } from 'wouter';
 import './index.css';
 
-const ErrorPage: React.FC<{ errorText: string }> = ({ errorText }) => {
+const ErrorPage: React.FC<{ errorText: string; navigateToRoot?: boolean }> = ({ errorText, navigateToRoot = false }) => {
     const [_, navigate] = useLocation();
 
     const [showEasterEgg, setShowEasterEgg] = useState(false);
@@ -64,7 +64,7 @@ const ErrorPage: React.FC<{ errorText: string }> = ({ errorText }) => {
                 className="return_to_home"
                 type="button"
                 onClick={() => {
-                    navigate('/');
+                    navigate(`${navigateToRoot ? '~' : ''}/`);
                 }}
             >
                 {i18next.t('errorPage.backToHome')}

@@ -82,7 +82,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
 
     if (isLoading) return <LoadingAnimation isLoading={isLoading} />;
 
-    if (isError) return <ErrorPage errorText={i18next.t('errorPage.noPermissionsToWorkspace')} />;
+    if (isError) return <ErrorPage errorText={i18next.t('errorPage.noPermissionsToWorkspace')} navigateToRoot />;
 
     return <Box display="flex">{currentUser.currentWorkspacePermissions && <MeltaRoutesInner />}</Box>;
 };
