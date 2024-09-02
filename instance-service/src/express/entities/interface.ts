@@ -141,3 +141,13 @@ export type EntitiesIdsRulesReasonsMap = Map<
         entityTemplateId: string;
     }
 >;
+
+export enum IEntityCrudAction {
+    onCreateEntity = 'onCreateEntity',
+    onUpdateEntity = 'onUpdateEntity',
+}
+
+export interface IExecutionOutput {
+    entityId: string;
+    properties: Record<string, any>;
+}

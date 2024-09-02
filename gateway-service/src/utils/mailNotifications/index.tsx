@@ -217,9 +217,7 @@ export const getCreateOrDeleteRelActionInfo = async (
     );
 };
 export const getUpdateEntityActionInfo = async ({ entity }: IUpdateEntityMetadataPopulated) => {
-    let entityTemplateId;
-
-    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityTemplateId ?? (entity! as IEntity).templateId);
+    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity!.templateId);
 
     return (
         <p>

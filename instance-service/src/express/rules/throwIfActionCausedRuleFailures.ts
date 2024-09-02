@@ -12,7 +12,10 @@ import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
 import { IAction } from '../bulkActions/interface';
 
-const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
+const getRelationshipIdFormattedForBrokenRules = (
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    relationshipId,
+) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);
 
     return index === -1 ? relationshipId : `$${index}._id`;
@@ -29,7 +32,7 @@ const getEntityIdFormattedForBrokenRules = (
 
 const getCauseFormattedForBrokenRules = (
     cause: ICausesOfInstance,
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
 ): ICausesOfInstance => {
     const {
         instance: { entityId, aggregatedRelationship },

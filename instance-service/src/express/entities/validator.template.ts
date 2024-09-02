@@ -67,8 +67,7 @@ export const getEntityTemplateByIdOrThrowValidationError = async (templateId: st
     return entityTemplate;
 };
 
-export const validateEntity = async (templateId: string, properties: Record<string, any>) => {
-    const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(templateId);
+export const validateEntity = async (entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) => {
     const validateFunction = ajv.compile(entityTemplate.properties);
     const valid = validateFunction(properties);
 
@@ -80,8 +79,9 @@ export const validateEntity = async (templateId: string, properties: Record<stri
 export const validateEntityRequest = async (req: Request) => {
     const { templateId, properties } = req.body;
 
-    await validateEntity(templateId, properties);
     const entityTemplate = await getEntityTemplateByIdOrThrowValidationError(templateId);
+
+    await validateEntity(entityTemplate, properties);
 
     addPropertyToRequest(req, 'entityTemplate', entityTemplate);
 };

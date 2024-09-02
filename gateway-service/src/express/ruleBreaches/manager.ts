@@ -380,28 +380,31 @@ export class RuleBreachesManager {
     }
 
     static async addBeforeFieldToUpdateAction(actions: IAction[]): Promise<(IAction | Promise<IAction>)[]> {
+        const updateActions = actions.filter((action) => action.actionType === ActionTypes.UpdateEntity);
+
         return Promise.all(
             actions.map(async (action) => {
-                if (action.actionType === ActionTypes.UpdateEntity) {
-                    const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
-                    let before;
-
-                    if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
-                        const numberPart = parseInt(entityId.slice(1, -4), 10);
-                        before = actions[numberPart].actionMetadata as ICreateEntityMetadata;
-                    } else {
-                        before = await InstanceManagerService.getEntityInstanceById(entityId);
-                    }
-                    return {
-                        actionType: action.actionType,
-                        actionMetadata: {
-                            ...action.actionMetadata,
-                            before: before.properties,
-                        },
-                    };
+                if (!updateActions.includes(action)) {
+                    return action;
                 }
 
-                return action;
+                const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
+                let before: ICreateEntityMetadata | IEntity;
+
+                if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
+                    const numberPart = parseInt(entityId.slice(1, -4), 10);
+                    before = actions[numberPart].actionMetadata as ICreateEntityMetadata;
+                } else {
+                    before = await InstanceManagerService.getEntityInstanceById(entityId);
+                }
+
+                return {
+                    actionType: action.actionType,
+                    actionMetadata: {
+                        ...action.actionMetadata,
+                        before: before.properties,
+                    },
+                };
             }),
         );
     }

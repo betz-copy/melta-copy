@@ -1,5 +1,5 @@
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '../express/entityTemplate/interface';
-import EntityTemplateManager from '../express/entityTemplate/manager';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 const generateFromString = async (propertyValues: IEntitySingleProperty) => {
     const { format, relationshipReference } = propertyValues;
@@ -12,7 +12,9 @@ const generateFromString = async (propertyValues: IEntitySingleProperty) => {
     }
 
     if (format === 'relationshipReference') {
-        const entityTemplate: IEntityTemplatePopulated = await EntityTemplateManager.getTemplateById(relationshipReference?.relatedTemplateId!)!;
+        const entityTemplate: IMongoEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
+            relationshipReference?.relatedTemplateId!,
+        )!;
 
         return entityTemplate.name;
     }
@@ -29,7 +31,7 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
 
     const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
 
-    return `(${arrayOptions})[]`;
+    return `(${arrayOptions})[]` || 'string[]';
 };
 
 export const generateInterface = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
@@ -67,8 +69,8 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
     ].join('\n');
 };
 
-const getAllRelatedEntities = async (entityId: string, relatedEntities: IEntityTemplatePopulated[] = []) => {
-    const entityTemplate = await EntityTemplateManager.getTemplateById(entityId);
+export const getAllRelatedEntities = async (entityId: string, relatedEntities: IMongoEntityTemplate[] = []) => {
+    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
     if (!entityTemplate) return relatedEntities;
     if (!relatedEntities.some((entity) => entity._id === entityTemplate._id)) relatedEntities.push(entityTemplate);
 
@@ -83,6 +85,8 @@ const getAllRelatedEntities = async (entityId: string, relatedEntities: IEntityT
             }
         }),
     );
+
+    console.dir({ relatedEntities }, { depth: null });
 
     return relatedEntities;
 };

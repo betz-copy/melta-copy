@@ -651,7 +651,7 @@ export class TemplatesManager {
         return TemplatesManager.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static async updateEntityTemplateAction(id: string, actions: string) {
+    static updateEntityTemplateAction(id: string, actions: string) {
         return EntityTemplateManagerService.updateEntityTemplateAction(id, actions);
     }
 

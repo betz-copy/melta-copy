@@ -4,7 +4,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import EntityTemplateManager from './manager';
 import { IEntityTemplatePopulated } from './interface';
-import { generateInterfaceWithRelationships } from '../../utils/generateInterfaceFromEntityTemplateProperties';
+import { generateInterfaceWithRelationships } from '../../utils/interfacesGenerator';
 import { ServiceError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
 

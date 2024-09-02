@@ -22,6 +22,8 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IEntityCrudAction,
+    IExecutionOutput,
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
@@ -53,6 +55,7 @@ import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import BulkActionManager from '../bulkActions/manager';
+import { getAllRelatedEntities } from '../../utils/actions/interfaceGenerator';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -375,26 +378,45 @@ export class EntityManager {
 
     static async executeActionsOnCrud(
         action: IAction,
-        crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
+        crudAction: IEntityCrudAction,
         userId: string,
-    ): Promise<{ entityId: string; properties: Record<string, any> }[]> {
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    ): Promise<IExecutionOutput[]> {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
                 let entity: IEntity | undefined;
 
-                if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity)
-                    entity = (await this.handleCreateEntity(action.actionMetadata as ICreateEntityMetadata, transaction, userId)).createdEntity;
-                else if (action.actionType === ActionTypes.UpdateEntity) {
-                    const actionMetaDate = action.actionMetadata as IUpdateEntityMetadata;
-                    const fixedWithUpdatedFields = await BulkActionManager.fixUpdatedFields(actionMetaDate, transaction);
-                    entity = (await this.handleUpdateEntity(fixedWithUpdatedFields, transaction)).updatedEntity;
+                if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity) {
+                    const actionMetaData = action.actionMetadata as ICreateEntityMetadata;
+                    entity = (
+                        await EntityManager.createEntityInTransaction(
+                            transaction,
+                            actionMetaData.properties,
+                            entitiesTemplatesByIds.get(actionMetaData.templateId)!,
+                            userId,
+                        )
+                    ).createdEntity;
+                } else if (action.actionType === ActionTypes.UpdateEntity) {
+                    const actionMetaData = action.actionMetadata as IUpdateEntityMetadata;
+                    const fixedWithUpdatedFields = await BulkActionManager.fixUpdatedFields(actionMetaData, transaction);
+                    const currEntity = await EntityManager.getEntityByIdInTransaction(actionMetaData.entityId, transaction);
+
+                    entity = (
+                        await EntityManager.updateEntityByIdInnerTransaction(
+                            (actionMetaData as IUpdateEntityMetadata).entityId,
+                            fixedWithUpdatedFields,
+                            entitiesTemplatesByIds.get(currEntity.templateId)!,
+                            transaction,
+                            userId,
+                        )
+                    ).updatedEntity;
                 }
 
                 if (entity) {
                     const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
 
-                    const executionOutput: { entityId: string; properties: Record<string, any> }[] = await executeActionCodeAndGetEntitiesToUpdate(
+                    const executionOutput: IExecutionOutput[] = await executeActionCodeAndGetEntitiesToUpdate(
                         entityTemplate,
                         entity,
                         crudAction,
@@ -410,13 +432,13 @@ export class EntityManager {
     }
 
     static buildOneAction = async (
-        crudAction: 'onCreateEntity' | 'onUpdateEntity',
+        crudAction: IEntityCrudAction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         entity?: IEntity,
         duplicatedFromId?: string,
     ): Promise<IAction> => {
-        if (crudAction === 'onUpdateEntity') {
+        if (crudAction === IEntityCrudAction.onUpdateEntity) {
             return {
                 actionType: ActionTypes.UpdateEntity,
                 actionMetadata: {
@@ -427,7 +449,7 @@ export class EntityManager {
             };
         }
 
-        if (crudAction === 'onCreateEntity') {
+        if (crudAction === IEntityCrudAction.onCreateEntity) {
             return duplicatedFromId
                 ? {
                       actionType: ActionTypes.DuplicateEntity,
@@ -449,10 +471,7 @@ export class EntityManager {
     static buildUpdatedActions = async (
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
-        entitiesToUpdate: {
-            entityId: string;
-            properties: Record<string, any>;
-        }[],
+        entitiesToUpdate: IExecutionOutput[],
     ) => {
         const actions: IAction[] = [];
         let updatedFields: Record<string, any> = {};
@@ -494,7 +513,7 @@ export class EntityManager {
     };
 
     static buildActionsArray = async (
-        crudAction: 'onCreateEntity' | 'onUpdateEntity',
+        crudAction: IEntityCrudAction,
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         userId: string,
@@ -505,6 +524,7 @@ export class EntityManager {
         const entitiesToUpdate = await this.executeActionsOnCrud(action, crudAction, userId);
         const actionsOfUpdatedEntities = await this.buildUpdatedActions(properties, entityTemplate, entitiesToUpdate);
         const actions = [action, ...actionsOfUpdatedEntities];
+
         return actions;
     };
 
@@ -515,8 +535,18 @@ export class EntityManager {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onCreateEntity')) {
-            const actions = await this.buildActionsArray('onCreateEntity', properties, entityTemplate, userId, undefined, duplicatedFromId);
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onCreateEntity)) {
+            const entityTemplates = await getAllRelatedEntities(entityTemplate._id);
+            const entitiesTemplatesByIds = new Map(entityTemplates.map((template) => [template._id, template]));
+
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onCreateEntity,
+                properties,
+                entityTemplate,
+                userId,
+                undefined,
+                duplicatedFromId,
+            );
 
             const [createdEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { createdEntity, updatedEntities, actions };
@@ -1206,8 +1236,15 @@ export class EntityManager {
             throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
         }
 
-        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, 'onUpdateEntity')) {
-            const actions = await this.buildActionsArray('onUpdateEntity', entityProperties, entityTemplate, userId, unPopulatedEntity);
+        if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
+            const actions = await this.buildActionsArray(
+                IEntityCrudAction.onUpdateEntity,
+                entityProperties,
+                entityTemplate,
+                userId,
+                unPopulatedEntity,
+            );
+
             const [updatedEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
 
             return { updatedEntity, updatedEntities, actions };
@@ -1222,7 +1259,7 @@ export class EntityManager {
 
             const ruleFailuresBeforeAction = await EntityManager.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
 
-            const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
+            const { updatedEntity, activityLogsToCreate } = await EntityManager.updateEntityByIdInnerTransaction(
                 id,
                 entityProperties,
                 entityTemplate,

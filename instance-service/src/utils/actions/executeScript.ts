@@ -3,14 +3,14 @@ import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import format from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { generateInterfaceWithRelationships } from './generateInterfaceFromJsonSchema';
-import { IEntity, isIEntity } from '../../express/entities/interface';
+import { IEntity, IEntityCrudAction, IExecutionOutput, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import config from '../../config';
+import { generateInterfaceWithRelationships } from './interfaceGenerator';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -30,10 +30,7 @@ const generateFakeEntityId = (index: number) => {
     return `${brokenRulesFakeEntityIdPrefix}${index}._id`;
 };
 
-const prepareCodeForActionExecution = async (
-    entityTemplate: IMongoEntityTemplate,
-    crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
-) => {
+const prepareCodeForActionExecution = async (entityTemplate: IMongoEntityTemplate, crudAction: IEntityCrudAction) => {
     const defaultCode = [
         'class CustomError extends Error {',
         '   constructor(message: string) {',
@@ -66,7 +63,7 @@ export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
         const context = vm.createContext({ entity: entity.properties });
         // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
         vm.runInContext(jsCode, context, { timeout: 10000 });
-        const executionOutput: { entityId: string; properties: Record<string, any> }[] = vm.runInContext('getActions(entity)', context);
+        const executionOutput: IExecutionOutput[] = vm.runInContext('getActions(entity)', context);
         return executionOutput;
     } catch (error) {
         if ((error as unknown as Error).name === 'CustomError')
@@ -82,9 +79,9 @@ export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
 export const executeActionCodeAndGetEntitiesToUpdate = async (
     entityTemplate: IMongoEntityTemplate,
     entity: IEntity,
-    crudAction: 'onCreateEntity' | 'onUpdateEntity' | 'onDeleteEntity',
+    crudAction: IEntityCrudAction,
     transaction: Transaction,
-): Promise<{ entityId: string; properties: Record<string, any> }[]> => {
+): Promise<IExecutionOutput[]> => {
     const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
     const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
 
@@ -108,7 +105,7 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
             const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
             const entityAfterManipulations = entityToUpdate;
 
-            if (entityToUpdate.entityId === entity.properties._id && crudAction === 'onCreateEntity') {
+            if (entityToUpdate.entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity) {
                 entityAfterManipulations.entityId = generateFakeEntityId(0);
             }
 
@@ -131,7 +128,7 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
                 }
             });
 
-            await validateEntity(entityTemplateOfEntityToUpdate._id, entityAfterManipulations.properties);
+            await validateEntity(entityTemplateOfEntityToUpdate, entityAfterManipulations.properties);
 
             updatedEntities.push(entityAfterManipulations);
         }),
