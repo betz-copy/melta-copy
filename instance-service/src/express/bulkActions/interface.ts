@@ -1,3 +1,5 @@
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
     sourceEntityId: string;
@@ -24,21 +26,37 @@ export interface IDuplicateEntityMetadata {
 
 export interface IUpdateEntityMetadata {
     entityId: string;
-    before?: Record<string, any>;
     updatedFields: Record<string, any>;
+    before?: Record<string, any>;
 }
 
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
 }
+
+export type IPopulatedCreateEntityMetadata = Omit<ICreateEntityMetadata, 'templateId'> & {
+    template: IMongoEntityTemplate;
+};
+
+export type IPopulatedUpdateEntityMetadata = Omit<IUpdateEntityMetadata, 'before'> & {
+    template: IMongoEntityTemplate;
+};
+
+export type IPopulatedDuplicateEntityMetadata = Omit<IDuplicateEntityMetadata, 'templateId'> & {
+    template: IMongoEntityTemplate;
+};
+
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata
     | ICreateEntityMetadata
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata;
+    | IUpdateEntityStatusMetadata
+    | IPopulatedDuplicateEntityMetadata
+    | IPopulatedCreateEntityMetadata
+    | IPopulatedUpdateEntityMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
