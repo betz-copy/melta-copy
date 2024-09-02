@@ -171,7 +171,7 @@ const config = {
     },
     notifications: {
         dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('* * * *').asString(),
+        dateAlertTime: env.get('DATE_ALERT_TIME').default('* * * * *').asString(),
     },
 };
 
