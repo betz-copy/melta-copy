@@ -7,6 +7,7 @@ import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
+import { menash } from 'menashmq';
 import config from '../../config';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
@@ -33,7 +34,6 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
-import { menash } from 'menashmq';
 
 const { errorCodes, rabbit } = config;
 
@@ -244,6 +244,7 @@ export class InstancesManager {
         }
 
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+
         return fileIdsToDelete;
     }
 
@@ -485,6 +486,7 @@ export class InstancesManager {
         }
 
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+
         return fileIdsToRemove;
     }
 

@@ -29,14 +29,14 @@ const initializeRabbit = async () => {
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
     await menash.declareTopology({
-        queues: [{ name: rabbit.deleteUnusedFilesQueue, options: { durable: true, prefetch: 1 } }], // num of unack messages fetched at a time
+        queues: [{ name: rabbit.deleteUnusedFilesQueue, options: { durable: true, prefetch: 1 } }],
         consumers: [
             {
                 queueName: rabbit.deleteUnusedFilesQueue,
                 onMessage: DeleteFilesConsumer.createDeleteFilesQueueReq,
                 options: { noAck: false },
             },
-        ], // ack message only after processed
+        ],
     });
 
     logger.info('Rabbit initialized');
