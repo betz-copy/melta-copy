@@ -4,6 +4,7 @@ import { Server } from './express/server';
 import { config } from './config';
 import { minioClient } from './utils/minio';
 import logger from './utils/logger/logsLogger';
+import DeleteFilesConsumer from './utils/rabbit/consumer';
 
 const { logs, rabbit } = config;
 
@@ -23,6 +24,17 @@ const initializeRabbit = async () => {
     logger.info('Rabbit connected');
 
     await menash.declareQueue(rabbit.previewQueue);
+
+    await menash.declareTopology({
+        queues: [{ name: rabbit.deleteUnusedFilesQueue, options: { durable: true, prefetch: 1 } }],
+        consumers: [
+            {
+                queueName: rabbit.deleteUnusedFilesQueue,
+                onMessage: DeleteFilesConsumer.createDeleteFilesQueueReq,
+                options: { noAck: false },
+            },
+        ],
+    });
 
     logger.info('Rabbit initialized');
 };
