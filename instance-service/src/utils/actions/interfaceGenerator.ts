@@ -1,7 +1,7 @@
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
-const generateFromString = async (propertyValues: IEntitySingleProperty) => {
+const generateFromString = (propertyValues: IEntitySingleProperty, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
     const { format, relationshipReference } = propertyValues;
 
     if (propertyValues.enum) {
@@ -12,9 +12,7 @@ const generateFromString = async (propertyValues: IEntitySingleProperty) => {
     }
 
     if (format === 'relationshipReference') {
-        const entityTemplate: IMongoEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
-            relationshipReference?.relatedTemplateId!,
-        )!;
+        const entityTemplate: IMongoEntityTemplate = entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!;
 
         return entityTemplate.name;
     }
@@ -34,7 +32,11 @@ const generateFromArray = (propertyValues: IEntitySingleProperty) => {
     return `(${arrayOptions})[]` || 'string[]';
 };
 
-export const generateInterface = async (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+export const generateInterface = (
+    entity: Record<string, IEntitySingleProperty>,
+    interfaceName: string,
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
         'readonly createdAt': 'string',
@@ -42,7 +44,7 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
         'readonly disabled': 'string',
     };
 
-    const getAllPropertiesTypes = Object.entries(entity).map(async ([propertyName, propertyValues]) => {
+    Object.entries(entity).forEach(([propertyName, propertyValues]) => {
         const { type, serialCurrent } = propertyValues;
 
         switch (type) {
@@ -56,11 +58,9 @@ export const generateInterface = async (entity: Record<string, IEntitySingleProp
                 dynamicInterface[propertyName] = generateFromArray(propertyValues);
                 break;
             default:
-                dynamicInterface[propertyName] = await generateFromString(propertyValues);
+                dynamicInterface[propertyName] = generateFromString(propertyValues, entitiesTemplatesByIds);
         }
     });
-
-    await Promise.all(getAllPropertiesTypes);
 
     return [
         `interface ${interfaceName} {`,
@@ -86,18 +86,13 @@ export const getAllRelatedEntities = async (entityId: string, relatedEntities: I
         }),
     );
 
-    console.dir({ relatedEntities }, { depth: null });
-
     return relatedEntities;
 };
 
-export const generateInterfaceWithRelationships = async (id: string) => {
-    const entityAndAllRelatedEntities = await getAllRelatedEntities(id);
-    const interfaces = await Promise.all(
-        entityAndAllRelatedEntities.map(async (entity) => {
-            return generateInterface(entity.properties.properties, entity.name);
-        }),
-    );
+export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
+    const interfaces = Object.values(entitiesTemplatesByIds).map((entityTemplate) => {
+        return generateInterface(entityTemplate.properties.properties, entityTemplate.name, entitiesTemplatesByIds);
+    });
 
     return interfaces.join('\n\n');
 };

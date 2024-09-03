@@ -35,17 +35,17 @@ export interface IUpdateEntityStatusMetadata {
     disabled: boolean;
 }
 
-export type IPopulatedCreateEntityMetadata = Omit<ICreateEntityMetadata, 'templateId'> & {
-    template: IMongoEntityTemplate;
-};
+export interface IPopulatedCreateEntityMetadata extends Omit<ICreateEntityMetadata, 'templateId'> {
+    entityTemplate: IMongoEntityTemplate;
+}
 
-export type IPopulatedUpdateEntityMetadata = Omit<IUpdateEntityMetadata, 'before'> & {
-    template: IMongoEntityTemplate;
-};
+export interface IPopulatedUpdateEntityMetadata extends IUpdateEntityMetadata {
+    entityTemplate: IMongoEntityTemplate;
+}
 
-export type IPopulatedDuplicateEntityMetadata = Omit<IDuplicateEntityMetadata, 'templateId'> & {
-    template: IMongoEntityTemplate;
-};
+export interface IPopulatedDuplicateEntityMetadata extends Omit<IDuplicateEntityMetadata, 'templateId'> {
+    entityTemplate: IMongoEntityTemplate;
+}
 
 export type IActionMetadata =
     | ICreateRelationshipMetadata

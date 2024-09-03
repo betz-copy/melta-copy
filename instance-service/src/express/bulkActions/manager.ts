@@ -10,6 +10,7 @@ import {
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
+    IPopulatedUpdateEntityMetadata,
     IUpdateEntityMetadata,
 } from './interface';
 import EntityManager from '../entities/manager';
@@ -42,7 +43,7 @@ export class BulkActionManager {
         return relationshipToReturn;
     }
 
-    static async fixUpdatedFields(actionMetadata: IUpdateEntityMetadata, transaction: Transaction) {
+    static async fixUpdatedFields(actionMetadata: IUpdateEntityMetadata | IPopulatedUpdateEntityMetadata, transaction: Transaction) {
         const { entityId, updatedFields } = actionMetadata;
 
         const entity = await EntityManager.getEntityByIdInTransaction(entityId, transaction);

@@ -8,11 +8,10 @@ import { ServiceError } from '../../express/error';
 import { validateEntity } from '../../express/entities/validator.template';
 import EntityManager from '../../express/entities/manager';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
 
-const { brokenRulesFakeEntityIdPrefix } = config;
+const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 
 const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
     const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
@@ -30,27 +29,27 @@ const generateFakeEntityId = (index: number) => {
     return `${brokenRulesFakeEntityIdPrefix}${index}._id`;
 };
 
-const prepareCodeForActionExecution = async (entityTemplate: IMongoEntityTemplate, crudAction: IEntityCrudAction) => {
-    const defaultCode = [
-        'class CustomError extends Error {',
-        '   constructor(message: string) {',
-        '       super(message);',
-        '       this.name = "CustomError";',
-        '    }',
-        '}',
-        `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
-        'const actions: any[] = [];',
-        'function updateEntity(entityId: string, properties: Record<string, any>): void {',
-        '  actions.push({ entityId, properties });',
-        '}',
-    ].join('\n');
+const addDefaultFunctionsToActionCode = (
+    entityTemplate: IMongoEntityTemplate,
+    crudAction: IEntityCrudAction,
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+) => {
+    const defaultCode = `class CustomError extends Error {
+           constructor(message: string) {
+               super(message);
+               this.name = ${errorCodes.actionsCustomError};
+            }
+        }
+        ${generateInterfaceWithRelationships(entitiesTemplatesByIds)}
+        const actions: any[] = [];
+        function updateEntity(entityId: string, properties: Record<string, any>): void {
+          actions.push({ entityId, properties });
+        }`;
 
-    const getActionsFunction = [
-        `function getActions(${entityTemplate.name}:${entityTemplate.name}){`,
-        `  ${crudAction}(${entityTemplate.name})`,
-        '    return actions',
-        '}',
-    ].join('\n');
+    const getActionsFunction = `function getActions(${entityTemplate.name}:${entityTemplate.name}){
+          ${crudAction}(${entityTemplate.name})
+            return actions
+        }`;
 
     const code = `${defaultCode}\n${entityTemplate.actions}\n${getActionsFunction}`;
     const jsCode = ts.transpile(code);
@@ -58,42 +57,34 @@ const prepareCodeForActionExecution = async (entityTemplate: IMongoEntityTemplat
     return jsCode;
 };
 
-export const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
+const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
     try {
         const context = vm.createContext({ entity: entity.properties });
+
         // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
         vm.runInContext(jsCode, context, { timeout: 10000 });
+
         const executionOutput: IExecutionOutput[] = vm.runInContext('getActions(entity)', context);
         return executionOutput;
     } catch (error) {
-        if ((error as unknown as Error).name === 'CustomError')
+        if ((error as Error).name === errorCodes.actionsCustomError)
             throw new ServiceError(400, `Error executing VM code of actions`, {
-                errorCode: config.errorCodes.actionsCustomError,
-                message: (error as unknown as Error).message,
+                errorCode: errorCodes.actionsCustomError,
+                message: (error as Error).message,
             });
 
         throw new ServiceError(400, `Error executing VM code  of actions: ${error}`);
     }
 };
 
-export const executeActionCodeAndGetEntitiesToUpdate = async (
-    entityTemplate: IMongoEntityTemplate,
+const adjustExecutionOutputToCommonStructure = async (
+    executionOutput: IExecutionOutput[],
     entity: IEntity,
     crudAction: IEntityCrudAction,
     transaction: Transaction,
-): Promise<IExecutionOutput[]> => {
-    const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
-    const jsCode = await prepareCodeForActionExecution(entityTemplate, crudAction);
-
-    const executionOutput: {
-        entityId: string;
-        properties: Record<string, any>;
-    }[] = executeActionCodeInVM(populatedInstances, jsCode);
-
-    const updatedEntities: {
-        entityId: string;
-        properties: Record<string, any>;
-    }[] = [];
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+) => {
+    const updatedEntities: IExecutionOutput[] = [];
 
     await Promise.all(
         executionOutput.map(async (entityToUpdate) => {
@@ -102,14 +93,14 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
             }
 
             const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
-            const entityTemplateOfEntityToUpdate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+            const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
             const entityAfterManipulations = entityToUpdate;
 
             if (entityToUpdate.entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity) {
                 entityAfterManipulations.entityId = generateFakeEntityId(0);
             }
 
-            Object.entries(entityTemplateOfEntityToUpdate.properties.properties).forEach(([name, value]) => {
+            Object.entries(currentEntityTemplate.properties.properties).forEach(([name, value]) => {
                 if (name in entityToUpdate.properties) {
                     const propertyValue = entityToUpdate.properties[name];
 
@@ -128,11 +119,28 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
                 }
             });
 
-            await validateEntity(entityTemplateOfEntityToUpdate, entityAfterManipulations.properties);
+            await validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
 
             updatedEntities.push(entityAfterManipulations);
         }),
     );
+
+    return updatedEntities;
+};
+
+export const executeActionCodeAndGetEntitiesToUpdate = async (
+    entityTemplate: IMongoEntityTemplate,
+    entity: IEntity,
+    crudAction: IEntityCrudAction,
+    transaction: Transaction,
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+): Promise<IExecutionOutput[]> => {
+    const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
+    const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds);
+
+    const executionOutput = executeActionCodeInVM(populatedInstances, jsCode);
+
+    const updatedEntities = await adjustExecutionOutputToCommonStructure(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds);
 
     return updatedEntities;
 };
