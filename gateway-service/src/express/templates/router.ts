@@ -94,6 +94,7 @@ templatesRouter.patch(
     wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
     wrapController(TemplatesController.deleteEntityEnumFieldValue),
 );
+templatesRouter.post('/entities/search', TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
