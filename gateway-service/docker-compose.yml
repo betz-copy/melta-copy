@@ -8,6 +8,9 @@ services:
 
   gateway-service:
     build: .
+    command: bash -c "cron && npm start"
+    volumes:
+      - ./scripts:/usr/src/app/scripts
     environment:
       PORT: 8000
       TOKEN_SECRET: secret

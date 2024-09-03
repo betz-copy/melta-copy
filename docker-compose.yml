@@ -156,6 +156,13 @@ services:
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
+  cron-service:
+    build: ./gateway-service
+    container_name: cron-service
+    command: cron -f
+    volumes:
+      - ./scripts:/etc/cron.d
+
   # frontend-service:
   #   build: ./frontend-service
   #   volumes:

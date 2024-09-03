@@ -1,16 +1,16 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: date-notification-check
-  namespace: default
+    name: date-notification-check
+    namespace: default
 spec:
-  schedule: "0 0 * * *"
-  jobTemplate:
-    spec:
-      template:
+    schedule: '* * * * *'
+    jobTemplate:
         spec:
-          containers:
-          - name: date-notification-check
-            image: gateway-service
-            command: ["node", "/usr/src/app/src/utils/notifications/dateNotificationsCheck.ts"]
-          restartPolicy: OnFailure
+            template:
+                spec:
+                    containers:
+                        - name: date-notification-check
+                          image: melta-gateway-service:latest
+                          command: ['node', '/usr/src/app/src/utils/notifications/dateNotificationsCheck.ts']
+                    restartPolicy: OnFailure

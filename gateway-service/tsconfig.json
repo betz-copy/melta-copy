@@ -19,8 +19,6 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
     "outDir": "./dist/",
     "lib": ["ES2020.Promise"]
   },

@@ -103,7 +103,7 @@ const sendNotificationsForEntityTemplate = async (entityTemplate: IMongoEntityTe
     }
 };
 
-export const checkForDateNotifications = async () => {
+const checkForDateNotifications = async () => {
     schedule.scheduleJob(notifications.dateAlertTime, async () => {
         logger.info('Checking for Date Notifications...');
         try {
@@ -114,3 +114,5 @@ export const checkForDateNotifications = async () => {
         }
     });
 };
+
+checkForDateNotifications();
