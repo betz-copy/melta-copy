@@ -4,7 +4,6 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 
 RUN npm install --silent
-# --production (in npm install) shouldnt be because need to run build typescript
 
 COPY . .
 
