@@ -30,7 +30,7 @@ const oldPermissionsToNewPermissions = (
 
         return {
             kartoffelId: oldPermissionOfUser.user.id,
-            digitalIdentitySource: oldPermissionOfUser.user.digitalIdentities[0].source,
+            digitalIdentitySource: oldPermissionOfUser.user.digitalIdentities[0]?.source,
             permissions: { [config.workspaceId]: newPermissions },
         };
     });

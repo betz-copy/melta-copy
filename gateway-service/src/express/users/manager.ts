@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';
@@ -29,7 +30,10 @@ export class UsersManager {
         kartoffelId: string,
         digitalIdentity: Pick<IExternalUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>,
     ) {
-        if (!digitalIdentity.fullName || !digitalIdentity.hierarchy || !digitalIdentity.jobTitle || !digitalIdentity.mail) {
+        if (!digitalIdentity.jobTitle) digitalIdentity.jobTitle = 'NONE';
+        if (!digitalIdentity.hierarchy) digitalIdentity.hierarchy = 'NONE';
+
+        if (!digitalIdentity.fullName || !digitalIdentity.mail) {
             throw new KartoffelUserMissingDataError(kartoffelId);
         }
     }
