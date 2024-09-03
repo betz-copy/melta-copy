@@ -18,10 +18,10 @@ const { infiniteScrollPageCount } = environment.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
-    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
 
     const [searchText, setSearchText] = useState('');
 
+    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         processTemplateId: string | null;
