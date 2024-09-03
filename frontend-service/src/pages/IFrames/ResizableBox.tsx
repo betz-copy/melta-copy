@@ -6,32 +6,39 @@ import { Grid } from '@mui/material';
 interface ResizeBoxProps {
     id: string;
     isSideBarOpen: boolean;
+    isDimensionsChange: boolean;
+    setIsDimensionsChange: (value: boolean) => void;
 }
 
-const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = false }) => {
+const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = false, isDimensionsChange, setIsDimensionsChange }) => {
     const localStorageKey = `iFrameDimension_${id}`;
 
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const sideBarWidth = isSideBarOpen ? 315 : 150;
+    const sideBarWidth = isSideBarOpen ? 310 : 150;
     const maxWidth = screenWidth - sideBarWidth;
     const maxHeight = screenHeight - 140;
     const defaultWidth = maxWidth / 2;
     const defaultHeight = screenHeight / 2;
 
-    const [isResizing, setIsResizing] = React.useState(false);
-
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
         if (savedDimensions) return JSON.parse(savedDimensions);
-        localStorage.setItem(localStorageKey, JSON.stringify({ width: defaultWidth, height: defaultHeight }));
-        return { width: defaultWidth, height: defaultHeight };
+
+        const defaultDimensions = { width: defaultWidth, height: defaultHeight };
+        localStorage.setItem(localStorageKey, JSON.stringify(defaultDimensions));
+        return defaultDimensions;
     };
 
-    const [dimensions, setDimensions] = useState(getDimensions());
+    const [dimensions, setDimensions] = useState(getDimensions);
+    const [isResizing, setIsResizing] = React.useState(false);
     useEffect(() => {
-        setDimensions(getDimensions());
-    });
+        if (isDimensionsChange) {
+            setDimensions(getDimensions());
+            setIsDimensionsChange(false);
+        }
+    }, [isDimensionsChange]);
+
     const onResizeStart = () => {
         setIsResizing(true);
     };

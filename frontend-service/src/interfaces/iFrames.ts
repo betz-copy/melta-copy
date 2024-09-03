@@ -2,7 +2,6 @@ export interface IFrame {
     name: string;
     url: string;
     categoryIds: string[];
-    apiToken?: string;
     iconFileId: string | null;
     placeInSideBar?: boolean;
 }

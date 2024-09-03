@@ -44,14 +44,14 @@ export const MenuItemContent: React.FC<{
             {!group && (
                 <Grid
                     style={{
-                        width: '30px',
+                        width: '40px',
                         height: '24px',
                         gap: '2px',
                         display: 'flex',
                         flexDirection: 'column',
                         alignContent: 'center',
                         justifyContent: 'center',
-                        marginRight: insideGroup ? '30px' : '10px',
+                        marginRight: insideGroup ? '30px' : '3px',
                     }}
                 >
                     {isDraggable && <img src="/icons/draggable-icon.svg" />}

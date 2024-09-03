@@ -91,6 +91,9 @@ export const environment = {
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
     },
+    iFrames: {
+        infiniteScrollPageCount: 4,
+    },
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,

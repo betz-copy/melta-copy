@@ -70,8 +70,8 @@ const IFramesPageHeadline: React.FC<{
                         MenuProps={{
                             PaperProps: {
                                 style: {
-                                    height: '180px',
-                                    width: '190px',
+                                    height: '190px',
+                                    width: '180px',
                                     backgroundColor: '#EBEFFA',
                                     borderRadius: '0px 0px 10px 10px',
                                     boxShadow: '-2px 2px 4px 0px #1E27754D',
@@ -88,7 +88,7 @@ const IFramesPageHeadline: React.FC<{
                             },
                             transformOrigin: {
                                 vertical: 'top',
-                                horizontal: 130,
+                                horizontal: 120,
                             },
                         }}
                         sx={{
@@ -117,7 +117,7 @@ const IFramesPageHeadline: React.FC<{
                                                         sx={{
                                                             textOverflow: 'ellipsis',
                                                             overflow: 'hidden',
-                                                            padding: '8px',
+                                                            padding: '6px',
                                                         }}
                                                     >
                                                         <MenuItemContent

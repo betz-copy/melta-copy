@@ -11,8 +11,11 @@ import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { Resizable } from './ResizableBox';
+import { environment } from '../../globals';
 
 const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
+    const { infiniteScrollPageCount } = environment.iFrames;
+
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
         iFrame: IMongoIFrame | null;
@@ -24,6 +27,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const queryClient = useQueryClient();
 
     const [iFramesOrder, setIFramesOrder] = useState<string[]>([]);
+    const [isDimensionsChange, setIsDimensionsChange] = useState(false);
     const queryKey = ['searchIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
 
@@ -40,7 +44,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
             .filter((key) => key.startsWith('iFrameDimension_'))
             .forEach((key) => {
                 const value = JSON.parse(localStorage.getItem(key)!);
-                if (isSideBarOpen) {
+                if (isSideBarOpen && open !== 'true') {
                     value.width *= 0.9;
                 } else if (open === 'true' && !isSideBarOpen) {
                     value.width /= 0.9;
@@ -48,7 +52,9 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
 
                 localStorage.setItem(key, JSON.stringify(value));
             });
+
         localStorage.setItem('isSideBarOpen', `${isSideBarOpen}`);
+        setIsDimensionsChange(true);
     }, [isSideBarOpen]);
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
@@ -79,20 +85,20 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                             const index = pageParam ?? 0;
 
                             if (searchInput) {
-                                const currentOrder = iFramesOrder.slice(index, index + 4);
+                                const currentOrder = iFramesOrder.slice(index, index + infiniteScrollPageCount);
                                 return searchIFrames({
                                     search: searchInput,
                                     ids: currentOrder.map((iFrameId) => iFrameId),
                                 });
                             }
-                            return allIFrames!.slice(index, index + 4);
+                            return allIFrames!.slice(index, index + infiniteScrollPageCount);
                         }}
                         onQueryError={(error) => {
                             console.log('Failed loading data:', error);
                             toast.error(i18next.t('iFrames.searchFailed'));
                         }}
                         getNextPageParam={(lastPage, allPages) => {
-                            const nextPage = allPages.length * 4;
+                            const nextPage = allPages.length * infiniteScrollPageCount;
                             return lastPage.length ? nextPage : undefined;
                         }}
                         emptyText={i18next.t('iFrames.noIFramesFound')}
@@ -100,19 +106,26 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                     >
                         {(iFrame) => {
                             return (
-                                <Resizable id={iFrame._id} isSideBarOpen={isSideBarOpen}>
-                                    <Grid
-                                        item
-                                        height="100%"
-                                        width="100%"
-                                        style={{
-                                            borderRadius: '18px',
-                                            overflow: 'hidden',
-                                        }}
+                                <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                                    <Resizable
+                                        id={iFrame._id}
+                                        isSideBarOpen={isSideBarOpen}
+                                        isDimensionsChange={isDimensionsChange}
+                                        setIsDimensionsChange={setIsDimensionsChange}
                                     >
-                                        <IFramePage iFrame={iFrame} isIFramePage={false} setIFramesOrder={setIFramesOrder} />
-                                    </Grid>
-                                </Resizable>
+                                        <Grid
+                                            item
+                                            height="100%"
+                                            width="100%"
+                                            style={{
+                                                borderRadius: '15px 15px 25px 15px',
+                                                overflow: 'hidden',
+                                            }}
+                                        >
+                                            <IFramePage iFrame={iFrame} isIFramePage={false} setIFramesOrder={setIFramesOrder} />
+                                        </Grid>
+                                    </Resizable>
+                                </div>
                             );
                         }}
                     </InfiniteScroll>

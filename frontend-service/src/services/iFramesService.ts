@@ -1,4 +1,3 @@
-import { mapValues } from 'lodash';
 import axios from '../axios';
 import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { environment } from '../globals';
@@ -21,8 +20,6 @@ const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValu
 
 const searchIFrames = async (query: ISearchIFramesBody) => {
     const { data } = await axios.post<IMongoIFrame[]>(`${iFrames}/search`, query);
-    // const { l } = query;
-    console.log({ data });
 
     return data;
 };
@@ -35,8 +32,7 @@ const getIFrameById = async (id: string) => {
 
 const createIFrame = async (newIFrame: IFrameWizardValues) => {
     const formData = new FormData();
-
-    const { name, url, categoryIds, apiToken, placeInSideBar } = newIFrame;
+    const { name, url, categoryIds, placeInSideBar } = newIFrame;
     if (newIFrame.icon) {
         formData.append('file', newIFrame.icon.file as File);
     }
@@ -44,7 +40,6 @@ const createIFrame = async (newIFrame: IFrameWizardValues) => {
     formData.append('url', url);
     formData.append('categoryIds', JSON.stringify(categoryIds));
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
-    if (apiToken) formData.append('apiToken', apiToken);
 
     const { data } = await axios.post<IMongoIFrame>(iFrames, formData);
 
@@ -60,7 +55,7 @@ const deleteIFrame = async (iFrameId: string) => {
 const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     const formData = new FormData();
 
-    const { name, url, categoryIds, apiToken, placeInSideBar } = updatedIFrame;
+    const { name, url, categoryIds, placeInSideBar } = updatedIFrame;
 
     if (updatedIFrame.icon) {
         if (updatedIFrame.icon.file instanceof File) {
@@ -73,7 +68,6 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     formData.append('url', url);
     formData.append('categoryIds', JSON.stringify(categoryIds));
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
-    if (apiToken) formData.append('apiToken', apiToken);
 
     const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
 

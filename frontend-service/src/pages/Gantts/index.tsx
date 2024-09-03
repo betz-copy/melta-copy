@@ -44,6 +44,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                         </IconButton>
                     )}
                 </Grid>
+
                 <ViewingBox minHeight="82vh">
                     <InfiniteScroll<IGantt>
                         queryKey={queryKey}
@@ -60,6 +61,7 @@ const GanttsPage: React.FC<IGanttsPageProps> = ({ setTitle }) => {
                     </InfiniteScroll>
                 </ViewingBox>
             </Grid>
+
             <CreateGanttDialog
                 open={ganttDialogOpen}
                 onClose={() => {

@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, MenuItem, Popover } from '@mui/material';
+import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, MenuItem, Popover, Tooltip, Menu } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -38,48 +38,39 @@ type SideBarProps = {
 };
 
 const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
-    const theme = useTheme();
-    const [showIFrames, setShowIFrames] = useState<boolean>(false);
+    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
     const navigate = useNavigate();
-    const [anchorEl, setAnchorEl] = useState(null);
-    const iconButtonRef = useRef(null);
-
-    const handleMouseEnter = (event) => {
-        // }: React.MouseEvent<HTMLDivElement>) => {
-        // setShowIFrames(true);
-        if (anchorEl !== event.currentTarget) {
-            console.log(event.currentTarget);
-
-            setAnchorEl(event.currentTarget);
-        }
+    const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
+        console.log('1');
+        setAnchorEl(event.currentTarget);
     };
 
     const handleMouseLeave = () => {
-        // setShowIFrames(false);
+        console.log('2');
         setAnchorEl(null);
+    };
 
-        console.log('ssbfcjshgs');
+    const handleMenuItemClick = (id: string) => {
+        navigate(`/iframes/${id}`);
+        setAnchorEl(null);
     };
 
     return (
         <>
-            {/* <Grid
-                style={{
-                    direction: 'rtl',
-                }}
-                ref={
-            > */}
             <NavButton
                 to="/iframes"
                 text={i18next.t('pages.iFrames')}
                 isDrawerOpen={isDrawerOpen}
                 onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
-                onMouseHover={handleMouseEnter}
-                // handleMouseLeave={handleMouseLeave}
+                handleMouseEnter={handleMouseEnter}
             >
                 <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
             </NavButton>
-            <Popover
+            <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMouseLeave}
+                MenuListProps={{ onMouseLeave: handleMouseLeave }}
                 anchorOrigin={{
                     vertical: 'top',
                     horizontal: 'left',
@@ -88,133 +79,15 @@ const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, 
                     vertical: 'top',
                     horizontal: 'right',
                 }}
-                open={Boolean(anchorEl)}
             >
-                {/* {iFrames?.length > 0 && (
-                    <Menu
-                        anchorEl={iconButtonRef.current}
-                        // open={showIFrames}
-                        // anchorEl={anchorEl}
-                        onClose={handleMouseLeave}
-                        onMouseEnter={handleMouseEnter}
-                        onMouseLeave={handleMouseLeave}
-                        anchorOrigin={{
-                            vertical: 'top',
-                            horizontal: 'left',
-                        }}
-                        transformOrigin={{
-                            vertical: 'top',
-                            horizontal: 'right',
-                        }}
-                        sx={{
-                            maxHeight: 350,
-                            // backgroundColor: '#EBEFFA',
-                        }}
-                    > */}
-                {/* {iFrames?.map((iFrame) => (
-                    <MenuItem
-                        key={iFrame._id}
-                        onClick={() => {
-                            handleMouseLeave();
-                            navigate(`/iframes/${iFrame._id}`);
-                        }}
-                        sx={{ alignItems: 'end' }}
-                    >
-                        {iFrame.iconFileId ? (
-                            <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
-                        ) : (
-                            <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
-                        )}
-
-                        <Grid sx={{ paddingLeft: '10px', textTransform: 'none' }}> {iFrame.name}</Grid>
+                {iFrames?.map((iFrame) => (
+                    <MenuItem key={iFrame._id} onClick={() => handleMenuItemClick(iFrame._id)}>
+                        {iFrame.name}
                     </MenuItem>
-                ))} */}
-                {/* </Menu> */}
-                {/* )} */}
-
-                {/* <Typography sx={{ p: 2 }}>The content of the Popover.</Typography> */}
-            </Popover>
-            {/* </Grid> */}
+                ))}
+            </Menu>
         </>
     );
-
-    // const theme = useTheme();
-
-    // const navigate = useNavigate();
-    // const iconButtonRef = useRef(null);
-    // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    // const open = Boolean(anchorEl);
-
-    // const handleContextMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    //     event.preventDefault();
-    //     setAnchorEl(event.currentTarget);
-    // };
-
-    // const handleCloseMenu = () => {
-    //     setAnchorEl(null);
-    // };
-
-    // return (
-    //     <Grid>
-    //         <Grid
-    //             style={{
-    //                 direction: 'rtl',
-    //             }}
-    //         >
-    //             <IconButton
-    //                 ref={iconButtonRef}
-    //                 onContextMenu={handleContextMenu}
-    //                 sx={{
-    //                     color: '#FFFFFF80',
-    //                     fontFamily: 'Rubik',
-    //                     fontSize: '17px',
-    //                     maxWidth: isDrawerOpen ? 'auto' : '90px',
-    //                 }}
-    //             >
-    //                 <NavButton
-    //                     to="/iframes"
-    //                     text={i18next.t('pages.iFrames')}
-    //                     isDrawerOpen={isDrawerOpen}
-    //                     onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
-    //                 >
-    //                     <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
-    //                 </NavButton>
-    //             </IconButton>
-    //         </Grid>
-    //         {iFrames?.length > 0 && (
-    //             <Menu
-    //                 anchorEl={anchorEl}
-    //                 open={open}
-    //                 onClose={handleCloseMenu}
-    //                 anchorOrigin={{
-    //                     vertical: 'top',
-    //                     horizontal: 'left',
-    //                 }}
-    //                 transformOrigin={{
-    //                     vertical: 'top',
-    //                     horizontal: 'right',
-    //                 }}
-    //                 sx={{
-    //                     maxHeight: 350,
-    //                 }}
-    //             >
-    //                 {iFrames.map((iFrame) => (
-    //                     <MenuItem key={iFrame._id}>
-    //                         <Button onClick={() => navigate(`/iframes/${iFrame._id}`)} sx={{ alignItems: 'end' }}>
-    //                             {iFrame.iconFileId ? (
-    //                                 <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
-    //                             ) : (
-    //                                 <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
-    //                             )}
-
-    //                             <Grid sx={{ paddingLeft: '10px', textTransform: 'none' }}> {iFrame.name}</Grid>
-    //                         </Button>
-    //                     </MenuItem>
-    //                 ))}
-    //             </Menu>
-    //         )}
-    //     </Grid>
-    // );
 };
 const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {

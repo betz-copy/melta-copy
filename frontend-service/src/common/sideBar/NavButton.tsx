@@ -11,31 +11,12 @@ interface NavButtonProps {
     text: string;
     disabled?: boolean;
     onChangeToActive: (boolean) => void;
-    onMouseLeave?: any;
-    onMouseHover?: any;
+    handleMouseEnter?: any;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({
-    to,
-    isDrawerOpen,
-    text,
-    children,
-    disabled = false,
-    onChangeToActive,
-    onMouseHover: onMouseOver,
-    onMouseLeave,
-}) => {
+const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, handleMouseEnter }) => {
     return (
-        <StyledLink
-            to={to}
-            onClick={(e) => {
-                console.log('1');
-
-                onMouseLeave();
-                if (disabled) e.preventDefault();
-            }}
-            className="nav-button"
-        >
+        <StyledLink to={to} className="nav-button">
             {({ isActive }) => {
                 onChangeToActive(isActive);
                 return (
@@ -44,7 +25,7 @@ const NavButton: React.FC<NavButtonProps> = ({
                         placement="left"
                         disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
                     >
-                        <div>
+                        <div onMouseEnter={handleMouseEnter}>
                             <ListItemButton
                                 disabled={disabled}
                                 sx={{
@@ -56,13 +37,6 @@ const NavButton: React.FC<NavButtonProps> = ({
                                     backgroundColor: isActive ? '#ffffffcc' : 'transparent',
                                     borderRadius: '20px',
                                     height: '32px',
-                                }}
-                                // onMouseOver={onMouseOver}
-                                onMouseEnter={onMouseOver}
-                                // onMouseLeave={onMouseLeave}
-                                // onMouseDown={onMouseLeave}
-                                onClick={() => {
-                                    console.log('helooooo');
                                 }}
                                 className="child"
                             >

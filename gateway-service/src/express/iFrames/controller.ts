@@ -5,7 +5,6 @@ import { IFrameManager } from './manager';
 class IFrameController {
     static async searchIFrames(req: Request, res: Response) {
         const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
-        console.log({ body });
 
         res.json(await IFrameManager.searchIFrames(body, permissionsOfUserId));
     }

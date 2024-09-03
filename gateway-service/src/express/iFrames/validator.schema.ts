@@ -5,7 +5,6 @@ const iFrameSchema = Joi.object({
     name: Joi.string().required(),
     url: Joi.string().required(),
     categoryIds: ExtendedJoi.stringToArray(),
-    apiToken: Joi.string(),
     iconFileId: Joi.string().allow(null),
     placeInSideBar: ExtendedJoi.boolean(),
 });
@@ -53,7 +52,7 @@ export const searchIFramesSchema = Joi.object({
         search: Joi.string(),
         limit: Joi.number().integer().min(0).default(0),
         skip: Joi.number().integer().min(0).default(0),
-        ids: Joi.array().items(Joi.string()), // .default([]),
+        ids: Joi.array().items(Joi.string()),
     },
     params: {},
 });

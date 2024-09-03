@@ -29,29 +29,15 @@ export class IFrameManager {
             .lean()
             .exec();
         const filteredIFrames = this.filterIFramesWithPermissions(iFrames, allowedCategories);
-        console.log({ filteredIFrames });
 
         if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
 
         return filteredIFrames;
-
-        // return filteredIFrames;
-        // const allIFrames = await IFrameModel.find(query).sort({ createdAt: -1 }).lean().exec();
-        // const filteredIFrames = this.filterIFramesWithPermissions(allIFrames, allowedCategories);
-
-        // if (!skip && !limit) return filteredIFrames;
-        // return filteredIFrames.slice(skip, skip + limit);
     }
 
     static async getIFrameById(iFrameId: string) {
-        // , _permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        // const allowedCategories: string[] = getAllowedCategories(permissionsOfUserId);
         const iFrame = await IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
-        // const filteredIFrame = this.filterIFramesWithPermissions(iFrame, allowedCategories);
-        // const isAllowed = iFrame.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId));
-        // console.log({ isAllowed });
-        // return isAllowed ? iFrame : null;
-        // validateHasPermissionsToIFrame(iFrame, allowedCategories);
+    
         return iFrame;
     }
 
@@ -62,7 +48,6 @@ export class IFrameManager {
             await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
-        console.log({ newIFrame });
 
         return IFrameModel.create(newIFrame);
     }

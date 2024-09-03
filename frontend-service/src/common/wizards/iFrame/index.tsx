@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IFrameWizardBaseType, StepsType, Wizard, WizardBaseType } from '../index';
+import { IFrameWizardBaseType, StepsType, Wizard } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
@@ -39,8 +39,6 @@ const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame) => {
         const index = iFramesStored.findIndex((iFrameId) => iFrameId === data._id);
 
         if (index === -1) {
-            console.log('not exist');
-
             iFramesStored = [data._id, ...iFramesStored];
 
             localStorage.setItem('iFramesOrder', JSON.stringify(iFramesStored));
@@ -51,7 +49,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
     open,
     handleClose,
     initalStep = 0,
-    initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', apiToken: '', placeInSideBar: false },
+    initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', placeInSideBar: false },
     isEditMode = false,
     setIFramesOrder,
 }) => {
@@ -62,15 +60,13 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                console.log({ data });
-
                 queryClient.invalidateQueries('searchIFrames');
 
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
                 updateIFramesOrderOnLocalStorage(data);
-
                 setIFramesOrder(JSON.parse(localStorage.getItem('iFramesOrder')!));
+
                 queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                     if (!oldData) {
                         return [data];
@@ -79,14 +75,10 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                     const index = oldData.findIndex((existingIframe) => existingIframe._id === data._id);
 
                     if (index === -1) {
-                        console.log('create a new iframe ', { data });
-
                         return [data, ...oldData];
                     }
                     const updatedData = [...oldData];
                     updatedData[index] = data;
-                    console.log({ updatedData });
-
                     return [...updatedData];
                 });
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');

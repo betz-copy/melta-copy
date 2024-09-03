@@ -28,7 +28,6 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
         },
     });
     useEffect(() => {
-        console.log({ setTitle });
         if (setTitle && setIconFileId) {
             setTitle(iFrameData?.name ?? '');
             setIconFileId(iFrameData?.iconFileId ?? '');

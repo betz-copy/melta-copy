@@ -178,12 +178,12 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                 maxWidth={false}
                 PaperProps={{
                     style: {
-                        height: '89vh',
-                        width: '85vw',
+                        height: '90vh',
+                        width: '88vw',
                     },
                 }}
             >
-                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} allowFullScreen />
+                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} />
             </Dialog>
 
             <IFrameWizard

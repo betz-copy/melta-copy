@@ -8,7 +8,6 @@ import { IFrameWizardValues } from '.';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ICategoryMap } from '../../../interfaces/categories';
-// import { Category } from '@mui/icons-material';
 
 const settingIFramesPermissionsSchema = {
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
