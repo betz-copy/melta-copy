@@ -3,17 +3,29 @@ import * as ts from 'typescript-actions';
 import * as fs from 'fs';
 import * as path from 'path';
 import EntityTemplateManager from './manager';
-import { IEntityTemplatePopulated } from './interface';
+import { IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
 import { generateInterfaceWithRelationships } from '../../utils/interfacesGenerator';
 import { ServiceError } from '../error';
 import { addPropertyToRequest } from '../../utils/express';
 
-const cleanActionCode = async (action: string, entityTemplate: IEntityTemplatePopulated) => {
+const getAllRelationshipReferencesEntityTemplates = async ({ _id, properties: { properties } }: IEntityTemplatePopulated) => {
+    const relatedTemplates: Set<string> = new Set<string>();
+    relatedTemplates.add(_id);
+
+    Object.values(properties).forEach((value) => {
+        if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
+    });
+
+    const entityTemplates = await EntityTemplateManager.getTemplates({ ids: Array.from(relatedTemplates), limit: 0, skip: 0 });
+    return new Map(entityTemplates.map((template) => [template._id, template]));
+};
+
+const cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
     const defaultCode = [
         '/// To throw a custom error in your code, use the following syntax:',
         '// throw new CustomError("Your error message")',
         '',
-        `${await generateInterfaceWithRelationships(entityTemplate._id)}`,
+        `${generateInterfaceWithRelationships(entitiesTemplatesByIds)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',
@@ -23,13 +35,13 @@ const cleanActionCode = async (action: string, entityTemplate: IEntityTemplatePo
     return action.slice(defaultCode.length + 1);
 };
 
-function traverse(
+const traverse = (
     node: ts.Node,
     parentScope: Set<string>,
     errors: string[],
     nameOfFunctionMustBe: string[],
     countNumOfOccurrences: Record<string, number>,
-) {
+) => {
     const currentScope = new Set(parentScope);
 
     if (ts.isImportDeclaration(node)) {
@@ -83,7 +95,7 @@ function traverse(
     ts.forEachChild(node, (child) => {
         traverse(child, currentScope, errors, nameOfFunctionMustBe, countNumOfOccurrences);
     });
-}
+};
 
 const compileTsCode = (filename: string, sourceFile: ts.SourceFile) => {
     const options: ts.CompilerOptions = {
@@ -141,7 +153,7 @@ export const validateActionAst = async (req: Request) => {
     const entityTemplate = await EntityTemplateManager.getTemplateById(templateId);
     const errors: string[] = [];
     const countNumOfOccurrences: Record<string, number> = {};
-    const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity', 'onDeleteEntity'];
+    const nameOfFunctionMustBe = ['onCreateEntity', 'onUpdateEntity'];
     const filename = 'ast.ts';
     const customErrorCode = [
         'class CustomError extends Error {',
@@ -164,5 +176,7 @@ export const validateActionAst = async (req: Request) => {
         console.log('No undeclared variables found.');
     }
 
-    addPropertyToRequest(req, 'actions', await cleanActionCode(actions, entityTemplate));
+    const entityTemplatesByIds = await getAllRelationshipReferencesEntityTemplates(entityTemplate);
+
+    addPropertyToRequest(req, 'actions', cleanActionCode(actions, entityTemplatesByIds));
 };

@@ -1,39 +1,27 @@
-import { useQueryClient } from 'react-query';
+import { QueryClient } from 'react-query';
 import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
-const generateFromString = (propertyValues: IEntitySingleProperty) => {
-    const queryClient = useQueryClient();
+const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const { format, relationshipReference } = propertyValues;
+    if (typeEnum) return typeEnum?.map((option) => `'${option}'`).join(' | ');
 
-    if (propertyValues.enum) {
-        return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
-    }
-    if (format === 'date' || format === 'date-time') {
-        return 'Date';
-    }
+    if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') {
-        const entityTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relationshipReference?.relatedTemplateId!)!;
-
-        return entityTemplate.name;
-    }
+    if (format === 'relationshipReference') return entityTemplates.get(relationshipReference?.relatedTemplateId!)!.name;
 
     return 'string';
 };
 
-const generateFromArray = (propertyValues: IEntitySingleProperty) => {
-    const { items } = propertyValues;
+const generateFromArray = ({ items }: IEntitySingleProperty) => {
+    if (items?.format === 'fileId') return 'string[]';
 
-    if (items?.format === 'fileId') {
-        return 'string[]';
-    }
     const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
+
     return `(${arrayOptions})[]`;
 };
 
-export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
+export const generateInterface = (entity: Record<string, IEntitySingleProperty>, interfaceName: string, queryClient: QueryClient) => {
     const dynamicInterface: Record<string, string> = {
         'readonly _id': 'string',
         'readonly createdAt': 'string',
@@ -46,11 +34,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
 
         switch (type) {
             case 'number':
-                if (serialCurrent) {
-                    dynamicInterface[`readonly ${propertyName}`] = 'number';
-                } else {
-                    dynamicInterface[propertyName] = 'number';
-                }
+                dynamicInterface[`${serialCurrent ? 'readonly ' : ''}${propertyName}`] = 'number';
                 break;
             case 'boolean':
                 dynamicInterface[propertyName] = 'boolean';
@@ -59,7 +43,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
                 dynamicInterface[propertyName] = generateFromArray(propertyValues);
                 break;
             default:
-                dynamicInterface[propertyName] = generateFromString(propertyValues);
+                dynamicInterface[propertyName] = generateFromString(propertyValues, queryClient);
         }
     });
 
@@ -70,8 +54,7 @@ export const generateInterface = (entity: Record<string, IEntitySingleProperty>,
     ].join('\n');
 };
 
-const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySingleProperty>) => {
-    const queryClient = useQueryClient();
+const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySingleProperty>, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const interfaces: string[] = [];
     const relationshipReferenceIds = new Set<string>();
@@ -89,7 +72,7 @@ const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySing
                     const relatedTemplate: IMongoEntityTemplatePopulated = entityTemplates.get(relatedTemplateId)!;
 
                     relationshipReferenceIds.add(relatedTemplateId);
-                    interfaces.push(generateInterface(relatedTemplate.properties.properties, relatedTemplate.name));
+                    interfaces.push(generateInterface(relatedTemplate.properties.properties, relatedTemplate.name, queryClient));
                     queue.push(relatedTemplate.properties.properties);
                 }
             }
@@ -99,10 +82,13 @@ const generateInterfacesForRelatedEntities = (entity: Record<string, IEntitySing
     return interfaces;
 };
 
-export const generateInterfaceWithRelationships = (entity: Record<string, IEntitySingleProperty>, interfaceName: string) => {
-    const generatedInterfacesForRelatedEntities = generateInterfacesForRelatedEntities(entity).reverse();
-    const generatedInterfaceForEntity = generateInterface(entity, interfaceName);
+export const generateInterfaceWithRelationships = (
+    entity: Record<string, IEntitySingleProperty>,
+    interfaceName: string,
+    queryClient: QueryClient,
+) => {
+    const generatedInterfacesForRelatedEntities = generateInterfacesForRelatedEntities(entity, queryClient).reverse();
+    const generatedInterfaceForEntity = generateInterface(entity, interfaceName, queryClient);
 
-    const allInterfaces = [...generatedInterfacesForRelatedEntities, generatedInterfaceForEntity].join('\n\n');
-    return allInterfaces;
+    return [...generatedInterfacesForRelatedEntities, generatedInterfaceForEntity].join('\n\n');
 };
