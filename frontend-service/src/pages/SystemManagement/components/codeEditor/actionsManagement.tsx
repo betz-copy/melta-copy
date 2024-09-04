@@ -1,11 +1,11 @@
 import React, { useRef } from 'react';
 import { editor } from 'monaco-editor';
 import { Monaco } from '@monaco-editor/react';
-import { CodeEditor } from '../../../../common/inputs/CodeEditor';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { Box, Typography } from '@mui/material';
 import { constrainedEditor } from 'constrained-editor-plugin';
 import i18next from 'i18next';
+import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { CodeEditor } from '../../../../common/inputs/CodeEditor';
 
 interface ActionManagementProps {
     entityTemplate: IMongoEntityTemplatePopulated | null;
@@ -33,6 +33,7 @@ const ActionManagement: React.FC<ActionManagementProps> = ({
     const constrainedInstanceRef = useRef(null);
 
     const handleEditorDidMount = (editorDefs: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+        // eslint-disable-next-line no-param-reassign
         editorDefs.getDomNode()!.style.direction = 'ltr';
         monacoRef.current = editorDefs;
         setEditorContent(monacoRef.current.getValue());
@@ -124,9 +125,8 @@ const ActionManagement: React.FC<ActionManagementProps> = ({
         monaco.languages.typescript.typescriptDefaults.addExtraLib(customErrorLib, 'ts:custom-error-lib.d.ts');
     };
 
-    const createBasicFunctions = (functionNames: string[], name: string) => {
-        return functionNames.flatMap((fnName) => [`function ${fnName}(${name}:${name}): void {`, '', '}', '']).join('\n');
-    };
+    const createBasicFunctions = (functionNames: string[], name: string) =>
+        functionNames.flatMap((fnName) => [`function ${fnName}(${name}:${name}): void {`, '', '}', '']).join('\n');
 
     const defaultValue = [defaultCode, '', createBasicFunctions(crudActions, entityName!)].join('\n');
 

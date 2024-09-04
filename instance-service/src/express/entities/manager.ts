@@ -52,19 +52,9 @@ import { createActivityLog } from '../../externalServices/activityLog/producer';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import {
-    ActionTypes,
-    IAction,
-    IActionMetadata,
-    ICreateEntityMetadata,
-    IPopulatedCreateEntityMetadata,
-    IPopulatedDuplicateEntityMetadata,
-    IPopulatedUpdateEntityMetadata,
-    IUpdateEntityMetadata,
-} from '../bulkActions/interface';
+import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import BulkActionManager from '../bulkActions/manager';
-import { getAllRelatedEntities } from '../../utils/actions/interfaceGenerator';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -336,7 +326,7 @@ export class EntityManager {
     }
 
     static async getRelatedEntitiesOfEntity(originalTemplateId: string, originalEntityIds: string[], transaction: Transaction) {
-        const allEntityTemplates = await EntityTemplateManagerService.getTemplatesUsingRelationshipReferance(originalTemplateId);
+        const allEntityTemplates = await EntityTemplateManagerService.getTemplatesUsingRelationshipReference(originalTemplateId);
         const relatedEntityIdsByFieldToChange: Record<string, string[]> = {};
 
         await Promise.all(
@@ -364,44 +354,46 @@ export class EntityManager {
         return relatedEntityIdsByFieldToChange;
     }
 
-    static async handleCreateEntity(actionMetadata: ICreateEntityMetadata, transaction: Transaction, userId: string, duplicatedFromId?: string) {
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(actionMetadata.templateId);
-        return EntityManager.createEntityInTransaction(transaction, actionMetadata.properties, entityTemplate, userId, duplicatedFromId);
+    static async getAllRelationshipReferencesEntityTemplates({ _id, properties: { properties } }: IMongoEntityTemplate) {
+        const relatedTemplates: Set<string> = new Set<string>();
+        relatedTemplates.add(_id);
+
+        Object.values(properties).forEach((value) => {
+            if (value.format === 'relationshipReference') relatedTemplates.add(value.relationshipReference?.relatedTemplateId!);
+        });
+
+        const entityTemplates = await EntityTemplateManagerService.searchEntityTemplates({ ids: Array.from(relatedTemplates), limit: 0, skip: 0 });
+        return new Map(entityTemplates.map((template) => [template._id, template]));
     }
 
-    static async handleUpdateEntity(actionMetadata: IUpdateEntityMetadata, transaction: Transaction, userId?: string) {
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(
-            (
-                await EntityManager.getEntityByIdInTransaction(actionMetadata.entityId, transaction)
-            ).templateId,
-        );
-
-        return EntityManager.updateEntityByIdInnerTransaction(
-            actionMetadata.entityId,
-            actionMetadata.updatedFields,
-            entityTemplate,
-            transaction,
-            userId,
-        );
-    }
-
-    static async handleCreateOrDuplicate(metadata: IPopulatedCreateEntityMetadata, transaction: Transaction, userId: string) {
-        const { properties, entityTemplate } = metadata;
+    static async createOrDuplicateAction(
+        metadata: ICreateEntityMetadata,
+        transaction: Transaction,
+        userId: string,
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    ) {
+        const { properties, templateId } = metadata;
+        const entityTemplate = entitiesTemplatesByIds.get(templateId)!;
         const { createdEntity } = await EntityManager.createEntityInTransaction(transaction, properties, entityTemplate, userId);
         return createdEntity;
     }
 
-    static async handleUpdate(metadata: IPopulatedUpdateEntityMetadata, transaction: Transaction, userId: string) {
-        const { entityId, entityTemplate } = metadata as IPopulatedUpdateEntityMetadata;
-        const fixedFields = await BulkActionManager.fixUpdatedFields(metadata, transaction);
+    static async updateAction(
+        metadata: IUpdateEntityMetadata,
+        transaction: Transaction,
+        userId: string,
+        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    ) {
+        const { entityId } = metadata;
+        const entity = await EntityManager.getEntityByIdInTransaction(entityId, transaction);
+        const entityTemplate = entitiesTemplatesByIds.get(entity.templateId)!;
 
-        const { updatedEntity } = await EntityManager.updateEntityByIdInnerTransaction(entityId, fixedFields, entityTemplate, transaction, userId);
-
-        return updatedEntity;
+        const fixedFields = await BulkActionManager.fixUpdatedFields(metadata, entityTemplate, entity);
+        return EntityManager.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
     }
 
     static async executeEntityTemplateActionOnInstanceCrud(
-        action: IAction,
+        { actionType, actionMetadata }: IAction,
         crudAction: IEntityCrudAction,
         userId: string,
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
@@ -409,24 +401,28 @@ export class EntityManager {
         return Neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
-                const { actionType, actionMetadata } = action;
-
                 const actionHandlers: Record<
                     Exclude<ActionTypes, ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship>,
-                    (metadata: IActionMetadata, txn: Transaction, uid: string) => Promise<IEntity | undefined>
+                    () => Promise<IEntity | undefined>
                 > = {
-                    [ActionTypes.CreateEntity]: async (metadata, txn, uid) =>
-                        EntityManager.handleCreateOrDuplicate(metadata as IPopulatedCreateEntityMetadata, txn, uid),
-                    [ActionTypes.DuplicateEntity]: async (metadata, txn, uid) =>
-                        EntityManager.handleCreateOrDuplicate(metadata as IPopulatedCreateEntityMetadata, txn, uid),
-                    [ActionTypes.UpdateEntity]: async (metadata, txn, uid) =>
-                        EntityManager.handleUpdate(metadata as IPopulatedUpdateEntityMetadata, txn, uid),
+                    [ActionTypes.CreateEntity || ActionTypes.DuplicateEntity]: async () =>
+                        EntityManager.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                    [ActionTypes.DuplicateEntity]: async () =>
+                        EntityManager.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
+                    [ActionTypes.UpdateEntity]: async () => {
+                        const { updatedEntity } = await EntityManager.updateAction(
+                            actionMetadata as IUpdateEntityMetadata,
+                            transaction,
+                            userId,
+                            entitiesTemplatesByIds,
+                        );
+                        return updatedEntity;
+                    },
                 };
 
                 const handler = actionHandlers[actionType];
-                const entityAfterAction = await handler(actionMetadata, transaction, userId);
-
-                const { entityTemplate } = actionMetadata as IPopulatedCreateEntityMetadata | IPopulatedUpdateEntityMetadata;
+                const entityAfterAction: IEntity = await handler();
+                const entityTemplate = entitiesTemplatesByIds.get(entityAfterAction.templateId)!;
 
                 return executeActionCodeAndGetEntitiesToUpdate(entityTemplate, entityAfterAction, crudAction, transaction, entitiesTemplatesByIds);
             },
@@ -449,8 +445,7 @@ export class EntityManager {
                         entityId: entity?.properties._id,
                         updatedFields: this.getUpdatedProperties(entity?.properties!, properties, entityTemplate),
                         before: entity?.properties,
-                        entityTemplate,
-                    } as IPopulatedUpdateEntityMetadata,
+                    } as IUpdateEntityMetadata,
                 };
 
             case IEntityCrudAction.onCreateEntity:
@@ -458,14 +453,14 @@ export class EntityManager {
                     ? {
                           actionType: ActionTypes.DuplicateEntity,
                           actionMetadata: {
-                              entityTemplate,
+                              templateId: entityTemplate._id,
                               properties,
                               entityIdToDuplicate: duplicatedFromId,
-                          } as IPopulatedDuplicateEntityMetadata,
+                          } as IDuplicateEntityMetadata,
                       }
                     : {
                           actionType: ActionTypes.CreateEntity,
-                          actionMetadata: { entityTemplate, properties } as IPopulatedCreateEntityMetadata,
+                          actionMetadata: { templateId: entityTemplate._id, properties } as ICreateEntityMetadata,
                       };
 
             default:
@@ -482,9 +477,7 @@ export class EntityManager {
         const actions: IAction[] = [];
 
         await Promise.all(
-            entitiesToUpdate.map(async (entityToUpdate) => {
-                const { entityId, properties: allProperties } = entityToUpdate;
-
+            entitiesToUpdate.map(async ({ entityId, properties: allProperties }) => {
                 let updatedFields: Record<string, any>;
                 let before: Record<string, any>;
 
@@ -500,16 +493,16 @@ export class EntityManager {
                     before = currentEntity.properties;
                 }
 
-                if (Object.entries(updatedFields).length) {
-                    actions.push({
-                        actionType: ActionTypes.UpdateEntity,
-                        actionMetadata: {
-                            entityId,
-                            updatedFields,
-                            before,
-                        } as IUpdateEntityMetadata,
-                    });
-                }
+                if (!Object.entries(updatedFields).length) return;
+
+                actions.push({
+                    actionType: ActionTypes.UpdateEntity,
+                    actionMetadata: {
+                        entityId,
+                        updatedFields,
+                        before,
+                    } as IUpdateEntityMetadata,
+                });
             }),
         );
 
@@ -521,10 +514,11 @@ export class EntityManager {
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
         userId: string,
-        entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         entity?: IEntity,
         duplicatedFromId?: string,
     ) => {
+        const entitiesTemplatesByIds = await EntityManager.getAllRelationshipReferencesEntityTemplates(entityTemplate);
+
         const mainAction = EntityManager.buildMainAction(crudAction, properties, entityTemplate, entity, duplicatedFromId);
 
         const entitiesToUpdate = await EntityManager.executeEntityTemplateActionOnInstanceCrud(
@@ -541,9 +535,7 @@ export class EntityManager {
             entitiesTemplatesByIds,
         );
 
-        const actions = [mainAction, ...actionsOfUpdatedEntities];
-
-        return actions;
+        return [mainAction, ...actionsOfUpdatedEntities];
     };
 
     static async createEntity(
@@ -554,19 +546,15 @@ export class EntityManager {
         duplicatedFromId?: string,
     ) {
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onCreateEntity)) {
-            const entityTemplates = await getAllRelatedEntities(entityTemplate._id);
-            const entitiesTemplatesByIds = new Map(entityTemplates.map((template) => [template._id, template]));
-
             const actions = await EntityManager.buildActionsArray(
                 IEntityCrudAction.onCreateEntity,
                 properties,
                 entityTemplate,
                 userId,
-                entitiesTemplatesByIds,
                 undefined,
                 duplicatedFromId,
             );
-            // const formattedActions = format(actions);
+
             const [createdEntity, ...updatedEntities] = await BulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { createdEntity, updatedEntities, actions };
         }
@@ -1255,15 +1243,11 @@ export class EntityManager {
         }
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
-            const entityTemplates = await getAllRelatedEntities(entityTemplate._id);
-            const entitiesTemplatesByIds = new Map(entityTemplates.map((template) => [template._id, template]));
-
             const actions = await this.buildActionsArray(
                 IEntityCrudAction.onUpdateEntity,
                 entityProperties,
                 entityTemplate,
                 userId,
-                entitiesTemplatesByIds,
                 unPopulatedEntity,
             );
 

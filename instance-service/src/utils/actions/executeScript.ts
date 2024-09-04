@@ -14,20 +14,16 @@ import { generateInterfaceWithRelationships } from './interfaceGenerator';
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 
 const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
-    const populatedInstances = EntityManager.fixReturnedEntityReferencesFields(entity);
+    const manipulatedEntity = JSON.parse(JSON.stringify(entity));
 
-    Object.entries(populatedInstances.properties).forEach(([name, value]) => {
-        if (isIEntity(value)) {
-            populatedInstances.properties[name] = value.properties;
-        }
+    Object.entries(manipulatedEntity.properties).forEach(([name, value]) => {
+        if (isIEntity(value)) manipulatedEntity.properties[name] = value.properties;
     });
 
-    return populatedInstances;
+    return manipulatedEntity;
 };
 
-const generateFakeEntityId = (index: number) => {
-    return `${brokenRulesFakeEntityIdPrefix}${index}._id`;
-};
+const generateFakeEntityId = (index: number) => `${brokenRulesFakeEntityIdPrefix}${index}._id`;
 
 const addDefaultFunctionsToActionCode = (
     entityTemplate: IMongoEntityTemplate,
@@ -37,7 +33,7 @@ const addDefaultFunctionsToActionCode = (
     const defaultCode = `class CustomError extends Error {
            constructor(message: string) {
                super(message);
-               this.name = ${errorCodes.actionsCustomError};
+               this.name = 'ACTIONS_CUSTOM_ERROR';
             }
         }
         ${generateInterfaceWithRelationships(entitiesTemplatesByIds)}
@@ -52,9 +48,7 @@ const addDefaultFunctionsToActionCode = (
         }`;
 
     const code = `${defaultCode}\n${entityTemplate.actions}\n${getActionsFunction}`;
-    const jsCode = ts.transpile(code);
-
-    return jsCode;
+    return ts.transpile(code);
 };
 
 const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
@@ -64,8 +58,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
         // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
         vm.runInContext(jsCode, context, { timeout: 10000 });
 
-        const executionOutput: IExecutionOutput[] = vm.runInContext('getActions(entity)', context);
-        return executionOutput;
+        return vm.runInContext('getActions(entity)', context);
     } catch (error) {
         if ((error as Error).name === errorCodes.actionsCustomError)
             throw new ServiceError(400, `Error executing VM code of actions`, {
@@ -77,7 +70,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
     }
 };
 
-const adjustExecutionOutputToCommonStructure = async (
+const manipulateOnExecutionOutput = async (
     executionOutput: IExecutionOutput[],
     entity: IEntity,
     crudAction: IEntityCrudAction,
@@ -88,34 +81,29 @@ const adjustExecutionOutputToCommonStructure = async (
 
     await Promise.all(
         executionOutput.map(async (entityToUpdate) => {
-            if (entityToUpdate.entityId === undefined) {
-                throw new ServiceError(400, 'cant create new entity by code');
-            }
+            if (entityToUpdate.entityId === undefined) throw new ServiceError(400, 'cant create new entity by code');
 
             const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
             const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
             const entityAfterManipulations = entityToUpdate;
 
-            if (entityToUpdate.entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity) {
+            if (entityToUpdate.entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity)
                 entityAfterManipulations.entityId = generateFakeEntityId(0);
-            }
 
             Object.entries(currentEntityTemplate.properties.properties).forEach(([name, value]) => {
                 if (name in entityToUpdate.properties) {
                     const propertyValue = entityToUpdate.properties[name];
 
-                    if (value.format === 'relationshipReference') {
-                        entityAfterManipulations.properties[name] = propertyValue._id;
-                    }
-                    if (value.format === 'date-time' && isDate(propertyValue)) {
+                    if (value.format === 'relationshipReference') entityAfterManipulations.properties[name] = propertyValue._id;
+
+                    if (value.format === 'date-time' && isDate(propertyValue))
                         entityAfterManipulations.properties[name] = propertyValue.toISOString();
-                    }
-                    if (value.format === 'date' && isDate(propertyValue)) {
+
+                    if (value.format === 'date' && isDate(propertyValue))
                         entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
-                    }
-                    if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue) {
+
+                    if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
                         throw new ServiceError(400, "can't change serial number properties");
-                    }
                 }
             });
 
@@ -128,7 +116,7 @@ const adjustExecutionOutputToCommonStructure = async (
     return updatedEntities;
 };
 
-export const executeActionCodeAndGetEntitiesToUpdate = async (
+export const executeActionCodeAndGetEntitiesToUpdate = (
     entityTemplate: IMongoEntityTemplate,
     entity: IEntity,
     crudAction: IEntityCrudAction,
@@ -140,7 +128,5 @@ export const executeActionCodeAndGetEntitiesToUpdate = async (
 
     const executionOutput = executeActionCodeInVM(populatedInstances, jsCode);
 
-    const updatedEntities = await adjustExecutionOutputToCommonStructure(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds);
-
-    return updatedEntities;
+    return manipulateOnExecutionOutput(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds);
 };

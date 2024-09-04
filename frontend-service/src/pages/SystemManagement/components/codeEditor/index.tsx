@@ -1,18 +1,19 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
+/* eslint-disable react-hooks/rules-of-hooks */
 import React, { useState } from 'react';
+import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ActionManagement } from './actionsManagement';
-import * as ts from 'typescript';
+import * as ts from 'typescript-actions';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { ErrorToast } from '../../../../common/ErrorToast';
 import { toast } from 'react-toastify';
+import { ErrorToast } from '../../../../common/ErrorToast';
+import { ActionManagement } from './actionsManagement';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
-import { generateInterfaceWithRelationships } from '../../../../utils/jsonSchemToInterface-ts';
+import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
 
 const CodeEditorDialog: React.FC<{
     open: boolean;
@@ -31,7 +32,7 @@ const CodeEditorDialog: React.FC<{
         '/// To throw a custom error in your code, use the following syntax:',
         '// throw new CustomError("Your error message")',
         '',
-        `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name)}`,
+        `${generateInterfaceWithRelationships(entityTemplate.properties.properties, entityTemplate.name, queryClient)}`,
         '',
         'function updateEntity(entityId: string, properties: Record<string, any>): void {',
         '  // updates entity in data base',
@@ -61,11 +62,10 @@ const CodeEditorDialog: React.FC<{
     const traverseAstAndValidate = (node: ts.Node) => {
         let foundImports = false;
 
-        const traverseAstRecursive = (node: ts.Node) => {
-            if (ts.isImportDeclaration(node)) {
-                foundImports = true;
-            }
-            ts.forEachChild(node, traverseAstRecursive);
+        const traverseAstRecursive = (nodeAst: ts.Node) => {
+            if (ts.isImportDeclaration(nodeAst)) foundImports = true;
+
+            ts.forEachChild(nodeAst, traverseAstRecursive);
         };
 
         traverseAstRecursive(node);
@@ -75,17 +75,15 @@ const CodeEditorDialog: React.FC<{
 
     const onChange = (value: string | undefined, _event: editor.IModelContentChangedEvent) => {
         setEditorValue(value ?? '');
-        const sourceFile = ts.createSourceFile('temp.tsx', value ?? '', ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-        const isImportUsing = traverseAstAndValidate(sourceFile);
-        setIsImportUsing(isImportUsing);
+        const sourceFile = ts.createSourceFile('codeAst.tsx', value ?? '', ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+        const hasImport = traverseAstAndValidate(sourceFile);
+        setIsImportUsing(hasImport);
     };
 
     const onValidate = (markers: editor.IMarker[]) => {
         const unusedPropertyErrorCode = '6133';
         const noTypeGivenErrorCode = '7044';
-        const filteredMarkers = markers.filter((marker) => {
-            return marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode;
-        });
+        const filteredMarkers = markers.filter((marker) => marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode);
         const hasErrorMarkers = filteredMarkers.length > 0;
 
         setValidationErrors(hasErrorMarkers);

@@ -1,31 +1,20 @@
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
-const generateFromString = (propertyValues: IEntitySingleProperty, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
-    const { format, relationshipReference } = propertyValues;
+const generateFromString = (
+    { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
+    entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+) => {
+    if (typeEnum) return typeEnum?.map((option) => `'${option}'`).join(' | ');
 
-    if (propertyValues.enum) {
-        return propertyValues.enum?.map((option) => `'${option}'`).join(' | ');
-    }
-    if (format === 'date' || format === 'date-time') {
-        return 'Date';
-    }
+    if (format === 'date' || format === 'date-time') return 'Date';
 
-    if (format === 'relationshipReference') {
-        const entityTemplate: IMongoEntityTemplate = entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!;
-
-        return entityTemplate.name;
-    }
+    if (format === 'relationshipReference') return entitiesTemplatesByIds.get(relationshipReference?.relatedTemplateId!)!.name;
 
     return 'string';
 };
 
-const generateFromArray = (propertyValues: IEntitySingleProperty) => {
-    const { items } = propertyValues;
-
-    if (items?.format === 'fileId') {
-        return 'string[]';
-    }
+const generateFromArray = ({ items }: IEntitySingleProperty) => {
+    if (items?.format === 'fileId') return 'string[]';
 
     const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
 
@@ -69,30 +58,7 @@ export const generateInterface = (
     ].join('\n');
 };
 
-export const getAllRelatedEntities = async (entityId: string, relatedEntities: IMongoEntityTemplate[] = []) => {
-    const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entityId);
-    if (!entityTemplate) return relatedEntities;
-    if (!relatedEntities.some((entity) => entity._id === entityTemplate._id)) relatedEntities.push(entityTemplate);
-
-    await Promise.all(
-        Object.values(entityTemplate.properties.properties).map(async (propertyValues) => {
-            if (propertyValues.format === 'relationshipReference') {
-                const { relatedTemplateId = '' } = propertyValues.relationshipReference || {};
-
-                if (!relatedEntities.some((entity) => entity._id === relatedTemplateId)) {
-                    await getAllRelatedEntities(relatedTemplateId, relatedEntities);
-                }
-            }
-        }),
-    );
-
-    return relatedEntities;
-};
-
-export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
-    const interfaces = Object.values(entitiesTemplatesByIds).map((entityTemplate) => {
-        return generateInterface(entityTemplate.properties.properties, entityTemplate.name, entitiesTemplatesByIds);
-    });
-
-    return interfaces.join('\n\n');
-};
+export const generateInterfaceWithRelationships = (entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) =>
+    [...entitiesTemplatesByIds.values()]
+        .map(({ properties: { properties }, name }) => generateInterface(properties, name, entitiesTemplatesByIds))
+        .join('\n\n');

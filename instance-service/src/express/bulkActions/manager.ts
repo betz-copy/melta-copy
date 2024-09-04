@@ -10,7 +10,6 @@ import {
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IPopulatedUpdateEntityMetadata,
     IUpdateEntityMetadata,
 } from './interface';
 import EntityManager from '../entities/manager';
@@ -43,15 +42,13 @@ export class BulkActionManager {
         return relationshipToReturn;
     }
 
-    static async fixUpdatedFields(actionMetadata: IUpdateEntityMetadata | IPopulatedUpdateEntityMetadata, transaction: Transaction) {
-        const { entityId, updatedFields } = actionMetadata;
+    static async fixUpdatedFields(actionMetadata: IUpdateEntityMetadata, entityTemplate: IMongoEntityTemplate, entity: IEntity) {
+        const { updatedFields } = actionMetadata;
 
-        const entity = await EntityManager.getEntityByIdInTransaction(entityId, transaction);
         const newEntityProperties = { ...entity.properties, ...updatedFields };
 
         // updatedFields specifies fields to remove w/ nulls. but shouldn't be in the IEntity properties
         const newEntityPropertiesWithoutNulls = pickBy(newEntityProperties, (property) => property !== null) as IEntity['properties'];
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(entity.templateId);
         const entityAfterManipulations = JSON.parse(JSON.stringify(newEntityPropertiesWithoutNulls));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
@@ -262,11 +259,11 @@ export class BulkActionManager {
                 case ActionTypes.UpdateEntity: {
                     const actionMetadata = action.actionMetadata as IUpdateEntityMetadata;
                     const fixedMetaData = this.getEntityIdByPrevResults(actionMetadata, results);
-                    const fixedWithUpdatedFields = await this.fixUpdatedFields(fixedMetaData, transaction);
-                    const { updatedEntity, activityLogsToCreate } = await EntityManager.handleUpdateEntity(
-                        fixedWithUpdatedFields,
+                    const { updatedEntity, activityLogsToCreate } = await EntityManager.updateAction(
+                        fixedMetaData,
                         transaction,
                         userId,
+                        entitiesTemplatesByIds,
                     );
 
                     results.push(updatedEntity);

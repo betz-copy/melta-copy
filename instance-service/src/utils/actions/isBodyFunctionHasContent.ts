@@ -1,23 +1,18 @@
 import * as ts from 'typescript-actions';
 import { IEntityCrudAction } from '../../express/entities/interface';
 
-const isFunctionExists = (node: ts.Node, functionName: IEntityCrudAction): node is ts.FunctionDeclaration => {
-    return ts.isFunctionDeclaration(node) && node.name?.text === functionName;
-};
+const isFunctionExists = (node: ts.Node, functionName: IEntityCrudAction): node is ts.FunctionDeclaration =>
+    ts.isFunctionDeclaration(node) && node.name?.text === functionName;
 
-const isFunctionBodyNonEmpty = (func: ts.FunctionDeclaration): boolean => {
-    return !!func.body && func.body.statements.some((statement) => statement.getText().trim().length > 0);
-};
+const isFunctionBodyNonEmpty = (func: ts.FunctionDeclaration): boolean =>
+    func.body?.statements.some((statement) => statement.getText().trim().length > 0) ?? false;
 
 const findFunctionDeclaration = (sourceFile: ts.SourceFile, functionName: IEntityCrudAction): ts.FunctionDeclaration | undefined => {
     let foundFunction: ts.FunctionDeclaration | undefined;
 
     const visit = (node: ts.Node) => {
-        if (isFunctionExists(node, functionName)) {
-            foundFunction = node;
-        } else {
-            ts.forEachChild(node, visit);
-        }
+        if (isFunctionExists(node, functionName)) foundFunction = node;
+        else ts.forEachChild(node, visit);
     };
 
     visit(sourceFile);
@@ -26,7 +21,7 @@ const findFunctionDeclaration = (sourceFile: ts.SourceFile, functionName: IEntit
 };
 
 export const isBodyFunctionHasContent = (code: string, functionName: IEntityCrudAction): boolean => {
-    const sourceFile = ts.createSourceFile('temp.ts', code, ts.ScriptTarget.Latest, true);
+    const sourceFile = ts.createSourceFile('codeAst.ts', code, ts.ScriptTarget.Latest, true);
 
     const functionDeclaration = findFunctionDeclaration(sourceFile, functionName);
     return functionDeclaration ? isFunctionBodyNonEmpty(functionDeclaration) : false;
