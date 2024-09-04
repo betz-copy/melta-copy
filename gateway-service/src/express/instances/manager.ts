@@ -1,20 +1,16 @@
+/* eslint-disable no-param-reassign */
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import { promises as fsp } from 'fs';
 import axios from 'axios';
 import { stream } from 'exceljs';
-import { deleteFiles, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
+import { promises as fsp } from 'fs';
+import { Dictionary } from 'lodash';
+import groupBy from 'lodash.groupby';
+import config from '../../config';
+import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import { IExportEntitiesBody } from './interfaces';
-import { InstanceManagerService } from '../../externalServices/instanceService';
-import {
-    EntityTemplateManagerService,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-} from '../../externalServices/templates/entityTemplateService';
-import { trycatch } from '../../utils';
 import {
     ActionTypes,
     IAction,
@@ -23,14 +19,20 @@ import {
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
-import RuleBreachesManager from '../ruleBreaches/manager';
-import config from '../../config';
-import { BadRequestError } from '../error';
+import { deleteFiles, downloadFile, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
+import {
+    EntityTemplateManagerService,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+} from '../../externalServices/templates/entityTemplateService';
+import { trycatch } from '../../utils';
 import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
-import { objectFilter } from '../../utils/object';
 import logger from '../../utils/logger/logsLogger';
-import groupBy from 'lodash.groupby';
-import { Dictionary } from 'lodash';
+import { objectFilter } from '../../utils/object';
+import { BadRequestError } from '../error';
+import RuleBreachesManager from '../ruleBreaches/manager';
+import { patchDocumentAsStream } from './documentExport';
+import { IExportEntitiesBody } from './interfaces';
 
 const { errorCodes } = config;
 
@@ -241,6 +243,16 @@ export class InstancesManager {
         }
 
         return deleteFiles(fileIdsToDelete);
+    }
+
+    static async exportEntityToDocumentTemplate({
+        documentTemplateId,
+        entityProperties,
+    }: {
+        documentTemplateId: string;
+        entityProperties: IEntity['properties'];
+    }) {
+        return patchDocumentAsStream(await downloadFile(documentTemplateId), entityProperties);
     }
 
     static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

@@ -63,10 +63,15 @@ export const getDatasource = <Data extends any = IEntity>(
     onFail: ((err: unknown) => void) | undefined,
     rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
+    isInfinite: boolean = false,
 ): IServerSideDatasource => {
+    let lastPage = 0;
     return {
         // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
+            lastPage++;
+            if (!isInfinite && lastPage === 1) return;
+
             if (rowData && mainEntity) {
                 params.success({
                     rowData,
@@ -76,10 +81,20 @@ export const getDatasource = <Data extends any = IEntity>(
             }
 
             const agGridRequest = params.request;
+            const currentPage = params.api.paginationGetCurrentPage();
+            const pageSize = params.api.paginationGetPageSize();
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest(
+                        {
+                            ...agGridRequest,
+                            quickFilter: quickFilterText,
+                            skip: 0,
+                            limit: (currentPage + 1) * pageSize,
+                        } as IAGGridRequest,
+                        template,
+                    ),
                 ),
             );
 
@@ -131,7 +146,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     return {
         rowModelType: 'serverSide',
         pagination: false,
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity, true),
         cacheBlockSize,
         maxBlocksInCache,
         maxConcurrentDatasourceRequests,

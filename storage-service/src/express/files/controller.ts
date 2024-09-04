@@ -32,6 +32,7 @@ export class FilesController {
 
             archive.pipe(res);
 
+            // eslint-disable-next-line no-plusplus
             for (let i = 0; i < fileIds.length; i++) {
                 const fileId = fileIds[i];
                 const fileData = filesData[i];
