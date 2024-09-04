@@ -54,6 +54,7 @@ export const createEntityTemplateSchema = Joi.object({
         propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
+        documentTemplatesIds: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {},
@@ -71,6 +72,7 @@ export const updateEntityTemplateSchema = Joi.object({
         propertiesTypeOrder: orderPropertiesTypeSchema.required(),
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
+        documentTemplatesIds: Joi.array().items(Joi.string()),
     }).min(1),
     query: {},
     params: {

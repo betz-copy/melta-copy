@@ -12,7 +12,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { InstanceManagerService } from '../../externalServices/instanceService';
 import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipsTemplateService';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { deleteFile, deleteFiles, uploadFile, uploadFiles } from '../../externalServices/storageService';
 import { trycatch } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { ServiceError } from '../error';
@@ -33,6 +33,7 @@ import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { isProcessManager } from '../../externalServices/permissionsService';
 import { IPermissionsOfUser } from '../permissions/interfaces';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import logger from '../../utils/logger/logsLogger';
 
 const {
     categoryHasTemplates,
@@ -309,14 +310,14 @@ export class TemplatesManager {
     }
 
     static async createEntityTemplate(
-        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId'>,
-        file?: Express.Multer.File,
+        templateData: Omit<IEntityTemplateWithConstraints, 'iconFileId' | 'documentTemplatesIds'>,
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(templateData.category);
         let iconFileId: string | null;
         if (file) {
-            iconFileId = await uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else {
             iconFileId = null;
         }
@@ -328,6 +329,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            documentTemplatesIds: files ? await uploadFiles(files) : undefined,
         });
 
         await InstanceManagerService.updateConstraintsOfTemplate(entityTemplate._id, { requiredConstraints, uniqueConstraints });
@@ -427,7 +429,7 @@ export class TemplatesManager {
     static async updateEntityTemplate(
         id: string,
         updatedTemplateData: Omit<IEntityTemplateWithConstraints, 'disabled'> & { file?: string },
-        file?: Express.Multer.File,
+        { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await EntityTemplateManagerService.getCategoryById(updatedTemplateData.category);
 
@@ -470,14 +472,25 @@ export class TemplatesManager {
                 await deleteFile(currTemplate.iconFileId);
             }
 
-            iconFileId = await uploadFile(file);
-            await removeTmpFile(file.path);
+            iconFileId = await uploadFile(file[0]);
+            await removeTmpFile(file[0].path);
         } else if (currTemplate.iconFileId && !updatedTemplateData.iconFileId) {
             await deleteFile(currTemplate.iconFileId);
 
             iconFileId = null;
         } else {
             iconFileId = currTemplate.iconFileId;
+        }
+
+        let newDocumentTemplatesIds: string[] | undefined;
+        if (files) {
+            if (currTemplate?.documentTemplatesIds) {
+                await deleteFiles(currTemplate.documentTemplatesIds);
+            }
+
+            newDocumentTemplatesIds = await uploadFiles(files);
+        } else {
+            newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
         }
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
@@ -492,6 +505,7 @@ export class TemplatesManager {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
+            documentTemplatesIds: newDocumentTemplatesIds,
         });
         await InstanceManagerService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
@@ -555,10 +569,12 @@ export class TemplatesManager {
                 ...templateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('Initial mongoDB update worked');
+            logger.info('Initial mongoDB update worked');
+
             return updatedEntityTemplate;
         } catch (error) {
-            console.error('Initial mongoDB update failed', error);
+            logger.error('Initial mongoDB update failed', { error });
+
             throw error;
         }
     }
@@ -582,10 +598,12 @@ export class TemplatesManager {
                 ...rollBackTemplateWithoutProperties,
                 category: templateWithoutProperties.category._id,
             } as Omit<IEntityTemplate, 'disabled'>);
-            console.log('RollBack mongoDB succeeded', rollBackTemplateWithoutProperties);
+            logger.info('RollBack mongoDB succeeded', { rollBackTemplateWithoutProperties });
+
             return rolledBackEntityTemplate;
         } catch (error) {
-            console.error('RollBack mongoDB update failed', error);
+            logger.error('RollBack mongoDB update failed', { error });
+
             throw error;
         }
     }
@@ -603,12 +621,13 @@ export class TemplatesManager {
             await InstanceManagerService.updateEnumFieldOfEntity(id, field, fieldValue, { name: values.name, type: values.type });
         } catch (neoError: any) {
             if (neoError.response?.status === 404) {
-                console.error('Neo4j update failed: Node not found');
-                // if not found, it's not an error.
+                logger.error('Neo4j update failed: Node not found', { error: neoError });
                 return templateWithoutProperties;
             }
-            console.warn('Neo4j update failed: starting roll-back', neoError.message, neoError.response?.status);
+
+            logger.error('Neo4j update failed: starting roll-back', { error: neoError });
             await TemplatesManager.neoRollBack(id, values, index, templateWithoutProperties, fieldValue, template, field);
+
             throw neoError;
         }
 
