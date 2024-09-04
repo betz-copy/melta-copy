@@ -63,13 +63,14 @@ export const getDatasource = <Data extends any = IEntity>(
     onFail: ((err: unknown) => void) | undefined,
     rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
+    isInfinite: boolean = false,
 ): IServerSideDatasource => {
     let lastPage = 0;
     return {
         // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
             lastPage++;
-            if (lastPage === 1) return;
+            if (!isInfinite && lastPage === 1) return;
 
             if (rowData && mainEntity) {
                 params.success({
@@ -145,7 +146,7 @@ const getRowModelProps = <Data extends any = IEntity>(
     return {
         rowModelType: 'serverSide',
         pagination: false,
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity, true),
         cacheBlockSize,
         maxBlocksInCache,
         maxConcurrentDatasourceRequests,
