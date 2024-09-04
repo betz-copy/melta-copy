@@ -1,11 +1,17 @@
 import { Request, Response } from 'express';
-import { ActivityLogManager } from './manager';
+import DefaultController from '../../utils/express/controller';
+import { IActivityLog } from './interface';
+import ActivityLogManager from './manager';
 
-class ActivityLogController {
-    static async getActivity(req: Request, res: Response) {
+export default class ActivityLogController extends DefaultController<IActivityLog, ActivityLogManager> {
+    constructor(workspaceId: string) {
+        super(new ActivityLogManager(workspaceId));
+    }
+
+    async getActivity(req: Request, res: Response) {
         const { limit, skip, actions } = req.query;
-        res.json(await ActivityLogManager.getActivity(req.params.entityId, Number(limit), Number(skip), actions as string[]));
+        const { entityId } = req.params;
+
+        res.json(await this.manager.getActivity(entityId, Number(limit), Number(skip), actions as string[]));
     }
 }
-
-export default ActivityLogController;

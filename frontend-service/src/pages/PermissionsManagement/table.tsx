@@ -1,24 +1,30 @@
-import React from 'react';
-import i18next from 'i18next';
-import '@noam7700/ag-grid-enterprise-core';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { ColDef, GetQuickFilterTextParams, ICellRendererParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import { ColDef, GetQuickFilterTextParams, ICellRendererParams, ISetFilterParams, ValueFormatterParams } from '@ag-grid-community/core';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { Chip, Grid, IconButton } from '@mui/material';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import { Chip, Grid, IconButton } from '@mui/material';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import i18next from 'i18next';
+import React from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import { IUser } from '../../services/kartoffelService';
 import { environment } from '../../globals';
+import { IMongoCategory } from '../../interfaces/categories';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
+import { IUser } from '../../interfaces/users';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 
 const { defaultRowHeight } = environment.agGrid;
 
-const defaultColDef: ColDef<IPermissionsOfUser> = {
+const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
+
+const defaultColDef: ColDef<IUser> = {
     editable: false,
     sortable: true,
     flex: 1,
@@ -31,68 +37,73 @@ const defaultColDef: ColDef<IPermissionsOfUser> = {
     menuTabs: ['filterMenuTab'],
 };
 
-const booleanToTextFormatter = (value: boolean) => (value ? i18next.t('booleanOptions.yes') : i18next.t('booleanOptions.no'));
-
-const nullableStringToBooleanColDefs = (field: string, headerName: string): ColDef<IPermissionsOfUser> => {
-    const filterParams: ISetFilterParams<IPermissionsOfUser, boolean> = {
-        values: [true, false],
-        suppressMiniFilter: true,
-        suppressSelectAll: true,
-        valueFormatter: (params: ValueFormatterParams<IPermissionsOfUser, boolean>) => booleanToTextFormatter(params.value),
-    };
-
-    return {
-        colId: field, // used for autoSizeColumns onFirstDataRendered
-        field,
-        headerName,
-        valueFormatter: (params) => booleanToTextFormatter(params.value),
-        getQuickFilterText: (params) => booleanToTextFormatter(params.value),
-        filter: 'agSetColumnFilter',
-        filterValueGetter: (params) => Boolean(params.getValue(field)),
-        filterParams,
-        minWidth: undefined,
-        flex: 0,
-    };
-};
-
 const columnDefs = (
+    workspaceId: string,
     categories: IMongoCategory[],
-    onDeletePermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any,
-    onEditPermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any,
-): ColDef<IPermissionsOfUser>[] => [
+    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
+    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
+): ColDef<IUser>[] => [
     {
-        field: 'user',
+        field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
-        valueFormatter: (params: ValueFormatterParams<IPermissionsOfUser, IPermissionsOfUser['user']>) => params.value.displayName,
-        comparator: (userA: IUser, userB: IUser) => {
-            const userFullNameA = userA?.displayName ?? '';
-            const userFullNameB = userB?.displayName ?? '';
-            return userFullNameA.localeCompare(userFullNameB);
-        },
         filter: 'agTextColumnFilter',
-        filterValueGetter: (params) => params.data!.user.displayName.toLowerCase(),
         getQuickFilterText: (params) => {
-            const { id, displayName, digitalIdentities } = params.data.user;
-            return `${id} ${displayName} ${digitalIdentities.map(({ uniqueId }) => uniqueId).join(' ')}`;
+            const {
+                _id,
+                displayName,
+                externalMetadata: { digitalIdentitySource },
+            } = params.data;
+
+            return `${_id} ${displayName} ${digitalIdentitySource}`;
         },
     },
-    nullableStringToBooleanColDefs('permissionsManagementId', i18next.t('permissions.permissionsManagement')),
-    nullableStringToBooleanColDefs('templatesManagementId', i18next.t('permissions.templatesManagement')),
-    nullableStringToBooleanColDefs('rulesManagementId', i18next.t('permissions.rulesManagement')),
-    nullableStringToBooleanColDefs('processesManagementId', i18next.t('permissions.processesManagement')),
     {
-        field: 'instancesPermissions',
+        field: 'externalMetadata.digitalIdentitySource',
+        headerName: i18next.t('permissions.sourceHeaderName'),
+        filter: 'agTextColumnFilter',
+        hide: true,
+    },
+    translatedEnumColDef(
+        'permissionsManagement',
+        (params) => (params.data?.permissions[workspaceId].permissions?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
+        { title: i18next.t('permissions.permissionsManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'templatesManagement',
+        (params) => (params.data?.permissions[workspaceId].templates?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
+        { title: i18next.t('permissions.templatesManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'rulesManagement',
+        (params) => (params.data?.permissions[workspaceId].rules?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
+        { title: i18next.t('permissions.rulesManagement') },
+        scopesTranslation,
+    ),
+    translatedEnumColDef(
+        'processesManagement',
+        (params) => (params.data?.permissions[workspaceId].processes?.scope || params.data?.permissions[workspaceId].admin?.scope) ?? '',
+        { title: i18next.t('permissions.processesManagement') },
+        scopesTranslation,
+    ),
+    {
+        field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
-        getQuickFilterText: (params: GetQuickFilterTextParams<IPermissionsOfUser, IPermissionsOfUser['instancesPermissions']>) => {
-            const permissionsOfCategories = params.value.map(({ category }) => {
-                return (
-                    categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
-                        _id: category,
-                        name: category,
-                        displayName: category,
-                    }
-                );
-            });
+        valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
+        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
+            const permissionsOfCategories =
+                params.data?.permissions[workspaceId].admin?.scope === PermissionScope.write
+                    ? Object.keys(params.value ?? {}).map((category) => {
+                          return (
+                              categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
+                                  _id: category,
+                                  name: category,
+                                  displayName: category,
+                              }
+                          );
+                      })
+                    : categories;
             return permissionsOfCategories.map(({ displayName }) => displayName).join(' ');
         },
         filter: false, // todo: do set filter with `.includes` logic
@@ -106,29 +117,21 @@ const columnDefs = (
         //     },
         // },
         comparator: (
-            instancesPermissionsLHS: IPermissionsOfUser['instancesPermissions'],
-            instancesPermissionsRHS: IPermissionsOfUser['instancesPermissions'],
+            categoriesPermissionsLHS: ICompact<IInstancesPermission>['categories'],
+            categoriesPermissionsRHS: ICompact<IInstancesPermission>['categories'],
         ) => {
-            if (instancesPermissionsLHS.length !== instancesPermissionsRHS.length) {
-                return instancesPermissionsLHS.length > instancesPermissionsRHS.length ? 1 : -1;
-            }
+            const lhs = Object.keys(categoriesPermissionsLHS);
+            const rhs = Object.keys(categoriesPermissionsRHS);
+
+            if (lhs.length !== rhs.length) return lhs.length > rhs.length ? 1 : -1;
 
             // else, compare by categories ids (sorted in each). not important, just be deterministic
-            const instancesPermissionsLHSStr = instancesPermissionsLHS
-                .map(({ category }) => category)
-                .sort()
-                .join(',');
-            const instancesPermissionsRHSStr = instancesPermissionsLHS
-                .map(({ category }) => category)
-                .sort()
-                .join(',');
-
-            return instancesPermissionsLHSStr.localeCompare(instancesPermissionsRHSStr);
+            return lhs.sort().join(',').localeCompare(rhs.sort().join(','));
         },
-        cellRenderer: (props: ICellRendererParams<IPermissionsOfUser, IPermissionsOfUser['instancesPermissions']>) => {
-            const instancesPermissionsPopulated = props.value.map(({ _id, category }) => {
+        cellRenderer: (props: ICellRendererParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
+            const categoriesPermissionsPopulated = Object.keys(props.value ?? {}).map((category) => {
                 return {
-                    _id,
+                    _id: category,
                     category: categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
                         _id: category,
                         name: category,
@@ -138,12 +141,12 @@ const columnDefs = (
             });
 
             // sort just for fun, same as comparator's sorting
-            instancesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
+            categoriesPermissionsPopulated.sort((a, b) => a.category._id.localeCompare(b.category._id));
 
             return (
                 <ScrollContainer horizontal vertical={false}>
                     <Grid container spacing={1} wrap="nowrap">
-                        {instancesPermissionsPopulated.map(({ _id, category }) => (
+                        {categoriesPermissionsPopulated.map(({ _id, category }) => (
                             <Grid item key={_id}>
                                 <Chip label={category.displayName} />
                             </Grid>
@@ -159,15 +162,18 @@ const columnDefs = (
         sortable: false,
         filter: false,
         suppressMenu: true,
-        cellRenderer: (props: ICellRendererParams<IPermissionsOfUser>) => {
+        suppressColumnsToolPanel: true,
+        cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
+
+            const isAdmin = data?.permissions[workspaceId].admin?.scope === PermissionScope.write;
 
             return (
                 <div>
-                    <IconButton color="primary" onClick={() => onEditPermissionsOfUser(data!)}>
+                    <IconButton color="primary" onClick={() => onEditPermissionsOfUser(data!)} disabled={isAdmin}>
                         <EditIcon />
                     </IconButton>
-                    <IconButton color="primary" onClick={() => onDeletePermissionsOfUser(data!)}>
+                    <IconButton color="primary" onClick={() => onDeletePermissionsOfUser(data!)} disabled={isAdmin}>
                         <DeleteIcon />
                     </IconButton>
                 </div>
@@ -179,22 +185,24 @@ const columnDefs = (
 ];
 
 const Table: React.FC<{
-    permissionsOfUsers: IPermissionsOfUser[];
+    users: IUser[];
     categories: IMongoCategory[];
-    onDeletePermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any;
-    onEditPermissionsOfUser: (permissionsOfUser: IPermissionsOfUser) => any;
+    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
+    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
-}> = ({ permissionsOfUsers, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
+}> = ({ users, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     return (
-        <AgGridReact<IPermissionsOfUser>
+        <AgGridReact<IUser>
             className="ag-theme-material"
-            modules={[MenuModule, SetFilterModule, ClientSideRowModelModule]}
+            modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
-            rowData={permissionsOfUsers}
+            rowData={users}
             defaultColDef={defaultColDef}
-            columnDefs={columnDefs(categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
+            columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
             rowModelType="clientSide"
-            getRowId={({ data: permissionsOfUser }) => permissionsOfUser.user.id}
+            getRowId={({ data: { _id } }) => _id}
             pagination
             paginationAutoPageSize
             rowHeight={defaultRowHeight}
@@ -208,11 +216,27 @@ const Table: React.FC<{
             onFirstDataRendered={(params) => {
                 params.columnApi.autoSizeColumns([
                     'actions',
-                    'permissionsManagementId',
-                    'templatesManagementId',
-                    'rulesManagementId',
-                    'processesManagmentId',
+                    'displayName',
+                    'source',
+                    'permissionsManagement',
+                    'templatesManagement',
+                    'rulesManagement',
+                    'processesManagement',
+                    'categoriesPermissions',
                 ]);
+            }}
+            sideBar={{
+                toolPanels: [
+                    {
+                        id: 'columns',
+                        labelDefault: 'Columns',
+                        labelKey: 'columns',
+                        iconKey: 'columns',
+                        toolPanel: 'agColumnsToolPanel',
+                        toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
+                    },
+                ],
+                position: 'left',
             }}
             quickFilterText={quickFilterText}
             localeText={i18next.t('agGridLocaleText', { returnObjects: true })}

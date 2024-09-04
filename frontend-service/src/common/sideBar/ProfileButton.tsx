@@ -1,6 +1,6 @@
 import { Grid, IconButton } from '@mui/material';
 import React from 'react';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 import UserAvatar from '../UserAvatar';
 import { MeltaTooltip } from '../MeltaTooltip';
 
@@ -10,17 +10,6 @@ interface ProfileButtonProps {
     isDrawerOpen: boolean;
     onClick: React.MouseEventHandler<HTMLButtonElement>;
 }
-
-export const getNameInitials = (user: ProfileButtonProps['currentUser']): string => {
-    if (user.firstName && user.lastName) {
-        return user.firstName.charAt(0) + user.lastName.charAt(0);
-    }
-    if (user.fullName) {
-        const names = user.fullName.split(' ');
-        return names.map((name) => name.charAt(0)).join('');
-    }
-    return '';
-};
 
 const ProfileButton: React.FC<ProfileButtonProps> = ({ currentUser, text, isDrawerOpen, onClick }) => {
     return (

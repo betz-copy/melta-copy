@@ -49,7 +49,7 @@ export const createProcessRequest = async (process: ProcessDetailsValues) => {
     formData.append('templateId', process.template!._id);
     formData.append('startDate', process.startDate!.toISOString());
     formData.append('endDate', process.endDate!.toISOString());
-    const transformedStepsObj = mapValues(process.steps, (reviewers) => reviewers.map(({ id }) => id));
+    const transformedStepsObj = mapValues(process.steps, (reviewers) => reviewers.map(({ _id }) => _id));
     formData.append('steps', JSON.stringify(transformedStepsObj));
 
     const { data } = await axios.post<IMongoProcessInstancePopulated>(processes, formData);
@@ -102,7 +102,7 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
 export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
     const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template.details.properties.properties);
-    const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ id }) => id));
+    const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ _id }) => _id));
     formData.append(
         'details',
         JSON.stringify({

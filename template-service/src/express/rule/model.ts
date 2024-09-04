@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-import { IMongoRule } from './interfaces';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
-import config from '../../config';
 
-const RuleTemplateSchema = new mongoose.Schema(
+export const RuleTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -42,7 +40,3 @@ const RuleTemplateSchema = new mongoose.Schema(
 RuleTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
-
-const RuleModel = mongoose.model<IMongoRule>(config.mongo.ruleCollectionName, RuleTemplateSchema);
-
-export default RuleModel;

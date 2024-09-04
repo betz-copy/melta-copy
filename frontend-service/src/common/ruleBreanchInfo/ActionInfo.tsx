@@ -17,7 +17,7 @@ import {
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 import { EntityLink } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
@@ -177,10 +177,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
 
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">
-                {actionType === ActionTypes.CreateRelationship && i18next.t('ruleBreachInfo.relActionInfo.creation')}
-                {actionType === ActionTypes.DeleteRelationship && i18next.t('ruleBreachInfo.relActionInfo.deletion')}
-            </Box>
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}
@@ -213,8 +210,6 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
             ...properties,
         },
     };
-
-    console.log({ entity });
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(templateId)!;

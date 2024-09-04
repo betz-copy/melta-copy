@@ -1,87 +1,75 @@
 import { Router } from 'express';
-import EntityController from './controller';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import EntityController from './controller';
 import {
-    validateEntity,
-    validateConstraintsOfTemplate,
-    validateSearchBatchBody,
-    validateSearchEntitiesOfTemplateBody,
-    validateFilterBatchBody,
-} from './validator.template';
-import {
-    deleteEntityByIdRequestSchema,
-    deleteEntitiesByTemplateIdRequestSchema,
     createEntityRequestSchema,
+    deleteEntitiesByTemplateIdRequestSchema,
+    deleteEntityByIdRequestSchema,
+    enumerateNewSerialNumberFieldsRequestSchema,
+    getAllConstraintsRequestSchema,
+    getConstraintsOfTemplateRequestSchema,
     getEntitiesByIdsRequestSchema,
     getEntityByIdRequestSchema,
-    updateEntityByIdRequestSchema,
-    getConstraintsOfTemplateRequestSchema,
-    getAllConstraintsRequestSchema,
-    updateEntityStatusByIdRequestSchema,
-    updateConstraintsOfTemplateRequestSchema,
+    getExpandedGraphByIdRequestSchema,
+    getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesOfTemplateRequestSchema,
+    updateConstraintsOfTemplateRequestSchema,
+    updateEntityByIdRequestSchema,
+    updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
-    getIfValuefieldIsUsedRequestSchema,
-    getExpandedGraphByIdRequestSchema,
-    enumerateNewSerialNumberFieldsRequestSchema,
 } from './validator.schema';
+import { EntityValidator } from './validator.template';
 
 const entityRouter: Router = Router();
 
-entityRouter.get(
-    '/constraints/:templateId',
-    ValidateRequest(getConstraintsOfTemplateRequestSchema),
-    wrapController(EntityController.getConstraintsOfTemplate),
-);
-entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), wrapController(EntityController.getAllConstraints));
+const entityController = createController(EntityController);
+const entityValidatorController = createController(EntityValidator, true);
+
+entityRouter.get('/constraints/:templateId', ValidateRequest(getConstraintsOfTemplateRequestSchema), entityController.getConstraintsOfTemplate);
+entityRouter.get('/constraints', ValidateRequest(getAllConstraintsRequestSchema), entityController.getAllConstraints);
 entityRouter.put(
     '/constraints/:templateId',
     ValidateRequest(updateConstraintsOfTemplateRequestSchema),
-    wrapMiddleware(validateConstraintsOfTemplate),
-    wrapController(EntityController.updateConstraintsOfTemplate),
+    entityValidatorController.validateConstraintsOfTemplate,
+    entityController.updateConstraintsOfTemplate,
 );
 entityRouter.post(
     '/constraints/enumerate-new-serial-number-fields/:templateId',
     ValidateRequest(enumerateNewSerialNumberFieldsRequestSchema),
-    wrapController(EntityController.enumerateNewSerialNumberFields),
+    entityController.enumerateNewSerialNumberFields,
 );
 
 entityRouter.post(
     '/search/template/:templateId',
     ValidateRequest(searchEntitiesOfTemplateRequestSchema),
-    wrapMiddleware(validateSearchEntitiesOfTemplateBody),
-    wrapController(EntityController.searchEntitiesOfTemplate),
+    entityValidatorController.validateSearchEntitiesOfTemplateBody,
+    entityController.searchEntitiesOfTemplate,
 );
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
-    wrapMiddleware(validateSearchBatchBody),
-    wrapController(EntityController.searchEntitiesBatch),
+    entityValidatorController.validateSearchBatchBody,
+    entityController.searchEntitiesBatch,
 );
 
-entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), wrapController(EntityController.updateEnumFieldValue));
-entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), wrapController(EntityController.getIsFieldUsed));
+entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
+entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
 
 entityRouter.post(
     '/expanded/:id',
     ValidateRequest(getExpandedGraphByIdRequestSchema),
-    wrapMiddleware(validateFilterBatchBody),
-    wrapController(EntityController.getExpandedGraphById),
+    entityValidatorController.validateFilterBatchBody,
+    entityController.getExpandedGraphById,
 );
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), wrapMiddleware(validateEntity), wrapController(EntityController.createEntity));
-entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), wrapController(EntityController.getEntityById));
-entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), wrapController(EntityController.getEntitiesByIds));
-entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), wrapController(EntityController.deleteEntityById));
-entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), wrapController(EntityController.deleteEntitiesByTemplateId));
-entityRouter.put(
-    '/:id',
-    ValidateRequest(updateEntityByIdRequestSchema),
-    wrapMiddleware(validateEntity),
-    wrapController(EntityController.updateEntityById),
-);
-entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), wrapController(EntityController.updateStatusById));
+entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntity, entityController.createEntity);
+entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
+entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
+entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
+entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
+entityRouter.put('/:id', ValidateRequest(updateEntityByIdRequestSchema), entityValidatorController.validateEntity, entityController.updateEntityById);
+entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 
 export default entityRouter;

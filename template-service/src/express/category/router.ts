@@ -1,19 +1,21 @@
 import { Router } from 'express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import { wrapController } from '../../utils/express';
-import { getCategoriesSchema, getCategoryByIdSchema, createCategorySchema, deleteCategorySchema, updateCategorySchema } from './validator.schema';
 import CategoriesController from './controller';
+import { createCategorySchema, deleteCategorySchema, getCategoriesSchema, getCategoryByIdSchema, updateCategorySchema } from './validator.schema';
 
 const categoryRouter: Router = Router();
 
-categoryRouter.get('/', ValidateRequest(getCategoriesSchema), wrapController(CategoriesController.getCategories));
+const controller = createController(CategoriesController);
 
-categoryRouter.get('/:categoryId', ValidateRequest(getCategoryByIdSchema), wrapController(CategoriesController.getCategoryById));
+categoryRouter.get('/', ValidateRequest(getCategoriesSchema), controller.getCategories);
 
-categoryRouter.post('/', ValidateRequest(createCategorySchema), wrapController(CategoriesController.createCategory));
+categoryRouter.get('/:categoryId', ValidateRequest(getCategoryByIdSchema), controller.getCategoryById);
 
-categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), wrapController(CategoriesController.deleteCategory));
+categoryRouter.post('/', ValidateRequest(createCategorySchema), controller.createCategory);
 
-categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), wrapController(CategoriesController.updateCategory));
+categoryRouter.delete('/:categoryId', ValidateRequest(deleteCategorySchema), controller.deleteCategory);
+
+categoryRouter.put('/:categoryId', ValidateRequest(updateCategorySchema), controller.updateCategory);
 
 export default categoryRouter;

@@ -1,24 +1,34 @@
 import { IMongoCategory } from '../../interfaces/categories';
-import { IPermissionsOfUser, Scope } from '../../services/permissionsService';
+import { PermissionScope } from '../../interfaces/permissions';
+import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 
-export const checkUserInstanceOfCategoryPermission = (
-    instancesPermissions: IPermissionsOfUser['instancesPermissions'],
+export const checkUserCategoryPermission = (
+    permissions: ISubCompactPermissions,
     { _id: categoryId }: IMongoCategory,
-    scope: Scope,
-) => {
-    return instancesPermissions.some(({ category, scopes }) => {
-        if (category !== categoryId) return false;
-
-        if (scope === 'Write') return scopes.includes('Write');
-
-        return scopes.includes('Write') || scopes.includes('Read');
-    });
+    scope: PermissionScope,
+): boolean => {
+    return (
+        Boolean(permissions?.admin) ||
+        permissions?.instances?.categories[categoryId]?.scope === scope ||
+        permissions?.instances?.categories[categoryId]?.scope === PermissionScope.write
+    );
 };
 
-export const getUserPermissionScopeOfCategory = (instancesPermissions: IPermissionsOfUser['instancesPermissions'], categoryId: string) => {
-    const permission = instancesPermissions.find(({ category }) => category === categoryId);
+export const getUserPermissionScopeOfCategory = (categoriesPermissions: ICompact<IInstancesPermission>['categories'], categoryId: string) => {
+    return categoriesPermissions[categoryId]?.scope ?? undefined;
+};
 
-    if (permission?.scopes.includes('Write')) return 'Write';
-    if (permission?.scopes.includes('Read')) return 'Read';
-    return undefined;
+export const getCategoryPermissionsToSyncAndDelete = (instances: ISubCompactPermissions['instances']) => {
+    const categoryPermissionsToSync = {};
+    const categoryPermissionsToDelete = {};
+
+    if (!instances) return { categoryPermissionsToSync, categoryPermissionsToDelete };
+
+    for (const [categoryId, categoryPermission] of Object.entries(instances.categories)) {
+        (categoryPermission?.scope === null || categoryPermission?.scope === undefined ? categoryPermissionsToDelete : categoryPermissionsToSync)[
+            categoryId
+        ] = instances.categories[categoryId];
+    }
+
+    return { categoryPermissionsToSync, categoryPermissionsToDelete };
 };

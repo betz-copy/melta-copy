@@ -1,4 +1,4 @@
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../users';
 import { IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
 
 export enum RuleBreachRequestStatus {
