@@ -31,6 +31,15 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const queryKey = ['searchIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
 
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    // const sideBarWidth = isSideBarOpen ? screenWidth * 0.18 : screenWidth * 0.04;
+    const sideBarWidth = 200;
+    const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
+    console.log({ sideBarWidthPrec });
+
+    // const sideBarWidth = 90;
+
     const localStorageKey = 'iFramesOrder';
     useEffect(() => {
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
@@ -45,9 +54,9 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
             .forEach((key) => {
                 const value = JSON.parse(localStorage.getItem(key)!);
                 if (isSideBarOpen && open !== 'true') {
-                    value.width *= 0.9;
+                    value.width *= sideBarWidthPrec;
                 } else if (open === 'true' && !isSideBarOpen) {
-                    value.width /= 0.9;
+                    value.width /= sideBarWidthPrec;
                 }
 
                 localStorage.setItem(key, JSON.stringify(value));
@@ -73,7 +82,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    paddingLeft: 20,
+                    paddingLeft: isSideBarOpen ? 25 : 13,
                     width: '100%',
                     boxSizing: 'border-box',
                 }}

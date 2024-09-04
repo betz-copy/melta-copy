@@ -17,7 +17,7 @@ import { MenuItemContent } from '../../common/SelectCheckbox';
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
-    iFramesOrder: any;
+    iFramesOrder: string[];
     setIFramesOrder: (value) => void;
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const queryClient = useQueryClient();

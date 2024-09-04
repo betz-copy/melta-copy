@@ -54,6 +54,7 @@
     "@rjsf/utils": "^5.18.1",
     "@rjsf/validator-ajv8": "^5.18.1",
     "@syncfusion/ej2-react-schedule": "github:MeltaTeam/not-stolen",
+    "@szhsin/react-menu": "^4.2.2",
     "@types/lodash.flatten": "^4.4.7",
     "@types/uuid": "^8.3.4",
     "ajv": "^8.11.0",

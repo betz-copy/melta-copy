@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, Grid, Box, Slide, Fade, Button, useTheme, Typography, MenuItem, Popover, Tooltip, Menu } from '@mui/material';
+import { Divider, IconButton, MenuItem, Grid, Box, Slide, Fade, Button, useTheme, Typography, Popover, Tooltip, Menu } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -14,6 +14,7 @@ import LinkIcon from '@mui/icons-material/Link';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import { ControlledMenu, useHover } from '@szhsin/react-menu';
 import { Drawer } from './SideBar.styled';
 import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
@@ -31,64 +32,42 @@ import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
 import { searchIFrames } from '../../services/iFramesService';
+import { IMongoIFrame } from '../../interfaces/iFrames';
+import '@szhsin/react-menu/dist/index.css';
+import './NavButton.css';
+import '@szhsin/react-menu/dist/transitions/zoom.css';
+
+type IFramesInSideBarProps = {
+    iFrames?: IMongoIFrame[];
+    activeButton: string | null;
+    isDrawerOpen: boolean;
+    handleChangeActiveButton: (isActive: boolean, key: string) => void;
+};
 
 type SideBarProps = {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
 };
 
-const IFramesInSideBar: React.FC<any> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-    const navigate = useNavigate();
-    const handleMouseEnter = (event: React.MouseEvent<HTMLElement>) => {
-        console.log('1');
-        setAnchorEl(event.currentTarget);
-    };
+// const IFramesInSideBar: React.FC<IFramesInSideBarProps> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
+//     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+//     const [isOpen, setOpen] = useState(false);
 
-    const handleMouseLeave = () => {
-        console.log('2');
-        setAnchorEl(null);
-    };
+//     const ref = useRef(null);
+//     // const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
 
-    const handleMenuItemClick = (id: string) => {
-        navigate(`/iframes/${id}`);
-        setAnchorEl(null);
-    };
+//     const navigate = useNavigate();
 
-    return (
-        <>
-            <NavButton
-                to="/iframes"
-                text={i18next.t('pages.iFrames')}
-                isDrawerOpen={isDrawerOpen}
-                onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
-                handleMouseEnter={handleMouseEnter}
-            >
-                <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
-            </NavButton>
-            <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMouseLeave}
-                MenuListProps={{ onMouseLeave: handleMouseLeave }}
-                anchorOrigin={{
-                    vertical: 'top',
-                    horizontal: 'left',
-                }}
-                transformOrigin={{
-                    vertical: 'top',
-                    horizontal: 'right',
-                }}
-            >
-                {iFrames?.map((iFrame) => (
-                    <MenuItem key={iFrame._id} onClick={() => handleMenuItemClick(iFrame._id)}>
-                        {iFrame.name}
-                    </MenuItem>
-                ))}
-            </Menu>
-        </>
-    );
-};
+//     const handleMenuItemClick = (event, id: string) => {
+//         console.log('clockkkk');
+//         event.stopPropagation();
+//         navigate(`/iframes/${id}`);
+//     };
+
+//     return (
+
+//     );
+// };
 const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -117,6 +96,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     };
     const navigate = useNavigate();
 
+    const handleMenuItemClick = (event, id: string) => {
+        console.log('clockkkk');
+        event.stopPropagation();
+        navigate(`/iframes/${id}`);
+    };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
         () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? notifications.groups : {}),
@@ -312,7 +296,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 </Grid>
 
                 <Grid item container direction="column" alignItems="stretch" marginTop="auto">
-                    <Divider style={{ backgroundColor: 'white', width: '85%', alignSelf: 'center' }} />
+                    <Divider style={{ backgroundColor: 'white', width: '85%', alignSelf: 'center', marginBottom: '10px' }} />
 
                     {meltaPlus && (
                         <Fade in={meltaPlus}>
@@ -329,13 +313,30 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Fade>
                     )}
 
-                    <IFramesInSideBar
-                        iFrames={iFramesInSidebar}
-                        activeButton={activeButton}
-                        myPermissions={myPermissions}
+                    <NavButton
+                        to="/iframes"
+                        text={
+                            <Grid>
+                                {iFramesInSidebar?.map((iFrame) => (
+                                    <MenuItem
+                                        key={iFrame._id}
+                                        onClick={(event) => handleMenuItemClick(event, iFrame._id)}
+                                        sx={{
+                                            '&:hover': {
+                                                backgroundColor: 'lightblue',
+                                            },
+                                        }}
+                                    >
+                                        {iFrame.name}
+                                    </MenuItem>
+                                ))}
+                            </Grid>
+                        }
                         isDrawerOpen={isDrawerOpen}
-                        handleChangeActiveButton={handleChangeActiveButton}
-                    />
+                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                    >
+                        <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
 
                     <NavButton
                         to="/rule-management"
@@ -478,3 +479,26 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 };
 
 export { SideBar };
+
+/* <ControlledMenu
+                {...hoverProps}
+                state={isOpen ? 'open' : 'open'}
+                anchorRef={ref}
+                // onMouseLeave={() => setOpen(false)}
+                // onClose={() => setOpen(false)}
+                // gap={200}
+                direction="left"
+                align="start"
+                className="frames-menu"
+                menuStyle={{
+                    //  display: 'flex', float: 'left', top: '100px', left: '150px',
+                    position: 'absolute',
+                    marginRight: '50px',
+                }}
+            >
+                {iFrames?.map((iFrame) => (
+                    <MenuItem key={iFrame._id} onClick={() => handleMenuItemClick(iFrame._id)}>
+                        {iFrame.name}
+                    </MenuItem>
+                ))}
+            </ControlledMenu> */
