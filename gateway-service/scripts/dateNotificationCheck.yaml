@@ -2,7 +2,6 @@ apiVersion: batch/v1
 kind: CronJob
 metadata:
     name: date-notification-check
-    namespace: default
 spec:
     schedule: '* * * * *'
     jobTemplate:
@@ -12,5 +11,45 @@ spec:
                     containers:
                         - name: date-notification-check
                           image: melta-gateway-service:latest
-                          command: ['node', '/usr/src/app/src/utils/notifications/dateNotificationsCheck.ts']
-                    restartPolicy: OnFailure
+                          command: ['node', '/usr/src/app/dist/utils/notifications/dateNotificationsCheck.js']
+                    restartPolicy: Never
+# Commands:
+
+# delete:
+# delete all cronjobs: kubectl delete cronjob --all
+# delete dateNotificationCheck: kubectl delete cronjob date-notification-check
+
+# create/ update
+# apply dateNotificationCheck: kubectl apply -f ~/melta/melta/gateway-service/scripts/dateNotificationCheck.yaml
+
+# get:
+# get cronjobs: kubectl get cronjob
+# get jobs: kubectl get job
+# get pods: kubectl get pods
+# logs: kubectl logs <pod name>
+
+# minikube:
+# Set Docker Environment to Minikube: eval $(minikube docker-env)
+# Minikube start: minikube start
+# Minikube status: minikube status
+
+# to build docker image:
+# cd gateway-service
+# docker build -t date-notification-check:latest .
+
+# Example: hello world
+# apiVersion: batch/v1
+# kind: CronJob
+# metadata:
+#     name: hello-world
+# spec:
+#     schedule: '* * * * *'
+#     jobTemplate:
+#         spec:
+#             template:
+#                 spec:
+#                     containers:
+#                         - name: busybox
+#                           image: busybox
+#                           command: ['echo', 'Hello World!']
+#                     restartPolicy: Never
