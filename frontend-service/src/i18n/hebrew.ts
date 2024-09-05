@@ -884,6 +884,7 @@ export default {
         arrangementIFrames: 'סידור מופעים',
         searchFailed: 'נכשל לחפש קישורים חיצוניים',
         noIFramesFound: 'לא נמצאו קישורים חיצוניים',
+        favouritesIFrames: 'מועדפים:',
     },
     gantts: {
         searchFailed: 'נכשל לחפש טבלאות',

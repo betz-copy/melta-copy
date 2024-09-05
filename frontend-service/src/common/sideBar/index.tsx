@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, MenuItem, Grid, Box, Slide, Fade, Button, useTheme, Typography, Popover, Tooltip, Menu } from '@mui/material';
+import { Divider, IconButton, MenuItem, Grid, Box, Slide, Fade, Button, useTheme, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
     Hive as HiveIcon,
@@ -14,7 +14,6 @@ import LinkIcon from '@mui/icons-material/Link';
 import i18next from 'i18next';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { ControlledMenu, useHover } from '@szhsin/react-menu';
 import { Drawer } from './SideBar.styled';
 import { ICategoryMap } from '../../interfaces/categories';
 import { NavButton } from './NavButton';
@@ -32,42 +31,12 @@ import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { sideBarTransition } from '../../theme';
 import { searchIFrames } from '../../services/iFramesService';
-import { IMongoIFrame } from '../../interfaces/iFrames';
-import '@szhsin/react-menu/dist/index.css';
-import './NavButton.css';
-import '@szhsin/react-menu/dist/transitions/zoom.css';
-
-type IFramesInSideBarProps = {
-    iFrames?: IMongoIFrame[];
-    activeButton: string | null;
-    isDrawerOpen: boolean;
-    handleChangeActiveButton: (isActive: boolean, key: string) => void;
-};
 
 type SideBarProps = {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
 };
 
-// const IFramesInSideBar: React.FC<IFramesInSideBarProps> = ({ iFrames, activeButton, isDrawerOpen, handleChangeActiveButton }) => {
-//     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-//     const [isOpen, setOpen] = useState(false);
-
-//     const ref = useRef(null);
-//     // const { anchorProps, hoverProps } = useHover(isOpen, setOpen);
-
-//     const navigate = useNavigate();
-
-//     const handleMenuItemClick = (event, id: string) => {
-//         console.log('clockkkk');
-//         event.stopPropagation();
-//         navigate(`/iframes/${id}`);
-//     };
-
-//     return (
-
-//     );
-// };
 const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
@@ -97,7 +66,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const navigate = useNavigate();
 
     const handleMenuItemClick = (event, id: string) => {
-        console.log('clockkkk');
         event.stopPropagation();
         navigate(`/iframes/${id}`);
     };
@@ -272,7 +240,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}
-                                    text={category.displayName}
+                                    title={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
                                     onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, category._id)}
@@ -303,7 +271,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <Box>
                                 <NavButton
                                     to="/fluid-simulation"
-                                    text={i18next.t('pages.fluidSimulation')}
+                                    title={i18next.t('pages.fluidSimulation')}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'fluid-simulation')}
                                 >
@@ -315,23 +283,53 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/iframes"
-                        text={
-                            <Grid>
-                                {iFramesInSidebar?.map((iFrame) => (
-                                    <MenuItem
-                                        key={iFrame._id}
-                                        onClick={(event) => handleMenuItemClick(event, iFrame._id)}
-                                        sx={{
-                                            '&:hover': {
-                                                backgroundColor: 'lightblue',
-                                            },
-                                        }}
-                                    >
-                                        {iFrame.name}
-                                    </MenuItem>
-                                ))}
+                        title={
+                            <Grid container display="flex" flexDirection="column">
+                                <Grid item padding={1}>
+                                    {i18next.t('iFrames.favouritesIFrames')}
+                                </Grid>
+                                <Grid item width="200px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                    {iFramesInSidebar?.map((iFrame) => (
+                                        <MenuItem
+                                            key={iFrame._id}
+                                            onClick={(event) => handleMenuItemClick(event, iFrame._id)}
+                                            sx={{
+                                                '&:hover': {
+                                                    backgroundColor: '#B8B8B8',
+                                                    borderRadius: '5px',
+                                                },
+                                                padding: '9px 9px 9px 18px',
+                                            }}
+                                        >
+                                            {iFrame.iconFileId ? (
+                                                <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
+                                            ) : (
+                                                <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
+                                            )}
+                                            <Typography
+                                                style={{
+                                                    fontFamily: 'Rubik',
+                                                    fontSize: '14px',
+                                                    fontWeight: '400',
+                                                    lineHeight: '17px',
+                                                    letterSpacing: '0em',
+                                                    textAlign: 'right',
+                                                    width: '125px',
+                                                    height: '17px',
+                                                    marginRight: '10px',
+                                                    textOverflow: 'ellipsis',
+                                                    whiteSpace: 'nowrap',
+                                                    overflow: 'hidden',
+                                                }}
+                                            >
+                                                {iFrame.name}
+                                            </Typography>
+                                        </MenuItem>
+                                    ))}
+                                </Grid>
                             </Grid>
                         }
+                        text={i18next.t('pages.iFrames')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
                     >
@@ -340,7 +338,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/rule-management"
-                        text={i18next.t('pages.ruleManagement')}
+                        title={i18next.t('pages.ruleManagement')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'rule-management')}
                     >
@@ -352,7 +350,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/gantts"
-                        text={i18next.t('pages.gantts')}
+                        title={i18next.t('pages.gantts')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'gantts')}
                     >
@@ -361,7 +359,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/processes"
-                        text={i18next.t('pages.processInstances')}
+                        title={i18next.t('pages.processInstances')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'processes')}
                     >
@@ -376,7 +374,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {(myPermissions.templatesManagementId || myPermissions.processesManagementId) && (
                         <NavButton
                             to="/system-management"
-                            text={i18next.t('pages.systemManagement')}
+                            title={i18next.t('pages.systemManagement')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'system-management')}
                         >
@@ -390,7 +388,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {myPermissions.permissionsManagementId && (
                         <NavButton
                             to="/permissions-management"
-                            text={i18next.t('permissions.permissionsManagmentPageTitle')}
+                            title={i18next.t('permissions.permissionsManagmentPageTitle')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'permissions-management')}
                         >
@@ -479,26 +477,3 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 };
 
 export { SideBar };
-
-/* <ControlledMenu
-                {...hoverProps}
-                state={isOpen ? 'open' : 'open'}
-                anchorRef={ref}
-                // onMouseLeave={() => setOpen(false)}
-                // onClose={() => setOpen(false)}
-                // gap={200}
-                direction="left"
-                align="start"
-                className="frames-menu"
-                menuStyle={{
-                    //  display: 'flex', float: 'left', top: '100px', left: '150px',
-                    position: 'absolute',
-                    marginRight: '50px',
-                }}
-            >
-                {iFrames?.map((iFrame) => (
-                    <MenuItem key={iFrame._id} onClick={() => handleMenuItemClick(iFrame._id)}>
-                        {iFrame.name}
-                    </MenuItem>
-                ))}
-            </ControlledMenu> */

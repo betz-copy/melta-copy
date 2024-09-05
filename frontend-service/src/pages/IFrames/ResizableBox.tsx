@@ -15,11 +15,10 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
 
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const sideBarWidth = isSideBarOpen ? 310 : 130;
+    const sideBarWidth = isSideBarOpen ? 310 : 135;
     const defaultWidth = (screenWidth - sideBarWidth) / 2;
     const defaultHeight = screenHeight / 2;
-
-    const maxWidth = screenWidth - (isSideBarOpen ? 310 : 130);
+    const maxWidth = screenWidth - sideBarWidth;
     const maxHeight = screenHeight - 140;
 
     const getDimensions = () => {

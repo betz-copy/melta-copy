@@ -24,6 +24,7 @@ const IFramesPageHeadline: React.FC<{
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const localStorageKey = 'iFramesOrder';
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
     }, [iFramesOrder]);
@@ -137,6 +138,7 @@ const IFramesPageHeadline: React.FC<{
                         </DragDropContext>
                     </Select>
                 </Grid>
+
                 <Grid item>
                     <Grid container wrap="nowrap" gap="15px">
                         <GlobalSearchBar onSearch={onSearch} borderRadius="7px" placeholder={i18next.t('globalSearch.searchInPage')} toTopBar />

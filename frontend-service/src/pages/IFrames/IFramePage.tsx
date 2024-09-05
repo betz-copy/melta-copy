@@ -19,6 +19,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
     const { iFrameId } = useParams();
     const id = iFrame?._id || iFrameId;
     const navigate = useNavigate();
+
     const { data: iFrameData, isLoading } = useQuery(['getIFrame', id], async () => getIFrameById(id!), {
         initialData: iFrame,
         retry: false,
@@ -27,6 +28,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
             if (iFrameId) navigate('/404');
         },
     });
+
     useEffect(() => {
         if (setTitle && setIconFileId) {
             setTitle(iFrameData?.name ?? '');

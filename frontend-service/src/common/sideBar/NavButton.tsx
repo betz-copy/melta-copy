@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react';
-import { Grid, ListItemButton, MenuItem, Tooltip } from '@mui/material';
-import { useNavigate } from 'react-router';
+import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
@@ -9,22 +8,22 @@ import { MeltaTooltip } from '../MeltaTooltip';
 interface NavButtonProps {
     to: string;
     isDrawerOpen: boolean;
-    text: string | ReactNode;
+    title: string | ReactNode;
     disabled?: boolean;
+    text?: string;
     onChangeToActive: (boolean) => void;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
-
+const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, title, children, disabled = false, onChangeToActive, text }) => {
     return (
         <StyledLink to={to} className="nav-button">
             {({ isActive }) => {
                 onChangeToActive(isActive);
                 return (
                     <MeltaTooltip
-                        title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
-                        placement="left"
-                        disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+                        title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : title}
+                        placement="left-end"
+                        disableHoverListener={!disabled && isDrawerOpen && !text} // when drawer is opened text is already shown, so no need for tooltip
                     >
                         <div>
                             <ListItemButton
@@ -44,7 +43,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
                                 {children}
                                 {isDrawerOpen && (
                                     <StyledListItemText
-                                        primary={text}
+                                        primary={text ?? title}
                                         sx={{ color: isActive ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
                                         className="child"
                                     />

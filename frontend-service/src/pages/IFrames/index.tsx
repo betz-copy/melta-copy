@@ -15,6 +15,7 @@ import { environment } from '../../globals';
 
 const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const { infiniteScrollPageCount } = environment.iFrames;
+    const queryClient = useQueryClient();
 
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
         isWizardOpen: boolean;
@@ -24,23 +25,17 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
         iFrame: null,
     });
     const [searchInput, setSearchInput] = useState<string>();
-    const queryClient = useQueryClient();
-
     const [iFramesOrder, setIFramesOrder] = useState<string[]>([]);
     const [isDimensionsChange, setIsDimensionsChange] = useState(false);
+
+    const localStorageKey = 'iFramesOrder';
     const queryKey = ['searchIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
 
     const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    // const sideBarWidth = isSideBarOpen ? screenWidth * 0.18 : screenWidth * 0.04;
     const sideBarWidth = 200;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
-    console.log({ sideBarWidthPrec });
 
-    // const sideBarWidth = 90;
-
-    const localStorageKey = 'iFramesOrder';
     useEffect(() => {
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
         localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
@@ -65,6 +60,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
         localStorage.setItem('isSideBarOpen', `${isSideBarOpen}`);
         setIsDimensionsChange(true);
     }, [isSideBarOpen]);
+
     return (
         <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
             <Grid container>

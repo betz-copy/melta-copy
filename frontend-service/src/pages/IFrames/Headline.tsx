@@ -195,6 +195,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                     if (setIFramesOrder) setIFramesOrder(val);
                 }}
             />
+
             <AreYouSureDialog
                 open={deleteIFrameDialogState.isDialogOpen}
                 handleClose={() => setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null })}
