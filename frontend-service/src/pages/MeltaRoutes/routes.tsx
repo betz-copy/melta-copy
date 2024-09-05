@@ -113,14 +113,13 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <RuleManagement setTitle={setTitle} />
                             </Route>
 
-                            <Route path="/gantts" nest>
-                                <Route path="/">
-                                    <TopBar title={title} />
-                                    <Gantts setTitle={setTitle} />
-                                </Route>
-                                <Route path="/:ganttId">
-                                    <GanttPage />
-                                </Route>
+                            <Route path="/gantts">
+                                <TopBar title={title} />
+                                <Gantts setTitle={setTitle} />
+                            </Route>
+
+                            <Route path="/gantts/:ganttId">
+                                <GanttPage />
                             </Route>
 
                             <Route path="/processes">

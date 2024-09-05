@@ -17,7 +17,7 @@ export const GanttsCard: React.FC<IGanttCardProps> = ({ gantt }) => {
     return (
         <Card
             onClick={() => {
-                navigate(gantt.groupBy ? `/${gantt._id}?${heatmapModeKey}=true` : `/${gantt._id}`);
+                navigate(gantt.groupBy ? `/gantts/${gantt._id}?${heatmapModeKey}=true` : `/gantts/${gantt._id}`);
             }}
             sx={{
                 ':hover': { transform: 'scale(1.05)' },
