@@ -54,19 +54,24 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         const numberPart = entity.slice(1, -4);
         const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
         const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
-        // todo: when a created entity was updated by actions so see who has the updated field and send it as the broken field to highlight it
 
-        // actions.map((action) => {
-        //     if (
-        //         action.actionType === ActionTypes.UpdateEntity &&
-        //         (action.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
-        //     ) {
-        //         const numberPart = entity.slice(1, -4);
-        //         const ii = Number(numberPart) < actions.length ? Number(numberPart) : 0;
-        //         if (ii === actionIndex) {
-        //         }
-        //     }
-        // });
+        let mergedProperties = { ...properties };
+
+        // if the created entity updated by actions- show the updated properties
+        actions.forEach((currentAction) => {
+            if (
+                currentAction.actionType === ActionTypes.UpdateEntity &&
+                !(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id
+            ) {
+                const { updatedFields } = currentAction.actionMetadata as IUpdateEntityMetadataPopulated;
+
+                mergedProperties = {
+                    ...properties,
+                    ...updatedFields,
+                };
+            }
+        });
+
         entityForLink = {
             templateId,
             properties: {
@@ -76,7 +81,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
                 updatedAt: new Date().toISOString(),
                 disabled: false,
 
-                ...properties,
+                ...mergedProperties,
             },
         };
 
@@ -91,8 +96,9 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
-                currentAction.actionType === ActionTypes.UpdateEntity &&
-                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
+                (currentAction.actionType === ActionTypes.UpdateEntity &&
+                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id) ||
+                !(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id
             ) {
                 return {
                     ...previousUpdatedProperties,
