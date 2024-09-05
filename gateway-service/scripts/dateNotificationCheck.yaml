@@ -11,7 +11,61 @@ spec:
                     containers:
                         - name: date-notification-check
                           image: melta-gateway-service:latest
+                          imagePullPolicy: IfNotPresent
                           command: ['node', '/usr/src/app/dist/utils/notifications/dateNotificationsCheck.js']
+                          env:
+                              - name: PORT
+                                value: '8000'
+                              - name: TOKEN_SECRET
+                                value: 'secret'
+                              - name: ENTITY_TEMPLATE_SERVICE_URL
+                                value: 'http://entity-template-service:8000'
+                              - name: STORAGE_SERVICE_URL
+                                value: 'http://storage-service:8000'
+                              - name: TEMPLATE_SERVICE_URL
+                                value: 'http://template-service:8000'
+                              - name: INSTANCE_SERVICE_URL
+                                value: 'http://instance-service:8000'
+                              - name: PERMISSION_SERVICE_BASE_URL
+                                value: 'http://permission-service:8000'
+                              - name: NOTIFICATION_SERVICE_URL
+                                value: 'http://notification-service:8000'
+                              - name: RULE_BREACH_SERVICE_URL
+                                value: 'http://rule-breach-service:8000'
+                              - name: PROCESS_SERVICE_URL
+                                value: 'http://process-service:8000'
+                              - name: GANTT_SERVICE_URL
+                                value: 'http://gantt-service:8000'
+                              - name: ACTIVITY_LOG_SERVICE_URL
+                                value: 'http://activity-log-service:8000'
+                              - name: CALLBACK_URL
+                                value: 'http://localhost/api/auth/callback'
+                              - name: KARTOFFEL_BASE_URL
+                                value: 'http://kartoffel-tmp:3000'
+                              - name: SHRAGA_URL
+                                value: 'https://shraga.shraga.branch-yesodot.org'
+                              - name: ACCESS_TOKEN_NAME
+                                value: 'rabaz-access-token'
+                              - name: SYSTEM_UNAVAILABLE_URL
+                                value: '/unavailable'
+                              - name: NODE_TLS_REJECT_UNAUTHORIZED
+                                value: '0'
+                              - name: RABBIT_URL
+                                value: 'amqp://rabbit'
+                              - name: SYSTEM_MELTA_BASE_URL
+                                value: 'http://localhost'
+                              - name: PREVIEW_SERVICE_URL
+                                value: 'http://preview-service:8000'
+                              - name: BASIC_AUTHENTICATION_USERS
+                                value: '[{"userId": "5e5688324203fc40043591aa", "password": "noamisgod"}]'
+                              - name: NOTIFICATIONS_MAIL_FROM
+                                value: 'hope39@ethereal.email'
+                              - name: MAX_FILE_BYTE_SIZE
+                                value: '150000000'
+                              - name: MAX_REQUEST_BYTE_SIZE
+                                value: '1000000000'
+                              - name: ELASTIC_APM_ACTIVE
+                                value: 'false'
                     restartPolicy: Never
 # Commands:
 
@@ -26,12 +80,14 @@ spec:
 # get cronjobs: kubectl get cronjob
 # get jobs: kubectl get job
 # get pods: kubectl get pods
+# get pods: kubectl get pods --watch
 # logs: kubectl logs <pod name>
 
 # minikube:
 # Set Docker Environment to Minikube: eval $(minikube docker-env)
 # Minikube start: minikube start
 # Minikube status: minikube status
+# minikube image load melta-template-service:latest
 
 # to build docker image:
 # cd gateway-service
