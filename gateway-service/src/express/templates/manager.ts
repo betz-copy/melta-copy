@@ -315,8 +315,32 @@ export class TemplatesManager {
 
     static async searchEntityTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>, searchQuery: ISearchEntityTemplatesBody) {
         const allowedEntityTemplates = await TemplatesManager.getAllowedEntitiesTemplates(permissionsOfUserId, searchQuery);
-        const entityTemplatesWithConstraints = await TemplatesManager.getAndPopulateAllTemplatesConstraints(allowedEntityTemplates);
-        return entityTemplatesWithConstraints;
+        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+
+        const allowedRelationshipsTemplatesBySource = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            sourceEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplatesByDestination = await RelationshipsTemplateManagerService.searchRelationshipTemplates({
+            destinationEntityIds: allowedEntityTemplatesIds,
+        });
+        const allowedRelationshipsTemplates = lodashUniqby(
+            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
+            '_id',
+        );
+
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            allowedRelationshipsTemplatesBySource,
+            allowedRelationshipsTemplatesByDestination,
+            allowedEntityTemplatesIds,
+        );
+
+        const { allowedRelationshipTemplatesBecauseOfRules } = await TemplatesManager.getAllowedRules(
+            allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
+
+        return [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules];
     }
 
     static async searchRelationshipTemplates(permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>, searchBody: ISearchRelationshipTemplatesBody) {

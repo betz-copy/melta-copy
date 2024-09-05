@@ -17,11 +17,7 @@ import { environment } from '../../../../globals';
 const { infiniteScrollPageCount } = environment.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
-    const queryClient = useQueryClient();
-
     const [searchText, setSearchText] = useState('');
-
-    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         processTemplateId: string | null;
@@ -37,6 +33,10 @@ const ProcessTemplatesRow: React.FC = () => {
         isWizardOpen: false,
         processTemplate: null,
     });
+
+    const queryClient = useQueryClient();
+
+    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
 
     const { isLoading: deleteTemplateIsLoading, mutateAsync: deleteTemplateMutateAsync } = useMutation(
         (id: string) => deleteProcessTemplateRequest(id),
