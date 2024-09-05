@@ -23,7 +23,7 @@ export class Authorizer extends DefaultController {
 
         if (!Object.keys(userPermissions)) throw new UserNotAuthorizedError();
 
-        return userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
+        return userPermissions[workspaceHierarchyIds[0]] || userPermissions[this.workspaceId];
     }
 
     private async authorizeUser(req: Request, userId: string, authPermissions: ISubCompactPermissions) {
