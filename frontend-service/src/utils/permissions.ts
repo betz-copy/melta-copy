@@ -3,14 +3,11 @@ import { getWorkspaceHierarchyIds } from '../services/workspacesService';
 
 export const getWorkspacePermissions = async (workspaceId: string, permissions: IUser['permissions']) => {
     const hierarchyIds = await getWorkspaceHierarchyIds(workspaceId);
+    hierarchyIds.push(workspaceId);
 
-    for (const currentWorkspaceId of Object.keys(permissions)) {
-        const ancestorHierarchyId = hierarchyIds.find((hierarchyId) => hierarchyId === currentWorkspaceId);
+    const hierarcyId = hierarchyIds.find((id) => Boolean(permissions[id]));
 
-        if (ancestorHierarchyId) {
-            return permissions[ancestorHierarchyId];
-        }
-    }
+    if (!hierarcyId) return;
 
-    return permissions[workspaceId];
+    return permissions[hierarcyId];
 };
