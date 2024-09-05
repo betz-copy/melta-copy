@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { wrapController, wrapMiddleware } from '../../../utils/express';
+import { createWorkspacesController } from '../../../utils/express';
 import ProcessTemplatesController from './controller';
 import config from '../../../config';
 import ValidateRequest from '../../../utils/joi';
@@ -11,7 +11,7 @@ import {
     getTemplateByIdSchema,
     searchProcessTemplatesSchema,
 } from './validator.schema';
-import { validateUserIsProcessesManager } from '../../permissions/validateAuthorizationMiddleware';
+import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 
 const {
     service: { uploadsFolderPath },
@@ -19,28 +19,34 @@ const {
 
 const TemplatesRouter: Router = Router();
 
-// TODO add validate User Is Processes Manager
-TemplatesRouter.get('/:id', ValidateRequest(getTemplateByIdSchema), wrapController(ProcessTemplatesController.getTemplateById));
+const TemplatesControllerMiddleware = createWorkspacesController(ProcessTemplatesController);
+
+TemplatesRouter.get(
+    '/:id',
+    ValidateRequest(getTemplateByIdSchema),
+    AuthorizerControllerMiddleware.userCanReadProcesses,
+    TemplatesControllerMiddleware.getTemplateById,
+);
 TemplatesRouter.post(
     '/',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createProcessTemplateSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.createProcessTemplate),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.createProcessTemplate,
 );
-TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), wrapController(ProcessTemplatesController.searchProcessTemplates));
+TemplatesRouter.post('/search', ValidateRequest(searchProcessTemplatesSchema), TemplatesControllerMiddleware.searchProcessTemplates);
 TemplatesRouter.delete(
     '/:id',
     ValidateRequest(deleteProcessTemplateSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.deleteProcessTemplate),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.deleteProcessTemplate,
 );
 TemplatesRouter.put(
     '/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateProcessTemplateSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(ProcessTemplatesController.updateProcessTemplate),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    TemplatesControllerMiddleware.updateProcessTemplate,
 );
 
 export default TemplatesRouter;

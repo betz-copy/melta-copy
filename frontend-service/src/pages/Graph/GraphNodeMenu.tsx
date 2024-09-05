@@ -1,15 +1,16 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
 import { Menu as MuiMenu, MenuItem } from '@mui/material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import i18next from 'i18next';
+import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery, useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useLocation } from 'wouter';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { expandedEntityToGraphData, highlightNode } from '../../utils/graph';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
@@ -20,7 +21,7 @@ const GraphNodeMenu: React.FC<{
     addNewGraphData: (graphData: GraphData) => void;
     filterRecord: IGraphFilterBodyBatch;
 }> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, addNewGraphData, filterRecord }) => {
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
     const queryClient = useQueryClient();
 
@@ -54,8 +55,8 @@ const GraphNodeMenu: React.FC<{
             ),
         {
             enabled: false,
-            onSuccess: (data) => {
-                const newGraphData = expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
+            onSuccess: async (data) => {
+                const newGraphData = await expandedEntityToGraphData(data!, entityTemplates, relationshipTemplates);
                 node.numberOfConnectionsExpanded++;
                 addNewGraphData(newGraphData);
             },

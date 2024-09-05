@@ -96,7 +96,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                     ids: currentOrder.map((iFrameId) => iFrameId),
                                 });
                             }
-                            return allIFrames!.slice(index, index + infiniteScrollPageCount);
+                            return allIFrames ? allIFrames.slice(index, index + infiniteScrollPageCount) : [];
                         }}
                         onQueryError={(error) => {
                             console.log('Failed loading data:', error);

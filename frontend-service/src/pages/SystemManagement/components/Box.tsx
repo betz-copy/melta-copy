@@ -1,19 +1,16 @@
 import React from 'react';
 import { Grid, Card, CardContent } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface BoxProps {
     children: React.ReactNode;
     header: React.ReactNode;
     addingIcon: React.ReactNode;
-    onHover?: (boolean) => void;
+    onHover?: (isHover: boolean) => void;
 }
 
 export const Box: React.FC<BoxProps> = ({ children, header, addingIcon, onHover }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-
-    if (Array.isArray(children) && !children.length) return null;
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Card

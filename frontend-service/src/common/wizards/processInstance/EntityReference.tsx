@@ -21,9 +21,10 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { IReferencedEntityForProcess } from '../../../interfaces/processes/processInstance';
 import EntityCard from '../../../pages/GlobalSearch/components/entityCard';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
+import { useUserStore } from '../../../stores/user';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import { ProcessDetailsValues } from './ProcessDetails';
 import { ProcessStepValues } from './ProcessSteps';
@@ -70,13 +71,14 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
 }) => {
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const currentUser = useUserStore((state) => state.user);
 
     const activeEntityTemplatesFiltered: IMongoEntityTemplatePopulated[] = useMemo(() => {
         return Array.from(entityTemplates.values())
-            .filter((entity) => myPermissions.instancesPermissions.some(({ category }) => category === entity.category._id))
+            .filter((entity) => currentUser.currentWorkspacePermissions.instances?.categories[entity.category._id]?.scope === PermissionScope.write)
             .filter((entity) => !entity.disabled);
-    }, [entityTemplates, myPermissions]);
+    }, [entityTemplates, currentUser.currentWorkspacePermissions]);
 
     const [isAnimatingOut, setIsAnimatingOut] = useState(false);
 
@@ -190,7 +192,7 @@ export const EntityReference: React.FC<ChooseEntityReferenceProps> = ({
                             label={i18next.t('wizard.processInstance.chooseRefEntity')}
                             autoLoad
                             hideNonPreview
-                            checkUsersPermissions="Read"
+                            checkUsersPermissions={PermissionScope.read}
                         />
                     </CardContent>
                 </Card>

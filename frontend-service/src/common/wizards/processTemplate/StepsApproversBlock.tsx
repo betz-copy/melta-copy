@@ -4,19 +4,18 @@ import { AccordionDetails, AccordionSummary, Box, Grid, Typography } from '@mui/
 import { FieldArray, FormikErrors } from 'formik';
 import { ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
-import { useSelector } from 'react-redux';
 import i18next from 'i18next';
-import { RootState } from '../../../store';
 import UserAutocomplete from '../../inputs/UserAutocomplete';
 import CreateUserCard from './ApproverCard';
 import { StepsGenericBlockProps } from './StepsBlocksInterface';
 import { FieldBlockAccordion } from '../entityTemplate/FieldBlock';
 import { ProcessTemplateWizardValues } from '.';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, propIndex, errors, touched }) => {
     const errorsOfStep = errors.steps?.[propIndex] as FormikErrors<ProcessTemplateWizardValues['steps'][number]> | undefined;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [userInputValue, setUserInputValue] = React.useState('');
 
     return (
@@ -31,6 +30,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                             <Box sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
                                 <Grid marginBottom={2}>
                                     <UserAutocomplete
+                                        mode="internal"
                                         value={null}
                                         onChange={(_e, chosenUser, reason) => {
                                             if (reason !== 'selectOption' || !chosenUser) return;
@@ -44,7 +44,7 @@ const StepsApproversBlock: React.FC<StepsGenericBlockProps> = ({ title, values, 
                                 </Grid>
                                 <Grid container spacing={1}>
                                     {values.steps[propIndex].reviewers.map((user, index) => (
-                                        <CreateUserCard key={user.id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
+                                        <CreateUserCard key={user._id} userName={user.displayName} userIndex={index} remove={() => remove(index)} />
                                     ))}
                                 </Grid>
                                 {errorsOfStep?.reviewers === i18next.t('validation.oneField') && (

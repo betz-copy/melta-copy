@@ -13,6 +13,8 @@ import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { MenuItemContent } from '../../common/SelectCheckbox';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
@@ -24,6 +26,7 @@ const IFramesPageHeadline: React.FC<{
     const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const localStorageKey = 'iFramesOrder';
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+    const currentUser = useUserStore((state) => state.user);
 
     useEffect(() => {
         setAllIFramesAllowed(queryClient.getQueryData('allIFrames')!);
@@ -153,11 +156,14 @@ const IFramesPageHeadline: React.FC<{
                     </IconButton>
                 </Grid>
                 <Grid item>
-                    {myPermissions.templatesManagementId && (
-                        <IconButton onClick={setIFrameWizardDialogState}>
-                            <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
-                        </IconButton>
-                    )}
+                    {/* {myPermissions.templatesManagementId && ( */}
+                    {currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write ||
+                        (currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write && (
+                            <IconButton onClick={setIFrameWizardDialogState}>
+                                <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
+                            </IconButton>
+                        ))}
+                    {/* )} */}
                 </Grid>
             </Grid>
         </TopBarGrid>

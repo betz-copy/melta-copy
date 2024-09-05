@@ -1,45 +1,50 @@
 import React, { useRef, useState } from 'react';
-import { Divider, IconButton, MenuItem, Grid, Box, Slide, Fade, Button, useTheme, Typography } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
 import {
-    Hive as HiveIcon,
-    Widgets as WidgetsIcon,
-    ManageAccounts as ManageAccountsIcon,
     Add as PlusIcon,
     Air as FluidSimulationIcon,
-    Gavel as GavelIcon,
     CalendarMonth as CalendarIcon,
+    Gavel as GavelIcon,
+    Hive as HiveIcon,
+    ManageAccounts as ManageAccountsIcon,
+    MeetingRoom as ExitIcon,
+    Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
+import { Box, Button, Grid, IconButton, MenuItem, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { Drawer } from './SideBar.styled';
-import { ICategoryMap } from '../../interfaces/categories';
-import { NavButton } from './NavButton';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import PermissionsOfUserDialog from '../permissionsOfUserDialog';
-import { CustomIcon, CustomImage } from '../CustomIcon';
-import { RootState } from '../../store';
-import { ProfileButton } from './ProfileButton';
-import { toggleMeltaPlus } from '../../store/reducers/meltaPlus';
-import { NotificationsButton } from './notifications/NotificationsButton';
+import { useLocation } from 'wouter';
 import { environment } from '../../globals';
-import { NotificationsScreen } from './notifications/NotificationsScreen';
+import { ICategoryMap } from '../../interfaces/categories';
+import { INotificationCountGroups } from '../../interfaces/notifications';
+import { PermissionScope } from '../../interfaces/permissions';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
+import { useMeltaPlusStore } from '../../stores/meltaPlus';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { sideBarTransition } from '../../theme';
+import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { sideBarTransition } from '../../theme';
 import { searchIFrames } from '../../services/iFramesService';
+import { MeltaIcon } from '../MeltaIcon';
+import PermissionsOfUserDialog from '../permissionsOfUserDialog';
+import { NavButton } from './NavButton';
+import { NotificationsButton } from './notifications/NotificationsButton';
+import { NotificationsScreen } from './notifications/NotificationsScreen';
+import { ProfileButton } from './ProfileButton';
+import { Drawer, DrawerDivider } from './SideBar.styled';
 
-type SideBarProps = {
+interface SideBarProps {
     toggleDrawer: () => any;
     isDrawerOpen: boolean;
-};
+}
 
 const { notifications } = environment;
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
+
+    const currentUser = useUserStore((state) => state.user);
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -52,8 +57,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
@@ -63,7 +66,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         if (isActive) setActiveButton(key);
         else if (activeButton === key) setActiveButton('');
     };
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
 
     const handleMenuItemClick = (event, id: string) => {
         event.stopPropagation();
@@ -71,7 +75,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
-        () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? notifications.groups : {}),
+        () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {}),
         {
             refetchInterval: environment.notifications.updateInterval,
             refetchOnWindowFocus: true,
@@ -80,8 +84,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const notificationCountDetails = notificationCountDetailsResponse || { total: 0, groups: {} };
 
-    const { meltaPlus } = useSelector((state: RootState) => state);
-    const dispatch = useDispatch();
+    const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
+    const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
+
+    const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
         <Drawer
@@ -93,46 +99,56 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
             style={{ zIndex: '1' }}
             sx={{ zIndex: '1' }}
         >
-            <Grid
-                container
-                direction="column"
-                wrap="nowrap"
-                height="100%"
-                bgcolor={theme.palette.primary.main}
-                style={{
-                    backgroundImage: 'url(/icons/sideNav-bg.png)',
-                    backgroundRepeat: 'no-repeat',
-                    backgroundPositionY: isDrawerOpen ? '-23px' : '2px',
-                }}
-            >
-                <Grid item container direction="column" alignItems="center" marginTop="15px" marginBottom="5px">
+            <Grid container direction="column" wrap="nowrap" height="100%" bgcolor={theme.palette.primary.main}>
+                <Grid
+                    item
+                    container
+                    direction="column"
+                    alignItems="center"
+                    paddingTop="15px"
+                    paddingBottom="20px"
+                    sx={{ backgroundColor: '#101440', borderBottomLeftRadius: '100% 15%', borderBottomRightRadius: '100% 15%' }}
+                >
                     <Box
                         position="relative"
                         onClick={(event) => {
-                            if (event.detail >= 3) dispatch(toggleMeltaPlus());
+                            if (event.detail >= 3) toggleMeltaPlus();
                         }}
                     >
                         <Slide in={meltaPlus} direction="down">
-                            <PlusIcon sx={{ position: 'absolute', left: '-15%', top: '10%', fontSize: 40, color: 'white' }} />
+                            <PlusIcon
+                                sx={{
+                                    position: 'absolute',
+                                    left: isDrawerOpen ? '-90%' : '-15%',
+                                    top: '18%',
+                                    fontSize: 40,
+                                    color: 'white',
+                                    zIndex: 1,
+                                    stroke: '#000',
+                                    strokeWidth: '0.1px',
+                                }}
+                            />
                         </Slide>
 
                         <Button
                             onClick={() => {
                                 navigate('');
+                                setActiveButton(null);
                             }}
                             style={{ width: '50px' }}
                         >
-                            <img
-                                src={isDrawerOpen ? '/icons/Melta_Logo.svg' : '/icons/Melta_Short_Logo.svg'}
+                            <MeltaIcon
+                                iconUrl={isDrawerOpen ? workspace.logoFileId : workspace.iconFileId}
+                                expanded={isDrawerOpen}
+                                width={isDrawerOpen ? '150px' : '70px'}
                                 style={{ margin: '0.6rem' }}
-                                height="30px"
                             />
                         </Button>
                     </Box>
 
                     <Grid item container direction={isDrawerOpen ? 'row' : 'column'} wrap="nowrap" alignItems="center">
                         <ProfileButton
-                            currentUser={myPermissions.user}
+                            currentUser={currentUser}
                             text={i18next.t('permissions.permissionsOfUserDialog.readTitle')}
                             isDrawerOpen={isDrawerOpen}
                             onClick={() => setIsMyPermissionsDialogOpen(!isMyPermissionsDialogOpen)}
@@ -147,7 +163,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         margin: 0,
                                         fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                     }}
-                                >{`${i18next.t('sideBar.hello')} ${myPermissions.user.firstName}, `}</Typography>
+                                >{`${i18next.t('sideBar.hello')} ${currentUser.fullName.split(' ')[0]}, `}</Typography>
                                 <Button
                                     style={{
                                         color: 'white',
@@ -186,7 +202,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             <GlobalSearchBar
                                 onSearch={(searchValue) => {
                                     handleChangeActiveButton(true, 'search');
-                                    navigate(`/?search=${searchValue}`, { replace: true });
+                                    navigate(`?search=${searchValue}&viewMode=templates-tables-view`);
                                 }}
                                 placeholder={i18next.t('pages.globalSearch')}
                                 size="small"
@@ -236,14 +252,17 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {Array.from(
                         categories.values(),
                         (category) =>
-                            Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === category._id)) && (
+                            Boolean(
+                                currentUser.currentWorkspacePermissions.admin ||
+                                    currentUser.currentWorkspacePermissions.instances?.categories[category._id],
+                            ) && (
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}
                                     title={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
-                                    disabled={Boolean(!myPermissions.instancesPermissions.find((instance) => instance.category === category._id))}
-                                    onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, category._id)}
+                                    onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
+                                    isActiveButton={activeButton === category._id}
                                 >
                                     {category.iconFileId ? (
                                         <CustomIcon
@@ -263,22 +282,22 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     )}
                 </Grid>
 
-                <Grid item container direction="column" alignItems="stretch" marginTop="auto">
-                    <Divider style={{ backgroundColor: 'white', width: '85%', alignSelf: 'center', marginBottom: '10px' }} />
+                <DrawerDivider />
 
+                <Grid item container direction="column" paddingY="0.5rem">
                     {meltaPlus && (
-                        <Fade in={meltaPlus}>
-                            <Box>
-                                <NavButton
-                                    to="/fluid-simulation"
-                                    title={i18next.t('pages.fluidSimulation')}
-                                    isDrawerOpen={isDrawerOpen}
-                                    onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'fluid-simulation')}
-                                >
-                                    <FluidSimulationIcon fontSize="large" sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white' }} />
-                                </NavButton>
-                            </Box>
-                        </Fade>
+                        <NavButton
+                            to="/fluid-simulation"
+                            title={i18next.t('pages.fluidSimulation')}
+                            isDrawerOpen={isDrawerOpen}
+                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'fluid-simulation')}
+                            isActiveButton={activeButton === 'fluid-simulation'}
+                        >
+                            <FluidSimulationIcon
+                                fontSize="large"
+                                sx={{ color: activeButton === 'fluid-simulation' ? '#545eb9' : 'white', ...environment.iconSize }}
+                            />
+                        </NavButton>
                     )}
 
                     <NavButton
@@ -340,7 +359,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/rule-management"
                         title={i18next.t('pages.ruleManagement')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'rule-management')}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'rule-management')}
+                        isActiveButton={activeButton === 'rule-management'}
                     >
                         <GavelIcon
                             fontSize="large"
@@ -352,7 +372,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/gantts"
                         title={i18next.t('pages.gantts')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'gantts')}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'gantts')}
+                        isActiveButton={activeButton === 'gantts'}
                     >
                         <CalendarIcon fontSize="large" sx={{ color: activeButton === 'gantts' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>
@@ -361,7 +382,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         to="/processes"
                         title={i18next.t('pages.processInstances')}
                         isDrawerOpen={isDrawerOpen}
-                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'processes')}
+                        onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'processes')}
+                        isActiveButton={activeButton === 'processes'}
                     >
                         <CustomImage
                             imageUrl="/icons/flowchart-hierarchy.svg"
@@ -371,12 +393,15 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         />
                     </NavButton>
 
-                    {(myPermissions.templatesManagementId || myPermissions.processesManagementId) && (
+                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"
                             title={i18next.t('pages.systemManagement')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'system-management')}
+                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'system-management')}
+                            isActiveButton={activeButton === 'system-management'}
                         >
                             <WidgetsIcon
                                 fontSize="large"
@@ -385,12 +410,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </NavButton>
                     )}
 
-                    {myPermissions.permissionsManagementId && (
+                    {(currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/permissions-management"
                             title={i18next.t('permissions.permissionsManagmentPageTitle')}
                             isDrawerOpen={isDrawerOpen}
-                            onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'permissions-management')}
+                            onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'permissions-management')}
+                            isActiveButton={activeButton === 'permissions-management'}
                         >
                             <ManageAccountsIcon
                                 fontSize="large"
@@ -398,63 +425,40 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             />
                         </NavButton>
                     )}
+                </Grid>
 
-                    <Grid style={{ display: 'flex' }}>
-                        <Grid
-                            item
-                            container
-                            alignItems="center"
-                            justifyContent={isDrawerOpen ? 'flex-start' : 'center'}
-                            flexWrap="nowrap"
-                            spacing={isDrawerOpen ? 5 : 1}
-                            paddingLeft={isDrawerOpen ? '30px' : ''}
-                            paddingTop="20px"
-                            paddingBottom="25px"
-                        >
-                            <Grid item>
-                                <img src="/icons/sapir.svg" height="21px" />
-                            </Grid>
-                            <Grid item>
-                                <img src="/icons/yesodot.svg" height="21px" />
-                            </Grid>
+                {Object.keys(currentUser.permissions).length > 1 && (
+                    <>
+                        <DrawerDivider />
+
+                        <Grid container item paddingY="0.5rem" justifyContent="center">
+                            <NavButton
+                                to={`~${workspace?.path}`}
+                                title={i18next.t('workspaces.goBack')}
+                                isDrawerOpen={isDrawerOpen}
+                                onChangeToActive={() => {}}
+                            >
+                                <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
+                            </NavButton>
                         </Grid>
-                        {isDrawerOpen ? (
-                            <IconButton
-                                onClick={toggleDrawer}
-                                size="large"
-                                sx={{
-                                    transition: sideBarTransition,
-                                }}
-                                style={{
-                                    height: '50px',
-                                    width: '30px',
-                                    position: 'fixed',
-                                    marginRight: '219px',
-                                    marginTop: '-25px',
-                                    backgroundColor: 'transparent',
-                                }}
-                            >
-                                <img src="/icons/close-menu.svg" />
-                            </IconButton>
-                        ) : (
-                            <IconButton
-                                onClick={toggleDrawer}
-                                sx={{
-                                    transition: sideBarTransition,
-                                }}
-                                style={{
-                                    height: '50px',
-                                    width: '30px',
-                                    position: 'fixed',
-                                    marginRight: '73px',
-                                    marginTop: '-25px',
-                                    backgroundColor: 'transparent',
-                                }}
-                            >
-                                <img src="/icons/open-menu.svg" />
-                            </IconButton>
-                        )}
-                    </Grid>
+                    </>
+                )}
+
+                <Grid item>
+                    <IconButton
+                        onClick={toggleDrawer}
+                        style={{
+                            height: '50px',
+                            width: '30px',
+                            position: 'fixed',
+                            marginRight: isDrawerOpen ? '219px' : '73px',
+                            marginTop: '-4.25rem',
+                            backgroundColor: 'transparent',
+                            transition: sideBarTransition,
+                        }}
+                    >
+                        <img src={`/icons/${isDrawerOpen ? 'close-menu' : 'open-menu'}.svg`} />
+                    </IconButton>
                 </Grid>
             </Grid>
 
@@ -462,7 +466,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 isOpen={isMyPermissionsDialogOpen}
                 mode="view"
                 handleClose={() => setIsMyPermissionsDialogOpen(false)}
-                existingPermissionsOfUser={myPermissions}
+                existingUser={currentUser}
             />
 
             <NotificationsScreen

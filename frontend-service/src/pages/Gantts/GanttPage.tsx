@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
-import { useNavigate, useParams } from 'react-router-dom';
 import { CircularProgress, Grid } from '@mui/material';
-import { toast } from 'react-toastify';
-import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
-import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
-import { GanttSideBar } from './SideBar';
-import { formikInitialGanttData, ganttValidationSchema } from '../../utils/gantts';
-import { useLocalStorage } from '../../utils/useLocalStorage';
-import { environment } from '../../globals';
-import { Gantt } from './Gantt';
-import { GanttsTopBar } from './TopBar';
-import { IBasicGantt } from '../../interfaces/gantts';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation, useParams } from 'wouter';
 import { ErrorToast } from '../../common/ErrorToast';
+import { environment } from '../../globals';
+import { IBasicGantt } from '../../interfaces/gantts';
+import { deleteGantt, getGanttById, updateGantt } from '../../services/ganttsService';
+import { formikInitialGanttData, ganttValidationSchema } from '../../utils/gantts';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { Gantt } from './Gantt';
+import { GanttSideBar } from './SideBar';
+import { GanttsTopBar } from './TopBar';
 
 const { ganttSettings } = environment;
 
 const GanttPage: React.FC = () => {
-    const { ganttId } = useParams();
+    const { ganttId } = useParams<{ ganttId: string }>();
     const queryClient = useQueryClient();
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const [sideBarOpen, setSideBarOpen] = useLocalStorage(ganttSettings.isSidebarOpenLocalStorageKey, true);
 

@@ -1,12 +1,11 @@
-import * as http from 'http';
-import * as express from 'express';
 import * as bodyParser from 'body-parser';
-import * as helmet from 'helmet';
-
 import { once } from 'events';
+import * as express from 'express';
+import * as helmet from 'helmet';
+import * as http from 'http';
+import { config } from '../config';
 import { errorMiddleware } from './error';
 import { appRouter } from './router';
-import { config } from '../config';
 
 export class Server {
     private app: express.Application;
@@ -17,7 +16,6 @@ export class Server {
         this.app = this.createExpressApp();
     }
 
-    // eslint-disable-next-line class-methods-use-this
     createExpressApp() {
         const app = express();
 

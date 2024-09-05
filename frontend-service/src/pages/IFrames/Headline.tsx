@@ -110,24 +110,24 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                     <Grid item style={{ padding: '20px' }}>
                         {isHovered && (
                             <Grid sx={{ display: 'flex' }}>
-                                {myPermissions.templatesManagementId && (
-                                    <>
-                                        <Grid>
-                                            <MeltaTooltip title={i18next.t('actions.delete')}>
-                                                <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
-                                                    <DeleteIcon color="primary" fontSize="small" />
-                                                </IconButton>
-                                            </MeltaTooltip>
-                                        </Grid>
-                                        <Grid>
-                                            <MeltaTooltip title={i18next.t('actions.edit')}>
-                                                <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
-                                                    <EditIcon color="primary" fontSize="small" />
-                                                </IconButton>
-                                            </MeltaTooltip>
-                                        </Grid>
-                                    </>
-                                )}
+                                {/* {myPermissions.templatesManagementId && ( */}
+                                <>
+                                    <Grid>
+                                        <MeltaTooltip title={i18next.t('actions.delete')}>
+                                            <IconButton onClick={() => setDeleteIFrameDialogState({ isDialogOpen: true, iFrameId: iFrame._id })}>
+                                                <DeleteIcon color="primary" fontSize="small" />
+                                            </IconButton>
+                                        </MeltaTooltip>
+                                    </Grid>
+                                    <Grid>
+                                        <MeltaTooltip title={i18next.t('actions.edit')}>
+                                            <IconButton onClick={() => setIFrameWizardDialogState({ isWizardOpen: true, iFrame })}>
+                                                <EditIcon color="primary" fontSize="small" />
+                                            </IconButton>
+                                        </MeltaTooltip>
+                                    </Grid>
+                                </>
+                                {/* )}/ */}
                                 <Grid>
                                     <MeltaTooltip title={i18next.t('actions.favourites')}>
                                         <IconButton

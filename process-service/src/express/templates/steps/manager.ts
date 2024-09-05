@@ -1,20 +1,28 @@
+/* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import StepTemplateModel from './model';
-import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
+import config from '../../../config';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
+import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
+import { StepTemplateSchema } from './model';
 
-export default class StepTemplateManager {
-    static async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
-        return StepTemplateModel.findById(id).orFail(new TemplateNotFoundError('step', id)).lean();
+export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
     }
 
-    static async getStepTemplates(ids: string[]): Promise<IMongoStepTemplate[]> {
-        return StepTemplateModel.find({ _id: { $in: ids } })
+    async getStepTemplate(id: string): Promise<IMongoStepTemplate> {
+        return this.model.findById(id).orFail(new TemplateNotFoundError('step', id)).lean();
+    }
+
+    async getStepTemplates(ids: string[]): Promise<IMongoStepTemplate[]> {
+        return this.model
+            .find({ _id: { $in: ids } })
             .orFail(new NoMatchingStepsError())
             .lean();
     }
 
-    private static throwIfDuplicateStepName(steps: IStepTemplate[]) {
+    private throwIfDuplicateStepName(steps: IStepTemplate[]) {
         const stepNames = steps.map(({ name }) => name);
         const stepUniqueNames = [...new Set(stepNames)];
         if (stepNames.length > stepUniqueNames.length) throw new ValidationError('process contains duplicate step name');
@@ -24,12 +32,12 @@ export default class StepTemplateManager {
         if (stepDisplayNames.length > stepUniqueDisplayNames.length) throw new ValidationError('process contains duplicate step display name');
     }
 
-    static async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession): Promise<StepTemplateDocument[]> {
+    async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession): Promise<StepTemplateDocument[]> {
         this.throwIfDuplicateStepName(steps);
-        return StepTemplateModel.insertMany(steps, { session });
+        return this.model.insertMany(steps, { session });
     }
 
-    static async updateStepsTemplates(steps: IMongoStepTemplate[], session?: ClientSession) {
+    async updateStepsTemplates(steps: IMongoStepTemplate[], session?: ClientSession) {
         this.throwIfDuplicateStepName(steps);
 
         const stepsToUpdate = steps.filter((step) => step._id);
@@ -42,7 +50,7 @@ export default class StepTemplateManager {
             },
         }));
 
-        const result = await StepTemplateModel.bulkWrite(bulkWriteOperations, { session });
+        const result = await this.model.bulkWrite(bulkWriteOperations, { session });
 
         if ((result?.matchedCount ?? 0) < stepsToUpdate.length) {
             throw new ServiceError(404, `One or more of the steps to update doesn't exist`);
@@ -57,7 +65,7 @@ export default class StepTemplateManager {
         return [...originalIds, ...newStepsIds];
     }
 
-    static async deleteStepsByIds(ids: string[], session?: ClientSession) {
-        return StepTemplateModel.deleteMany({ _id: { $in: ids } }, { session });
+    async deleteStepsByIds(ids: string[], session?: ClientSession) {
+        return this.model.deleteMany({ _id: { $in: ids } }, { session });
     }
 }

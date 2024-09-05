@@ -8,6 +8,7 @@ import { IFrameWizardValues } from '.';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ICategoryMap } from '../../../interfaces/categories';
+import { useUserStore } from '../../../stores/user';
 
 const settingIFramesPermissionsSchema = {
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
@@ -19,6 +20,12 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     const allowedCategoriesIds = myPermissions?.instancesPermissions
         .filter((instancesPermission) => instancesPermission.scopes.includes('Write'))
         .map((instancesPermission) => instancesPermission.category);
+
+    // ???
+    // const currentUser = useUserStore((state) => state.user);
+
+    // const allowedCategoriesIds =
+    //     currentUser.currentWorkspacePermissions.instances?.scope === 'write'.map((instancesPermission) => instancesPermission.category);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
