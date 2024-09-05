@@ -27,7 +27,7 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
-    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(tablesPerLoadingChunkSize);
     const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const loaderRef = useRef(null);
 
@@ -39,9 +39,7 @@ const TemplateTablesViewResults = forwardRef<
         if (Array.isArray(updatedEntities)) {
             updatedEntities.forEach((entity) => {
                 const reference = templateTablesRefs.current[entity.templateId];
-                if (reference) {
-                    reference.updateRowDataClientSide(entity);
-                }
+                if (reference) reference.updateRowDataClientSide(entity);
             });
         }
     }, [updatedEntities]);

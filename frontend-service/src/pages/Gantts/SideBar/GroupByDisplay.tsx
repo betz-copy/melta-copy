@@ -30,7 +30,9 @@ export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik,
             edit &&
             groupByEntityTemplate &&
             filteredMap(Object.keys(groupByEntityTemplate.properties.properties), (property) => ({
-                include: Boolean(groupByEntityTemplate.uniqueConstraints.find((uniqueConstraint) => lodashIsEqual(uniqueConstraint, [property]))),
+                include: Boolean(
+                    groupByEntityTemplate.uniqueConstraints.find((uniqueConstraint) => lodashIsEqual(uniqueConstraint.properties, [property])),
+                ),
                 value: property,
             })),
         [groupByEntityTemplate, edit],

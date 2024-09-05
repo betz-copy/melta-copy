@@ -1,25 +1,32 @@
+/* eslint-disable lines-between-class-members */
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
+import { IMongoCategory } from './interface';
 import CategoryManager from './manager';
 
-class CategoriesController {
-    static async getCategories(req: Request, res: Response) {
-        res.json(await CategoryManager.getCategories(req.query.search as string));
+class CategoriesController extends DefaultController<IMongoCategory, CategoryManager> {
+    constructor(workspaceId: string) {
+        super(new CategoryManager(workspaceId));
     }
 
-    static async getCategoryById(req: Request, res: Response) {
-        res.json(await CategoryManager.getCategoryById(req.params.categoryId));
+    async getCategories(req: Request, res: Response) {
+        res.json(await this.manager.getCategories(req.query.search as string));
     }
 
-    static async createCategory(req: Request, res: Response) {
-        res.json(await CategoryManager.createCategory(req.body));
+    async getCategoryById(req: Request, res: Response) {
+        res.json(await this.manager.getCategoryById(req.params.categoryId));
     }
 
-    static async deleteCategory(req: Request, res: Response) {
-        res.json(await CategoryManager.deleteCategory(req.params.categoryId));
+    async createCategory(req: Request, res: Response) {
+        res.json(await this.manager.createCategory(req.body));
     }
 
-    static async updateCategory(req: Request, res: Response) {
-        res.json(await CategoryManager.updateCategory(req.params.categoryId, req.body));
+    async deleteCategory(req: Request, res: Response) {
+        res.json(await this.manager.deleteCategory(req.params.categoryId));
+    }
+
+    async updateCategory(req: Request, res: Response) {
+        res.json(await this.manager.updateCategory(req.params.categoryId, req.body));
     }
 }
 

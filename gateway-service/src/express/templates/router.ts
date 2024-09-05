@@ -1,21 +1,12 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
-import { wrapController, wrapMiddleware } from '../../utils/express';
-import {
-    validateUserHasAtLeastSomePermissions,
-    validateUserIsRulesManager,
-    validateUserIsTemplatesManager,
-} from '../permissions/validateAuthorizationMiddleware';
-import TemplatesController from './controller';
-import {
-    validateUserCanCreateEntityTemplateUnderCategory,
-    validateUserCanCreateRelationshipTemplateUnderCategory,
-    validateUserCanUpdateOrDeleteEntityTemplate,
-    validateUserCanUpdateOrDeleteRelationshipTemplate,
-} from './middlewares';
 import config from '../../config';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import TemplatesController from './controller';
+import { TemplatesValidator } from './middlewares';
 import {
     createCategorySchema,
     createEntityTemplateSchema,
@@ -32,7 +23,6 @@ import {
     updateRelationshipTemplateSchema,
     updateRuleStatusByIdRequestSchema,
 } from './validator.schema';
-import { IMongoEntityTemplateWithConstraints } from './interfaces';
 
 const {
     templateService: { url, requestTimeout },
@@ -41,58 +31,53 @@ const {
 
 const TemplatesServiceProxy = createProxyMiddleware({
     target: url,
-    onProxyReq: (proxyReq, req, _res) => {
-        fixRequestBody(proxyReq, req);
-    },
+    onProxyReq: fixRequestBody,
     proxyTimeout: requestTimeout,
 });
 
-const fixDeleteResponseData = (data: IMongoEntityTemplateWithConstraints) => {
-    const logData = JSON.parse(JSON.stringify(data));
-    logData.category = { _id: data.category };
-    return logData;
-};
-
 const templatesRouter: Router = Router();
 
+const templatesControllerMiddleware = createWorkspacesController(TemplatesController);
+const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
+
 // all needed categories
-templatesRouter.get('/all', wrapMiddleware(validateUserHasAtLeastSomePermissions), wrapController(TemplatesController.getAllAllowedTemplates));
+templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
 
 // categories
-templatesRouter.get('/categories', wrapMiddleware(validateUserHasAtLeastSomePermissions), TemplatesServiceProxy);
+templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapController(TemplatesController.createCategory),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.createCategory,
 );
 templatesRouter.put(
     '/categories/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapController(TemplatesController.updateCategory),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.updateCategory,
 );
 templatesRouter.delete(
     '/categories/:id',
     ValidateRequest(deleteCategorySchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapController(TemplatesController.deleteCategory),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    templatesControllerMiddleware.deleteCategory,
 );
 
 // entities (templates)
 templatesRouter.put(
     '/entities/update-enum-field/:id',
     ValidateRequest(updateFieldValueSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityEnumFieldValue),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
+    templatesControllerMiddleware.updateEntityEnumFieldValue,
 );
 templatesRouter.patch(
     '/entities/delete-enum-field/:id',
     ValidateRequest(deleteFieldValueSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityEnumFieldValue),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
+    templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
 templatesRouter.patch(
     '/entities/:id/actions',
@@ -103,104 +88,68 @@ templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
     ValidateRequest(createEntityTemplateSchema),
-    wrapMiddleware(validateUserCanCreateEntityTemplateUnderCategory),
-    wrapController(TemplatesController.createEntityTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-entities',
-        responseDataExtractor: undefined,
-    }),
+    templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
+    templatesControllerMiddleware.createEntityTemplate,
 );
 templatesRouter.put(
     '/entities/:id',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
     ValidateRequest(updateEntityTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-entities',
-        responseDataExtractor: undefined,
-    }),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
+    templatesControllerMiddleware.updateEntityTemplate,
 );
 templatesRouter.patch(
     '/entities/:id/status',
     ValidateRequest(updateEntityTemplateStatusSchema),
-    wrapController(TemplatesController.updateEntityTemplateStatus, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-entities',
-        responseDataExtractor: undefined,
-    }),
+    templatesControllerMiddleware.updateEntityTemplateStatus,
 );
 templatesRouter.delete(
     '/entities/:id',
     ValidateRequest(deleteEntityTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.deleteEntityTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-entities',
-        responseDataExtractor: fixDeleteResponseData,
-    }),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
+    templatesControllerMiddleware.deleteEntityTemplate,
 );
 
 // relationships (templates)
 templatesRouter.post(
     '/relationships',
     ValidateRequest(createRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanCreateRelationshipTemplateUnderCategory),
-    wrapController(TemplatesController.createRelationshipTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-relationships',
-        responseDataExtractor: undefined,
-    }),
+    templatesValidatorMiddleware.validateUserCanCreateRelationshipTemplateUnderCategory,
+    templatesControllerMiddleware.createRelationshipTemplate,
 );
 templatesRouter.put(
     '/relationships/:id',
     ValidateRequest(updateRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.updateRelationshipTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-relationships',
-        responseDataExtractor: undefined,
-    }),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipTemplate,
+    templatesControllerMiddleware.updateRelationshipTemplate,
 );
 templatesRouter.delete(
     '/relationships/:id',
     ValidateRequest(deleteRelationshipTemplateSchema),
-    wrapMiddleware(validateUserCanUpdateOrDeleteRelationshipTemplate),
-    wrapController(TemplatesController.deleteRelationshipTemplate, {
-        toLog: true,
-        logRequestFields: [],
-        indexName: 'templates-relationships',
-        responseDataExtractor: undefined,
-    }),
+    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipTemplate,
+    templatesControllerMiddleware.deleteRelationshipTemplate,
 );
 
 templatesRouter.get(
     '/relationships/all',
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapController(TemplatesController.getAllRelationshipTemplates),
+    AuthorizerControllerMiddleware.userCanReadTemplates,
+    templatesControllerMiddleware.getAllRelationshipTemplates,
 );
 
 // rules (templates)
-templatesRouter.put('/rules/:ruleId', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
+templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
 templatesRouter.patch(
     '/rules/:ruleId/status',
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware.userCanWriteRules,
     ValidateRequest(updateRuleStatusByIdRequestSchema),
-    wrapController(TemplatesController.updateRuleStatusById),
+    templatesControllerMiddleware.updateRuleStatusById,
 );
 templatesRouter.delete(
     '/rules/:ruleId',
-    wrapMiddleware(validateUserIsRulesManager),
+    AuthorizerControllerMiddleware.userCanWriteRules,
     ValidateRequest(deleteRuleByIdRequestSchema),
-    wrapController(TemplatesController.deleteRuleById),
+    templatesControllerMiddleware.deleteRuleById,
 );
-templatesRouter.post('/rules/get-many', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
-templatesRouter.post('/rules', wrapMiddleware(validateUserIsRulesManager), TemplatesServiceProxy);
+templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
 
 export default templatesRouter;

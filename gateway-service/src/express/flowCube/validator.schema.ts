@@ -1,8 +1,11 @@
 import Joi from 'joi';
 
-// POST /api/flow-cube/entites/search/template/templateId
+// POST /api/flow-cube/:workspaceId/entities/search/template/:templateId
 export const searchFlowCubeRequestSchema = Joi.object({
     body: Joi.object().pattern(Joi.string(), Joi.any()),
     query: {},
-    params: { templateId: Joi.string().required() },
+    params: {
+        workspaceId: Joi.string().required(),
+        templateId: Joi.string().required(),
+    },
 });

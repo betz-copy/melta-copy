@@ -11,7 +11,7 @@ import { CreateTemplateName, createTemplateNameSchema } from '../entityTemplate/
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
-import { IUser } from '../../../services/kartoffelService';
+import { IUser } from '../../../interfaces/users';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 
 export interface ProcessTemplateFormInputProperties {

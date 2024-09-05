@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import config from '../../config';
+import DefaultExternalService from '../../utils/externalService';
 import { IEntityTemplate, ISearchEntityTemplatesBody } from './interfaces';
 
 const {
@@ -11,18 +12,18 @@ const {
     },
 } = config;
 
-export class TemplateManagerService {
-    private static TemplateManagerApi = axios.create({ baseURL: url, timeout });
+export class TemplateManagerService extends DefaultExternalService {
+    constructor(workspaceId: string) {
+        super(workspaceId, axios.create({ baseURL: url, timeout }));
+    }
 
-    static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await this.TemplateManagerApi.post<IEntityTemplate[]>(`${baseRoute}${searchTemplatesRoute}`, body);
-
+    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}): Promise<IEntityTemplate[]> {
+        const { data } = await this.api.post(`${baseRoute}${searchTemplatesRoute}`, body);
         return data;
     }
 
-    static async getEntityTemplateById(id: string) {
-        const { data } = await this.TemplateManagerApi.get<IEntityTemplate>(`${baseRoute}/${id}`);
-
+    async getEntityTemplateById(id: string): Promise<IEntityTemplate> {
+        const { data } = await this.api.get(`${baseRoute}/${id}`);
         return data;
     }
 }

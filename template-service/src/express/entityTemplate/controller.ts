@@ -1,39 +1,45 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
+import { IMongoEntityTemplate } from './interface';
 import { EntityTemplateManager } from './manager';
 import { fetchPropertyFromRequest } from '../../utils/express';
 
-class EntityTemplateController {
-    static async searchEntityTemplates(req: Request, res: Response) {
-        res.json(await EntityTemplateManager.getTemplates(req.body));
+class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
+    constructor(workspaceId: string) {
+        super(new EntityTemplateManager(workspaceId));
     }
 
-    static async getEntityTemplateById(req: Request, res: Response) {
+    async searchEntityTemplates(req: Request, res: Response) {
+        res.json(await this.manager.getTemplates(req.body));
+    }
+
+    async getEntityTemplateById(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await EntityTemplateManager.getTemplateById(id));
+        res.json(await this.manager.getTemplateById(id));
     }
 
-    static async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
-        res.json(await EntityTemplateManager.getTemplatesUsingRelationshipReferance(req.params.relatedTemplateId));
+    async getTemplatesUsingRelationshipReferance(req: Request, res: Response) {
+        res.json(await this.manager.getTemplatesUsingRelationshipReferance(req.params.relatedTemplateId));
     }
 
-    static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await EntityTemplateManager.createTemplate(req.body));
+    async createEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createTemplate(req.body));
     }
 
-    static async deleteEntityTemplate(req: Request, res: Response) {
+    async deleteEntityTemplate(req: Request, res: Response) {
         // TODO: validate no instances exists before deleting
         const { templateId: id } = req.params;
-        res.json(await EntityTemplateManager.deleteTemplate(id));
+        res.json(await this.manager.deleteTemplate(id));
     }
 
-    static async updateEntityTemplate(req: Request, res: Response) {
+    async updateEntityTemplate(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await EntityTemplateManager.updateEntityTemplate(id, req.body));
+        res.json(await this.manager.updateEntityTemplate(id, req.body));
     }
 
-    static async updateEntityTemplateStatus(req: Request, res: Response) {
+    async updateEntityTemplateStatus(req: Request, res: Response) {
         const { templateId: id } = req.params;
-        res.json(await EntityTemplateManager.updateEntityTemplateStatus(id, req.body.disabled));
+        res.json(await this.manager.updateEntityTemplateStatus(id, req.body.disabled));
     }
 
     static async updateEntityTemplateAction(req: Request, res: Response) {

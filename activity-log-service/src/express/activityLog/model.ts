@@ -1,9 +1,7 @@
 import * as mongoose from 'mongoose';
+import { Action } from './interface';
 
-import { Action, IActivityLog } from './interface';
-import config from '../../config';
-
-const ActivityLogSchema = new mongoose.Schema({
+export const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
         type: Date,
         required: true,
@@ -39,7 +37,3 @@ const ActivityLogSchema = new mongoose.Schema({
 ActivityLogSchema.index({ entityId: 1, timestamp: -1 });
 
 ActivityLogSchema.index({ entityId: 1, userId: 1 }, { unique: true, partialFilterExpression: { action: { $eq: 'VIEW_ENTITY' } } });
-
-const ActivityLogModel = mongoose.model<IActivityLog & mongoose.Document>(config.mongo.activitiesCollectionName, ActivityLogSchema);
-
-export default ActivityLogModel;

@@ -1,56 +1,61 @@
 import assert from 'assert';
 import { Request, Response } from 'express';
-import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
 import { TemplatesManager } from './manager';
 
-export default class TemplatesController {
+export default class TemplatesController extends DefaultController<TemplatesManager> {
+    constructor(workspaceId: string) {
+        super(new TemplatesManager(workspaceId));
+    }
+
     // all
-    static async getAllAllowedTemplates(req: Request, res: Response) {
+    async getAllAllowedTemplates(req: Request, res: Response) {
         const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 
         assert(user, 'User doesnt exists under request');
 
-        res.json(await TemplatesManager.getAllAllowedTemplates(user.id, permissionsOfUserId));
+        res.json(await this.manager.getAllAllowedTemplates(user.id, permissionsOfUserId));
     }
 
     // categories
-    static async createCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.createCategory(req.body, req.file));
+    async createCategory(req: Request, res: Response) {
+        res.json(await this.manager.createCategory(req.body, req.file));
     }
 
-    static async deleteCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteCategory(req.params.id));
+    async deleteCategory(req: Request, res: Response) {
+        res.json(await this.manager.deleteCategory(req.params.id));
     }
 
-    static async updateCategory(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateCategory(req.params.id, req.body, req.file));
+    async updateCategory(req: Request, res: Response) {
+        res.json(await this.manager.updateCategory(req.params.id, req.body, req.file));
     }
 
     // entityTemplates
-    static async createEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
+    async createEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createEntityTemplate(req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
-    static async deleteEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteEntityTemplate(req.params.id));
+    async deleteEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteEntityTemplate(req.params.id));
     }
 
-    static async updateEntityTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
+    async updateEntityTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateEntityTemplate(req.params.id, req.body, req.files as Record<string, Express.Multer.File[]>));
     }
 
-    static async updateEntityTemplateStatus(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
+    async updateEntityTemplateStatus(req: Request, res: Response) {
+        res.json(await this.manager.updateEntityTemplateStatus(req.params.id, req.body.disabled));
     }
 
-    static async updateEntityEnumFieldValue(req: Request, res: Response) {
+    async updateEntityEnumFieldValue(req: Request, res: Response) {
         const { field, partialInput: values, fieldValue } = req.body;
-        res.json(await TemplatesManager.updateEntityEnumFieldValue(req.params.id, field, values, fieldValue));
+        res.json(await this.manager.updateEntityEnumFieldValue(req.params.id, field, values, fieldValue));
     }
 
-    static async deleteEntityEnumFieldValue(req: Request, res: Response) {
+    async deleteEntityEnumFieldValue(req: Request, res: Response) {
         const { fieldValue, partialInput: field } = req.body;
-        res.json(await TemplatesManager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
+        res.json(await this.manager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
 
     static async updateEntityTemplateAction(req: Request, res: Response) {
@@ -58,28 +63,28 @@ export default class TemplatesController {
     }
 
     // relationshipTemplates
-    static async createRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.createRelationshipTemplate(req.body));
+    async createRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createRelationshipTemplate(req.body));
     }
 
-    static async deleteRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteRelationshipTemplate(req.params.id));
+    async deleteRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteRelationshipTemplate(req.params.id));
     }
 
-    static async updateRelationshipTemplate(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateRelationshipTemplate(req.params.id, req.body));
+    async updateRelationshipTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateRelationshipTemplate(req.params.id, req.body));
     }
 
-    static async getAllRelationshipTemplates(_req: Request, res: Response) {
-        res.json(await TemplatesManager.getAllRelationshipTemplates());
+    async getAllRelationshipTemplates(_req: Request, res: Response) {
+        res.json(await this.manager.getAllRelationshipTemplates());
     }
 
     // rules
-    static async updateRuleStatusById(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
+    async updateRuleStatusById(req: Request, res: Response) {
+        res.json(await this.manager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
     }
 
-    static async deleteRuleById(req: Request, res: Response) {
-        res.json(await TemplatesManager.deleteRuleById(req.params.ruleId));
+    async deleteRuleById(req: Request, res: Response) {
+        res.json(await this.manager.deleteRuleById(req.params.ruleId));
     }
 }

@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
@@ -16,17 +16,19 @@ const {
     },
 } = config;
 
-export class InstanceManagerService {
-    private static InstanceManagerApi = axios.create({ baseURL: url, timeout: requestTimeout });
+export class InstancesService extends DefaultExternalServiceApi {
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: url, timeout: requestTimeout });
+    }
 
     // entity instances
-    static async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
-        const { data } = await this.InstanceManagerApi.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
+    async updateEnumFieldOfEntity(id: string, newValue: string, oldValue: string, field: any) {
+        const { data } = await this.api.put<IEntity>(`${baseEntitiesRoute}/update-enum-field/${id}`, { newValue, oldValue, field });
         return data;
     }
 
-    static async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
-        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
+    async getIfValuefieldIsUsed(id: string, fieldValue: string, fieldName: string, type: string) {
+        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/get-is-field-used/${id}`, {
             params: {
                 fieldValue,
                 fieldName,
@@ -36,70 +38,63 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async getEntityInstanceById(id: string) {
-        const { data } = await this.InstanceManagerApi.get<IEntity>(`${baseEntitiesRoute}/${id}`);
+    async getEntityInstanceById(id: string) {
+        const { data } = await this.api.get<IEntity>(`${baseEntitiesRoute}/${id}`);
         return data;
     }
 
-    static async getEntityInstancesByIds(ids: string[]) {
-        const { data } = await this.InstanceManagerApi.post<IEntity[]>(`${baseEntitiesRoute}/ids`, { ids });
+    async getEntityInstancesByIds(ids: string[]) {
+        const { data } = await this.api.post<IEntity[]>(`${baseEntitiesRoute}/ids`, { ids });
         return data;
     }
 
-    static async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
-        const { data } = await this.InstanceManagerApi.post<{ createdEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(
-            `${baseEntitiesRoute}`,
-            {
-                ...entity,
-                ignoredRules,
-                userId,
-                duplicatedFromId,
-            },
-        );
+    async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
+        const { data } = await this.api.post<{ createdEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(`${baseEntitiesRoute}`, {
+            ...entity,
+            ignoredRules,
+            userId,
+            duplicatedFromId,
+        });
 
         return data;
     }
 
-    static async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.put<{ updatedEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.api.put<{ updatedEntity: IEntity; updatedEntities: IEntity[]; actions: IAction[] }>(
             `${baseEntitiesRoute}/${id}`,
-            {
-                ...entity,
-                ignoredRules,
-                userId,
-            },
+            { ...entity, ignoredRules, userId },
         );
 
         return data;
     }
 
-    static async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules, userId });
+    async updateEntityStatus(id: string, disabled: boolean, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.api.patch<IEntity>(`${baseEntitiesRoute}/${id}/status`, { disabled, ignoredRules, userId });
 
         return data;
     }
 
-    static async deleteEntityInstance(id: string) {
-        const { data } = await this.InstanceManagerApi.delete<{ deletedEntityId: string; updatedEntities: IEntity[] }>(`${baseEntitiesRoute}/${id}`);
+    async deleteEntityInstance(id: string) {
+        const { data } = await this.api.delete<string>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }
 
-    static async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
-        const { data } = await this.InstanceManagerApi.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
         return data;
     }
 
     // relationships instances
-    static async getRelationshipInstanceById(id: string) {
-        const { data } = await this.InstanceManagerApi.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);
+    async getRelationshipInstanceById(id: string) {
+        const { data } = await this.api.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }
 
-    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.post<IRelationship>(baseRelationshipsRoute, {
+    async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.api.post<IRelationship>(baseRelationshipsRoute, {
             relationshipInstance: relationship,
             ignoredRules,
             userId,
@@ -108,20 +103,20 @@ export class InstanceManagerService {
         return data;
     }
 
-    static async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.InstanceManagerApi.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules, userId } });
+    async deleteRelationshipInstance(id: string, ignoredRules: IBrokenRule[], userId: string) {
+        const { data } = await this.api.delete<IRelationship>(`${baseRelationshipsRoute}/${id}`, { data: { ignoredRules, userId } });
 
         return data;
     }
 
-    static async getRelationshipsCountByTemplateId(templateId: string) {
-        const { data } = await this.InstanceManagerApi.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
+    async getRelationshipsCountByTemplateId(templateId: string) {
+        const { data } = await this.api.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
 
         return data;
     }
 
-    static async getRelationshipsByIds(relationshipIds: string[]) {
-        const { data } = await this.InstanceManagerApi.post<IRelationship[]>(`${baseRelationshipsRoute}/ids`, {
+    async getRelationshipsByIds(relationshipIds: string[]) {
+        const { data } = await this.api.post<IRelationship[]>(`${baseRelationshipsRoute}/ids`, {
             ids: relationshipIds,
         });
 
@@ -129,40 +124,40 @@ export class InstanceManagerService {
     }
 
     // constraints
-    static async getAllConstraints() {
-        const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate[]>(baseConstraintsRoute);
+    async getAllConstraints() {
+        const { data } = await this.api.get<IConstraintsOfTemplate[]>(baseConstraintsRoute);
 
         return data;
     }
 
-    static async getConstraintsOfTemplate(templateId: string) {
-        const { data } = await this.InstanceManagerApi.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
+    async getConstraintsOfTemplate(templateId: string) {
+        const { data } = await this.api.get<IConstraintsOfTemplate>(`${baseConstraintsRoute}/${templateId}`);
         return data;
     }
 
-    static async updateConstraintsOfTemplate(
+    async updateConstraintsOfTemplate(
         templateId: string,
         constraints: { requiredConstraints: string[]; uniqueConstraints: IUniqueConstraintOfTemplate[] },
     ) {
-        const { data } = await this.InstanceManagerApi.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
+        const { data } = await this.api.put<IConstraintsOfTemplate[]>(`${baseConstraintsRoute}/${templateId}`, constraints);
 
         return data;
     }
 
-    static async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
-        const { data } = await this.InstanceManagerApi.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
+    async enumerateNewSerialNumberFields(templateId: string, newSerialNumberFields: object) {
+        const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
         return data;
     }
 
-    static async runBulkOfActions(
+    async runBulkOfActions(
         actionsGroups: IAction[][],
         dryRun: boolean,
         userId: string,
         ignoredRules: IBrokenRule[] = [],
     ): Promise<PromiseSettledResult<(IEntity | IRelationship)[]>[]> {
-        const { data } = await this.InstanceManagerApi.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
+        const { data } = await this.api.post<PromiseSettledResult<(IEntity | IRelationship)[]>[]>(
             `${baseBulkActionsRoute}/bulk`,
             { actionsGroups, ignoredRules, userId },
             { params: { dryRun } },

@@ -1,10 +1,15 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
 import { BulkActionManager } from './manager';
 
-class BulkActionController {
-    static async runBulkOfActionsInMultipleTransactions(req: Request, res: Response) {
+class BulkActionController extends DefaultController<BulkActionManager> {
+    constructor(workspaceId: string) {
+        super(new BulkActionManager(workspaceId));
+    }
+
+    async runBulkOfActionsInMultipleTransactions(req: Request, res: Response) {
         res.json(
-            await BulkActionManager.runBulkOfActionsInMultipleTransactions(
+            await this.manager.runBulkOfActionsInMultipleTransactions(
                 req.body.actionsGroups,
                 req.body.ignoredRules,
                 req.query.dryRun as unknown as boolean,

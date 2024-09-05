@@ -1,22 +1,21 @@
-import type { Property } from 'csstype';
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography } from '@mui/material';
+import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
 import { pdfjs } from 'react-pdf';
-import { useSelector } from 'react-redux';
+import { environment } from '../globals';
 import { IEntity } from '../interfaces/entities';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
+import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { MeltaTooltip } from './MeltaTooltip';
-import { VerifyLink } from './VerifyLink';
-import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../utils/HtmlTagsStringValue';
-import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference';
-import { environment } from '../globals';
 import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
+import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
+import { VerifyLink } from './VerifyLink';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -266,7 +265,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
 };
 
 export const EntityProperties: React.FC<IEntityPropertiesProps> = (props) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return <EntityPropertiesInternal {...props} darkMode={darkMode} />;
 };

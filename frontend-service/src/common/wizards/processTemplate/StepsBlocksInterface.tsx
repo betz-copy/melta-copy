@@ -1,7 +1,7 @@
 import { FormikErrors, FormikTouched } from 'formik';
 import { ProcessTemplateWizardValues } from '.';
 import fileDetails from '../../../interfaces/fileDetails';
-import { IUser } from '../../../services/kartoffelService';
+import { IUser } from '../../../interfaces/users';
 
 export interface StepsGenericBlockProps {
     values: ProcessTemplateWizardValues;

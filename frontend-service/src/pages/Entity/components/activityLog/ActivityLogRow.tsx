@@ -2,26 +2,26 @@ import React from 'react';
 import { Typography, Grid, Skeleton } from '@mui/material';
 import { useQuery } from 'react-query';
 import randomColor from 'randomcolor';
-import { useSelector } from 'react-redux';
 import { IActivityLog } from '../../../../services/activityLogService';
-import { getUserByIdRequest } from '../../../../services/kartoffelService';
+import { getUserByIdRequest } from '../../../../services/userService';
 import ActionText from './ActionText';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getShortDate } from '../../../../utils/date';
-import { RootState } from '../../../../store';
 import UserAvatar from '../../../../common/UserAvatar';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 const ActivityLogRow: React.FC<{ log: IActivityLog; entityTemplate: IMongoEntityTemplatePopulated }> = ({ log, entityTemplate }) => {
     const { data: user, isLoading } = useQuery(['getUserById', log.userId], () => getUserByIdRequest(log.userId));
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Grid container>
             <Grid item padding="10px">
                 {isLoading ? (
                     <Skeleton variant="circular" width={40} height={40} />
                 ) : (
-                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!.id })} />
+                    <UserAvatar user={user!} size={40} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
                 )}
             </Grid>
             <Grid item container xs={9}>

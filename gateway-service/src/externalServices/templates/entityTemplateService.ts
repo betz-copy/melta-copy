@@ -1,5 +1,5 @@
-import config from '../../config';
 import { TemplatesManagerService } from '.';
+import config from '../../config';
 
 const {
     templateService: {
@@ -91,98 +91,81 @@ export interface ISearchEntityTemplatesBody {
     skip?: number;
 }
 
-export class EntityTemplateManagerService extends TemplatesManagerService {
+export class EntityTemplateService extends TemplatesManagerService {
     // categories
-    static async getAllCategories() {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoCategory[]>(baseCategoriesRoute);
+    async getAllCategories() {
+        const { data } = await this.api.get<IMongoCategory[]>(baseCategoriesRoute);
 
         return data;
     }
 
-    static async createCategory(category: ICategory) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoCategory>(baseCategoriesRoute, category);
+    async createCategory(category: ICategory) {
+        const { data } = await this.api.post<IMongoCategory>(baseCategoriesRoute, category);
 
         return data;
     }
 
-    static async updateCategory(categoryId: string, updatedCategory: Partial<ICategory>) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.put<IMongoCategory>(
-            `${baseCategoriesRoute}/${categoryId}`,
-            updatedCategory,
-        );
+    async updateCategory(categoryId: string, updatedCategory: Partial<ICategory>) {
+        const { data } = await this.api.put<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`, updatedCategory);
 
         return data;
     }
 
-    static async deleteCategory(categoryId: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.delete<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
+    async deleteCategory(categoryId: string) {
+        const { data } = await this.api.delete<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
 
         return data;
     }
 
-    static async getCategoryById(categoryId: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
+    async getCategoryById(categoryId: string) {
+        const { data } = await this.api.get<IMongoCategory>(`${baseCategoriesRoute}/${categoryId}`);
 
         return data;
     }
 
     // entity templates
-    static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoEntityTemplatePopulated[]>(
-            `${baseEntitiesRoute}/search`,
-            body,
-        );
+    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
+        const { data } = await this.api.post<IMongoEntityTemplatePopulated[]>(`${baseEntitiesRoute}/search`, body);
 
         return data;
     }
 
-    static async getEntityTemplateById(id: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${id}`);
+    async getEntityTemplateById(id: string) {
+        const { data } = await this.api.get<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${id}`);
 
         return data;
     }
 
-    static async createEntityTemplate(entityTemplate: IEntityTemplate) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoEntityTemplatePopulated>(baseEntitiesRoute, entityTemplate);
+    async createEntityTemplate(entityTemplate: IEntityTemplate) {
+        const { data } = await this.api.post<IMongoEntityTemplatePopulated>(baseEntitiesRoute, entityTemplate);
 
         return data;
     }
 
-    static async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.put<IMongoEntityTemplatePopulated>(
-            `${baseEntitiesRoute}/${entityTemplateId}`,
-            updatedEntityTemplate,
-        );
+    async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
+        const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
 
         return data;
     }
 
-    static async updateEntityTemplateStatus(entityTemplateId: string, disabledStatus: boolean) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.patch<IMongoEntityTemplatePopulated>(
-            `${baseEntitiesRoute}/${entityTemplateId}/status`,
-            {
-                disabled: disabledStatus,
-            },
-        );
+    async updateEntityTemplateStatus(entityTemplateId: string, disabledStatus: boolean) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}/status`, {
+            disabled: disabledStatus,
+        });
 
         return data;
     }
 
-    static async updateEntityTemplateAction(entityTemplateId: string, actions: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.patch<IMongoEntityTemplatePopulated>(
-            `${baseEntitiesRoute}/${entityTemplateId}/actions`,
-            {
-                actions,
-            },
-        );
+    async updateEntityTemplateAction(entityTemplateId: string, actions: string) {
+        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}/actions`, {
+            actions,
+        });
 
         return data;
     }
 
-    static async deleteEntityTemplate(entityTemplateId: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.delete<IMongoEntityTemplate>(
-            `${baseEntitiesRoute}/${entityTemplateId}`,
-        );
+    async deleteEntityTemplate(entityTemplateId: string) {
+        const { data } = await this.api.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
 
         return data;
     }

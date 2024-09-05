@@ -1,30 +1,31 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
-import i18next from 'i18next';
-import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
-import fileDownload from 'js-file-download';
 import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { AddEntityButton } from './AddEntityButton';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
-import { BlueTitle } from '../BlueTitle';
-import { ResetFilterButton } from './ResetFilterButton';
-import IconButtonWithPopover from '../IconButtonWithPopover';
-import { CustomIcon } from '../CustomIcon';
-import { exportEntitiesRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
+import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
+import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import fileDownload from 'js-file-download';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { exportEntitiesRequest } from '../../services/entitiesService';
+import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
+import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import { EntityTemplateColor } from '../EntityTemplateColor';
-import { ImageWithDisable } from '../ImageWithDisable';
+import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { BlueTitle } from '../BlueTitle';
+import { CustomIcon } from '../CustomIcon';
 import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { EntityTemplateColor } from '../EntityTemplateColor';
+import IconButtonWithPopover from '../IconButtonWithPopover';
+import { ImageWithDisable } from '../ImageWithDisable';
+import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
-import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
+import { ResetFilterButton } from './ResetFilterButton';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -43,6 +44,8 @@ const TemplateTable = forwardRef<
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const theme = useTheme();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
@@ -88,9 +91,7 @@ const TemplateTable = forwardRef<
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const queryClient = useQueryClient();
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
+    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
 
     const drafts = useDraftsStore((state) => state.drafts);
 
