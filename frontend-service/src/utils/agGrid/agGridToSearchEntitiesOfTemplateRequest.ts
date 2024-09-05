@@ -214,10 +214,10 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated,
 ): ISearchEntitiesOfTemplateBody => {
-    const { skip, limit, filterModel, quickFilter, sortModel } = agGridRequest;
+    const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
-        skip,
-        limit,
+        skip: startRow,
+        limit: endRow - startRow,
         textSearch: quickFilter,
         filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,

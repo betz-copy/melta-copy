@@ -83,7 +83,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         const groupByEntityTemplateConstraints = await this.instancesService.getConstraintsOfTemplate(gantt.groupBy.entityTemplateId);
         if (
             !groupByEntityTemplateConstraints.uniqueConstraints.find((uniqueConstraint) =>
-                lodashIsEqual(uniqueConstraint, [gantt.groupBy!.groupNameField]),
+                lodashIsEqual(uniqueConstraint.properties, [gantt.groupBy!.groupNameField]),
             )
         ) {
             throw new ServiceError(

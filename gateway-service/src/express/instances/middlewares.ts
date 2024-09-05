@@ -227,9 +227,7 @@ export class InstancesValidator extends DefaultController {
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 
-        if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
-            throw new ServiceError(403, 'user not authorized', { metadata: 'user does not have write permission on rules' });
-        }
+        if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) return;
 
         const ignoredRulesPopulated: IRule[] = await Promise.all(
             ignoredRules.map((ignoredRule) => this.relationshipsTemplateService.getRuleById(ignoredRule.ruleId)),
