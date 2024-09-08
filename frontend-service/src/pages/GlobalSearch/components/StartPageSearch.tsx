@@ -2,14 +2,23 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { GlobalSearchBar } from '../../../common/EntitiesPage/Headline';
+import { MeltaIcon } from '../../../common/MeltaIcon';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const StartPageSearch: React.FC<{
     onSearch: (searchValue: string) => void;
 }> = ({ onSearch }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     return (
         <Grid container direction="column" alignItems="center" spacing={4} sx={{ marginTop: '15vh' }}>
             <Grid item>
-                <img src="/icons/Melta_Google_Logo.svg" style={{ margin: '0.6rem', color: 'black' }} width="400px" />
+                <MeltaIcon
+                    iconUrl={workspace?.logoFileId}
+                    width="400px"
+                    style={{ margin: '0.6rem', filter: 'drop-shadow(3px 3px 2px rgba(0, 0, 0, 0.5))' }}
+                    expanded
+                />
             </Grid>
             <Grid item width="800px">
                 <GlobalSearchBar

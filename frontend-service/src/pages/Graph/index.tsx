@@ -1,37 +1,36 @@
 /* eslint-disable no-param-reassign */
-import React, { useEffect, useRef, useState } from 'react';
-import * as ReactDOMServer from 'react-dom/server';
 import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
-import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
-import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
-import { useQuery, useQueryClient } from 'react-query';
-import { useParams, useSearchParams } from 'react-router-dom';
+import i18next from 'i18next';
 import uniqBy from 'lodash.uniqby';
 import uniqWith from 'lodash.uniqwith';
-import { useSelector } from 'react-redux';
-
-import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import * as ReactDOMServer from 'react-dom/server';
+import ForceGraph, { ForceGraphMethods, ForceGraphProps, GraphData, NodeObject } from 'react-force-graph-2d';
+import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps as ForceGraphProps3D } from 'react-force-graph-3d';
 import { BsFillPlusCircleFill } from 'react-icons/bs';
-import { expandedEntityToGraphData, getGraphDataWithNodeSizes, getFixedGraphLinks, fixHighlighted, updateNodeLabelIcons } from '../../utils/graph';
-import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
-import { LinkMiddlePoint3D, create3DLabel, create3DNodeDetails, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
+import { useQuery, useQueryClient } from 'react-query';
+import { useParams } from 'wouter';
+import { toast } from 'react-toastify';
+import { environment } from '../../globals';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import { GraphTopBar } from './GraphTopBar';
-import { environment } from '../../globals';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';
+import { drawLinkLabel, drawNode, lookAt } from '../../utils/graph/2DCanvas';
+import { create3DLabel, create3DNodeDetails, LinkMiddlePoint3D, lookAt3D, scale3DNode } from '../../utils/graph/3DCanvas';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { PartialRequired, SharedProperties } from '../../utils/typeHelpers';
-import { GraphNodeMenu } from './GraphNodeMenu';
-import { GraphMenu } from './GraphMenu';
-import { RootState } from '../../store';
-import { NodeTooltip } from './NodeTooltip';
-import { useLocalStorage } from '../../utils/useLocalStorage';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
 import { GraphFilterBatch } from './GraphFilterBatch';
+import { GraphMenu } from './GraphMenu';
+import { GraphNodeMenu } from './GraphNodeMenu';
+import { GraphTopBar } from './GraphTopBar';
+import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
-import { toast } from 'react-toastify';
 
 interface genericMenuState {
     node: NodeObject;
@@ -56,13 +55,13 @@ const Graph: React.FC = () => {
     const [shouldZoomToFit, setShouldZoomToFit] = useState(true);
     const [shouldUpdateHighlighted, setShouldUpdateHighlighted] = useState(false);
 
-    const { entityId } = useParams() as { entityId: string };
+    const { entityId } = useParams<{ entityId: string }>();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [nodeMenuState, setNodeMenuState] = useState<genericMenuState>();
     const [graphMenuState, setGraphMenuState] = useState<Omit<genericMenuState, 'node'>>();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const queryClient = useQueryClient();
 
@@ -163,7 +162,7 @@ const Graph: React.FC = () => {
             resetGraph(data, true);
         }
 
-        let expandedEntityGraphData = expandedEntityToGraphData(
+        let expandedEntityGraphData = await expandedEntityToGraphData(
             {
                 ...expandedEntity,
                 connections: expandedEntity?.connections?.slice(startIndex, startIndex + BatchSize) ?? [],

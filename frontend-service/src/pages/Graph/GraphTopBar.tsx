@@ -1,15 +1,14 @@
-import React from 'react';
-import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
-import { useQueryClient, useQuery } from 'react-query';
 import { RestartAltOutlined as ResetIcon } from '@mui/icons-material';
-import i18next from 'i18next';
-import { useSelector } from 'react-redux';
+import { Grid, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import i18next from 'i18next';
+import React from 'react';
+import { useQuery, useQueryClient } from 'react-query';
+import { CopyUrlButton } from '../../common/CopyUrlButton';
+import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import { RootState } from '../../store';
-import { CopyUrlButton } from '../../common/CopyUrlButton';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 interface GraphTopBarProps {
     onReset: React.MouseEventHandler<HTMLButtonElement>;
@@ -25,7 +24,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
 
     const theme = useTheme();
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const templateIds = Array.from(entityTemplates.keys());

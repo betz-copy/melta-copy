@@ -1,15 +1,15 @@
 /* eslint-disable no-param-reassign */
-import React from 'react';
 import { Menu as MuiMenu, MenuItem } from '@mui/material';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import i18next from 'i18next';
+import React from 'react';
 import { GraphData, NodeObject } from 'react-force-graph-2d';
 import { useQuery } from 'react-query';
-import i18next from 'i18next';
-
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useLocation } from 'wouter';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { highlightNode } from '../../utils/graph';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const GraphNodeMenu: React.FC<{
     graphData: GraphData;
@@ -20,7 +20,7 @@ const GraphNodeMenu: React.FC<{
     filterRecord: IGraphFilterBodyBatch;
     onSuccessExpandGraph: (data: IEntityExpanded) => void;
 }> = ({ graphData, filteredEntityTemplates, node, location, onCloseMenu, filterRecord, onSuccessExpandGraph }) => {
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const [searchParams, setSearchParams] = useSearchParams();
 
     const expandedParams = JSON.parse(searchParams.get('expandedEntities')!) || {};

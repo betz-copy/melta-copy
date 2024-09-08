@@ -76,12 +76,12 @@ const StepComponentToPrint: React.FC<{
                 <BlueTitle title={i18next.t('wizard.processInstance.stepReviewers')} component="h6" variant="h6" />
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', minHeight: '25px', width: '100%' }}>
                     {stepTemplate.reviewers.map((reviewer) => (
-                        <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
+                        <Typography variant="body1" key={reviewer._id} sx={{ paddingY: '5px', paddingX: '10px' }}>
                             {`- ${reviewer.displayName}`}
                         </Typography>
                     ))}
                     {reviewers.map((reviewer) => (
-                        <Typography variant="body1" key={reviewer.id} sx={{ paddingY: '5px', paddingX: '10px' }}>
+                        <Typography variant="body1" key={reviewer._id} sx={{ paddingY: '5px', paddingX: '10px' }}>
                             {`- ${reviewer.displayName}`}
                         </Typography>
                     ))}

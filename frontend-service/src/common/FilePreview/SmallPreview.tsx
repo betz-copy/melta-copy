@@ -8,7 +8,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { environment } from '../../globals';
 import { IFile } from '../../interfaces/preview';
 import { VideoPreview } from './VideoPreview';
-import { useFilePreview } from '../../utils/useFilePreview';
+import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { PreviewDialog } from './PreviewDialog';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';

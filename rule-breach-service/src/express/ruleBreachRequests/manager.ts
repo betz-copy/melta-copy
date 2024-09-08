@@ -1,71 +1,76 @@
+import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import { ActionTypes, IActionMetadata } from '../../utils/interfaces/actionMetadata';
 import { IAgGridRequest } from '../../utils/interfaces/agGrid';
 import { IBrokenRule, IRuleBreach } from '../../utils/interfaces/ruleBreach';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { RuleBreachDoesNotExistError } from '../error';
 import { IRuleBreachRequest, RuleBreachRequestStatus } from './interface';
-import RuleBreachRequestsModel from './model';
+import { RuleBreachRequestsSchema } from './model';
 
-export class RuleBreachRequestsManager {
-    public static async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {
+export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRuleBreachRequest> {
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.ruleBreachRequestsCollectionName, RuleBreachRequestsSchema);
+    }
+
+    public async searchRuleBreachRequests(agGridRequest: IAgGridRequest) {
         const { startRow, endRow, sortModel, filterModel } = agGridRequest;
 
         const sort = translateAgGridSortModel(sortModel);
         const query = translateAgGridFilterModel(filterModel);
 
         const [rows, lastRowIndex] = await Promise.all([
-            RuleBreachRequestsModel.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
-            RuleBreachRequestsModel.count(query),
+            this.model.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
+            this.model.count(query),
         ]);
 
         return { rows, lastRowIndex };
     }
 
-    public static async getManyRuleBreachRequests(ids: string[]) {
-        return RuleBreachRequestsModel.find({ _id: { $in: ids } });
+    public async getManyRuleBreachRequests(ids: string[]) {
+        return this.model.find({ _id: { $in: ids } });
     }
 
-    public static async createRuleBreachRequest(
-        ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>,
-    ): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
+    public async createRuleBreachRequest(ruleBreachRequestData: Omit<IRuleBreach, '_id' | 'createdAt' | 'status'>): Promise<IRuleBreachRequest> {
+        return this.model.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
     }
 
-    public static async updateRuleBreachRequestStatus(
+    public async updateRuleBreachRequestStatus(
         ruleBreachRequestId: string,
         reviewerId: string,
         status: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { status, reviewerId, reviewedAt: new Date() }, { new: true })
+        return this.model
+            .findByIdAndUpdate(ruleBreachRequestId, { status, reviewerId, reviewedAt: new Date() }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }
 
-    public static async updateRuleBreachRequestActionsMetadatas(
+    public async updateRuleBreachRequestActionsMetadatas(
         ruleBreachRequestId: string,
         actions: {
             actionType: ActionTypes;
             actionMetadata: IActionMetadata;
         }[],
     ): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
+        return this.model
+            .findByIdAndUpdate(ruleBreachRequestId, { actions }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }
 
-    public static async updateRuleBreachRequestBrokenRules(ruleBreachRequestId: string, brokenRules: IBrokenRule[]): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findByIdAndUpdate(ruleBreachRequestId, { brokenRules }, { new: true })
+    public async updateRuleBreachRequestBrokenRules(ruleBreachRequestId: string, brokenRules: IBrokenRule[]): Promise<IRuleBreachRequest> {
+        return this.model
+            .findByIdAndUpdate(ruleBreachRequestId, { brokenRules }, { new: true })
             .orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request'))
             .lean();
     }
 
-    public static async getRuleBreachRequestById(ruleBreachRequestId: string): Promise<IRuleBreachRequest> {
-        return RuleBreachRequestsModel.findById(ruleBreachRequestId).orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request')).exec();
+    public async getRuleBreachRequestById(ruleBreachRequestId: string): Promise<IRuleBreachRequest> {
+        return this.model.findById(ruleBreachRequestId).orFail(new RuleBreachDoesNotExistError(ruleBreachRequestId, 'request')).exec();
     }
 
-    public static async getRuleBreachRequestsByRuleId(ruleId: string): Promise<IRuleBreachRequest[]> {
-        return RuleBreachRequestsModel.find({ 'brokenRules.ruleId': ruleId }).lean();
+    public async getRuleBreachRequestsByRuleId(ruleId: string): Promise<IRuleBreachRequest[]> {
+        return this.model.find({ 'brokenRules.ruleId': ruleId }).lean();
     }
 }
-
-export default RuleBreachRequestsManager;

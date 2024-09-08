@@ -1,7 +1,6 @@
 import React, { CSSProperties, ComponentProps } from 'react';
 import { Grid, Card, CardContent } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ViewingBoxProps {
     children: React.ReactNode;
@@ -11,7 +10,7 @@ interface ViewingBoxProps {
 }
 
 export const ViewingBox: React.FC<ViewingBoxProps> = ({ children, minHeight = 'auto', maxHeight = '21rem', gridProps }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     if (Array.isArray(children) && !children.length) return null;
 

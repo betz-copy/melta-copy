@@ -1,33 +1,39 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../utils/express/controller';
+import { IMongoRule } from './interfaces';
 import { RuleManager } from './manager';
 
-class RuleController {
-    static async getRuleById(req: Request, res: Response) {
-        res.json(await RuleManager.getRuleById(req.params.ruleId));
+class RuleController extends DefaultController<IMongoRule, RuleManager> {
+    constructor(workspaceId: string) {
+        super(new RuleManager(workspaceId));
     }
 
-    static async getManyRulesByIds(req: Request, res: Response) {
-        res.json(await RuleManager.getManyRulesByIds(req.body.rulesIds));
+    async getRuleById(req: Request, res: Response) {
+        res.json(await this.manager.getRuleById(req.params.ruleId));
     }
 
-    static async updateRuleById(req: Request, res: Response) {
-        res.json(await RuleManager.updateRuleById(req.params.ruleId, req.body));
+    async getManyRulesByIds(req: Request, res: Response) {
+        res.json(await this.manager.getManyRulesByIds(req.body.rulesIds));
     }
 
-    static async updateRuleStatusById(req: Request, res: Response) {
-        res.json(await RuleManager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
+    async updateRuleById(req: Request, res: Response) {
+        res.json(await this.manager.updateRuleById(req.params.ruleId, req.body));
     }
 
-    static async deleteRuleById(req: Request, res: Response) {
-        res.json(await RuleManager.deleteRuleById(req.params.ruleId));
+    async updateRuleStatusById(req: Request, res: Response) {
+        res.json(await this.manager.updateRuleStatusById(req.params.ruleId, req.body.disabled));
     }
 
-    static async createRule(req: Request, res: Response) {
-        res.json(await RuleManager.createRule(req.body));
+    async deleteRuleById(req: Request, res: Response) {
+        res.json(await this.manager.deleteRuleById(req.params.ruleId));
     }
 
-    static async searchRules(req: Request, res: Response) {
-        res.json(await RuleManager.searchRules(req.body));
+    async createRule(req: Request, res: Response) {
+        res.json(await this.manager.createRule(req.body));
+    }
+
+    async searchRules(req: Request, res: Response) {
+        res.json(await this.manager.searchRules(req.body));
     }
 }
 
