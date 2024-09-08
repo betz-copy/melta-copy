@@ -85,9 +85,10 @@ spec:
 
 # minikube:
 # Set Docker Environment to Minikube: eval $(minikube docker-env)
+# Minikube delete: minikube delete
 # Minikube start: minikube start
 # Minikube status: minikube status
-# minikube image load melta-template-service:latest
+# minikube image load melta-gateway-service:latest
 
 # to build docker image:
 # cd gateway-service
