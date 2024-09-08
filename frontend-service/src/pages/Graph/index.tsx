@@ -155,9 +155,9 @@ const Graph: React.FC = () => {
         let expandedEntity = initialExpandedEntity?.entity;
         const { data } = await getExpandedEntityById();
         const startIndex = currentBatchIndex * BatchSize;
-        setIsLoading(true);
+        setIsLoading(data !== undefined);
 
-        if (data?.connections.length !== initialExpandedEntity?.entity?.connections.length) {
+        if (data && data.connections.length !== initialExpandedEntity?.entity?.connections.length) {
             expandedEntity = data;
             resetGraph(data, true);
         }
@@ -186,14 +186,13 @@ const Graph: React.FC = () => {
         addNewGraphData(expandedEntityGraphData);
         setShouldZoomToFit(shouldZoom);
 
-        if (
-            currentBatchIndex * BatchSize < expandedEntity!.connections.length &&
-            ((is3DGraph && currentBatchIndex * BatchSize < limit3DConnections) || !is3DGraph)
-        )
+        const index = currentBatchIndex * BatchSize;
+
+        if (index < expandedEntity!.connections.length && ((is3DGraph && index < limit3DConnections) || !is3DGraph))
             setCurrentBatchIndex(currentBatchIndex + 1);
         else {
             setIsLoading(false);
-            if (is3DGraph && currentBatchIndex * BatchSize < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
+            if (is3DGraph && index < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
         }
     };
 
