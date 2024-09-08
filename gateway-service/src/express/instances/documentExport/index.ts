@@ -129,10 +129,7 @@ const getJewishDateWithTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const { day, monthName, year } = toHebrewJewishDate(toJewishDate(date));
 
-    return `${day} ב${monthName} ${year}, ${date.toLocaleTimeString('he', {
-        hour: '2-digit',
-        minute: '2-digit',
-    })}`;
+    return `${day} ב${monthName} ${year}`;
 };
 
 const getHebrewDateWithTime = (dateStr: string) => {
@@ -141,10 +138,7 @@ const getHebrewDateWithTime = (dateStr: string) => {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
-    }).format(date)}, ${date.toLocaleTimeString('he', {
-        hour: '2-digit',
-        minute: '2-digit',
-    })}`;
+    }).format(date)}`;
 };
 
 const getJewishDate = (dateStr: string) => {
