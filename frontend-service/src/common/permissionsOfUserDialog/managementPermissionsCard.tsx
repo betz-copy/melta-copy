@@ -1,10 +1,9 @@
-import React from 'react';
-import i18next from 'i18next';
 import { Card, CardContent, CheckboxProps, FormControlLabel, FormGroup, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import PermissionViewIcon from './PermissionViewIcon';
-import { RootState } from '../../store';
+import i18next from 'i18next';
+import React from 'react';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
+import PermissionViewIcon from './PermissionViewIcon';
 
 type ManagementCheckboxProps = { disabled: boolean; viewMode: boolean; checked: boolean; onChange: CheckboxProps['onChange'] };
 const ManagementPermissionsCard: React.FC<{
@@ -13,7 +12,7 @@ const ManagementPermissionsCard: React.FC<{
     rulesManagement: ManagementCheckboxProps;
     processesManagement: ManagementCheckboxProps;
 }> = ({ permissionsManagement, templatesManagement, rulesManagement, processesManagement }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Card variant="outlined" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>

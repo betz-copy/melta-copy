@@ -1,14 +1,15 @@
-import React, { useState } from 'react';
-import { TextField, Autocomplete } from '@mui/material';
-import * as Yup from 'yup';
-import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
+import { Autocomplete, TextField } from '@mui/material';
 import { FormikErrors, FormikTouched } from 'formik';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useQueryClient } from 'react-query';
+import { useParams } from 'wouter';
+import * as Yup from 'yup';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 const chooseTemplateSchema = Yup.object({
     template: Yup.object({
@@ -24,12 +25,13 @@ const ChooseTemplate: React.FC<{
     errors: FormikErrors<EntityWizardValues>;
     setFieldValue: (field: string, value: any, shouldValidate?: boolean | undefined) => void;
 }> = ({ values, touched, errors, setFieldValue }) => {
-    const param = useParams();
+    const param = useParams<{ categoryId: string }>();
     const { categoryId } = param;
     const queryClient = useQueryClient();
 
+    const currentUser = useUserStore((state) => state.user);
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     let entityTemplatesFilteredByCategory: IMongoEntityTemplatePopulated[] = [];
 
@@ -37,12 +39,12 @@ const ChooseTemplate: React.FC<{
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
             return (
                 entity.category._id === categoryId &&
-                checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write')
+                checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write)
             );
         });
     } else {
         entityTemplatesFilteredByCategory = Array.from(entityTemplates.values()).filter((entity) => {
-            return checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entity.category, 'Write');
+            return checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entity.category, PermissionScope.write);
         });
     }
 

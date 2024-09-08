@@ -1,19 +1,20 @@
-import React, { useEffect, useCallback, useMemo, useState } from 'react';
 import { Grid, Card, CardContent, Box, Divider, Button, IconButton, CircularProgress, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
 import i18next from 'i18next';
-import { toast } from 'react-toastify';
 import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
 import { AxiosError } from 'axios';
-import { useNavigate } from 'react-router';
+import debounce from 'lodash.debounce';
+import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { v4 as uuid } from 'uuid';
+import { useLocation } from 'wouter';
+import { cloneDeep } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
-import debounce from 'lodash.debounce';
-import isEqual from 'lodash.isequal';
-import { v4 as uuid } from 'uuid';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
@@ -28,7 +29,6 @@ import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/Instanc
 import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
-import { cloneDeep } from 'lodash';
 
 const { errorCodes } = environment;
 
@@ -121,15 +121,14 @@ const CreateOrEditEntityDetails: React.FC<{
     const initialValues = useMemo(() => {
         if (entityToUpdate) {
             return convertIEntityToEntityWizardValues(entityToUpdate, entityTemplate, initialTemplateFileKeys);
-        } else {
-            return {
-                properties: {
-                    disabled: false,
-                },
-                attachmentsProperties: {},
-                template: entityTemplate,
-            };
         }
+        return {
+            properties: {
+                disabled: false,
+            },
+            attachmentsProperties: {},
+            template: entityTemplate,
+        };
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
     const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
@@ -145,7 +144,7 @@ const CreateOrEditEntityDetails: React.FC<{
                     unique: {
                         ...prev.unique,
                         [propKey]: `${i18next.t(
-                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`
+                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
                         )} ${propTitle}`,
                     },
                 }));
@@ -175,7 +174,7 @@ const CreateOrEditEntityDetails: React.FC<{
         },
     );
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -311,6 +310,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 const isPropertiesFirst = (values.template?.propertiesTypeOrder ?? [])[0] === 'properties';
                 const schema = filterFieldsFromPropertiesSchema(values.template.properties);
 
+                // eslint-disable-next-line react-hooks/rules-of-hooks
                 useEffect(() => {
                     if (initialCurrValues) setValues(initialCurrValues);
                 }, [initialCurrValues]);
@@ -556,7 +556,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                             Object.keys(errors).length > 0
                                                                 ? ''
                                                                 : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                        }                                                        
+                                                        }
                                                         disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}

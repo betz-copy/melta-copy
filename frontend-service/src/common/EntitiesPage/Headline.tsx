@@ -4,17 +4,16 @@ import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleBut
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
-import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
-import { RootState } from '../../store';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -105,28 +104,28 @@ const EntitiesPageHeadline: React.FC<{
     onAddEntity,
     refreshServerSide,
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
-const onSuccessCreate = (entity: IEntity) => {
-    const handleTemplatesTablesView = () => {
-        const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+    const onSuccessCreate = (entity: IEntity) => {
+        const handleTemplatesTablesView = () => {
+            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
 
             if (template) {
-            try {
-                refreshServerSide(template._id);
-            } catch {
-                onAddEntity(entity.templateId);
+                try {
+                    refreshServerSide(template._id);
+                } catch {
+                    onAddEntity(entity.templateId);
+                }
             }
+        };
+
+        if (viewModeProps.viewMode === 'templates-tables-view') {
+            handleTemplatesTablesView();
+        } else {
+            onAddEntity(entity.properties._id);
         }
     };
-
-    if (viewModeProps.viewMode === 'templates-tables-view') {
-        handleTemplatesTablesView();
-    } else {
-        onAddEntity(entity.properties._id);
-    }
-};
     return (
         <Grid
             container

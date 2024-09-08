@@ -26,7 +26,7 @@ const TemplateTablesViewResults = forwardRef<
     }
 >(({ templates, searchInput, pageType }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
-    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState(tablesPerLoadingChunkSize);
+    const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(tablesPerLoadingChunkSize);
     const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({

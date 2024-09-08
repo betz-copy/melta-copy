@@ -1,17 +1,17 @@
-import React, { useEffect, useRef, useState } from 'react';
-import i18next from 'i18next';
 import { CircularProgress, Grid } from '@mui/material';
-import { useNavigate, useParams } from 'react-router';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { RuleBreachTable } from './table';
+import { useLocation, useParams } from 'wouter';
+import { BlueTitle } from '../../common/BlueTitle';
+import '../../css/pages.css';
+import { environment } from '../../globals';
+import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
-import RuleBreachDialog from './ruleBreachDialog';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
-import '../../css/pages.css';
-import { BlueTitle } from '../../common/BlueTitle';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
-import { environment } from '../../globals';
+import RuleBreachDialog from './ruleBreachDialog';
+import { RuleBreachTable } from './table';
 
 const { defaultRowHeight } = environment.agGrid;
 
@@ -27,7 +27,7 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
     const [isDialogOpen, setIsDialogOpen] = useState(true);
     const queryClient = useQueryClient();
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const getRuleBreach = () => {
         switch (breachType) {
@@ -79,9 +79,8 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
 };
 
 const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
-    const { '*': allParams } = useParams();
-    const [breachType, ruleBreachId] = allParams!.split('/');
-    const navigate = useNavigate();
+    const { breachType, ruleBreachId } = useParams<{ breachType: string; ruleBreachId: string }>();
+    const [_, navigate] = useLocation();
     const [ruleBreach, setRuleBreach] = useState<IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | null>(null);
     useEffect(() => setTitle(i18next.t('pages.ruleManagement')), [setTitle]);
 
