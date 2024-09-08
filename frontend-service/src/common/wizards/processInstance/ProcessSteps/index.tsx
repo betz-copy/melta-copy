@@ -2,14 +2,13 @@ import { Box, Grid, Tab } from '@mui/material';
 import React from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStep } from './processStep';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 import { CustomIcon } from '../../../CustomIcon';
-import { RootState } from '../../../../store';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 export interface ProcessStepValues {
     properties: object;
@@ -44,7 +43,7 @@ const Steps: React.FC<IStepsProp> = ({
     defaultStepTemplate,
 }) => {
     const [tabValue, setTabValue] = React.useState(defaultStepTemplate ? defaultStepTemplate._id : processTemplate.steps[0]._id);
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const defaultTabColor = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
     return (
         <Box

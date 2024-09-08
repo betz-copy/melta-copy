@@ -1,23 +1,21 @@
-import React from 'react';
-import i18next from 'i18next';
-import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import {
     AccessTimeFilled as AccessTimeFilledIcon,
-    CancelOutlined as CancelOutlinedIcon,
     Cancel as CancelIcon,
-    CheckCircleOutline as CheckCircleOutlineIcon,
+    CancelOutlined as CancelOutlinedIcon,
     CheckCircle as CheckCircleIcon,
+    CheckCircleOutline as CheckCircleOutlineIcon,
 } from '@mui/icons-material';
+import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
-import { useSelector } from 'react-redux';
+import i18next from 'i18next';
+import React from 'react';
 import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
+import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
+import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
 import { BlueTitle } from '../../../BlueTitle';
-import { RootState } from '../../../../store';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
 import { ProcessStepValues } from '../ProcessSteps/index';
-import { IUser } from '../../../../services/kartoffelService';
-import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
 
 interface StatusDisplayProps {
     status: Status;
@@ -83,7 +81,7 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
     isPrinting,
     instance,
 }) => {
-    const currentUser = useSelector((state: RootState) => state.user) as IUser;
+    const currentUser = useUserStore((state) => state.user);
 
     return (
         <Grid item container justifyContent="center">
@@ -97,7 +95,7 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
                 <Grid item container justifyContent="center" alignItems="center" style={{ margin: '0px' }}>
                     <span style={{ fontWeight: 'bold', fontSize: isPrinting ? '14px' : undefined }}>
                         {` ${
-                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!.id
+                            currentUser.id === (instance as IMongoStepInstancePopulated).reviewer!._id
                                 ? i18next.t('wizard.processInstance.summary.byYou')
                                 : `${i18next.t('wizard.processInstance.summary.by')} ${(instance as IMongoStepInstancePopulated).reviewer!.fullName}`
                         }`}

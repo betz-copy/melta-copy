@@ -2,7 +2,7 @@
     width: 100%;
     align-self: center;
     background-color: transparent;
-    padding: 4px 15px;
+    padding: 4px 10px;
 }
 
 .nav-button :hover {
@@ -11,11 +11,12 @@
 }
 
 .nav-button :hover::before {
-    background-color: #1E2775;
+    background-color: #1e2775;
     border-radius: 20px;
 }
 
-.child :hover{
-    background-color:transparent;
+.child :hover {
+    background-color: transparent;
     border-radius: 0;
 }
+

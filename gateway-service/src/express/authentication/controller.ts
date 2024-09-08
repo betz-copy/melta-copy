@@ -1,19 +1,23 @@
 import { Request, Response } from 'express';
 import config from '../../config';
+import { UserService } from '../../externalServices/userService';
 import { ShragaUser } from '../../utils/express/passport';
+import { UsersManager } from '../users/manager';
 import { AuthenticationManager } from './manager';
 
 const { accessTokenName } = config.authentication.shragaAuthentication;
-const { systemUnavailableURL } = config.service;
 
 class AuthenticationController {
     static async createTokenAndRedirect(req: Request, res: Response) {
-        const { RelayState, id } = req.user as ShragaUser;
-        const result = AuthenticationManager.createAccessToken({ id } as Express.User);
+        const { RelayState, id } = req.user as unknown as ShragaUser;
 
-        if (!result.token) return res.redirect(`${systemUnavailableURL}?reason=${result.reason}`);
+        const user = await UserService.getUserByExternalId(id).catch(() => {});
 
-        res.cookie(accessTokenName, result.token);
+        if (user) await UsersManager.syncUser(user._id);
+
+        const token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });
+        res.cookie(accessTokenName, token);
+
         return res.redirect(RelayState || '');
     }
 }

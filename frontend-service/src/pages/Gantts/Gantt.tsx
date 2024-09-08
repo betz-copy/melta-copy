@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from 'react-query';
-import { useSearchParams } from 'react-router-dom';
 import { render } from 'react-dom';
 import {
     Day,
@@ -20,7 +19,6 @@ import {
 } from '@syncfusion/ej2-react-schedule';
 import { L10n, loadCldr } from '@syncfusion/ej2-base'; // eslint-disable-line import/no-extraneous-dependencies
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import flatten from 'lodash.flatten';
 import { CircularProgress, Grid } from '@mui/material';
@@ -39,8 +37,7 @@ import numberingSystems from '../../CLDR/hebrew/numberingSystems.json';
 import timeZoneNames from '../../CLDR/hebrew/timeZoneNames.json';
 import numbers from '../../CLDR/hebrew/numbers.json';
 import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
-import { useDynamicStyleSheet } from '../../utils/useDynamicStyleSheet';
-import { RootState } from '../../store';
+import { useDynamicStyleSheet } from '../../utils/hooks/useDynamicStyleSheet';
 import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
 import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
 import { IGantt } from '../../interfaces/gantts';
@@ -48,6 +45,8 @@ import '../../css/syncfusion/schedule.css';
 import { environment } from '../../globals';
 import { Heatmap } from './Heatmap';
 import { ScheduleToolbar } from './ScheduleToolbar';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 loadCldr(numberingSystems, caHebrew, timeZoneNames, numbers);
 L10n.load({ 'he-IL': hebrew.schedule });
@@ -63,7 +62,7 @@ interface IGanttProps {
 }
 
 export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     useDynamicStyleSheet(darkMode ? darkTheme : lightTheme);
 
     const scheduleRef = useRef<ScheduleComponent>(null);

@@ -1,13 +1,16 @@
-import React from 'react';
-import { IconButton } from '@mui/material';
 import { FileDownload as FileDownloadIcon } from '@mui/icons-material';
-import Downloader from 'js-file-downloader';
-import { toast } from 'react-toastify';
+import { IconButton } from '@mui/material';
 import i18next from 'i18next';
-import { getFileName } from '../utils/getFileName';
+import Downloader from 'js-file-downloader';
+import React from 'react';
+import { toast } from 'react-toastify';
 import { environment } from '../globals';
+import { useWorkspaceStore } from '../stores/workspace';
+import { getFileName } from '../utils/getFileName';
 
 const DownloadButton: React.FC<{ fileId: string | File }> = ({ fileId }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
 
     return (
@@ -20,6 +23,7 @@ const DownloadButton: React.FC<{ fileId: string | File }> = ({ fileId }) => {
                         url,
                         filename: fileName,
                         withCredentials: true,
+                        headers: [{ name: environment.workspaceIdHeaderName, value: workspace._id }],
                     });
 
                     if (typeof fileId !== 'string') URL.revokeObjectURL(url);

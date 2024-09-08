@@ -1,15 +1,17 @@
 import { Router } from 'express';
-import GanttsController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import GanttsController from './controller';
 import { createGanttSchema, deleteGanttSchema, getGanttByIdSchema, searchGanttsSchema, updateGanttSchema } from './validator.schema';
 
 const ganttsRouter: Router = Router();
 
-ganttsRouter.get('/:ganttId', ValidateRequest(getGanttByIdSchema), wrapController(GanttsController.getGanttById));
-ganttsRouter.post('/', ValidateRequest(createGanttSchema), wrapController(GanttsController.createGantt));
-ganttsRouter.delete('/:ganttId', ValidateRequest(deleteGanttSchema), wrapController(GanttsController.deleteGantt));
-ganttsRouter.put('/:ganttId', ValidateRequest(updateGanttSchema), wrapController(GanttsController.updateGantt));
-ganttsRouter.post('/search', ValidateRequest(searchGanttsSchema), wrapController(GanttsController.searchGantts));
+const controller = createController(GanttsController);
+
+ganttsRouter.get('/:ganttId', ValidateRequest(getGanttByIdSchema), controller.getGanttById);
+ganttsRouter.post('/', ValidateRequest(createGanttSchema), controller.createGantt);
+ganttsRouter.delete('/:ganttId', ValidateRequest(deleteGanttSchema), controller.deleteGantt);
+ganttsRouter.put('/:ganttId', ValidateRequest(updateGanttSchema), controller.updateGantt);
+ganttsRouter.post('/search', ValidateRequest(searchGanttsSchema), controller.searchGantts);
 
 export default ganttsRouter;

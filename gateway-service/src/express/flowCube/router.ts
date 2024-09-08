@@ -1,18 +1,21 @@
 import { Router } from 'express';
-import { wrapController, wrapMiddleware } from '../../utils/express';
-import { searchFlowCubeRequestSchema } from './validator.schema';
+import { createWorkspacesController, translateWorkspaceParameter, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import { InstancesValidator } from '../instances/middlewares';
 import FlowCubeController from './controller';
-import { validateUserCanSearchEntitiesOfTemplate } from '../instances/middlewares';
+import { searchFlowCubeRequestSchema } from './validator.schema';
 
 const FlowCubeRouter: Router = Router();
+const FlowCubeControllerMiddleware = createWorkspacesController(FlowCubeController);
+const InstancesValidatorMiddleware = createWorkspacesController(InstancesValidator, true);
 
 // entities
 FlowCubeRouter.post(
-    '/entities/search/template/:templateId',
+    '/:workspaceId/entities/search/template/:templateId',
     ValidateRequest(searchFlowCubeRequestSchema),
-    wrapMiddleware(validateUserCanSearchEntitiesOfTemplate),
-    wrapController(FlowCubeController.searchFlowCube),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
+    wrapMiddleware(translateWorkspaceParameter),
+    FlowCubeControllerMiddleware.searchFlowCube,
 );
 
 export default FlowCubeRouter;

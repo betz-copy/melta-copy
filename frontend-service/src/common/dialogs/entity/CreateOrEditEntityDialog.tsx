@@ -9,9 +9,9 @@ import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useMutation } from 'react-query';
-import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { v4 as uuid } from 'uuid';
+import { useLocation } from 'wouter';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
@@ -23,12 +23,12 @@ import { createEntityRequest, updateEntityRequestForMultiple } from '../../../se
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
-import { ExportFormats } from './ExportFormats';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { ChooseTemplate } from './ChooseTemplate';
 import { DraftWarningDialog } from './draftWarningDialog';
+import { ExportFormats } from './ExportFormats';
 import { toastConstraintValidationError } from './toastConstraintValidationError';
 
 const { errorCodes } = environment;
@@ -125,7 +125,7 @@ const CreateOrEditEntityDetails: React.FC<{
         },
     );
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>

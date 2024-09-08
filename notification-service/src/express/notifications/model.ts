@@ -1,8 +1,6 @@
 import * as mongoose from 'mongoose';
-import { INotificationDocument } from './interface';
-import config from '../../config';
 
-const NotificationsSchema = new mongoose.Schema(
+export const NotificationsSchema = new mongoose.Schema(
     {
         viewers: {
             type: [String],
@@ -19,7 +17,3 @@ const NotificationsSchema = new mongoose.Schema(
     },
     { timestamps: true, versionKey: false },
 );
-
-const NotificationsModel = mongoose.model<INotificationDocument>(config.mongo.notificationsCollectionName, NotificationsSchema);
-
-export default NotificationsModel;

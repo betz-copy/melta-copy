@@ -1,6 +1,6 @@
-import axios from 'axios';
-import { IMongoCategory } from './categories';
 import config from '../config';
+import { createAxiosInstance } from '../utils/axios';
+import { IMongoCategory } from './categories';
 
 const {
     url,
@@ -53,9 +53,11 @@ export interface IMongoEntityTemplate extends IEntityTemplate {
     _id: string;
 }
 
-export const createEntityTemplates = async (entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
+export const createEntityTemplates = async (workspaceId: string, entityTemplatesToCreate: IEntityTemplateMock[], categories: IMongoCategory[]) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = entityTemplatesToCreate.map((entityTemplate) => {
-        return axios.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
+        return axiosInstance.post<IMongoEntityTemplate>(url + createEntityTemplateRoute, {
             ...entityTemplate,
             category: categories.find((category) => category.name === entityTemplate.category.name)?._id,
         });

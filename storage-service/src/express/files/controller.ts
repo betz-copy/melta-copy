@@ -1,14 +1,18 @@
-import * as express from 'express';
 import * as archiver from 'archiver';
+import * as express from 'express';
+import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
-import { FilesManager } from './manager';
 import logger from '../../utils/logger/logsLogger';
+import { FilesManager } from './manager';
 
-export class FilesController {
-    static async downloadFile(req: express.Request, res: express.Response) {
+export default class FilesController extends DefaultController<FilesManager> {
+    constructor(workspaceId: string) {
+        super(new FilesManager(workspaceId));
+    }
+
+    async downloadFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        const stream = await FilesManager.downloadFile(path.toString());
-        const fileStats = await FilesManager.fileStat(path.toString());
+        const [stream, fileStats] = await Promise.all([this.manager.downloadFile(path.toString()), this.manager.fileStat(path.toString())]);
 
         res.setHeader('Content-Type', fileStats.metaData['content-type']);
         res.setHeader('Content-Disposition', `attachment; filename=${getFileName(path)}`);
@@ -16,11 +20,11 @@ export class FilesController {
         stream.pipe(res);
     }
 
-    static async downloadZip(req: express.Request, res: express.Response) {
+    async downloadZip(req: express.Request, res: express.Response) {
         try {
             const { path } = req.params;
             const fileIds = path.split('?');
-            const filesData = await FilesManager.getFilesData(fileIds);
+            const filesData = await this.manager.getFilesData(fileIds);
 
             const archive = archiver('zip', {
                 zlib: { level: 9 },
@@ -46,41 +50,41 @@ export class FilesController {
         }
     }
 
-    static async uploadFile(req: express.Request, res: express.Response) {
-        res.json(FilesManager.uploadFile(req.file));
+    async uploadFile(req: express.Request, res: express.Response) {
+        res.json(this.manager.uploadFile(req.file));
     }
 
-    static async uploadFiles(req: express.Request, res: express.Response) {
-        res.json(await FilesManager.uploadFiles(req.files as Express.Multer.File[]));
+    async uploadFiles(req: express.Request, res: express.Response) {
+        res.json(await this.manager.uploadFiles(req.files as Express.Multer.File[]));
     }
 
-    static async listFiles(_req: express.Request, res: express.Response) {
-        res.json(await FilesManager.listFiles());
+    async listFiles(_req: express.Request, res: express.Response) {
+        res.json(await this.manager.listFiles());
     }
 
-    static async duplicateFile(req: express.Request, res: express.Response) {
+    async duplicateFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await FilesManager.duplicateFile(path));
+        res.json(await this.manager.duplicateFile(path));
     }
 
-    static async duplicateFiles(req: express.Request, res: express.Response) {
+    async duplicateFiles(req: express.Request, res: express.Response) {
         const { paths } = req.body;
 
-        res.json(await FilesManager.duplicateFiles(paths));
+        res.json(await this.manager.duplicateFiles(paths));
     }
 
-    static async fileStat(req: express.Request, res: express.Response) {
+    async fileStat(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await FilesManager.fileStat(path));
+        res.json(await this.manager.fileStat(path));
     }
 
-    static async deleteFile(req: express.Request, res: express.Response) {
+    async deleteFile(req: express.Request, res: express.Response) {
         const { path } = req.params;
-        res.json(await FilesManager.deleteFile(path));
+        res.json(await this.manager.deleteFile(path));
     }
 
-    static async deleteFiles(req: express.Request, res: express.Response) {
+    async deleteFiles(req: express.Request, res: express.Response) {
         const { paths } = req.body;
-        res.json(await FilesManager.deleteFiles(paths));
+        res.json(await this.manager.deleteFiles(paths));
     }
 }

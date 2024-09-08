@@ -1,0 +1,7 @@
+.card .actionMenu {
+    visibility: hidden;
+}
+
+.card:hover .actionMenu {
+    visibility: visible;
+}

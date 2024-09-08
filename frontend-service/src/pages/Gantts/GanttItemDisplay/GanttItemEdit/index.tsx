@@ -3,15 +3,14 @@ import { Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
 import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { getGanttItemEditDetails, getRelationshipString } from '../../../../utils/gantts';
 import { EditConnectedEntityTemplates } from './EditConnectedEntityTemplates.tsx';
-import { RootState } from '../../../../store';
 import { RemoveFromArrayButton } from './RemoveFromArrayButton';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface IGanttItemEditProps {
     ganttItem: IGanttItem;
@@ -20,7 +19,7 @@ interface IGanttItemEditProps {
 }
 
 export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index, formik }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { values, setFieldValue } = formik;
 
