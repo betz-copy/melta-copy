@@ -1,8 +1,12 @@
 import { Request, Response } from 'express';
 import { RequestWithPermissionsOfUserId } from '../instances/middlewares';
 import { IFrameManager } from './manager';
+import DefaultController from '../../utils/express/controller';
 
-class IFrameController {
+export class IFrameController  extends DefaultController<IFrameManager> {
+    // constructor(workspaceId: string) {
+    //     super(new IFrameManager(workspaceId));
+    // }
     static async searchIFrames(req: Request, res: Response) {
         const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 

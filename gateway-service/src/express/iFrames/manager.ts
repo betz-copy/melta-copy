@@ -3,22 +3,32 @@ import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { ServiceError } from '../error';
 import IFrameModel from './model';
 import { IFrame, IFrameDocument } from './interface';
-import { IPermissionsOfUser } from '../permissions/interfaces';
-import { deleteFile, uploadFile } from '../../externalServices/storageService';
+import { StorageService } from '../../externalServices/storageService';
 import { removeTmpFile } from '../../utils/fs';
-import { getAllowedCategories } from './middlewares';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
+import DefaultManagerProxy from '../../utils/express/manager';
 
-export class IFrameManager {
-    private static filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
+export class IFrameManager extends DefaultManagerProxy {
+    private storageService: StorageService;
+
+    constructor(workspaceId: string) {
+        super(null);
+        this.storageService = new StorageService(workspaceId);
+    }
+    private filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId)));
     }
 
-    static escapeRegExp(text: string) {
+    escapeRegExp(text: string) {
         return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
     }
 
-    static async searchIFrames({ search, limit, skip, ids }: ISearchIFramesBody, permissionsOfUserId: Omit<IPermissionsOfUser, 'user'>) {
-        const allowedCategories: string[] = getAllowedCategories(permissionsOfUserId);
+    async searchIFrames(
+        { search, limit, skip, ids }: ISearchIFramesBody,
+        permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
+    ) {
+        const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
+
         const query: FilterQuery<IFrameDocument> = {};
         if (search) {
             const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
@@ -28,23 +38,24 @@ export class IFrameManager {
         const iFrames = await IFrameModel.find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
             .lean()
             .exec();
-        const filteredIFrames = this.filterIFramesWithPermissions(iFrames, allowedCategories);
+
+        const filteredIFrames = permissionsOfUserId.admin?.scope ? iFrames : this.filterIFramesWithPermissions(iFrames, allowedCategories);
 
         if (ids) return ids?.map((id) => filteredIFrames.find((iFrame) => iFrame._id.toString() === id)).filter(Boolean);
 
         return filteredIFrames;
     }
 
-    static async getIFrameById(iFrameId: string) {
+    async getIFrameById(iFrameId: string) {
         const iFrame = await IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
-    
+
         return iFrame;
     }
 
-    static async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
+    async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
         let newIFrame;
         if (file) {
-            const newFileId = await uploadFile(file);
+            const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
@@ -52,11 +63,11 @@ export class IFrameManager {
         return IFrameModel.create(newIFrame);
     }
 
-    static deleteIFrame(iFrameId: string) {
+    deleteIFrame(iFrameId: string) {
         return IFrameModel.findByIdAndDelete(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
-    static async update(
+    async update(
         id: string,
         updatedIFrame: Partial<IFrame> & {
             file?: string;
@@ -68,24 +79,24 @@ export class IFrameManager {
             .exec();
     }
 
-    static async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
-        const { iconFileId } = await IFrameManager.getIFrameById(iFrameId);
+    async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
+        const { iconFileId } = await this.getIFrameById(iFrameId);
         let updatedIFrame;
 
         if (file) {
             if (iconFileId) {
-                await deleteFile(iconFileId);
+                await this.storageService.deleteFile(iconFileId);
             }
 
-            const newFileId = await uploadFile(file);
+            const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
 
-            updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: newFileId });
+            updatedIFrame = await this.update(iFrameId, { ...updatedData, iconFileId: newFileId });
         } else if (iconFileId && !updatedData.iconFileId) {
-            await deleteFile(iconFileId);
+            await this.storageService.deleteFile(iconFileId);
 
-            updatedIFrame = await IFrameManager.update(iFrameId, { ...updatedData, iconFileId: null });
-        } else updatedIFrame = await IFrameManager.update(iFrameId, updatedData);
+            updatedIFrame = await this.update(iFrameId, { ...updatedData, iconFileId: null });
+        } else updatedIFrame = await this.update(iFrameId, updatedData);
 
         return updatedIFrame;
     }

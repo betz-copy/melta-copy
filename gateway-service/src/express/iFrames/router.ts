@@ -2,13 +2,16 @@ import { Router } from 'express';
 import multer from 'multer';
 import IFramesController from './controller';
 import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
-import { wrapController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController, wrapController, wrapMiddleware } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame, validateUserCanUpdateIFrame } from './middlewares';
 import config from '../../config';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 export const iFramesRouter: Router = Router();
+const IFramesControllerMiddleware = createWorkspacesController(IFramesController);
+const IFramesValidatorMiddleware = createWorkspacesController(IFramesValidator, true);
 
 const {
     service: { uploadsFolderPath },
@@ -17,9 +20,13 @@ const {
 iFramesRouter.get(
     '/:iFrameId',
     ValidateRequest(getIFrameByIdSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapMiddleware(validateUserCanGetIFrame),
-    wrapController(IFramesController.getIFrameById),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    IFramesValidatorMiddleware.validateUserCanGetIFrame,
+
+    // wrapMiddleware(validateUserHasAtLeastSomePermissions),
+    // wrapMiddleware(validateUserCanGetIFrame),
+    // wrapController(IFramesController.getIFrameById),
+//
 );
 
 iFramesRouter.post(
