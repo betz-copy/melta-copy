@@ -55,6 +55,11 @@ const searchRelationshipTemplates = async (searchBody: ISearchRelationshipTempla
     return data;
 };
 
+const getAllRelationshipTemplatesRequest = async () => {
+    const { data } = await axios.get<IMongoRelationshipTemplate[]>(`${relationshipTemplates}/all`);
+    return data;
+};
+
 export {
     createRelationshipTemplateRequest,
     updateRelationshipTemplateRequest,
@@ -62,4 +67,5 @@ export {
     relationshipTemplateObjectToRelationshipTemplateForm,
     relationshipTemplateFormToRelationshipTemplateObject,
     searchRelationshipTemplates,
+    getAllRelationshipTemplatesRequest,
 };

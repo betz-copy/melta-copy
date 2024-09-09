@@ -1,11 +1,13 @@
-import axios from 'axios';
 // @ts-ignore
-import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import axios, { AxiosError } from 'axios';
+import { JSONSchemaFaker } from 'json-schema-faker';
 import * as pLimit from 'p-limit';
 import config from './config';
+import { IRelationship } from './interfaces/relationships';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
+import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
@@ -20,15 +22,25 @@ const {
     isAliveRoute,
 } = config.instanceService;
 
-export const createInstances = async (entityTemplates: IMongoEntityTemplate[], chance: Chance.Chance, fileId: string) => {
-    format('fileId', (_value) => fileId);
+export const createInstances = async (
+    workspaceId: string,
+    userId: string,
+    entityTemplates: IMongoEntityTemplate[],
+    chance: Chance.Chance,
+    fileId: string,
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
+    JSONSchemaFaker.format('fileId', (_value) => fileId);
+
     const promises = entityTemplates
         .map((entityTemplate) => {
             return Array.from({ length: chance.integer({ min: minNumberOfEntities, max: maxNumberOfEntities }) }, () =>
                 limit(() =>
-                    axios.post(url + createEntityRoute, {
-                        properties: generate(entityTemplate.properties),
+                    axiosInstance.post(url + createEntityRoute, {
+                        properties: JSONSchemaFaker.generate(entityTemplate.properties),
                         templateId: entityTemplate._id,
+                        userId,
                     }),
                 ),
             );
@@ -41,10 +53,14 @@ export const createInstances = async (entityTemplates: IMongoEntityTemplate[], c
 };
 
 export const createRelationshipInstances = async (
+    workspaceId: string,
+    userId: string,
     entities: { properties: { _id: string }; templateId: string }[],
     relationshipTemplates: IMongoRelationshipTemplate[],
     chance: Chance.Chance,
 ) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = relationshipTemplates
         .map((relationshipTemplate) => {
             const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
@@ -56,16 +72,24 @@ export const createRelationshipInstances = async (
                     relevantDestinationEntities[chance.integer({ min: 0, max: relevantDestinationEntities.length - 1 })].properties._id;
 
                 return limit(async () => {
-                    const { result } = await trycatch(() =>
-                        axios.post(url + createRelationshipRoute, {
+                    try {
+                        const { data } = await axiosInstance.post<IRelationship>(url + createRelationshipRoute, {
                             relationshipInstance: {
                                 sourceEntityId,
                                 destinationEntityId,
                                 templateId: relationshipTemplate._id,
                             },
-                        }),
-                    );
-                    return result;
+                            userId,
+                        });
+                        return data;
+                    } catch (error) {
+                        if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
+                            console.log('Relationship already exists, skipping...');
+                            return;
+                        }
+
+                        throw error;
+                    }
                 });
             });
         })
@@ -73,7 +97,7 @@ export const createRelationshipInstances = async (
 
     const results = await Promise.all(promises);
 
-    return results.map((result) => result?.data);
+    return results.filter(Boolean) as IRelationship[];
 };
 
 export const isInstanceServiceAlive = async () => {

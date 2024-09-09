@@ -1,25 +1,24 @@
+import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { useSearchParams } from 'react-router-dom';
-import i18next from 'i18next';
-import { ICategoryMap } from '../../interfaces/categories';
-
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import StartPageSearch from './components/StartPageSearch';
 import EntitiesPage from '../../common/EntitiesPage';
+import { ICategoryMap } from '../../interfaces/categories';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { useUserStore } from '../../stores/user';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import StartPageSearch from './components/StartPageSearch';
 
 const GlobalSearch: React.FC<{}> = () => {
-    const queryClient = useQueryClient();
+    const currentUser = useUserStore((state) => state.user);
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const allowedCategories = Array.from(categories.values()).filter((category) =>
-        myPermissions.instancesPermissions.some(({ category: categoryId }) => categoryId === category._id),
-    );
+    const allowedCategories = currentUser.currentWorkspacePermissions.admin
+        ? Array.from(categories.values())
+        : Array.from(categories.values()).filter((category) => Boolean(currentUser.currentWorkspacePermissions.instances?.categories[category._id]));
 
     const allowedTemplates = Array.from(entityTemplates.values()).filter((entityTemplate) =>
         allowedCategories.find((category) => category._id === entityTemplate.category._id),
@@ -29,7 +28,7 @@ const GlobalSearch: React.FC<{}> = () => {
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 
     return urlSearchParams.get('search') === null ? (
-        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue })} />
+        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue, viewMode: 'templates-tables-view' })} />
     ) : (
         <EntitiesPage
             pageType="globalSearch"

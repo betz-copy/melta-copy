@@ -1,30 +1,46 @@
-import { FilterQuery, Document } from 'mongoose';
-import RelationshipTemplateModel from './model';
-import { IRelationshipTemplate } from './interface';
-import { ServiceError } from '../error';
+import { ClientSession, Document, FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
+import { ServiceError } from '../error';
+import { IMongoRelationshipTemplate, IRelationshipTemplate } from './interface';
+import { RelationshipTemplateSchema } from './model';
 
-export class RelationshipTemplateManager {
-    static getTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelationshipTemplate> {
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.relationshipTemplatesCollectionName, RelationshipTemplateSchema);
     }
 
-    static async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
-        return RelationshipTemplateModel.findByIdAndUpdate(templateId, updatedFields, { new: true })
+    async getTemplateById(templateId: string) {
+        return this.model.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+    }
+
+    async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>, session?: ClientSession) {
+        return this.model
+            .findByIdAndUpdate(templateId, updatedFields, { new: true, session })
             .orFail(new ServiceError(404, 'Relationship Template not found'))
             .lean()
             .exec();
     }
 
-    static deleteTemplateById(templateId: string) {
-        return RelationshipTemplateModel.findByIdAndDelete(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+    async deleteTemplateById(templateId: string, session?: ClientSession) {
+        return this.model.findByIdAndDelete(templateId, { session }).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
     }
 
-    static async createTemplate(relationshipTemplate: IRelationshipTemplate) {
-        return RelationshipTemplateModel.create(relationshipTemplate);
+    async deleteManyTemplatesByIds(templateIds: string[], session?: ClientSession) {
+        const { deletedCount } = await this.model
+            .deleteMany({ _id: { $in: templateIds } }, { session })
+            .lean()
+            .exec();
+
+        if (deletedCount !== templateIds.length) throw new ServiceError(404, 'Some Relationship Templates not found');
     }
 
-    static searchTemplates(searchBody: {
+    async createTemplate(relationshipTemplate: IRelationshipTemplate, session?: ClientSession) {
+        return session ? this.model.create([relationshipTemplate], { session }).then((res) => res[0]) : this.model.create(relationshipTemplate);
+    }
+
+    async searchTemplates(searchBody: {
         search?: string;
         ids?: string[];
         sourceEntityIds?: string[];
@@ -51,7 +67,7 @@ export class RelationshipTemplateManager {
             query.destinationEntityId = { $in: destinationEntityIds };
         }
 
-        return RelationshipTemplateModel.find(query).limit(limit).skip(skip).lean().exec();
+        return this.model.find(query).limit(limit).skip(skip).lean().exec();
     }
 }
 

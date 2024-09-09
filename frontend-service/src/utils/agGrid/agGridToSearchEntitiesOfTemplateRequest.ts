@@ -217,7 +217,7 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
         skip: startRow,
-        limit: endRow - startRow + 1,
+        limit: endRow - startRow,
         textSearch: quickFilter,
         filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,

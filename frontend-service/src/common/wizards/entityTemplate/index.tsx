@@ -14,6 +14,10 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { UploadExportFormats } from './UploadExportFormats';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
+import { mapTemplates } from '../../../utils/templates';
 
 const { errorCodes } = environment;
 
@@ -30,6 +34,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     required: boolean;
     preview: boolean;
     hide: boolean;
+    readOnly?: true;
     id: string;
     uniqueCheckbox?: boolean;
     groupName?: string;
@@ -38,16 +43,23 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
     isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints'
+        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
+    documentTemplatesIds?: File[];
 }
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -70,12 +82,16 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
     },
+    {
+        label: i18next.t('wizard.entityTemplate.exportDocuments'),
+        component: (props) => <UploadExportFormats {...props} />,
+    },
 ];
 
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = {
         name: '',
         displayName: '',
@@ -86,33 +102,41 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
+        documentTemplatesIds: [],
     },
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
 
     const { isLoading, mutateAsync } = useMutation(
-        (enitiyTemplate: EntityTemplateWizardValues) =>
+        (entityTemplate: EntityTemplateWizardValues) =>
             isEditMode
-                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, enitiyTemplate)
-                : createEntityTemplateRequest(enitiyTemplate),
+                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate)
+                : createEntityTemplateRequest(entityTemplate),
         {
-            onSuccess: (data) => {
+            onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
                 queryClient.invalidateQueries(['searchEntityTemplates']);
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.entityTemplate.editedSuccefully'));
+                    toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
                 }
+
+                try {
+                    const relationshipTemplates = await getAllRelationshipTemplatesRequest();
+                    queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
+                } catch (error) {
+                    toast.error(i18next.t('wizard.failedToUpdateSystemData'));
+                }
                 handleClose();
             },
-            onError: (error: AxiosError, enitiyTemplateValues) => {
+            onError: (error: AxiosError, entityTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(enitiyTemplateValues);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
@@ -152,12 +176,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.entityTemplate.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

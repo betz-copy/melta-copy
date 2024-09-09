@@ -51,9 +51,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
             {inputType === 'chooseFromOptions' && (
                 <Grid item>
                     <IconPicker
-                        width="38rem"
+                        width="70rem"
                         height="21rem"
-                        iconsPerPage={70}
+                        iconsPerPage={130}
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
                             const detailedFile = { file: icon, name: icon.name };

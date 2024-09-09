@@ -1,5 +1,5 @@
-import axios from 'axios';
 import config from '../config';
+import { createAxiosInstance } from '../utils/axios';
 import { IMongoEntityTemplate } from './entityTemplates';
 
 const {
@@ -20,9 +20,15 @@ export interface IMongoRelationshipTemplate extends Omit<IRelationshipTemplate, 
     _id: string;
 }
 
-export const createRelationshipTemplates = async (relationshipTemplates: IRelationshipTemplate[], entityTemplates: IMongoEntityTemplate[]) => {
+export const createRelationshipTemplates = async (
+    workspaceId: string,
+    relationshipTemplates: IRelationshipTemplate[],
+    entityTemplates: IMongoEntityTemplate[],
+) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = relationshipTemplates.map((relationshipTemplate) => {
-        return axios.post<IMongoRelationshipTemplate>(url + createRelationshipTemplateRoute, {
+        return axiosInstance.post<IMongoRelationshipTemplate>(url + createRelationshipTemplateRoute, {
             ...relationshipTemplate,
             sourceEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.sourceEntityId.name === entityTemplate.name)?._id,
             destinationEntityId: entityTemplates.find((entityTemplate) => relationshipTemplate.destinationEntityId.name === entityTemplate.name)?._id,

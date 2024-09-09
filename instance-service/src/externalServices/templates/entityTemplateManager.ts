@@ -1,23 +1,29 @@
-import config from '../../config';
 import { TemplatesManagerService } from '.';
+import config from '../../config';
 import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from './interfaces/entityTemplates';
 
 const {
     templateService: {
-        entities: { getByIdRoute, searchRoute },
+        entities: { getByIdRoute, searchRoute, getRelatedByIdRoute },
     },
 } = config;
 
 export class EntityTemplateManagerService extends TemplatesManagerService {
     // entity templates
-    static async getEntityTemplateById(id: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
+    async getEntityTemplateById(id: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate>(`${getByIdRoute}/${id}`);
 
         return data;
     }
 
-    static async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoEntityTemplate[]>(searchRoute, body);
+    async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
+        const { data } = await this.api.get<IMongoEntityTemplate[]>(`${getRelatedByIdRoute}/${relatedTemplateId}`);
+
+        return data;
+    }
+
+    async searchEntityTemplates(body: ISearchEntityTemplatesBody = {}) {
+        const { data } = await this.api.post<IMongoEntityTemplate[]>(searchRoute, body);
 
         return data;
     }

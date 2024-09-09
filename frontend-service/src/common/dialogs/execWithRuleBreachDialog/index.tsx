@@ -2,13 +2,12 @@ import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogT
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
-import { RootState } from '../../../store';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const ExecWithRuleBreachDialog: React.FC<{
     isSubmitting: boolean;
@@ -21,7 +20,7 @@ const ExecWithRuleBreachDialog: React.FC<{
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
         const rule = rules.get(ruleId)!;
@@ -42,7 +41,7 @@ const ExecWithRuleBreachDialog: React.FC<{
                     : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
             </DialogTitle>
             <DialogContent>
-                <RuleBreachInfo brokenRules={brokenRules} actionType={actionType} actionMetadata={actionMetadata} isCompact={false} />
+                <RuleBreachInfo brokenRules={brokenRules} actions={[{ actionType, actionMetadata }]} isCompact={false} />
             </DialogContent>
             <DialogActions>
                 <Button onClick={onCancel}>{i18next.t('execActionWithRuleBreach.cancel')}</Button>

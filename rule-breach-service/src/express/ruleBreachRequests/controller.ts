@@ -1,47 +1,55 @@
 import { Request, Response } from 'express';
-import { RuleBreachRequestsManager } from './manager';
+import DefaultController from '../../utils/express/controller';
+import { IRuleBreachRequest } from './interface';
+import RuleBreachRequestsManager from './manager';
 
-class RuleBreachRequestsController {
-    static async searchRuleBreachRequests(req: Request, res: Response) {
-        res.json(await RuleBreachRequestsManager.searchRuleBreachRequests(req.body));
+export default class RuleBreachRequestsController extends DefaultController<IRuleBreachRequest, RuleBreachRequestsManager> {
+    constructor(workspaceId: string) {
+        super(new RuleBreachRequestsManager(workspaceId));
     }
 
-    static async createRuleBreachRequest(req: Request, res: Response) {
-        res.json(await RuleBreachRequestsManager.createRuleBreachRequest(req.body));
+    async searchRuleBreachRequests(req: Request, res: Response) {
+        res.json(await this.manager.searchRuleBreachRequests(req.body));
     }
 
-    static async updateRuleBreachRequestStatus(req: Request, res: Response) {
+    async getManyRuleBreachRequests(req: Request, res: Response) {
+        res.json(await this.manager.getManyRuleBreachRequests(req.body.rulesBreachIds));
+    }
+
+    async createRuleBreachRequest(req: Request, res: Response) {
+        res.json(await this.manager.createRuleBreachRequest(req.body));
+    }
+
+    async updateRuleBreachRequestStatus(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { reviewerId, status } = req.body;
 
-        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
+        res.json(await this.manager.updateRuleBreachRequestStatus(ruleBreachRequestId, reviewerId, status));
     }
 
-    static async updateRuleBreachRequestActionMetadata(req: Request, res: Response) {
+    async updateRuleBreachRequestActionsMetadatas(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
-        const { actionType, actionMetadata } = req.body;
+        const { actions } = req.body;
 
-        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestActionMetadata(ruleBreachRequestId, actionType, actionMetadata));
+        res.json(await this.manager.updateRuleBreachRequestActionsMetadatas(ruleBreachRequestId, actions));
     }
 
-    static async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {
+    async updateRuleBreachRequestBrokenRules(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
         const { brokenRules } = req.body;
 
-        res.json(await RuleBreachRequestsManager.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, brokenRules));
+        res.json(await this.manager.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, brokenRules));
     }
 
-    static async getRuleBreachRequestById(req: Request, res: Response) {
+    async getRuleBreachRequestById(req: Request, res: Response) {
         const { ruleBreachRequestId } = req.params;
 
-        res.json(await RuleBreachRequestsManager.getRuleBreachRequestById(ruleBreachRequestId));
+        res.json(await this.manager.getRuleBreachRequestById(ruleBreachRequestId));
     }
 
-    static async getRuleBreachRequestsByRuleId(req: Request, res: Response) {
+    async getRuleBreachRequestsByRuleId(req: Request, res: Response) {
         const { ruleId } = req.params;
 
-        res.json(await RuleBreachRequestsManager.getRuleBreachRequestsByRuleId(ruleId));
+        res.json(await this.manager.getRuleBreachRequestsByRuleId(ruleId));
     }
 }
-
-export default RuleBreachRequestsController;

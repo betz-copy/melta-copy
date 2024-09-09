@@ -1,18 +1,11 @@
+import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
-import * as apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
+import initializeRabbit from './utils/rabbit';
 
-const { mongo, service, logs } = config;
-
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
+const { mongo, service } = config;
 
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
@@ -24,6 +17,8 @@ const initializeMongo = async () => {
 
 const main = async () => {
     await initializeMongo();
+
+    await initializeRabbit();
 
     const server = new Server(service.port);
 

@@ -2,6 +2,19 @@ import { Request } from 'express';
 import Joi from 'joi';
 import { wrapValidator } from './express';
 
+const validateProperties = (value, helpers) => {
+    const properties = value;
+    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true);
+
+    for (const key of requiredFields) {
+        if (properties[key].required && properties[key].readOnly) {
+            return helpers.message(`Property ${key} is readOnly and cannot be required`);
+        }
+    }
+
+    return value;
+};
+
 export const ExtendedJoi = Joi.extend(
     {
         base: Joi.object(),
@@ -11,7 +24,10 @@ export const ExtendedJoi = Joi.extend(
         },
         coerce: (value: string, helpers) => {
             try {
-                return { value: JSON.parse(value) };
+                let parsedValue = JSON.parse(value);
+                if ('required' in parsedValue && 'type' in parsedValue && 'hide' in parsedValue)
+                    parsedValue = validateProperties(parsedValue, helpers);
+                return { value: parsedValue };
             } catch {
                 return { errors: [helpers.error('string.object')] };
             }
@@ -37,6 +53,14 @@ export const MongoIdSchema = Joi.string().regex(/^[0-9a-fA-F]{24}$/, 'valid Mong
 
 export const ColorSchema = Joi.string().regex(/^#[A-Fa-f0-9]{6}$/);
 
+export const FilePathSchema = Joi.string()
+    .regex(/^\/.*[^/]$/, 'valid file path')
+    .allow('/');
+
+export const HexColorSchema = Joi.string().regex(/^#(?:[0-9a-fA-F]{3}){1,2}$/, 'valid hex color');
+
+export const WorkspaceNameSchema = Joi.string().regex(/^[a-zA-Z0-9_-]+$/, 'valid workspace name');
+
 export const fileSchema = Joi.object({
     fieldname: Joi.string().required(),
     originalname: Joi.string().required(),
@@ -49,6 +73,12 @@ export const fileSchema = Joi.object({
 export const iconFileSchema = fileSchema.keys({
     originalname: Joi.string()
         .regex(/\.(svg|png)$/)
+        .required(),
+});
+
+export const documentTemplateSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(docx)$/)
         .required(),
 });
 

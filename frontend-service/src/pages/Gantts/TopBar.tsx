@@ -11,12 +11,7 @@ import {
     GridView as HeatmapModeIcon,
 } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { useSearchParams } from 'react-router-dom';
-import { RootState } from '../../store';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
@@ -25,6 +20,10 @@ import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const {
     separators,
@@ -43,15 +42,14 @@ interface IGanttTopBar {
 }
 
 export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, onDelete, onAddGroupBy, edit, isGroupBy, isLoading }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [searchParams, setSearchParams] = useSearchParams();
     const heatmapMode = Boolean(searchParams.get(heatmapModeKey));
 
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const currentUser = useUserStore((state) => state.user);
 
     const titleError = formik.touched.name && formik.errors.name;
 
@@ -81,7 +79,8 @@ export const GanttsTopBar: React.FC<IGanttTopBar> = ({ title, formik, onEdit, on
                     }
                 />
 
-                {myPermissions.templatesManagementId && (
+                {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                    currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                     <Grid item container wrap="nowrap" flexDirection="row-reverse" marginLeft="auto">
                         <Swap
                             condition={edit}

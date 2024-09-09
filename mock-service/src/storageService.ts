@@ -1,12 +1,15 @@
 import * as fs from 'fs';
-import axios from 'axios';
 import * as path from 'path';
-import FormData = require('form-data');
 import config from './config';
 import { trycatch } from './utils';
+import { createAxiosInstance } from './utils/axios';
+import FormData = require('form-data');
+import axios from 'axios';
 
 const { url, uploadFileRoute, fileData, fileName, isAliveRoute } = config.storageService;
-export const uploadFile = async () => {
+export const uploadFile = async (workspaceId: string) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const filePath = path.join(__dirname, fileName);
 
     try {
@@ -15,7 +18,7 @@ export const uploadFile = async () => {
         const formData = new FormData();
         formData.append('file', fs.createReadStream(filePath));
 
-        const { data } = await axios.post(url + uploadFileRoute, formData, {
+        const { data } = await axiosInstance.post(url + uploadFileRoute, formData, {
             headers: formData.getHeaders(),
         });
 

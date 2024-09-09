@@ -1,4 +1,4 @@
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../users';
 import { InstanceProperties, Status } from './processInstance';
 
 export interface IStepInstance {

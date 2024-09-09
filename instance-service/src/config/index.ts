@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     neo4j: {
@@ -12,19 +13,31 @@ const config = {
             username: env.get('NEO4J_USERNAME').default('neo4j').asString(),
             password: env.get('NEO4J_PASSWORD').default('test').asString(),
         },
-        database: env.get('NEO4J_DATABASE').default('neo4j').asString(),
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
+        relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
+        mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
+        workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
+    },
+    rabbit: {
+        url: env.get('RABBIT_URL').required().asUrlString(),
+        retryOptions: {
+            minTimeout: env.get('RABBIT_RETRY_MIN_TIMEOUT').default(1000).asIntPositive(),
+            retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
+            factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
+        },
+        activityLogQueue: env.get('ACTIVITY_LOG_QUEUE_NAME').default('activity-log-queue').asString(),
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
         timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
         entities: {
             getByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_BY_ID_ROUTE').default('/api/templates/entities').asString(),
+            getRelatedByIdRoute: env.get('TEMPLATE_SERVICE_ENTITIES_GET_RELATED_BY_ID_ROUTE').default('/api/templates/entities/related').asString(),
             searchRoute: env.get('TEMPLATE_SERVICE_ENTITIES_SEARCH_ROUTE').default('/api/templates/entities/search').asString(),
         },
         relationships: {
@@ -57,15 +70,12 @@ const config = {
     requiredConstraintsPrefixName: env.get('REQUIRED_CONSTRAINTS_PREFIX_NAME').default('requiredConstraint').asString(),
     requiredConstraint: env.get('REQUIRED_CONSTRAINT').default('requiredConstraint').asString(),
     uniqueConstraint: env.get('UNIQUE_CONSTRAINT').default('uniqueConstraint').asString(),
-
     constraintsNameDelimiter: env.get('CONSTRAINTS_NAME_DELIMITER').default('-').asString(), // default "-" because template properties cant have "-" chars (variableName format validation)
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
     cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
     cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
-        enableApm: env.get('ENABLE_APM').default('true').asBool(),
-        apmServerUrl: env.get('APM_SERVER_URL').default('http://apm-server:8200').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
         enableRotateFile: env.get('ENABLE_ROTATE_FILE_LOGGING').default('true').asBool(),
         label: env.get('LOG_LABEL').default('instance').asString(),

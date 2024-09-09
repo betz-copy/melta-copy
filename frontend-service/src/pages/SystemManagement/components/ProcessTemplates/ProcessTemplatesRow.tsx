@@ -67,7 +67,7 @@ const ProcessTemplatesRow: React.FC = () => {
                         style={{ borderRadius: '5px' }}
                         onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
                     >
-                        <img src="icons/Add-New-Process.svg" />
+                        <img src="/icons/Add-New-Process.svg" />
                     </IconButton>
                 </Grid>
             </Grid>

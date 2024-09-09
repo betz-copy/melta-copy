@@ -1,9 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import sortBy from 'lodash.sortby';
-import { Box } from '@mui/material';
-import pickBy from 'lodash.pickby';
-import isEqual from 'lodash.isequal';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
     ColumnMovedEvent,
     ColumnResizedEvent,
@@ -15,33 +10,38 @@ import {
     PaginationChangedEvent,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@noam7700/ag-grid-enterprise-core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import '../../css/table.css';
-import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
-import { trycatch } from '../../utils/trycatch';
-import { LocalStorage } from '../../utils/localStorage';
-import { environment } from '../../globals';
-import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
-import { ResizeBox } from '../EntitiesPage/ResizeBox';
+import { Box } from '@mui/material';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import '@noam7700/ag-grid-enterprise-core';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
+import i18next from 'i18next';
+import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
+import sortBy from 'lodash.sortby';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
-import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import '../../css/table.css';
+import { environment } from '../../globals';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
+import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
+import { LocalStorage } from '../../utils/localStorage';
+import { trycatch } from '../../utils/trycatch';
+import { ResizeBox } from '../EntitiesPage/ResizeBox';
+import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -65,7 +65,16 @@ export const getDatasource = <Data extends any = IEntity>(
     mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
     return {
+        // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
+            if (rowData && mainEntity) {
+                params.success({
+                    rowData,
+                    rowCount: rowData.length,
+                });
+                return;
+            }
+
             const agGridRequest = params.request;
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
@@ -73,26 +82,15 @@ export const getDatasource = <Data extends any = IEntity>(
                     agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
                 ),
             );
+
             if (err || !data) {
                 onFail?.(err);
                 params.fail();
                 return;
             }
-
-            let filteredRowData: IEntity[] = data.entities.map(({ entity }) => entity);
-            if (rowData && mainEntity) {
-                const rowDataIds =
-                    rowData.map((connection) => {
-                        if (connection.destinationEntity.properties._id === mainEntity.entity.properties._id)
-                            return connection.sourceEntity.properties._id;
-                        return connection.destinationEntity.properties._id;
-                    }) ?? [];
-                filteredRowData = filteredRowData.filter((entity) => rowDataIds.includes(entity.properties._id));
-            }
-
             params.success({
-                rowData: filteredRowData,
-                rowCount: filteredRowData.length,
+                rowData: data.entities.map(({ entity }) => entity),
+                rowCount: data.count,
             });
         },
     };
@@ -117,26 +115,15 @@ const getRowModelProps = <Data extends any = IEntity>(
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
-    if (rowModelType === 'serverSide') {
-        return {
-            rowModelType,
-            serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-            cacheBlockSize: 50,
-            maxBlocksInCache: 10,
-            pagination: true,
-            paginationPageSize,
-        };
-    }
-
-    // 'infinite' row model type
+    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
     return {
         rowModelType: 'serverSide',
-        pagination: false,
         serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize: 50,
-        maxBlocksInCache: 10,
-        maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 50,
+        cacheBlockSize,
+        maxBlocksInCache,
+        pagination: rowModelType === 'serverSide',
+        paginationPageSize,
+        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
     };
 };
 
@@ -215,7 +202,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
-        const navigate = useNavigate();
+        const [_, navigate] = useLocation();
 
         const gridRef = useRef<AgGridReact<Data>>(null);
         // height of table includes statusbar and titles
@@ -263,6 +250,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     if (!gridApi) return;
                     const isSideBarOpen = gridApi.isToolPanelShowing();
                     gridApi.setSideBarVisible(!isSideBarOpen);
+                    // eslint-disable-next-line no-unused-expressions
                     isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
             };
@@ -435,7 +423,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     }}
                     suppressCsvExport
                     suppressContextMenu
-                    onToolPanelVisibleChanged={(params) => {
+                    onToolPanelVisibleChanged={() => {
                         const gridApi = gridRef.current?.api;
                         if (!gridApi) return;
                         const isSideBarOpen = gridApi.isToolPanelShowing();

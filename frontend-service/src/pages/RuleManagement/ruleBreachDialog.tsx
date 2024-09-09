@@ -3,18 +3,18 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { useSelector } from 'react-redux';
 import RuleBreachInfo from '../../common/ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IPermissionsOfUser } from '../../services/permissionsService';
-import { RootState } from '../../store';
 import { environment } from '../../globals';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const { errorCodes } = environment;
 
@@ -26,12 +26,8 @@ const RuleBreachDialog: React.FC<{
     handleClose: () => void;
     onUpdatedRuleBreach: (ruleBreachRequest: IRuleBreachRequestPopulated) => void;
 }> = ({ isOpen, handleClose, ruleBreach, breachType, refreshBreaches, onUpdatedRuleBreach }) => {
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-
-    const { rulesManagementId } = myPermissions;
+    const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { mutateAsync: updateRequestStatus, isLoading: isLoadingReviewRuleBrach } = useMutation(
         (status: RuleBreachRequestStatus) => {
@@ -114,14 +110,14 @@ const RuleBreachDialog: React.FC<{
                 <RuleBreachInfo
                     originUser={ruleBreach.originUser}
                     brokenRules={ruleBreach.brokenRules}
-                    actionType={ruleBreach.actionType}
-                    actionMetadata={ruleBreach.actionMetadata}
+                    actions={ruleBreach.actions}
                     isCompact={false}
                 />
             </DialogContent>
             {breachType === 'request' &&
                 (ruleBreach as IRuleBreachRequestPopulated).status === RuleBreachRequestStatus.Pending &&
-                (rulesManagementId ? (
+                (currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write ||
+                currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write ? (
                     <DialogActions style={{ justifyContent: 'space-evenly' }}>
                         <Button
                             variant="contained"

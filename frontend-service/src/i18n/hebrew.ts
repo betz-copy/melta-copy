@@ -1,4 +1,6 @@
 import { environment } from '../globals';
+import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
+import { WorkspaceTypes } from '../interfaces/workspaces';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
@@ -75,6 +77,7 @@ export default {
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
+        'deleteRelationshipPopoverText-cant': 'לא ניתן למחוק קשרים מסוג זה',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
         succeededToDeleteRelationship: 'הקשר נמחק בהצלחה',
         createdAt: 'תאריך יצירה',
@@ -93,6 +96,8 @@ export default {
         deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
         updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
         atLeastOneItem: 'חייב להיות ערך אחד לפחות',
+        preview: 'תצוגה מקדימה',
+        download: 'הורדת הקובץ',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',
@@ -137,6 +142,7 @@ export default {
         backToHome: 'לחזרה לעמוד הבית',
         systemUnavailable: 'המערכת לא זמינה כרגע',
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
+        noPermissionsToWorkspace: 'אין לך הרשאות לגשת למרחב עבודה זה',
         disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
         preview: 'קובץ לא נתמך לתצוגה מקדימה',
@@ -229,7 +235,34 @@ export default {
         title: 'האם אתה בטוח?',
         yes: 'אשר',
         no: 'ביטול',
+    },
+    draftSaveDialog: {
+        exitTitle: 'בחרת לצאת ללא שמירת השינויים',
+        exitDescription: 'האם ברצונך לשמור את השינויים?',
+        notSavedTitle: 'בחרת לצאת ללא יצירת היישות',
+        notSavedDescription:
+            'קיימת טיוטה של היישות אשר נשמרת על העמדה שלך בלבד!\nעל מנת ליצור את היישות ולהוסיפה לטבלה יש למלא את כל שדות החובה.\nניתן להשלים פעולה זו במועד מאוחר יותר',
+        exit: 'יציאה ללא שמירה',
+        save: 'שמירה',
+        saveAsDraft: 'שמירה כטיוטה',
+        backToEdit: 'חזרה לעריכה',
+        draft: 'טיוטה',
+        editDraft: 'שחזור מקריסה',
         enumChangeDisclaimer: 'שים לב! פעולה זו תגרור לשינוי הערך בכלל הישויות מסוג  ',
+        emptyDraft: 'טיוטה ריקה',
+        lastSavedAt: 'נשמר לאחרונה ב-{{date}}',
+        success: {
+            create: 'הטיוטה נוצרה בהצלחה',
+            edit: 'הטיוטה עודכנה בהצלחה',
+            delete: 'הטיוטה נמחקה בהצלחה',
+        },
+    },
+    templateEntitiesAutocomplete: {
+        label: 'ישות',
+        failedToSearchUsers: 'נכשל לחפש ישויות',
+        loading: 'טוען...',
+        noOptions: 'אין תוצאות',
+        noPreviewFields: 'אין שדות לתצוגה מקדימה',
     },
     userAutocomplete: {
         label: 'משתמש',
@@ -271,6 +304,7 @@ export default {
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
+        sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
         permissionsManagmentPageTitle: 'ניהול הרשאות',
@@ -306,6 +340,10 @@ export default {
             read: 'קריאה',
             write: 'עריכה',
         },
+        scopes: {
+            read: 'קריאה',
+            write: 'עריכה',
+        },
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
@@ -331,6 +369,7 @@ export default {
         displayName: 'שם תצוגה',
         file: 'הוסף אייקון',
         color: 'בחר צבע',
+        failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
         category: {
             title: 'יצירת קטגוריה',
@@ -361,6 +400,7 @@ export default {
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
+            relatedTemplateHaveToHadRequiredFields: 'תבנית ישות קשורה חייבת להכיל שדות חובה',
             attachmentDisplayName: 'שם לתצוגה',
             filesArrayOption: 'ריבוי קבצים',
             propertyType: 'סוג שדה',
@@ -373,6 +413,10 @@ export default {
             chooseEntityTemplateName: 'בחירת שם תבנית',
             chooseIcon: 'בחירת אייקון',
             properties: 'שדות',
+            exportDocuments: 'פורמטים לייצוא',
+            // eslint-disable-next-line quotes
+            exportDocumentsInfo:
+                'העלאת פורמט קובץ מאפשרת יצירת מבנה קובץ בו התוכן יוחלף בהתאם לשדות היישות. הוספת {{  }} מסביב לשם השדה כפי שמופיע בהגדרות הישות: {{ שם השדה באנגלית }}  בקובץ ה-word יאפשר החלפת טקסט זה בערך המוזן ע"י המשתמש לאחר מילוי היישות.',
             parameters: 'פרמטרים',
             attachments: 'קבצים',
             dragAndDropFile: 'לחץ או גרור להעלאת קובץ',
@@ -553,6 +597,18 @@ export default {
             },
             editProcessBth: 'ערוך תהליך',
         },
+        workspace: {
+            title: 'יצירת סביבת עבודה',
+            createdSuccessfully: 'סביבת עבודה נוצרה בהצלחה',
+            editedSuccessfully: 'סביבת עבודה עודכנה בהצלחה',
+            failedToCreate: 'נכשל ליצור סביבת עבודה',
+            failedToEdit: 'נכשל בעריכת סביבת עבודה',
+            chooseDetails: 'בחירת פרטים',
+            chooseIcons: 'בחירת אייקונים',
+            icon: 'הוסף אייקון (פורמט svg)',
+            logo: 'הוסף לוגו (פורמט svg)',
+            chooseColors: 'בחירת צבעים',
+        },
     },
     validation: {
         required: 'חובה',
@@ -561,6 +617,10 @@ export default {
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
         hide: 'הסתר',
         unique: 'ייחודי',
+        readOnly: 'לקריאה בלבד',
+        incoming: 'משויך מ',
+        outgoing: 'משויך ל',
+        relatedDirection: 'כיוון שיוך',
         calculateTime: 'הצגת הפרש זמן',
         uniqueTooltipTitle:
             '* לחיצה על כפתור זה תדרוש להוסיף או ליצור קבוצת ייחודיים עבור שדה זה.\n* כאשר מספר שדות משוייכים לאותה הקבוצה, יאוכף שילוב של אותם השדות.\n* לדוגמה, כאשר "שם פרטי" ו"שם משפחה" משוייכים לקבוצת ייחודיים אחת, לא יהיה ניתן ליצור ישות חדשה עם אותו השילוב של "שם פרטי" ו"שם משפחה" שכבר קיים.',
@@ -596,6 +656,7 @@ export default {
         email: 'כתובת מייל',
         pattern: 'תבנית (regex)',
         enum: 'רשימה',
+        relationshipReference: 'שיוך לקשר',
         dateNotification: 'התראה לפני סיום',
         entityReference: 'שיוך לישות',
         serialNumber: 'מספר סידורי',
@@ -643,8 +704,8 @@ export default {
     },
     ruleBreachInfo: {
         relActionInfo: {
-            creation: 'יצירת',
-            deletion: 'מחיקת',
+            [ActionTypes.CreateRelationship]: 'יצירת',
+            [ActionTypes.DeleteRelationship]: 'מחיקת',
             relationship: 'קשר',
             fromEntity: 'מישות',
             toEntity: 'לישות',
@@ -661,14 +722,17 @@ export default {
             entityAfterUnknown: 'לא ידוע ישות אחרי',
             entityAfter: 'ישות אחרי',
             fileContentUpdated: 'מעודכן',
+            contentUpdated: 'מעודכן',
         },
         updateEntityStatusActionInfo: {
             updatingStatus: 'עדכון סטטוס',
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
+        actionBrokeTheFollowingRules: 'הפעולה שנעשתה',
         brokeTheFollowingRule: 'הפרה את החוק',
-        brokeTheFollowingRules: 'הפרה את החוקים',
+        brokeTheFollowingRules: 'החוקים שהופרו',
         relevantEntities: 'ישויות רלוונטיות',
         unknownRelationship: 'קשר לא ידוע',
         theEntityThatWasCreated: 'הישות שנוצרה',
@@ -757,6 +821,7 @@ export default {
         actionsHeaderName: 'פעולות',
         breachDetails: 'פרטי חריגה',
         'create-relationship': 'יצירת קשר',
+        'cant-create-relationship': 'לא ניתן ליצור קשרים מסוג זה',
         'delete-relationship': 'מחיקת קשר',
         'create-entity': 'יצירת ישות',
         'duplicate-entity': 'שכפול ישות',
@@ -858,6 +923,26 @@ export default {
             failedToDelete: 'נכשל למחוק טבלה',
             addGroupBy: 'הוסף קיבוץ',
             deleteGroupBy: 'מחק קיבוץ',
+        },
+    },
+    workspaces: {
+        goBack: 'חזור',
+        createNew: 'צור סביבת עבודה חדשה',
+        edit: 'ערוך',
+        move: 'העבר',
+        cancelMove: 'בטל העברה',
+        approveMove: 'אשר העברה',
+        movedSuccessfully: 'העברה בוצעה בהצלחה',
+        failedToMove: 'נכשל בהעברה',
+        requestedWorkspaceDoesntExist: 'סביבת העבודה המבוקשת אינה קיימת',
+        type: 'סוג',
+        types: {
+            [WorkspaceTypes.dir]: 'תיקייה',
+            [WorkspaceTypes.mlt]: 'סביבת עבודה',
+        },
+        color: 'צבע {{color}}',
+        colors: {
+            primary: 'ראשי',
         },
     },
     agGridLocaleText,

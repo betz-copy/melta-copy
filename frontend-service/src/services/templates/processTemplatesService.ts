@@ -194,7 +194,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
 
         addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties);
 
-        const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer.id);
+        const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
             _id: step._id!,
             properties: stepSchema,

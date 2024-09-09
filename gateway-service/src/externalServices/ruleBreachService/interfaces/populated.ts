@@ -1,4 +1,5 @@
 import {
+    ActionTypes,
     IBrokenRule,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -9,22 +10,22 @@ import {
     IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '.';
-import { IUser } from '../../../express/users/interface';
+import { IUser } from '../../userService/interfaces/users';
 import { IEntity } from '../../instanceService/interfaces/entities';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface IDeleteRelationshipMetadataPopulated extends Omit<IDeleteRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
 export interface IDuplicateEntityMetadataPopulated extends Omit<IDuplicateEntityMetadata, 'entityIdToDuplicate'> {
-    entityToDuplicate: IEntity | null;
+    entityToDuplicate: IEntity | string | null;
 }
 
 export interface IUpdateEntityMetadataPopulated extends Omit<IUpdateEntityMetadata, 'entityId'> {
@@ -42,8 +43,8 @@ export type IActionMetadataPopulated =
     | IUpdateEntityMetadataPopulated
     | IUpdateEntityStatusMetadataPopulated;
 
-export type IEntityForBrokenRules = IEntity | 'created-entity-id' | null;
-export type IRelationshipForBrokenRules = IEntity | 'created-relationship-id' | null;
+export type IEntityForBrokenRules = IEntity | string | null;
+export type IRelationshipForBrokenRules = IEntity | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;
@@ -66,13 +67,17 @@ export interface IBrokenRulePopulated extends Omit<IBrokenRule, 'failures'> {
     }>;
 }
 
-export interface IRuleBreachPopulated<T = IActionMetadataPopulated> extends Omit<IRuleBreach<T>, 'originUserId' | 'brokenRules'> {
+export interface IRuleBreachPopulated extends Omit<IRuleBreach, 'originUserId' | 'brokenRules' | 'actions'> {
     originUser: IUser;
     brokenRules: IBrokenRulePopulated[];
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
 }
 
-export interface IRuleBreachAlertPopulated<T = IActionMetadataPopulated> extends IRuleBreachPopulated<T> {}
-export interface IRuleBreachRequestPopulated<T = IActionMetadataPopulated> extends IRuleBreachPopulated<T> {
+export interface IRuleBreachAlertPopulated extends IRuleBreachPopulated {}
+export interface IRuleBreachRequestPopulated extends IRuleBreachPopulated {
     reviewer?: IUser;
     reviewedAt?: Date;
     status: RuleBreachRequestStatus;
