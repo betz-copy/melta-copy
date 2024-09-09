@@ -1,4 +1,4 @@
-import neo4j, { Driver, Neo4jError, Session } from 'neo4j-driver';
+import neo4j, { Driver, Neo4jError, Session, SessionMode } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 import config from '../../config';
 import logger from '../logger/logsLogger';
@@ -28,35 +28,45 @@ export default class Neo4jClient {
         Neo4jClient.isInitialized = true;
     }
 
-    private get session(): Session {
-        return Neo4jClient.driver.session({ database: this.database });
+    private createSession(defaultAccessMode?: SessionMode): Session {
+        return Neo4jClient.driver.session({ database: this.database, defaultAccessMode });
     }
 
-    async wrapDBNotExistsError<T>(func: () => Promise<T>): Promise<T> {
+    private async closeSession(session: Session) {
         try {
-            // For some reason, func needs to be awaited here, otherwise the error doesn't get caught
-            return await func();
+            await session.close();
         } catch (err) {
+            logger.error('Failed to close session. Possible leak, Error:', { err });
+        }
+    }
+
+    async wrapDBNotExistsError<T>(func: (session: Session) => Promise<T>, defaultAccessMode?: SessionMode): Promise<T> {
+        const session = this.createSession(defaultAccessMode);
+
+        try {
+            const result = await func(session);
+            await this.closeSession(session);
+            return result;
+        } catch (err) {
+            await this.closeSession(session);
+
             // Check if the error is caused by non-existing database
             if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
                 // Create the db if it doesn't exist
-                await Neo4jClient.driver
-                    .session()
-                    .run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`)
-                    .catch(() => {});
+                const newWorkspaceSession = Neo4jClient.driver.session();
+                await newWorkspaceSession.run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`).catch(() => {});
+                await newWorkspaceSession.close();
+
+                const newSession = this.createSession();
 
                 // Retry
-                return func();
+                const result = await func(newSession);
+                await this.closeSession(newSession);
+                return result;
             }
 
             // Throw the error if it's not caused by non-existing database
             throw err;
-        } finally {
-            try {
-                await this.session.close();
-            } catch (err) {
-                console.error('Failed to close session. Possible leak, Error:', { err });
-            }
         }
     }
 
@@ -69,7 +79,7 @@ export default class Neo4jClient {
     }
 
     private async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters: Record<string, any>) {
-        return this.wrapDBNotExistsError(() => this.session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
+        return this.wrapDBNotExistsError((session) => session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
     }
 
     static async close() {
