@@ -21,9 +21,11 @@ export class Authorizer extends DefaultController {
 
         const userPermissions = await UserService.getUserPermissions(userId, workspaceHierarchyIds);
 
-        if (!Object.keys(userPermissions)) throw new UserNotAuthorizedError();
+        const hierarcyId = workspaceHierarchyIds.find((id) => Boolean(userPermissions[id]));
 
-        return userPermissions[this.workspaceId] || userPermissions[workspaceHierarchyIds[0]];
+        if (!Object.keys(userPermissions) || !hierarcyId) throw new UserNotAuthorizedError();
+
+        return userPermissions[hierarcyId];
     }
 
     private async authorizeUser(req: Request, userId: string, authPermissions: ISubCompactPermissions) {

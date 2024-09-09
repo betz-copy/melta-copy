@@ -37,12 +37,12 @@ export const getButtonState = (
     isEntityDisabled: boolean,
     hasWritePermissionToCurrCategory: boolean,
     categoryId: string,
-    instancesPermissions?: ISubCompactPermissions['instances'],
+    permissions?: ISubCompactPermissions,
 ) => {
     let isEditButtonsDisabled = false;
     let disabledButtonText = '';
 
-    const permissionToRelatedCategory = instancesPermissions?.categories[categoryId];
+    const permissionToRelatedCategory = permissions?.instances?.categories[categoryId];
 
     if (isEntityDisabled) {
         isEditButtonsDisabled = true;
@@ -50,10 +50,10 @@ export const getButtonState = (
     } else if (!hasWritePermissionToCurrCategory) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissions');
-    } else if (!instancesPermissions) {
+    } else if (!permissions?.admin && !permissions?.instances) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHavePermissionsToCategory');
-    } else if (permissionToRelatedCategory?.scope !== PermissionScope.write) {
+    } else if (!permissions?.admin && permissionToRelatedCategory?.scope !== PermissionScope.write) {
         isEditButtonsDisabled = true;
         disabledButtonText = i18next.t('permissions.dontHaveWritePermissionsToCategory');
     } else {
@@ -519,7 +519,7 @@ const Entity: React.FC = () => {
                                         isEntityDisabled,
                                         hasWritePermissionToCurrCategory,
                                         _id,
-                                        currentUser.currentWorkspacePermissions.instances,
+                                        currentUser.currentWorkspacePermissions,
                                     );
 
                                     return (

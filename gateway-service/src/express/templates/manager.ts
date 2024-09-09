@@ -17,7 +17,7 @@ import {
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
@@ -193,7 +193,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         ] = await Promise.all([
             this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
             this.getAllowedRules(allowedEntityTemplatesIds, allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
-            this.processService.searchProcessTemplates(permissionsOfUserId.processes?.scope === PermissionScope.write ? {} : { reviewerId: userId }),
+            this.processService.searchProcessTemplates(permissionsOfUserId.admin || permissionsOfUserId.processes ? {} : { reviewerId: userId }),
         ]);
 
         const allAllowedEntityTemplates = [

@@ -182,10 +182,10 @@ export const environment = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
-        cacheBlockSize: 50,
+        cacheBlockSize: 5,
         maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 50,
+        infiniteInitialRowCount: 10,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
