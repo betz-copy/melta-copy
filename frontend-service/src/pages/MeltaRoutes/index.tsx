@@ -68,7 +68,8 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
             setWorkspace(workspace);
             document.title = workspace.displayName;
 
-            currentUser.permissions[workspace._id] = await getWorkspacePermissions(workspace._id, currentUser.permissions);
+            const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);
+            if (workspacePermissions) currentUser.permissions[workspace._id] = workspacePermissions;
 
             if (currentUser.currentWorkspacePermissions !== currentUser.permissions[workspace._id])
                 setUser({ ...currentUser, currentWorkspacePermissions: currentUser.permissions[workspace._id] });

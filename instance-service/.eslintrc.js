@@ -43,5 +43,6 @@ module.exports = {
         'class-methods-use-this': 'off',
         'valid-typeof': ['error', { requireStringLiterals: false }],
         semi: [2, 'always'],
+        'class-methods-use-this': 'off',
     },
 };
