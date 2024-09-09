@@ -1,7 +1,5 @@
 import mongoose from 'mongoose';
 
-import { IGanttDocument } from './interface';
-import config from '../../config';
 import { ServiceError } from '../error';
 
 const GroupBySchema = new mongoose.Schema(
@@ -72,7 +70,8 @@ const GanttItem = new mongoose.Schema(
     { _id: false },
 );
 
-const GanttSchema = new mongoose.Schema(
+// eslint-disable-next-line import/prefer-default-export
+export const GanttSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -101,7 +100,3 @@ const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, ne
 
 GanttSchema.post('save', handleMongooseDuplicateKeyError);
 GanttSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
-
-const GanttModel = mongoose.model<IGanttDocument>(config.mongo.ganttsCollectionName, GanttSchema);
-
-export default GanttModel;

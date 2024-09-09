@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 
 const RuleBreachInfo: React.FC<{
     originUser?: IUser;

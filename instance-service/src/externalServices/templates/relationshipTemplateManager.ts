@@ -1,7 +1,7 @@
-import config from '../../config';
 import { TemplatesManagerService } from '.';
-import { IMongoRule, ISearchRulesBody } from './interfaces/rules';
+import config from '../../config';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from './interfaces/relationshipTemplates';
+import { IMongoRule, ISearchRulesBody } from './interfaces/rules';
 
 const {
     templateService: {
@@ -10,20 +10,20 @@ const {
 } = config;
 
 export class RelationshipsTemplateManagerService extends TemplatesManagerService {
-    static async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
+    async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
+        const { data } = await this.api.post<IMongoRelationshipTemplate[]>(searchTemplatesRoute, searchBody);
 
         return data;
     }
 
-    static async getRelationshipTemplateById(id: string) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.get<IMongoRelationshipTemplate>(`${getRelationshipByIdRoute}/${id}`);
+    async getRelationshipTemplateById(id: string) {
+        const { data } = await this.api.get<IMongoRelationshipTemplate>(`${getRelationshipByIdRoute}/${id}`);
 
         return data;
     }
 
-    static async searchRules(searchBody: Omit<ISearchRulesBody, 'disabled'>) {
-        const { data } = await TemplatesManagerService.TemplateManagerAxiosApi.post<IMongoRule[]>(searchRulesRoute, {
+    async searchRules(searchBody: Omit<ISearchRulesBody, 'disabled'>) {
+        const { data } = await this.api.post<IMongoRule[]>(searchRulesRoute, {
             ...searchBody,
             disabled: false,
         });

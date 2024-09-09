@@ -1,18 +1,18 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
 import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
-import { IPermissionsOfUser, Scope } from '../../../services/permissionsService';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 const DashedSelectBox: React.FC<{
     text: string;
-    checkUsersPermissions: Scope;
+    checkUsersPermissions: PermissionScope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     error?: boolean;
     entityTemplate?: IMongoEntityTemplatePopulated;
@@ -22,12 +22,12 @@ const DashedSelectBox: React.FC<{
 }> = ({ text, checkUsersPermissions, onClick, error, minHeight, entityTemplate, onSuccessCreate, addNewEntityLabel }) => {
     const disabledReasonAnchorRef = React.useRef<HTMLParagraphElement>(null);
     const borderColorTheme = error ? 'error' : 'primary';
-    const queryClient = useQueryClient();
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+    const currentUser = useUserStore((state) => state.user);
 
     const userHasPermissions = !entityTemplate
         ? undefined
-        : checkUserInstanceOfCategoryPermission(instancesPermissions, entityTemplate.category, checkUsersPermissions);
+        : checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, checkUsersPermissions);
 
     const disabled = !entityTemplate || userHasPermissions === false;
 

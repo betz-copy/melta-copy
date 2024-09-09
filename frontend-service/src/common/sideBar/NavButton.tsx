@@ -1,64 +1,66 @@
-import React from 'react';
 import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
-import { StyledLink, StyledListItemText } from './NavBar.styled';
-import './NavButton.css';
+import React, { useEffect } from 'react';
+import { Link, useRoute } from 'wouter';
 import { MeltaTooltip } from '../MeltaTooltip';
+import { StyledListItemText } from './NavBar.styled';
+import './NavButton.css';
 
 interface NavButtonProps {
     to: string;
     isDrawerOpen: boolean;
     text: string;
     disabled?: boolean;
-    onChangeToActive: (boolean) => void;
+    onChangeToActive: (isActive: boolean) => void;
+    isActiveButton?: boolean;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
+const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, isActiveButton }) => {
+    const [isActive] = useRoute(to);
+
+    useEffect(() => {
+        if (isActive) onChangeToActive(isActive);
+    }, [onChangeToActive, isActive]);
+
     return (
-        <StyledLink
-            to={to}
+        <Link
+            href={to}
             onClick={(e) => {
                 if (disabled) e.preventDefault();
             }}
             className="nav-button"
+            style={{ textDecoration: 'none', color: 'inherit' }}
         >
-            {({ isActive }) => {
-                onChangeToActive(isActive);
-                return (
-                    <MeltaTooltip
-                        title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
-                        placement="left"
-                        disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+            <MeltaTooltip
+                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
+                placement="left"
+                disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+            >
+                <div>
+                    <ListItemButton
+                        disabled={disabled}
+                        sx={{ color: 'black' }}
+                        style={{
+                            justifyContent: 'space-around',
+                            direction: 'rtl',
+                            backgroundColor: isActiveButton ? '#ffffffcc' : 'transparent',
+                            borderRadius: '20px',
+                            height: '32px',
+                        }}
+                        className="child"
                     >
-                        <div>
-                            <ListItemButton
-                                disabled={disabled}
-                                sx={{
-                                    color: 'black',
-                                }}
-                                style={{
-                                    justifyContent: 'space-around',
-                                    direction: 'rtl',
-                                    backgroundColor: isActive ? '#ffffffcc' : 'transparent',
-                                    borderRadius: '20px',
-                                    height: '32px',
-                                }}
+                        {children}
+                        {isDrawerOpen && (
+                            <StyledListItemText
+                                primary={text}
+                                sx={{ color: isActiveButton ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
                                 className="child"
-                            >
-                                {children}
-                                {isDrawerOpen && (
-                                    <StyledListItemText
-                                        primary={text}
-                                        sx={{ color: isActive ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
-                                        className="child"
-                                    />
-                                )}
-                            </ListItemButton>
-                        </div>
-                    </MeltaTooltip>
-                );
-            }}
-        </StyledLink>
+                            />
+                        )}
+                    </ListItemButton>
+                </div>
+            </MeltaTooltip>
+        </Link>
     );
 };
 

@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
-import { ProcessInstanceDocument, Status } from './interface';
+import { Status } from './interface';
 import config from '../../../config';
 
-const ProcessInstanceSchema = new mongoose.Schema(
+// eslint-disable-next-line import/prefer-default-export
+export const ProcessInstanceSchema = new mongoose.Schema(
     {
         templateId: {
             type: String,
@@ -45,6 +46,3 @@ const ProcessInstanceSchema = new mongoose.Schema(
 );
 
 ProcessInstanceSchema.index({ name: 1 }, { unique: true });
-const ProcessInstanceModel = mongoose.model<ProcessInstanceDocument>(config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
-
-export default ProcessInstanceModel;

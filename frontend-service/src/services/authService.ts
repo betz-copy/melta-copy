@@ -1,7 +1,7 @@
 import jwtDecode from 'jwt-decode';
 import cookies from 'js-cookie';
 import { environment } from '../globals';
-import { UserState } from '../store/reducers/user';
+import { UserState } from '../stores/user';
 
 export class AuthService {
     static getUser = () => {
@@ -38,7 +38,7 @@ export class AuthService {
 
     static parseUserToken = (token: string) => {
         try {
-            return jwtDecode(token) as UserState & { exp: number; iat: number };
+            return jwtDecode(token) as UserState['user'] & {};
         } catch (error) {
             return null;
         }

@@ -1,8 +1,8 @@
-import * as mongoose from 'mongoose';
-import { ProcessTemplateDocument } from './interface';
+import mongoose from 'mongoose';
 import config from '../../../config';
 
-const ProcessTemplateSchema = new mongoose.Schema(
+// eslint-disable-next-line import/prefer-default-export
+export const ProcessTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -32,7 +32,3 @@ const ProcessTemplateSchema = new mongoose.Schema(
 
 ProcessTemplateSchema.index({ name: 1 }, { unique: true });
 ProcessTemplateSchema.index({ displayName: 1 }, { unique: true });
-
-const ProcessTemplateModel = mongoose.model<ProcessTemplateDocument>(config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
-
-export default ProcessTemplateModel;

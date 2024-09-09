@@ -1,19 +1,19 @@
 import { Router } from 'express';
-import { wrapController, wrapMiddleware } from '../../utils/express';
-import {
-    runBulkOfActionsInMultipleTransactionsSchema,
-} from './validator.schema';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
-import RelationshipController from './controller';
-import { validateActionsGroups } from './validator.template';
+import BulkActionController from './controller';
+import { runBulkOfActionsInMultipleTransactionsSchema } from './validator.schema';
+import { BulkActionValidator } from './validator.template';
 
 const bulkActionRouter: Router = Router();
+const bulkActionControllerMiddleware = createController(BulkActionController);
+const bulkActionValidatorMiddleware = createController(BulkActionValidator, true);
 
 bulkActionRouter.post(
     '/bulk',
     ValidateRequest(runBulkOfActionsInMultipleTransactionsSchema),
-    wrapMiddleware(validateActionsGroups),
-    wrapController(RelationshipController.runBulkOfActionsInMultipleTransactions),
+    bulkActionValidatorMiddleware.validateActionsGroups,
+    bulkActionControllerMiddleware.runBulkOfActionsInMultipleTransactions,
 );
 
 export default bulkActionRouter;

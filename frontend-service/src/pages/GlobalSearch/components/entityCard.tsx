@@ -1,31 +1,31 @@
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, Typography, styled } from '@mui/material';
+import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from 'react-query';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { EntityProperties } from '../../../common/EntityProperties';
 import OpenPreview from '../../../common/FilePreview/OpenPreview';
 import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { CreateOrEditEntityDetails } from '../../../common/dialogs/entity/CreateOrEditEntityDialog';
 import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import { FileExtensions, IFile } from '../../../interfaces/preview';
+import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
 import { getPreviewContentType } from '../../../utils/getFileType';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -67,9 +67,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const [open, setOpen] = useState<boolean>(expandCard);
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
-    const queryClient = useQueryClient();
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, entityTemplate.category, 'Write');
+    const currentUser = useUserStore((state) => state.user);
+
+    const userHasWritePermissions = checkUserCategoryPermission(
+        currentUser.currentWorkspacePermissions,
+        entityTemplate.category,
+        PermissionScope.write,
+    );
 
     const shouldDisplayFilePreview = useMemo(() => {
         return entityTemplate.propertiesOrder.some((propertyName) => {
@@ -132,7 +136,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const decreaseIndex = () => setPreviewImageIndex(previewImageIndex - 1);
 
     const [editDialog, setEditDialog] = useState<{ isOpen: boolean; entity?: IEntity }>({ isOpen: false });
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const entityTemplateColor = getEntityTemplateColor(entityTemplate);
     const first5PropsKeys: string[] = [
         ...entityTemplate.propertiesPreview,
