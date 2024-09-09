@@ -212,8 +212,6 @@ services:
       - logs:/usr/src/app/logs
 
   rule-breach-service:
-    ports:
-      - 8012:8000 
     restart: always
     volumes:
       - logs:/usr/src/app/logs
