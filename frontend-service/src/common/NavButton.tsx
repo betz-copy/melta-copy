@@ -1,16 +1,16 @@
 import { Button } from '@mui/material';
 import React, { ReactNode } from 'react';
-import { NavLink, To } from 'react-router-dom';
+import { Link } from 'wouter';
 
 interface NavButtonProps {
-    to: To;
+    to: string;
     children: ReactNode;
 }
 
 export const NavButton: React.FC<NavButtonProps> = ({ to, children }) => {
     return (
-        <NavLink to={to} style={{ textDecoration: 'none' }}>
+        <Link href={to} style={{ textDecoration: 'none' }}>
             <Button sx={{ ':hover': { backdropFilter: 'brightness(1.15)', bgcolor: 'transparent' } }}>{children}</Button>
-        </NavLink>
+        </Link>
     );
 };

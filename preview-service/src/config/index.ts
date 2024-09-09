@@ -4,6 +4,7 @@ import * as env from 'env-var';
 export const config = {
     service: {
         port: env.get('PORT').default(8000).asPortNumber(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },

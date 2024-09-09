@@ -1,4 +1,4 @@
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../users';
 import { IProcessDetails } from './processTemplate';
 
 export interface IStepTemplate extends IProcessDetails {

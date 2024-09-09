@@ -1,13 +1,14 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import { Server } from './express/server';
 import { config } from './config';
-import { minioClient } from './utils/minio/minioClient';
-import logger from './utils/logger/logsLogger';
+import { Server } from './express/server';
 import PreviewConsumer from './rabbit/consumer';
+import logger from './utils/logger/logsLogger';
 
-const { rabbit } = config;
-
+const {
+    rabbit,
+    service: { port: servicePort },
+} = config;
 
 const initializeRabbitReceiver = async () => {
     logger.info('Connecting to Rabbit for receiving messages...');
@@ -27,17 +28,13 @@ const initializeRabbitReceiver = async () => {
 const main = async () => {
     await initializeRabbitReceiver();
 
-    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL } = config.minio;
-    await minioClient.initialize(endPoint, port, accessKey, secretKey, bucketName, useSSL);
-
     logger.info(`Preview connection established!`);
 
-    const { port: serverPort } = config.service;
-    const server = new Server(serverPort);
+    const server = new Server(servicePort);
 
     await server.start();
 
-    logger.info(`Server started on port: ${serverPort}`);
+    logger.info(`Server started on port: ${servicePort}`);
 };
 
 main().catch((error) => {

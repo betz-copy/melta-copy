@@ -1,14 +1,15 @@
 /* eslint-disable no-param-reassign */
-import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 import uniqBy from 'lodash.uniqby';
+import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { environment } from '../../globals';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
-import { ILabelIcon, rangeAsString } from './helperTypes';
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
+import { ILabelIcon, rangeAsString } from './helperTypes';
 
 const { graphSettings } = environment;
 
@@ -68,12 +69,13 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
     return { links, nodes: expendedNodes };
 };
 
-export const entityToNode = (entity: IEntity, entityTemplate: IEntityTemplatePopulated): NodeObject => {
+export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {
         icon = new Image();
-        icon.src = `/api${environment.api.storage}/${entityTemplate.iconFileId}`;
+
+        icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
     }
 
     return {
@@ -98,26 +100,28 @@ export const relationshipToLink = (sourceEntity, destinationEntity, relationship
     };
 };
 
-export const expandedEntityToGraphData = (
+export const expandedEntityToGraphData = async (
     expandedEntity: IEntityExpanded,
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
-): GraphData => {
-    const nodes: NodeObject[] = [entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!)];
+): Promise<GraphData> => {
+    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!)];
 
-    const links = expandedEntity.connections.map(({ sourceEntity, destinationEntity, relationship }) => {
-        const relationshipTemplate = relationshipTemplates.get(relationship.templateId);
+    const links = await Promise.all(
+        expandedEntity.connections.map(async ({ sourceEntity, destinationEntity, relationship }) => {
+            const relationshipTemplate = relationshipTemplates.get(relationship.templateId);
 
-        if (!relationshipTemplate) throw new Error('must have relationship template');
+            if (!relationshipTemplate) throw new Error('must have relationship template');
 
-        const currSourceEntity = entityTemplates.get(sourceEntity.templateId);
-        if (currSourceEntity) nodes.push(entityToNode(sourceEntity, currSourceEntity));
+            const currSourceEntity = entityTemplates.get(sourceEntity.templateId);
+            if (currSourceEntity) nodes.push(await entityToNode(sourceEntity, currSourceEntity));
 
-        const currDestinationEntity = entityTemplates.get(destinationEntity.templateId);
-        if (currDestinationEntity) nodes.push(entityToNode(destinationEntity, currDestinationEntity));
+            const currDestinationEntity = entityTemplates.get(destinationEntity.templateId);
+            if (currDestinationEntity) nodes.push(await entityToNode(destinationEntity, currDestinationEntity));
 
-        return relationshipToLink(sourceEntity, destinationEntity, relationshipTemplate);
-    });
+            return relationshipToLink(sourceEntity, destinationEntity, relationshipTemplate);
+        }),
+    );
 
     const uniqueGraphNodes = uniqBy(nodes, ({ id }) => id);
 

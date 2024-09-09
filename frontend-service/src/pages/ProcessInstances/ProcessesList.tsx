@@ -12,8 +12,9 @@ import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import './ProcessesList.css';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -26,9 +27,15 @@ const ProcessesList: React.FC<{
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
+
     const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
+
+    const currentUser = useUserStore((state) => state.user);
+
+    const hasPermissionsToEditDetails =
+        currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
+
     const getStatusFilter = (status: Status | 'all' | undefined) => {
         if (status === 'all') return [Status.Approved, Status.Pending, Status.Rejected];
         if (status !== undefined) return [status];

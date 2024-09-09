@@ -3,6 +3,7 @@ import './dotenv';
 
 const config = {
     service: {
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     rabbit: {
@@ -35,6 +36,7 @@ const config = {
         templateSearchIndexPrefixes: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIXES').default('primaryGlobalSearch_,secondaryGlobalSearch_').asArray(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
+        workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
     },
     redis: {
         url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),

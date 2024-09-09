@@ -1,7 +1,6 @@
 import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
 import _mapValues from 'lodash.mapvalues';
-import _sortBy from 'lodash.sortby';
 import _isEqual from 'lodash.isequal';
 import { Transaction } from 'neo4j-driver';
 import { IRuleFailure } from './interfaces';

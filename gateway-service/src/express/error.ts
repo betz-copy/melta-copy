@@ -1,5 +1,6 @@
 import axios from 'axios';
 import express from 'express';
+import { PermissionScope } from '../externalServices/userService/interfaces/permissions';
 
 import logger from '../utils/logger/logsLogger';
 
@@ -60,3 +61,27 @@ export const errorMiddleware = async (error: Error, _req: express.Request, res: 
 
     next();
 };
+
+export class InvalidWorkspaceHeaderError extends ServiceError {
+    constructor() {
+        super(400, 'Invalid workspace id in header');
+    }
+}
+
+export class UserNotFoundError extends ServiceError {
+    constructor() {
+        super(400, 'User not found');
+    }
+}
+
+export class UserNotAuthorizedError extends ServiceError {
+    constructor() {
+        super(403, 'User not authorized');
+    }
+}
+
+export class UserIncorrectScopeError extends ServiceError {
+    constructor(neededScope?: PermissionScope, userScope?: PermissionScope) {
+        super(403, `User scope is ${userScope} but ${neededScope} is needed`);
+    }
+}

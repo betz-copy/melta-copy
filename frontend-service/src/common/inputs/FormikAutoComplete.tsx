@@ -10,6 +10,7 @@ interface IFormikAutoCompleteProps<T> {
     disabled?: boolean;
     multiple?: boolean;
     hideSelectedOptions?: boolean;
+    disableClear?: boolean;
     getOptionLabel?: (option: T) => string;
     getOptionDisabled?: (option: T) => boolean;
     onChange?: (value: T | T[] | null) => void;
@@ -24,6 +25,7 @@ export const FormikAutoComplete = <T,>({
     disabled,
     multiple,
     hideSelectedOptions,
+    disableClear,
     getOptionLabel,
     getOptionDisabled,
     onChange,
@@ -42,6 +44,7 @@ export const FormikAutoComplete = <T,>({
             disabled={disabled}
             multiple={multiple}
             filterSelectedOptions={hideSelectedOptions}
+            disableClearable={disableClear}
             renderInput={(params) => (
                 <TextField {...params} id={formikField} name={formikField} error={Boolean(error)} helperText={error} label={label} sx={style} />
             )}

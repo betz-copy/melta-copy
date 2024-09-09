@@ -1,51 +1,52 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, IconButton, Menu } from '@mui/material';
 import {
-    Delete as DeleteIcon,
+    AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
-    MoreVertOutlined,
+    Delete as DeleteIcon,
     DoDisturbAlt,
     Edit as EditIcon,
-    AccountTreeOutlined as GraphIcon,
+    MoreVertOutlined,
 } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useSelector } from 'react-redux';
-import { IMongoEntityTemplatePopulated, IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { EntityPropertiesInternal } from '../../../common/EntityProperties';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
-import { EditEntityDetails } from './EditEntityDetails';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { MenuButton } from '../../../common/MenuButton';
-import { EntityDisableCheckbox } from './EntityDisableCheckbox';
-import { EntityDates } from './EntityDates';
-import { RootState } from '../../../store';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import TooltipMenuButton from './TooltipMenuButton';
-import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
-import { checkUserInstanceOfCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
+import { EntityPropertiesInternal } from '../../../common/EntityProperties';
+import { ErrorToast } from '../../../common/ErrorToast';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { ImageWithDisable } from '../../../common/ImageWithDisable';
+import { MenuButton } from '../../../common/MenuButton';
+import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { useUserStore } from '../../../stores/user';
+import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
+import { EditEntityDetails } from './EditEntityDetails';
+import { EntityDates } from './EntityDates';
+import { EntityDisableCheckbox } from './EntityDisableCheckbox';
+import TooltipMenuButton from './TooltipMenuButton';
+import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
     const { entity } = expandedEntity;
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const open = Boolean(anchorEl);
 
@@ -56,8 +57,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const handleClose = () => {
         setAnchorEl(null);
     };
-
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
 
     const closeDeleteDialog = () => {
         setOpenDeleteDialog(false);
@@ -135,7 +134,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         );
     }
 
-    const canWriteInstance = checkUserInstanceOfCategoryPermission(myPermissions.instancesPermissions, entityTemplate.category, 'Write');
+    const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
     return (
         <>

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # Check for Docker Compose version
 if command -v docker-compose &> /dev/null; then

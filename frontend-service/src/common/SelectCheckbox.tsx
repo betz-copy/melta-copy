@@ -1,30 +1,29 @@
 /* eslint-disable no-nested-ternary */
-import React, { Fragment, PropsWithChildren, Key, Dispatch, SetStateAction, useState, ReactElement } from 'react';
-import i18next from 'i18next';
-import lodashGroupBy from 'lodash.groupby';
-import lodashUniqby from 'lodash.uniqby';
 import {
+    Box,
+    Button,
+    Divider,
     FormControl,
     Grid,
-    Typography,
+    InputAdornment,
     ListItemText,
     MenuItem,
     Select,
     SxProps,
-    Theme,
     TextField,
-    Divider,
-    Box,
-    Button,
-    InputAdornment,
+    Theme,
+    Typography,
     useTheme,
 } from '@mui/material';
-import { IoIosArrowDown, IoIosArrowBack, IoIosArrowUp } from 'react-icons/io';
-import { useSelector } from 'react-redux';
+import i18next from 'i18next';
+import lodashGroupBy from 'lodash.groupby';
+import lodashUniqby from 'lodash.uniqby';
+import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
-import { RootState } from '../store';
-import { MeltaTooltip } from './MeltaTooltip';
+import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
+import { useDarkModeStore } from '../stores/darkMode';
 import { MeltaCheckbox } from './MeltaCheckbox';
+import { MeltaTooltip } from './MeltaTooltip';
 
 export const MenuItemContent: React.FC<{
     checked: boolean;
@@ -489,7 +488,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
 

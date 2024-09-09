@@ -1,17 +1,16 @@
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
-import i18next from 'i18next';
+import { TextField } from '@mui/material';
 import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import heLocale from 'date-fns/locale/he';
-import { TextField } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../store';
+import i18next from 'i18next';
+import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjfsDatesWidgets';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
     const [dateValue, setDateValue] = useState<Date | null>(null);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const handleChange = (newValue: Date | null) => {
         setDateValue(newValue);

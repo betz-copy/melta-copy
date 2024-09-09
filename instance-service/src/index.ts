@@ -1,20 +1,19 @@
-import 'elastic-apm-node/start';
 import axios from 'axios';
+import 'elastic-apm-node/start';
 
-import Server from './express/server';
-import Neo4jClient from './utils/neo4j';
-import RedisClient from './utils/redis';
 import config from './config';
+import Server from './express/server';
 import logger from './utils/logger/logsLogger';
+import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
+import RedisClient from './utils/redis';
 
-const { service, neo4j, redis } = config;
-
+const { service } = config;
 
 const initializeRedis = async () => {
     logger.info('Connecting to Redis...');
 
-    await RedisClient.initialize(redis.url);
+    await RedisClient.initialize();
 
     logger.info('Redis connection established');
 };
@@ -22,7 +21,7 @@ const initializeRedis = async () => {
 const main = async () => {
     await initializeRedis();
     await initializeRabbit();
-    await Neo4jClient.initialize(neo4j.url, neo4j.auth, neo4j.database);
+    await Neo4jClient.initialize();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

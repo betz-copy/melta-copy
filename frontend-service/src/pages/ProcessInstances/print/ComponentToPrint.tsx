@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Divider, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
+import { UseMutateAsyncFunction } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
 import { BlueTitle } from '../../../common/BlueTitle';
@@ -11,11 +11,11 @@ import { IMongoProcessTemplatePopulated } from '../../../interfaces/processes/pr
 import ProcessStatus, { ReviewedAtProcessStatus } from '../../../common/wizards/processInstance/ProcessSummaryStep/ProcessStatus';
 import ProcessSummary from '../../../common/wizards/processInstance/ProcessSummaryStep';
 import { ProcessComponentToPrint, StepComponentToPrint } from './ProcessComponentToPrint';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { getStepTemplateByStepInstance } from '../../../utils/processWizard/steps';
 import { getProcessByIdRequest } from '../../../services/processesService';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { FileToPrint } from '../../../common/print/FileToPrint';
+import { useUserStore } from '../../../stores/user';
 
 const ComponentToPrint = React.forwardRef<
     HTMLDivElement,
@@ -49,8 +49,8 @@ const ComponentToPrint = React.forwardRef<
         ref,
     ) => {
         const theme = useTheme();
-        const queryClient = useQueryClient();
-        const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+
+        const currentUser = useUserStore((state) => state.user);
 
         return (
             <Box ref={ref} margin="20px" width="750px" style={{ direction: 'rtl' }}>
@@ -67,7 +67,7 @@ const ComponentToPrint = React.forwardRef<
                         <Typography>{`${i18next.t('wizard.processInstance.summary.printedAt')} : ${new Date().toLocaleDateString(
                             'en-UK',
                         )}`}</Typography>
-                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${myPermissions.user.fullName}`}</Typography>
+                        <Typography>{`${i18next.t('wizard.processInstance.summary.printedBy')} : ${currentUser.fullName}`}</Typography>
                     </Grid>
                     <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center" marginBottom={1}>
                         <Grid container alignItems="center" justifyContent="space-between" wrap="nowrap">
