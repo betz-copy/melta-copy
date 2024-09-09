@@ -55,7 +55,7 @@ import {
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
@@ -771,7 +771,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     public async populateCreateEntityActionMetadata(actionMetadata: ICreateEntityMetadata): Promise<ICreateEntityMetadataPopulated> {
         const { templateId, properties } = actionMetadata;
-        const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(templateId, properties);
+
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
         return { ...actionMetadata, properties: createdEntityWithPopulatedRelationshipReferences };
     }
 
@@ -788,8 +790,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
-    public async getPopulatedRelationshipReferences(templateId: string, properties: Record<string, any>) {
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+    public async getPopulatedRelationshipReferences(entityTemplate: IMongoEntityTemplatePopulated, properties: Record<string, any>) {
         const populatedProperties = JSON.parse(JSON.stringify(properties));
 
         await Promise.all(
@@ -808,10 +809,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         actionMetadata: IUpdateEntityMetadata,
         actions: IAction[],
     ): Promise<IUpdateEntityMetadataPopulated> {
-        const { entityId, before } = actionMetadata;
+        const { entityId, ...restOfMetadata } = actionMetadata;
 
         let entity: IEntity | null;
-        let beforeEntityWithPopulatedRelationshipReferences: IEntity | undefined;
 
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
@@ -819,26 +819,21 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         if (entity) {
-            const currentEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
-                entity!.templateId,
-                entity!.properties,
-            );
+            const { templateId, properties } = entity;
+            const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
 
-            const updatedEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(
-                entity!.templateId,
-                actionMetadata.updatedFields,
-            );
-
-            if (before) beforeEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entity!.templateId, before);
+            const [currentEntityWithReferences, updatedEntityWithReferences, beforeEntityWithReferences] = await Promise.all([
+                this.getPopulatedRelationshipReferences(entityTemplate, properties),
+                this.getPopulatedRelationshipReferences(entityTemplate, actionMetadata.updatedFields),
+                restOfMetadata.before ? this.getPopulatedRelationshipReferences(entityTemplate, restOfMetadata.before) : Promise.resolve(undefined), // For before if it exists
+            ]);
 
             return {
-                updatedFields: updatedEntityWithPopulatedRelationshipReferences,
-                entity: { templateId: entity!.templateId, properties: currentEntityWithPopulatedRelationshipReferences },
-                ...(before && { before: beforeEntityWithPopulatedRelationshipReferences }),
+                updatedFields: updatedEntityWithReferences,
+                entity: { templateId, properties: currentEntityWithReferences },
+                ...(restOfMetadata.before && { before: beforeEntityWithReferences }),
             };
         }
-
-        const { entityId: id, ...restOfMetadata } = actionMetadata;
 
         return {
             ...restOfMetadata,
