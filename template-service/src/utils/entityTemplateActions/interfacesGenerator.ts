@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IMongoEntityTemplate } from '../express/entityTemplate/interface';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '../../express/entityTemplate/interface';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
