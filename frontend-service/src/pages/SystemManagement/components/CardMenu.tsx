@@ -9,9 +9,12 @@ import {
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
 } from '@mui/icons-material';
+import { useQuery } from 'react-query';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
+import { getFile } from '../../../services/workspacesService';
+import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
@@ -23,6 +26,13 @@ export const CardMenu: React.FC<{
 }> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+
+    const currentUser = useUserStore((state) => state.user);
+
+    const { data: rootWorkspace } = useQuery({
+        queryKey: ['workspace', '/'],
+        queryFn: () => getFile('/'),
+    });
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -68,7 +78,7 @@ export const CardMenu: React.FC<{
                     />
                 )}
 
-                {onAddActionsClick && (
+                {onAddActionsClick && currentUser.permissions[rootWorkspace?._id ?? '']?.admin?.scope && (
                     <MenuButton
                         onClick={(e) => {
                             onAddActionsClick(e);

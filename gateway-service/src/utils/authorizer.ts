@@ -7,6 +7,7 @@ import { PermissionScope, PermissionType } from '../externalServices/userService
 import { ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
 import { createWorkspacesController } from './express';
 import DefaultController from './express/controller';
+import { WorkspaceManager } from '../express/workspaces/manager';
 
 export type RequestWithPermissionsOfUserId = Request & { permissionsOfUserId: ISubCompactPermissions };
 
@@ -87,6 +88,17 @@ export class Authorizer extends DefaultController {
 
     async userCanReadWorkspaces(req: Request) {
         await this.wrapAuthMiddleware(req, { [PermissionType.admin]: { scope: PermissionScope.read } });
+    }
+
+    async userIsRootAdmin(req: Request) {
+        const rootWorkspace = await WorkspaceManager.getFile('/');
+        const userPermissions = await UserService.getUserPermissions(req.user!.id, [rootWorkspace._id]);
+
+        const rootPermissions = userPermissions[rootWorkspace._id];
+
+        if (!rootPermissions?.admin?.scope) throw new UserNotAuthorizedError();
+
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = rootPermissions;
     }
 }
 

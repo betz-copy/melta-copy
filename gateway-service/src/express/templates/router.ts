@@ -17,6 +17,7 @@ import {
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
+    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
@@ -81,8 +82,9 @@ templatesRouter.patch(
 );
 templatesRouter.patch(
     '/entities/:id/actions',
-    wrapMiddleware(validateUserCanUpdateOrDeleteEntityTemplate),
-    wrapController(TemplatesController.updateEntityTemplateAction),
+    ValidateRequest(updateEntityTemplateActionSchema),
+    AuthorizerControllerMiddleware.userIsRootAdmin,
+    templatesControllerMiddleware.updateEntityTemplateAction,
 );
 templatesRouter.post(
     '/entities',
