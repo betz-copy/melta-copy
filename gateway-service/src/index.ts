@@ -7,7 +7,7 @@ import config from './config';
 import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
-const { service, rabbit } = config;
+const { service, rabbit, mongo } = config;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');

@@ -47,9 +47,7 @@ export class IFrameManager extends DefaultManagerProxy {
     }
 
     async getIFrameById(iFrameId: string) {
-        const iFrame = await IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
-
-        return iFrame;
+        return IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
     async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {

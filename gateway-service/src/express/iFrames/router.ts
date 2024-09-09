@@ -1,11 +1,12 @@
 import { Router } from 'express';
 import multer from 'multer';
 import IFramesController from './controller';
-import { validateUserHasAtLeastSomePermissions, validateUserIsTemplatesManager } from '../permissions/validateAuthorizationMiddleware';
-import { createWorkspacesController, wrapController, wrapMiddleware } from '../../utils/express';
+import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
-import { validateUserCanCreateIFrame, validateUserCanDeleteIFrame, validateUserCanGetIFrame, validateUserCanUpdateIFrame } from './middlewares';
+import {
+    IFramesValidator
+} from './middlewares';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
@@ -22,43 +23,39 @@ iFramesRouter.get(
     ValidateRequest(getIFrameByIdSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     IFramesValidatorMiddleware.validateUserCanGetIFrame,
-
-    // wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    // wrapMiddleware(validateUserCanGetIFrame),
-    // wrapController(IFramesController.getIFrameById),
-//
+    IFramesControllerMiddleware.getIFrameById,
 );
 
 iFramesRouter.post(
     '/',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(createIFrameSchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapMiddleware(validateUserCanCreateIFrame),
-    wrapController(IFramesController.createIFrame),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    IFramesValidatorMiddleware.validateUserCanCreateIFrame,
+    IFramesControllerMiddleware.createIFrame,
 );
 
 iFramesRouter.put(
     '/:iFrameId',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
     ValidateRequest(updateIFrameSchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapMiddleware(validateUserCanUpdateIFrame),
-    wrapController(IFramesController.updateIFrame),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    IFramesValidatorMiddleware.validateUserCanUpdateIFrame,
+    IFramesControllerMiddleware.updateIFrame,
 );
 iFramesRouter.delete(
     '/:iFrameId',
     ValidateRequest(deleteIFrameSchema),
-    wrapMiddleware(validateUserIsTemplatesManager),
-    wrapMiddleware(validateUserCanDeleteIFrame),
-    wrapController(IFramesController.deleteIFrame),
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
+    IFramesValidatorMiddleware.validateUserCanDeleteIFrame,
+    IFramesControllerMiddleware.deleteIFrame,
 );
 
 iFramesRouter.post(
     '/search',
     ValidateRequest(searchIFramesSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(IFramesController.searchIFrames),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    IFramesControllerMiddleware.searchIFrames,
 );
 
 export default iFramesRouter;
