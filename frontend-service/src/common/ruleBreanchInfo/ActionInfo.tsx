@@ -96,9 +96,8 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
-                (currentAction.actionType === ActionTypes.UpdateEntity &&
-                    (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id) ||
-                !(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id
+                currentAction.actionType === ActionTypes.UpdateEntity &&
+                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
             ) {
                 return {
                     ...previousUpdatedProperties,
