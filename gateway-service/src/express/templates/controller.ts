@@ -37,10 +37,10 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async searchCategories(req: Request, res: Response) {
-        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+        const { user } = req as RequestWithPermissionsOfUserId;
         assert(user, 'User doesnt exists under request');
 
-        res.json(await this.manager.getAllowedCategories(permissionsOfUserId));
+        res.json(await this.manager.getAllCategories());
     }
 
     // entityTemplates

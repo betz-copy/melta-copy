@@ -252,14 +252,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.entityTemplateService.getAllCategories();
     }
 
-    async getAllowedCategories(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId']) {
-        const { instances } = permissionsOfUserId;
-        const allowedCategoriesIds = instances?.categories.map((permission) => permission.category);
-        const categories = await this.getAllCategories();
-
-        return categories.filter((category) => allowedCategoriesIds.includes(category._id));
-    }
-
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);

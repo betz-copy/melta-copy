@@ -73,8 +73,8 @@ templatesRouter.delete(
 templatesRouter.post(
     '/categories/search',
     ValidateRequest(getCategoriesSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(TemplatesController.searchCategories),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchCategories,
 );
 
 // entities (templates)
@@ -119,8 +119,8 @@ templatesRouter.delete(
 templatesRouter.post(
     '/entities/search',
     ValidateRequest(searchEntityTemplatesSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(TemplatesController.searchEntityTemplates),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
 );
 
 // relationships (templates)
@@ -152,8 +152,8 @@ templatesRouter.get(
 templatesRouter.post(
     '/relationships/search',
     ValidateRequest(searchTemplatesRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(TemplatesController.searchRelationshipTemplates),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRelationshipTemplates,
 );
 
 // rules (templates)
@@ -175,8 +175,8 @@ templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddlewa
 templatesRouter.post(
     '/rules/search',
     ValidateRequest(searchRulesRequestSchema),
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    wrapController(TemplatesController.searchRulesTemplates),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRulesTemplates,
 );
 
 export default templatesRouter;

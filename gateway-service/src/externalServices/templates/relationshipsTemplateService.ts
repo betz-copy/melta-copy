@@ -2,6 +2,7 @@ import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
 import { ISearchBody } from './entityTemplateService';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
     templateService: {
@@ -27,6 +28,14 @@ export interface ISearchRelationshipTemplatesBody extends ISearchBody {
 export interface ISearchRulesBody extends ISearchBody {
     entityTemplateIds?: string[];
     disabled?: boolean;
+}
+
+export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
+    searchBody: ISearchRelationshipTemplatesBody;
+}
+
+export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
+    searchBody: ISearchRulesBody;
 }
 
 export class RelationshipsTemplateService extends TemplatesManagerService {

@@ -101,7 +101,7 @@ const CreateOrEditEntityDetails: React.FC<{
             updateEntityRequestForMultiple(entityToUpdate!.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                toast.success(i18next.t('wizard.entity.editedSuccefully'));
+                toast.success(i18next.t('wizard.entity.editedSuccessfully'));
                 handleClose();
                 if (onSuccessUpdate) onSuccessUpdate(data);
             },
