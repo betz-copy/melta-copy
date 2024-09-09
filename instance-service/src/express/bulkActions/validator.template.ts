@@ -55,7 +55,7 @@ export class BulkActionValidator extends DefaultController {
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
     }
 
-    private validateRelationship = (relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) => {
+    private validateRelationship(relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) {
         if (!relationshipTemplate) {
             throw new ValidationError(`Relationship template doesnt exist`);
         }
@@ -66,9 +66,9 @@ export class BulkActionValidator extends DefaultController {
         ) {
             throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
         }
-    };
+    }
 
-    private validateEntity = (entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) => {
+    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
         if (!entityTemplate) {
             throw new ValidationError(`Entity template doesnt exist`);
         }
@@ -79,7 +79,7 @@ export class BulkActionValidator extends DefaultController {
         if (!valid) {
             throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
         }
-    };
+    }
 
     async validateActionsGroups(req: Request) {
         const { actionsGroups } = req.body;

@@ -60,8 +60,6 @@ import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasC
 const { brokenRulesFakeEntityIdPrefix } = config;
 
 export class EntityManager extends DefaultManagerNeo4j {
-    private bulkActionManager: BulkActionManager;
-
     private entityTemplateManagerService: EntityTemplateManagerService;
 
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
@@ -72,7 +70,6 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     constructor(workspaceId: string) {
         super(workspaceId);
-        this.bulkActionManager = new BulkActionManager(workspaceId);
         this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
         this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
         this.relationshipManager = new RelationshipManager(workspaceId);
@@ -418,8 +415,9 @@ export class EntityManager extends DefaultManagerNeo4j {
         const { entityId } = metadata;
         const entity = await this.getEntityByIdInTransaction(entityId, transaction);
         const entityTemplate = entitiesTemplatesByIds.get(entity.templateId)!;
+        const bulkManager = new BulkActionManager(this.workspaceId);
 
-        const fixedFields = await this.bulkActionManager.fixUpdatedFields(metadata, entityTemplate, entity);
+        const fixedFields = bulkManager.fixUpdatedFields(metadata, entityTemplate, entity);
         return this.updateEntityByIdInnerTransaction(entityId, fixedFields.updatedFields, entityTemplate, transaction, userId);
     }
 
@@ -436,7 +434,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     Exclude<ActionTypes, ActionTypes.UpdateStatus | ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship>,
                     () => Promise<IEntity | undefined>
                 > = {
-                    [ActionTypes.CreateEntity || ActionTypes.DuplicateEntity]: async () =>
+                    [ActionTypes.CreateEntity]: async () =>
                         this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
                     [ActionTypes.DuplicateEntity]: async () =>
                         this.createOrDuplicateAction(actionMetadata as ICreateEntityMetadata, transaction, userId, entitiesTemplatesByIds),
@@ -455,7 +453,14 @@ export class EntityManager extends DefaultManagerNeo4j {
                 const entityAfterAction: IEntity = await handler();
                 const entityTemplate = entitiesTemplatesByIds.get(entityAfterAction.templateId)!;
 
-                return executeActionCodeAndGetEntitiesToUpdate(entityTemplate, entityAfterAction, crudAction, transaction, entitiesTemplatesByIds);
+                return executeActionCodeAndGetEntitiesToUpdate(
+                    entityTemplate,
+                    entityAfterAction,
+                    crudAction,
+                    transaction,
+                    entitiesTemplatesByIds,
+                    this.workspaceId,
+                );
             },
             true,
         );
@@ -576,7 +581,8 @@ export class EntityManager extends DefaultManagerNeo4j {
                 duplicatedFromId,
             );
 
-            const [createdEntity, ...updatedEntities] = await this.bulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const bulkManager = new BulkActionManager(this.workspaceId);
+            const [createdEntity, ...updatedEntities] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
             return { createdEntity, updatedEntities, actions };
         }
 
@@ -693,7 +699,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return node;
     }
 
-    fixReturnedEntityReferencesFields(entity: IEntity) {
+    static fixReturnedEntityReferencesFields(entity: IEntity) {
         const fixedExpandedEntity = entity;
 
         const relatedEntities = {};
@@ -1268,7 +1274,8 @@ export class EntityManager extends DefaultManagerNeo4j {
                 unPopulatedEntity,
             );
 
-            const [updatedEntity, ...updatedEntities] = await this.bulkActionManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const bulkManager = new BulkActionManager(this.workspaceId);
+            const [updatedEntity, ...updatedEntities] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
 
             return { updatedEntity, updatedEntities, actions };
         }

@@ -5,11 +5,11 @@ import format from 'date-fns/format';
 import { isDate } from 'date-fns';
 import { IEntity, IEntityCrudAction, IExecutionOutput, isIEntity } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
-import { validateEntity } from '../../express/entities/validator.template';
-import EntityManager from '../../express/entities/manager';
+import { EntityValidator } from '../../express/entities/validator.template';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
+import { EntityManager } from '../../express/entities/manager';
 
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 
@@ -76,38 +76,39 @@ const manipulateOnExecutionOutput = async (
     crudAction: IEntityCrudAction,
     transaction: Transaction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    workspaceId: string,
 ) => {
+    const entityManager = new EntityManager(workspaceId);
+    const entityValidator = new EntityValidator(workspaceId);
     const updatedEntities: IExecutionOutput[] = [];
 
     await Promise.all(
-        executionOutput.map(async (entityToUpdate) => {
-            if (entityToUpdate.entityId === undefined) throw new ServiceError(400, 'cant create new entity by code');
+        executionOutput.map(async ({ entityId, properties }) => {
+            if (entityId === undefined) throw new ServiceError(400, 'cant create new entity by code');
 
-            const currentEntity = await EntityManager.getEntityByIdInTransaction(entityToUpdate.entityId, transaction);
+            const currentEntity = await entityManager.getEntityByIdInTransaction(entityId, transaction);
             const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
-            const entityAfterManipulations = entityToUpdate;
+            const entityAfterManipulations = JSON.parse(JSON.stringify({ entityId, properties }));
 
-            if (entityToUpdate.entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity)
+            if (entityId === entity.properties._id && crudAction === IEntityCrudAction.onCreateEntity)
                 entityAfterManipulations.entityId = generateFakeEntityId(0);
 
             Object.entries(currentEntityTemplate.properties.properties).forEach(([name, value]) => {
-                if (name in entityToUpdate.properties) {
-                    const propertyValue = entityToUpdate.properties[name];
+                if (!(name in properties)) return;
 
-                    if (value.format === 'relationshipReference') entityAfterManipulations.properties[name] = propertyValue._id;
+                const propertyValue = properties[name];
 
-                    if (value.format === 'date-time' && isDate(propertyValue))
-                        entityAfterManipulations.properties[name] = propertyValue.toISOString();
+                if (value.format === 'relationshipReference') entityAfterManipulations.properties[name] = propertyValue._id;
 
-                    if (value.format === 'date' && isDate(propertyValue))
-                        entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
+                if (value.format === 'date-time' && isDate(propertyValue)) entityAfterManipulations.properties[name] = propertyValue.toISOString();
 
-                    if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
-                        throw new ServiceError(400, "can't change serial number properties");
-                }
+                if (value.format === 'date' && isDate(propertyValue)) entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
+
+                if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
+                    throw new ServiceError(400, "can't change serial number properties");
             });
 
-            await validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
+            await entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
 
             updatedEntities.push(entityAfterManipulations);
         }),
@@ -122,11 +123,12 @@ export const executeActionCodeAndGetEntitiesToUpdate = (
     crudAction: IEntityCrudAction,
     transaction: Transaction,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
+    workspaceId: string,
 ): Promise<IExecutionOutput[]> => {
     const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
     const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds);
 
     const executionOutput = executeActionCodeInVM(populatedInstances, jsCode);
 
-    return manipulateOnExecutionOutput(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds);
+    return manipulateOnExecutionOutput(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds, workspaceId);
 };
