@@ -17,7 +17,6 @@ import {
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     updateCategorySchema,
-    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
     updateFieldValueSchema,
@@ -80,12 +79,7 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
-templatesRouter.patch(
-    '/entities/:id/actions',
-    ValidateRequest(updateEntityTemplateActionSchema),
-    AuthorizerControllerMiddleware.userIsRootAdmin,
-    templatesControllerMiddleware.updateEntityTemplateAction,
-);
+templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
     multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),

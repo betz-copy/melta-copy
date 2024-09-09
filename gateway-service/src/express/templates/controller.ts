@@ -58,10 +58,6 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.deleteEntityEnumFieldValue(req.params.id, field, fieldValue));
     }
 
-    static async updateEntityTemplateAction(req: Request, res: Response) {
-        res.json(await TemplatesManager.updateEntityTemplateAction(req.params.id, req.body.actions));
-    }
-
     // relationshipTemplates
     async createRelationshipTemplate(req: Request, res: Response) {
         res.json(await this.manager.createRelationshipTemplate(req.body));

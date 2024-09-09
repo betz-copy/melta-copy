@@ -156,14 +156,6 @@ export class EntityTemplateService extends TemplatesManagerService {
         return data;
     }
 
-    async updateEntityTemplateAction(entityTemplateId: string, actions: string) {
-        const { data } = await this.api.patch<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}/actions`, {
-            actions,
-        });
-
-        return data;
-    }
-
     async deleteEntityTemplate(entityTemplateId: string) {
         const { data } = await this.api.delete<IMongoEntityTemplate>(`${baseEntitiesRoute}/${entityTemplateId}`);
 

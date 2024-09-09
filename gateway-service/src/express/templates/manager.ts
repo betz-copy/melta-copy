@@ -675,10 +675,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.populateTemplateConstraints(updatedEntityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    static updateEntityTemplateAction(id: string, actions: string) {
-        return EntityTemplateManagerService.updateEntityTemplateAction(id, actions);
-    }
-
     // relationship templates
     private async throwIfEntityTemplateDoesntExist(entityTemplateId: string, errorMessage: string) {
         const { err: getEntityErr } = await trycatch(() => this.entityTemplateService.getEntityTemplateById(entityTemplateId));
