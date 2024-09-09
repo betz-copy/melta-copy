@@ -39,5 +39,6 @@ module.exports = {
         'import/prefer-default-export': 'off', // rule sucks
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
+        'class-methods-use-this': 'off',
     },
 };
