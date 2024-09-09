@@ -34,7 +34,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
         >
             <MeltaTooltip
                 title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : title}
-                placement="left-end"
+                placement="left-start"
                 disableHoverListener={!disabled && isDrawerOpen && !text} // when drawer is opened text is already shown, so no need for tooltip
             >
                 <div>
@@ -53,7 +53,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
                         {children}
                         {isDrawerOpen && (
                             <StyledListItemText
-                                primary={text}
+                                primary={text ?? title}
                                 sx={{ color: isActiveButton ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
                                 className="child"
                             />

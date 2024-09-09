@@ -1,8 +1,7 @@
 import * as mongoose from 'mongoose';
 import { IFrameDocument } from './interface';
-import config from '../../config';
 
-const IFrameSchema = new mongoose.Schema(
+const IFrameSchema = new mongoose.Schema<IFrameDocument>(
     {
         name: {
             type: String,
@@ -26,6 +25,4 @@ const IFrameSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-const IFrameModel = mongoose.model<IFrameDocument>(config.mongo.iFramesCollectionName, IFrameSchema);
-
-export default IFrameModel;
+export default IFrameSchema;

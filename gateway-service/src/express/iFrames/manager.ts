@@ -1,22 +1,24 @@
 import { FilterQuery, Types } from 'mongoose';
+import config from '../../config';
 import { ISearchIFramesBody } from '../../externalServices/iFramesService';
-import { ServiceError } from '../error';
-import IFrameModel from './model';
-import { IFrame, IFrameDocument } from './interface';
 import { StorageService } from '../../externalServices/storageService';
-import { removeTmpFile } from '../../utils/fs';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
-import DefaultManagerProxy from '../../utils/express/manager';
+import { removeTmpFile } from '../../utils/fs';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
+import { ServiceError } from '../error';
+import { IFrame, IFrameDocument } from './interface';
+import IFrameSchema from './model';
 
-export class IFrameManager extends DefaultManagerProxy {
+export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     private storageService: StorageService;
 
     constructor(workspaceId: string) {
-        super(null);
+        super(workspaceId, config.mongo.iFramesCollectionName, IFrameSchema);
         this.storageService = new StorageService(workspaceId);
     }
-    private filterIFramesWithPermissions(allIFrames, allowedCategories: string[]) {
-        return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId: string) => allowedCategories.includes(categoryId)));
+
+    private filterIFramesWithPermissions(allIFrames: IFrameDocument[], allowedCategories: string[]) {
+        return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
     }
 
     escapeRegExp(text: string) {
@@ -35,7 +37,8 @@ export class IFrameManager extends DefaultManagerProxy {
             query.$or = [{ name: searchRegex }, { url: searchRegex }];
         }
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
-        const iFrames = await IFrameModel.find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
+        const iFrames = await this.model
+            .find(query, {}, { limit, skip, sort: ids ? {} : { createdAt: -1 } })
             .lean()
             .exec();
 
@@ -47,22 +50,22 @@ export class IFrameManager extends DefaultManagerProxy {
     }
 
     async getIFrameById(iFrameId: string) {
-        return IFrameModel.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+        return this.model.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
     async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
-        let newIFrame;
+        let newIFrame: IFrame;
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
             newIFrame = { ...iFrameData, iconFileId: newFileId };
         } else newIFrame = { ...iFrameData, iconFileId: null };
 
-        return IFrameModel.create(newIFrame);
+        return this.model.create(newIFrame);
     }
 
     deleteIFrame(iFrameId: string) {
-        return IFrameModel.findByIdAndDelete(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+        return this.model.findByIdAndDelete(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
     }
 
     async update(
@@ -71,7 +74,8 @@ export class IFrameManager extends DefaultManagerProxy {
             file?: string;
         },
     ) {
-        return IFrameModel.findByIdAndUpdate(id, updatedIFrame, { new: true, overwrite: true })
+        return this.model
+            .findByIdAndUpdate(id, updatedIFrame, { new: true, overwrite: true })
             .orFail(new ServiceError(404, 'IFrame not found'))
             .lean()
             .exec();
@@ -79,7 +83,7 @@ export class IFrameManager extends DefaultManagerProxy {
 
     async updateIFrame(iFrameId: string, updatedData: Partial<IFrame> & { file?: string }, file?: Express.Multer.File) {
         const { iconFileId } = await this.getIFrameById(iFrameId);
-        let updatedIFrame;
+        let updatedIFrame: IFrame;
 
         if (file) {
             if (iconFileId) {

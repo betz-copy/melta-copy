@@ -303,54 +303,59 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <NavButton
                         to="/iframes"
                         title={
-                            <Grid container display="flex" flexDirection="column">
-                                <Grid item padding={1}>
-                                    {i18next.t('iFrames.favouritesIFrames')}
-                                </Grid>
-                                <Grid item width="200px" maxHeight="450px" sx={{ overflow: 'auto' }}>
-                                    {iFramesInSidebar?.map((iFrame) => (
-                                        <MenuItem
-                                            key={iFrame._id}
-                                            onClick={(event) => handleMenuItemClick(event, iFrame._id)}
-                                            sx={{
-                                                '&:hover': {
-                                                    backgroundColor: '#B8B8B8',
-                                                    borderRadius: '5px',
-                                                },
-                                                padding: '9px 9px 9px 18px',
-                                            }}
-                                        >
-                                            {iFrame.iconFileId ? (
-                                                <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
-                                            ) : (
-                                                <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
-                                            )}
-                                            <Typography
-                                                style={{
-                                                    fontFamily: 'Rubik',
-                                                    fontSize: '14px',
-                                                    fontWeight: '400',
-                                                    lineHeight: '17px',
-                                                    letterSpacing: '0em',
-                                                    textAlign: 'right',
-                                                    width: '125px',
-                                                    height: '17px',
-                                                    marginRight: '10px',
-                                                    textOverflow: 'ellipsis',
-                                                    whiteSpace: 'nowrap',
-                                                    overflow: 'hidden',
+                            iFramesInSidebar && iFramesInSidebar.length > 0 ? (
+                                <Grid container display="flex" flexDirection="column">
+                                    <Grid item padding={1}>
+                                        {i18next.t('iFrames.favouritesIFrames')}
+                                    </Grid>
+                                    <Grid item width="200px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                        {iFramesInSidebar.map((iFrame) => (
+                                            <MenuItem
+                                                key={iFrame._id}
+                                                onClick={(event) => handleMenuItemClick(event, iFrame._id)}
+                                                sx={{
+                                                    '&:hover': {
+                                                        backgroundColor: '#B8B8B8',
+                                                        borderRadius: '5px',
+                                                    },
+                                                    padding: '9px 9px 9px 18px',
                                                 }}
                                             >
-                                                {iFrame.name}
-                                            </Typography>
-                                        </MenuItem>
-                                    ))}
+                                                {iFrame.iconFileId ? (
+                                                    <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
+                                                ) : (
+                                                    <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
+                                                )}
+                                                <Typography
+                                                    style={{
+                                                        fontFamily: 'Rubik',
+                                                        fontSize: '14px',
+                                                        fontWeight: '400',
+                                                        lineHeight: '17px',
+                                                        letterSpacing: '0em',
+                                                        textAlign: 'right',
+                                                        width: '125px',
+                                                        height: '17px',
+                                                        marginRight: '10px',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    {iFrame.name}
+                                                </Typography>
+                                            </MenuItem>
+                                        ))}
+                                    </Grid>
                                 </Grid>
-                            </Grid>
+                            ) : (
+                                i18next.t('pages.iFrames')
+                            )
                         }
                         text={i18next.t('pages.iFrames')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                        isActiveButton={activeButton === 'iFrames'}
                     >
                         <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
                     </NavButton>

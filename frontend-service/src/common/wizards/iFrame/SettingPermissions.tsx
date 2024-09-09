@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import { StepComponentProps } from '..';
 import { IFrameWizardValues } from '.';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { useUserStore } from '../../../stores/user';
 
@@ -16,18 +15,21 @@ const settingIFramesPermissionsSchema = {
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
     const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const allowedCategoriesIds = myPermissions?.instancesPermissions
-        .filter((instancesPermission) => instancesPermission.scopes.includes('Write'))
-        .map((instancesPermission) => instancesPermission.category);
+    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+    const currentUser = useUserStore((state) => state.user);
+
+    console.log(currentUser.currentWorkspacePermissions.admin);
+
+    const allowedCategoriesIds = currentUser.currentWorkspacePermissions.admin
+        ? Array.from(categories.values()).map(({ _id }) => _id)
+        : Object.keys(currentUser.currentWorkspacePermissions.instances?.categories ?? {});
+    console.log({ allowedCategoriesIds });
 
     // ???
     // const currentUser = useUserStore((state) => state.user);
 
     // const allowedCategoriesIds =
     //     currentUser.currentWorkspacePermissions.instances?.scope === 'write'.map((instancesPermission) => instancesPermission.category);
-
-    const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [selectedCategories, setSelectedCategories] = useState(values.categoryIds || []);
     const handleCheckboxChange = (categoryId: string) => {

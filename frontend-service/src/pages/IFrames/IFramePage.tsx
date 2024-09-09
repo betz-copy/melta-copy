@@ -1,24 +1,22 @@
-import React, { useEffect } from 'react';
-import Iframe from 'react-iframe';
-import { useNavigate, useParams } from 'react-router-dom';
-import { useQuery } from 'react-query';
 import { CircularProgress, Grid } from '@mui/material';
+import React from 'react';
+import Iframe from 'react-iframe';
+import { useQuery } from 'react-query';
+import { useLocation, useParams } from 'wouter';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
 
 interface IFramePageProps {
     iFrame?: IMongoIFrame;
-    isIFramePage?: boolean;
     setIFramesOrder?: (value) => void;
-    setTitle?: React.Dispatch<React.SetStateAction<string>>;
-    setIconFileId?: React.Dispatch<React.SetStateAction<string>>;
+    isIFramePage?: boolean;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, setIFramesOrder, setTitle, setIconFileId }) => {
-    const { iFrameId } = useParams();
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFramePage = true }) => {
+    const { iFrameId } = useParams<{ iFrameId: string }>();
     const id = iFrame?._id || iFrameId;
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     const { data: iFrameData, isLoading } = useQuery(['getIFrame', id], async () => getIFrameById(id!), {
         initialData: iFrame,
@@ -29,13 +27,6 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
         },
     });
 
-    useEffect(() => {
-        if (setTitle && setIconFileId) {
-            setTitle(iFrameData?.name ?? '');
-            setIconFileId(iFrameData?.iconFileId ?? '');
-        }
-    }, [setTitle, iFrameData]);
-
     if (isLoading) {
         return (
             <Grid container justifyContent="center">
@@ -44,22 +35,18 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, isIFramePage = true, se
         );
     }
 
-    return isIFramePage ? (
-        <Grid
-            style={{
-                height: 'calc(100vh - 58px)',
-                width: '100%',
-                overflow: 'hidden',
-            }}
-        >
-            <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
-        </Grid>
-    ) : (
+    return (
         <Grid container width="100%" height="100%" flexDirection="column" flexWrap="nowrap">
             <Grid item>
-                <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} />
+                <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} isIFramePage={isIFramePage} />
             </Grid>
-            <Grid item width="100%" height="100%">
+            <Grid
+                style={{
+                    height: 'calc(100vh - 48px)',
+                    width: '100%',
+                    overflow: 'hidden',
+                }}
+            >
                 <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
             </Grid>
         </Grid>

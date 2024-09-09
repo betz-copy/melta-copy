@@ -7,6 +7,7 @@ export class IFrameController extends DefaultController<IFrameManager> {
     constructor(workspaceId: string) {
         super(new IFrameManager(workspaceId));
     }
+
     async searchIFrames(req: Request, res: Response) {
         const { body, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
 

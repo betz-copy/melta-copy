@@ -15,6 +15,7 @@ export class IFramesValidator extends DefaultController {
         this.iFramesManager = new IFrameManager(workspaceId);
         this.authorizer = new Authorizer(workspaceId);
     }
+
     private async validateHasPermissionsToIFrame(iFrame: IFrame, allowedCategoriesIds: string[]) {
         const unauthorizedCategories = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
 
@@ -30,6 +31,9 @@ export class IFramesValidator extends DefaultController {
             this.authorizer.getWorkspacePermissions(req.user!.id),
             this.authorizer.userCanWriteTemplates(req),
         ]);
+
+        if (userPermissions.admin) return;
+
         const allowedCategoriesIds = Object.keys(userPermissions.instances?.categories ?? {});
         console.log({ allowedCategoriesIds });
 

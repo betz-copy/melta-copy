@@ -29,7 +29,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const [isDimensionsChange, setIsDimensionsChange] = useState(false);
 
     const localStorageKey = 'iFramesOrder';
-    const queryKey = ['searchIFrames', searchInput, iFramesOrder];
+    const queryKey = ['allIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
 
     const screenWidth = window.innerWidth;

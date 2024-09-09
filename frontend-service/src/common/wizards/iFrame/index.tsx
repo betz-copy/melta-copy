@@ -60,7 +60,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                queryClient.invalidateQueries('searchIFrames');
+                // queryClient.invalidateQueries('searchIFrames');
 
                 queryClient.setQueryData(['getIFrame', data._id], data);
 

@@ -41,7 +41,6 @@ const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
 export const MeltaRoutesInner: React.FC = () => {
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(false);
-    const [iconFileId, setIconFileId] = useState('');
 
     const [_, navigate] = useLocation();
 
@@ -128,8 +127,7 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <IFrames isSideBarOpen={open} />
                             </Route>
                             <Route path="/iframes/:iFrameId">
-                                <TopBar title={title} boxStyle={{ marginBottom: 0 }} iconFileId={iconFileId} />
-                                <IFramePage setTitle={setTitle} setIconFileId={setIconFileId} />
+                                <IFramePage />
                             </Route>
 
                             <Route path="/processes">

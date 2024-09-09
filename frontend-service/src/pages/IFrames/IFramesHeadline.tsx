@@ -6,7 +6,6 @@ import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { BlueTitle } from '../../common/BlueTitle';
 import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
@@ -23,7 +22,6 @@ const IFramesPageHeadline: React.FC<{
     setIFramesOrder: (value) => void;
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
     const localStorageKey = 'iFramesOrder';
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const currentUser = useUserStore((state) => state.user);
@@ -156,14 +154,12 @@ const IFramesPageHeadline: React.FC<{
                     </IconButton>
                 </Grid>
                 <Grid item>
-                    {/* {myPermissions.templatesManagementId && ( */}
-                    {currentUser.currentWorkspacePermissions.permissions?.scope === PermissionScope.write ||
-                        (currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write && (
-                            <IconButton onClick={setIFrameWizardDialogState}>
-                                <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
-                            </IconButton>
-                        ))}
-                    {/* )} */}
+                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
+                        <IconButton onClick={setIFrameWizardDialogState}>
+                            <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
+                        </IconButton>
+                    )}
                 </Grid>
             </Grid>
         </TopBarGrid>
