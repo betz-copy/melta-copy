@@ -303,13 +303,13 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <NavButton
                         to="/iframes"
                         title={
-                            iFramesInSidebar && iFramesInSidebar.length > 0 ? (
+                            iFramesInSidebar?.length! > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid item padding={1}>
                                         {i18next.t('iFrames.favouritesIFrames')}
                                     </Grid>
-                                    <Grid item width="200px" maxHeight="450px" sx={{ overflow: 'auto' }}>
-                                        {iFramesInSidebar.map((iFrame) => (
+                                    <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                        {iFramesInSidebar?.map((iFrame) => (
                                             <MenuItem
                                                 key={iFrame._id}
                                                 onClick={(event) => handleMenuItemClick(event, iFrame._id)}

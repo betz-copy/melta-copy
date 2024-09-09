@@ -134,6 +134,7 @@ const PermissionsOfUserDialog: React.FC<{
                     });
                 }
 
+                queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
                 handleClose();
             },

@@ -25,12 +25,6 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
         : Object.keys(currentUser.currentWorkspacePermissions.instances?.categories ?? {});
     console.log({ allowedCategoriesIds });
 
-    // ???
-    // const currentUser = useUserStore((state) => state.user);
-
-    // const allowedCategoriesIds =
-    //     currentUser.currentWorkspacePermissions.instances?.scope === 'write'.map((instancesPermission) => instancesPermission.category);
-
     const [selectedCategories, setSelectedCategories] = useState(values.categoryIds || []);
     const handleCheckboxChange = (categoryId: string) => {
         setSelectedCategories((prevSelected) =>
