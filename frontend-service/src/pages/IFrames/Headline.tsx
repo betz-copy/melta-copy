@@ -22,11 +22,12 @@ import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../serv
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 
-const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value) => void; isIFramePage: boolean }> = ({
-    iFrame,
-    setIFramesOrder,
-    isIFramePage,
-}) => {
+const IFrameHeadline: React.FC<{
+    iFrame: IMongoIFrame;
+    setIFramesOrder?: (value) => void;
+    isIFramePage: boolean;
+    setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
+}> = ({ iFrame, setIFramesOrder, isIFramePage, setIFrameDeleted }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
     const [isHovered, setIsHovered] = useState(false);
@@ -58,12 +59,11 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
     });
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (data) => {
-            // queryClient.invalidateQueries('searchIFrames');
             queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
                 if (!oldData) return [];
                 return oldData.filter((iframe) => iframe._id !== data._id);
             });
-            queryClient.invalidateQueries('allIFrames');
+            setIFrameDeleted!((prev: boolean) => !prev);
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
@@ -114,8 +114,7 @@ const IFrameHeadline: React.FC<{ iFrame: IMongoIFrame; setIFramesOrder?: (value)
                         <Grid item style={{ padding: '20px' }}>
                             {isHovered && (
                                 <Grid sx={{ display: 'flex' }}>
-                                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
-                                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
+                                    {currentUser.currentWorkspacePermissions.admin && (
                                         <>
                                             <Grid>
                                                 <MeltaTooltip title={i18next.t('actions.delete')}>

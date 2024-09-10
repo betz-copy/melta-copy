@@ -154,8 +154,7 @@ const IFramesPageHeadline: React.FC<{
                     </IconButton>
                 </Grid>
                 <Grid item>
-                    {(currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
-                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
+                    {currentUser.currentWorkspacePermissions.admin && (
                         <IconButton onClick={setIFrameWizardDialogState}>
                             <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
                         </IconButton>

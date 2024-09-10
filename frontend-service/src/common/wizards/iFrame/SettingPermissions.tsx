@@ -18,12 +18,9 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
 
-    console.log(currentUser.currentWorkspacePermissions.admin);
-
     const allowedCategoriesIds = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values()).map(({ _id }) => _id)
         : Object.keys(currentUser.currentWorkspacePermissions.instances?.categories ?? {});
-    console.log({ allowedCategoriesIds });
 
     const [selectedCategories, setSelectedCategories] = useState(values.categoryIds || []);
     const handleCheckboxChange = (categoryId: string) => {

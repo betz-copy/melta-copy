@@ -633,6 +633,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',

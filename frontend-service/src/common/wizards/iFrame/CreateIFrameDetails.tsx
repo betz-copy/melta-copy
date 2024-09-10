@@ -4,11 +4,10 @@ import * as Yup from 'yup';
 import i18next from 'i18next';
 import { StepComponentProps } from '../index';
 import { IFrameWizardValues } from '.';
-import { variableUrlValidation } from '../../../utils/validation';
 
 const createIFrameDetailsSchema = {
     name: Yup.string().required(i18next.t('validation.required')),
-    url: Yup.string().required(i18next.t('validation.required')).matches(variableUrlValidation, 'URL is not valid'),
+    url: Yup.string().url(i18next.t('validation.url')).required(i18next.t('validation.required')),
 };
 
 const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {

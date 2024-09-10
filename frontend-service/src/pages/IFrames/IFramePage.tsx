@@ -11,9 +11,10 @@ interface IFramePageProps {
     iFrame?: IMongoIFrame;
     setIFramesOrder?: (value) => void;
     isIFramePage?: boolean;
+    setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFramePage = true }) => {
+const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFramePage = true, setIFrameDeleted }) => {
     const { iFrameId } = useParams<{ iFrameId: string }>();
     const id = iFrame?._id || iFrameId;
     const [_, navigate] = useLocation();
@@ -38,7 +39,12 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
     return (
         <Grid container width="100%" height="100%" flexDirection="column" flexWrap="nowrap">
             <Grid item>
-                <IFrameHeadline iFrame={iFrameData!} setIFramesOrder={setIFramesOrder} isIFramePage={isIFramePage} />
+                <IFrameHeadline
+                    iFrame={iFrameData!}
+                    setIFramesOrder={setIFramesOrder}
+                    isIFramePage={isIFramePage}
+                    setIFrameDeleted={setIFrameDeleted}
+                />
             </Grid>
             <Grid
                 style={{

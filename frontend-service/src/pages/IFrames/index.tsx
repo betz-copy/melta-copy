@@ -31,7 +31,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const localStorageKey = 'iFramesOrder';
     const queryKey = ['allIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
-
+    const [iFrameDeleted, setIFrameDeleted] = useState(false);
     const screenWidth = window.innerWidth;
     const sideBarWidth = 200;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
@@ -40,7 +40,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
         const iFramesIds = allIFrames?.map(({ _id }) => _id) || [];
         localStorage.setItem(localStorageKey, JSON.stringify(iFramesIds));
         setIFramesOrder(iFramesIds);
-    }, [allIFrames, queryClient]);
+    }, [allIFrames, queryClient, iFrameDeleted]);
 
     useEffect(() => {
         const open: string = localStorage.getItem('isSideBarOpen') ?? 'false';
@@ -96,6 +96,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                     ids: currentOrder.map((iFrameId) => iFrameId),
                                 });
                             }
+
                             return allIFrames ? allIFrames.slice(index, index + infiniteScrollPageCount) : [];
                         }}
                         onQueryError={(error) => {
@@ -127,7 +128,12 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                                 overflow: 'hidden',
                                             }}
                                         >
-                                            <IFramePage iFrame={iFrame} isIFramePage={false} setIFramesOrder={setIFramesOrder} />
+                                            <IFramePage
+                                                iFrame={iFrame}
+                                                isIFramePage={false}
+                                                setIFramesOrder={setIFramesOrder}
+                                                setIFrameDeleted={setIFrameDeleted}
+                                            />
                                         </Grid>
                                     </Resizable>
                                 </div>
