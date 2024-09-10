@@ -1,5 +1,4 @@
 import { StorageService } from '../../externalServices/storageService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
 import { UsersManager } from '../users/manager';
@@ -62,16 +61,10 @@ export class WorkspaceManager extends DefaultManagerProxy {
         );
     }
 
-    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[], userId: string) {
+    async createOne(workspace: Omit<IWorkspace, '_id'>, files: Express.Multer.File[]) {
         const fileProperties = await this.uploadFilesWrapper(files);
 
-        const createdWorkspace = await WorkspaceService.createOne({ ...workspace, ...fileProperties });
-
-        await UsersManager.syncUserPermissions(userId, { [createdWorkspace._id]: { admin: { scope: PermissionScope.write } } }).catch(() => {
-            console.log(`failed to sync user permissions for userId ${userId} and workspaceId ${createdWorkspace._id}`); // eslint-disable-line no-console
-        });
-
-        return createdWorkspace;
+        return WorkspaceService.createOne({ ...workspace, ...fileProperties });
     }
 
     private async deleteFilesWrapper(id: string, deleteFunc: () => Promise<any>) {
