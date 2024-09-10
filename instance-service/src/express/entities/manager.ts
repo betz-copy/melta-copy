@@ -970,7 +970,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return ruleFailures;
     }
 
-    public getKeysOfUpdatedProperties(
+    private getKeysOfUpdatedProperties(
         oldEntityProperties: Record<string, any>,
         newEntityProperties: Record<string, any>,
         entityTemplate: IMongoEntityTemplate,
@@ -981,15 +981,21 @@ export class EntityManager extends DefaultManagerNeo4j {
             createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
             updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
         };
-        const templateUpdatedProperties = pickBy(propertiesWithGeneratedProperties, (_propertyTemplate, key) => {
-            return newEntityProperties[key] !== oldEntityProperties[key];
-        });
+        const templateUpdatedProperties = pickBy(
+            propertiesWithGeneratedProperties,
+            (_propertyTemplate, key) => newEntityProperties[key] !== oldEntityProperties[key],
+        );
 
         const updatedProperties = Object.keys(templateUpdatedProperties);
         return updatedProperties;
     }
 
-    public getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
+    private removeBasicProperties(properties: Record<string, any>) {
+        const { createdAt, updatedAt, _id, disabled, ...rest } = properties;
+        return rest;
+    }
+
+    private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
         const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
@@ -997,7 +1003,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             return acc;
         }, {} as Record<string, any>);
 
-        return updatedProperties;
+        return this.removeBasicProperties(updatedProperties);
     }
 
     async handleRelationshipReferenceFieldsChanges(
