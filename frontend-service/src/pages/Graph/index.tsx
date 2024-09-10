@@ -31,6 +31,8 @@ import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
+// eslint-disable-next-line import/no-unresolved
+import { ILinkObject, INodeObject } from '../../customTypes';
 
 interface genericMenuState {
     node: NodeObject;
@@ -100,7 +102,7 @@ const Graph: React.FC = () => {
         if (resetData) setGraphData({ nodes: [], links: [] });
     };
 
-    const graphEntityTemplateIds = uniqBy(graphData.nodes, ({ templateId }) => templateId).map((element) => element.templateId);
+    const graphEntityTemplateIds = uniqBy(graphData.nodes as INodeObject[], ({ templateId }) => templateId).map((element) => element.templateId);
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
             const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
@@ -174,7 +176,7 @@ const Graph: React.FC = () => {
 
         if (!initialExpandedEntity?.menu) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
 
-        expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
+        (expandedEntityGraphData.nodes as INodeObject[]).find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
 
         return { expandedEntityGraphData, expandedEntity };
     };
@@ -272,16 +274,23 @@ const Graph: React.FC = () => {
                     ref={forceRef as React.MutableRefObject<ForceGraphMethods3D>}
                     rendererConfig={{ powerPreference: 'low-power', precision: 'lowp' }}
                     linkDirectionalArrowLength={4}
-                    linkDirectionalParticleWidth={(link) => (link.highlighted ? 2.5 : 0)}
-                    linkWidth={(link) => (link.highlighted ? 1 : 0.5)}
+                    linkDirectionalParticleWidth={(link) => ((link as ILinkObject).highlighted ? 2.5 : 0)}
+                    linkWidth={(link) => ((link as ILinkObject).highlighted ? 1 : 0.5)}
                     linkDirectionalParticleResolution={6}
                     linkOpacity={0.45}
                     nodeResolution={16}
                     nodeThreeObjectExtend
-                    nodeThreeObject={(node) => create3DNodeDetails(node, entityTemplates.get(node.templateId)!, entityId === node.data._id, darkMode)}
+                    nodeThreeObject={(node) =>
+                        create3DNodeDetails(
+                            node as INodeObject,
+                            entityTemplates.get((node as INodeObject).templateId)!,
+                            entityId === (node as INodeObject).data._id,
+                            darkMode,
+                        )
+                    }
                     linkThreeObjectExtend
                     linkThreeObject={(link) => {
-                        const labelText = relationshipTemplates.get(link.templateId)!.displayName;
+                        const labelText = relationshipTemplates.get((link as ILinkObject).templateId)!.displayName;
 
                         const { label } = create3DLabel(labelText, graphSettings.linkLabelFontSize);
                         return label;
@@ -291,7 +300,7 @@ const Graph: React.FC = () => {
                         return false;
                     }}
                     onNodeClick={(node) => {
-                        lookAt3D(node, forceRef.current as ForceGraphMethods3D);
+                        lookAt3D(node as INodeObject, forceRef.current as ForceGraphMethods3D);
                     }}
                 />
             );
@@ -303,19 +312,19 @@ const Graph: React.FC = () => {
                 ref={forceRef as React.MutableRefObject<ForceGraphMethods>}
                 nodeCanvasObjectMode={() => 'after'}
                 nodeCanvasObject={(node, ctx) => {
-                    const entityTemplate = entityTemplates.get(node.templateId)!;
+                    const entityTemplate = entityTemplates.get((node as INodeObject).templateId)!;
 
-                    updateNodeLabelIcons(node, entityId === node.data._id);
+                    updateNodeLabelIcons(node as INodeObject, entityId === (node as INodeObject).data._id);
                     drawNode(ctx, node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, entityTemplate);
                 }}
                 linkCanvasObjectMode={() => 'after'}
                 linkCanvasObject={(link, ctx) => {
-                    const label = relationshipTemplates.get(link.templateId)?.displayName || '';
+                    const label = relationshipTemplates.get((link as ILinkObject).templateId)?.displayName || '';
 
-                    drawLinkLabel(link, label, ctx);
+                    drawLinkLabel(link as ILinkObject, label, ctx);
                 }}
                 onNodeClick={(node) => {
-                    lookAt(node, forceRef.current as ForceGraphMethods);
+                    lookAt(node as INodeObject, forceRef.current as ForceGraphMethods);
                 }}
             />
         );
@@ -431,7 +440,7 @@ const Graph: React.FC = () => {
                         setGraphMenuState(undefined);
                     }}
                     onCenterMain={() => {
-                        const mainNode = graphData.nodes.find((node) => node.id === entityId)!;
+                        const mainNode = graphData.nodes.find((node) => node.id === entityId)! as INodeObject;
 
                         if (is3DGraph) {
                             lookAt3D(mainNode, forceRef.current as ForceGraphMethods3D);
