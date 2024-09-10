@@ -3,7 +3,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --silent
+RUN npm ci --silent
 
 COPY . .
 
@@ -15,7 +15,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 
-RUN npm install --omit=dev --silent
+RUN npm ci --omit=dev --silent
 COPY --from=build /usr/src/app/dist ./dist
 
 EXPOSE 8000
