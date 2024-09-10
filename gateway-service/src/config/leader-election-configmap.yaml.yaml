@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-    name: leader-election-config
-    namespace: default
-data:
-    leader: ''

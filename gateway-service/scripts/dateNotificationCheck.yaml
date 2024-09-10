@@ -94,20 +94,3 @@ spec:
 # to build docker image:
 # cd gateway-service
 # docker build -t date-notification-check:latest .
-
-# Example: hello world
-# apiVersion: batch/v1
-# kind: CronJob
-# metadata:
-#     name: hello-world
-# spec:
-#     schedule: '* * * * *'
-#     jobTemplate:
-#         spec:
-#             template:
-#                 spec:
-#                     containers:
-#                         - name: busybox
-#                           image: busybox
-#                           command: ['echo', 'Hello World!']
-#                     restartPolicy: Never
