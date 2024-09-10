@@ -1,8 +1,8 @@
 /* eslint-disable no-plusplus */
 // @ts-ignore
+import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import pLimit from 'p-limit';
 import { Axios } from 'axios';
-import { JSONSchemaFaker } from 'json-schema-faker';
-import * as pLimit from 'p-limit';
 import config from './config';
 import { IMongoProcessTemplatePopulated } from './processTemplate';
 import { createAxiosInstance } from './utils/axios';

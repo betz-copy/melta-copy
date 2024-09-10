@@ -21,7 +21,7 @@ export class NotificationsManager extends DefaultManagerMongo<INotification> {
     }
 
     public async getNotificationCount(query: IBasicNotificationQuery) {
-        return this.model.count(this.handleQuery(query));
+        return this.model.countDocuments(this.handleQuery(query));
     }
 
     public async getNotificationGroupCount(

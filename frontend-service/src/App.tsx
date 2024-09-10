@@ -23,7 +23,7 @@ const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
     const [isErrorMyUser, setIsErrorMyUser] = useState(false);
 
-    const [_, navigate] = useLocation();
+    const [location, navigate] = useLocation();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -64,7 +64,9 @@ const App: React.FC = () => {
                 const workspaceIds = Object.keys(userFromDb.permissions);
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);
-                    if (workspace.name !== '' && workspace.path !== '/') navigate(`${workspace.path}/${workspace.name}${workspace.type}`);
+                    const path = `${workspace.path}/${workspace.name}${workspace.type}`;
+                    if (workspace.name !== '' && workspace.path !== '/')
+                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}`);
                 }
             } catch {
                 setIsErrorMyUser(true);
@@ -74,7 +76,7 @@ const App: React.FC = () => {
         };
 
         initUser();
-    }, [setUser, navigate]);
+    }, [setUser, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
     if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 

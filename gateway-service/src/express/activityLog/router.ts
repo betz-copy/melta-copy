@@ -5,8 +5,11 @@ import config from '../../config';
 const { activityLogService: activityLog } = config;
 
 const ActivityLogProxy = createProxyMiddleware({
-    target: activityLog.url,
-    onProxyReq: fixRequestBody,
+    target: `${activityLog.url}${activityLog.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: activityLog.requestTimeout,
 });
 

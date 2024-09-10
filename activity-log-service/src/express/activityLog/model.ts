@@ -15,18 +15,9 @@ export const ActivityLogSchema = new mongoose.Schema({
         required: true,
     },
     action: {
-        type: Action,
+        type: String,
         required: true,
-        enum: [
-            'DELETE_RELATIONSHIP',
-            'CREATE_RELATIONSHIP',
-            'UPDATE_ENTITY',
-            'CREATE_ENTITY',
-            'DUPLICATE_ENTITY',
-            'DISABLE_ENTITY',
-            'ACTIVATE_ENTITY',
-            'VIEW_ENTITY',
-        ],
+        enum: Action,
     },
     metadata: {
         type: Object,

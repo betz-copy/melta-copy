@@ -35,17 +35,17 @@ export class FilesManager extends DefaultManagerMinio {
         const fileStream = await this.minioClient.downloadFileStream(filePath);
         const fileBuffer = await streamToBuffer(fileStream);
         const convertedBuffer = await libreConvert(fileBuffer, document.previewFileType, undefined);
-        return Readable.from(convertedBuffer);
+        return { previewBuffer: Readable.from(convertedBuffer), fileSize: convertedBuffer.length };
     }
 
-    async uploadFileToMinio(fileStream: Readable, newFileName: string) {
-        await this.minioClient.uploadFileStream(fileStream, newFileName, {});
+    async uploadFileToMinio(fileStream: Readable, newFileName: string, fileSize: number) {
+        await this.minioClient.uploadFileStream(fileStream, newFileName, fileSize, {});
     }
 
     async uploadFilePreview(originalFileName: string) {
         const pdfFileName = `${document.previewPrefix}${originalFileName.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
-        const previewBuffer = await this.createFilePreview(originalFileName);
-        const res = await this.uploadFileToMinio(previewBuffer as Readable, pdfFileName);
+        const { previewBuffer, fileSize } = await this.createFilePreview(originalFileName);
+        const res = await this.uploadFileToMinio(previewBuffer as Readable, pdfFileName, fileSize);
         return res;
     }
 }
