@@ -40,5 +40,8 @@ module.exports = {
         'no-shadow': 'off',
         'no-restricted-syntax': 'off',
         '@typescript-eslint/no-shadow': 'error',
+        'no-plusplus': 'off',
+        'max-classes-per-file': 'off',
+        'class-methods-use-this': 'off',
     },
 };

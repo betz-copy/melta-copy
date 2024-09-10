@@ -46,6 +46,7 @@ export const expandEntityToNeoQuery = async (
 };
 
 export const getExpandedFilteredGraphRecursively = async (
+    neo4jClient: Neo4jClient,
     disabled: boolean | null,
     initialExpandedEntity: IEntityExpanded,
     searchBody: IGetExpandedEntityBody['filters'],
@@ -75,7 +76,7 @@ export const getExpandedFilteredGraphRecursively = async (
             entityTemplatesMap,
             initialExpandedEntityId,
         );
-        const currFilteredExpandedEntity = await Neo4jClient.readTransaction(
+        const currFilteredExpandedEntity = await neo4jClient.readTransaction(
             searchCypherQuery.cypherQuery,
             normalizeReturnedRelAndEntities(disabled),
             searchCypherQuery.parameters,

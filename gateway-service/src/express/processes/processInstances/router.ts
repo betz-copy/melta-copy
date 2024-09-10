@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../../config';
-import { wrapController, wrapMiddleware } from '../../../utils/express';
+import { createWorkspacesController } from '../../../utils/express';
 
 import InstancesController from './controller';
 import {
@@ -13,37 +13,39 @@ import {
     archivedProcessStatusSchema,
 } from './validator.schema';
 import ValidateRequest from '../../../utils/joi';
-import { validateUserIsProcessesManager } from '../../permissions/validateAuthorizationMiddleware';
+import { AuthorizerControllerMiddleware } from '../../../utils/authorizer';
 
 const InstancesRouter: Router = Router();
 
-InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), wrapController(InstancesController.getProcessInstance));
+const InstancesControllerMiddleware = createWorkspacesController(InstancesController);
+
+InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(
     '/',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(createProcessInstanceSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(InstancesController.createProcessInstance),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.createProcessInstance,
 );
-InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), wrapController(InstancesController.searchProcessInstances));
+InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), InstancesControllerMiddleware.searchProcessInstances);
 InstancesRouter.put(
     '/:id',
     multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
     ValidateRequest(updateProcessInstanceSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(InstancesController.updateProcessInstance),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.updateProcessInstance,
 );
 InstancesRouter.delete(
     '/:id',
     ValidateRequest(deleteProcessInstanceSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(InstancesController.deleteProcessInstance),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.deleteProcessInstance,
 );
 InstancesRouter.patch(
     '/archive/:id',
     ValidateRequest(archivedProcessStatusSchema),
-    wrapMiddleware(validateUserIsProcessesManager),
-    wrapController(InstancesController.archiveProcess),
+    AuthorizerControllerMiddleware.userCanWriteProcesses,
+    InstancesControllerMiddleware.archiveProcess,
 );
 
 export default InstancesRouter;

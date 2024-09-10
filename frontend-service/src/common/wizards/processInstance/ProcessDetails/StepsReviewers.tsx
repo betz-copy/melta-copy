@@ -5,18 +5,17 @@ import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
-import { useSelector } from 'react-redux';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
 import { CustomIcon } from '../../../CustomIcon';
-import { IUser } from '../../../../services/kartoffelService';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
-import { RootState } from '../../../../store';
 import { MeltaTooltip } from '../../../MeltaTooltip';
+import { useDarkModeStore } from '../../../../stores/darkMode';
+import { IUser } from '../../../../interfaces/users';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const cardRef = useRef<HTMLDivElement | null>(null);
     const [cardWidth, setCardWidth] = useState<number | null>(null);
 
@@ -88,11 +87,11 @@ const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processIn
                         onRemove={(removedReviewer, reviewers) => {
                             if (isEditMode && processInstance) {
                                 const stepInstance = getStepInstanceByStepTemplateId(stepTemplate._id, processInstance)!;
-                                const newReviewers = reviewers.filter((reviewer: IUser) => reviewer.id !== removedReviewer.id);
+                                const newReviewers = reviewers.filter((reviewer: IUser) => reviewer._id !== removedReviewer._id);
                                 const newStepsValue = { ...values.steps, [stepInstance._id]: newReviewers };
                                 setFieldValue('steps', newStepsValue);
                             } else {
-                                const newReviewers = reviewers.filter((reviewer: IUser) => reviewer.id !== removedReviewer.id);
+                                const newReviewers = reviewers.filter((reviewer: IUser) => reviewer._id !== removedReviewer._id);
                                 const newStepsValue = { ...values.steps, [stepTemplate._id]: newReviewers };
                                 setFieldValue('steps', newStepsValue);
                             }

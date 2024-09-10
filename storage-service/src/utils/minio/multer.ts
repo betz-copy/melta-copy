@@ -1,37 +1,55 @@
-import { callbackify } from 'util';
-import { Request } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import * as Multer from 'multer';
-import { MinIOClient, minioClient } from './minioClient';
-import { generatePath } from '../generatePath';
+import { callbackify } from 'util';
 import { config } from '../../config';
+import { ServiceError } from '../../express/error';
+import { generatePath } from '../generatePath';
+import DefaultManagerMinio from './manager';
 
-class MinioStorage {
-    private client: MinIOClient;
+const { fileKeyName, filesKeyName } = config.multer;
 
-    constructor(client: MinIOClient) {
-        this.client = client;
-    }
-
+export class MinioStorage extends DefaultManagerMinio {
     async handleFile(_req: Request, file: Express.Multer.File) {
         const path = generatePath(file.originalname);
 
-        await this.client.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
-        return { ...(await this.client.statFile(path)), path };
+        await this.minioClient.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
+        return { ...(await this.minioClient.statFile(path)), path };
     }
 
     public _handleFile = callbackify((req: Request, file: Express.Multer.File) => this.handleFile(req, file));
 
     async removeFile(_req: Request, file: Express.Multer.File) {
-        await this.client.removeFile(file.path);
+        await this.minioClient.removeFile(file.path);
     }
 
     public _removeFile = callbackify((req: Request, file: Express.Multer.File) => this.removeFile(req, file));
 }
 
-export const UploadToMinio = (fileKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName);
-};
+export class MinioMulter {
+    private static async wrapMulterMiddleware(req: Request) {
+        const workspaceId = req.headers[config.service.workspaceIdHeaderName];
+        if (typeof workspaceId !== 'string') return null;
 
-export const UploadBulkToMinio = (filesKeyName: string) => {
-    return Multer({ storage: new MinioStorage(minioClient), limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName);
-};
+        const storage = new MinioStorage(workspaceId);
+
+        if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
+
+        return storage;
+    }
+
+    static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
+        const storage = await MinioMulter.wrapMulterMiddleware(req);
+
+        if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
+
+        Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName)(req, res, next);
+    }
+
+    static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
+        const storage = await MinioMulter.wrapMulterMiddleware(req);
+
+        if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
+
+        Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName)(req, res, next);
+    }
+}

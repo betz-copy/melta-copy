@@ -3,7 +3,7 @@ import { Box, Grid } from '@mui/material';
 import { Document, Page, pdfjs } from 'react-pdf';
 import FlexBox from '../FlexBox';
 import { IFile } from '../../interfaces/preview';
-import { useFilePreview } from '../../utils/useFilePreview';
+import { useFilePreview } from '../../utils/hooks/useFilePreview';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 

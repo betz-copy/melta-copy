@@ -21,11 +21,12 @@ import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetai
 import { getProcessByIdRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { Print } from '../../../pages/ProcessInstances/print';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -77,11 +78,12 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
     isEditMode,
     setIsEditMode,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
+    const hasPermissionsToEditDetails = currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write;
 
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 

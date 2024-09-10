@@ -3,15 +3,14 @@ import { Button, Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
 import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
 import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { ConnectionIcon } from '../ConnectionIcon.styled';
-import { RootState } from '../../../../store';
 import { RemoveFromArrayButton } from './RemoveFromArrayButton';
 import { getRelationshipString } from '../../../../utils/gantts';
+import { useDarkModeStore } from '../../../../stores/darkMode';
 
 interface IEditConnectedEntityTemplatesProps {
     formik: FormikProps<IBasicGantt>;
@@ -28,7 +27,7 @@ export const EditConnectedEntityTemplates: React.FC<IEditConnectedEntityTemplate
     relevantRelationshipIds = [],
     disabled,
 }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const { setFieldValue } = formik;
 
