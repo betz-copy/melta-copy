@@ -82,6 +82,7 @@ spec:
 # get pods: kubectl get pods
 # get pods: kubectl get pods --watch
 # logs: kubectl logs <pod name>
+# kubectl delete pods --all
 
 # minikube:
 # Set Docker Environment to Minikube: eval $(minikube docker-env)
