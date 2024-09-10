@@ -161,7 +161,6 @@ const Graph: React.FC = () => {
 
         if (data && data.connections.length !== initialExpandedEntity?.entity?.connections.length) {
             expandedEntity = data;
-            resetGraph(data, true);
         }
 
         let expandedEntityGraphData = await expandedEntityToGraphData(
@@ -191,7 +190,8 @@ const Graph: React.FC = () => {
         const index = currentBatchIndex * BatchSize;
 
         if (index < expandedEntity!.connections.length && ((is3DGraph && index < limit3DConnections) || !is3DGraph))
-            setCurrentBatchIndex(currentBatchIndex + 1);
+            if (currentBatchIndex + BatchSize > expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex % index);
+            else setCurrentBatchIndex(currentBatchIndex + BatchSize);
         else {
             setIsLoading(false);
             if (is3DGraph && index < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
