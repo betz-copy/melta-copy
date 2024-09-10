@@ -46,7 +46,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
             console.log('4', _id);
-            return _id;
+            return _id!.toString();
         });
         console.log('5');
         return this.getProcessTemplateById(templateId);
@@ -140,7 +140,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         const query: FilterQuery<ProcessTemplateDocument> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
-        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (reviewerId) {
             return getProcessTemplatesByReviewerIdAggregation(this.model, query, reviewerId, limit, skip);
         }

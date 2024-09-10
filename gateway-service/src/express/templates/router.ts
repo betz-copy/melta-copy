@@ -25,13 +25,16 @@ import {
 } from './validator.schema';
 
 const {
-    templateService: { url, requestTimeout },
+    templateService: { url, requestTimeout, baseRoute },
     service: { uploadsFolderPath },
 } = config;
 
 const TemplatesServiceProxy = createProxyMiddleware({
-    target: url,
-    onProxyReq: fixRequestBody,
+    target: `${url}${baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: requestTimeout,
 });
 

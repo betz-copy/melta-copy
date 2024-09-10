@@ -21,7 +21,7 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
 
         const [rows, lastRowIndex] = await Promise.all([
             this.model.find(query, {}, { skip: startRow, limit: endRow - startRow, sort }).lean(),
-            this.model.count(query),
+            this.model.countDocuments(query),
         ]);
 
         return { rows, lastRowIndex };

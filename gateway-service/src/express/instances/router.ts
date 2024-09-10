@@ -23,8 +23,11 @@ import {
 const { instanceService } = config;
 
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceService.url,
-    onProxyReq: fixRequestBody,
+    target: `${instanceService.url}${instanceService.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: instanceService.requestTimeout,
 });
 
