@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
+import { createWorkspacesController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import RuleBreachesController from './controller';
 import {
@@ -23,7 +23,7 @@ const RulesBreachesControllerMiddleware = createWorkspacesController(RuleBreache
 
 RulesBreachesRouter.post(
     '/requests',
-    multer({ dest: config.service.uploadsFolderPath }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath }).any()),
     ValidateRequest(createRuleBreachRequestRequestSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     RulesBreachesControllerMiddleware.createRuleBreachRequest,

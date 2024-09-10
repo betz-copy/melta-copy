@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../../config';
-import { createWorkspacesController } from '../../../utils/express';
+import { createWorkspacesController, wrapMulter } from '../../../utils/express';
 
 import InstancesController from './controller';
 import {
@@ -22,7 +22,7 @@ const InstancesControllerMiddleware = createWorkspacesController(InstancesContro
 InstancesRouter.get('/:id', ValidateRequest(getProcessInstanceSchema), InstancesControllerMiddleware.getProcessInstance);
 InstancesRouter.post(
     '/',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(createProcessInstanceSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     InstancesControllerMiddleware.createProcessInstance,
@@ -30,7 +30,7 @@ InstancesRouter.post(
 InstancesRouter.post('/search', ValidateRequest(searchProcessInstancesSchema), InstancesControllerMiddleware.searchProcessInstances);
 InstancesRouter.put(
     '/:id',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateProcessInstanceSchema),
     AuthorizerControllerMiddleware.userCanWriteProcesses,
     InstancesControllerMiddleware.updateProcessInstance,
