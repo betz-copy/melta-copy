@@ -92,7 +92,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
                     : i18next.t('ruleBreachInfo.theEntityThatWasCreated')}
             </Typography>
         );
-        linkable = entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
+        linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
