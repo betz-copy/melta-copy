@@ -168,8 +168,17 @@ const TemplateTable = forwardRef<
                     </AddEntityButton>
                 </Grid>
             </Grid>
-
-            <Grid container direction="row" width="90vw" wrap="nowrap" sx={{ overflowX: 'auto', marginBottom: '0.5rem' }}>
+            <Grid
+                container
+                direction="row"
+                wrap="wrap"
+                sx={{
+                    overflowY: 'auto',
+                    marginBottom: '0.5rem',
+                    width: '100%',
+                    maxHeight: 180
+               }}
+            >
                 {drafts[template.category._id]?.[template._id]
                     ?.sort((a, b) => {
                         if (a.entityId && !b.entityId) return -1;
@@ -177,7 +186,7 @@ const TemplateTable = forwardRef<
                         return 0;
                     })
                     .map((draft) => (
-                        <Grid item key={draft.uniqueId}>
+                        <Grid item key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
                             <DraftCard
                                 draft={draft}
                                 openEditDialog={() => {
@@ -186,7 +195,13 @@ const TemplateTable = forwardRef<
                                         isOpen: true,
                                         entity: {
                                             templateId: draft.template._id,
-                                            properties: { ...draft.properties, _id: draft.entityId!, createdAt: '', updatedAt: '', disabled: false },
+                                            properties: {
+                                                ...draft.properties,
+                                                _id: draft.entityId!,
+                                                createdAt: '',
+                                                updatedAt: '',
+                                                disabled: false,
+                                            },
                                         },
                                     });
                                 }}
@@ -194,7 +209,7 @@ const TemplateTable = forwardRef<
                         </Grid>
                     ))}
             </Grid>
-
+            
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
@@ -233,6 +248,7 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
+
             <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
                     isEditMode
