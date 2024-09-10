@@ -10,12 +10,11 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
 import { environment } from '../../../globals';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
@@ -41,6 +40,7 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
@@ -55,11 +55,25 @@ const DuplicateEntity: React.FC<{}> = () => {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
+                setExternalErrors({ files: false, unique: {} });
             },
             onError: (err: AxiosError) => {
+                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate);
+                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                    const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
+                    constraintPropsDisplayNames.forEach((uniqueProp) => {
+                        setExternalErrors((prev) => ({
+                            ...prev,
+                            unique: {
+                                ...prev.unique,
+                                [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                    `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                                )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            },
+                        }));
+                    });
                     return;
                 }
 
@@ -97,10 +111,12 @@ const DuplicateEntity: React.FC<{}> = () => {
         }
     });
     const fileProperties = fileIdsProperties;
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
-            onSubmit={async (values) => {
+            onSubmit={async (values, formikHelpers) => {
+                formikHelpers.setTouched({});
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -135,6 +151,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}
+                                                                uniqueErrors={{ ...externalErrors.unique }}
                                                                 touched={touched.properties ?? {}}
                                                                 setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                             />
@@ -145,8 +162,18 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     title={i18next.t('wizard.entityTemplate.attachments')}
                                                                     component="h6"
                                                                     variant="h6"
-                                                                    style={{ marginBottom: '22px' }}
+                                                                    style={{
+                                                                        marginBottom: externalErrors.files ? '0px' : '12px',
+                                                                    }}
                                                                 />
+                                                                {externalErrors.files && (
+                                                                    <p
+                                                                        id="error"
+                                                                        style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
+                                                                    >
+                                                                        {i18next.t('errorCodes.FILES_TOO_BIG')}
+                                                                    </p>
+                                                                )}
                                                                 <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
@@ -163,6 +190,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             ) : (
                                                                                 <InstanceFileInput
@@ -174,6 +202,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             )}
                                                                         </Grid>
@@ -209,6 +238,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     navigate(`/entity/${entity.properties._id}`);
+                                                                    setExternalErrors({ files: false, unique: {} });
                                                                 }}
                                                             >
                                                                 {i18next.t('entityPage.cancel')}
@@ -246,6 +276,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 onCreateRuleBreachRequest={() => {
                                     setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
                                     navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
+                                    setExternalErrors({ files: false, unique: {} });
                                 }}
                             />
                         )}

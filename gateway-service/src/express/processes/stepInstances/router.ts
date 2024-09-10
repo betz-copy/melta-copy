@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import config from '../../../config';
-import { createWorkspacesController } from '../../../utils/express';
+import { createWorkspacesController, wrapMulter } from '../../../utils/express';
 import ValidateRequest from '../../../utils/joi';
 import StepInstanceController from './controller';
 import { updateStepSchema } from './validator.schema';
@@ -12,7 +12,7 @@ const StepInstanceControllerMiddleware = createWorkspacesController(StepInstance
 
 StepInstanceRouter.patch(
     '/:stepId',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateStepSchema),
     StepInstanceControllerMiddleware.updateStep,
 );
