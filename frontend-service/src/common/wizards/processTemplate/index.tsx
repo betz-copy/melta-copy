@@ -60,7 +60,7 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
 const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues>> = ({
     open,
     handleClose,
-    initialStep: initalStep = 0,
+    initialStep = 0,
     initialValues = {
         _id: uuid(),
         createdAt: '',
@@ -105,7 +105,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initialStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t(isEditMode ? 'wizard.processTemplate.editTitle' : 'wizard.processTemplate.title')}
             steps={stepsComponents}

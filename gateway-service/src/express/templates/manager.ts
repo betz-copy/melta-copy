@@ -77,6 +77,36 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         this.ruleBreachService = new RuleBreachService(workspaceId);
     }
 
+    async getAllowedEntityTemplateIds(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchBody?: any) {
+        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, searchBody);
+        return allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+    }
+
+    async getAllowedRelationshipTemplates(entityTemplateIds: string[]) {
+        const [bySource, byDestination] = await Promise.all([
+            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: entityTemplateIds }),
+            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: entityTemplateIds }),
+        ]);
+
+        return lodashUniqby([...bySource, ...byDestination], '_id');
+    }
+
+    async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: any[]) {
+        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
+            relationshipTemplates,
+            relationshipTemplates,
+            entityTemplateIds,
+        );
+
+        const { allowedRelationshipTemplatesBecauseOfRules } = await this.getAllowedRules(
+            entityTemplateIds,
+            relationshipTemplates,
+            allowedEntityTemplatesIdsByOneRelationship,
+        );
+
+        return { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship };
+    }
+
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
     private getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
         allowedRelationshipsTemplatesBySource: IRelationshipTemplate[],
@@ -175,37 +205,24 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
 
-        const [allowedRelationshipsTemplatesBySource, allowedRelationshipsTemplatesByDestination] = await Promise.all([
-            this.relationshipTemplateService.searchRelationshipTemplates({ sourceEntityIds: allowedEntityTemplatesIds }),
-            this.relationshipTemplateService.searchRelationshipTemplates({ destinationEntityIds: allowedEntityTemplatesIds }),
-        ]);
-
-        const allowedRelationshipsTemplates = lodashUniqby(
-            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
-            '_id',
-        );
-
-        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
-            allowedRelationshipsTemplatesBySource,
-            allowedRelationshipsTemplatesByDestination,
+        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
+        const { allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesIdsByOneRelationship } = await this.getAllowedTemplatesAndRules(
             allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
         );
 
-        const [
-            allowedEntityTemplatesByOneRelationship,
-            { allowedRules, allowedRelationshipTemplatesBecauseOfRules, allowedEntityTemplatesBecauseOfRules },
-            processTemplatesBeforePopulate,
-        ] = await Promise.all([
-            this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
-            this.getAllowedRules(allowedEntityTemplatesIds, allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
-            this.processService.searchProcessTemplates(permissionsOfUserId.admin || permissionsOfUserId.processes ? {} : { reviewerId: userId }),
-        ]);
+        const [allowedEntityTemplatesByOneRelationship, { allowedRules, allowedEntityTemplatesBecauseOfRules }, processTemplatesBeforePopulate] =
+            await Promise.all([
+                this.entityTemplateService.searchEntityTemplates({ ids: allowedEntityTemplatesIdsByOneRelationship }),
+                this.getAllowedRules(allowedEntityTemplatesIds, allowedRelationshipsTemplates, allowedEntityTemplatesIdsByOneRelationship),
+                this.processService.searchProcessTemplates(permissionsOfUserId.admin || permissionsOfUserId.processes ? {} : { reviewerId: userId }),
+            ]);
 
         const allAllowedEntityTemplates = [
             ...allowedEntityTemplates,
             ...allowedEntityTemplatesByOneRelationship,
             ...allowedEntityTemplatesBecauseOfRules,
-        ];
+        ].filter((template): template is IMongoEntityTemplatePopulated => !!template && typeof template !== 'string');
 
         const [allAllowedEntityTemplatesWithConstraints, ...processTemplates] = await Promise.all([
             this.getAndPopulateAllTemplatesConstraints(allAllowedEntityTemplates),
@@ -340,54 +357,28 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     async searchEntityTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchQuery: ISearchEntityTemplatesBody) {
         const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId, searchQuery);
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
-
-        const allowedRelationshipsTemplatesBySource = await this.relationshipTemplateService.searchRelationshipTemplates({
-            sourceEntityIds: allowedEntityTemplatesIds,
-        });
-        const allowedRelationshipsTemplatesByDestination = await this.relationshipTemplateService.searchRelationshipTemplates({
-            destinationEntityIds: allowedEntityTemplatesIds,
-        });
-        const allowedRelationshipsTemplates = lodashUniqby(
-            [...allowedRelationshipsTemplatesByDestination, ...allowedRelationshipsTemplatesBySource],
-            '_id',
-        );
-
-        const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
-            allowedRelationshipsTemplatesBySource,
-            allowedRelationshipsTemplatesByDestination,
-            allowedEntityTemplatesIds,
-        );
-
-        const { allowedRelationshipTemplatesBecauseOfRules } = await this.getAllowedRules(
-            allowedEntityTemplatesIds,
-            allowedRelationshipsTemplates,
-            allowedEntityTemplatesIdsByOneRelationship,
-        );
-
-        return [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules];
+        return this.getAndPopulateAllTemplatesConstraints(allowedEntityTemplates);
     }
 
     async searchRelationshipTemplates(
         permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'],
         searchBody: ISearchRelationshipTemplatesBody,
     ) {
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId, searchBody);
+        const allowedRelationshipsTemplates = await this.getAllowedRelationshipTemplates(allowedEntityTemplatesIds);
 
-        const searchResults = await this.relationshipTemplateService.searchRelationshipTemplates(searchBody);
-        return searchResults.filter(
-            (relationship) =>
-                allowedEntityTemplatesIds.includes(relationship.destinationEntityId) ||
-                allowedEntityTemplatesIds.includes(relationship.sourceEntityId),
+        const { allowedRelationshipTemplatesBecauseOfRules } = await this.getAllowedTemplatesAndRules(
+            allowedEntityTemplatesIds,
+            allowedRelationshipsTemplates,
         );
+
+        return [...allowedRelationshipsTemplates, ...allowedRelationshipTemplatesBecauseOfRules];
     }
 
     async searchRulesTemplates(permissionsOfUserId: RequestWithPermissionsOfUserId['permissionsOfUserId'], searchBody: ISearchRulesBody) {
-        const allowedEntityTemplates = await this.getAllowedEntitiesTemplates(permissionsOfUserId);
-        const allowedEntityTemplatesIds = allowedEntityTemplates.map((entityTemplate) => entityTemplate._id);
-
+        const allowedEntityTemplatesIds = await this.getAllowedEntityTemplateIds(permissionsOfUserId);
         const searchResults = await this.relationshipTemplateService.searchRules(searchBody);
+
         return searchResults.filter((rule) => allowedEntityTemplatesIds.includes(rule.entityTemplateId));
     }
 

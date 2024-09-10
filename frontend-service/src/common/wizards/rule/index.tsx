@@ -33,7 +33,7 @@ const steps: StepsType<RuleWizardValues> = [
 const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
     open,
     handleClose,
-    initialStep: initalStep = 0,
+    initialStep = 0,
     initialValues = {
         name: '',
         description: '',
@@ -74,7 +74,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initialStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.rule.title')}
             steps={steps}
