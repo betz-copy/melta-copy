@@ -300,6 +300,8 @@ services:
     ports:
       - 8012:8000
     restart: always
+    networks:
+      - network
 
 volumes:
   elastic_data:
