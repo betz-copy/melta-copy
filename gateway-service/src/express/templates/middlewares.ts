@@ -5,7 +5,7 @@ import { IRelationshipTemplate, RelationshipsTemplateService } from '../../exter
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ForbiddenError, ServiceError } from '../error';
+import { ForbiddenError } from '../error';
 
 export class TemplatesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
