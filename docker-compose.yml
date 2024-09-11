@@ -182,8 +182,8 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
-  frontend-service:
-    build: ./frontend-service
+  # frontend-service:
+  #   build: ./frontend-service
 
   nginx:
     image: nginx:alpine
