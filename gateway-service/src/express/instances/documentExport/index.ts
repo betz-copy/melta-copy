@@ -219,7 +219,7 @@ const createPatchesFromEntity = (properties: IEntity['properties']): Record<stri
         let formattedValue = trimmedValue;
 
         if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
-            formattedValue = `${new Date(formattedValue).toLocaleDateString('uk')}, ${new Date(formattedValue).toLocaleTimeString('uk')}`;
+            formattedValue = `${new Date(formattedValue).toLocaleDateString('he')}, ${new Date(formattedValue).toLocaleTimeString('he')}`;
         if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
         if (Array.isArray(trimmedValue)) formattedValue = trimmedValue.join(', ');
 
