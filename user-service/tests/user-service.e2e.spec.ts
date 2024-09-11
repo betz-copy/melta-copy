@@ -4,6 +4,7 @@ import * as mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
 
+import { StatusCodes } from 'http-status-codes';
 import { config } from '../src/config';
 import Server from '../src/express/server';
 import { IUser } from '../src/express/users/interface';
@@ -86,29 +87,29 @@ describe('e2e user service api testing', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(200);
+            const response = await request(app).get('/isAlive').expect(StatusCodes.OK);
             expect(response.text).toBe('alive');
         });
     });
 
     describe('/unknownRoute', () => {
         it('should return status code 404', async () => {
-            return request(app).get('/unknownRoute').expect(404);
+            return request(app).get('/unknownRoute').expect(StatusCodes.NOT_FOUND);
         });
     });
 
     describe('/api/users', () => {
         describe('GET /api/users/:id', () => {
             it('should get a user', async () => {
-                const { body: user } = await request(app).post('/api/users').send(userData1).expect(200);
+                const { body: user } = await request(app).post('/api/users').send(userData1).expect(StatusCodes.OK);
 
-                const { body } = await request(app).get(`/api/users/${user._id}`).expect(200);
+                const { body } = await request(app).get(`/api/users/${user._id}`).expect(StatusCodes.OK);
 
                 expect(body).toEqual(user);
             });
 
             it('should fail for getting a non-existing user', async () => {
-                return request(app).get(`/api/users/${fakeObjectId}`).expect(404);
+                return request(app).get(`/api/users/${fakeObjectId}`).expect(StatusCodes.NOT_FOUND);
             });
         });
     });

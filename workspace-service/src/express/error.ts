@@ -1,5 +1,6 @@
 /* eslint-disable max-classes-per-file */
 import * as express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
@@ -13,31 +14,31 @@ export class ServiceError extends Error {
 
 export class DocumentNotFoundError extends ServiceError {
     constructor(id: string) {
-        super(404, `No workspace found with id ${id}`);
+        super(StatusCodes.NOT_FOUND, `No workspace found with id ${id}`);
     }
 }
 
 export class PathDoesNotExistError extends ServiceError {
     constructor(path: string) {
-        super(404, `No workspace found with path ${path}`);
+        super(StatusCodes.NOT_FOUND, `No workspace found with path ${path}`);
     }
 }
 
 export class PathIsNotFolderError extends ServiceError {
     constructor(path: string) {
-        super(404, `${path} is not a folder`);
+        super(StatusCodes.NOT_FOUND, `${path} is not a folder`);
     }
 }
 
 export class WorkspaceUnderRootMustBeDirError extends ServiceError {
     constructor() {
-        super(400, 'Workspace under root must be a directory');
+        super(StatusCodes.BAD_REQUEST, 'Workspace under root must be a directory');
     }
 }
 
 export const errorMiddleware = (error: Error, _req: express.Request, res: express.Response, next: express.NextFunction) => {
     if (error.name === 'ValidationError') {
-        res.status(400).send({
+        res.status(StatusCodes.BAD_REQUEST).send({
             type: error.name,
             message: error.message,
         });
@@ -47,7 +48,7 @@ export const errorMiddleware = (error: Error, _req: express.Request, res: expres
             message: error.message,
         });
     } else {
-        res.status(500).send({
+        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
             type: error.name,
             message: error.message,
         });

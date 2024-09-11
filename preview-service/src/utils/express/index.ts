@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { config } from '../../config';
 import { ServiceError } from '../../express/error';
 import { FunctionKey } from '../types';
@@ -12,7 +13,7 @@ export const createController = <T extends InstanceType<typeof DefaultController
                 return (req: Request, res: Response, next: NextFunction) => {
                     const workspaceId = req.headers[config.service.workspaceIdHeaderName];
 
-                    if (typeof workspaceId !== 'string') return next(new ServiceError(400, 'Invalid workspace id in header'));
+                    if (typeof workspaceId !== 'string') return next(new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid workspace id in header'));
 
                     return (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
                 };

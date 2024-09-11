@@ -1,13 +1,17 @@
 /* eslint-disable max-classes-per-file */
 import * as express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { NotificationType } from './notifications/interface';
 import logger from '../utils/logger/logsLogger';
-import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
     public code;
 
-    constructor(code: number, message: string, public metadata: object = {}) {
+    constructor(
+        code: number,
+        message: string,
+        public metadata: object = {},
+    ) {
         super(message);
         this.code = code;
         this.metadata = metadata;

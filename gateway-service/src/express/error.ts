@@ -1,12 +1,16 @@
 import axios from 'axios';
 import express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { PermissionScope } from '../externalServices/userService/interfaces/permissions';
 
 import logger from '../utils/logger/logsLogger';
-import { StatusCodes } from 'http-status-codes';
 
 export class ServiceError extends Error {
-    constructor(public code: number, message: string, public metadata: any = {}) {
+    constructor(
+        public code: number,
+        message: string,
+        public metadata: any = {},
+    ) {
         super(message);
         this.code = code;
         this.metadata = metadata;
@@ -14,7 +18,10 @@ export class ServiceError extends Error {
 }
 
 export class NotFoundError extends ServiceError {
-    constructor(message: string, public metadata: object = {}) {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
         super(StatusCodes.NOT_FOUND, message);
         this.name = 'NotFound';
         this.metadata = metadata;
@@ -22,7 +29,10 @@ export class NotFoundError extends ServiceError {
 }
 
 export class ForbiddenError extends ServiceError {
-    constructor(message: string, public metadata: object = {}) {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
         super(StatusCodes.FORBIDDEN, message);
         this.name = 'Forbidden';
         this.metadata = metadata;
@@ -30,7 +40,10 @@ export class ForbiddenError extends ServiceError {
 }
 
 export class BadRequestError extends ServiceError {
-    constructor(message: string, public metadata: object = {}) {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
         super(StatusCodes.BAD_REQUEST, message);
         this.name = 'badRequest';
         this.metadata = metadata;
@@ -102,24 +115,24 @@ export const errorMiddleware = async (error: Error, req: express.Request, res: e
 
 export class InvalidWorkspaceHeaderError extends ServiceError {
     constructor() {
-        super(400, 'Invalid workspace id in header');
+        super(StatusCodes.BAD_REQUEST, 'Invalid workspace id in header');
     }
 }
 
 export class UserNotFoundError extends ServiceError {
     constructor() {
-        super(400, 'User not found');
+        super(StatusCodes.BAD_REQUEST, 'User not found');
     }
 }
 
 export class UserNotAuthorizedError extends ServiceError {
     constructor() {
-        super(403, 'User not authorized');
+        super(StatusCodes.FORBIDDEN, 'User not authorized');
     }
 }
 
 export class UserIncorrectScopeError extends ServiceError {
     constructor(neededScope?: PermissionScope, userScope?: PermissionScope) {
-        super(403, `User scope is ${userScope} but ${neededScope} is needed`);
+        super(StatusCodes.FORBIDDEN, `User scope is ${userScope} but ${neededScope} is needed`);
     }
 }

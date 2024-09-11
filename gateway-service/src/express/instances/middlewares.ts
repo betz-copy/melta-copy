@@ -55,7 +55,7 @@ export class InstancesValidator extends DefaultController {
         ]);
 
         if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId)) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
         }
     }
 

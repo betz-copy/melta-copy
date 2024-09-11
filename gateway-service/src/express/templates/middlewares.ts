@@ -5,7 +5,7 @@ import { IRelationshipTemplate, RelationshipsTemplateService } from '../../exter
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
-import { ServiceError } from '../error';
+import { ForbiddenError, ServiceError } from '../error';
 
 export class TemplatesValidator extends DefaultController {
     private entityTemplateService: EntityTemplateService;
@@ -27,7 +27,7 @@ export class TemplatesValidator extends DefaultController {
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
         if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category)) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${category}` });
         }
     }
 
@@ -40,7 +40,7 @@ export class TemplatesValidator extends DefaultController {
         ]);
 
         if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category._id)) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${category}` });
         }
     }
 
@@ -67,7 +67,7 @@ export class TemplatesValidator extends DefaultController {
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
     }
 
@@ -83,7 +83,7 @@ export class TemplatesValidator extends DefaultController {
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
     }
 }
