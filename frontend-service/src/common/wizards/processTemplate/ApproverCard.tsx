@@ -2,8 +2,7 @@
 import React from 'react';
 import { Chip, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface ApproverCard {
     userName: string | undefined;
@@ -11,7 +10,8 @@ interface ApproverCard {
     userIndex: number;
 }
 const CreateUserCard: React.FC<ApproverCard> = ({ userName, remove, userIndex }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Grid margin={1} sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
             <Chip label={userName} variant="outlined" onDelete={() => remove(userIndex)} />

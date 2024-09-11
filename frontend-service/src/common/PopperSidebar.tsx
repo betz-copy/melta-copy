@@ -1,9 +1,8 @@
-import React, { CSSProperties } from 'react';
-import { Box, IconButton, Popper, Typography, Grid, ClickAwayListener, useTheme } from '@mui/material';
 import { CloseSharp } from '@mui/icons-material';
+import { Box, ClickAwayListener, Grid, IconButton, Popper, Typography, useTheme } from '@mui/material';
 import Slide from '@mui/material/Slide';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import React, { CSSProperties } from 'react';
+import { useDarkModeStore } from '../stores/darkMode';
 
 const PopperSidebar: React.FC<{
     open: boolean;
@@ -14,8 +13,9 @@ const PopperSidebar: React.FC<{
     width?: CSSProperties['width'];
     isCheckBoxClicked?: boolean;
 }> = ({ children, open, setOpen, title, side, sideMargin = 0, width = '22rem', isCheckBoxClicked = false }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
+
     return (
         <Popper open={open} transition sx={{ left: side === 'right' ? 0 : 'auto', marginX: sideMargin, zIndex: '200' }}>
             {({ TransitionProps }) => (

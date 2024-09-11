@@ -1,10 +1,13 @@
 import { environment } from '../globals';
+import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
+import { WorkspaceTypes } from '../interfaces/workspaces';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
     category: 'קטגוריה',
     categories: 'קטגוריות',
+    entity: 'ישות',
     entityTemplate: 'תבנית ישות',
     entityTemplates: 'תבניות ישות',
     relationshipTemplate: 'תבנית קשר',
@@ -68,6 +71,8 @@ export default {
         deleteOrArcivhed: 'מחיקה או שליחה לארכיון',
         unArchived: 'הוצא מארכיון',
         archived: 'הכנס לארכיון',
+        create: 'יוצר',
+        update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
     },
@@ -89,6 +94,10 @@ export default {
         disabledSuccessfully: 'ישות הושבתה בהצלחה',
         activatedSuccessfully: 'ישות הופעלה בהצלחה',
         disabledEntity: 'ישות לא פעילה',
+        linkToEntityPage: 'לחץ למידע נוסף',
+        error: 'לחץ לניסיון נוסף',
+        create: 'יוצר ישות',
+        update: 'מעדכן ישות',
         deleteEnumFieldSuccessfully: 'ערך נמחק בהצלחה',
         updatedEnumFieldSuccessfully: 'ערך נוסף בהצלחה',
         atLeastOneItem: 'חייב להיות ערך אחד לפחות',
@@ -138,6 +147,7 @@ export default {
         backToHome: 'לחזרה לעמוד הבית',
         systemUnavailable: 'המערכת לא זמינה כרגע',
         noPermissions: 'אין לך הרשאות לגשת לעמוד זה',
+        noPermissionsToWorkspace: 'אין לך הרשאות לגשת למרחב עבודה זה',
         disabledEntity: 'ישות לא פעילה',
         activeEntity: ' פעיל',
         preview: 'קובץ לא נתמך לתצוגה מקדימה',
@@ -299,6 +309,7 @@ export default {
     permissions: {
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
+        sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
         permissionsManagmentPageTitle: 'ניהול הרשאות',
@@ -331,6 +342,10 @@ export default {
             instancesPermissions: 'הרשאות על קטגוריות',
             allCategories: 'הכל',
             chooseAll: 'סמן הכל',
+            read: 'קריאה',
+            write: 'עריכה',
+        },
+        scopes: {
             read: 'קריאה',
             write: 'עריכה',
         },
@@ -587,6 +602,18 @@ export default {
             },
             editProcessBth: 'ערוך תהליך',
         },
+        workspace: {
+            title: 'יצירת סביבת עבודה',
+            createdSuccessfully: 'סביבת עבודה נוצרה בהצלחה',
+            editedSuccessfully: 'סביבת עבודה עודכנה בהצלחה',
+            failedToCreate: 'נכשל ליצור סביבת עבודה',
+            failedToEdit: 'נכשל בעריכת סביבת עבודה',
+            chooseDetails: 'בחירת פרטים',
+            chooseIcons: 'בחירת אייקונים',
+            icon: 'הוסף אייקון (פורמט svg)',
+            logo: 'הוסף לוגו (פורמט svg)',
+            chooseColors: 'בחירת צבעים',
+        },
     },
     validation: {
         required: 'חובה',
@@ -665,6 +692,7 @@ export default {
         RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',
         RULE_BLOCK: 'עבר על חוקים',
         RULE_HAS_ALERTS_OR_REQUESTS: 'לחוק קיימים התראות/בקשות. ניתן רק להשבית אותו',
+        FILES_TOO_BIG: 'סך גודל הקבצים גדול מדי',
     },
     tourText: {
         sideBar: 'סרגל הניווט הראשי של המערכת למעבר בין עולמות התוכן והעמודים השונים',
@@ -682,8 +710,8 @@ export default {
     },
     ruleBreachInfo: {
         relActionInfo: {
-            creation: 'יצירת',
-            deletion: 'מחיקת',
+            [ActionTypes.CreateRelationship]: 'יצירת',
+            [ActionTypes.DeleteRelationship]: 'מחיקת',
             relationship: 'קשר',
             fromEntity: 'מישות',
             toEntity: 'לישות',
@@ -901,6 +929,26 @@ export default {
             failedToDelete: 'נכשל למחוק טבלה',
             addGroupBy: 'הוסף קיבוץ',
             deleteGroupBy: 'מחק קיבוץ',
+        },
+    },
+    workspaces: {
+        goBack: 'חזור',
+        createNew: 'צור סביבת עבודה חדשה',
+        edit: 'ערוך',
+        move: 'העבר',
+        cancelMove: 'בטל העברה',
+        approveMove: 'אשר העברה',
+        movedSuccessfully: 'העברה בוצעה בהצלחה',
+        failedToMove: 'נכשל בהעברה',
+        requestedWorkspaceDoesntExist: 'סביבת העבודה המבוקשת אינה קיימת',
+        type: 'סוג',
+        types: {
+            [WorkspaceTypes.dir]: 'תיקייה',
+            [WorkspaceTypes.mlt]: 'סביבת עבודה',
+        },
+        color: 'צבע {{color}}',
+        colors: {
+            primary: 'ראשי',
         },
     },
     agGridLocaleText,

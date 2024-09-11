@@ -1,15 +1,15 @@
-import _groupBy from 'lodash.groupby';
 import _difference from 'lodash.difference';
+import _groupBy from 'lodash.groupby';
+import _isEqual from 'lodash.isequal';
 import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
-import _isEqual from 'lodash.isequal';
-import { IBrokenRule, ICausesOfInstance, IRuleFailure } from './interfaces';
 import config from '../../config';
-import { ServiceError } from '../error';
-import { ICause } from './interfaces/formulaWithCauses/cause';
 import { filteredMap } from '../../utils/filteredMap';
-import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { isEqualStripUndefined } from '../../utils/lib';
+import { ServiceError } from '../error';
+import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
+import { IBrokenRule, ICausesOfInstance, IRuleFailure } from './interfaces';
+import { ICause } from './interfaces/formulaWithCauses/cause';
 
 const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);

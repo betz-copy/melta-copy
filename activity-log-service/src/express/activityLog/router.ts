@@ -1,11 +1,12 @@
 import { Router } from 'express';
-import ActivityLogController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import ActivityLogController from './controller';
 import { getActivitySchema } from './validator.schema';
 
 const activityLogRouter: Router = Router();
+const controller = createController(ActivityLogController);
 
-activityLogRouter.get('/:entityId', ValidateRequest(getActivitySchema), wrapController(ActivityLogController.getActivity));
+activityLogRouter.get('/:entityId', ValidateRequest(getActivitySchema), controller.getActivity);
 
 export default activityLogRouter;

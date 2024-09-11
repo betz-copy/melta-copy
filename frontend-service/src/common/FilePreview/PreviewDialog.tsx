@@ -1,20 +1,19 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { Document, Page, pdfjs } from 'react-pdf';
-import ReactPlayer from 'react-player';
-import i18next from 'i18next';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { RootState } from '../../store';
-import FlexBox from '../FlexBox';
-import { getFileExtension } from '../../utils/getFileType';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import ReactPlayer from 'react-player';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { getFileExtension } from '../../utils/getFileType';
+import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { DownloadButton } from '../DownloadButton';
-import { useFilePreview } from '../../utils/useFilePreview';
+import FlexBox from '../FlexBox';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
@@ -29,7 +28,7 @@ type PreviewProps = {
 const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setOpen, fileName }) => {
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
     const { data, refetch, isLoading: loading, isError: error } = useFilePreview(fileId, contentType, setNoSuchKeyError);
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [jumpToPage, setJumpToPage] = useState('1');
@@ -103,13 +102,13 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
         }
     };
 
-    const handleEnterKeyPress = (e) => {
+    const handleEnterKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleJumpToPage();
         }
     };
 
-    let previewContent;
+    let previewContent: React.ReactNode;
     if (contentType === 'image') {
         previewContent = (
             <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

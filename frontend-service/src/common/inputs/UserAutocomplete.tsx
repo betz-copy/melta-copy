@@ -1,13 +1,16 @@
-import { Autocomplete, AutocompleteProps, SxProps, TextField } from '@mui/material';
+import { Autocomplete, AutocompleteProps, TextField } from '@mui/material';
+import i18next from 'i18next';
+import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import _debounce from 'lodash.debounce';
-import i18next from 'i18next';
-import { IUser, searchUsersRequest } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
+import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';
 
-const UserAutocomplete: React.FC<{
+interface IUserAutocomplete<TMode = 'internal' | 'external'> {
+    mode: TMode;
     value: IUser | null;
     displayValue?: string;
     onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
@@ -21,7 +24,10 @@ const UserAutocomplete: React.FC<{
     helperText?: string;
     minInputLengthToSearch?: number;
     size?: 'small' | 'medium';
-}> = ({
+}
+
+const UserAutocomplete: React.FC<IUserAutocomplete> = ({
+    mode,
     value,
     displayValue,
     onChange,
@@ -36,7 +42,8 @@ const UserAutocomplete: React.FC<{
     minInputLengthToSearch = 2,
     size,
 }) => {
-    const [internalDisplayValue, setInputValue] = useState<string>(value ? value.displayName : '');
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
 
     const currentDisplayValue = displayValue ?? internalDisplayValue;
 
@@ -44,39 +51,26 @@ const UserAutocomplete: React.FC<{
         data: usersOptions,
         refetch: searchUsersOptions,
         isFetching: isFetchingUsersOptions,
-    } = useQuery(['searchUsers', currentDisplayValue], () => searchUsersRequest(currentDisplayValue), {
-        onError: (error) => {
-            console.log('failed to search users. error:', error);
-            toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
+    } = useQuery(
+        ['searchUsers', mode, currentDisplayValue],
+        () => {
+            if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
+            return searchUsersRequest({ search: currentDisplayValue, limit: 10 });
         },
-        enabled: false,
-        retry: false,
-        initialData: [],
-    });
+        {
+            onError: () => {
+                toast.error(i18next.t('userAutocomplete.failedToSearchUsers'));
+            },
+            enabled: false,
+            retry: false,
+            initialData: [],
+        },
+    );
+
     const searchUsersOptionsDebounced = _debounce(searchUsersOptions, 1000);
-    const readOnlyInputLabelProps: SxProps = {
-        sx: {
-            '&.Mui-focused': {
-                color: 'rgba(0, 0, 0, 0.6)',
-            },
-        },
-    };
-    const readOnlyValueSx: SxProps = {
-        '& .MuiOutlinedInput-root.Mui-focused': {
-            '& > fieldset': {
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                borderWidth: '1px',
-            },
-        },
-        '& .MuiOutlinedInput-root:hover': {
-            '& > fieldset': {
-                borderColor: 'rgba(0, 0, 0, 0.23)',
-                borderWidth: '1px',
-            },
-        },
-    };
+
     return (
-        <MeltaTooltip title={value?.displayName || ''} sx={{ maxWidth: 'none' }}>
+        <MeltaTooltip title={value?.displayName ?? ''} sx={{ maxWidth: 'none' }}>
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
@@ -91,10 +85,16 @@ const UserAutocomplete: React.FC<{
                 disabled={disabled}
                 onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
-                getOptionLabel={(option) => option.displayName}
+                getOptionLabel={({ displayName }) => displayName}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => option.id === currValue.id}
-                options={usersOptions!}
+                isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
+                options={
+                    (usersOptions?.sort((a, b) => {
+                        if (!a.fullName || !a.jobTitle || !a.hierarchy || !a.mail) return 1;
+                        if (!b.fullName || !b.jobTitle || !b.hierarchy || !b.mail) return -1;
+                        return 0;
+                    }) as IUser[]) ?? []
+                }
                 loading={isFetchingUsersOptions}
                 loadingText={i18next.t('userAutocomplete.loading')}
                 noOptionsText={i18next.t('userAutocomplete.noOptions')}
@@ -106,8 +106,34 @@ const UserAutocomplete: React.FC<{
                         helperText={helperText}
                         label={label}
                         InputProps={{ ...params.InputProps, readOnly, endAdornment: (readOnly || disabled) && undefined }}
-                        InputLabelProps={{ ...(params.InputLabelProps, readOnly && readOnlyInputLabelProps) }}
-                        sx={readOnly ? readOnlyValueSx : {}}
+                        InputLabelProps={{
+                            ...(params.InputLabelProps,
+                            readOnly && {
+                                sx: {
+                                    '&.Mui-focused': {
+                                        color: 'rgba(0, 0, 0, 0.6)',
+                                    },
+                                },
+                            }),
+                        }}
+                        sx={
+                            readOnly
+                                ? {
+                                      '& .MuiOutlinedInput-root.Mui-focused': {
+                                          '& > fieldset': {
+                                              borderColor: 'rgba(0, 0, 0, 0.23)',
+                                              borderWidth: '1px',
+                                          },
+                                      },
+                                      '& .MuiOutlinedInput-root:hover': {
+                                          '& > fieldset': {
+                                              borderColor: 'rgba(0, 0, 0, 0.23)',
+                                              borderWidth: '1px',
+                                          },
+                                      },
+                                  }
+                                : {}
+                        }
                     />
                 )}
                 readOnly={readOnly}

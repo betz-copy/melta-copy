@@ -80,7 +80,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                 {files.length > 0 ? (
                     <Grid item flexWrap="wrap" overflow="auto" width="100%">
                         {files.map((file, index) => (
-                            <Grid key={file} item container justifyContent="space-between" alignItems="center" width="100%">
+                            <Grid key={`${file}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
                                         <FileIcon extension={getFileExtension(file)} style={{ height: '20px' }} />

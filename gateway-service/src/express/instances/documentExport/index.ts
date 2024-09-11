@@ -1,6 +1,7 @@
 import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
+import mammoth from 'mammoth';
 import config from '../../../config';
 import { IEntity } from '../../../externalServices/instanceService/interfaces/entities';
 
@@ -129,10 +130,7 @@ const getJewishDateWithTime = (dateStr: string) => {
     const date = new Date(dateStr);
     const { day, monthName, year } = toHebrewJewishDate(toJewishDate(date));
 
-    return `${day} ב${monthName} ${year}, ${date.toLocaleTimeString('he', {
-        hour: '2-digit',
-        minute: '2-digit',
-    })}`;
+    return `${day} ב${monthName} ${year}`;
 };
 
 const getHebrewDateWithTime = (dateStr: string) => {
@@ -141,10 +139,7 @@ const getHebrewDateWithTime = (dateStr: string) => {
         month: 'long',
         day: 'numeric',
         year: 'numeric',
-    }).format(date)}, ${date.toLocaleTimeString('he', {
-        hour: '2-digit',
-        minute: '2-digit',
-    })}`;
+    }).format(date)}`;
 };
 
 const getJewishDate = (dateStr: string) => {
@@ -215,7 +210,7 @@ const isDateWithoutTime = (strDate: string): boolean => {
  * @param {IEntity} entity - The entity containing properties to be converted into patches.
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
-const createPatchesFromEntity = (properties: IEntity['properties']): Record<string, IPatch> => {
+const createPatchesFromEntity = (properties: IEntity['properties'], patchesToDelete: string[] = []): Record<string, IPatch> => {
     const patches: Record<string, IPatch> = {};
 
     // Extract keys of properties that are date strings
@@ -255,6 +250,13 @@ const createPatchesFromEntity = (properties: IEntity['properties']): Record<stri
         };
     });
 
+    patchesToDelete.forEach((patch) => {
+        patches[patch] = {
+            type: PatchType.PARAGRAPH,
+            children: [new TextRun('')],
+        };
+    });
+
     return patches;
 };
 
@@ -262,7 +264,13 @@ const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Ui
     firstPatchDocument.toString() === secondPatchDocument.toString();
 
 export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties: IEntity['properties']) => {
-    const patches = createPatchesFromEntity(properties);
+    const patches = createPatchesFromEntity(
+        properties,
+        (await mammoth.extractRawText({ buffer: arrayBuffer as unknown as Buffer })).value
+            .match(/{{.*?}}/g)
+            ?.map((patch) => patch.replace(/{{|}}/g, ''))
+            ?.filter((patch) => !(patch in properties)),
+    );
 
     // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches
