@@ -7,7 +7,7 @@ import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
-import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqBody } from './interface';
+import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interface';
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
@@ -38,7 +38,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         return result;
     }
 
-    async createStepsInstances(steps: Pick<IStepInstance, 'reviewers' | 'templateId'>[], session?: ClientSession): Promise<StepInstanceDocument[]> {
+    async createStepsInstances(steps: Pick<IStepInstance, 'reviewers' | 'templateId'>[], session?: ClientSession) {
         return this.model.insertMany(steps, { session });
     }
 

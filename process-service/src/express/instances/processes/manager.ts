@@ -1,4 +1,4 @@
-import { ClientSession, Document, FilterQuery, Types } from 'mongoose';
+import { ClientSession, FilterQuery, Types } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
 import config from '../../../config';
@@ -30,7 +30,7 @@ import {
 } from './interface';
 import { ProcessInstanceSchema } from './model';
 
-type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
+type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 
 class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     private processTemplateManager: ProcessTemplateManager;
@@ -104,7 +104,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
         const query = this.model.findById(id).orFail(new NotFoundError('process', id)).lean();
-        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessInstanceType<T>>;
+        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as unknown as Promise<ProcessInstanceType<T>>;
     }
 
     async getProcessesByTemplateId(id: string) {
@@ -175,7 +175,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
         this.stepInstanceManager.validateStepIds(currProcess.steps, Object.keys(updatedData.steps));
 
-        const updatedProcess = await transaction(async (session) => {
+        const updatedProcess: IMongoProcessInstancePopulated = await transaction(async (session) => {
             await this.stepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
             const { steps, ...processData } = updatedData;
@@ -188,6 +188,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 .orFail(new NotFoundError('process', id))
                 .lean();
         });
+
         await updateDocumentOnElastic(updatedProcess);
 
         return updatedProcess;

@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IMongoStepTemplate } from '../steps/interface';
 
 export enum ProcessPropertyFormats {
@@ -63,4 +62,3 @@ export interface IBaseSearchProperties {
 export interface IProcessTemplateSearchProperties extends IBaseSearchProperties {
     displayName?: string;
 }
-export type ProcessTemplateDocument = IProcessTemplate & Document;

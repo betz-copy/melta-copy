@@ -1,9 +1,8 @@
 import { logger } from 'elastic-apm-node';
-import { Document, LeanDocument } from 'mongoose';
-import { IMongoProcessInstancePopulated, IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
-import ElasticClient from './index';
-import { ServiceError } from '../../express/error';
 import config from '../../config';
+import { ServiceError } from '../../express/error';
+import { IMongoProcessInstancePopulated, ProcessInstanceDocument } from '../../express/instances/processes/interface';
+import ElasticClient from './index';
 
 const { elastic } = config;
 
@@ -28,7 +27,7 @@ const createProcessTextChain = (process: object) => {
 
     return values;
 };
-const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | LeanDocument<ProcessInstanceDocument>) => {
+const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | ProcessInstanceDocument) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
         const elkClient = clientInstance.getClient();
@@ -48,7 +47,7 @@ const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated |
     }
 };
 
-const updateDocumentOnElastic = async (process: LeanDocument<IProcessInstance & Document<any, any, any>> | IMongoProcessInstancePopulated) => {
+const updateDocumentOnElastic = async (process: IMongoProcessInstancePopulated) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
         const elkClient = clientInstance.getClient();
@@ -124,4 +123,5 @@ const processGlobalSearch = async (searchText: string, skip: number, limit: numb
     }
 };
 
-export { deleteDocumentOnElastic, createDocumentOnElastic, updateDocumentOnElastic, processGlobalSearch };
+export { createDocumentOnElastic, deleteDocumentOnElastic, processGlobalSearch, updateDocumentOnElastic };
+

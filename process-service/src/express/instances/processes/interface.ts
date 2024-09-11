@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IBaseSearchProperties } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
 
@@ -49,4 +48,6 @@ export interface IProcessInstanceSearchProperties extends IBaseSearchProperties 
     archived?: boolean;
 }
 
-export type ProcessInstanceDocument = IProcessInstance & Document;
+export interface ProcessInstanceDocument extends IProcessInstance {
+    _id: string;
+}

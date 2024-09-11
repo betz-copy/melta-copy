@@ -1,4 +1,4 @@
-import { ClientSession, Document, FilterQuery } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
@@ -23,7 +23,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
-        const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
+        const query: FilterQuery<IEntityTemplate> = {};
 
         if (displayName) {
             query.displayName = { $regex: escapeRegExp(displayName) };
@@ -135,7 +135,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 .exec();
 
             await Promise.all(
-                Object.values(deletedEntityTemplate.properties.properties).map(async (property) => {
+                Object.values(deletedEntityTemplate.properties.properties).map(async (property: any) => {
                     if (property.relationshipReference) {
                         await this.relationshipTemplateManager.deleteTemplateById(property.relationshipReference.relationshipTemplateId!, session);
                     }
