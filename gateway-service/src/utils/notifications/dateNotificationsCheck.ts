@@ -1,4 +1,6 @@
 import * as schedule from 'node-schedule';
+import { StatusCodes } from 'http-status-codes';
+import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
 import { WorkspaceTypes } from '../../express/workspaces/interface';
@@ -10,9 +12,7 @@ import { IDateAboutToExpireMetadataPopulated } from '../../externalServices/noti
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { ServiceError } from '../../express/error';
-import { StatusCodes } from 'http-status-codes';
 import { RabbitManager } from '../rabbit';
-import { logger } from 'elastic-apm-node';
 
 const { notifications } = config;
 

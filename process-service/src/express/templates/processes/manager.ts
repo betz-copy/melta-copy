@@ -1,5 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { Document, FilterQuery, Types } from 'mongoose';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
@@ -17,7 +18,6 @@ import {
     ProcessTemplateDocument,
 } from './interface';
 import { ProcessTemplateSchema } from './model';
-import { StatusCodes } from 'http-status-codes';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
 

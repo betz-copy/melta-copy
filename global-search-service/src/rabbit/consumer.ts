@@ -39,7 +39,7 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
             }
 
             default:
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'invalid action type (should be caught in joi valiton)');
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'invalid action type (should be caught in joi validation)');
         }
     } catch (error) {
         msg.nack(false);

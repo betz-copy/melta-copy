@@ -2,6 +2,8 @@
 import { AxiosError } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
+import { StatusCodes } from 'http-status-codes';
+import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
@@ -31,11 +33,9 @@ import {
     IMongoEntityTemplateWithConstraintsPopulated,
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
-import { StatusCodes } from 'http-status-codes';
 import { getParametersOfFormula } from './rules';
 import { IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
-import { logger } from 'elastic-apm-node';
 
 const {
     categoryHasTemplates,

@@ -99,22 +99,8 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
                         error: { deleteFilesError, processServiceError },
                     });
                 });
-
                 throw processServiceError;
             });
-
-        // const updatedStep = await processInstancesManager.service
-        //     .updateStepInstance(stepId, {
-        //         ...processServiceUpdateData,
-        //         properties: props,
-        //     })
-        //     .catch(async (processServiceError) => {
-        //         await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-        //             throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to delete files error', {
-        //                 error: { deleteFilesError, processServiceError },
-        //             });
-        //         });
-        //     });
 
         if (oldProperties) await processInstancesManager.removeUnusedFileIds(stepTemplate.properties, oldProperties, { ...props });
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { InstancesService } from '../../../externalServices/instanceService';
 import {
@@ -43,7 +44,6 @@ import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
-import { StatusCodes } from 'http-status-codes';
 
 export default class ProcessesInstancesManager extends DefaultManagerProxy<ProcessService> {
     private instancesService: InstancesService;
@@ -173,7 +173,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         );
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
-            await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((error) => {
+            await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
                 throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process unused files`, {
                     error,
                 });
