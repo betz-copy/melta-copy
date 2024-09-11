@@ -24,7 +24,11 @@ export const environment = {
         notifications: '/notifications',
         ruleBreachesRequests: '/rule-breaches/requests',
         ruleBreachesAlerts: '/rule-breaches/alerts',
+        workspaces: '/workspaces',
     },
+    unauthorizedId: 'unauthorized',
+    defaultTitle: 'Melta',
+    workspaceIdHeaderName: 'workspace-id',
     graphSettings: {
         nodeConnectionsCountRangesToNodeSize: {
             '0-2': 3,
@@ -122,16 +126,17 @@ export const environment = {
                 {
                     color: '#DD3500',
                     type: NotificationType.ruleBreachRequest,
-                    displayName: () => i18next?.t('notifications.displayNames.ruleBreachRequest'),
+                    displayName: () => i18next.t('notifications.displayNames.ruleBreachRequest'),
                 },
             ],
             general: [
                 {
+                    color: undefined,
                     type: NotificationType.dateAboutToExpire,
                     displayName: () => i18next.t('notifications.displayNames.dateAboutToExpire'),
                 },
                 {
-                    color: ' #FFAC2F',
+                    color: '#FFAC2F',
                     type: NotificationType.ruleBreachAlert,
                     displayName: () => i18next.t('notifications.displayNames.ruleBreachAlert'),
                 },
@@ -173,6 +178,10 @@ export const environment = {
         defaultExpandedRowCount: 13,
         defaultRowHeight: 50,
         defaultFontSize: 14,
+        cacheBlockSize: 5,
+        maxBlocksInCache: 10,
+        maxConcurrentDatasourceRequests: 1,
+        infiniteInitialRowCount: 10,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -180,8 +189,8 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
-    createdRelationshipIdInBrokenRules: 'created-relationship-id',
     accessTokenName: 'rabaz-access-token',
+    brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
     fileIdLength: 32,
     maxDateTimestamp: 8640000000000000,
@@ -202,6 +211,7 @@ export const environment = {
         width: '24px',
         height: '24px',
     },
+    draftAutoSaveDebounce: 250,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],
@@ -1231,4 +1241,8 @@ export const environment = {
             'prw',
         ],
     },
-};
+    matomo: {
+        urlBase: 'matomo.yesodot.services.idf',
+        siteId: 24,
+    },
+} as const;

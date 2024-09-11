@@ -3,6 +3,7 @@
     "target": "ES2019",
     "module": "CommonJS",
     "allowJs": false,
+    "esModuleInterop": true,
     "sourceMap": true,
     "removeComments": true,
     "strict": true,

@@ -1,49 +1,74 @@
-import axios from 'axios';
 import FormData from 'form-data';
+import config from '../config';
+import DefaultExternalServiceApi from '../utils/express/externalService';
 import fsCreateReadStream from '../utils/fs';
 
-import config from '../config';
+const {
+    service: { docxHeaders },
+    storageService: { url, uploadFileRoute, uploadFilesRoute, downloadFileRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute },
+} = config;
 
-const { url, uploadFileRoute, uploadFilesRoute, deleteFileRoute, deleteFilesRoute, duplicateFilesRoute } = config.storageService;
+export class StorageService extends DefaultExternalServiceApi {
+    constructor(workspaceId: string) {
+        super(workspaceId, { baseURL: url });
+    }
 
-export const uploadFile = async (file: Express.Multer.File) => {
-    const formData = new FormData();
-    const fileStream = await fsCreateReadStream(file.path);
-    formData.append('file', fileStream, file.originalname);
+    async uploadFile(file: Express.Multer.File) {
+        const formData = new FormData();
+        const fileStream = await fsCreateReadStream(file.path);
+        formData.append('file', fileStream, file.originalname);
 
-    const { data } = await axios.post<{ path: string }>(`${url}/${uploadFileRoute}`, formData, {
-        headers: formData.getHeaders(),
-    });
+        const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
+            headers: formData.getHeaders(),
+        });
 
-    return data.path;
-};
+        return data.path;
+    }
 
-export const uploadFiles = async (files: Express.Multer.File[]) => {
-    const formData = new FormData();
+    async uploadFiles(files: Express.Multer.File[]) {
+        const formData = new FormData();
 
-    const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
-    const fileStreams = await Promise.all(fileStreamsPromises);
+        const fileStreamsPromises = files.map((file) => fsCreateReadStream(file.path));
+        const fileStreams = await Promise.all(fileStreamsPromises);
 
-    fileStreams.forEach((fileStream, index) => {
-        formData.append('files', fileStream, files[index].originalname);
-    });
+        fileStreams.forEach((fileStream, index) => {
+            formData.append('files', fileStream, files[index].originalname);
+        });
 
-    const { data } = await axios.post<{ path: string }[]>(`${url}/${uploadFilesRoute}`, formData, {
-        headers: formData.getHeaders(),
-    });
+        const { data } = await this.api.post<{ path: string }[]>(uploadFilesRoute, formData, {
+            headers: formData.getHeaders(),
+        });
 
-    return data.map(({ path }) => path);
-};
+        return data.map(({ path }) => path);
+    }
 
-export const deleteFile = (fileId: string) => {
-    return axios.delete(`${url}/${deleteFileRoute}/${encodeURIComponent(fileId)}`);
-};
+    async downloadFile(path: string) {
+        const { data } = await this.api.get<ArrayBuffer>(`${downloadFileRoute}/${encodeURIComponent(path)}`, {
+            responseType: 'arraybuffer',
+            ...docxHeaders,
+        });
 
-export const deleteFiles = (paths: string[]) => {
-    return axios.post(`${url}/${deleteFilesRoute}`, { paths });
-};
+        return data;
+    }
 
-export const duplicateFiles = async (paths: string[]) => {
-    const { data } = await axios.post(`${url}/${duplicateFilesRoute}`, { paths });
-    return data;
-};
+    async downloadFiles(paths: string[]) {
+        const { data } = await this.api.get(`${downloadFileRoute}/zip/`, {
+            params: { path: paths.join('?') },
+            responseType: 'stream',
+        });
+        return data;
+    }
+
+    async deleteFile(fileId: string) {
+        return this.api.delete(`${deleteFileRoute}/${encodeURIComponent(fileId)}`);
+    }
+
+    async deleteFiles(paths: string[]) {
+        return this.api.post(deleteFilesRoute, { paths });
+    }
+
+    async duplicateFiles(paths: string[]) {
+        const { data } = await this.api.post<{ path: string }[]>(duplicateFilesRoute, { paths });
+        return data;
+    }
+}

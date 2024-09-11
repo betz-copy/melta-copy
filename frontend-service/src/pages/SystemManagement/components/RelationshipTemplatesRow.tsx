@@ -49,16 +49,26 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     setDeleteRelationshipTemplateDialogState,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const { isProperty } = relationshipTemplate;
 
     return (
         <ViewingCard
             title={
-                <Grid container direction="row" justifyContent="space-between" width="100%" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
+                <Grid
+                    color={isProperty ? 'darkgrey' : 'black'}
+                    container
+                    direction="row"
+                    justifyContent="space-between"
+                    width="100%"
+                    alignItems="center"
+                    paddingLeft="20px"
+                    flexWrap="nowrap"
+                >
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <RelationshipTitle relationshipTemplate={relationshipTemplate} />
                     </Grid>
                     <Grid item container flexBasis="10%" width="25px">
-                        {isHoverOnCard && (
+                        {isHoverOnCard && !isProperty && (
                             <CardMenu
                                 onEditClick={() => {
                                     const { sourceEntity, destinationEntity, ...restOfRelationshipTemplate } = relationshipTemplate;

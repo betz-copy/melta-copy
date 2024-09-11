@@ -14,6 +14,11 @@ interface IRelationshipMetadata extends IBaseActivityLog {
     metadata: { relationshipId: string; relationshipTemplateId: string; entityId: string };
 }
 
+interface IDuplicateEntityMetadata extends IBaseActivityLog {
+    action: 'DUPLICATE_ENTITY';
+    metadata: { entityIdDuplicatedFrom: string };
+}
+
 interface IUpdateEntityMetadata extends IBaseActivityLog {
     action: 'UPDATE_ENTITY';
     metadata: { updatedFields: [{ fieldName: string; oldValue: any; newValue: any }] };
@@ -29,4 +34,4 @@ export enum Action {
     'VIEW_ENTITY',
 }
 
-export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IUpdateEntityMetadata;
+export type IActivityLog = IEmptyMetadata | IRelationshipMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;

@@ -1,40 +1,34 @@
-import React, { useState, useRef, useEffect } from 'react';
 import { Close as CloseIcon } from '@mui/icons-material';
-import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { Document, Page, pdfjs } from 'react-pdf';
-import ReactPlayer from 'react-player';
-import i18next from 'i18next';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import ZoomInIcon from '@mui/icons-material/ZoomIn';
 import ZoomOutIcon from '@mui/icons-material/ZoomOut';
-import RefreshIcon from '@mui/icons-material/Refresh';
-import { RootState } from '../../store';
-import FlexBox from '../FlexBox';
-import { getFileExtension } from '../../utils/getFileType';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import { Button, Card, CircularProgress, Dialog, DialogContent, Grid, IconButton, TextField, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { useEffect, useRef, useState } from 'react';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+import ReactPlayer from 'react-player';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { getFileExtension } from '../../utils/getFileType';
+import { useFilePreview } from '../../utils/hooks/useFilePreview';
 import { DownloadButton } from '../DownloadButton';
-import { useFilePreview } from '../../utils/useFilePreview';
+import FlexBox from '../FlexBox';
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 
 type PreviewProps = {
     open: boolean;
-    fileId: string;
+    fileId: string | File;
     setOpen: (value: boolean) => void;
     fileName: string;
     contentType: 'image' | 'video' | 'audio' | 'unsupported' | 'pdf' | 'document';
 };
 
-const isImage = (type: string) => type === 'image';
-const isVideoOrAudio = (type: string) => ['video', 'audio'].includes(type);
-const isUnsupported = (type: string) => type === 'unsupported';
-const isSpecial = (type: string) => !(isImage(type) || isVideoOrAudio(type) || isUnsupported(type));
-
 const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setOpen, fileName }) => {
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);
     const { data, refetch, isLoading: loading, isError: error } = useFilePreview(fileId, contentType, setNoSuchKeyError);
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [numOfPages, setNumOfPages] = useState(1);
     const [currentPage, setCurrentPage] = useState(1);
     const [jumpToPage, setJumpToPage] = useState('1');
@@ -108,14 +102,14 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
         }
     };
 
-    const handleEnterKeyPress = (e) => {
+    const handleEnterKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === 'Enter') {
             handleJumpToPage();
         }
     };
 
-    let previewContent;
-    if (isImage(contentType)) {
+    let previewContent: React.ReactNode;
+    if (contentType === 'image') {
         previewContent = (
             <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
                 <img
@@ -138,9 +132,9 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                 />
             </div>
         );
-    } else if (isVideoOrAudio(contentType)) {
+    } else if (contentType === 'video' || contentType === 'audio') {
         previewContent = <ReactPlayer style={{ marginTop: '65px' }} url={data} controls playing />;
-    } else if (isUnsupported(contentType)) {
+    } else if (contentType === 'unsupported' || fileId instanceof File) {
         previewContent = (
             <Card sx={{ borderRadius: 2, bgcolor: '#4c494c', display: 'grid', height: 150, padding: 3 }} elevation={10}>
                 <Typography variant="body1" style={{ color: 'white', marginTop: '10px', fontSize: '20px' }}>
@@ -205,11 +199,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             },
                         }}
                     >
-                        <IconButton
-                            onClick={() => {
-                                setOpen(false);
-                            }}
-                        >
+                        <IconButton onClick={() => setOpen(false)}>
                             <CloseIcon />
                         </IconButton>
 
@@ -221,7 +211,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             <ZoomOutIcon />
                         </IconButton>
                     </FlexBox>
-                    {isSpecial(contentType) && extension !== 'pptx' && (
+                    {contentType === 'document' && extension !== 'pptx' && (
                         <FlexBox direction="row" sx={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <TextField
                                 type="number"
@@ -243,7 +233,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
                             />
 
                             <div style={{ color: 'white' }}>
-                                {numOfPages} / {currentPageRef.current}{' '}
+                                {numOfPages} / {currentPageRef.current}
                             </div>
                         </FlexBox>
                     )}
@@ -251,7 +241,10 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
 
                 <Grid
                     ref={containerRef}
-                    sx={{ height: '95%', overflowY: isImage(contentType) || isVideoOrAudio(contentType) ? 'hidden' : 'scroll' }}
+                    sx={{
+                        height: '95%',
+                        overflowY: ['image', 'video', 'audio'].includes(contentType) ? 'hidden' : 'scroll',
+                    }}
                     container
                     justifyContent="center"
                     alignItems="center"

@@ -8,8 +8,8 @@ export interface ICreateRelationshipMetadata {
 
 export interface ICreateRelationshipMetadataPopulated {
     relationshipTemplateId: string;
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
 }
 
 export interface IDeleteRelationshipMetadata {
@@ -22,8 +22,19 @@ export interface IDeleteRelationshipMetadata {
 export interface IDeleteRelationshipMetadataPopulated {
     relationshipId: string;
     relationshipTemplateId: string;
-    sourceEntity: IEntity | null;
-    destinationEntity: IEntity | null;
+    sourceEntity: IEntity | string | null;
+    destinationEntity: IEntity | string | null;
+}
+
+export interface ICreateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+}
+
+export interface IDuplicateEntityMetadata {
+    templateId: string;
+    properties: Record<string, any>;
+    entityIdToDuplicate: string;
 }
 
 export interface IUpdateEntityMetadata {
@@ -37,6 +48,12 @@ export interface IUpdateEntityStatusMetadata {
     disabled: boolean;
 }
 
+export interface ICreateEntityMetadataPopulated extends ICreateEntityMetadata {}
+
+export interface IDuplicateEntityMetadataPopulated extends ICreateEntityMetadata {
+    entityToDuplicate: IEntity | null;
+}
+
 export interface IUpdateEntityStatusMetadataPopulated {
     entity: IEntity | null;
     disabled: boolean;
@@ -47,16 +64,32 @@ export interface IUpdateEntityMetadataPopulated {
     updatedFields: Record<string, any>;
 }
 
-export type IActionMetadata = ICreateRelationshipMetadata | IDeleteRelationshipMetadata | IUpdateEntityMetadata | IUpdateEntityStatusMetadata;
+export type IActionMetadata =
+    | ICreateRelationshipMetadata
+    | IDeleteRelationshipMetadata
+    | ICreateEntityMetadata
+    | IDuplicateEntityMetadata
+    | IUpdateEntityMetadata
+    | IUpdateEntityStatusMetadata;
+
 export type IActionMetadataPopulated =
     | ICreateRelationshipMetadataPopulated
     | IDeleteRelationshipMetadataPopulated
+    | ICreateEntityMetadataPopulated
+    | IDuplicateEntityMetadataPopulated
     | IUpdateEntityMetadataPopulated
     | IUpdateEntityStatusMetadataPopulated;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
     DeleteRelationship = 'delete-relationship',
+    CreateEntity = 'create-entity',
+    DuplicateEntity = 'duplicate-entity',
     UpdateEntity = 'update-entity',
     UpdateStatus = 'update-status',
+}
+
+export interface IAction {
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadata;
 }

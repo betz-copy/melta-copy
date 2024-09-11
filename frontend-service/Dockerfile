@@ -1,7 +1,10 @@
-FROM node:18.14-alpine as build
+
+FROM node:22-alpine as build
 WORKDIR /usr/src/app
+
 COPY ["package.json", "package-lock.json", ".npmrc", "./"]
-RUN npm install
+RUN npm ci --silent
+
 COPY . .
 
 RUN NODE_OPTIONS=--max-old-space-size=8000 npm run build --prod

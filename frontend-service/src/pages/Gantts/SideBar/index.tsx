@@ -1,15 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Box, Button, Grid } from '@mui/material';
-import { useSelector } from 'react-redux';
 import { Add as AddIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FieldArray, FormikProps } from 'formik';
 import { Swap } from '../../../common/Swap';
-import { RootState } from '../../../store';
 import { CompactDrawer } from '../../../common/CompactDrawer';
 import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
 import { GanttItemsDisplay } from './GanttItemsDisplay';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 interface IGanttSideBarProps {
     gantt: IBasicGantt;
@@ -21,7 +20,7 @@ interface IGanttSideBarProps {
 }
 
 export const GanttSideBar: React.FC<IGanttSideBarProps> = ({ toggle, open, gantt, formik, edit, isLoading }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const ganttItemsDisplayRef = useRef<HTMLDivElement>(null);
 

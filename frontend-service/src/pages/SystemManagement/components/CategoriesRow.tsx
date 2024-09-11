@@ -43,16 +43,9 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 
     return (
         <ViewingCard
+            width={250}
             title={
-                <Grid
-                    container
-                    direction="row"
-                    justifyContent="space-between"
-                    minWidth="232px"
-                    alignItems="center"
-                    paddingLeft="20px"
-                    flexWrap="nowrap"
-                >
+                <Grid container direction="row" justifyContent="space-between" alignItems="center" paddingLeft="20px" flexWrap="nowrap">
                     <Grid item container alignItems="center" gap="10px" flexBasis="90%">
                         <Grid item>
                             <EntityTemplateColor entityTemplateColor={category.color} style={{ height: '18px' }} />
@@ -170,14 +163,14 @@ const CategoriesRow: React.FC = () => {
                     />
                 ))}
             </Box>
-            {
-                // TODO - add when category group will be supported
-                <Grid>
-                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
-                        <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
-                    </IconButtonWithPopover>
-                </Grid>
-            }
+
+            {/* TODO - add when category group will be supported */}
+            <Grid>
+                <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
+                    <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
+                </IconButtonWithPopover>
+            </Grid>
+
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

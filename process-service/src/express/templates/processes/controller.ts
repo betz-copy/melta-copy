@@ -1,26 +1,30 @@
 import { Request, Response } from 'express';
+import DefaultController from '../../../utils/express/controller';
+import { IProcessTemplate } from './interface';
 import ProcessTemplateManager from './manager';
 
-class ProcessTemplateController {
-    static async getTemplateById(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.getProcessTemplateById(req.params.id));
+export default class ProcessTemplateController extends DefaultController<IProcessTemplate, ProcessTemplateManager> {
+    constructor(workspaceId: string) {
+        super(new ProcessTemplateManager(workspaceId));
     }
 
-    static async createTemplate(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.createProcessTemplate(req.body));
+    async getTemplateById(req: Request, res: Response) {
+        res.json(await this.manager.getProcessTemplateById(req.params.id));
     }
 
-    static async deleteTemplate(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.deleteProcessTemplate(req.params.id));
+    async createTemplate(req: Request, res: Response) {
+        res.json(await this.manager.createProcessTemplate(req.body));
     }
 
-    static async updateTemplate(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.updateTemplate(req.params.id, req.body));
+    async deleteTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deleteProcessTemplate(req.params.id));
     }
 
-    static async searchTemplates(req: Request, res: Response) {
-        res.json(await ProcessTemplateManager.searchTemplates(req.body));
+    async updateTemplate(req: Request, res: Response) {
+        res.json(await this.manager.updateTemplate(req.params.id, req.body));
+    }
+
+    async searchTemplates(req: Request, res: Response) {
+        res.json(await this.manager.searchTemplates(req.body));
     }
 }
-
-export default ProcessTemplateController;

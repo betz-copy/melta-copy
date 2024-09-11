@@ -1,6 +1,6 @@
 import { Document } from 'mongoose';
-import { IMongoStepInstance } from '../steps/interface';
 import { IBaseSearchProperties } from '../../templates/processes/interface';
+import { IMongoStepInstance } from '../steps/interface';
 
 export enum Status {
     Pending = 'pending',

@@ -1,59 +1,52 @@
 import { Router } from 'express';
-import RuleBreachRequestsController from './controller';
-import { wrapController } from '../../utils/express';
+import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
+import RuleBreachRequestsController from './controller';
 import {
     createRuleBreachRequestRequestSchema,
+    getManyRuleBreachesByIds,
     getRuleBreachRequestByIdRequestSchema,
     getRuleBreachRequestsByRuleIdRequestSchema,
-    updateRuleBreachRequestStatusRequestSchema,
     searchRuleBreachRequestsRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
+    updateRuleBreachRequestStatusRequestSchema,
 } from './validator.schema';
 
 const RuleBreachRequestsRouter: Router = Router();
 
-RuleBreachRequestsRouter.post(
-    '/search',
-    ValidateRequest(searchRuleBreachRequestsRequestSchema),
-    wrapController(RuleBreachRequestsController.searchRuleBreachRequests),
-);
+const controller = createController(RuleBreachRequestsController);
 
-RuleBreachRequestsRouter.post(
-    '/',
-    ValidateRequest(createRuleBreachRequestRequestSchema),
-    wrapController(RuleBreachRequestsController.createRuleBreachRequest),
-);
+RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequestsRequestSchema), controller.searchRuleBreachRequests);
+
+RuleBreachRequestsRouter.post('/get-many', ValidateRequest(getManyRuleBreachesByIds), controller.getManyRuleBreachRequests);
+
+RuleBreachRequestsRouter.post('/', ValidateRequest(createRuleBreachRequestRequestSchema), controller.createRuleBreachRequest);
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/status',
     ValidateRequest(updateRuleBreachRequestStatusRequestSchema),
-    wrapController(RuleBreachRequestsController.updateRuleBreachRequestStatus),
+    controller.updateRuleBreachRequestStatus,
 );
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/action-metadata',
     ValidateRequest(updateRuleBreachRequestActionMetadataRequestSchema),
-    wrapController(RuleBreachRequestsController.updateRuleBreachRequestActionMetadata),
+    controller.updateRuleBreachRequestActionsMetadatas,
 );
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/broken-rules',
     ValidateRequest(updateRuleBreachRequestBrokenRulesRequestSchema),
-    wrapController(RuleBreachRequestsController.updateRuleBreachRequestBrokenRules),
+    controller.updateRuleBreachRequestBrokenRules,
 );
 
-RuleBreachRequestsRouter.get(
-    '/:ruleBreachRequestId',
-    ValidateRequest(getRuleBreachRequestByIdRequestSchema),
-    wrapController(RuleBreachRequestsController.getRuleBreachRequestById),
-);
+RuleBreachRequestsRouter.get('/:ruleBreachRequestId', ValidateRequest(getRuleBreachRequestByIdRequestSchema), controller.getRuleBreachRequestById);
 
 RuleBreachRequestsRouter.get(
     '/broken-rules/:ruleId',
     ValidateRequest(getRuleBreachRequestsByRuleIdRequestSchema),
-    wrapController(RuleBreachRequestsController.getRuleBreachRequestsByRuleId),
+    controller.getRuleBreachRequestsByRuleId,
 );
 
 export default RuleBreachRequestsRouter;

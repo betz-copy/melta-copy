@@ -7,6 +7,7 @@ export const createEntityInstanceSchema = Joi.object({
     body: Joi.object({
         templateId: Joi.string().required(),
         properties: ExtendedJoi.stringToObject(), // properties is json string (because of form data)
+        ignoredRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).default([]),
     }).unknown(true),
     query: {},
     params: {},
@@ -42,6 +43,17 @@ export const deleteEntityInstanceSchema = Joi.object({
     params: { id: Joi.string().required() },
 });
 
+// POST /api/instances/entities/export/document/:entityId
+export const exportEntityToDocumentSchemaByEntityId = Joi.object({
+    body: {},
+    query: {
+        documentTemplateId: Joi.string().required(),
+    },
+    params: {
+        entityId: MongoIdSchema,
+    },
+});
+
 // POST /api/instances/entities/export
 export const exportEntitiesSchema = Joi.object({
     body: {
@@ -51,6 +63,16 @@ export const exportEntitiesSchema = Joi.object({
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
         }),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/entities/export/document
+export const exportEntityToDocumentSchema = Joi.object({
+    body: {
+        documentTemplateId: Joi.string().required(),
+        entityProperties: Joi.object(),
     },
     query: {},
     params: {},

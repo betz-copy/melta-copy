@@ -3,7 +3,7 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Grid, Circul
 import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import { makeStyles } from '@mui/styles';
-import { useMutation, useQueryClient } from 'react-query';
+import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,14 +18,15 @@ import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
-import { getProcessByIdRequest, updateProcessRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
-import { ErrorToast } from '../../ErrorToast';
+import { getProcessByIdRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
-import { IPermissionsOfUser } from '../../../services/permissionsService';
 import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { Print } from '../../../pages/ProcessInstances/print';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 interface IProcessInstanceWizard {
     open: boolean;
@@ -33,6 +34,14 @@ interface IProcessInstanceWizard {
     processInstance: IMongoProcessInstancePopulated;
     stepTemplate?: IMongoStepTemplatePopulated;
     processTemplate: IMongoProcessTemplatePopulated;
+    currProcessInstance: IMongoProcessInstancePopulated;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+    isLoading: any;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    isProcessChanged: boolean;
+    setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
+    isEditMode: boolean;
+    setIsEditMode: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const wizardContentStyles = makeStyles(() => ({
@@ -54,33 +63,30 @@ const wizardContentStyles = makeStyles(() => ({
     },
 }));
 
-const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose, processInstance, stepTemplate, processTemplate }) => {
+const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
+    open,
+    onClose,
+    processInstance,
+    stepTemplate,
+    processTemplate,
+    currProcessInstance,
+    setCurrProcessInstance,
+    isLoading,
+    mutateAsync,
+    isProcessChanged,
+    setIsProcessChanged,
+    isEditMode,
+    setIsEditMode,
+}) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const [currProcessInstance, setCurrProcessInstance] = useState<IMongoProcessInstancePopulated>(processInstance);
 
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const hasPermissionsToEditDetails = Boolean(myPermissions.processesManagementId);
+    const hasPermissionsToEditDetails = currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write;
 
-    const [isEditMode, setIsEditMode] = useState<boolean>(false);
     const [isStepEditMode, setIsStepEditMode] = useState(false);
 
-    const [isProcessChanged, setIsProcessChanged] = useState<boolean>(false);
-    const { isLoading, mutateAsync } = useMutation(
-        (processData: ProcessDetailsValues) => updateProcessRequest(processInstance._id, processData, processTemplate),
-        {
-            onSuccess: (processNewData) => {
-                toast.success(i18next.t('wizard.processInstance.editedSuccessfully'));
-                setIsProcessChanged(true);
-                setIsEditMode(false);
-                setCurrProcessInstance(processNewData);
-            },
-            onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
-                console.log('failed to update process instance. error', error);
-            },
-        },
-    );
     const detailsFormikData = useProcessDetailsFormik(processInstance, processTemplatesMap, mutateAsync);
     const [activeStep, setActiveStep] = React.useState(stepTemplate ? 1 : 0);
 
@@ -96,7 +102,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
             label: i18next.t('wizard.processInstance.processSteps'),
             component: (
                 <ProcessStepsStep
-                    processTemplate={processTemplatesMap.get(processInstance!.templateId)!}
+                    processTemplate={processTemplate}
                     processInstance={currProcessInstance}
                     onStepUpdateSuccess={async (stepInstance) => {
                         setCurrProcessInstance((prev) => {
@@ -120,7 +126,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         {
             label: i18next.t('wizard.processInstance.processSummary'),
             component: (
-                <ProcessSummary processInstance={currProcessInstance} processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!} />
+                <ProcessSummary
+                    isPrinting={false}
+                    processInstance={currProcessInstance}
+                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                />
             ),
         },
     ];
@@ -180,7 +190,18 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
         hasPermissionsToEditDetails && activeStep === 0 && processInstance.status === Status.Pending && !processInstance.archived;
 
     return (
-        <Dialog keepMounted={false} open={open} fullWidth maxWidth="xl" PaperProps={{ style: { height: '85vh' } }}>
+        <Dialog
+            keepMounted={false}
+            open={open}
+            fullWidth
+            maxWidth="xl"
+            PaperProps={{
+                style: {
+                    height: '85vh',
+                    overflowY: 'visible',
+                },
+            }}
+        >
             <DialogTitle height="8vh" margin={0} display="flex" justifyContent="space-between" alignItems="center">
                 <BlueTitle title={detailsFormikData.values.name} variant="h4" component="p" />
                 <Grid>
@@ -233,6 +254,17 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({ open, onClose
                                 </Grid>
                             </Grid>
                         )}
+                        <Grid>
+                            {activeStep === 2 && !processInstance.archived && (
+                                <Print
+                                    processInstance={currProcessInstance}
+                                    processTemplate={processTemplatesMap.get(currProcessInstance.templateId)!}
+                                    mutateAsync={mutateAsync}
+                                    setCurrProcessInstance={setCurrProcessInstance}
+                                    setIsProcessChanged={setIsProcessChanged}
+                                />
+                            )}
+                        </Grid>
                         <Grid>
                             {!isEditMode && hasPermissionsToEditDetails && (
                                 <>

@@ -2,29 +2,45 @@
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import config from './config';
-import { createCategories, getCategories } from './categories';
-import { createEntityTemplates, isEntityTemplateServiceAlive } from './entityTemplates';
+import { createGantts } from './gantts';
+import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
 import { categories } from './mocks/categories';
 import { entityTemplates } from './mocks/entityTemplates';
-import { createInstances, createRelationshipInstances, isInstanceServiceAlive } from './instances';
-import { createRelationshipTemplates, isRelationshipTemplateServiceAlive } from './relationshipTemplates';
-import { relationshipTemplates } from './mocks/relationshipTemplates';
-import { createPermissionsBulk, isPermissionServiceAlive } from './permissionsApi';
-import { getPermissionsToCreate } from './mocks/permissionsApi';
-import { createRules } from './rules';
-import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
 import { getProcessTemplateToCreate } from './mocks/processTemplates';
+import { relationshipTemplates } from './mocks/relationshipTemplates';
+import { getUsersToCreate } from './mocks/users';
+import { getWorkspacesToCreate } from './mocks/workspaces';
 import { createProcessInstances } from './processInstances';
+import { createProcessTemplates, isProcessServiceAlive } from './processTemplate';
 import { isStorageServiceAlive, uploadFile } from './storageService';
-import { createGantts } from './gantts';
+import { isTemplateServiceAlive } from './templates';
+import { createCategories } from './templates/categories';
+import { createEntityTemplates } from './templates/entityTemplates';
+import { createRelationshipTemplates } from './templates/relationshipTemplates';
+import { createRules } from './templates/rules';
+import { createUsers, isUserServiceAlive } from './users';
+import { createWorkspaces, getRootWorkspace, getWorkspaces, isWorkpacesServiceAlive } from './workspaces';
 
 const main = async () => {
     console.log(`Mock started ${JSON.stringify(config, null, 4)}`);
 
-    const { err: entityTemplateServiceAliveErr } = await isEntityTemplateServiceAlive();
-    if (entityTemplateServiceAliveErr) {
-        console.log('Entity Template Service is not alive');
-        throw entityTemplateServiceAliveErr;
+    const { err: workspacesServiceAliveErr } = await isWorkpacesServiceAlive();
+    if (workspacesServiceAliveErr) {
+        console.log('Workspace Service is not alive');
+        throw workspacesServiceAliveErr;
+    }
+
+    const [rootWorkspace, workspaces] = await Promise.all([getRootWorkspace(), getWorkspaces()]);
+
+    if (workspaces.length) {
+        console.log('DB not empty');
+        return;
+    }
+
+    const { err: templateServiceAliveErr } = await isTemplateServiceAlive();
+    if (templateServiceAliveErr) {
+        console.log('Template Service is not alive');
+        throw templateServiceAliveErr;
     }
 
     const { err: processServiceAliveErr } = await isProcessServiceAlive();
@@ -33,16 +49,10 @@ const main = async () => {
         throw processServiceAliveErr;
     }
 
-    const { err: relationshipTemplateServiceAliveErr } = await isRelationshipTemplateServiceAlive();
-    if (relationshipTemplateServiceAliveErr) {
-        console.log('Relationship Template Service is not alive');
-        throw relationshipTemplateServiceAliveErr;
-    }
-
-    const { err: permissionServiceAliveErr } = await isPermissionServiceAlive();
-    if (permissionServiceAliveErr) {
-        console.log('Permission Service is not alive');
-        throw permissionServiceAliveErr;
+    const { err: userServiceAliveErr } = await isUserServiceAlive();
+    if (userServiceAliveErr) {
+        console.log('User Service is not alive');
+        throw userServiceAliveErr;
     }
 
     const { err: instanceServiceAliveErr } = await isInstanceServiceAlive();
@@ -57,11 +67,6 @@ const main = async () => {
         throw storageServiceAliveErr;
     }
 
-    if ((await getCategories()).length !== 0) {
-        console.log('DB not empty');
-        return;
-    }
-
     console.log('All services alive!');
 
     const seed = config.seed ?? Math.floor(Math.random() * 1000);
@@ -70,49 +75,54 @@ const main = async () => {
     const chance = new Chance(seed);
     JSONSchemaFaker.option({ random: () => chance.floating({ min: 0, max: 0.9999, fixed: 4 }) });
 
+    console.log('Creating workspaces');
+
+    const mainWorkspace = await createWorkspaces(getWorkspacesToCreate());
+
     console.log('Creating categories');
 
-    const createdCategories = await createCategories(categories);
+    const createdCategories = await createCategories(mainWorkspace._id, categories);
 
     console.log('Creating entity templates');
 
-    const createdEntityTemplates = await createEntityTemplates(entityTemplates, createdCategories);
+    const createdEntityTemplates = await createEntityTemplates(mainWorkspace._id, entityTemplates, createdCategories);
 
     console.log('Creating relationshipTemplates templates');
 
-    const createdRelationshipTemplates = await createRelationshipTemplates(relationshipTemplates, createdEntityTemplates);
+    const createdRelationshipTemplates = await createRelationshipTemplates(mainWorkspace._id, relationshipTemplates, createdEntityTemplates);
 
-    console.log('Creating rules');
+    console.log('Creating users');
 
-    await createRules(createdEntityTemplates, createdRelationshipTemplates);
-
-    console.log('Creating permissions');
-
-    await createPermissionsBulk(getPermissionsToCreate(createdCategories));
+    const users = await createUsers(getUsersToCreate(rootWorkspace._id, mainWorkspace._id, createdCategories));
+    const userIds = users.map(({ _id }) => _id);
 
     console.log('Creating example file');
 
-    const exampleFileId = await uploadFile();
+    const exampleFileId = await uploadFile(mainWorkspace._id);
 
     console.log('Creating entities');
 
-    const createdEntityInstances = await createInstances(createdEntityTemplates, chance, exampleFileId);
+    const createdEntityInstances = await createInstances(mainWorkspace._id, userIds[0], createdEntityTemplates, chance, exampleFileId);
 
     console.log('Creating relationships');
 
-    await createRelationshipInstances(createdEntityInstances, createdRelationshipTemplates, chance);
+    await createRelationshipInstances(mainWorkspace._id, userIds[0], createdEntityInstances, createdRelationshipTemplates, chance);
+
+    console.log('Creating rules');
+
+    await createRules(mainWorkspace._id, createdEntityTemplates, createdRelationshipTemplates);
 
     console.log('Creating process templates');
 
-    const createdProcessTemplates = await createProcessTemplates(getProcessTemplateToCreate(chance));
+    const createdProcessTemplates = await createProcessTemplates(mainWorkspace._id, getProcessTemplateToCreate(userIds, chance));
 
     console.log('Creating process Instances');
 
-    await createProcessInstances(createdProcessTemplates, chance, exampleFileId);
+    await createProcessInstances(mainWorkspace._id, createdProcessTemplates, userIds, chance, exampleFileId);
 
     console.log('Creating gantts');
 
-    await createGantts(chance, createdEntityTemplates, createdRelationshipTemplates);
+    await createGantts(chance, mainWorkspace._id, createdEntityTemplates, createdRelationshipTemplates);
 
     console.log('Finished');
 };

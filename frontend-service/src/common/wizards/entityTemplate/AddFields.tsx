@@ -56,6 +56,14 @@ const addFieldsSchema = Yup.object({
                         is: 'serialNumber',
                         then: (schema) => schema.min(0, i18next.t('validation.invalidSerialStarter')).required(i18next.t('validation.required')),
                     }),
+                relationshipReference: Yup.object().when('type', {
+                    is: 'relationshipReference',
+                    then: Yup.object({
+                        relatedTemplateId: Yup.string().required(i18next.t('validation.required')),
+                        relatedTemplateField: Yup.string().required(i18next.t('validation.required')),
+                        relationshipTemplateDirection: Yup.string().required(i18next.t('validation.required')),
+                    }),
+                }),
             }),
         )
         .min(1, i18next.t('validation.oneField')),
@@ -161,8 +169,10 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportSerialNumberType
                                             supportEntityReferenceType={false}
                                             supportChangeToRequiredWithInstances
+                                            supportRelationshipReference
                                             supportArrayFields
                                             supportEditEnum
+                                            supportUnique
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />
                                     </Grid>

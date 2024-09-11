@@ -1,72 +1,79 @@
+/* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import ProcessTemplateManager from '../../templates/processes/manager';
+import ajv from '../../../utils/ajv';
+import DefaultController from '../../../utils/express/controller';
 import { InstancePropertiesValidationError, ValidationError } from '../../error';
 import { IProcessDetails } from '../../templates/processes/interface';
-import { CreateProcessReqBody, InstanceProperties, UpdateProcessReqBody } from './interface';
-import ProcessInstanceManager from './manager';
-import ajv from '../../../utils/ajv';
+import ProcessTemplateManager from '../../templates/processes/manager';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
-import StepTemplateManager from '../../templates/steps/manager';
 import StepInstanceManager from '../steps/manager';
+import { CreateProcessReqBody, IProcessInstance, InstanceProperties, UpdateProcessReqBody } from './interface';
+import ProcessInstanceManager from './manager';
 
-export const validateStepIds = (validStepIds: string[], stepIdsToCheck: string[]) => {
-    if (validStepIds.length !== stepIdsToCheck.length) throw new ValidationError('number of steps not matched the template');
-    const unmatchedStepTemplateIds = stepIdsToCheck.filter((item) => !validStepIds.includes(item));
-    if (unmatchedStepTemplateIds.length) throw new ValidationError('unmatched step ids');
-};
+export default class ProcessInstanceValidator extends DefaultController<IProcessInstance, ProcessInstanceManager> {
+    private stepInstanceManager: StepInstanceManager;
 
-const validateInstanceProperties = (instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) => {
-    const validate = ajv.compile(templateProperties);
-    const isValid = validate(instanceProperties);
+    private processTemplateManager: ProcessTemplateManager;
 
-    if (!isValid) {
-        throw new InstancePropertiesValidationError(JSON.stringify(validate.errors));
+    constructor(workspaceId: string) {
+        super(new ProcessInstanceManager(workspaceId));
+        this.stepInstanceManager = new StepInstanceManager(workspaceId);
+        this.processTemplateManager = new ProcessTemplateManager(workspaceId);
     }
-};
 
-const validateReviewersNotInTemplate = (instanceStepReviewersByTemplateStepIds: Record<string, string[]>, stepTemplates: IMongoStepTemplate[]) => {
-    Object.entries(instanceStepReviewersByTemplateStepIds).forEach(([templateStepId, reviewers]) => {
-        const stepTemplate = stepTemplates.find((currStepTemplate) => String(currStepTemplate._id) === templateStepId);
+    validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
+        const validate = ajv.compile(templateProperties);
+        const isValid = validate(instanceProperties);
 
-        if (!stepTemplate) throw new ValidationError('step not found in template');
-
-        if (stepTemplate.reviewers.some((templateReviewer) => reviewers.includes(templateReviewer))) {
-            throw new ValidationError('reviewer already in template');
+        if (!isValid) {
+            throw new InstancePropertiesValidationError(JSON.stringify(validate.errors));
         }
-    });
-};
+    }
 
-export const validateCreateProcessInstance = async (req: Request) => {
-    const { templateId, details, steps }: CreateProcessReqBody = req.body;
+    validateReviewersNotInTemplate(instanceStepReviewersByTemplateStepIds: Record<string, string[]>, stepTemplates: IMongoStepTemplate[]) {
+        Object.entries(instanceStepReviewersByTemplateStepIds).forEach(([templateStepId, reviewers]) => {
+            const stepTemplate = stepTemplates.find((currStepTemplate) => String(currStepTemplate._id) === templateStepId);
 
-    const template = await ProcessTemplateManager.getProcessTemplateById(templateId, false);
-    const stepTemplates = await StepTemplateManager.getStepTemplates(template.steps);
+            if (!stepTemplate) throw new ValidationError('step not found in template');
 
-    validateReviewersNotInTemplate(steps, stepTemplates);
-    validateInstanceProperties(details, template.details.properties);
-};
-
-export const validateUpdateProcessInstance = async (req: Request) => {
-    const { steps, details }: UpdateProcessReqBody = req.body;
-
-    const template = await ProcessInstanceManager.getProcessTemplateByProcessId(req.params.id);
-
-    if (steps) {
-        const [stepTemplates, stepInstances] = await Promise.all([
-            StepTemplateManager.getStepTemplates(template.steps),
-            StepInstanceManager.getSteps(Object.keys(steps)),
-        ]);
-
-        const instanceStepsWithTemplateStepIds: Record<string, string[]> = {};
-
-        stepInstances.forEach((step) => {
-            instanceStepsWithTemplateStepIds[step.templateId] = steps[step._id];
+            if (stepTemplate.reviewers.some((templateReviewer) => reviewers.includes(templateReviewer))) {
+                throw new ValidationError('reviewer already in template');
+            }
         });
-
-        validateReviewersNotInTemplate(instanceStepsWithTemplateStepIds, stepTemplates);
     }
 
-    if (details) {
-        validateInstanceProperties(details, template.details.properties);
+    public async validateCreateProcessInstance(req: Request) {
+        const { templateId, details, steps }: CreateProcessReqBody = req.body;
+
+        const template = await this.processTemplateManager.getProcessTemplateById(templateId, false);
+        const stepTemplates = await this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps);
+
+        this.validateReviewersNotInTemplate(steps, stepTemplates);
+        this.validateInstanceProperties(details, template.details.properties);
     }
-};
+
+    public async validateUpdateProcessInstance(req: Request) {
+        const { steps, details }: UpdateProcessReqBody = req.body;
+
+        const template = await this.manager.getProcessTemplateByProcessId(req.params.id);
+
+        if (steps) {
+            const [stepTemplates, stepInstances] = await Promise.all([
+                this.processTemplateManager.stepTemplateManager.getStepTemplates(template.steps),
+                this.stepInstanceManager.getSteps(Object.keys(steps)),
+            ]);
+
+            const instanceStepsWithTemplateStepIds: Record<string, string[]> = {};
+
+            stepInstances.forEach((step) => {
+                instanceStepsWithTemplateStepIds[step.templateId] = steps[step._id];
+            });
+
+            this.validateReviewersNotInTemplate(instanceStepsWithTemplateStepIds, stepTemplates);
+        }
+
+        if (details) {
+            this.validateInstanceProperties(details, template.details.properties);
+        }
+    }
+}

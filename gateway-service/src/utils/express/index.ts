@@ -1,7 +1,13 @@
-import { Request, Response, NextFunction } from 'express';
-// eslint-disable-next-line import/no-extraneous-dependencies
+import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
+import config from '../../config';
+import { InvalidWorkspaceHeaderError } from '../../express/error';
+import { WorkspaceService } from '../../express/workspaces/service';
 import dataLogger from '../logger/dataLogger';
+import { FunctionKey } from '../types';
+import DefaultController from './controller';
+
+const { workspaceIdHeaderName } = config.service;
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -72,3 +78,69 @@ export const wrapController = <ExtendedRequest extends Request<any, any, any, an
 };
 
 export type RequestWithQuery<Query> = Request<any, any, any, Query>;
+
+const handleMulterErrors = (err, _req, res, next) => {
+    if (!err) {
+        return next();
+    }
+
+    const statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 500;
+    const errorMessage = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : 'File upload error';
+
+    return res.status(statusCode).json({ error: errorMessage, details: err.message });
+};
+
+export const wrapMulter = (upload: any) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        upload(req, res, (err: any) => {
+            if (err) {
+                return handleMulterErrors(err, req, res, next);
+            }
+            next();
+        });
+    };
+};
+
+export const getWorkspaceId = async (req: Request) => {
+    const workspaceId = req.headers[workspaceIdHeaderName];
+
+    if (typeof workspaceId !== 'string') throw new InvalidWorkspaceHeaderError();
+    await WorkspaceService.getById(workspaceId); // check if workspace exists
+
+    return workspaceId;
+};
+
+export const createWorkspacesController = <T extends InstanceType<typeof DefaultController<any>>>(
+    Controller: { new (workspaceId: string): T },
+    isMiddleware = false,
+) => {
+    return new Proxy(
+        {},
+        {
+            get: (_, funcName: string) => {
+                return async (req: Request, res: Response, next: NextFunction) => {
+                    const workspaceId = await getWorkspaceId(req).catch(next);
+
+                    if (!workspaceId) return;
+
+                    if (isMiddleware) {
+                        (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
+                        return;
+                    }
+
+                    (new Controller(workspaceId)[funcName] as Function)(req, res, next).catch(next);
+                };
+            },
+        },
+    ) as {
+        [K in FunctionKey<T, (req: Request, res: Response, next?: NextFunction) => Promise<void>>]: (
+            req: Request,
+            res: Response,
+            next: NextFunction,
+        ) => void;
+    };
+};
+
+export const translateWorkspaceParameter = async (req: Request) => {
+    req.headers[config.service.workspaceIdHeaderName] = req.params.workspaceId;
+};

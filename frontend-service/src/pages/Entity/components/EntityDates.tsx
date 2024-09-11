@@ -1,12 +1,12 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
 import { getLongDate } from '../../../utils/date';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const EntityDates: React.FC<{ createdAt: string; updatedAt: string }> = ({ createdAt, updatedAt }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     return (
         <Grid item container justifyContent="space-between">
             <Typography color={darkMode ? '#cecece' : '#787C9E'} fontSize="12px" fontWeight="400">{`${i18next.t(

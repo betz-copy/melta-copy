@@ -1,4 +1,5 @@
 import React, { Dispatch } from 'react';
+import i18next from 'i18next';
 import { IMongoCategory } from '../interfaces/categories';
 import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
@@ -35,6 +36,7 @@ const TemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={title}
+            img={title === i18next.t('entityTemplatesCheckboxLabel') ? <img src="/icons/select-checkbox.svg" /> : undefined}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}

@@ -1,10 +1,14 @@
 import { v4 as uuidv4 } from 'uuid';
-import neo4j, { QueryResult, Node, Relationship, Transaction } from 'neo4j-driver';
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
-import { IRelationship } from '../../express/relationships/interface';
+import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
-import { IConnection } from '../../express/rules/interfaces';
+import { EntityManager } from '../../express/entities/manager';
+import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+
+type Node = Neo4jNode<number>;
+type Relationship = Neo4jRelationship<number>;
 
 /**
  *
@@ -24,7 +28,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
+            props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
 
             return;
         }
@@ -45,16 +49,18 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
-    return {
+    const entity = {
         templateId: node.labels[0],
         properties: normalizeFields(node.properties),
     };
+
+    return EntityManager.fixReturnedEntityRefrencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
@@ -70,18 +76,11 @@ export const normalizeReturnedEntity =
     };
 
 export const normalizeResponseCount = (result: QueryResult): number => {
-    return result.records[0].get(0).toNumber();
+    return result.records[0].get(0);
 };
 
-export const normalizeRuleResultAgainstPair = (result: QueryResult): boolean => {
-    return result.records[0].get('doesRuleStillApply');
-};
-
-export const normalizeRuleFailuresAgainstPinnedEntity = (result: QueryResult) => {
-    return result.records.map((resultOfPairRecord) => {
-        const resultOfPair = resultOfPairRecord.toObject();
-        return resultOfPair as { unpinnedRelationshipId: string; unpinnedEntityId: string };
-    });
+export const normalizeRuleResult = (result: QueryResult) => {
+    return result.records[0].toObject() as { value: boolean; formulaCauses: IFormulaCauses };
 };
 
 export const normalizeReturnedRelationship =
@@ -134,7 +133,6 @@ const doesPathContainDisabledNode = (path: (Node | Relationship)[], disabled: bo
     });
 };
 
-
 export const normalizeReturnedRelAndEntities =
     (disabled: boolean | null) =>
     (result: QueryResult): IEntityExpanded | null => {
@@ -160,9 +158,8 @@ export const normalizeReturnedRelAndEntities =
 
         const connections = validConnections.map((record) => {
             const [firstEntity, relationship, secondEntity] = record.get(0).slice(-3) as [Node, Relationship, Node];
-            const [sourceEntity, destinationEntity] = relationship.start.equals(firstEntity.identity)
-                ? [firstEntity, secondEntity]
-                : [secondEntity, firstEntity];
+            const [sourceEntity, destinationEntity] =
+                relationship.start === firstEntity.identity ? [firstEntity, secondEntity] : [secondEntity, firstEntity];
 
             return {
                 sourceEntity: nodeToEntity(sourceEntity),
@@ -180,6 +177,17 @@ export const normalizeReturnedRelAndEntities =
         };
     };
 
+const formatUndirectedRelationship = (relationship: Relationship, node1: Node, node2: Node): IRelationship => {
+    const [sourceNode, destinationNode] = relationship.start === node1.identity ? [node1, node2] : [node2, node1];
+
+    return {
+        templateId: relationship.type,
+        properties: normalizeFields(relationship.properties),
+        sourceEntityId: sourceNode.properties._id,
+        destinationEntityId: destinationNode.properties._id,
+    };
+};
+
 export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWithDirectRelationships[] => {
     return result.records.map((record): IEntityWithDirectRelationships => {
         const { node, relationships } = record.toObject() as {
@@ -188,39 +196,22 @@ export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWi
         };
         return {
             entity: nodeToEntity(node),
-            relationships: relationships?.map(({ relationship, otherEntity }) => {
-                const [sourceEntityId, destinationEntityId] = relationship.start.equals(node.identity)
-                    ? [node.properties._id, otherEntity.properties._id]
-                    : [otherEntity.properties._id, node.properties._id];
-                return {
-                    relationship: {
-                        templateId: relationship.type,
-                        properties: normalizeFields(relationship.properties),
-                        sourceEntityId,
-                        destinationEntityId,
-                    },
-                    otherEntity: nodeToEntity(otherEntity),
-                };
-            }),
+            relationships: relationships?.map(({ relationship, otherEntity }) => ({
+                relationship: formatUndirectedRelationship(relationship, node, otherEntity),
+                otherEntity: nodeToEntity(otherEntity),
+            })),
         };
     });
 };
 
-export const normalizeRelAndEntitiesForRule = (result: QueryResult): IConnection[] => {
+export const normalizeNeighboursOfEntityForRule = (result: QueryResult) => {
     return result.records.map((record) => {
-        const sourceEntity = record.get('s') as Node;
-        const relationship = record.get('r') as Relationship;
-        const destinationEntity = record.get('d') as Node;
+        const relationshipTemplate = record.get('rTemplate') as string;
+        const neighbourOfEntity = record.get('neighbour') as Node;
 
         return {
-            sourceEntity: nodeToEntity(sourceEntity),
-            relationship: {
-                templateId: relationship.type,
-                properties: normalizeFields(relationship.properties),
-                sourceEntityId: sourceEntity.properties._id,
-                destinationEntityId: destinationEntity.properties._id,
-            },
-            destinationEntity: nodeToEntity(destinationEntity),
+            relationshipTemplate,
+            neighbourOfEntity: nodeToEntity(neighbourOfEntity),
         };
     });
 };
@@ -246,7 +237,7 @@ export const getNeo4jDateTime = (date = new Date()) => {
     keep date in DB in israel timezone. it's needed in rules formula "toDate" function to get date of datetime field, but in israel.
     for example, if event happened at 01:00, UTC will save it the day before, so "toDate" will bring the wrong date.
     */
-    const adjustedDate = utcToZonedTime(date, 'Asia/Jerusalem');
+    const adjustedDate = toZonedTime(date, 'Asia/Jerusalem');
     return neo4j.types.LocalDateTime.fromStandardDate(adjustedDate);
 };
 export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);

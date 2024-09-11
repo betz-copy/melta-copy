@@ -37,8 +37,11 @@ module.exports = {
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-console': 'off',
         'no-unused-vars': 'off', // Checked by typescript
+        'no-plusplus': 'off', // shitty rule
         'import/prefer-default-export': 'off',
+        'no-restricted-syntax': 'off',
         'valid-typeof': ['error', { requireStringLiterals: false }],
         semi: [2, 'always'],
+        'class-methods-use-this': 'off',
     },
 };

@@ -1,12 +1,24 @@
 import config from '../../config';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
-import { InstanceManagerService } from '../../externalServices/instanceService';
+import { InstancesService } from '../../externalServices/instanceService';
 import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../externalServices/instanceService/interfaces/entities';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import DefaultManagerProxy from '../../utils/express/manager';
 
-export class FlowCubeManager {
-    static async convertFlowToNeoSearch(templateId: string, flowSearchBody: Record<string, any>) {
+export class FlowCubeManager extends DefaultManagerProxy<null> {
+    private instancesService: InstancesService;
+
+    private entityTemplateService: EntityTemplateService;
+
+    constructor(workspaceId: string) {
+        super(null);
+
+        this.instancesService = new InstancesService(workspaceId);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+    }
+
+    async convertFlowToNeoSearch(templateId: string, flowSearchBody: Record<string, any>) {
         const filterAnd: IFilterOfTemplate<any>[] = [];
-        const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
 
         Object.entries(flowSearchBody).forEach(([field, filterValue]) => {
             if (template.properties.properties[field]) {
@@ -40,9 +52,9 @@ export class FlowCubeManager {
         return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
     }
 
-    static async searchFlowCube(templateId: string, searchBody: any) {
-        const convertedSearchBody: ISearchEntitiesOfTemplateBody = await FlowCubeManager.convertFlowToNeoSearch(templateId, searchBody);
-        const res = await InstanceManagerService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
+    async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
+        const convertedSearchBody: ISearchEntitiesOfTemplateBody = await this.convertFlowToNeoSearch(templateId, searchBody);
+        const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
         const convertToFlow = res.entities.map((entity) => entity.entity.properties);
         return convertToFlow;
     }

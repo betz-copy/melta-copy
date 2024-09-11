@@ -1,15 +1,14 @@
 import React, { useState } from 'react';
 import { Grid, Card, CardContent, Collapse } from '@mui/material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const ViewingCard: React.FC<{
     title: React.ReactNode;
     expendedCard?: React.ReactNode;
-    onHover?: (boolean) => void;
+    onHover?: (isHover: boolean) => void;
     width?: number;
 }> = ({ title, expendedCard, onHover, width }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const [open, setOpen] = useState<boolean>(false);
 
     return (
@@ -38,11 +37,7 @@ export const ViewingCard: React.FC<{
                         setOpen(!!expendedCard);
                     }}
                 >
-                    {!open && (
-                        <Grid container>
-                            <Grid item>{title}</Grid>
-                        </Grid>
-                    )}
+                    {!open && title}
                 </CardContent>
 
                 <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>

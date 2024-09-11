@@ -1,42 +1,89 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { EntityTemplateManagerService } from '../../externalServices/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateManagerService } from '../../externalServices/relationshipsTemplateService';
-import { validateAuthorization } from '../permissions/validateAuthorizationMiddleware';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
+import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
+import { Authorizer } from '../../utils/authorizer';
+import DefaultController from '../../utils/express/controller';
+import { ServiceError } from '../error';
 
-export const validateUserCanCreateEntityTemplateUnderCategory = (req: Request) => {
-    const { category } = req.body;
+export class TemplatesValidator extends DefaultController {
+    private entityTemplateService: EntityTemplateService;
 
-    return validateAuthorization(req, 'Templates', [category]);
-};
+    private relationshipsTemplateService: RelationshipsTemplateService;
 
-export const validateUserCanUpdateOrDeleteEntityTemplate = async (req: Request) => {
-    const templateId = req.params.id;
+    private authorizer: Authorizer;
 
-    const { category } = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+    constructor(workspaceId: string) {
+        super(null);
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.relationshipsTemplateService = new RelationshipsTemplateService(workspaceId);
+        this.authorizer = new Authorizer(workspaceId);
+    }
 
-    return validateAuthorization(req, 'Templates', [category._id]);
-};
+    async validateUserCanCreateEntityTemplateUnderCategory(req: Request) {
+        const { category } = req.body;
 
-export const getRelatedCategoriesFromRelationshipTemplate = async (relationshipTemplate: IRelationshipTemplate) => {
-    const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
 
-    const { category: srcCategory } = await EntityTemplateManagerService.getEntityTemplateById(sourceEntityId);
-    const { category: dstCategory } = await EntityTemplateManagerService.getEntityTemplateById(destinationEntityId);
+        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category)) {
+            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+        }
+    }
 
-    return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
-};
+    async validateUserCanUpdateOrDeleteEntityTemplate(req: Request) {
+        const templateId = req.params.id;
 
-export const validateUserCanCreateRelationshipTemplateUnderCategory = async (req: Request) => {
-    const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(req.body);
+        const [{ category }, userPermissions] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(templateId),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
 
-    return validateAuthorization(req, 'Templates', relatedCategories);
-};
+        if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(category._id)) {
+            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${category}` });
+        }
+    }
 
-export const validateUserCanUpdateOrDeleteRelationshipTemplate = async (req: Request) => {
-    const relationshipTemplate = await RelationshipsTemplateManagerService.getRelationshipTemplateById(req.params.id);
+    async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
+        const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
-    const relatedCategories = await getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
+        const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(sourceEntityId),
+            this.entityTemplateService.getEntityTemplateById(destinationEntityId),
+        ]);
 
-    return validateAuthorization(req, 'Templates', relatedCategories);
-};
+        return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
+    }
+
+    async validateUserCanCreateRelationshipTemplateUnderCategory(req: Request) {
+        const [relatedCategories, userPermissions] = await Promise.all([
+            this.getRelatedCategoriesFromRelationshipTemplate(req.body),
+            this.authorizer.getWorkspacePermissions(req.user!.id),
+        ]);
+
+        if (
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
+            )
+        ) {
+            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+        }
+    }
+
+    async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
+        const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
+        const relatedCategories = await this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
+
+        const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+
+        if (
+            !userPermissions.admin?.scope &&
+            !Object.entries(userPermissions.instances?.categories ?? {}).some(
+                ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
+            )
+        ) {
+            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+        }
+    }
+}

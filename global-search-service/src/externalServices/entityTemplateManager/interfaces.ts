@@ -8,6 +8,12 @@ interface IEntitySingleProperty {
     dateNotification?: number;
     isDailyAlert?: boolean;
     calculateTime?: boolean;
+    relationshipReference?: {
+        relationshipTemplateId?: string;
+        relationshipTemplateDirection: 'outgoing' | 'incoming';
+        relatedTemplateId: string;
+        relatedTemplateField: string;
+    };
 }
 
 interface IJSONSchema {
@@ -27,6 +33,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     disabled: boolean;
+    documentTemplatesIds?: string[];
 }
 
 export interface ISearchEntityTemplatesBody {

@@ -1,15 +1,38 @@
 import joi from 'joi';
 import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 
+const causesOfInstanceSchema = joi.object({
+    instance: joi
+        .object({
+            entityId: joi.string().required(),
+            aggregatedRelationship: joi.object({
+                relationshipId: joi.string().required(),
+                otherEntityId: joi.string().required(),
+            }),
+        })
+        .required(),
+    properties: joi.array().items(joi.string()).required(),
+});
+
 export const brokenRuleSchema = joi.object({
     ruleId: MongoIdSchema.required(),
-    relationshipIds: joi.array().items(joi.string()).required(),
+    failures: joi
+        .array()
+        .items({
+            entityId: joi.string().required(),
+            causes: joi.array().items(causesOfInstanceSchema).required(),
+        })
+        .required(),
 });
 
 const ruleBreachSchema = joi.object({
     brokenRules: ExtendedJoi.stringToArray().items(brokenRuleSchema).min(1).required(),
-    actionType: joi.string().required(),
-    actionMetadata: ExtendedJoi.stringToObject().required(),
+    actions: ExtendedJoi.stringToArray().items(
+        joi.object({
+            actionType: joi.string().required(),
+            actionMetadata: joi.object().required(),
+        }),
+    ),
 });
 
 const agGridRequestSchema = joi.object({
@@ -92,4 +115,14 @@ export const getRuleBreachAlertByIdRequestSchema = joi.object({
     params: {
         ruleBreachAlertId: MongoIdSchema.required(),
     },
+});
+
+// POST /api/rule-breaches/getMany
+export const getManyRuleBreachesByIds = joi.object({
+    query: {},
+    body: {
+        rulesBreachIds: joi.array().items(MongoIdSchema),
+        isPopulate: joi.bool().default(true),
+    },
+    params: {},
 });

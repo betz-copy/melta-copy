@@ -1,19 +1,19 @@
+import { LoadingButton } from '@mui/lab';
 import { CircularProgress, Grid, Tab, Tabs } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
-import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
-import { LoadingButton } from '@mui/lab';
+import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
-import { INotificationGroupCountDetails, INotificationPopulated } from '../../../interfaces/notifications';
+import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
+import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
+import DateRange from '../../inputs/DateRange';
 import PopperSidebar from '../../PopperSidebar';
+import { SelectCheckbox } from '../../SelectCheckbox';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
-import DateRange from '../../inputs/DateRange';
-import { SelectCheckbox } from '../../SelectCheckbox';
-import IconButtonWithPopover from '../../IconButtonWithPopover';
 
 const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.notifications;
 
@@ -23,6 +23,22 @@ interface NotificationsScreenProps {
     sideBarWidth: CSSProperties['width'];
     notificationCountDetails: INotificationGroupCountDetails;
     updateNotificationCountDetails: () => void;
+}
+
+interface IGroups {
+    requests: NotificationType[];
+    general: NotificationType[];
+}
+
+interface IExpandedNotifications {
+    type: NotificationType;
+    color?: string;
+    displayName: () => string;
+}
+
+interface IExpandedGroups {
+    requests: IExpandedNotifications[];
+    general: IExpandedNotifications[];
 }
 
 export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
@@ -37,40 +53,50 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
     const [openCalenders, setOpenCalendars] = useState<boolean>(false);
-    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(notificationsMoreData[selectedGroup]);
+    const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
+        (notificationsMoreData as unknown as IExpandedGroups)[selectedGroup],
+    );
     const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
     };
+
     const onSetEndDate = (newEndDateInput: Date | null) => {
         setEndDate(newEndDateInput);
     };
+
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
         setOpenCalendars(false);
     };
-    const { mutate, isLoading } = useMutation((groupName: keyof typeof groups) => manyNotificationSeenRequest(groups[groupName]), {
-        onSuccess: (seenNotifications, groupName) => {
-            updateNotificationCountDetails();
 
-            if (seenNotifications.length) {
-                toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
-            }
-        },
-        onError: (error, groupName) => {
-            const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
+    const { mutate, isLoading } = useMutation(
+        (groupName: keyof typeof groups) => manyNotificationSeenRequest((groups as unknown as IGroups)[groupName]),
+        {
+            onSuccess: (seenNotifications, groupName) => {
+                updateNotificationCountDetails();
 
-            // eslint-disable-next-line no-console
-            console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
-            toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
+                if (seenNotifications.length) {
+                    toast.success(i18next.t('notifications.allSeen', { group: i18next.t(`notifications.groups.${groupName}`) }));
+                }
+            },
+            onError: (error, groupName) => {
+                const translatedGroupName = i18next.t(`notifications.groups.${groupName}`);
+
+                // eslint-disable-next-line no-console
+                console.log(`failed to set all notifications of group "${translatedGroupName}" as seen. error:`, error);
+                toast.error(i18next.t('notifications.failedSetAllAsSeen', { group: translatedGroupName }));
+            },
         },
-    });
+    );
+
     const handleGroupChange = (_event, newGroup) => {
         if (!newGroup) return;
         setSelectedGroup(newGroup);
     };
+
     return (
         <PopperSidebar
             open={open}
@@ -115,7 +141,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             }
                             onClick={(event) => {
                                 setSelectedGroup(groupName);
-                                setNotificationsToShowCheckbox(notificationsMoreData[groupName]);
+                                setNotificationsToShowCheckbox((notificationsMoreData as unknown as IExpandedGroups)[groupName]);
                                 event.preventDefault();
                             }}
                             sx={{
@@ -138,20 +164,20 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
-                                options={notificationsMoreData[selectedGroup]}
+                                options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
                                 selectedOptions={notificationsToShowCheckbox}
                                 setSelectedOptions={setNotificationsToShowCheckbox}
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOriginProp={openCalenders ? 70 : 101}
+                                horizontalOrigin={openCalenders ? 61 : 89}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
                                         backgroundColor: '#FFFF',
                                         color: '#9398C2',
                                         boxShadow: '-2px 2px 6px 0px #1E277540',
                                         border: 0,
-                                        width: openCalenders ? '17rem' : '13rem',
+                                        width: openCalenders ? '15rem' : '11.5rem',
                                     },
                                     '& .MuiOutlinedInput-notchedOutline': { border: 0 },
                                     '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {

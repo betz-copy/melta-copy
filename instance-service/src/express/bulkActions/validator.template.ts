@@ -1,0 +1,142 @@
+import Ajv from 'ajv';
+import addFormats from 'ajv-formats';
+import { Request } from 'express';
+import groupBy from 'lodash.groupby';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import DefaultController from '../../utils/express/controller';
+import { IEntity } from '../entities/interface';
+import { EntityManager } from '../entities/manager';
+import { ValidationError } from '../error';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+
+const ajv = new Ajv();
+
+ajv.addFormat('fileId', /.*/);
+ajv.addFormat('text-area', /.*/);
+ajv.addFormat('relationshipReference', /.*/);
+addFormats(ajv);
+ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
+ajv.addKeyword({
+    keyword: 'dateNotification',
+    type: 'number',
+});
+ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
+ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
+ajv.addKeyword({
+    keyword: 'serialStarter',
+    type: 'number',
+});
+ajv.addKeyword({
+    keyword: 'relationshipReference',
+    type: 'string',
+});
+ajv.addKeyword({
+    keyword: 'serialCurrent',
+    type: 'number',
+});
+
+export class BulkActionValidator extends DefaultController {
+    private entityManager: EntityManager;
+
+    private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;
+
+    private entityTemplateManagerService: EntityTemplateManagerService;
+
+    constructor(workspaceId: string) {
+        super(undefined);
+        this.entityManager = new EntityManager(workspaceId);
+        this.relationshipsTemplateManagerService = new RelationshipsTemplateManagerService(workspaceId);
+        this.entityTemplateManagerService = new EntityTemplateManagerService(workspaceId);
+    }
+
+    private validateRelationship(relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) {
+        if (!relationshipTemplate) {
+            throw new ValidationError(`Relationship template doesnt exist`);
+        }
+
+        if (
+            relationshipTemplate.destinationEntityId !== destinationEntity.templateId ||
+            relationshipTemplate.sourceEntityId !== sourceEntity.templateId
+        ) {
+            throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
+        }
+    }
+
+    private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
+        if (!entityTemplate) {
+            throw new ValidationError(`Entity template doesnt exist`);
+        }
+
+        const validateFunction = ajv.compile(entityTemplate.properties);
+        const valid = validateFunction(metadataProperties);
+
+        if (!valid) {
+            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
+        }
+    }
+
+    async validateActionsGroups(req: Request) {
+        const { actionsGroups } = req.body;
+
+        const entitiesIds = new Set<string>();
+        const relationshipTemplatesIds = new Set<string>();
+        const entityTemplatesIds = new Set<string>();
+
+        (actionsGroups as IAction[][]).forEach((actionsGroup) =>
+            actionsGroup.forEach((action) => {
+                if (action.actionType === ActionTypes.CreateRelationship) {
+                    const metadata = action.actionMetadata as ICreateRelationshipMetadata;
+
+                    entitiesIds.add(metadata.destinationEntityId);
+                    entitiesIds.add(metadata.sourceEntityId);
+                    relationshipTemplatesIds.add(metadata.relationshipTemplateId);
+                } else if (action.actionType === ActionTypes.CreateEntity) {
+                    const metadata = action.actionMetadata as ICreateEntityMetadata;
+
+                    entityTemplatesIds.add(metadata.templateId);
+                }
+            }),
+        );
+
+        const [entities, relationshipTemplates, entitiesTemplates] = await Promise.all([
+            this.entityManager.getEntitiesByIds([...entitiesIds]),
+            this.relationshipsTemplateManagerService.searchRelationshipTemplates({ ids: [...relationshipTemplatesIds] }),
+            this.entityTemplateManagerService.searchEntityTemplates({ ids: [...entityTemplatesIds] }),
+        ]).catch(() => {
+            throw new ValidationError(`General error finding Relationship or Entity`);
+        });
+
+        const entitiesByEntitiesIds = groupBy(entities, (entity) => entity.properties._id);
+        const relationshipTemplatesByRelationshipTemplatesIds = groupBy(relationshipTemplates, (relationshipTemplate) => relationshipTemplate._id);
+        const entitiesTemplatesByEntitiesTemplatesIds = groupBy(entitiesTemplates, (entityTemplate) => entityTemplate._id);
+
+        (actionsGroups as IAction[][]).forEach((actionsGroup) =>
+            actionsGroup.forEach((action) => {
+                if (action.actionType === ActionTypes.CreateRelationship) {
+                    const metadata = action.actionMetadata as ICreateRelationshipMetadata;
+
+                    if (
+                        !metadata.relationshipTemplateId.startsWith('$') &&
+                        !metadata.sourceEntityId.startsWith('$') &&
+                        !metadata.destinationEntityId.startsWith('$')
+                    ) {
+                        this.validateRelationship(
+                            relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0],
+                            entitiesByEntitiesIds[metadata.sourceEntityId][0],
+                            entitiesByEntitiesIds[metadata.destinationEntityId][0],
+                        );
+                    }
+                } else if (action.actionType === ActionTypes.CreateEntity) {
+                    const metadata = action.actionMetadata as ICreateEntityMetadata;
+
+                    if (!metadata.templateId.startsWith('$')) {
+                        this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
+                    }
+                }
+            }),
+        );
+    }
+}

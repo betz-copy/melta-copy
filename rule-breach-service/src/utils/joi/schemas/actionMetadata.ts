@@ -14,6 +14,16 @@ export const deleteRelationshipMetadataSchema = joi.object({
     destinationEntityId: joi.string().required(),
 });
 
+export const createEntityMetadataSchema = joi.object({
+    templateId: mongoIdSchema.required(),
+    properties: joi.object().min(1).required(),
+});
+export const duplicateEntityMetadataSchema = joi.object({
+    templateId: mongoIdSchema.required(),
+    properties: joi.object().min(1).required(),
+    entityIdToDuplicate: joi.string().required(),
+});
+
 export const updateEntityMetadataSchema = joi.object({
     entityId: joi.string().required(),
     before: joi.object().min(1),

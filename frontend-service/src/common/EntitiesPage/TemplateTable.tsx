@@ -1,52 +1,51 @@
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
-import i18next from 'i18next';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { useMutation, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
+import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
+import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import { GridApi, IServerSideGetRowsRequest } from '@ag-grid-community/core';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { AddEntityButton } from './AddEntityButton';
-import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
-import { BlueTitle } from '../BlueTitle';
-import { ResetFilterButton } from './ResetFilterButton';
-import IconButtonWithPopover from '../IconButtonWithPopover';
-import { CustomIcon } from '../CustomIcon';
-import { exportEntitiesRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
+import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { PermissionScope } from '../../interfaces/permissions';
+import { exportEntitiesRequest } from '../../services/entitiesService';
+import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
+import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { getEntityTemplateColor } from '../../utils/colors';
-import { IPermissionsOfUser } from '../../services/permissionsService';
+import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { BlueTitle } from '../BlueTitle';
+import { CustomIcon } from '../CustomIcon';
+import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
+import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { CreateOrEditEntityDetails } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { checkUserInstanceOfCategoryPermission } from '../../utils/permissions/instancePermissions';
+import { AddEntityButton } from './AddEntityButton';
+import { EntityWizardValues } from '../dialogs/entity';
+import { DraftCard } from './DraftCard';
+import { ResetFilterButton } from './ResetFilterButton';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
-export type TemplateTableRef = {
-    getFilterModel: () => ReturnType<GridApi<IEntity>['getFilterModel']> | undefined;
-    getSortModel: () => IServerSideGetRowsRequest['sortModel'] | undefined;
-};
+export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
 const TemplateTable = forwardRef<
-    TemplateTableRef,
+    EntitiesTableOfTemplateRef<IEntity>,
     {
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
     }
 >(({ template, quickFilterText, page }, ref) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const theme = useTheme();
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
-    useImperativeHandle(ref, () => ({
-        getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
-        getSortModel: () => entitiesTableRef.current?.getSortModel(),
-    }));
+    useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -72,20 +71,29 @@ const TemplateTable = forwardRef<
     );
 
     const [isFiltered, setIsFiltered] = useState(false);
-
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
+        isEditMode: boolean;
         entity?: IEntity;
+        wizardValues?: EntityWizardValues;
     }>({
+        isOpen: false,
+        isEditMode: true,
+    });
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
     });
     const [isExpand, setIsExpand] = useState(false);
 
     const entityTemplateColor = getEntityTemplateColor(template);
 
-    const queryClient = useQueryClient();
-    const { instancesPermissions } = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
-    const userHasWritePermissions = checkUserInstanceOfCategoryPermission(instancesPermissions, template.category, 'Write');
+    const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
+
+    const drafts = useDraftsStore((state) => state.drafts);
+
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -121,6 +129,13 @@ const TemplateTable = forwardRef<
             <Grid container flexDirection="row" alignItems="center">
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
                     <IconButtonWithPopover
+                        popoverText={i18next.t('entitiesTableOfTemplate.columns')}
+                        iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
+                        style={{ borderRadius: '5px' }}
+                    >
+                        <img src="/icons/columns-settings.svg" />
+                    </IconButtonWithPopover>
+                    <IconButtonWithPopover
                         popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
                         iconButtonProps={{
                             onClick: () => {
@@ -148,10 +163,49 @@ const TemplateTable = forwardRef<
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
                 </Grid>
+            </Grid>
+            <Grid
+                container
+                direction="row"
+                wrap="wrap"
+                sx={{
+                    overflowY: 'auto',
+                    marginBottom: '0.5rem',
+                    width: '100%',
+                    maxHeight: 180,
+                }}
+            >
+                {drafts[template.category._id]?.[template._id]
+                    ?.sort((a, b) => {
+                        if (a.entityId && !b.entityId) return -1;
+                        if (!a.entityId && b.entityId) return 1;
+                        return 0;
+                    })
+                    .map((draft) => (
+                        <Grid item key={draft.uniqueId} sx={{ flex: '0 0 auto', minWidth: '200px' }}>
+                            <DraftCard
+                                draft={draft}
+                                openEditDialog={() => {
+                                    setDraftId(draft.uniqueId);
+                                    setExternalErrors({ files: false, unique: {} });
+                                    setEditDialog({
+                                        isOpen: true,
+                                        isEditMode: false,
+                                        wizardValues: {
+                                            template,
+                                            properties: { ...draft.properties, _id: draft.entityId!, createdAt: '', updatedAt: '', disabled: false },
+                                            attachmentsProperties: draft.attachmentsProperties,
+                                        },
+                                    });
+                                }}
+                            />
+                        </Grid>
+                    ))}
             </Grid>
 
             <Box sx={{ marginBottom: '30px', width: '100%' }}>
@@ -176,10 +230,15 @@ const TemplateTable = forwardRef<
                     }}
                     editRowButtonProps={{
                         onClick: (currEntity) => {
+                            setDraftId('');
                             setEditDialog({
                                 isOpen: true,
+                                isEditMode: true,
                                 entity: currEntity,
                             });
+                            setExternalErrors({ files: false, unique: {} });
+                            setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                            toast.dismiss();
                         },
                         popoverText: i18next.t(
                             !userHasWritePermissions ? 'permissions.dontHaveWritePermissions' : 'entitiesTableOfTemplate.editEntity',
@@ -191,16 +250,27 @@ const TemplateTable = forwardRef<
                     }}
                 />
             </Box>
-            <Dialog open={editDialog.isOpen} maxWidth="md">
+
+            <Dialog open={editDialog.isOpen} maxWidth={template.documentTemplatesIds?.length ? 'lg' : 'md'}>
                 <CreateOrEditEntityDetails
-                    isEditMode
+                    isEditMode={editDialog.isEditMode}
                     entityTemplate={template}
-                    entity={editDialog.entity!}
+                    initialCurrValues={editDialog.wizardValues}
+                    entityToUpdate={editDialog.entity!}
+                    onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
-                        entitiesTableRef.current?.updateRowDataClientSide(entity);
+                        if (editDialog.isEditMode) entitiesTableRef.current?.updateRowDataClientSide(entity);
+                        else entitiesTableRef.current?.refreshServerSide();
+                        setEditDialog((prev) => ({ ...prev, isOpen: false }));
+                        setExternalErrors({ files: false, unique: {} });
+                    }}
+                    handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
                     }}
-                    onCancelUpdate={() => setEditDialog((prev) => ({ ...prev, isOpen: false }))}
+                    externalErrors={externalErrors}
+                    setExternalErrors={setExternalErrors}
+                    createOrUpdateWithRuleBreachDialogState={createOrUpdateWithRuleBreachDialogState}
+                    setCreateOrUpdateWithRuleBreachDialogState={setCreateOrUpdateWithRuleBreachDialogState}
                 />
             </Dialog>
         </Grid>

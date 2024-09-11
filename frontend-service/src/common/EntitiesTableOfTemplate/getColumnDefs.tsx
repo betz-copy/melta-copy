@@ -1,8 +1,9 @@
-import React, { memo } from 'react';
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
-import i18next from 'i18next';
-import { NavLink } from 'react-router-dom';
 import { Grid } from '@mui/material';
+import i18next from 'i18next';
+import React, { memo } from 'react';
+import { Link } from 'wouter';
+import { IButtonProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
@@ -14,10 +15,10 @@ import {
     fileColDef,
     numberColDef,
     regexColDef,
+    relatedTemplateColDef,
     stringColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { IButtonProps } from '.';
 import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
@@ -65,6 +66,16 @@ export const getColumnDefs = <Data extends any = IEntity>({
         if (format === 'date' || format === 'date-time')
             return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
         if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
+        if (format === 'relationshipReference')
+            return relatedTemplateColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                propertyTemplate.relationshipReference!.relatedTemplateId,
+                propertyTemplate.relationshipReference!.relatedTemplateField,
+                hideColumn,
+            );
         if (propertyTemplate.enum)
             return enumColDef(
                 property,
@@ -162,8 +173,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 return (
                     <Grid flexWrap="nowrap">
                         {onNavigateToRow && (
-                            <NavLink
-                                to={`/entity/${getEntityPropertiesData(data)._id}`}
+                            <Link
+                                href={`/entity/${getEntityPropertiesData(data)._id}`}
                                 onClick={(e) => {
                                     if (!hasPermissionToCategory) e.preventDefault();
                                 }}
@@ -179,7 +190,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 >
                                     <img src="/icons/read-more-icon.svg" />
                                 </IconButtonWithPopover>
-                            </NavLink>
+                            </Link>
                         )}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopover
@@ -205,8 +216,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                         )}
 
                         {onNavigateToRow && (
-                            <NavLink
-                                to={`/entity/${getEntityPropertiesData(data)._id}/graph`}
+                            <Link
+                                href={`/entity/${getEntityPropertiesData(data)._id}/graph`}
                                 onClick={(e) => {
                                     if (disabledEntity) e.preventDefault();
                                 }}
@@ -220,7 +231,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 >
                                     <img src="/icons/graph-icon.svg" />
                                 </IconButtonWithPopover>
-                            </NavLink>
+                            </Link>
                         )}
                     </Grid>
                 );

@@ -1,11 +1,10 @@
-import React from 'react';
-import { Card, CardContent, Typography, Grid, Divider, CheckboxProps, FormControlLabel } from '@mui/material';
-import { useSelector } from 'react-redux';
+import { Card, CardContent, CheckboxProps, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { RootState } from '../../store';
-import { Scope } from '../../services/permissionsService';
-import PermissionViewIcon from './PermissionViewIcon';
+import React from 'react';
+import { PermissionScope } from '../../interfaces/permissions';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
+import PermissionViewIcon from './PermissionViewIcon';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
@@ -23,14 +22,14 @@ const InstancesPermissionsCard: React.FC<{
         categoryDisplayName: string;
         disabled: boolean;
         permissionType: permissionTypeCheckboxProps;
-        scope?: Scope;
+        scope?: PermissionScope;
     }[];
     checkboxAllProps?: {
         permissionType: permissionTypeCheckboxProps;
         indeterminate: boolean;
     };
 }> = ({ categoriesCheckboxProps, viewMode, checkboxAllProps }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const bgcolor = darkMode ? '#242424' : 'white';
 
     return (

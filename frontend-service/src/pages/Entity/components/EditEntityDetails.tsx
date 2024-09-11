@@ -1,25 +1,25 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
+import pickBy from 'lodash.pickby';
+import i18next from 'i18next';
+import { Form, Formik } from 'formik';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
+import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterAttachmentsAndEntitiesRefFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import UpdateEntityWithRuleBreachDialog from './UpdateEntityWithRuleBreachDialog';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
 const { errorCodes } = environment;
 
@@ -32,9 +32,14 @@ const EditEntityDetails: React.FC<{
     const [updateWithRuleBreachDialogState, setUpdateWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
-        rawBrokenRules?: IRuleBreach['brokenRules'];
+        rawBrokenRules?: IBrokenRule[];
         updateEntityFormData?: EntityWizardValues;
     }>({ isOpen: false });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const handleClose = () => {
+        onCancelUpdate();
+        setExternalErrors({ files: false, unique: {} });
+    };
 
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
@@ -62,11 +67,26 @@ const EditEntityDetails: React.FC<{
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccefully'));
                 onSuccessUpdate(data);
+                setExternalErrors({ files: false, unique: {} });
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
+                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
+
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate);
+                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                    const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
+                    constraintPropsDisplayNames.forEach((uniqueProp) => {
+                        setExternalErrors((prev) => ({
+                            ...prev,
+                            unique: {
+                                ...prev.unique,
+                                [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                    `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                                )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            },
+                        }));
+                    });
                     return;
                 }
 
@@ -82,14 +102,16 @@ const EditEntityDetails: React.FC<{
             },
         },
     );
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
-            onSubmit={async (values) => {
+            onSubmit={async (values, formikHelpers) => {
+                formikHelpers.setTouched({});
                 updateMutation({ newEntityData: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
-                const nonAttachmentsSchema = filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties);
+                const nonAttachmentsSchema = filterFieldsFromPropertiesSchema(entityTemplate.properties);
                 const propertiesErrors = ajvValidate(nonAttachmentsSchema, values.properties);
                 if (Object.keys(propertiesErrors).length === 0) {
                     return {};
@@ -113,10 +135,11 @@ const EditEntityDetails: React.FC<{
                                                     style={{ fontWeight: '600', fontSize: '20px' }}
                                                 />
                                                 <JSONSchemaFormik
-                                                    schema={filterAttachmentsAndEntitiesRefFromPropertiesSchema(entityTemplate.properties)}
+                                                    schema={filterFieldsFromPropertiesSchema(entityTemplate.properties)}
                                                     values={values}
                                                     setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                     errors={errors.properties ?? {}}
+                                                    uniqueErrors={externalErrors.unique}
                                                     touched={touched.properties ?? {}}
                                                     setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                     isEditMode
@@ -133,8 +156,20 @@ const EditEntityDetails: React.FC<{
                                                                 title={i18next.t('wizard.entityTemplate.attachments')}
                                                                 component="h6"
                                                                 variant="h6"
-                                                                style={{ marginBottom: '12px', fontSize: '16px', fontWeight: '600' }}
+                                                                style={{
+                                                                    marginBottom: externalErrors.files ? '0px' : '12px',
+                                                                    fontSize: '16px',
+                                                                    fontWeight: '600',
+                                                                }}
                                                             />
+                                                            {externalErrors.files && (
+                                                                <p
+                                                                    id="error"
+                                                                    style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
+                                                                >
+                                                                    {i18next.t('errorCodes.FILES_TOO_BIG')}
+                                                                </p>
+                                                            )}
                                                             <>
                                                                 {Object.entries(templateFilesProperties).map(([key, value], index) => (
                                                                     <Grid item key={key} marginTop={index > 0 ? 5 : 0}>
@@ -147,6 +182,7 @@ const EditEntityDetails: React.FC<{
                                                                                 value={values.attachmentsProperties[key]}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
+                                                                                setExternalErrors={setExternalErrors}
                                                                             />
                                                                         ) : (
                                                                             <InstanceFileInput
@@ -157,6 +193,7 @@ const EditEntityDetails: React.FC<{
                                                                                 value={values.attachmentsProperties[key]}
                                                                                 error={errors.attachmentsProperties?.[key] as string}
                                                                                 setFieldTouched={setFieldTouched}
+                                                                                setExternalErrors={setExternalErrors}
                                                                             />
                                                                         )}
                                                                     </Grid>
@@ -179,7 +216,7 @@ const EditEntityDetails: React.FC<{
                                                     style={{ borderRadius: '7px' }}
                                                     variant="outlined"
                                                     startIcon={<ClearIcon />}
-                                                    onClick={() => onCancelUpdate()}
+                                                    onClick={() => handleClose()}
                                                 >
                                                     {i18next.t('entityPage.cancel')}
                                                 </Button>
@@ -203,25 +240,29 @@ const EditEntityDetails: React.FC<{
                             </Card>
                         </Form>
                         {updateWithRuleBreachDialogState.isOpen && (
-                            <UpdateEntityWithRuleBreachDialog
-                                isLoadingUpdateEntity={isUpdateLoading}
-                                handleClose={() => setUpdateWithRuleBreachDialogState({ isOpen: false })}
-                                onUpdateEntity={() => {
+                            <ActionOnEntityWithRuleBreachDialog
+                                isLoadingActionOnEntity={isUpdateLoading}
+                                handleClose={() => {
+                                    setUpdateWithRuleBreachDialogState({ isOpen: false });
+                                }}
+                                doActionEntity={() => {
                                     return updateMutation({
                                         newEntityData: updateWithRuleBreachDialogState.updateEntityFormData!,
                                         ignoredRules: updateWithRuleBreachDialogState.rawBrokenRules!,
                                     });
                                 }}
+                                actionType={ActionTypes.UpdateEntity}
                                 brokenRules={updateWithRuleBreachDialogState.brokenRules!}
                                 rawBrokenRules={updateWithRuleBreachDialogState.rawBrokenRules!}
                                 currEntity={entity}
-                                updateEntityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
+                                entityFormData={updateWithRuleBreachDialogState.updateEntityFormData!}
                                 onUpdatedRuleBlock={(brokenRules) =>
                                     setUpdateWithRuleBreachDialogState((prevState) => ({
                                         ...prevState,
                                         brokenRules,
                                     }))
                                 }
+                                onCreateRuleBreachRequest={() => handleClose()}
                             />
                         )}
                     </>

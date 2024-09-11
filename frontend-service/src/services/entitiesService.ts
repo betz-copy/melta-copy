@@ -1,3 +1,5 @@
+/* eslint-disable no-param-reassign */
+import { mapValues } from 'lodash';
 import axios from '../axios';
 import { environment } from '../globals';
 import {
@@ -45,7 +47,7 @@ export const getRelationshipInstancesCountByTemplateIdRequest = async (templateI
     return data;
 };
 
-export const createEntityRequest = async (entity: EntityWizardValues) => {
+export const createEntityRequest = async (entity: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
 
     const filesToUpload: any = [];
@@ -65,8 +67,20 @@ export const createEntityRequest = async (entity: EntityWizardValues) => {
     filesToUpload.forEach(([key, value]) => {
         formData.append(key, value as Blob);
     });
-    formData.append('properties', JSON.stringify(entity.properties));
+    formData.append(
+        'properties',
+        JSON.stringify(
+            mapValues(entity.properties, (property, key) =>
+                entity.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+            ),
+        ),
+    );
     formData.append('templateId', entity.template._id);
+
+    if (ignoredRules) {
+        formData.append('ignoredRules', JSON.stringify(ignoredRules));
+    }
+
     const { data } = await axios.post<IEntity>(entities, formData);
     return data;
 };
@@ -122,7 +136,14 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-    formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
+    formData.append(
+        'properties',
+        JSON.stringify(
+            mapValues(newEntityData.properties, (property, key) =>
+                newEntityData.template.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+            ),
+        ),
+    );
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {
@@ -132,7 +153,7 @@ export const updateEntityRequestForMultiple = async (
     return data;
 };
 
-export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues) => {
+export const duplicateEntityRequest = async (entityId: string, newEntityData: EntityWizardValues, ignoredRules?: IRuleBreach['brokenRules']) => {
     const formData = new FormData();
     const filesToUpload: any = [];
     const unchangedFiles: any = [];
@@ -176,8 +197,20 @@ export const duplicateEntityRequest = async (entityId: string, newEntityData: En
         }
     });
 
-    formData.append('properties', JSON.stringify({ ...newEntityData.properties }));
+    formData.append(
+        'properties',
+        JSON.stringify(
+            mapValues(newEntityData.properties, (property, key) =>
+                newEntityData.template.properties.properties[key].format === 'relationshipReference' ? property?.properties._id : property,
+            ),
+        ),
+    );
     formData.append('templateId', newEntityData.template._id);
+
+    if (ignoredRules) {
+        formData.append('ignoredRules', JSON.stringify(ignoredRules));
+    }
+
     const { data } = await axios.post<IEntity>(`${entities}/${entityId}/duplicate`, formData);
     return data;
 };
@@ -192,7 +225,17 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
+export const getEntityById = async (entityId: string) => {
+    const { data } = await axios.get<IEntity>(`${entities}/${entityId}`);
+    return data;
+};
+
 export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchBody) => {
     const { data } = await axios.post<ISearchResult>(`${entities}/search/batch`, searchBody);
+    return data;
+};
+
+export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
+    const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
     return data;
 };

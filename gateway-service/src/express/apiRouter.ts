@@ -1,18 +1,17 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
-import { wrapMiddleware } from '../utils/express';
-import { validateUserHasAtLeastSomePermissions } from './permissions/validateAuthorizationMiddleware';
-import usersRouter from './users/router';
-import permissionsRouter from './permissions/router';
-import templatesRouter from './templates/router';
-import processesRouter from './processes/router';
-import instancesRouter from './instances/router';
-import ActivityLogRouter from './activityLog/router';
-import notificationsRouter from './notifications/router';
-import RulesBreachesRouter from './ruleBreaches/router';
-import GanttsRouter from './gantts/router';
 import config from '../config';
+import { AuthorizerControllerMiddleware } from '../utils/authorizer';
+import ActivityLogRouter from './activityLog/router';
 import flowCubeRouter from './flowCube/router';
+import GanttsRouter from './gantts/router';
+import instancesRouter from './instances/router';
+import notificationsRouter from './notifications/router';
+import processesRouter from './processes/router';
+import RulesBreachesRouter from './ruleBreaches/router';
+import templatesRouter from './templates/router';
+import { usersRouter } from './users/router';
+import { workspaceRouter } from './workspaces/router';
 
 const apiRouter = Router();
 
@@ -30,21 +29,30 @@ apiRouter.use('/flow-cube', flowCubeRouter);
 
 apiRouter.use(
     '/files',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.storageService.url, onProxyReq: fixRequestBody }),
+    createProxyMiddleware({
+        target: `${config.storageService.url}${config.storageService.baseRoute}`,
+        changeOrigin: true,
+        on: { proxyReq: fixRequestBody },
+    }),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
 );
 
 apiRouter.use(
     '/preview',
-    wrapMiddleware(validateUserHasAtLeastSomePermissions),
-    createProxyMiddleware({ target: config.previewService.url, onProxyReq: fixRequestBody, proxyTimeout: config.previewService.requestTimeout }),
+    createProxyMiddleware({
+        target: `${config.previewService.url}${config.previewService.baseRoute}`,
+        changeOrigin: true,
+        on: {
+            proxyReq: fixRequestBody,
+        },
+        proxyTimeout: config.previewService.requestTimeout,
+    }),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
 );
 
 apiRouter.use('/processes', processesRouter);
 
 apiRouter.use('/users', usersRouter);
-
-apiRouter.use('/permissions', permissionsRouter);
 
 apiRouter.use('/activity-log', ActivityLogRouter);
 
@@ -53,5 +61,7 @@ apiRouter.use('/notifications', notificationsRouter);
 apiRouter.use('/rule-breaches', RulesBreachesRouter);
 
 apiRouter.use('/gantts', GanttsRouter);
+
+apiRouter.use('/workspaces', workspaceRouter);
 
 export default apiRouter;

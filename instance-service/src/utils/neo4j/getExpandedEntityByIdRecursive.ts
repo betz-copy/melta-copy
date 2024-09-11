@@ -1,7 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-await-in-loop */
 import { IEntityExpanded, IGetExpandedEntityBody } from '../../express/entities/interface';
-import { IMongoEntityTemplate } from '../../externalServices/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { templatesFilterToNeoQuery } from './searchBodyToNeoQuery';
 import Neo4jClient from '.';
 import { normalizeReturnedRelAndEntities } from './lib';
@@ -21,7 +21,7 @@ export const expandEntityToNeoQuery = async (
         acc[currentId] = {};
         return acc;
     }, {});
-    const fullFilters = {...mappedRecords, ...filters};
+    const fullFilters = { ...mappedRecords, ...filters };
     const filterQuery = templatesFilterToNeoQuery(fullFilters, entityTemplatesMap);
     let filterCypherQuery: string;
     if (Object.keys(filters).length !== 0) {
@@ -38,16 +38,15 @@ export const expandEntityToNeoQuery = async (
                     })
                     YIELD path
                     with apoc.path.elements(path) as elementsOfPath
-                    with *, [node in elementsOfPath ${
-                    filterCypherQuery
-                } | node] as filteredElementsOfPath
+                    with *, [node in elementsOfPath ${filterCypherQuery} | node] as filteredElementsOfPath
                     where size(filteredElementsOfPath) = size(elementsOfPath)
                     RETURN elementsOfPath`,
-                parameters: { ...filterQuery.parameters },
+        parameters: { ...filterQuery.parameters },
     };
 };
 
 export const getExpandedFilteredGraphRecursively = async (
+    neo4jClient: Neo4jClient,
     disabled: boolean | null,
     initialExpandedEntity: IEntityExpanded,
     searchBody: IGetExpandedEntityBody['filters'],
@@ -77,7 +76,7 @@ export const getExpandedFilteredGraphRecursively = async (
             entityTemplatesMap,
             initialExpandedEntityId,
         );
-        const currFilteredExpandedEntity = await Neo4jClient.readTransaction(
+        const currFilteredExpandedEntity = await neo4jClient.readTransaction(
             searchCypherQuery.cypherQuery,
             normalizeReturnedRelAndEntities(disabled),
             searchCypherQuery.parameters,
