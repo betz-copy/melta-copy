@@ -1,16 +1,27 @@
-import { FilterQuery, Document, ClientSession } from 'mongoose';
-
-import EntityTemplateModel from './model';
-import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
-import { NotFoundError } from '../error';
+import { ClientSession, Document, FilterQuery } from 'mongoose';
+import config from '../../config';
 import { escapeRegExp } from '../../utils';
-import { sendUpdateIndexesOnUpdateTemplate, sendUpdateIndexesOnDeleteTemplate } from '../externalServices/globalSearchIndexCreator';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
-import RelationshipTemplateManager from '../relationshipTemplate/manager';
+import { NotFoundError } from '../error';
+import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
+import RelationshipTemplateManager from '../relationshipTemplate/manager';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
+import { EntityTemplateSchema } from './model';
 
-export class EntityTemplateManager {
-    static getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
+export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {
+    private globalSearchIndexCreator: GlobalSearchIndexCreator;
+
+    private relationshipTemplateManager: RelationshipTemplateManager;
+
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
+        this.globalSearchIndexCreator = new GlobalSearchIndexCreator(workspaceId);
+        this.relationshipTemplateManager = new RelationshipTemplateManager(workspaceId);
+    }
+
+    getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
         const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
 
@@ -26,26 +37,27 @@ export class EntityTemplateManager {
             query.category = { $in: categoryIds };
         }
 
-        return EntityTemplateModel.find(query).populate('category').limit(limit).skip(skip).lean().exec();
+        return this.model.find(query).populate('category').limit(limit).skip(skip).lean().exec();
     }
 
-    static getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
-        return EntityTemplateModel.findById(id)
+    getTemplateById(id: string): Promise<IEntityTemplatePopulated> {
+        return this.model
+            .findById(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }
 
-    static getTemplatesByCategory(category: string) {
-        return EntityTemplateModel.find({ category }).lean().exec();
+    getTemplatesByCategory(category: string) {
+        return this.model.find({ category }).lean().exec();
     }
 
-    static hasRelationshipsProperties(entityTemplate: Omit<IEntityTemplate, 'disabled'>) {
+    hasRelationshipsProperties(entityTemplate: Omit<IEntityTemplate, 'disabled'>) {
         return Object.values(entityTemplate.properties.properties).some((property) => property.relationshipReference);
     }
 
-    static async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession) {
+    async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession) {
         const fixedEntityTemplate: IMongoEntityTemplate = JSON.parse(JSON.stringify(entityTemplate));
 
         await Promise.all(
@@ -66,9 +78,12 @@ export class EntityTemplateManager {
                     };
 
                     if (relationshipTemplateId) {
-                        await RelationshipTemplateManager.updateTemplateById(relationshipTemplateId, relationshipTemplateToUpsert, session);
+                        await this.relationshipTemplateManager.updateTemplateById(relationshipTemplateId, relationshipTemplateToUpsert, session);
                     } else {
-                        const upsertedRelationshipTemplate = await RelationshipTemplateManager.createTemplate(relationshipTemplateToUpsert, session);
+                        const upsertedRelationshipTemplate = await this.relationshipTemplateManager.createTemplate(
+                            relationshipTemplateToUpsert,
+                            session,
+                        );
 
                         // eslint-disable-next-line no-param-reassign
                         fixedEntityTemplate.properties.properties[propertyName].relationshipReference!.relationshipTemplateId =
@@ -81,38 +96,40 @@ export class EntityTemplateManager {
         return fixedEntityTemplate;
     }
 
-    static async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
+    async createTemplate(templateData: Omit<IEntityTemplate, 'disabled'>) {
         let entityTemplate: IEntityTemplatePopulated | null = null;
 
         if (this.hasRelationshipsProperties(templateData)) {
             entityTemplate = await withTransaction(async (session: ClientSession) => {
-                const [newEntityTemplate] = await EntityTemplateModel.create([templateData], { session });
+                const [newEntityTemplate] = await this.model.create([templateData], { session });
 
                 const fixedEntityTemplate = await this.upsertRelationshipsProperties(newEntityTemplate, session);
 
-                return EntityTemplateModel.findByIdAndUpdate(fixedEntityTemplate._id, fixedEntityTemplate, {
-                    new: true,
-                    overwrite: true,
-                    session,
-                })
+                return this.model
+                    .findByIdAndUpdate(fixedEntityTemplate._id, fixedEntityTemplate, {
+                        new: true,
+                        overwrite: true,
+                        session,
+                    })
                     .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
                     .orFail(new NotFoundError('Entity Template not found'))
                     .lean()
                     .exec();
             });
         } else {
-            const createdEntityTemplate = await EntityTemplateModel.create(templateData);
+            const createdEntityTemplate = await this.model.create(templateData);
             entityTemplate = await createdEntityTemplate.populate<Pick<IEntityTemplatePopulated, 'category'>>('category');
         }
 
-        await sendUpdateIndexesOnUpdateTemplate(entityTemplate._id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(entityTemplate!._id);
 
         return entityTemplate;
     }
 
-    static async deleteTemplate(id: string) {
+    async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate = await EntityTemplateModel.findByIdAndDelete(id, { session })
+            const deletedEntityTemplate = await this.model
+                .findByIdAndDelete(id, { session })
                 .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
                 .exec();
@@ -120,42 +137,44 @@ export class EntityTemplateManager {
             await Promise.all(
                 Object.values(deletedEntityTemplate.properties.properties).map(async (property) => {
                     if (property.relationshipReference) {
-                        await RelationshipTemplateManager.deleteTemplateById(property.relationshipReference.relationshipTemplateId!, session);
+                        await this.relationshipTemplateManager.deleteTemplateById(property.relationshipReference.relationshipTemplateId!, session);
                     }
                 }),
             );
         });
 
-        await sendUpdateIndexesOnDeleteTemplate(id);
+        await this.globalSearchIndexCreator.sendUpdateIndexesOnDeleteTemplate(id);
 
         return entityTemplate;
     }
 
-    static async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
-        return EntityTemplateModel.aggregate([
-            {
-                $addFields: {
-                    propertiesArray: {
-                        $objectToArray: '$properties.properties',
+    async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
+        return this.model
+            .aggregate([
+                {
+                    $addFields: {
+                        propertiesArray: {
+                            $objectToArray: '$properties.properties',
+                        },
                     },
                 },
-            },
-            {
-                $match: {
-                    'propertiesArray.v.relationshipReference.relatedTemplateId': relatedTemplateId,
-                    'propertiesArray.v.format': 'relationshipReference',
+                {
+                    $match: {
+                        'propertiesArray.v.relationshipReference.relatedTemplateId': relatedTemplateId,
+                        'propertiesArray.v.format': 'relationshipReference',
+                    },
                 },
-            },
-            {
-                $project: {
-                    propertiesArray: 0,
+                {
+                    $project: {
+                        propertiesArray: 0,
+                    },
                 },
-            },
-        ]).exec();
+            ])
+            .exec();
     }
 
-    static async updateEntityTemplate(id: string, updatedTemplateData: Omit<IEntityTemplate, 'disabled'>) {
-        const currentEntityTemplate = await EntityTemplateManager.getTemplateById(id);
+    async updateEntityTemplate(id: string, updatedTemplateData: Omit<IEntityTemplate, 'disabled'>) {
+        const currentEntityTemplate = await this.getTemplateById(id);
 
         const newEntityTemplate = await withTransaction(async (session: ClientSession) => {
             let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
@@ -164,11 +183,12 @@ export class EntityTemplateManager {
                 entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session);
             }
 
-            const updatedEntityTemplate = await EntityTemplateModel.findByIdAndUpdate(id, entityTemplateToUpdate, {
-                new: true,
-                overwrite: true,
-                session,
-            })
+            const updatedEntityTemplate = await this.model
+                .findByIdAndUpdate(id, entityTemplateToUpdate, {
+                    new: true,
+                    overwrite: true,
+                    session,
+                })
                 .populate('category')
                 .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
@@ -185,7 +205,8 @@ export class EntityTemplateManager {
                         ),
                 )
                 .map((property) => property.relationshipReference!.relationshipTemplateId!);
-            await RelationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
+
+            await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
 
             return updatedEntityTemplate;
         });
@@ -210,12 +231,12 @@ export class EntityTemplateManager {
             Object.keys(currentEntityTemplate.properties.properties).length !== Object.keys(newEntityTemplate.properties.properties).length;
 
         if (isPropertyTypeChanged || isNewPropertyAdded) {
-            await sendUpdateIndexesOnUpdateTemplate(id);
+            await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(id);
 
-            const relatedTemplates = await EntityTemplateManager.getTemplatesUsingRelationshipReferance(id);
+            const relatedTemplates = await this.getTemplatesUsingRelationshipReferance(id);
             await Promise.all(
                 relatedTemplates.map(async (relatedTemplate) => {
-                    await sendUpdateIndexesOnUpdateTemplate(relatedTemplate._id);
+                    await this.globalSearchIndexCreator.sendUpdateIndexesOnUpdateTemplate(relatedTemplate._id);
                 }),
             );
         }
@@ -223,8 +244,9 @@ export class EntityTemplateManager {
         return newEntityTemplate;
     }
 
-    static async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
-        return EntityTemplateModel.findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+    async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
+        return this.model
+            .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate('category')
             .orFail(new NotFoundError('Entity Template not found'))
             .lean()

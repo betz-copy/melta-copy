@@ -1,5 +1,5 @@
-import menash from 'menashmq';
 import config from '../../config';
+import DefaultExternalServiceRabbit from '../../utils/rabbit/manager';
 
 const { rabbit } = config;
 
@@ -13,20 +13,22 @@ export interface IUpdateIndexRequest {
     templateId?: string;
 }
 
-const sendUpdateIndex = (request: IUpdateIndexRequest) => {
-    return menash.send(rabbit.updateSearchIndexQueueName, request);
-};
+export default class GlobalSearchIndexCreator extends DefaultExternalServiceRabbit {
+    async sendUpdateIndex(request: IUpdateIndexRequest) {
+        return this.sendToQueue(rabbit.updateSearchIndexQueueName, request);
+    }
 
-export const sendUpdateIndexesOnUpdateTemplate = async (changedTemplateId: string) => {
-    return Promise.all([
-        sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-        sendUpdateIndex({ action: Action.upsertTemplateIndex, templateId: changedTemplateId }),
-    ]);
-};
+    async sendUpdateIndexesOnUpdateTemplate(changedTemplateId: string) {
+        return Promise.all([
+            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: Action.upsertTemplateIndex, templateId: changedTemplateId }),
+        ]);
+    }
 
-export const sendUpdateIndexesOnDeleteTemplate = async (deletedTemplateId: string) => {
-    return Promise.all([
-        sendUpdateIndex({ action: Action.upsertGlobalIndex }),
-        sendUpdateIndex({ action: Action.deleteTemplateIndex, templateId: deletedTemplateId }),
-    ]);
-};
+    async sendUpdateIndexesOnDeleteTemplate(deletedTemplateId: string) {
+        return Promise.all([
+            this.sendUpdateIndex({ action: Action.upsertGlobalIndex }),
+            this.sendUpdateIndex({ action: Action.deleteTemplateIndex, templateId: deletedTemplateId }),
+        ]);
+    }
+}

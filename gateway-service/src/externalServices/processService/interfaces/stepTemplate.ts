@@ -1,4 +1,4 @@
-import { IUser } from '../../../express/users/interface';
+import { IUser } from '../../userService/interfaces/users';
 import { IProcessDetails } from './processTemplate';
 
 export interface IStepTemplate extends IProcessDetails {

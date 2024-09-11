@@ -1,25 +1,18 @@
+import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
-import * as apm from 'elastic-apm-node';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
 import { ServiceError } from './express/error';
 import { StatusCodes } from 'http-status-codes';
 
-const { mongo, service, logs } = config;
+const { mongo, service } = config;
 
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
 
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url);
 
     logger.info('Mongo connection established');
 };

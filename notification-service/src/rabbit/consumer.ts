@@ -1,9 +1,14 @@
 import { ConsumerMessage } from 'menashmq';
+import { StatusCodes } from 'http-status-codes';
 import NotificationsManager from '../express/notifications/manager';
 import { basicValidateRequest } from '../utils/joi';
 import { notificationSchema } from '../utils/joi/schemas/notification';
 import { ServiceError } from '../express/error';
-import { StatusCodes } from 'http-status-codes';
+import config from '../config';
+
+const {
+    service: { workspaceIdHeaderName },
+} = config;
 
 class NotificationsConsumer {
     static async createNotification(msg: ConsumerMessage) {
@@ -11,7 +16,9 @@ class NotificationsConsumer {
             const msgContent = msg.getContent();
             const value = basicValidateRequest(notificationSchema, msgContent);
 
-            await NotificationsManager.createNotification(value);
+            const manager = new NotificationsManager(msg.properties.headers[workspaceIdHeaderName]);
+
+            await manager.createNotification(value);
 
             msg.ack();
         } catch (err: any) {

@@ -1,8 +1,7 @@
-import * as mongoose from 'mongoose';
-import { IStepTemplate, StepTemplateDocument } from './interface';
-import config from '../../../config';
+import mongoose from 'mongoose';
 
-const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
+// eslint-disable-next-line import/prefer-default-export
+export const StepTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -34,7 +33,3 @@ const StepTemplateSchema = new mongoose.Schema<IStepTemplate>(
         versionKey: false,
     },
 );
-
-const StepTemplateModel = mongoose.model<StepTemplateDocument>(config.mongo.stepTemplatesCollectionName, StepTemplateSchema);
-
-export default StepTemplateModel;

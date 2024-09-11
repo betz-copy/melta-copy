@@ -1,23 +1,30 @@
 import { FilterQuery } from 'mongoose';
-import NotificationModel from './model';
-import { IBasicNotificationQuery, INotification, INotificationGroupCountDetails, INotificationCountGroups, INotificationDocument } from './interface';
+import config from '../../config';
+import transaction from '../../utils/mongo';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotificationDoesNotExistError } from '../error';
-import transaction from '../../utils/mongoose';
+import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from './interface';
+import { NotificationsSchema } from './model';
 
-export class NotificationsManager {
-    public static async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {
+export class NotificationsManager extends DefaultManagerMongo<INotification> {
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.notificationsCollectionName, NotificationsSchema);
+    }
+
+    public async getNotifications(limit: number, step: number, query: IBasicNotificationQuery): Promise<INotification[]> {
         if (query.types && query.types.length > 0)
-            return NotificationModel.find(this.handleQuery(query), {}, { limit, skip: step * limit })
+            return this.model
+                .find(this.handleQuery(query), {}, { limit, skip: step * limit })
                 .sort({ createdAt: -1 })
                 .lean();
         return [];
     }
 
-    public static async getNotificationCount(query: IBasicNotificationQuery) {
-        return NotificationModel.count(this.handleQuery(query));
+    public async getNotificationCount(query: IBasicNotificationQuery) {
+        return this.model.countDocuments(this.handleQuery(query));
     }
 
-    public static async getNotificationGroupCount(
+    public async getNotificationGroupCount(
         groups: INotificationCountGroups,
         query: Omit<IBasicNotificationQuery, 'types'>,
     ): Promise<INotificationGroupCountDetails> {
@@ -35,43 +42,44 @@ export class NotificationsManager {
         return notificationCountDetails;
     }
 
-    public static async getNotificationById(notificationId: string): Promise<INotification> {
-        return NotificationModel.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
+    public async getNotificationById(notificationId: string): Promise<INotification> {
+        return this.model.findById(notificationId).orFail(new NotificationDoesNotExistError(notificationId)).lean();
     }
 
-    public static async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
-        return NotificationModel.create({ ...notificationData });
+    public async createNotification(notificationData: Omit<INotification, 'createdAt'>): Promise<INotification> {
+        return this.model.create({ ...notificationData });
     }
 
-    public static async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
+    public async notificationSeen(notificationId: string, viewerId: string): Promise<INotification> {
         return transaction(async (session) => {
-            const notification = await NotificationModel.findByIdAndUpdate(notificationId, { $pull: { viewers: viewerId } }, { new: true, session })
+            const notification = await this.model
+                .findByIdAndUpdate(notificationId, { $pull: { viewers: viewerId } }, { new: true, session })
                 .orFail(new NotificationDoesNotExistError(notificationId))
                 .lean();
 
             if (!notification.viewers.length) {
-                await NotificationModel.findByIdAndDelete(notificationId, { session });
+                await this.model.findByIdAndDelete(notificationId, { session });
             }
 
             return notification;
         });
     }
 
-    public static async manyNotificationSeen(viewerId: string, query: Omit<IBasicNotificationQuery, 'viewerId'>): Promise<INotification[]> {
+    public async manyNotificationSeen(viewerId: string, query: Omit<IBasicNotificationQuery, 'viewerId'>): Promise<INotification[]> {
         const updatedQuery = this.handleQuery(query);
 
         return transaction(async (session) => {
-            await NotificationModel.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { new: true, session });
-            const notification = await NotificationModel.find(updatedQuery, {}, { session }).lean();
+            await this.model.updateMany(updatedQuery, { $pull: { viewers: viewerId } }, { new: true, session });
+            const notification = await this.model.find(updatedQuery, {}, { session }).lean();
 
-            await NotificationModel.deleteMany({ viewers: { $size: 0 } }, { session });
+            await this.model.deleteMany({ viewers: { $size: 0 } }, { session });
 
             return notification;
         });
     }
 
-    private static handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
-        const query: FilterQuery<INotificationDocument> = { ...rest };
+    private handleQuery({ viewerId, types, startDate, endDate, ...rest }: IBasicNotificationQuery) {
+        const query: FilterQuery<INotification> = { ...rest };
 
         if (viewerId) query.viewers = viewerId;
 

@@ -1,10 +1,10 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
-import { utcToZonedTime, zonedTimeToUtc } from 'date-fns-tz';
+import { fromZonedTime, toZonedTime } from 'date-fns-tz';
 import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
 import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
-import EntityManager from '../../express/entities/manager';
+import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
 
 type Node = Neo4jNode<number>;
@@ -28,7 +28,7 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         }
 
         if (value instanceof neo4j.types.LocalDateTime) {
-            props[key] = zonedTimeToUtc(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
+            props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
 
             return;
         }
@@ -49,10 +49,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -237,7 +237,7 @@ export const getNeo4jDateTime = (date = new Date()) => {
     keep date in DB in israel timezone. it's needed in rules formula "toDate" function to get date of datetime field, but in israel.
     for example, if event happened at 01:00, UTC will save it the day before, so "toDate" will bring the wrong date.
     */
-    const adjustedDate = utcToZonedTime(date, 'Asia/Jerusalem');
+    const adjustedDate = toZonedTime(date, 'Asia/Jerusalem');
     return neo4j.types.LocalDateTime.fromStandardDate(adjustedDate);
 };
 export const getNeo4jDate = (date = new Date()) => neo4j.types.Date.fromStandardDate(date);

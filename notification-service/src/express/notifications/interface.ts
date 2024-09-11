@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { ProcessStatus } from '../../utils/interfaces/processes';
 
 export enum NotificationType {
@@ -70,9 +69,8 @@ export interface INotification {
     createdAt: Date;
 }
 
-export type INotificationDocument = INotification & Document;
-
 export type INotificationCountGroups = Record<string, NotificationType[]>;
+
 export interface INotificationGroupCountDetails {
     groups: Record<string, number>;
     total: number;

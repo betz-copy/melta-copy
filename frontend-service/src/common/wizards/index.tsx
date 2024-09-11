@@ -5,9 +5,8 @@ import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
 
-import { useSelector } from 'react-redux';
 import { Stepper } from './stepper';
-import { RootState } from '../../store';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -54,7 +53,7 @@ const Wizard = <T extends object>({
     const [activeStep, setActiveStep] = useState(initalStep);
     const isLastStep = activeStep === steps.length - 1;
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const handleBack = () => {
         setActiveStep((prevActiveStep) => prevActiveStep - 1);

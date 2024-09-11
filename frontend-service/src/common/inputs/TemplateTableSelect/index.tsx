@@ -2,10 +2,10 @@ import { Box, FormControl, FormHelperText, FormLabel } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { PermissionScope } from '../../../interfaces/permissions';
 import DashedSelectBox from './dashedSelectBox';
 import DeletableEntityViewerCard from './deletableEntityViewerCard';
 import EntitiesTableOfTemplateWithQuickFilter from './EntitiesTableOfTemplateWithQuickFilter';
-import { Scope } from '../../../services/permissionsService';
 
 const TemplateTableSelect: React.FC<{
     entityTemplate?: IMongoEntityTemplatePopulated;
@@ -18,7 +18,7 @@ const TemplateTableSelect: React.FC<{
     hideNonPreview?: boolean;
     autoLoad?: boolean;
     addNewEntityLabel?: string;
-    checkUsersPermissions: Scope;
+    checkUsersPermissions: PermissionScope;
 }> = ({
     entityTemplate,
     value,

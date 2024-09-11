@@ -1,15 +1,16 @@
-import React, { isValidElement } from 'react';
-import { useParams, Navigate, useNavigate } from 'react-router-dom';
-import { useQuery } from 'react-query';
 import { CircularProgress } from '@mui/material';
 import { AxiosError } from 'axios';
-import { getExpandedEntityByIdRequest } from '../services/entitiesService';
+import React, { isValidElement } from 'react';
+import { useQuery } from 'react-query';
+import { Redirect, useLocation, useParams } from 'wouter';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
-import { IPermissionsOfUser } from '../services/permissionsService';
+import { PermissionScope } from '../interfaces/permissions';
+import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { getExpandedEntityByIdRequest } from '../services/entitiesService';
 
 export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) => {
-    if (isAllowed) {
-        return <Navigate to="/" replace />;
+    if (!isAllowed) {
+        return <Redirect href="/" replace />;
     }
 
     if (isValidElement(children)) {
@@ -19,21 +20,25 @@ export const protectedRoute = (children: React.ReactNode, isAllowed: boolean) =>
     return <div />;
 };
 
-export const CategoryProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    const params = useParams();
+export const CategoryProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    const params = useParams<{ categoryId: string }>();
     const { categoryId } = params;
 
-    return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === categoryId));
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[categoryId]?.scope),
+    );
 };
 
-export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; entityTemplates: IEntityTemplateMap }> = ({
+export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermissions; entityTemplates: IEntityTemplateMap }> = ({
     children,
     permissions,
     entityTemplates,
 }) => {
-    const params = useParams();
+    const params = useParams<{ entityId: string }>();
     const { entityId } = params;
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
 
     const templateIds = Array.from(entityTemplates.keys());
 
@@ -51,14 +56,24 @@ export const EntityProtectedRoute: React.FC<{ permissions: IPermissionsOfUser; e
     );
 
     if (isLoading) return <CircularProgress />;
+
     const currentEntityTemplate = entityTemplates.get(expandedEntity!.entity.templateId);
-    return protectedRoute(children, !permissions.instancesPermissions.find((instance) => instance.category === currentEntityTemplate?.category._id));
+
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write || Boolean(permissions.instances?.categories[currentEntityTemplate?.category._id ?? '']),
+    );
 };
 
-export const SystemManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    return protectedRoute(children, !permissions.templatesManagementId && !permissions.processesManagementId);
+export const SystemManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    return protectedRoute(
+        children,
+        permissions.admin?.scope === PermissionScope.write ||
+            permissions.templates?.scope === PermissionScope.write ||
+            permissions.processes?.scope === PermissionScope.write,
+    );
 };
 
-export const PermissionsManagementProtectedRoute: React.FC<{ permissions: IPermissionsOfUser }> = ({ children, permissions }) => {
-    return protectedRoute(children, !permissions.permissionsManagementId);
+export const PermissionsManagementProtectedRoute: React.FC<{ permissions: ISubCompactPermissions }> = ({ children, permissions }) => {
+    return protectedRoute(children, permissions.admin?.scope === PermissionScope.write || permissions.permissions?.scope === PermissionScope.write);
 };

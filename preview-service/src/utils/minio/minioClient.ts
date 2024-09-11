@@ -1,13 +1,14 @@
 import * as minio from 'minio';
 import { Readable } from 'stream';
+import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
+const { url: endPoint, port, accessKey, secretKey, useSSL } = config.minio;
+
 export class MinIOClient {
-    minioClient: minio.Client;
+    private minioClient: minio.Client;
 
-    bucketName: string;
-
-    async initialize(endPoint: string, port: number, accessKey: string, secretKey: string, bucketName = 'defaultbucket', useSSL = false) {
+    constructor(private bucketName: string) {
         this.minioClient = new minio.Client({
             endPoint,
             port,
@@ -15,26 +16,35 @@ export class MinIOClient {
             accessKey,
             secretKey,
         });
-        this.bucketName = bucketName;
+    }
 
-        if (!(await this.minioClient.bucketExists(this.bucketName))) {
-            await this.minioClient.makeBucket(this.bucketName, '');
-            logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+    private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
+        try {
+            return func();
+        } catch (err: any) {
+            // Check if the error is caused by non-existing bucket
+            if (err.code !== 'NoSuchBucket') throw err;
+
+            // Create the bucket if it doesn't exist
+            if (!(await this.minioClient.bucketExists(this.bucketName))) {
+                await this.minioClient.makeBucket(this.bucketName, '');
+                logger.info(`Bucket with name "${this.bucketName}" created successfully`);
+            }
+
+            // Retry
+            return func();
         }
     }
 
     downloadFileStream(filePath: string) {
-        return this.minioClient.getObject(this.bucketName, filePath);
+        return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
     }
 
-    async uploadFileStream(filePath: Readable, objectName: string, metaData = {}) {
-        return this.minioClient.putObject(this.bucketName, objectName, filePath, metaData);
+    uploadFileStream(filePath: Readable, objectName: string, size: number, metaData = {}) {
+        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, objectName, filePath, size, metaData));
     }
 
     statFile(filePath: string) {
-        return this.minioClient.statObject(this.bucketName, filePath);
+        return this.wrapDBNotExistsError(() => this.minioClient.statObject(this.bucketName, filePath));
     }
 }
-
-const minioClient = new MinIOClient();
-export { minioClient };

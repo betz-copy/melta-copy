@@ -1,7 +1,5 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
-import { IGanttDocument } from './interface';
-import config from '../../config';
 import { ServiceError } from '../error';
 import { StatusCodes } from 'http-status-codes';
 
@@ -73,7 +71,8 @@ const GanttItem = new mongoose.Schema(
     { _id: false },
 );
 
-const GanttSchema = new mongoose.Schema(
+// eslint-disable-next-line import/prefer-default-export
+export const GanttSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -92,7 +91,7 @@ const GanttSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: mongoose.HookNextFunction) => {
+const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: any) => void) => {
     if (error.name === 'MongoError' && error.code === 11000) {
         next(new ServiceError(StatusCodes.BAD_REQUEST, 'gantt with the same name already exists'));
     } else {
@@ -102,7 +101,3 @@ const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, ne
 
 GanttSchema.post('save', handleMongooseDuplicateKeyError);
 GanttSchema.post('findOneAndUpdate', handleMongooseDuplicateKeyError);
-
-const GanttModel = mongoose.model<IGanttDocument>(config.mongo.ganttsCollectionName, GanttSchema);
-
-export default GanttModel;

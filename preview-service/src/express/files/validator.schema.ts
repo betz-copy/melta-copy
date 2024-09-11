@@ -1,6 +1,6 @@
 import * as Joi from 'joi';
 
-// Get /api/preview/:fileId/:needsConversion
+// Get /api/preview/:fileId
 export const getPreviewSchema = Joi.object({
     body: {},
     params: {

@@ -1,43 +1,46 @@
-import React, { useState } from 'react';
-import { Grid, Card, CardContent, CircularProgress, Box, Divider, Button } from '@mui/material';
-import { Done as DoneIcon, Clear as ClearIcon } from '@mui/icons-material';
-import { useMutation } from 'react-query';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { Form, Formik } from 'formik';
-import pickBy from 'lodash.pickby';
-import { useLocation } from 'react-router';
-import { useNavigate } from 'react-router-dom';
+import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
-import { duplicateEntityRequest } from '../../../services/entitiesService';
-import { EntityWizardValues } from '../../../common/dialogs/entity';
-import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
+import { Form, Formik } from 'formik';
+import i18next from 'i18next';
+import pickBy from 'lodash.pickby';
+import React, { useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
-import { DuplicateTopBar } from './DuplicateTopBar';
-import { environment } from '../../../globals';
-import { toastConstraintValidationError } from '../../../common/dialogs/entity/toastConstraintValidationError';
+import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchemaFormik';
+import { environment } from '../../../globals';
+import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { duplicateEntityRequest } from '../../../services/entitiesService';
+import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
+import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
+import { DuplicateTopBar } from './DuplicateTopBar';
 
 const { errorCodes } = environment;
 
 const DuplicateEntity: React.FC<{}> = () => {
-    const { state } = useLocation();
-    const { entityTemplate, expandedEntity } = state as {
+    const { state } = window.history;
+
+    const {
+        entityTemplate,
+        expandedEntity: { entity },
+    } = state as {
         entityTemplate: IMongoEntityTemplatePopulated;
         expandedEntity: IEntityExpanded;
     };
-    const { entity } = expandedEntity;
-    const navigate = useNavigate();
+
+    const [_, navigate] = useLocation();
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
@@ -52,11 +55,25 @@ const DuplicateEntity: React.FC<{}> = () => {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
+                setExternalErrors({ files: false, unique: {} });
             },
             onError: (err: AxiosError) => {
+                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-                    toastConstraintValidationError(errorMetadata, entityTemplate);
+                    const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+                    const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${entityTemplate.properties.properties[prop].title}`);
+                    constraintPropsDisplayNames.forEach((uniqueProp) => {
+                        setExternalErrors((prev) => ({
+                            ...prev,
+                            unique: {
+                                ...prev.unique,
+                                [uniqueProp.substring(0, uniqueProp.indexOf('-'))]: `${i18next.t(
+                                    `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                                )} ${uniqueProp.substring(uniqueProp.indexOf('-') + 1)}`,
+                            },
+                        }));
+                    });
                     return;
                 }
 
@@ -94,10 +111,12 @@ const DuplicateEntity: React.FC<{}> = () => {
         }
     });
     const fileProperties = fileIdsProperties;
+
     return (
         <Formik
             initialValues={{ properties: fieldProperties, attachmentsProperties: fileProperties }}
-            onSubmit={async (values) => {
+            onSubmit={async (values, formikHelpers) => {
+                formikHelpers.setTouched({});
                 duplicateMutation({ newEntityDate: { ...values, template: entityTemplate } });
             }}
             validate={(values) => {
@@ -132,6 +151,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 values={values}
                                                                 setValues={(propertiesValues) => setFieldValue('properties', propertiesValues)}
                                                                 errors={errors.properties ?? {}}
+                                                                uniqueErrors={{ ...externalErrors.unique }}
                                                                 touched={touched.properties ?? {}}
                                                                 setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                             />
@@ -142,8 +162,18 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                     title={i18next.t('wizard.entityTemplate.attachments')}
                                                                     component="h6"
                                                                     variant="h6"
-                                                                    style={{ marginBottom: '22px' }}
+                                                                    style={{
+                                                                        marginBottom: externalErrors.files ? '0px' : '12px',
+                                                                    }}
                                                                 />
+                                                                {externalErrors.files && (
+                                                                    <p
+                                                                        id="error"
+                                                                        style={{ color: '#d32f2f', margin: 0, padding: 0, marginBottom: '12px' }}
+                                                                    >
+                                                                        {i18next.t('errorCodes.FILES_TOO_BIG')}
+                                                                    </p>
+                                                                )}
                                                                 <div style={{ color: '#666666', fontSize: '0.9rem', padding: '2%' }}>
                                                                     {i18next.t('wizard.entityTemplate.dragAndDropFile')}
                                                                 </div>
@@ -160,6 +190,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             ) : (
                                                                                 <InstanceFileInput
@@ -171,6 +202,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                                     value={values.attachmentsProperties[key]}
                                                                                     error={errors.attachmentsProperties?.[key] as string}
                                                                                     setFieldTouched={setFieldTouched}
+                                                                                    setExternalErrors={setExternalErrors}
                                                                                 />
                                                                             )}
                                                                         </Grid>
@@ -206,6 +238,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     navigate(`/entity/${entity.properties._id}`);
+                                                                    setExternalErrors({ files: false, unique: {} });
                                                                 }}
                                                             >
                                                                 {i18next.t('entityPage.cancel')}
@@ -243,6 +276,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 onCreateRuleBreachRequest={() => {
                                     setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
                                     navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
+                                    setExternalErrors({ files: false, unique: {} });
                                 }}
                             />
                         )}

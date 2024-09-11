@@ -1,6 +1,6 @@
+import 'elastic-apm-node/start';
 import mongoose from 'mongoose';
 import axios from 'axios';
-import apm from 'elastic-apm-node';
 import menash from 'menashmq';
 import Server from './express/server';
 import config from './config';
@@ -8,15 +8,8 @@ import logger from './utils/logger/logsLogger';
 import { ServiceError } from './express/error';
 import { StatusCodes } from 'http-status-codes';
 
-const { mongo, service, rabbit, logs } = config;
+const { mongo, service, rabbit } = config;
 
-if (logs.enableApm) {
-    apm.start({
-        serviceName: logs.extraDefault.serviceName,
-        serverUrl: logs.apmServerUrl,
-        environment: logs.extraDefault.environment,
-    });
-}
 
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');

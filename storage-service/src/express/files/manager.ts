@@ -1,71 +1,76 @@
-import { Stream } from 'stream';
 import { menash } from 'menashmq';
-import { generatePath } from '../../utils/generatePath';
-import { minioClient } from '../../utils/minio';
+import { Stream } from 'stream';
+import { StatusCodes } from 'http-status-codes';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
-import { StatusCodes } from 'http-status-codes';
+import { generatePath } from '../../utils/generatePath';
+import DefaultManagerMinio from '../../utils/minio/manager';
 
-const { rabbit, document } = config;
+const {
+    rabbit,
+    document,
+    service: { workspaceIdHeaderName },
+} = config;
 
-export class FilesManager {
-    static uploadFile(file?: Express.Multer.File) {
+export class FilesManager extends DefaultManagerMinio {
+    uploadFile(file?: Express.Multer.File) {
         return file;
     }
 
-    static async uploadFiles(files?: Express.Multer.File[]) {
+    async uploadFiles(files?: Express.Multer.File[]) {
         const documentFiles = files?.filter((file) => isFileDocument(file.path));
         if (documentFiles?.length)
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.path),
+                { headers: { [workspaceIdHeaderName]: this.workspaceId } },
             );
         return files;
     }
 
-    static downloadFile(path: string) {
-        return minioClient.downloadFileStream(path);
+    async downloadFile(path: string) {
+        return this.minioClient.downloadFileStream(path);
     }
 
-    static listFiles() {
-        return minioClient.getFilesList(true);
+    async listFiles() {
+        return this.minioClient.getFilesList(true);
     }
 
-    static fileStat(filePath: string) {
-        return minioClient.statFile(filePath);
+    async fileStat(filePath: string) {
+        return this.minioClient.statFile(filePath);
     }
 
-    static async deleteFile(filePath: string) {
+    async deleteFile(filePath: string) {
         const pdfFileName = `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
         try {
-            await minioClient.removeFile(pdfFileName);
+            await this.minioClient.removeFile(pdfFileName);
         } catch (error) {
             throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing preview file', { error });
         }
-        return minioClient.removeFile(filePath);
+        return this.minioClient.removeFile(filePath);
     }
 
-    static async duplicateFile(sourceFilePath: string) {
+    async duplicateFile(sourceFilePath: string) {
         const destinationPath = generatePath(sourceFilePath.slice(32));
-        await minioClient.copyFile(sourceFilePath, destinationPath);
-        return { ...(await FilesManager.fileStat(destinationPath)), path: destinationPath };
+        await this.minioClient.copyFile(sourceFilePath, destinationPath);
+        return { ...(await this.fileStat(destinationPath)), path: destinationPath };
     }
 
-    static async duplicateFiles(sourceFilePaths: string[]) {
-        const copiedFiles = sourceFilePaths.map((path) => FilesManager.duplicateFile(path));
+    async duplicateFiles(sourceFilePaths: string[]) {
+        const copiedFiles = sourceFilePaths.map((path) => this.duplicateFile(path));
         const result = await Promise.all(copiedFiles);
 
         return result;
     }
 
-    static deleteFiles(filePaths: string[]) {
+    deleteFiles(filePaths: string[]) {
         const removalPromises = filePaths.map(async (filePath) => {
             const extension = getFileExtension(filePath);
             if (document.documentType.includes(extension)) {
                 const pdfFileName = `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
                 try {
-                    await minioClient.removeFile(pdfFileName);
+                    await this.minioClient.removeFile(pdfFileName);
                 } catch (error) {
                     throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing preview file', { error });
                 }
@@ -73,27 +78,27 @@ export class FilesManager {
         });
 
         return Promise.all(removalPromises)
-            .then(() => minioClient.removeFiles(filePaths))
+            .then(() => this.minioClient.removeFiles(filePaths))
             .catch((error) => {
                 throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing files', { error });
             });
     }
 
-    static async getFilesData(filePaths: string[]): Promise<Buffer[]> {
+    async getFilesData(filePaths: string[]): Promise<Buffer[]> {
         const fileStreams = await Promise.all(
             filePaths.map((filePath) => {
-                return minioClient.downloadFileStream(filePath.toString());
+                return this.minioClient.downloadFileStream(filePath.toString());
             }),
         );
-        return Promise.all(fileStreams.map(streamToBuffer));
+        return Promise.all(fileStreams.map((fileStream) => this.streamToBuffer(fileStream)));
     }
-}
 
-async function streamToBuffer(stream: Stream): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-        stream.on('end', () => resolve(Buffer.concat(chunks)));
-        stream.on('error', reject);
-    });
+    private async streamToBuffer(stream: Stream): Promise<Buffer> {
+        return new Promise((resolve, reject) => {
+            const chunks: Buffer[] = [];
+            stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+            stream.on('end', () => resolve(Buffer.concat(chunks)));
+            stream.on('error', reject);
+        });
+    }
 }

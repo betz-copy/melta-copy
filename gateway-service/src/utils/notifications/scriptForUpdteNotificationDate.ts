@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '../../express/error';
-import { EntityTemplateManagerService, IEntityTemplate } from '../../externalServices/templates/entityTemplateService';
+import { WorkspaceTypes } from '../../express/workspaces/interface';
+import { WorkspaceManager } from '../../express/workspaces/manager';
+import { EntityTemplateService, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import logger from '../logger/logsLogger';
 
 enum dateNotificationOptions {
@@ -12,65 +14,74 @@ enum dateNotificationOptions {
     halfYear = 180,
 }
 
-async function main() {
-    const allEntityTemplates = await EntityTemplateManagerService.searchEntityTemplates();
+const checkDateNotification = async (entityTemplateService: EntityTemplateService, entityTemplate: IMongoEntityTemplatePopulated) => {
+    const { _id, createdAt, updatedAt, ...restProperties } = entityTemplate;
+    let updatedProperties = '';
 
-    allEntityTemplates.map(async (entity) => {
-        const { _id, createdAt, updatedAt, ...restProperties } = entity;
-        let updatedProperties = '';
+    let hasDateNotification = false;
 
-        let hasDateNotification = false;
-
-        let update: IEntityTemplate = {
-            ...restProperties,
-            category: entity.category._id,
+    let update: IEntityTemplate = {
+        ...restProperties,
+        category: entityTemplate.category._id,
+        properties: {
+            ...entityTemplate.properties,
             properties: {
-                ...entity.properties,
-                properties: {
-                    ...entity.properties.properties,
-                },
+                ...entityTemplate.properties.properties,
             },
-        };
+        },
+    };
 
-        Object.entries(entity.properties.properties).map(async ([propertyName, property]) => {
-            if (property.dateNotification) {
-                updatedProperties += ` ${propertyName} `;
-                hasDateNotification = true;
-                update = {
-                    ...restProperties,
-                    category: entity.category._id,
+    Object.entries(entityTemplate.properties.properties).map(async ([propertyName, property]) => {
+        if (property.dateNotification) {
+            updatedProperties += ` ${propertyName} `;
+            hasDateNotification = true;
+            update = {
+                ...restProperties,
+                category: entityTemplate.category._id,
+                properties: {
+                    ...entityTemplate.properties,
                     properties: {
-                        ...entity.properties,
-                        properties: {
-                            ...update.properties.properties,
-                            [propertyName]: {
-                                ...property,
-                                isDailyAlert: true,
-                                dateNotification: dateNotificationOptions[
-                                    entity.properties.properties[propertyName].dateNotification!
-                                ] as unknown as number,
-                            },
+                        ...update.properties.properties,
+                        [propertyName]: {
+                            ...property,
+                            isDailyAlert: true,
+                            dateNotification: dateNotificationOptions[
+                                entityTemplate.properties.properties[propertyName].dateNotification!
+                            ] as unknown as number,
                         },
                     },
-                };
-            }
-        });
-
-        if (hasDateNotification) {
-            try {
-                await EntityTemplateManagerService.updateEntityTemplate(entity._id, update);
-                logger.info(
-                    `Succeed to update fields that have a date notification in entityTemplate: ${entity._id} - ${entity.name} in properties: ${updatedProperties}`,
-                );
-            } catch (error) {
-                throw new ServiceError(
-                    StatusCodes.INTERNAL_SERVER_ERROR,
-                    `Failed to update fields that have a date notification in entityTemplate: ${entity._id} - ${entity.name} in properties: ${updatedProperties}`,
-                    { error },
-                );
-            }
+                },
+            };
         }
     });
-}
+
+    if (!hasDateNotification) return;
+
+    try {
+        await entityTemplateService.updateEntityTemplate(entityTemplate._id, update);
+        logger.info(
+            `Succeed to update fields that have a date notification in entityTemplate: ${entityTemplate._id} - ${entityTemplate.name} in properties: ${updatedProperties}`,
+        );
+    } catch (error) {
+        throw new ServiceError(
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            `Failed to update fields that have a date notification in entityTemplate: ${entityTemplate._id} - ${entityTemplate.name} in properties: ${updatedProperties}`,
+            { error },
+        );
+    }
+};
+
+const main = async () => {
+    const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
+
+    await Promise.all(
+        workspaceIds.map(async (workspaceId) => {
+            const entityTemplateService = new EntityTemplateService(workspaceId);
+
+            const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
+            await Promise.all(allEntityTemplates.map((entityTemplate) => checkDateNotification(entityTemplateService, entityTemplate)));
+        }),
+    );
+};
 
 main();
