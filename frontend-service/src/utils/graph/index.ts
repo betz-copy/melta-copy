@@ -4,7 +4,7 @@ import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplate } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
@@ -69,13 +69,23 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
     return { links, nodes: expendedNodes };
 };
 
-export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
+export const entityToNode = async (
+    entity: IEntity,
+    entityTemplate: IEntityTemplatePopulated,
+    icons: Map<string, HTMLImageElement>,
+): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {
-        icon = new Image();
+        if (!icons.has(entityTemplate.iconFileId)) {
+            icon = new Image();
+            console.log('hello if', { icons, icon }, 'iconFileId', entityTemplate.iconFileId);
 
-        icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+            icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+
+            icons.set(entityTemplate.iconFileId, icon);
+            console.log('hello end', { icons });
+        } else icon = icons.get(entityTemplate.iconFileId);
     }
 
     return {
@@ -105,7 +115,8 @@ export const expandedEntityToGraphData = async (
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
 ): Promise<GraphData> => {
-    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!)];
+    const icons: Map<string, HTMLImageElement> = new Map();
+    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!, icons)];
 
     const links = await Promise.all(
         expandedEntity.connections.map(async ({ sourceEntity, destinationEntity, relationship }) => {
@@ -114,10 +125,10 @@ export const expandedEntityToGraphData = async (
             if (!relationshipTemplate) throw new Error('must have relationship template');
 
             const currSourceEntity = entityTemplates.get(sourceEntity.templateId);
-            if (currSourceEntity) nodes.push(await entityToNode(sourceEntity, currSourceEntity));
+            if (currSourceEntity) nodes.push(await entityToNode(sourceEntity, currSourceEntity, icons));
 
             const currDestinationEntity = entityTemplates.get(destinationEntity.templateId);
-            if (currDestinationEntity) nodes.push(await entityToNode(destinationEntity, currDestinationEntity));
+            if (currDestinationEntity) nodes.push(await entityToNode(destinationEntity, currDestinationEntity, icons));
 
             return relationshipToLink(sourceEntity, destinationEntity, relationshipTemplate);
         }),
@@ -136,24 +147,24 @@ export const highlightNode = (node: NodeObject, graphData: GraphData, highlight:
     graphData.links.forEach((link) => {
         if ((link.target as NodeObject).id === node.id) {
             (link.source as NodeObject).highlighted += count;
-            link.highlighted += count;
+            (link as LinkObject).highlighted += count;
         }
         if ((link.source as NodeObject).id === node.id) {
             (link.target as NodeObject).highlighted += count;
-            link.highlighted += count;
+            (link as LinkObject).highlighted += count;
         }
     });
 };
 
 export const fixHighlighted = (graphData: GraphData) => {
     graphData.links.forEach((link) => {
-        link.highlighted = 0;
+        (link as LinkObject).highlighted = 0;
         (link.source as NodeObject).highlighted = 0;
         (link.target as NodeObject).highlighted = 0;
     });
     graphData.nodes.forEach((node) => {
-        if (node.mainHighlighted) {
-            highlightNode(node, graphData);
+        if ((node as NodeObject).mainHighlighted) {
+            highlightNode(node as NodeObject, graphData);
         }
     });
 };
