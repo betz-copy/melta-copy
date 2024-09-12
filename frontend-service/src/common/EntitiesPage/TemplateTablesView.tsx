@@ -24,26 +24,16 @@ const TemplateTablesViewResults = forwardRef<
         searchInput: string;
         pageSize?: number;
         pageType: string;
+        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
->(({ templates, searchInput, pageType }, ref) => {
+>(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
     const [visibleTemplatesCount, setVisibleTemplatesCount] = useState<number>(tablesPerLoadingChunkSize);
-    const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
     const loaderRef = useRef(null);
 
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
-
-    useEffect(() => {
-        if (Array.isArray(updatedEntities)) {
-            updatedEntities.forEach((entity) => {
-                const reference = templateTablesRefs.current[entity.templateId];
-
-                if (reference) reference.updateRowDataClientSide(entity);
-            });
-        }
-    }, [updatedEntities]);
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -116,64 +106,68 @@ export interface TemplateTablesViewProps {
     templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
+    setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }
 
 export interface TemplateTablesViewRef {
     refetch: () => void;
-    templateTablesRefs: Record<string, TemplateTableRef>;
+    templateTablesRefs: Record<string, TemplateTableRef> | undefined;
 }
 
-const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(({ templates, searchInput, pageType }, ref) => {
-    const { setSteps } = useTour();
+const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
+    ({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+        const { setSteps } = useTour();
 
-    const {
-        data: templatesFilteredByCount,
-        refetch: refetchTemplatesFilteredByCount,
-        isFetching: isLoadingTemplatesFilteredByCount,
-    } = useQuery(
-        ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
-        () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
-        {
-            onSuccess: (data) => {
-                if (data.length === 0 && pageType === 'globalSearch') {
-                    // if there are no entities to show in the global search page, stop the tour
-                    setSteps!((currSteps) => currSteps.slice(0, 4));
-                }
+        const {
+            data: templatesFilteredByCount,
+            refetch: refetchTemplatesFilteredByCount,
+            isFetching: isLoadingTemplatesFilteredByCount,
+        } = useQuery(
+            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
+            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
+            {
+                onSuccess: (data) => {
+                    if (data.length === 0 && pageType === 'globalSearch') {
+                        // if there are no entities to show in the global search page, stop the tour
+                        setSteps!((currSteps) => currSteps.slice(0, 4));
+                    }
+                },
+                onError(error) {
+                    console.log('Failed to load templates counts', error);
+                    toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+                },
             },
-            onError(error) {
-                console.log('Failed to load templates counts', error);
-                toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            },
-        },
-    );
+        );
 
-    const templateTablesRefs = useRef<TemplateTablesViewRef['templateTablesRefs']>({});
+        const viewResultsRef = useRef<TemplateTablesViewResultsRef>(null);
 
-    useImperativeHandle(ref, () => ({
-        refetch: refetchTemplatesFilteredByCount,
-        templateTablesRefs: templateTablesRefs.current,
-    }));
+        useImperativeHandle(ref, () => ({
+            refetch: refetchTemplatesFilteredByCount,
+            templateTablesRefs: viewResultsRef.current?.templateTablesRefs,
+        }));
 
-    return (
-        <Grid container>
-            {isLoadingTemplatesFilteredByCount && (
-                <Grid container justifyContent="center">
-                    <CircularProgress />
-                </Grid>
-            )}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && <Typography>{i18next.t('noSearchResults')}</Typography>}
-            {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
-                <TemplateTablesViewResults
-                    ref={(el) => {
-                        if (el) templateTablesRefs.current = el.templateTablesRefs;
-                    }}
-                    templates={templatesFilteredByCount}
-                    searchInput={searchInput}
-                    pageType={pageType}
-                />
-            )}
-        </Grid>
-    );
-});
+        return (
+            <Grid container>
+                {isLoadingTemplatesFilteredByCount && (
+                    <Grid container justifyContent="center">
+                        <CircularProgress />
+                    </Grid>
+                )}
+                {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && (
+                    <Typography>{i18next.t('noSearchResults')}</Typography>
+                )}
+                {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
+                    <TemplateTablesViewResults
+                        ref={viewResultsRef}
+                        templates={templatesFilteredByCount}
+                        searchInput={searchInput}
+                        pageType={pageType}
+                        setUpdatedEntities={setUpdatedEntities}
+                    />
+                )}
+            </Grid>
+        );
+    },
+);
 
 export default TemplateTablesView;

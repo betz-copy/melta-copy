@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
@@ -17,6 +17,12 @@ interface InstanceFileInputProps {
     value: File[] | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    setExternalErrors?: React.Dispatch<
+        React.SetStateAction<{
+            files: boolean;
+            unique: {};
+        }>
+    >;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -27,8 +33,15 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     value,
     error,
     setFieldTouched,
+    setExternalErrors,
 }) => {
-    const [filesName, setFilesName] = useState<string[]>(value ? value.map((file) => getFileName(file.name)) : []);
+    const filesName = value
+        ? value.map((file) => {
+              const fileId = file.name;
+              return !(file instanceof File) ? getFileName(fileId) : fileId;
+          })
+        : [];
+
     return (
         <Box
             marginTop={1}
@@ -51,16 +64,16 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 onDropFiles={(acceptedFiles: File[]) => {
                     const updatedFiles = value ? [...value, ...acceptedFiles] : acceptedFiles;
                     setFieldValue(fileFieldName, updatedFiles);
-                    setFilesName([...filesName, ...acceptedFiles.map((file) => file.name)]);
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 onDeleteFile={(fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
                     const updatedFiles = [...(value || [])];
                     updatedFiles.splice(fileIndex, 1);
                     setFieldValue(fileFieldName, updatedFiles);
-                    setFilesName(updatedFiles.map((file: File | { name: string }) => (file instanceof File ? file.name : getFileName(file.name))));
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 errorText={error}
                 multiple

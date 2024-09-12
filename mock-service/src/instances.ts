@@ -1,7 +1,7 @@
 // @ts-ignore
-import axios, { AxiosError } from 'axios';
-import { JSONSchemaFaker } from 'json-schema-faker';
-import * as pLimit from 'p-limit';
+import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
+import pLimit from 'p-limit';
+import axios from 'axios';
 import config from './config';
 import { IRelationship } from './interfaces/relationships';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
@@ -85,7 +85,6 @@ export const createRelationshipInstances = async (
                     } catch (error) {
                         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
                             console.log('Relationship already exists, skipping...');
-                            return;
                         }
 
                         throw error;

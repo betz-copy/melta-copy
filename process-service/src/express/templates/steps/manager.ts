@@ -59,7 +59,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
         let newStepsIds: string[] = [];
         if (stepsToCreate.length) {
             const createdSteps = await this.createStepsTemplates(stepsToCreate, session);
-            newStepsIds = createdSteps.map((step) => step._id.toString());
+            newStepsIds = createdSteps.map((step) => step._id!.toString());
         }
         const originalIds = stepsToUpdate.map((step) => step._id!.toString());
         return [...originalIds, ...newStepsIds];
