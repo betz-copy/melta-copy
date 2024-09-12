@@ -5,6 +5,8 @@ import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
+    myPermissions: 'ההרשאות שלי',
+    myAccount: 'החשבון שלי',
     category: 'קטגוריה',
     categories: 'קטגוריות',
     entity: 'ישות',

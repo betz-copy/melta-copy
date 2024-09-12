@@ -45,6 +45,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
+    console.log({ currentUser });
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
