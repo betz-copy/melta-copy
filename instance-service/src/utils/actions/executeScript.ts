@@ -1,7 +1,7 @@
 import * as ts from 'typescript-actions';
 import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
-import format from 'date-fns/format';
+import { formatDate } from 'date-fns/format';
 import { isDate } from 'date-fns';
 import { IEntity, IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
@@ -52,9 +52,11 @@ const addDefaultFunctionsToActionCode = (
 };
 
 const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
+    console.log({ jsCode });
+
     try {
         const context = vm.createContext({ entity: entity.properties });
-        vm.runInContext(jsCode, vm.createContext({ entity: entity.properties }), { timeout: 10000 });
+        vm.runInContext(jsCode, context, { timeout: 10000 });
 
         return vm.runInContext('getActions(entity)', context);
     } catch (error) {
@@ -82,6 +84,8 @@ const manipulateOnExecutionOutput = async (
 
     await Promise.all(
         executionOutput.map(async ({ entityId, properties }) => {
+            console.log('updated properties', { properties });
+
             if (!entityId) throw new ServiceError(400, 'cant create new entity by code');
 
             const currentEntity = await entityManager.getEntityByIdInTransaction(entityId, transaction);
@@ -93,6 +97,7 @@ const manipulateOnExecutionOutput = async (
 
             Object.entries(currentEntityTemplate.properties.properties).forEach(([name, value]) => {
                 if (!(name in properties)) return;
+                console.log('here', value.serialCurrent);
 
                 const propertyValue = properties[name];
 
@@ -100,10 +105,11 @@ const manipulateOnExecutionOutput = async (
 
                 if (value.format === 'date-time' && isDate(propertyValue)) entityAfterManipulations.properties[name] = propertyValue.toISOString();
 
-                if (value.format === 'date' && isDate(propertyValue)) entityAfterManipulations.properties[name] = format(propertyValue, 'yyyy-MM-dd');
+                if (value.format === 'date' && isDate(propertyValue))
+                    entityAfterManipulations.properties[name] = formatDate(propertyValue, 'yyyy-MM-dd');
 
-                if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
-                    throw new ServiceError(400, "can't change serial number properties");
+                // if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
+                //     throw new ServiceError(400, "can't change serial number properties");
             });
 
             entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);

@@ -337,7 +337,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 actionType: action.actionType,
                 actionMetadata: {
                     ...action.actionMetadata,
-                    properties: entity.createdEntity.properties,
+                    properties: entity.properties,
                 },
             },
         ]);
@@ -370,7 +370,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 actionType: action.actionType,
                 actionMetadata: {
                     ...action.actionMetadata,
-                    properties: entity.createdEntity.properties,
+                    properties: entity.properties,
                 },
             },
         ]);

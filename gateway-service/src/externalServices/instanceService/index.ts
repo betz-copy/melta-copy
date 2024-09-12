@@ -49,7 +49,7 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
-        const { data } = await this.api.post<{ createdEntity: IEntity; updatedEntities: IEntity[]; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
+        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
             ...entity,
             ignoredRules,
             userId,
@@ -60,10 +60,11 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.api.put<{ updatedEntity: IEntity; updatedEntities: IEntity[]; actions?: IAction[] }>(
-            `${baseEntitiesRoute}/${id}`,
-            { ...entity, ignoredRules, userId },
-        );
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
+            ...entity,
+            ignoredRules,
+            userId,
+        });
 
         return data;
     }

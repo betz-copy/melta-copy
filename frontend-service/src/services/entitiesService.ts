@@ -81,7 +81,7 @@ export const createEntityRequest = async (entity: EntityWizardValues, ignoredRul
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
 
-    const { data } = await axios.post<{ createdEntity: IEntity; updatedEntities: IEntity[] }>(entities, formData);
+    const { data } = await axios.post<IEntity>(entities, formData);
     return data;
 };
 
@@ -149,7 +149,7 @@ export const updateEntityRequestForMultiple = async (
     if (ignoredRules) {
         formData.append('ignoredRules', JSON.stringify(ignoredRules));
     }
-    const { data } = await axios.put<{ updatedEntity: IEntity; updatedEntities: IEntity[] }>(`${entities}/${entityId}`, formData);
+    const { data } = await axios.put<IEntity>(`${entities}/${entityId}`, formData);
     return data;
 };
 

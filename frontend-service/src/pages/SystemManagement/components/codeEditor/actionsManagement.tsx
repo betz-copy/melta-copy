@@ -131,7 +131,7 @@ const ActionManagement: React.FC<ActionManagementProps> = ({
     const defaultValue = [defaultCode, '', createBasicFunctions(crudActions, entityName!)].join('\n');
 
     return (
-        <Box>
+        <Box sx={{ overflow: 'hidden', maxHeight: 'calc(100vh - 100px)' }}>
             <CodeEditor
                 style={{ height: '795px', width: '100%' }}
                 language="typescript"

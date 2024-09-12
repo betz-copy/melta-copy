@@ -195,7 +195,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 type: 'UNIQUE',
                 templateId: label,
                 uniqueGroupName: '',
-                properties: properties,
+                properties,
             };
 
             throw new ServiceError(400, `[NEO4J] instance has duplicates on unique properties`, {
@@ -579,6 +579,8 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         duplicatedFromId?: string,
     ) {
+        console.log({ properties });
+
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onCreateEntity)) {
             const actions = await this.buildActionsArray(
                 IEntityCrudAction.onCreateEntity,
@@ -590,8 +592,12 @@ export class EntityManager extends DefaultManagerNeo4j {
             );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const [createdEntity, ...updatedEntities] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            return { createdEntity, updatedEntities, actions };
+            const [createdEntity] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const x = await this.getEntityById(createdEntity.properties._id);
+
+            console.dir({ x }, { depth: null });
+
+            return { createdEntity: x, actions };
         }
 
         return this.neo4jClient
@@ -613,7 +619,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 await Promise.all(activityLogsPromises);
 
-                return { createdEntity, updatedEntities: [] };
+                return { createdEntity };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }
@@ -1006,10 +1012,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1089,6 +1098,8 @@ export class EntityManager extends DefaultManagerNeo4j {
                     }
                 });
 
+                console.log({ entityTemplate });
+
                 await runInTransactionAndNormalize(
                     transaction,
                     `MATCH (e)
@@ -1099,7 +1110,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     {
                         updateParams: {
                             ids: entityIdsToUpdate,
-                            value: addStringFieldsAndNormalizeDateValues(relatedEntitiesChangedValues, entityTemplate),
+                            value: relatedEntitiesChangedValues,
                         },
                     },
                 );
@@ -1289,9 +1300,12 @@ export class EntityManager extends DefaultManagerNeo4j {
             );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const [updatedEntity, ...updatedEntities] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const [updatedEntity] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            console.log(updatedEntity.properties._id);
 
-            return { updatedEntity, updatedEntities, actions };
+            const x = this.getEntityById(updatedEntity.properties._id);
+
+            return { updatedEntity: x, actions };
         }
 
         return this.neo4jClient
@@ -1321,7 +1335,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 );
                 await Promise.all(activityLogsPromises);
 
-                return { updatedEntity, updatedEntities: [] };
+                return { updatedEntity };
             })
             .catch((err) => this.throwServiceErrorIfFailedConstraintsValidation(err)); // constraint validation is performed on end of transaction
     }

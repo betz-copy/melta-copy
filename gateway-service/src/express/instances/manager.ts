@@ -214,7 +214,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
-        const { createdEntity, updatedEntities, actions } = await this.service
+        const { createdEntity, actions } = await this.service
             .createEntityInstance(newInstanceData, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -236,7 +236,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return { createdEntity, updatedEntities };
+        return createdEntity;
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
@@ -372,7 +372,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             properties: newInstanceProperties,
         };
 
-        const { createdEntity, updatedEntities, actions } = await this.service
+        const { createdEntity, actions } = await this.service
             .createEntityInstance(newInstanceData, ignoredRules, userId, id)
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -395,7 +395,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return { createdEntity, updatedEntities };
+        return createdEntity;
     }
 
     checkSerialFieldWasUpdated(
@@ -427,7 +427,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
-        const { updatedEntity, updatedEntities, actions } = await this.service
+        const { updatedEntity, actions } = await this.service
             .updateEntityInstance(
                 id,
                 {
@@ -489,7 +489,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return { updatedEntity, updatedEntities };
+        return updatedEntity;
     }
 
     private async deleteAllEntityFiles(currentEntity: IEntity) {

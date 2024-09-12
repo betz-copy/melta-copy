@@ -12,7 +12,7 @@ import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import CardsView, { CardsViewRef } from './CardsView';
-import { IExportEntitiesBody } from '../../interfaces/entities';
+import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
@@ -39,16 +39,32 @@ const EntitiesPage: React.FC<{
 }) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
+    // console.log(templateTablesViewRef.current!.templateTablesRefs, { templateTablesViewRef });
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({ search: '', viewMode: 'templates-tables-view' });
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);
+    const [updatedEntities, setUpdatedEntities] = useState<IEntity[]>([]);
 
     const queryClient = useQueryClient();
 
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
+
+    useEffect(() => {
+        if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
+            console.log({ updatedEntities });
+
+            updatedEntities.forEach((entity) => {
+                const reference = templateTablesViewRef.current!.templateTablesRefs?.[entity.templateId];
+
+                console.log({ reference });
+
+                if (reference) reference.updateRowDataClientSide(entity);
+            });
+        }
+    }, [updatedEntities]);
 
     useEffect(() => {
         setSearchInput(search || '');
@@ -81,10 +97,8 @@ const EntitiesPage: React.FC<{
 
     const onSearch = (newSearchInput: string) => {
         if (urlSearchParams.get('search') === newSearchInput) {
-            if (isTableView) 
-                templateTablesViewRef.current?.refetch();
-             else 
-                cardsViewRef.current?.refetch();
+            if (isTableView) templateTablesViewRef.current?.refetch();
+            else cardsViewRef.current?.refetch();
         }
 
         setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), search: newSearchInput });
@@ -113,26 +127,22 @@ const EntitiesPage: React.FC<{
                         isLoadingExcel: isLoadingExcelExport,
                     }}
                     onAddEntity={(id?: string) => {
-                        if (id) {                    
-                            const queryKey = isTableView 
+                        if (id) {
+                            const queryKey = isTableView
                                 ? ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput]
                                 : ['searchEntities', templatesToShowCheckbox.map(({ _id }) => _id), searchInput];
-                    
-                            queryClient.invalidateQueries(queryKey)
-                                .finally(() => {
-                                    if (isTableView && templateTablesViewRef.current?.templateTablesRefs?.[id]) {
-                                        templateTablesViewRef.current.templateTablesRefs[id].scrollIntoView();
-                                    }
-                                });
+
+                            queryClient.invalidateQueries(queryKey).finally(() => {
+                                if (isTableView && templateTablesViewRef.current?.templateTablesRefs?.[id]) {
+                                    templateTablesViewRef.current.templateTablesRefs[id].scrollIntoView();
+                                }
+                            });
                         } else {
-                            const queryKey = isTableView 
-                                ? ['filterEmptyTemplateTablesOnGlobalSearch'] 
-                                : ['searchEntities'];
-                            
+                            const queryKey = isTableView ? ['filterEmptyTemplateTablesOnGlobalSearch'] : ['searchEntities'];
+
                             queryClient.resetQueries({ queryKey });
                         }
                     }}
-                    
                     viewModeProps={{
                         viewMode: viewMode as 'templates-tables-view' | 'cards-view',
                         setViewMode: (newViewMode) => setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), viewMode: newViewMode }),
@@ -143,6 +153,7 @@ const EntitiesPage: React.FC<{
                         ref!.refreshServerSide();
                         ref!.scrollIntoView();
                     }}
+                    setUpdatedEntities={setUpdatedEntities}
                 />
             </Box>
 
@@ -153,6 +164,7 @@ const EntitiesPage: React.FC<{
                         templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
                         pageType={pageType}
+                        setUpdatedEntities={setUpdatedEntities}
                     />
                 )}
                 {viewMode === 'cards-view' && (
