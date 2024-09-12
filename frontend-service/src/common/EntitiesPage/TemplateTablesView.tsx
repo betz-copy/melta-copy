@@ -107,7 +107,7 @@ export interface TemplateTablesViewProps {
 
 export interface TemplateTablesViewRef {
     refetch: () => void;
-    templateTablesRefs: Record<string, TemplateTableRef>;
+    templateTablesRefs: Record<string, TemplateTableRef> | undefined;
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(({ templates, searchInput, pageType }, ref) => {
@@ -134,11 +134,11 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
         },
     );
 
-    const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
+    const viewResultsRef = useRef<TemplateTablesViewResultsRef>(null);
 
     useImperativeHandle(ref, () => ({
         refetch: refetchTemplatesFilteredByCount,
-        templateTablesRefs: templateTablesRefs.current,
+        templateTablesRefs: viewResultsRef.current?.templateTablesRefs,
     }));
 
     return (
@@ -150,14 +150,7 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
             )}
             {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount?.length === 0 && <Typography>{i18next.t('noSearchResults')}</Typography>}
             {!isLoadingTemplatesFilteredByCount && templatesFilteredByCount && (
-                <TemplateTablesViewResults
-                    ref={(el) => {
-                        if (el) templateTablesRefs.current = el.templateTablesRefs;
-                    }}
-                    templates={templatesFilteredByCount}
-                    searchInput={searchInput}
-                    pageType={pageType}
-                />
+                <TemplateTablesViewResults ref={viewResultsRef} templates={templatesFilteredByCount} searchInput={searchInput} pageType={pageType} />
             )}
         </Grid>
     );

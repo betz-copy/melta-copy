@@ -12,6 +12,7 @@ import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 export const GlobalSearchBar: React.FC<{
@@ -90,10 +91,41 @@ const EntitiesPageHeadline: React.FC<{
         setViewMode: (newViewMode: 'cards-view' | 'templates-tables-view') => void;
     };
     pageTitle: string;
-}> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle }) => {
+    onAddEntity: (id: string) => void;
+    refreshServerSide: (templateId: string) => void;
+}> = ({
+    searchInput,
+    setSearchInput,
+    onSearch,
+    entityTemplateSelectCheckboxProps,
+    excelExportProps,
+    viewModeProps,
+    pageTitle,
+    onAddEntity,
+    refreshServerSide,
+}) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
+    const onSuccessCreate = (entity: IEntity) => {
+        const handleTemplatesTablesView = () => {
+            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+
+            if (template) {
+                try {
+                    refreshServerSide(template._id);
+                } catch {
+                    onAddEntity(entity.templateId);
+                }
+            }
+        };
+
+        if (viewModeProps.viewMode === 'templates-tables-view') {
+            handleTemplatesTablesView();
+        } else {
+            onAddEntity(entity.properties._id);
+        }
+    };
     return (
         <Grid
             container
@@ -189,6 +221,7 @@ const EntitiesPageHeadline: React.FC<{
                         <AddEntityButton
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            onSuccessCreate={onSuccessCreate}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

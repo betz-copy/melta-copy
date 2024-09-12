@@ -1,4 +1,5 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
+
 import { ServiceError } from '../error';
 
 const GroupBySchema = new mongoose.Schema(
@@ -69,6 +70,7 @@ const GanttItem = new mongoose.Schema(
     { _id: false },
 );
 
+// eslint-disable-next-line import/prefer-default-export
 export const GanttSchema = new mongoose.Schema(
     {
         name: {
@@ -88,7 +90,7 @@ export const GanttSchema = new mongoose.Schema(
     { timestamps: true, versionKey: false },
 );
 
-const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: mongoose.HookNextFunction) => {
+const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: any) => void) => {
     if (error.name === 'MongoError' && error.code === 11000) {
         next(new ServiceError(400, 'gantt with the same name already exists'));
     } else {

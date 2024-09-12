@@ -120,15 +120,15 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const processId: string = await transaction(async (session) => {
             const steps = await this.stepInstanceManager.createStepsInstances(initialSteps, session);
             const processTemplate = await this.processTemplateManager.getProcessTemplateById(process.templateId!, false);
-
+    
             const stepIds = steps
                 .sort((a, b) => processTemplate.steps.indexOf(a.templateId) - processTemplate.steps.indexOf(b.templateId))
                 .map((step) => step._id);
-
+    
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...process, steps: stepIds }], { session });
-            return _id;
+            return _id.toString();
         });
         return this.getProcessById(processId);
     }
@@ -213,7 +213,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
         if (name) query.name = { $regex: escapeRegExp(name) };
-        if (ids) query._id = { $in: ids.map((id) => Types.ObjectId(id)) };
+        if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, limit, skip);

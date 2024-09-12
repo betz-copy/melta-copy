@@ -1,4 +1,4 @@
-import { ClientSession, FilterQuery, Model, Types, connection } from 'mongoose';
+import { connection, ClientSession, Types, Model, PipelineStage, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import { IStepInstance } from '../../express/instances/steps/interface';
@@ -18,7 +18,7 @@ export const getTemplateAggregation = async (model: Model<IProcessInstance> | Mo
     return model.aggregate([
         {
             $match: {
-                _id: Types.ObjectId(id),
+                _id: new Types.ObjectId(id),
             },
         },
         {
@@ -55,7 +55,7 @@ export const getProcessTemplatesByReviewerIdAggregation = async (
     limit: number,
     skip: number,
 ): Promise<IMongoProcessTemplatePopulated[]> => {
-    const aggregationPipeline: FilterQuery<ProcessTemplateDocument>[] = [
+    const aggregationPipeline: PipelineStage[] = [
         { $match: query },
         {
             $lookup: {
@@ -122,7 +122,7 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
     limit: number,
     skip: number,
 ) => {
-    const aggregationPipeline: FilterQuery<ProcessInstanceDocument>[] = [
+    const aggregationPipeline: PipelineStage[] = [
         { $match: query },
         {
             $lookup: {
