@@ -4,7 +4,7 @@ import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated, IMongoEntityTemplate } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
@@ -69,23 +69,24 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
     return { links, nodes: expendedNodes };
 };
 
-export const entityToNode = async (
-    entity: IEntity,
-    entityTemplate: IEntityTemplatePopulated,
-    icons: Map<string, HTMLImageElement>,
-): Promise<NodeObject> => {
+const iconLoadCache: Map<string, Promise<HTMLImageElement>> = new Map();
+
+export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {
-        if (!icons.has(entityTemplate.iconFileId)) {
-            icon = new Image();
-            console.log('hello if', { icons, icon }, 'iconFileId', entityTemplate.iconFileId);
+        if (!iconLoadCache.has(entityTemplate.iconFileId)) {
+            const iconLoadPromise = (async () => {
+                const img = new Image();
 
-            icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+                img.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+                return img;
+            })();
 
-            icons.set(entityTemplate.iconFileId, icon);
-            console.log('hello end', { icons });
-        } else icon = icons.get(entityTemplate.iconFileId);
+            iconLoadCache.set(entityTemplate.iconFileId, iconLoadPromise);
+
+            icon = await iconLoadPromise;
+        } else icon = await iconLoadCache.get(entityTemplate.iconFileId);
     }
 
     return {
@@ -115,8 +116,7 @@ export const expandedEntityToGraphData = async (
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
 ): Promise<GraphData> => {
-    const icons: Map<string, HTMLImageElement> = new Map();
-    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!, icons)];
+    const nodes: NodeObject[] = [await entityToNode(expandedEntity.entity, entityTemplates.get(expandedEntity.entity.templateId)!)];
 
     const links = await Promise.all(
         expandedEntity.connections.map(async ({ sourceEntity, destinationEntity, relationship }) => {
@@ -125,10 +125,10 @@ export const expandedEntityToGraphData = async (
             if (!relationshipTemplate) throw new Error('must have relationship template');
 
             const currSourceEntity = entityTemplates.get(sourceEntity.templateId);
-            if (currSourceEntity) nodes.push(await entityToNode(sourceEntity, currSourceEntity, icons));
+            if (currSourceEntity) nodes.push(await entityToNode(sourceEntity, currSourceEntity));
 
             const currDestinationEntity = entityTemplates.get(destinationEntity.templateId);
-            if (currDestinationEntity) nodes.push(await entityToNode(destinationEntity, currDestinationEntity, icons));
+            if (currDestinationEntity) nodes.push(await entityToNode(destinationEntity, currDestinationEntity));
 
             return relationshipToLink(sourceEntity, destinationEntity, relationshipTemplate);
         }),
