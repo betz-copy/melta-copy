@@ -3,7 +3,7 @@ import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import format from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { IEntity, IEntityCrudAction, IExecutionOutput, isIEntity } from '../../express/entities/interface';
+import { IEntity, IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { ServiceError } from '../../express/error';
 import { EntityValidator } from '../../express/entities/validator.template';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
@@ -17,7 +17,7 @@ const getPopulatedRelationshipReferencesFields = (entity: IEntity) => {
     const manipulatedEntity = JSON.parse(JSON.stringify(entity));
 
     Object.entries(manipulatedEntity.properties).forEach(([name, value]) => {
-        if (isIEntity(value)) manipulatedEntity.properties[name] = value.properties;
+        if (isRelationshipReference(value)) manipulatedEntity.properties[name] = value.properties;
     });
 
     return manipulatedEntity;
@@ -54,9 +54,7 @@ const addDefaultFunctionsToActionCode = (
 const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
     try {
         const context = vm.createContext({ entity: entity.properties });
-
-        // define timeout in order to prevent collapse of the system in case of infinite loop for example: while(true){}
-        vm.runInContext(jsCode, context, { timeout: 10000 });
+        vm.runInContext(jsCode, vm.createContext({ entity: entity.properties }), { timeout: 10000 });
 
         return vm.runInContext('getActions(entity)', context);
     } catch (error) {
@@ -84,7 +82,7 @@ const manipulateOnExecutionOutput = async (
 
     await Promise.all(
         executionOutput.map(async ({ entityId, properties }) => {
-            if (entityId === undefined) throw new ServiceError(400, 'cant create new entity by code');
+            if (!entityId) throw new ServiceError(400, 'cant create new entity by code');
 
             const currentEntity = await entityManager.getEntityByIdInTransaction(entityId, transaction);
             const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
@@ -108,7 +106,7 @@ const manipulateOnExecutionOutput = async (
                     throw new ServiceError(400, "can't change serial number properties");
             });
 
-            await entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
+            entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);
 
             updatedEntities.push(entityAfterManipulations);
         }),
@@ -125,10 +123,10 @@ export const executeActionCodeAndGetEntitiesToUpdate = (
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
     workspaceId: string,
 ): Promise<IExecutionOutput[]> => {
-    const populatedInstances = getPopulatedRelationshipReferencesFields(entity);
+    const fixedEntity = getPopulatedRelationshipReferencesFields(entity);
     const jsCode = addDefaultFunctionsToActionCode(entityTemplate, crudAction, entitiesTemplatesByIds);
 
-    const executionOutput = executeActionCodeInVM(populatedInstances, jsCode);
+    const executionOutput = executeActionCodeInVM(fixedEntity, jsCode);
 
     return manipulateOnExecutionOutput(executionOutput, entity, crudAction, transaction, entitiesTemplatesByIds, workspaceId);
 };

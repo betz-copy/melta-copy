@@ -39,6 +39,7 @@ const TemplateTablesViewResults = forwardRef<
         if (Array.isArray(updatedEntities)) {
             updatedEntities.forEach((entity) => {
                 const reference = templateTablesRefs.current[entity.templateId];
+
                 if (reference) reference.updateRowDataClientSide(entity);
             });
         }

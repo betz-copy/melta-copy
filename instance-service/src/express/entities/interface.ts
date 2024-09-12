@@ -107,7 +107,7 @@ export interface IGetExpandedEntityBody {
     filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
 }
 
-export const isIEntity = (object: any): object is IEntity => {
+export const isRelationshipReference = (object: any): object is IEntity => {
     return (
         typeof object === 'object' &&
         'properties' in object &&

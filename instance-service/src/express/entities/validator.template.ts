@@ -71,7 +71,7 @@ export class EntityValidator extends DefaultController {
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
             if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
-                throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
+                throw new ValidationError(`Entity template doesn't exist (id: "${templateId}")`);
             }
 
             throw getEntityTemplateByIdErr;
@@ -80,7 +80,7 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    async validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
+    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(properties);
 
@@ -94,7 +94,7 @@ export class EntityValidator extends DefaultController {
 
         const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
 
-        await this.validateEntity(entityTemplate, properties);
+        this.validateEntity(entityTemplate, properties);
 
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
