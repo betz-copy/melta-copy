@@ -3,10 +3,9 @@ import menash from 'menashmq';
 import { config } from './config';
 import { Server } from './express/server';
 import logger from './utils/logger/logsLogger';
-import DeleteFilesConsumer from './utils/rabbit/consumer';
+import { declareTopology } from './utils/rabbit';
 
 const { rabbit } = config;
-
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
@@ -17,16 +16,7 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.previewQueue);
 
-    await menash.declareTopology({
-        queues: [{ name: rabbit.deleteUnusedFilesQueue, options: { durable: true, prefetch: 1 } }],
-        consumers: [
-            {
-                queueName: rabbit.deleteUnusedFilesQueue,
-                onMessage: DeleteFilesConsumer.createDeleteFilesQueueReq,
-                options: { noAck: false },
-            },
-        ],
-    });
+    await declareTopology();
 
     logger.info('Rabbit initialized');
 };
