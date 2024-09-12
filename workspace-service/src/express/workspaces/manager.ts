@@ -26,7 +26,7 @@ export class WorkspacesManager {
             path = parentPath;
         }
 
-        queries.unshift({ name: '', path: '/' });
+        if (queries[0].name !== '') queries.unshift({ name: '', path: '/' });
 
         return Promise.all(
             queries.map(async (query) => {
