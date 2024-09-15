@@ -373,6 +373,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 text={i18next.t('workspaces.goBack')}
                                 isDrawerOpen={isDrawerOpen}
                                 onChangeToActive={() => {}}
+                                onClick={() => queryClient.removeQueries('getAllTemplates')}
                             >
                                 <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
                             </NavButton>
