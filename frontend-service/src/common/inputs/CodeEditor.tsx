@@ -25,6 +25,7 @@ export const CodeEditor: React.FC<codeEditorProps> = ({ language, style, value, 
             value={value}
             options={{
                 minimap: { enabled: false },
+                scrollBeyondLastLine: false,
             }}
         />
     );

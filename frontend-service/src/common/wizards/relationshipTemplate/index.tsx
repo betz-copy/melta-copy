@@ -22,7 +22,6 @@ export interface RelationshipTemplateWizardValues {
     displayName: string;
     sourceEntity: IMongoEntityTemplatePopulated;
     destinationEntity: IMongoEntityTemplatePopulated;
-    action?: string;
 }
 
 export const defaultInitialValues: RelationshipTemplateWizardValues = {

@@ -816,7 +816,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
-            entity = actions[numberPart].actionMetadata as IEntity;
+            entity = JSON.parse(JSON.stringify(actions[numberPart].actionMetadata)) as IEntity;
+            entity.properties = { ...entity.properties, ...restOfMetadata.updatedFields };
         } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         if (entity) {

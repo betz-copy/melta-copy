@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import React, { useState } from 'react';
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Grid, IconButton, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { CloseOutlined, Done, ContentCopy } from '@mui/icons-material';
 import { editor } from 'monaco-editor';
@@ -14,6 +14,14 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../i
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
+import { environment } from '../../../../globals';
+import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+
+const {
+    systemManagement: {
+        actions: { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs },
+    },
+} = environment;
 
 const CodeEditorDialog: React.FC<{
     open: boolean;
@@ -27,6 +35,7 @@ const CodeEditorDialog: React.FC<{
     const [validationErrors, setValidationErrors] = useState(false);
     const [isImportUsing, setIsImportUsing] = useState(false);
     const [editorValue, setEditorValue] = useState('');
+    const [closeActionDialog, setCloseActionDialog] = useState(false);
 
     const defaultCode = [
         '/// To throw a custom error in your code, use the following syntax:',
@@ -59,7 +68,7 @@ const CodeEditorDialog: React.FC<{
         },
     );
 
-    const traverseAstAndValidate = (node: ts.Node) => {
+    const traverseAstAndValidate = (node: ts.Node): boolean => {
         let foundImports = false;
 
         const traverseAstRecursive = (nodeAst: ts.Node) => {
@@ -81,9 +90,7 @@ const CodeEditorDialog: React.FC<{
     };
 
     const onValidate = (markers: editor.IMarker[]) => {
-        const unusedPropertyErrorCode = '6133';
-        const noTypeGivenErrorCode = '7044';
-        const filteredMarkers = markers.filter((marker) => marker.code !== unusedPropertyErrorCode && marker.code !== noTypeGivenErrorCode);
+        const filteredMarkers = markers.filter((marker) => marker.code !== unusedPropertyErrorCodeTs && marker.code !== noTypeGivenErrorCodeTs);
         const hasErrorMarkers = filteredMarkers.length > 0;
 
         setValidationErrors(hasErrorMarkers);
@@ -96,67 +103,76 @@ const CodeEditorDialog: React.FC<{
     const mainColor = (theme) => theme.palette.primary.main;
 
     return (
-        <Dialog open={open} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: 'white' } }} disableEnforceFocus>
-            <DialogTitle>
-                <Grid display="flex" flexDirection="row" alignItems="center" gap=".25rem">
-                    <Typography color={mainColor} fontSize="20px" fontWeight="600" fontFamily="Rubik">
-                        {i18next.t('actions.addActions')}
-                    </Typography>
-                    <IconButtonWithPopover
-                        popoverText={i18next.t('systemManagement.entityAction.copyCode')}
-                        iconButtonProps={{
-                            onClick: () => {
-                                navigator.clipboard.writeText(editorValue);
-                                toast.success(i18next.t('systemManagement.entityAction.successCopyCode'));
-                            },
+        <Box>
+            <Dialog open={open} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: 'white' } }} disableEnforceFocus>
+                <DialogTitle>
+                    <Grid display="flex" flexDirection="row" alignItems="center" gap=".25rem">
+                        <Typography color={mainColor} fontSize="20px" fontWeight="600" fontFamily="Rubik">
+                            {i18next.t('actions.addActions')}
+                        </Typography>
+                        <IconButtonWithPopover
+                            popoverText={i18next.t('systemManagement.entityAction.copyCode')}
+                            iconButtonProps={{
+                                onClick: () => {
+                                    navigator.clipboard.writeText(editorValue);
+                                    toast.success(i18next.t('systemManagement.entityAction.successCopyCode'));
+                                },
+                            }}
+                        >
+                            <ContentCopy sx={{ color: mainColor }} />
+                        </IconButtonWithPopover>
+                    </Grid>
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => {
+                            setCloseActionDialog(true);
+                        }}
+                        sx={{
+                            position: 'absolute',
+                            right: 12,
+                            top: 12,
+                            color: mainColor,
                         }}
                     >
-                        <ContentCopy sx={{ color: mainColor }} />
-                    </IconButtonWithPopover>
-                </Grid>
-                <IconButton
-                    aria-label="close"
-                    onClick={async () => {
-                        handleClose();
-                    }}
-                    sx={{
-                        position: 'absolute',
-                        right: 12,
-                        top: 12,
-                        color: mainColor,
-                    }}
-                >
-                    <CloseOutlined />
-                </IconButton>
-            </DialogTitle>
-            <DialogContent>
-                <ActionManagement
-                    entityTemplate={entityTemplate}
-                    onChange={onChange}
-                    onValidate={onValidate}
-                    forbidden={isImportUsing}
-                    value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
-                    setEditorContent={setEditorValue}
-                    defaultCode={defaultCode}
-                    crudActions={['onCreateEntity', 'onUpdateEntity']}
-                />
-            </DialogContent>
-            <DialogActions>
-                <Grid item>
-                    <Button
-                        type="submit"
-                        variant="contained"
-                        disabled={isLoading || validationErrors || isImportUsing}
-                        sx={{ borderRadius: '10px' }}
-                        onClick={saveAction}
-                    >
-                        {i18next.t('wizard.finish')}
-                        {isLoading && <CircularProgress size={20} />}
-                        <Done />
-                    </Button>
-                </Grid>
-            </DialogActions>
-        </Dialog>
+                        <CloseOutlined />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <ActionManagement
+                        entityTemplate={entityTemplate}
+                        onChange={onChange}
+                        onValidate={onValidate}
+                        forbidden={isImportUsing}
+                        value={entityTemplate.actions ? `${defaultCode}\n${entityTemplate.actions}\n` : undefined}
+                        setEditorContent={setEditorValue}
+                        defaultCode={defaultCode}
+                        crudActions={['onCreateEntity', 'onUpdateEntity']}
+                    />
+                </DialogContent>
+                <DialogActions sx={{ padding: '16px' }}>
+                    <Grid item>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            disabled={isLoading || validationErrors || isImportUsing}
+                            sx={{ borderRadius: '10px' }}
+                            onClick={saveAction}
+                        >
+                            {i18next.t('wizard.finish')}
+                            {isLoading && <CircularProgress size={20} />}
+                            <Done />
+                        </Button>
+                    </Grid>
+                </DialogActions>
+            </Dialog>
+            <AreYouSureDialog
+                open={closeActionDialog}
+                handleClose={() => setCloseActionDialog(false)}
+                onYes={handleClose}
+                isLoading={isLoading}
+                body={i18next.t('systemManagement.entityAction.theCodeWillBeDeletedOnClose')}
+            />
+        </Box>
     );
 };
 

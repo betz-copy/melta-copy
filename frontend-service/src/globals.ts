@@ -1246,4 +1246,10 @@ export const environment = {
         urlBase: 'matomo.yesodot.services.idf',
         siteId: 24,
     },
+    systemManagement: {
+        actions: {
+            unusedPropertyErrorCodeTs: '6133',
+            noTypeGivenErrorCodeTs: '7044',
+        },
+    },
 } as const;

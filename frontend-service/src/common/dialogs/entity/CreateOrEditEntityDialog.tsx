@@ -135,31 +135,54 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
+    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
+
         const errorMetadata = err.response?.data?.metadata;
-        if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-            const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
 
-            const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
+        switch (errorMetadata?.errorCode) {
+            case errorCodes.failedConstraintsValidation: {
+                const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
 
-            constraintPropsDisplayNames.forEach((uniqueProp) => {
-                const [propKey, propTitle] = uniqueProp.split('-');
-                setExternalErrors((prev) => ({
-                    ...prev,
-                    unique: {
-                        ...prev.unique,
-                        [propKey]: `${i18next.t(
-                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                        )} ${propTitle}`,
-                    },
-                }));
-            });
+                const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
+
+                constraintPropsDisplayNames.forEach((uniqueProp) => {
+                    const [propKey, propTitle] = uniqueProp.split('-');
+
+                    setExternalErrors((prev) => ({
+                        ...prev,
+                        unique: {
+                            ...prev.unique,
+                            [propKey]: `${i18next.t(
+                                `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                            )} ${propTitle}`,
+                        },
+                    }));
+                });
+                break;
+            }
+
+            case errorCodes.actionsCustomError:
+                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
+                break;
+
+            case errorCodes.ruleBlock: {
+                const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
+                setCreateOrUpdateWithRuleBreachDialogState!({
+                    isOpen: true,
+                    brokenRules,
+                    rawBrokenRules,
+                    newEntityData,
+                    actions,
+                    rawActions,
+                });
+                break;
+            }
+
+            default:
+                break;
         }
-
-        if (errorMetadata?.errorCode === errorCodes.actionsCustomError) setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
-
-        return errorMetadata;
     };
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
@@ -170,20 +193,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (onSuccessUpdate) onSuccessUpdate(data);
             },
             onError: (err: AxiosError, { newEntityData }) => {
-                const errorMetadata = handleMutationError(err, entityTemplate);
-
-                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
-
-                    setCreateOrUpdateWithRuleBreachDialogState!({
-                        isOpen: true,
-                        brokenRules,
-                        rawBrokenRules,
-                        newEntityData,
-                        actions,
-                        rawActions,
-                    });
-                }
+                handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );
@@ -195,26 +205,12 @@ const CreateOrEditEntityDetails: React.FC<{
             createEntityRequest(newEntityData, ignoredRules),
         {
             onSuccess: (currEntity: IEntity) => {
-                console.log({ currEntity });
-
                 onSuccessCreate?.(currEntity);
                 onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
             },
             onError: (err: AxiosError, { newEntityData }) => {
-                const errorMetadata = handleMutationError(err, entityTemplate);
-                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
-
-                    setCreateOrUpdateWithRuleBreachDialogState!({
-                        isOpen: true,
-                        brokenRules,
-                        rawBrokenRules,
-                        newEntityData,
-                        actions,
-                        rawActions,
-                    });
-                }
+                handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );

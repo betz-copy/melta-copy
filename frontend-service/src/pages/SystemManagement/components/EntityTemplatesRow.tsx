@@ -156,6 +156,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     })
                                 }
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
+                                onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
@@ -163,9 +164,6 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     isDisabled: entityTemplate.disabled,
                                     canEdit: entityTemplate.disabled,
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
-                                }}
-                                onAddActionsClick={() => {
-                                    setAddActionsDialogState({ isWizardOpen: true, entityTemplate });
                                 }}
                             />
                         )}

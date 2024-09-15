@@ -232,7 +232,8 @@ export default {
             successCopyCode: 'הקוד הועתק בהצלחה',
             successUpdateAction: 'הוספת פעולה לישות בוצעה בהצלחה',
             failedUpdateAction: 'הוספת פעולה לישות נכשלה',
-            cantImport: 'אין אפשרות להשתמש ב',
+            cantUseIn: 'אין אפשרות להשתמש ב',
+            theCodeWillBeDeletedOnClose: 'בעת סגירה הקוד ימחק ויחזור למצבו הקודם',
         },
     },
     error: {
