@@ -472,19 +472,20 @@ export const searchWithRelationshipsToNeoQuery = (
             ${searchNeoQuery.cypherQuery}
         }
         
-        WITH *, $showRelationshipsPerTemplate[labels(node)[0]] as showRelationships
-        WITH *, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
+        WITH node, $showRelationshipsPerTemplate[labels(node)[0]] as showRelationships
+        WITH node, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
         
         OPTIONAL MATCH (node)-[relationship]-(otherEntity)
         WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
 
-        WITH node, CASE
+        WITH node, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
+        WITH node, relationships, otherEntities, CASE
         WHEN NOT shouldShowRelationships THEN NULL
-        WHEN relationship is NULL then []
-        ELSE collect({relationship: relationship, otherEntity: otherEntity})
-        END as relationships
+        WHEN size(relationships) = 0 then []
+        ELSE [i IN range(0, size(relationships) - 1) | {relationship: relationships[i], otherEntity: otherEntities[i]}]
+        END as relationshipsList
 
-        RETURN node, relationships
+        RETURN node, relationshipsList AS relationships
         `,
         parameters: {
             ...searchNeoQuery.parameters,

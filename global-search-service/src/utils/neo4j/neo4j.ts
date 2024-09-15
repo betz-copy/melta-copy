@@ -1,4 +1,4 @@
-import neo4j, { Driver, Neo4jError, Session, SessionMode } from 'neo4j-driver';
+import neo4j, { Driver, Neo4jError, Session, SessionMode, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 import config from '../../config';
 import logger from '../logger/logsLogger';
@@ -6,6 +6,7 @@ import logger from '../logger/logsLogger';
 const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
 
 type TransactionType = 'writeTransaction' | 'readTransaction';
+type TransactionWork<T> = (tx: Transaction) => Promise<T> | T;
 
 export default class Neo4jClient {
     private static driver: Driver;
@@ -80,6 +81,21 @@ export default class Neo4jClient {
 
     private async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters: Record<string, any>) {
         return this.wrapDBNotExistsError((session) => session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
+    }
+
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>, dryRun = false) {
+        return this.wrapDBNotExistsError(
+            async (session) => {
+                const trx = session.beginTransaction();
+                const result = await transactionWork(trx);
+
+                if (dryRun) await trx.rollback();
+                else await trx.commit();
+
+                return result;
+            },
+            transactionType === 'readTransaction' ? 'READ' : 'WRITE',
+        );
     }
 
     static async close() {

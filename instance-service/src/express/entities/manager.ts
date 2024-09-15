@@ -187,7 +187,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 type: 'UNIQUE',
                 templateId: label,
                 uniqueGroupName: '',
-                properties: properties,
+                properties,
             };
 
             throw new ServiceError(400, `[NEO4J] instance has duplicates on unique properties`, {
@@ -413,7 +413,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         let latestIndex: string | null = null;
 
         if (searchBody.textSearch) {
-            latestIndex = await getLatestTemplateSearchIndex(this.workspaceId, entityTemplate._id);
+            latestIndex = await getLatestTemplateSearchIndex(this.workspaceId, entityTemplate._id); // TODO: yona - remove redis usage
 
             if (!latestIndex) {
                 throw new ServiceError(400, `[NEO4J] Global search index not found.`);
@@ -435,6 +435,9 @@ export class EntityManager extends DefaultManagerNeo4j {
             latestIndex,
             new Map([[entityTemplate._id, entityTemplate]]),
         );
+
+        console.log(searchCypherQuery);
+
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(
             searchBodyOfTemplate,
             latestIndex,
@@ -1140,7 +1143,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getConstraintsOfTemplate(templateId: string) {
-        const constraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const constraints = await this.neo4jClient.readTransaction('show constraints', normalizeGetDbConstraints);
         const constraintsArrayOfTemplate = constraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
@@ -1152,7 +1155,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getAllConstraints() {
-        const neo4jConstraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const neo4jConstraints = await this.neo4jClient.readTransaction('show constraints', normalizeGetDbConstraints);
         const constraints = neo4jConstraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
@@ -1211,9 +1214,9 @@ export class EntityManager extends DefaultManagerNeo4j {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             await transaction
                 .run(
-                    `CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT exists(n.\`${constraint.property}${
+                    `CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (n.\`${constraint.property}${
                         template.properties.properties[constraint.property].format === 'relationshipReference' ? '.properties._id_reference' : ''
-                    }\`)`,
+                    }\`) IS NOT NULL`,
                 )
                 .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
@@ -1261,7 +1264,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
 
             await transaction
-                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
+                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (${propsPart}) IS NODE KEY`)
                 .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
 
@@ -1278,7 +1281,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         uniqueConstraints: IUniqueConstraintOfTemplate[],
     ) {
         return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
+            const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'show constraints', normalizeGetDbConstraints);
 
             const updateConstraintsPromises: Promise<any>[] = [];
 
