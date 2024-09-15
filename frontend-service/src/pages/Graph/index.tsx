@@ -74,7 +74,7 @@ const Graph: React.FC = () => {
     const [load, setLoad] = useState<boolean>(false);
     const reload = () => setLoad(!load);
     const [is3DGraph, setIs3DGraph] = useLocalStorage(graphSettings.is3DViewLocalStorageKey, false);
-    const [initialExpandedEntity, setInitialExpandedEntity] = useState<{ entity?: IEntityExpanded; menu?: boolean }>();
+    const [initialExpandedEntity, setInitialExpandedEntity] = useState<{ entity?: IEntityExpanded; expand?: boolean }>();
     const [currentBatchIndex, setCurrentBatchIndex] = useState<number>(0);
     const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -96,10 +96,11 @@ const Graph: React.FC = () => {
     }, []);
 
     const resetGraph = (data?: IEntityExpanded, resetData?: true) => {
-        setInitialExpandedEntity({ entity: data, menu: false });
-        setCurrentBatchIndex(0);
-
-        if (resetData) setGraphData({ nodes: [], links: [] });
+        setInitialExpandedEntity({ entity: data, expand: !resetData });
+        if (resetData) {
+            setGraphData({ nodes: [], links: [] });
+            setCurrentBatchIndex(0);
+        }
     };
 
     const graphEntityTemplateIds = uniqBy(graphData.nodes as INodeObject[], ({ templateId }) => templateId).map((element) => element.templateId);
@@ -127,7 +128,7 @@ const Graph: React.FC = () => {
         ...JSON.parse(searchParams.get('expandedEntities')!),
     };
 
-    const { refetch: getExpandedEntityById } = useQuery<IEntityExpanded>(
+    const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(
         [
             'getExpandedEntity',
             entityId,
@@ -155,52 +156,58 @@ const Graph: React.FC = () => {
 
     const createGraphData = async () => {
         let expandedEntity = initialExpandedEntity?.entity;
-        const { data } = await getExpandedEntityById();
-        const startIndex = currentBatchIndex * BatchSize;
-        setIsLoading(data !== undefined);
-
-        if (data && data.connections.length !== initialExpandedEntity?.entity?.connections.length) {
-            expandedEntity = data;
+        if (!initialExpandedEntity?.expand) {
+            const { data } = await getExpandedEntityById();
+            if (data && data.connections.length !== initialExpandedEntity?.entity?.connections.length) expandedEntity = data;
         }
 
+        setIsLoading(expandedEntity !== undefined);
+
+        const nextBatch = currentBatchIndex + BatchSize;
         let expandedEntityGraphData = await expandedEntityToGraphData(
             {
                 ...expandedEntity,
-                connections: expandedEntity?.connections?.slice(startIndex, startIndex + BatchSize) ?? [],
+                connections:
+                    expandedEntity?.connections?.slice(
+                        currentBatchIndex,
+                        nextBatch > expandedEntity!.connections.length ? expandedEntity!.connections.length : nextBatch,
+                    ) ?? [],
                 entity: expandedEntity!.entity,
             },
             entityTemplates,
             relationshipTemplates,
         );
 
-        if (!initialExpandedEntity?.menu) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
+        if (initialExpandedEntity?.expand) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
 
-        (expandedEntityGraphData.nodes as INodeObject[]).find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
+        const currEntityExpand = (expandedEntityGraphData.nodes as INodeObject[]).find((node) => node.id === entityId);
+        if (currEntityExpand) currEntityExpand.numberOfConnectionsExpanded++;
 
         return { expandedEntityGraphData, expandedEntity };
     };
 
     const loadNextBatch = async () => {
         const { expandedEntityGraphData, expandedEntity } = await createGraphData();
+
         const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
 
         addNewGraphData(expandedEntityGraphData);
         setShouldZoomToFit(shouldZoom);
 
-        const index = currentBatchIndex * BatchSize;
+        const nextBatch = currentBatchIndex + BatchSize;
 
-        if (index < expandedEntity!.connections.length && ((is3DGraph && index < limit3DConnections) || !is3DGraph))
-            if (currentBatchIndex + BatchSize > expandedEntity!.connections.length) setCurrentBatchIndex(currentBatchIndex % index);
-            else setCurrentBatchIndex(currentBatchIndex + BatchSize);
+        if (currentBatchIndex < expandedEntity!.connections.length && ((is3DGraph && currentBatchIndex < limit3DConnections) || !is3DGraph))
+            if (nextBatch > expandedEntity!.connections.length) setCurrentBatchIndex(expandedEntity!.connections.length);
+            else setCurrentBatchIndex(nextBatch);
         else {
             setIsLoading(false);
-            if (is3DGraph && index < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
+            if (is3DGraph && currentBatchIndex < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
         }
     };
 
     useEffect(() => {
         loadNextBatch();
-    }, [currentBatchIndex, initialExpandedEntity?.menu, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
+    }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -260,13 +267,6 @@ const Graph: React.FC = () => {
         },
     };
     const getGraph = () => {
-        if (!graphData.nodes.length)
-            return (
-                <Box display="flex" justifyContent="center" alignContent="center" height="100%">
-                    <CircularProgress size={80} />
-                </Box>
-            );
-
         if (is3DGraph) {
             return (
                 <ForceGraph3D
@@ -341,9 +341,6 @@ const Graph: React.FC = () => {
 
     return (
         <Box ref={ref} position="relative" height="100%" width="100%">
-            <Backdrop open={isLoading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
-                <CircularProgress />
-            </Backdrop>
             <GraphTopBar
                 entityId={entityId}
                 filteredEntityTemplates={filteredEntityTemplates}
@@ -385,6 +382,9 @@ const Graph: React.FC = () => {
                         openFilter={openFilter}
                     />
                 </Box>
+                <Backdrop open={(isLoading || !graphData.nodes.length) && !error} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                    <CircularProgress />
+                </Backdrop>
                 {openFilter && (
                     <Button
                         sx={{

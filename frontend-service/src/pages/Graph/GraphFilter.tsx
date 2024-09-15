@@ -254,7 +254,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             padding: '15px',
                             marginRight: '7px',
                         }}
-                        component="body"
                         variant="body1"
                     >
                         {i18next.t('graph.filterEntity')}
