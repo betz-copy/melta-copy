@@ -84,8 +84,6 @@ const manipulateOnExecutionOutput = async (
 
     await Promise.all(
         executionOutput.map(async ({ entityId, properties }) => {
-            console.log('updated properties', { properties });
-
             if (!entityId) throw new ServiceError(400, 'cant create new entity by code');
 
             const currentEntity = await entityManager.getEntityByIdInTransaction(entityId, transaction);
@@ -97,7 +95,6 @@ const manipulateOnExecutionOutput = async (
 
             Object.entries(currentEntityTemplate.properties.properties).forEach(([name, value]) => {
                 if (!(name in properties)) return;
-                console.log('here', value.serialCurrent);
 
                 const propertyValue = properties[name];
 
@@ -108,8 +105,8 @@ const manipulateOnExecutionOutput = async (
                 if (value.format === 'date' && isDate(propertyValue))
                     entityAfterManipulations.properties[name] = formatDate(propertyValue, 'yyyy-MM-dd');
 
-                // if (value.serialCurrent && value.serialCurrent - 1 !== propertyValue)
-                //     throw new ServiceError(400, "can't change serial number properties");
+                if (value.serialCurrent && currentEntity.properties[name] !== propertyValue)
+                    throw new ServiceError(400, "can't change serial number properties");
             });
 
             entityValidator.validateEntity(currentEntityTemplate, entityAfterManipulations.properties);

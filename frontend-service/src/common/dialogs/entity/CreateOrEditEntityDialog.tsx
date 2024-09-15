@@ -170,18 +170,9 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (onSuccessUpdate) onSuccessUpdate(data);
             },
             onError: (err: AxiosError, { newEntityData }) => {
-                console.log({ err });
-
                 const errorMetadata = handleMutationError(err, entityTemplate);
 
-                if (onSuccessUpdate) {
-                    toast.error(errorMetadata?.message);
-                    return;
-                }
-
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    console.log('hi');
-
                     const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
 
                     setCreateOrUpdateWithRuleBreachDialogState!({

@@ -579,8 +579,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        console.log({ properties });
-
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onCreateEntity)) {
             const actions = await this.buildActionsArray(
                 IEntityCrudAction.onCreateEntity,
@@ -592,12 +590,11 @@ export class EntityManager extends DefaultManagerNeo4j {
             );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const [createdEntity] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const x = await this.getEntityById(createdEntity.properties._id);
 
-            console.dir({ x }, { depth: null });
+            const [{ properties: createdEntityProperties }] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const createdEntity = await this.getEntityById(createdEntityProperties._id);
 
-            return { createdEntity: x, actions };
+            return { createdEntity, actions };
         }
 
         return this.neo4jClient
@@ -1300,12 +1297,11 @@ export class EntityManager extends DefaultManagerNeo4j {
             );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            const [updatedEntity] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            console.log(updatedEntity.properties._id);
 
-            const x = this.getEntityById(updatedEntity.properties._id);
+            const [{ properties }] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const updatedEntity = await this.getEntityById(properties._id);
 
-            return { updatedEntity: x, actions };
+            return { updatedEntity, actions };
         }
 
         return this.neo4jClient

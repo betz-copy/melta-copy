@@ -796,6 +796,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         await Promise.all(
             Object.entries(entityTemplate.properties.properties).map(async ([name, value]) => {
                 const propertyValue = properties[name];
+
                 if (value.format === 'relationshipReference' && propertyValue) {
                     populatedProperties[name] = await this.instancesService.getEntityInstanceById(propertyValue).catch(() => null);
                 }
