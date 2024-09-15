@@ -126,22 +126,6 @@ const {
 // });
 // };
 
-const getJewishDateWithTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const { day, monthName, year } = toHebrewJewishDate(toJewishDate(date));
-
-    return `${day} ב${monthName} ${year}`;
-};
-
-const getHebrewDateWithTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return `${new Intl.DateTimeFormat('he', {
-        month: 'long',
-        day: 'numeric',
-        year: 'numeric',
-    }).format(date)}`;
-};
-
 const getJewishDate = (dateStr: string) => {
     const { day, monthName, year } = toHebrewJewishDate(toJewishDate(new Date(dateStr)));
 
@@ -210,7 +194,7 @@ const isDateWithoutTime = (strDate: string): boolean => {
  * @param {IEntity} entity - The entity containing properties to be converted into patches.
  * @returns {Record<string, IPatch>} - A record of patches created from the entity's properties.
  */
-const createPatchesFromEntity = (properties: IEntity['properties'], patchesToDelete: string[] = []): Record<string, IPatch> => {
+const createPatchesFromEntity = (properties: IEntity['properties']): Record<string, IPatch> => {
     const patches: Record<string, IPatch> = {};
 
     // Extract keys of properties that are date strings
@@ -222,13 +206,8 @@ const createPatchesFromEntity = (properties: IEntity['properties'], patchesToDel
     const propertiesWithHebrewDates = datePropertyKeys.reduce(
         (acc, datePropertyKey) => {
             const dateValue = properties[datePropertyKey];
-            if (isDateWithTime(dateValue)) {
-                acc[`${datePropertyKey}${jewishDateIndicator}`] = getJewishDateWithTime(dateValue);
-                acc[`${datePropertyKey}${hebrewDateIndicator}`] = getHebrewDateWithTime(dateValue);
-            } else {
-                acc[`${datePropertyKey}${jewishDateIndicator}`] = getJewishDate(dateValue);
-                acc[`${datePropertyKey}${hebrewDateIndicator}`] = getHebrewDate(dateValue);
-            }
+            acc[`${datePropertyKey}${jewishDateIndicator}`] = getJewishDate(dateValue);
+            acc[`${datePropertyKey}${hebrewDateIndicator}`] = getHebrewDate(dateValue);
             return acc;
         },
         { ...properties },
@@ -240,20 +219,13 @@ const createPatchesFromEntity = (properties: IEntity['properties'], patchesToDel
         let formattedValue = trimmedValue;
 
         if (typeof trimmedValue === 'string' && isDateWithTime(trimmedValue))
-            formattedValue = `${new Date(formattedValue).toLocaleDateString('uk')}, ${new Date(formattedValue).toLocaleTimeString('uk')}`;
+            formattedValue = `${new Date(formattedValue).toLocaleDateString('he')}, ${new Date(formattedValue).toLocaleTimeString('he')}`;
         if (typeof trimmedValue === 'boolean') formattedValue = formattedValue ? 'כן' : 'לא';
         if (Array.isArray(trimmedValue)) formattedValue = trimmedValue.join(', ');
 
         patches[key] = {
             type: PatchType.PARAGRAPH,
             children: [new TextRun(String(formattedValue))],
-        };
-    });
-
-    patchesToDelete.forEach((patch) => {
-        patches[patch] = {
-            type: PatchType.PARAGRAPH,
-            children: [new TextRun('')],
         };
     });
 
@@ -264,13 +236,7 @@ const arePatchesEqual = (firstPatchDocument: Uint8Array, secondPatchDocument: Ui
     firstPatchDocument.toString() === secondPatchDocument.toString();
 
 export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties: IEntity['properties']) => {
-    const patches = createPatchesFromEntity(
-        properties,
-        (await mammoth.extractRawText({ buffer: arrayBuffer as unknown as Buffer })).value
-            .match(/{{.*?}}/g)
-            ?.map((patch) => patch.replace(/{{|}}/g, ''))
-            ?.filter((patch) => !(patch in properties)),
-    );
+    const patches = createPatchesFromEntity(properties);
 
     // Due to the fact that 'patchDocument' function can patch only one instance of a string per patch,
     // we need to check if the document can no longer change with the patches
@@ -286,6 +252,22 @@ export const patchDocumentAsStream = async (arrayBuffer: ArrayBuffer, properties
         patchedDocument = newPatchedDocument;
         // eslint-disable-next-line no-await-in-loop
         newPatchedDocument = await patchDocument(patchedDocument, { patches, keepOriginalStyles: true });
+    }
+
+    // Extract keys to delete from the document by matching the pattern {{.*?}} in the raw text
+    // ? don't ask about the buffer that gets an arrayBuffer, this lib is stupid
+    const keysToDelete = (await mammoth.extractRawText({ buffer: arrayBuffer as unknown as Buffer })).value
+        .match(/{{.*?}}/g) // Match all occurrences of {{key}} in the document
+        ?.map((patch) => patch.replace(/{{|}}/g, '')) // Remove the curly braces from the matched keys
+        ?.filter((patch) => !(patch in properties)); // Filter out keys that are present in the properties
+
+    if (keysToDelete) {
+        // Create new patches to delete the keys
+        const emptyPatches: Record<string, IPatch> = Object.fromEntries(
+            keysToDelete?.map((patch) => [patch, { type: PatchType.PARAGRAPH, children: [new TextRun('')] }]),
+        );
+        // Apply the new patches to the document
+        patchedDocument = await patchDocument(patchedDocument, { patches: emptyPatches, keepOriginalStyles: true });
     }
 
     return Buffer.from(patchedDocument);

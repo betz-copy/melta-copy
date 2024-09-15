@@ -58,6 +58,7 @@ export const config = {
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
         previewQueue: env.get('PREVIEW_QUEUE_NAME').default('preview-queue').asString(),
+        deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
     },
     document: {
         previewPrefix: env.get('DOCUMENT_PREVIEW_PREFIX').default('preview').asString(),
