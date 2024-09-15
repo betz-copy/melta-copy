@@ -1,3 +1,4 @@
+import { NotificationType } from './notifications';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -8,6 +9,7 @@ export interface IBaseUser {
     mail: string;
     preferences: {
         darkMode?: boolean;
+        mailsNotificationsTypes?: NotificationType[];
     };
     externalMetadata: {
         kartoffelId: string;

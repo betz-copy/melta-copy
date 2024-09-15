@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
+import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import { UserService } from '../../externalServices/userService';
 import {
     ICompactNullablePermissions,
@@ -61,8 +62,12 @@ export class UsersManager {
         });
     }
 
-    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
+    static async updateUser(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
         return UserService.updateUser(userId, { externalMetadata });
+    }
+
+    static async updateUserExternalMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
+        return UserService.updateUser(userId, { preferences });
     }
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {

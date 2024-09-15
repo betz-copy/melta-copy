@@ -28,6 +28,9 @@ const UserSchema = new mongoose.Schema(
             darkMode: {
                 type: Boolean,
             },
+            mailsNotificationsTypes: {
+                type: [],
+            },
         },
         externalMetadata: {
             kartoffelId: {

@@ -1,10 +1,10 @@
-import { Box, Button, Dialog, DialogActions, Grid, Tab, useTheme } from '@mui/material';
+import { Box, Dialog, Grid, Tab, useTheme } from '@mui/material';
 import _isEqual from 'lodash.isequal';
 import React, { ReactElement } from 'react';
 import i18next from 'i18next';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useTour } from '@reactour/tour';
-import { useLocation } from 'wouter';
+// import { useTour } from '@reactour/tour';
+// import { useLocation } from 'wouter';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MyPermissions from './myPermissions';
@@ -18,14 +18,14 @@ const PermissionsOfUserDialog: React.FC<{
 }> = ({ isOpen, handleClose, mode, existingUser }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
-    const { setIsOpen, setCurrentStep } = useTour();
-    const [_, navigate] = useLocation();
+    // const { setIsOpen, setCurrentStep } = useTour();
+    // const [_, navigate] = useLocation();
 
     const [tabValue, setTabValue] = React.useState('myPermissions');
 
     const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
         myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
-        myAccount: <MyAccount />,
+        myAccount: <MyAccount existingUser={existingUser} />,
     };
 
     return (

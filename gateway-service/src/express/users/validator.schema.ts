@@ -2,10 +2,38 @@ import joi from 'joi';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { MongoIdSchema } from '../../utils/joi';
 
+export const partialSchema = (schema: joi.ObjectSchema) => {
+    const keys = Object.keys(schema.describe().keys);
+
+    return schema.fork(keys, (keySchema) =>
+        keySchema.describe().type === 'object' ? partialSchema(keySchema as joi.ObjectSchema) : keySchema.optional(),
+    );
+};
 const UserExternalMetadataSchema = joi.object({
     kartoffelId: joi.string().required(),
     digitalIdentitySource: joi.string().required(),
 });
+export const baseUserSchema = joi.object({
+    preferences: joi
+        .object({
+            darkMode: joi.boolean(),
+            // mailsNotificationsTypes: joi.array().items(NotificationType),
+            mailsNotificationsTypes: joi.array().items(joi.string()),
+        })
+        .required(),
+    // fullName: joi.string().required(),
+    // jobTitle: joi.string().required(),
+    // hierarchy: joi.string().required(),
+    // mail: joi.string().required(),
+
+    // externalMetadata: joi
+    //     .object({
+    //         kartoffelId: joi.string().required(),
+    //         digitalIdentitySource: joi.string().required(),
+    //     })
+    //     .required(),
+});
+export const partialBaseUserSchema = partialSchema(baseUserSchema);
 
 // GET /api/users/my
 export const getMyUserRequestSchema = joi.object({
@@ -43,6 +71,15 @@ export const createUserRequestSchema = joi.object({
         permissions: joi.object(),
     }).required(),
     params: {},
+});
+
+// PATCH /api/users/:id
+export const updateUserRequestSchema = joi.object({
+    query: {},
+    body: partialBaseUserSchema.required(),
+    params: {
+        userId: joi.string().required(),
+    },
 });
 
 // PATCH /api/users/:userId/external

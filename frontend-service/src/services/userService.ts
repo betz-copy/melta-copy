@@ -26,6 +26,11 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
     return data;
 };
 
+export const updateUserRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
+    const { data } = await axios.patch<IUser>(`${users}/${userId}`, { kartoffelId, digitalIdentitySource });
+    return data;
+};
+
 export const updateUserExternalMetadataRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
     const { data } = await axios.patch<IUser>(`${users}/${userId}/externalMetadata`, { kartoffelId, digitalIdentitySource });
     return data;

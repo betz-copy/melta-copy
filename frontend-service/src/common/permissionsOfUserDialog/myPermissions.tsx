@@ -361,9 +361,9 @@ const MyPermissions: React.FC<{
                                         <Button
                                             onClick={() => {
                                                 handleClose();
-                                                setIsOpen(true);
-                                                setCurrentStep(0);
-                                                navigate('?search=&viewMode=templates-tables-view');
+                                                // setIsOpen(true);
+                                                // setCurrentStep(0);
+                                                // navigate('?search=&viewMode=templates-tables-view');
                                             }}
                                         >
                                             {i18next.t('showTour')}
@@ -372,7 +372,7 @@ const MyPermissions: React.FC<{
                                 </Grid>
                                 <Grid>
                                     {/* <Button onClick={handleClose} autoFocus>
-                                        {/* // disabled={formikProps.isSubmitting}> 
+                                        {/* // disabled={formikProps.isSubmitting}>
                                         {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
                                     </Button> */}
                                     {mode !== 'view' && (

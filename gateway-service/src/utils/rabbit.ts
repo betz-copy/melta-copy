@@ -3,6 +3,8 @@ import config from '../config';
 import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
 import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
+import { UsersManager } from '../express/users/manager';
+import { IUser } from '../externalServices/userService/interfaces/users';
 
 const {
     rabbit,
@@ -20,8 +22,21 @@ export class RabbitManager {
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
-        const mailData = await new MailManager(this.workspaceId).createMail({ viewers, type, populatedMetaData });
+        const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
+        console.log({ viewers }, { filteredViewers });
+        if (filteredViewers.length > 0) {
+            const mailData = await new MailManager(this.workspaceId).createMail({ viewers: filteredViewers, type, populatedMetaData });
+            await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+        }
+    }
 
-        await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+    async filterViewers(viewersId: string[], type: NotificationType) {
+        const viewers: Promise<IUser>[] = viewersId.map(async (viewerId: string) => {
+            return UsersManager.getUserById(viewerId);
+        });
+        const viewersData: IUser[] = await Promise.all(viewers);
+        console.log({ viewersData });
+
+        return viewersData.filter((viewer: IUser) => viewer.preferences.mailsNotificationsTypes?.includes(type));
     }
 }

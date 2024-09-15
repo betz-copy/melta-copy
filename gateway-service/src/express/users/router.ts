@@ -11,6 +11,7 @@ import {
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
+    updateUserRequestSchema,
 } from './validator.schema';
 
 export const usersRouter: Router = Router();
@@ -26,6 +27,7 @@ usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapContr
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
 
+usersRouter.patch('/:userId', ValidateRequest(updateUserRequestSchema), wrapController(UsersController.updateUser));
 usersRouter.patch(
     '/:userId/external',
     ValidateRequest(updateUserExternalMetadataRequestSchema),

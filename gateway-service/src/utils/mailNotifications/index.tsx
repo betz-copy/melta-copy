@@ -2,7 +2,6 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
-import { UsersManager } from '../../express/users/manager';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
@@ -33,6 +32,7 @@ import {
     IProcessStatusUpdateMailNotificationMetadataPopulated,
 } from './interfaces';
 import { mailConfig } from './mailConfig';
+import { IUser } from '../../externalServices/userService/interfaces/users';
 
 const { mailTitle } = mailConfig;
 const {
@@ -409,12 +409,9 @@ export class MailManager {
         }
     }
 
-    async createMail({ viewers: viewersId, type, populatedMetaData }: IMailNotification) {
-        const viewersMailPromises = viewersId.map(async (viewerId: string) => {
-            const viewer = await UsersManager.getUserById(viewerId);
-            return viewer.mail;
-        });
-        const viewersMail = await Promise.all(viewersMailPromises);
+    async createMail({ viewers, type, populatedMetaData }: IMailNotification) {
+        const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
+        // const viewersMail = await Promise.all(viewersMailPromises);
         const title = mailTitle[type];
 
         const html = renderToString(await this.getMailHtml(type, populatedMetaData));
