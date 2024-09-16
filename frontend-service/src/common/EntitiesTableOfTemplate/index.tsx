@@ -131,6 +131,7 @@ export { getRowModelProps };
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
+    entities: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -174,6 +175,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
+            entities,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -288,7 +290,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
+            () => getRowModelProps(rowModelType, template, entities, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
             [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 

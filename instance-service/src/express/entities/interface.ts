@@ -1,5 +1,6 @@
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 export interface IEntity {
     templateId: string;
@@ -87,6 +88,10 @@ export interface ISearchEntitiesOfTemplateBody {
     sort: ISearchSort;
 }
 
+export interface ISearchEntitiesByYemplates {
+    [templateId: string]: { searchBody: ISearchEntitiesOfTemplateBody; entityTemplate: IMongoEntityTemplate };
+}
+
 export interface ISearchBatchBody {
     skip: number;
     limit: number;
@@ -109,7 +114,7 @@ export interface IGetExpandedEntityBody {
 
 export enum RunRuleReason {
     dependentViaAggregation = 'dependentViaAggregation',
-    dependentOnEntity = 'dependentOnEntity'
+    dependentOnEntity = 'dependentOnEntity',
 }
 
 // reasons which rules to run on each entity
