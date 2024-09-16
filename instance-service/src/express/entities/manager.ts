@@ -28,7 +28,6 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
 import { NotFoundError, ServiceError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -410,16 +409,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
-        let latestIndex: string | null = null;
-
-        if (searchBody.textSearch) {
-            latestIndex = await getLatestTemplateSearchIndex(this.workspaceId, entityTemplate._id); // TODO: yona - remove redis usage
-
-            if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
-            }
-        }
-
         const searchBodyOfTemplate: ISearchBatchBody = {
             skip: searchBody.skip,
             limit: searchBody.limit,
@@ -430,20 +419,11 @@ export class EntityManager extends DefaultManagerNeo4j {
             sort: searchBody.sort,
         };
 
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(
-            searchBodyOfTemplate,
-            latestIndex,
-            new Map([[entityTemplate._id, entityTemplate]]),
-        );
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
 
         console.log(searchCypherQuery);
 
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(
-            searchBodyOfTemplate,
-            latestIndex,
-            new Map([[entityTemplate._id, entityTemplate]]),
-            true,
-        );
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]), true);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
@@ -471,17 +451,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
-        let latestIndex: string | null = null;
-        if (searchBody.textSearch) {
-            latestIndex = await getLatestGlobalSearchIndex(this.workspaceId);
-
-            if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
-            }
-        }
-
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap);
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap);
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),

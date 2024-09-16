@@ -7,11 +7,7 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: {
-        globalSearchIndexes: [primaryGlobalSearchIndex],
-        templateSearchIndexPrefixes: [primaryTemplateSearchIndexPrefix],
-        stringPropertySuffix,
-    },
+    neo4j: { globalSearchIndexes: primaryGlobalSearchIndex, templateSearchIndexPrefixes: primaryTemplateSearchIndexPrefix, stringPropertySuffix },
 } = config;
 
 export const runInTransactionAndNormalize = async <T>(
