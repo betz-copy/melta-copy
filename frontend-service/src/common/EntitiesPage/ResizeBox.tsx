@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizeTable.css';
 import { Grid } from '@mui/material';
@@ -20,15 +20,18 @@ const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeig
         }
     }, [templateId, setHeight]);
 
-    const onResizeStart = () => {
+    const onResizeStart = useCallback(() => {
         setIsResizing(true);
-    };
+    }, []);
 
-    const onResizeStop = (_event, { size }) => {
-        setHeight(size.height);
-        sessionStorage.setItem(`resizeHeight-${templateId}`, size.height.toString());
-        setIsResizing(false);
-    };
+    const onResizeStop = useCallback(
+        (_event, { size }) => {
+            setHeight(size.height);
+            sessionStorage.setItem(`resizeHeight-${templateId}`, size.height.toString());
+            setIsResizing(false);
+        },
+        [setHeight, templateId],
+    );
 
     return (
         <ResizableBox

@@ -1,4 +1,4 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Grid, Box, CircularProgress, Dialog, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
@@ -45,19 +45,14 @@ const TemplateTable = forwardRef<
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
-    const loadExpandState = () => {
-        const savedExpandState = sessionStorage.getItem(`isExpand-${template._id}`);
-        return savedExpandState === 'true';
-    };
-
-    const [isExpand, setIsExpand] = useState(loadExpandState());
+    const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
 
     useImperativeHandle(ref, () => ({
         getFilterModel: () => entitiesTableRef.current?.getFilterModel(),
         getSortModel: () => entitiesTableRef.current?.getSortModel(),
     }));
 
-    const handleExpandClick = () => {
+    const handleExpandClick = useCallback(() => {
         setIsExpand((prevExpand) => {
             const newExpandState = !prevExpand;
 
@@ -67,7 +62,7 @@ const TemplateTable = forwardRef<
             sessionStorage.setItem(`resizeHeight-${template._id}`, '650');
             return newExpandState;
         });
-    };
+    }, [template._id, page]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {

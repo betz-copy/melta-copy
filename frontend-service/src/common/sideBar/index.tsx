@@ -225,7 +225,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                 >
                     {Array.from(
                         categories.values(),
-                        (category: any) =>
+                        (category) =>
                             Boolean(myPermissions.instancesPermissions.find((instance) => instance.category === category._id)) && (
                                 <NavButton
                                     key={category._id}

@@ -1,7 +1,7 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState, useEffect } from 'react';
+import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import sortBy from 'lodash.sortby';
-import { Box } from '@mui/material';
+import { Box, debounce } from '@mui/material';
 import pickBy from 'lodash.pickby';
 import isEqual from 'lodash.isequal';
 import {
@@ -139,7 +139,6 @@ const getRowModelProps = <Data extends any = IEntity>(
             cacheBlockSize,
             maxBlocksInCache,
             pagination: true,
-            // suppressServerSideInfiniteScroll: true,
             paginationPageSize,
         };
     }
@@ -344,6 +343,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.columnApi.getColumnState();
             const newcolumnsOrder = columnState.reduce((acc, column, index) => {
+                // eslint-disable-next-line no-param-reassign
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
@@ -383,12 +383,12 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const onBodyScroll = (params: BodyScrollEvent<Data>) => {
+        const onBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
             if (!saveStorageProps.shouldSaveScrollPosition) return;
             if (params.api.getVerticalPixelRange().top > 0 && rowModelType === 'infinite') {
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
             }
-        };
+        }, 300);
 
         const gridContent = (
             <Box

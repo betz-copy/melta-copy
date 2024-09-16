@@ -1,5 +1,5 @@
 import React, { useState, lazy, Suspense, useEffect } from 'react';
-import { CssBaseline, Box, useScrollTrigger, Button } from '@mui/material';
+import { CssBaseline, Box, useScrollTrigger, Button, debounce } from '@mui/material';
 import { matchPath, Route, Routes, useNavigate } from 'react-router-dom';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { CacheProvider } from '@emotion/react';
@@ -81,11 +81,11 @@ const Main = () => {
             }, 150);
         }
 
-        const handleScroll = () => {
+        const handleScroll = debounce(() => {
             if (pageScrollTarget) {
                 sessionStorage.setItem(`scrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
             }
-        };
+        }, 300);
 
         if (pageScrollTarget) {
             pageScrollTarget.addEventListener('scroll', handleScroll);

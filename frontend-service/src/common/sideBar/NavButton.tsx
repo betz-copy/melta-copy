@@ -17,11 +17,8 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, isActive: boolean) => {
         if (disabled) {
             e.preventDefault();
-        } else {
-            // eslint-disable-next-line no-lonely-if
-            if (!isActive) {
-                sessionStorage.clear();
-            }
+        } else if (!isActive) {
+            sessionStorage.clear();
         }
     };
 
