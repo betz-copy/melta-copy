@@ -61,7 +61,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
         actions.forEach((currentAction) => {
             if (
                 currentAction.actionType === ActionTypes.UpdateEntity &&
-                !(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id
+                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === properties._id
             ) {
                 const { updatedFields } = currentAction.actionMetadata as IUpdateEntityMetadataPopulated;
 

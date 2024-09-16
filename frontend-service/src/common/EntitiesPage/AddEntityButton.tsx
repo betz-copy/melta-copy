@@ -64,11 +64,12 @@ const AddEntityButton: React.FC<{
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
                     onSuccessUpdate={(entity) => {
-                        setUpdatedEntities(
-                            Object.values(entity.properties).filter(
-                                (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
-                            ),
+                        const updatedRelatedEntities = Object.values(entity.properties).filter(
+                            (property): property is IEntity => typeof property === 'object' && 'templateId' in property && 'properties' in property,
                         );
+
+                        if (setUpdatedEntities && updatedRelatedEntities.length > 0) setUpdatedEntities(updatedRelatedEntities);
+
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
                         setExternalErrors({ files: false, unique: {}, action: '' });
                     }}

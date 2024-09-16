@@ -125,7 +125,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     queryClient.setQueryData(['getExpandedEntity', entity.properties._id, { [entity.properties._id]: 1 }, { templateIds }], () => {
                         return {
                             ...expandedEntity,
-                            entity: data.updatedEntity,
+                            entity: data,
                         };
                     });
                 }}

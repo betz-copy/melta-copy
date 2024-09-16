@@ -39,7 +39,6 @@ const EntitiesPage: React.FC<{
 }) => {
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
-    // console.log(templateTablesViewRef.current!.templateTablesRefs, { templateTablesViewRef });
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({ search: '', viewMode: 'templates-tables-view' });
     const search = urlSearchParams.get('search')!;
@@ -54,17 +53,13 @@ const EntitiesPage: React.FC<{
 
     useEffect(() => {
         if (Array.isArray(updatedEntities) && viewMode !== 'cards-view') {
-            console.log({ updatedEntities });
-
             updatedEntities.forEach((entity) => {
                 const reference = templateTablesViewRef.current!.templateTablesRefs?.[entity.templateId];
-
-                console.log({ reference });
 
                 if (reference) reference.updateRowDataClientSide(entity);
             });
         }
-    }, [updatedEntities]);
+    }, [updatedEntities, viewMode]);
 
     useEffect(() => {
         setSearchInput(search || '');
