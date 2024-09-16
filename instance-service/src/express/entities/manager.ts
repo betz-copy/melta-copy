@@ -531,7 +531,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 } else {
                     const currentEntity = await this.getEntityById(entityId);
                     const currentEntityTemplate = entitiesTemplatesByIds.get(currentEntity.templateId)!;
-                    const currentNotPopulated = await this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate);
+                    const currentNotPopulated = this.relationshipReferenceObjectToId(currentEntity, currentEntityTemplate);
 
                     updatedFields = this.getUpdatedProperties(currentNotPopulated.properties, allProperties, currentEntityTemplate);
                     before = currentEntity.properties;
@@ -572,6 +572,39 @@ export class EntityManager extends DefaultManagerNeo4j {
         return [mainAction, ...actionsOfUpdatedEntities];
     };
 
+    fixActions = (actions: IAction[], results: IEntity[]) =>
+        actions.map((action, index) => {
+            const { actionMetadata, actionType } = action;
+            if (actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) {
+                return {
+                    ...action,
+                    actionMetadata: {
+                        ...actionMetadata,
+                        properties: results[index].properties,
+                    },
+                };
+            }
+
+            if (actionType === ActionTypes.UpdateEntity) {
+                const { entityId } = actionMetadata as IUpdateEntityMetadata;
+
+                if (entityId.startsWith('$')) {
+                    const numberPart = parseInt(entityId.slice(1, -4), 10);
+                    const createdEntity = results[numberPart] as IEntity;
+
+                    return {
+                        ...action,
+                        actionMetadata: {
+                            ...actionMetadata,
+                            entityId: createdEntity.properties._id,
+                        },
+                    };
+                }
+            }
+
+            return action;
+        });
+
     async createEntity(
         properties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplate,
@@ -591,10 +624,11 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
 
-            const [{ properties: createdEntityProperties }] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const createdEntity = await this.getEntityById(createdEntityProperties._id);
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const createdEntity = await this.getEntityById(results[0].properties._id);
+            const fixedActions = this.fixActions(actions, results);
 
-            return { createdEntity, actions };
+            return { createdEntity, actions: fixedActions };
         }
 
         return this.neo4jClient
@@ -911,7 +945,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 { disabled },
             );
 
-            await this.updateRelationshipReference(updatedEntity, updatedProperties, entityTemplate, transaction);
+            await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
 
             const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
 
@@ -1073,12 +1107,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { fixedProperties, createdRelationships, deletedRelationships };
     }
 
-    async updateRelationshipReference(
-        updatedEntity: IEntity,
-        updatedProperties: string[],
-        entityTemplate: IMongoEntityTemplate,
-        transaction: Transaction,
-    ) {
+    async updateRelationshipReference(updatedEntity: IEntity, updatedProperties: string[], transaction: Transaction) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
 
@@ -1094,8 +1123,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         ] = entityProperties[updatedProperty];
                     }
                 });
-
-                console.log({ entityTemplate });
 
                 await runInTransactionAndNormalize(
                     transaction,
@@ -1172,7 +1199,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             },
         );
 
-        await this.updateRelationshipReference(updatedEntity, updatedProperties, entityTemplate, transaction);
+        await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -1257,7 +1284,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { updatedEntity, activityLogsToCreate };
     }
 
-    async relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
+    relationshipReferenceObjectToId(entity: IEntity, entityTemplate: IMongoEntityTemplate) {
         const entityAfterManipulations = JSON.parse(JSON.stringify(entity.properties));
 
         Object.entries(entityTemplate.properties.properties).forEach(([name, value]) => {
@@ -1281,7 +1308,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         const entity = await this.getEntityById(id);
-        const unPopulatedEntity = await this.relationshipReferenceObjectToId(entity, entityTemplate);
+        const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
         if (entity.properties.disabled) {
             throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
@@ -1298,10 +1325,11 @@ export class EntityManager extends DefaultManagerNeo4j {
 
             const bulkManager = new BulkActionManager(this.workspaceId);
 
-            const [{ properties }] = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            const updatedEntity = await this.getEntityById(properties._id);
+            const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            const updatedEntity = await this.getEntityById(results[0].properties._id);
+            const fixedActions = this.fixActions(actions, results);
 
-            return { updatedEntity, actions };
+            return { updatedEntity, actions: fixedActions };
         }
 
         return this.neo4jClient

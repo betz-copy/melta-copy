@@ -160,6 +160,39 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         }
     }
 
+    async updateRuleBreachRequestData(id: string, actions: IAction[], results: IEntity | IRelationship[]) {
+        const fixedActions = [...actions];
+
+        actions.forEach(({ actionMetadata, actionType }, index) => {
+            if (actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) {
+                fixedActions[index] = {
+                    actionType,
+                    actionMetadata: {
+                        ...actionMetadata,
+                        properties: results[index].properties,
+                    },
+                };
+            }
+
+            if (actionType === ActionTypes.UpdateEntity) {
+                if ((actionMetadata as IUpdateEntityMetadata).entityId.startsWith('$')) {
+                    const numberPart = parseInt((actionMetadata as IUpdateEntityMetadata).entityId.slice(1, -4), 10);
+                    const createdEntity = results[numberPart] as IEntity;
+
+                    fixedActions[index] = {
+                        actionType,
+                        actionMetadata: {
+                            ...actionMetadata,
+                            entityId: createdEntity.properties._id,
+                        },
+                    };
+                }
+            }
+        });
+
+        await this.service.updateRuleBreachRequestActionsMetadata(id, fixedActions);
+    }
+
     async approveRuleBreachRequest(
         ruleBreachRequestId: string,
         user: Express.User,
@@ -178,6 +211,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             await this.service.updateRuleBreachRequestActionsMetadata(ruleBreachRequest._id, fixedActions);
 
             actionsResults = await this.instancesService.runBulkOfActions([ruleBreachRequest.actions], false, user.id, ruleBreachRequest.brokenRules);
+
+            await this.updateRuleBreachRequestData(ruleBreachRequest._id, ruleBreachRequest.actions, actionsResults[0].value);
         } else
             try {
                 // only 1 action
@@ -778,15 +813,19 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
     }
 
     public async populateDuplicateEntityActionMetadata(actionMetadata: IDuplicateEntityMetadata): Promise<IDuplicateEntityMetadataPopulated> {
-        const { entityIdToDuplicate, ...restOfMetadata } = actionMetadata;
+        const { entityIdToDuplicate, templateId, properties } = actionMetadata;
 
         const entityToDuplicate = entityIdToDuplicate.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)
             ? entityIdToDuplicate
             : await this.instancesService.getEntityInstanceById(entityIdToDuplicate).catch(() => null);
 
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const duplicatedEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
+
         return {
             entityToDuplicate,
-            ...restOfMetadata,
+            properties: duplicatedEntityWithPopulatedRelationshipReferences,
+            templateId,
         };
     }
 
@@ -797,7 +836,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             Object.entries(entityTemplate.properties.properties).map(async ([name, value]) => {
                 const propertyValue = properties[name];
 
-                if (value.format === 'relationshipReference' && propertyValue) {
+                if (value.format === 'relationshipReference' && propertyValue && typeof propertyValue === 'string') {
                     populatedProperties[name] = await this.instancesService.getEntityInstanceById(propertyValue).catch(() => null);
                 }
             }),
@@ -816,8 +855,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
-            entity = JSON.parse(JSON.stringify(actions[numberPart].actionMetadata)) as IEntity;
-            entity.properties = { ...entity.properties, ...restOfMetadata.updatedFields };
+            entity = actions[numberPart].actionMetadata as IEntity;
         } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         if (entity) {

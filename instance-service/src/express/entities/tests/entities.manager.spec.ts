@@ -87,7 +87,7 @@ describe('Entity manager', () => {
         });
 
         it('Should update an entity', async () => {
-            const res = await EntityManager.updateEntityById(id, newProperties, entityTemplate, [], neo4j.mockUserId)[0];
+            const res = await EntityManager.updateEntityById(id, newProperties, entityTemplate, [], neo4j.mockUserId).updatedEntity;
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);

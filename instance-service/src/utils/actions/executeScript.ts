@@ -52,8 +52,6 @@ const addDefaultFunctionsToActionCode = (
 };
 
 const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
-    console.log({ jsCode });
-
     try {
         const context = vm.createContext({ entity: entity.properties });
         vm.runInContext(jsCode, context, { timeout: 10000 });
