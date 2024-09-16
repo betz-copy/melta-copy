@@ -225,6 +225,11 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
     return data;
 };
 
+export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string) => {
+    const { data } = await axios.post<{ templateId: string; count: number }[]>(`${entities}/count`, { templateIds, textSearch });
+    return data;
+};
+
 export const getEntityById = async (entityId: string) => {
     const { data } = await axios.get<IEntity>(`${entities}/${entityId}`);
     return data;

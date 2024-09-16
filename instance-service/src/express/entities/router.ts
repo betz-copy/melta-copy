@@ -3,6 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import EntityController from './controller';
 import {
+    countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     deleteEntityByIdRequestSchema,
@@ -47,6 +48,7 @@ entityRouter.post(
     entityValidatorController.validateSearchEntitiesOfTemplateBody,
     entityController.searchEntitiesOfTemplate,
 );
+entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),

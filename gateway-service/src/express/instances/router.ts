@@ -48,6 +48,9 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
     InstanceManagerProxy,
 );
+
+InstancesRouter.post('/entities/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
+
 InstancesRouter.post(
     '/entities/export',
     InstancesValidatorMiddleware.validateUserCanExportEntities,

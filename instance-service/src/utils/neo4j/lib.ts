@@ -79,6 +79,13 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+    return result.records.map((record) => ({
+        templateId: record.get('templateId'),
+        count: +record.get('count'),
+    }));
+};
+
 export const normalizeRuleResult = (result: QueryResult) => {
     return result.records[0].toObject() as { value: boolean; formulaCauses: IFormulaCauses };
 };

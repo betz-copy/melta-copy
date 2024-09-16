@@ -21,13 +21,14 @@ import {
     normalizeGetDbConstraints,
     normalizeNeighboursOfEntityForRule,
     normalizeResponseCount,
+    normalizeResponseTemplatesCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { NotFoundError, ServiceError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -421,8 +422,6 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
 
-        console.log(searchCypherQuery);
-
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]), true);
 
         const [entities, count] = await Promise.all([
@@ -431,6 +430,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         ]);
 
         return { entities, count };
+    }
+
+    async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '') {
+        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch || '')}*`;
+
+        const query = `
+            UNWIND $templateIds AS templateId
+            WITH templateId, $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefixes}' + templateId AS indexName
+            CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
+            RETURN templateId, count(node) AS count;
+        `;
+
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, { templateIds, textSearchFixed });
     }
 
     searchRelatedEntitiesOfEntitiesInTransaction(
