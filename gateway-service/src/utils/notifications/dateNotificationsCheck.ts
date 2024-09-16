@@ -1,4 +1,5 @@
 import * as schedule from 'node-schedule';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
 import { WorkspaceTypes } from '../../express/workspaces/interface';
@@ -11,6 +12,7 @@ import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../exte
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import logger from '../logger/logsLogger';
 import { RabbitManager } from '../rabbit';
+import { ServiceError } from '../../express/error';
 
 const { notifications } = config;
 
@@ -81,7 +83,7 @@ const sendNotificationsForEntityTemplate = async (
                 },
             },
         },
-        limit: config.instanceService.searchEntitiesFlowMaxLimit,
+        limit: config.instanceService.dateNotificationLimit,
     });
 
     const propertiesWithDateNotifications: IFilterDatesRange[] = Object.entries(entityTemplate.properties.properties)
@@ -147,11 +149,13 @@ const checkForDateNotifications = async () => {
                         ),
                     );
                 } catch (error) {
-                    logger.error('Error checking date notifications:', error);
+                    logger.error('Error checking date notifications:', { error });
                 }
             }),
         );
     });
 };
 
-checkForDateNotifications();
+checkForDateNotifications().catch((error) => {
+    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'error in checkForDateNotifications', { error });
+});
