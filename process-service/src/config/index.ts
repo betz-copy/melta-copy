@@ -50,6 +50,7 @@ const config = {
     elastic: {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('process-global-search').asString(),
+        excludedKeys: env.get('EXCLUDED_KEYS').default('_id,templateId,reviewers').asArray(','),
     },
 };
 

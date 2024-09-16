@@ -6,27 +6,28 @@ import ElasticClient from './index';
 
 const { elastic } = config;
 
-const createProcessTextChain = (process: object) => {
-    let values = '';
-    // eslint-disable-next-line no-restricted-syntax
-    for (const [key, value] of Object.entries(process)) {
-        // eslint-disable-next-line no-continue
-        if (['_id', 'templateId', 'reviewers'].includes(key)) continue;
-        if (value !== null)
-            if (typeof value === 'object') {
-                values += createProcessTextChain(value);
-            } else if (Array.isArray(value)) {
-                // eslint-disable-next-line no-loop-func
-                value.forEach((item) => {
-                    values += createProcessTextChain(item);
-                });
+function createProcessTextChain(obj: IMongoProcessInstancePopulated | ProcessInstanceDocument, valuesString: string[] = []) {
+    function recursiveHelper(value?: object | null, currentKey: string | null = null) {
+        if (currentKey && elastic.excludedKeys.includes(currentKey.toString())) return;
+
+        if (value === null || value === undefined) return;
+
+        if (typeof value === 'object') {
+            if (Array.isArray(value)) {
+                value.forEach((item) => recursiveHelper(item));
+            } else if (value instanceof Date) {
+                valuesString.push(value.toISOString());
             } else {
-                values += `${value} `;
+                Object.entries(value).forEach(([key, val]) => recursiveHelper(val, key));
             }
+        } else {
+            valuesString.push(String(value));
+        }
     }
 
-    return values;
-};
+    recursiveHelper(obj);
+    return valuesString.join(' ');
+}
 const createDocumentOnElastic = async (process: IMongoProcessInstancePopulated | ProcessInstanceDocument) => {
     try {
         const clientInstance: ElasticClient = ElasticClient.getInstance();
@@ -119,9 +120,9 @@ const processGlobalSearch = async (searchText: string, skip: number, limit: numb
         return processes.hits.hits.map(({ _id }) => _id);
     } catch (error) {
         console.error('Error searching in Elasticsearch:', error);
-        return [];
+        // return [];
+        throw error;
     }
 };
 
 export { createDocumentOnElastic, deleteDocumentOnElastic, processGlobalSearch, updateDocumentOnElastic };
-
