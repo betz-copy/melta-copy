@@ -11,7 +11,7 @@ import {
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
-    updateUserRequestSchema,
+    updateUserPreferencesMetadataRequestSchema,
 } from './validator.schema';
 
 export const usersRouter: Router = Router();
@@ -28,7 +28,11 @@ usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapContr
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
 
-usersRouter.patch('/:userId', ValidateRequest(updateUserRequestSchema), wrapController(UsersController.updateUser));
+usersRouter.patch(
+    '/:userId/preferences',
+    ValidateRequest(updateUserPreferencesMetadataRequestSchema),
+    wrapController(UsersController.updateUserPreferencesMetadata),
+);
 
 usersRouter.patch(
     '/:userId/external',

@@ -250,6 +250,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     async createCategory(categoryData: Omit<ICategory, 'iconFileId'>, file?: Express.Multer.File) {
         if (file) {
             const newFileId = await this.storageService.uploadFile(file);
+            console.log({ file }, { newFileId });
+
             await removeTmpFile(file.path);
             return this.entityTemplateService.createCategory({ ...categoryData, iconFileId: newFileId });
         }

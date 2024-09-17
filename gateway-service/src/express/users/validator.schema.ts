@@ -13,23 +13,29 @@ const UserExternalMetadataSchema = joi.object({
     kartoffelId: joi.string().required(),
     digitalIdentitySource: joi.string().required(),
 });
+
+const UserPreferencesMetadataSchema = joi.object({
+    darkMode: joi.boolean(),
+    // mailsNotificationsTypes: joi.array().items(NotificationType),
+    mailsNotificationsTypes: joi.array().items(joi.string()),
+});
+
 export const baseUserSchema = joi.object({
+    fullName: joi.string().required(),
+    jobTitle: joi.string().required(),
+    hierarchy: joi.string().required(),
+    mail: joi.string().required(),
+    externalMetadata: joi
+        .object({
+            kartoffelId: joi.string().required(),
+            digitalIdentitySource: joi.string().required(),
+        })
+        .required(),
     preferences: joi
         .object({
             darkMode: joi.boolean(),
             // mailsNotificationsTypes: joi.array().items(NotificationType),
             mailsNotificationsTypes: joi.array().items(joi.string()),
-        })
-        .required(),
-    fullName: joi.string().required(),
-    jobTitle: joi.string().required(),
-    hierarchy: joi.string().required(),
-    mail: joi.string().required(),
-
-    externalMetadata: joi
-        .object({
-            kartoffelId: joi.string().required(),
-            digitalIdentitySource: joi.string().required(),
         })
         .required(),
 });
@@ -73,10 +79,10 @@ export const createUserRequestSchema = joi.object({
     params: {},
 });
 
-// PATCH /api/users/:id
-export const updateUserRequestSchema = joi.object({
+// PATCH /api/users/:id/preferences
+export const updateUserPreferencesMetadataRequestSchema = joi.object({
     query: {},
-    body: baseUserSchema.required(),
+    body: UserPreferencesMetadataSchema.required(),
     params: {
         userId: joi.string().required(),
     },

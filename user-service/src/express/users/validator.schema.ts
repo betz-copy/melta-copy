@@ -57,6 +57,21 @@ export const updateUserRequestSchema = joi.object({
     },
 });
 
+// PATCH /api/users/preferences/:id
+export const updateUserPreferencesMetadataRequestSchema = joi.object({
+    query: {},
+    body: joi
+        .object({
+            darkMode: joi.boolean(),
+            // mailsNotificationsTypes: joi.array().items(NotificationType),
+            mailsNotificationsTypes: joi.array().items(joi.string()),
+        })
+        .required(),
+    params: {
+        id: mongoIdSchema.required(),
+    },
+});
+
 // PATCH /api/users/bulk
 export const updateUsersBulkRequestSchema = joi.object({
     query: {},

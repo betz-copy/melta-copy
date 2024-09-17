@@ -47,18 +47,19 @@ export class UsersManager {
             return { ...existingUser, permissions: { ...existingUser.permissions, ...newPermissions } };
         }
 
-        const { _id, displayName, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
+        const { _id, displayName, existingDigitalIdentitySource, preferences, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
             kartoffelId,
             digitalIdentitySource,
         );
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
+        console.log('lookkkkk', { preferences });
 
         return UserService.createUser({
             ...(digitalIdentity as IUser),
             permissions,
             externalMetadata: { kartoffelId, digitalIdentitySource },
-            preferences: {},
+            preferences,
         });
     }
 
@@ -68,10 +69,11 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async updateUser(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
+    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
         console.log({ preferences });
 
         return UserService.updateUser(userId, { preferences });
+        // return UserService.updateUserPreferencesMetadata(userId, { preferences });
     }
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {
