@@ -143,7 +143,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         return runRulesOnEntity(transaction, entityId, relevantRules);
     };
 
-    private throwServiceErrorIfFailedConstraintsValidation(err: unknown): never {
+    throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
         }
@@ -199,7 +199,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             // unsupported constraint validation error. possibly neo4j broke expected message
             throw err;
         }
-    }
+    };
 
     async createEntityInTransaction(
         transaction: Transaction,
