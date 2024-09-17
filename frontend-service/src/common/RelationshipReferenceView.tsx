@@ -2,7 +2,7 @@ import React, { CSSProperties } from 'react';
 import { Grid, tooltipClasses, useTheme, Typography } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'wouter';
 import i18next from 'i18next';
 import { MeltaTooltip } from './MeltaTooltip';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
@@ -90,8 +90,8 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                 )
             }
         >
-            <NavLink
-                to={`/entity/${entity.properties._id}`}
+            <Link
+                href={`/entity/${entity.properties._id}`}
                 style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
             >
                 <Grid display="inline-block">
@@ -119,7 +119,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                         }
                     />
                 </Grid>
-            </NavLink>
+            </Link>
         </MeltaTooltip>
     );
 };

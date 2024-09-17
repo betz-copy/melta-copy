@@ -1,6 +1,7 @@
 import axios from 'axios';
 import config from './config';
 import { trycatch } from './utils';
+import { createAxiosInstance } from './utils/axios';
 
 const { url, createProcessTemplateRoute, isAliveRoute } = config.processService;
 
@@ -49,11 +50,11 @@ export interface IMongoProcessTemplatePopulated extends Omit<IProcessTemplateWit
     updatedAt: Date;
 }
 
-export const createProcessTemplates = async (processTemplates: IProcessTemplateWithSteps[]) => {
+export const createProcessTemplates = async (workspaceId: string, processTemplates: IProcessTemplateWithSteps[]) => {
+    const axiosInstance = createAxiosInstance(workspaceId);
+
     const promises = processTemplates.map((processTemplate) => {
-        return axios.post<IMongoProcessTemplatePopulated>(url + createProcessTemplateRoute, {
-            ...processTemplate,
-        });
+        return axiosInstance.post<IMongoProcessTemplatePopulated>(url + createProcessTemplateRoute, processTemplate);
     });
 
     const results = await Promise.all(promises);

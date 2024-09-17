@@ -1,5 +1,3 @@
-import { Document } from 'mongoose';
-
 export interface IGanttItem {
     entityTemplate: {
         id: string;
@@ -22,8 +20,6 @@ export interface IGantt {
         groupNameField: string; // must be unique
     };
 }
-
-export type IGanttDocument = IGantt & Document;
 
 export interface ISearchGanttsBody {
     search?: string;

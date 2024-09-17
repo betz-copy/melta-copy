@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IRuleBreach } from '../../utils/interfaces/ruleBreach';
 
 export enum RuleBreachRequestStatus {
@@ -13,5 +12,3 @@ export interface IRuleBreachRequest extends IRuleBreach {
     reviewedAt?: Date;
     status: RuleBreachRequestStatus;
 }
-
-export type IRuleBreachRequestDocument = IRuleBreachRequest & Document;

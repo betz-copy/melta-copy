@@ -1,14 +1,14 @@
-import React from 'react';
-import { Grid, Typography, styled, useTheme } from '@mui/material';
-import { useQueryClient } from 'react-query';
+import { Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import { useNavigate } from 'react-router-dom';
-import { IActivityLog } from '../../../../services/activityLogService';
-import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import React from 'react';
+import { useQueryClient } from 'react-query';
+import { useLocation } from 'wouter';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
-import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import RelationshipReferenceView from '../../../../common/RelationshipReferenceView';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
+import { IActivityLog } from '../../../../services/activityLogService';
+import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../../../../utils/HtmlTagsStringValue';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -40,7 +40,7 @@ const RelationshipMetadataActionText: React.FC<{
 }> = ({ action, actionMetadata, entityTemplate }) => {
     const theme = useTheme();
 
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
     const queryClient = useQueryClient();
 
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
@@ -89,7 +89,7 @@ const DuplicateEntityMetadataActionText: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ actionMetadata, entityTemplate }) => {
     const theme = useTheme();
-    const navigate = useNavigate();
+    const [_, navigate] = useLocation();
 
     return (
         <Grid item minWidth="190px">

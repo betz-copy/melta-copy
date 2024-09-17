@@ -14,6 +14,7 @@ import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
 import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
+import { UploadExportFormats } from './UploadExportFormats';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { mapTemplates } from '../../../utils/templates';
@@ -53,12 +54,13 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
 export interface EntityTemplateWizardValues
     extends Omit<
         IEntityTemplatePopulated,
-        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints'
+        'properties' | 'iconFileId' | 'propertiesOrder' | 'propertiesPreview' | 'enumPropertiesColors' | 'uniqueConstraints' | 'documentTemplatesIds'
     > {
     properties: EntityTemplateFormInputProperties[];
     attachmentProperties: EntityTemplateFormInputProperties[];
     uniqueConstraints?: IUniqueConstraintOfTemplate[];
     icon?: fileDetails;
+    documentTemplatesIds?: File[];
 }
 
 const steps: StepsType<EntityTemplateWizardValues> = [
@@ -81,6 +83,10 @@ const steps: StepsType<EntityTemplateWizardValues> = [
         component: (props, { isEditMode, setBlock }) => <AddFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
         validationSchema: addFieldsSchema,
     },
+    {
+        label: i18next.t('wizard.entityTemplate.exportDocuments'),
+        component: (props) => <UploadExportFormats {...props} />,
+    },
 ];
 
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
@@ -97,6 +103,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
+        documentTemplatesIds: [],
     },
     isEditMode = false,
 }) => {

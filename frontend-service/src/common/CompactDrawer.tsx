@@ -1,8 +1,7 @@
 import React, { CSSProperties } from 'react';
 import { Divider, Grid, IconButton } from '@mui/material';
 import { ChevronRight as ArrowRightIcon, ChevronLeft as ArrowLeftIcon } from '@mui/icons-material';
-import { useSelector } from 'react-redux';
-import { RootState } from '../store';
+import { useDarkModeStore } from '../stores/darkMode';
 
 interface CompactDrawerProps {
     toggleMinimized: () => void;
@@ -14,7 +13,7 @@ interface CompactDrawerProps {
 }
 
 export const CompactDrawer: React.FC<CompactDrawerProps> = ({ toggleMinimized, open, locked, style, styleOpen, styleClosed, children }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Grid

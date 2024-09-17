@@ -1,37 +1,38 @@
-import React, { useState } from 'react';
+import DoneIcon from '@mui/icons-material/Done';
+import { LoadingButton } from '@mui/lab';
 import { Card, CardContent, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import React, { useState } from 'react';
 import { useMutation } from 'react-query';
-import { LoadingButton } from '@mui/lab';
 import { toast } from 'react-toastify';
-import { useSelector } from 'react-redux';
-import DoneIcon from '@mui/icons-material/Done';
+import { environment } from '../../../globals';
 import {
     INotificationPopulated,
+    isArchiveProcessNotification,
+    isDateAboutToExpireNotification,
+    isDeleteProcessNotification,
     isNewProcessNotification,
     isProcessReviewerUpdateNotification,
     isProcessStatusUpdateNotification,
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
-    isDateAboutToExpireNotification,
-    isDeleteProcessNotification,
-    isArchiveProcessNotification,
     NotificationType,
 } from '../../../interfaces/notifications';
-import { getShortDate } from '../../../utils/date';
 import { notificationSeenRequest } from '../../../services/notificationService';
+import { useDarkModeStore } from '../../../stores/darkMode';
+import { getShortDate } from '../../../utils/date';
+import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
+import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
+import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
+import { NewProcessNotification } from './processNotifications/NewProcessNotification';
+import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
+import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
 import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
 import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
-import { RootState } from '../../../store';
-import { NewProcessNotification } from './processNotifications/NewProcessNotification';
-import { ProcessStatusUpdateNotification } from './processNotifications/ProcessStatusUpdateNotification';
-import { ProcessReviewerUpdateNotification } from './processNotifications/ProcessReviewerUpdateNotification';
-import { DeleteProcessNotification } from './processNotifications/DeleteProcessNotification';
-import { DateAboutToExpireNotification } from './generalNotifications/DateAboutToExpireNotification';
-import { ArchiveProcessNotification } from './processNotifications/ArchiveProcessNotification';
-import { environment } from '../../../globals';
+
+const { titleColor } = environment.notifications;
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -47,9 +48,9 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
             toast.error(i18next.t('notifications.failedSetAsSeen'));
         },
     });
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const [isHovered, setIsHovered] = useState(false);
-    const darkMode = useSelector((state: RootState) => state.darkMode);
-    const { titleColor } = environment.notifications;
 
     return (
         <Card

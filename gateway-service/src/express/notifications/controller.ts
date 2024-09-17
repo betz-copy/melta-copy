@@ -1,25 +1,30 @@
 import { Request, Response } from 'express';
 import { NotificationsManager } from './manager';
+import DefaultController from '../../utils/express/controller';
 
-class NotificationsController {
-    static async getMyNotifications(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotifications(req.user!, req.query));
+class NotificationsController extends DefaultController<NotificationsManager> {
+    constructor(workspaceId: string) {
+        super(new NotificationsManager(workspaceId));
     }
 
-    static async getMyNotificationCount(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotificationCount(req.user!, req.query));
+    async getMyNotifications(req: Request, res: Response) {
+        res.json(await this.manager.getMyNotifications(req.user!, req.query));
     }
 
-    static async getMyNotificationGroupCount(req: Request, res: Response) {
-        res.json(await NotificationsManager.getMyNotificationGroupCount(req.user!, req.body));
+    async getMyNotificationCount(req: Request, res: Response) {
+        res.json(await this.manager.getMyNotificationCount(req.user!, req.query));
     }
 
-    static async notificationsSeen(req: Request, res: Response) {
-        res.json(await NotificationsManager.notificationsSeen(req.params.notificationId, req.user!));
+    async getMyNotificationGroupCount(req: Request, res: Response) {
+        res.json(await this.manager.getMyNotificationGroupCount(req.user!, req.body));
     }
 
-    static async manyNotificationsSeen(req: Request, res: Response) {
-        res.json(await NotificationsManager.manyNotificationsSeen(req.user!, req.body));
+    async notificationsSeen(req: Request, res: Response) {
+        res.json(await this.manager.notificationsSeen(req.params.notificationId, req.user!));
+    }
+
+    async manyNotificationsSeen(req: Request, res: Response) {
+        res.json(await this.manager.manyNotificationsSeen(req.user!, req.body));
     }
 }
 

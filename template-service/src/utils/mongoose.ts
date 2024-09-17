@@ -1,5 +1,6 @@
-import { ClientSession, startSession, Types } from 'mongoose';
+/* eslint-disable no-param-reassign */
 import _forEach from 'lodash.foreach';
+import { ClientSession, startSession, Types } from 'mongoose';
 import { trycatch } from '.';
 import logger from './logger/logsLogger';
 

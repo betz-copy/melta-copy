@@ -1,31 +1,36 @@
-import ActivityLogModel from './model';
+import config from '../../config';
+import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { IActivityLog } from './interface';
+import { ActivityLogSchema } from './model';
 
-export class ActivityLogManager {
-    static async getActivity(entityId: string, limit: number, skip: number, actions?: string[]) {
+export default class ActivityLogManager extends DefaultManagerMongo<IActivityLog> {
+    constructor(workspaceId: string) {
+        super(workspaceId, config.mongo.activitiesCollectionName, ActivityLogSchema);
+    }
+
+    async getActivity(entityId: string, limit: number, skip: number, actions?: string[]) {
         const regActions = actions?.map((action) => new RegExp(action));
         if (actions) {
-            const res = ActivityLogModel.find({ entityId, action: { $in: regActions } })
+            const res = this.model
+                .find({ entityId, action: { $in: regActions } })
                 .limit(limit)
                 .skip(skip)
                 .exec();
             return res;
         }
-        return ActivityLogModel.find({ entityId }).limit(limit).skip(skip).exec();
+        return this.model.find({ entityId }).limit(limit).skip(skip).exec();
     }
 
-    static async createActivity(activityLog: IActivityLog) {
+    async createActivity(activityLog: IActivityLog) {
         let createValue;
         try {
-            createValue = await ActivityLogModel.create(activityLog);
+            createValue = await this.model.create(activityLog);
         } catch (error: any) {
             if (error.name === 'MongoError' && (error as any).code === 11000) {
-                return ActivityLogModel.findOne({ entityId: activityLog.entityId, action: new RegExp(activityLog.action) });
+                return this.model.findOne({ entityId: activityLog.entityId, action: new RegExp(activityLog.action) });
             }
             throw error;
         }
         return createValue;
     }
 }
-
-export default ActivityLogManager;

@@ -16,6 +16,8 @@ export const regexSchema = Yup.string().test('is-regex', (value, context) => {
 
 export const variableNameValidation = /^[a-zA-Z][a-zA-Z_$0-9]*$/;
 
+export const workspaceNameValidation = /^[a-zA-Z0-9_-]+$/;
+
 type PropertiesType = 'normal' | 'attachment';
 
 const addDuplicateFieldsError = (

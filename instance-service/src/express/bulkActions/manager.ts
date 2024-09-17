@@ -1,23 +1,42 @@
 /* eslint-disable no-await-in-loop */
-import { Transaction } from 'neo4j-driver';
 import groupBy from 'lodash.groupby';
-import Neo4jClient from '../../utils/neo4j';
-import { IRelationship } from '../relationships/interfaces';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
-import EntityManager from '../entities/manager';
-import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
-import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { IBrokenRule } from '../rules/interfaces';
-import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-import RelationshipManager from '../relationships/manager';
+import { Transaction } from 'neo4j-driver';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
-import { createActivityLog } from '../../externalServices/activityLog/producer';
+import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
+import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
+import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import DefaultManagerNeo4j from '../../utils/neo4j/manager';
+import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
+import { EntityManager } from '../entities/manager';
+import { IRelationship } from '../relationships/interfaces';
+import { RelationshipManager } from '../relationships/manager';
+import { IBrokenRule } from '../rules/interfaces';
+import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
+import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
 
-export class BulkActionManager {  
-    static getEntitiesIdsRulesReasonsBefore = (actions: IAction[], relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>) => {
+export class BulkActionManager extends DefaultManagerNeo4j {
+    private entityManager: EntityManager;
+
+    private relationshipsManager: RelationshipManager;
+
+    private entityTemplateService: EntityTemplateManagerService;
+
+    private relationshipsTemplateService: RelationshipsTemplateManagerService;
+
+    private activityLogProducer: ActivityLogProducer;
+
+    constructor(workspaceId: string) {
+        super(workspaceId);
+        this.entityManager = new EntityManager(workspaceId);
+        this.relationshipsManager = new RelationshipManager(workspaceId);
+        this.entityTemplateService = new EntityTemplateManagerService(workspaceId);
+        this.relationshipsTemplateService = new RelationshipsTemplateManagerService(workspaceId);
+        this.activityLogProducer = new ActivityLogProducer(workspaceId);
+    }
+
+    getEntitiesIdsRulesReasonsBefore = (actions: IAction[], relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>) => {
         const entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap = new Map();
 
         const entitiesTemplatesIdsOfRules = new Set<string>();
@@ -46,7 +65,10 @@ export class BulkActionManager {
                 entitiesDatas.forEach((entityData) => {
                     entitiesTemplatesIdsOfRules.add(entityData.entityTemplateId);
                     const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(entityData.entityId)?.reasons || [];
-                    reasons.push({ type: RunRuleReason.dependentViaAggregation, dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId });
+                    reasons.push({
+                        type: RunRuleReason.dependentViaAggregation,
+                        dependentRelationshipTemplateId: actionMetadata.relationshipTemplateId,
+                    });
 
                     entitiesIdsRulesReasonsMapBeforeRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
                 });
@@ -56,7 +78,7 @@ export class BulkActionManager {
         return { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules };
     };
 
-    static getEntitiesIdsRulesReasonsAfter = (
+    getEntitiesIdsRulesReasonsAfter = (
         actions: IAction[],
         results: (IEntity | IRelationship)[],
         relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>,
@@ -103,29 +125,27 @@ export class BulkActionManager {
         return entitiesIdsRulesReasonsMapAfterRunActions;
     };
 
-    static async runBulkOfActionsInTransaction(
+    async runBulkOfActionsInTransaction(
         transaction: Transaction,
         actions: IAction[],
         entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
         userId: string,
     ) {
         const results: (IEntity | IRelationship)[] = [];
-        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = []; 
+        const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         for (const action of actions) {
             if (action.actionType === ActionTypes.CreateEntity) {
                 const actionMetadata = action.actionMetadata as ICreateEntityMetadata;
 
-                const {newEntity, activityLogsToCreate} = await EntityManager.createEntityInTransaction(
+                const { newEntity, activityLogsToCreate } = await this.entityManager.createEntityInTransaction(
                     transaction,
                     actionMetadata.properties,
                     entitiesTemplatesByIds.get(actionMetadata.templateId)!,
-                    userId
+                    userId,
                 );
 
-                results.push(
-                    newEntity
-                );
+                results.push(newEntity);
 
                 allActivityLogsToCreate.push(...activityLogsToCreate);
             } else {
@@ -136,16 +156,20 @@ export class BulkActionManager {
                     destinationEntityId: actionMetadata.destinationEntityId,
                     properties: {},
                 };
-                const fixedRelationship = RelationshipManager.getRelationshipByPrevResults(relationship, results);
+                const fixedRelationship = this.relationshipsManager.getRelationshipByPrevResults(relationship, results);
 
-                await RelationshipManager.validateCreateRelationshipDuplicate(
+                await this.relationshipsManager.validateCreateRelationshipDuplicate(
                     transaction,
                     fixedRelationship.templateId,
                     fixedRelationship.sourceEntityId,
                     fixedRelationship.destinationEntityId,
                 );
 
-                const {createdRelationship, activityLogsToCreate} = await RelationshipManager.createRelationshipInTransaction(transaction, fixedRelationship, userId)
+                const { createdRelationship, activityLogsToCreate } = await this.relationshipsManager.createRelationshipInTransaction(
+                    transaction,
+                    fixedRelationship,
+                    userId,
+                );
 
                 allActivityLogsToCreate.push(...activityLogsToCreate);
 
@@ -153,11 +177,11 @@ export class BulkActionManager {
             }
         }
 
-        return {results, allActivityLogsToCreate};
+        return { results, allActivityLogsToCreate };
     }
 
-    static async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
-        return Neo4jClient.performComplexTransaction(
+    async runBulkOfActions(actions: IAction[], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
+        return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
                 // collecting all relationshipTemplatesIds
@@ -174,8 +198,8 @@ export class BulkActionManager {
 
                 // get all entityTemplates group by entityTemplateId
                 const [entityTemplates, relationshipTemplates] = await Promise.all([
-                    EntityTemplateManagerService.searchEntityTemplates({ ids: [...entityTemplateIds] }),
-                    RelationshipsTemplateManagerService.searchRelationshipTemplates({ ids: [...relationshipTemplateIds] })
+                    this.entityTemplateService.searchEntityTemplates({ ids: [...entityTemplateIds] }),
+                    this.relationshipsTemplateService.searchRelationshipTemplates({ ids: [...relationshipTemplateIds] }),
                 ]);
 
                 const entitiesTemplatesByIds = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
@@ -184,32 +208,30 @@ export class BulkActionManager {
                 );
 
                 // collecting all the entitiesIds and their rules for preparation to search their related rules
-                const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } =
-                    BulkActionManager.getEntitiesIdsRulesReasonsBefore(actions, relationshipsTemplatesByIds);
+                const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = this.getEntitiesIdsRulesReasonsBefore(
+                    actions,
+                    relationshipsTemplatesByIds,
+                );
 
                 // search rules of entities
-                const rulesOfEntities = await RelationshipsTemplateManagerService.searchRules({
+                const rulesOfEntities = await this.relationshipsTemplateService.searchRules({
                     entityTemplateIds: [...entitiesTemplatesIdsOfRules],
                 });
 
                 const rulesByEntityTemplateIds = groupBy(rulesOfEntities, (rule) => rule.entityTemplateId);
 
                 const [ruleFailuresBeforeAll, { results, allActivityLogsToCreate }] = await Promise.all([
-                    EntityManager.runRulesOnEntitiesWithRuleReasons(
+                    this.entityManager.runRulesOnEntitiesWithRuleReasons(
                         transaction,
                         entitiesIdsRulesReasonsMapBeforeRunActions,
-                        rulesByEntityTemplateIds
+                        rulesByEntityTemplateIds,
                     ),
-                    BulkActionManager.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId)
+                    this.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId),
                 ]);
 
-                const entitiesIdsRulesReasonsMapAfterRunActions = BulkActionManager.getEntitiesIdsRulesReasonsAfter(
-                    actions,
-                    results,
-                    relationshipsTemplatesByIds,
-                );
+                const entitiesIdsRulesReasonsMapAfterRunActions = this.getEntitiesIdsRulesReasonsAfter(actions, results, relationshipsTemplatesByIds);
 
-                const ruleFailuresAfterAll = await EntityManager.runRulesOnEntitiesWithRuleReasons(
+                const ruleFailuresAfterAll = await this.entityManager.runRulesOnEntitiesWithRuleReasons(
                     transaction,
                     entitiesIdsRulesReasonsMapAfterRunActions,
                     rulesByEntityTemplateIds,
@@ -225,9 +247,11 @@ export class BulkActionManager {
                         return {};
                     }),
                 );
-                
+
                 if (!dryRun) {
-                    const activityLogsPromises = allActivityLogsToCreate.map((activityLogToCreate) => createActivityLog(activityLogToCreate));
+                    const activityLogsPromises = allActivityLogsToCreate.map((activityLogToCreate) =>
+                        this.activityLogProducer.createActivityLog(activityLogToCreate),
+                    );
                     await Promise.all(activityLogsPromises);
                 }
 
@@ -237,14 +261,13 @@ export class BulkActionManager {
         );
     }
 
-    static async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
+    async runBulkOfActionsInMultipleTransactions(actionsGroups: IAction[][], ignoredRules: IBrokenRule[], dryRun: boolean, userId: string) {
         const transactionsPromises = actionsGroups.map((actionsGroup) => {
-            return BulkActionManager.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
+            return this.runBulkOfActions(actionsGroup, ignoredRules, dryRun, userId);
         });
 
         return Promise.allSettled(transactionsPromises);
     }
-
 }
 
 export default BulkActionManager;

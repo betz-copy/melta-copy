@@ -134,20 +134,22 @@ services:
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
-      PERMISSION_SERVICE_URL: ${PERMISSION_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
       PROCESS_SERVICE_URL: ${PROCESS_SERVICE_URL}
       STORAGE_SERVICE_URL: ${STORAGE_SERVICE_URL}
       GANTT_SERVICE_URL: ${GANTT_SERVICE_URL}
-      PERMISSION_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
-      PROCESS_SERVICE_REVIEWERS_KARTOFFEL_IDS: 5e5688d54203fc40043591ac,5e5689514203fc40043591ae,6618026a26928782bb9c16ca
+      WORKSPACES_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      USER_SERVICE_MANAGERS_KARTOFFEL_IDS: 5e5688324203fc40043591aa,61d37cb5e4de0300121e31ef
+      WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
     depends_on:
       - neo4j
       - template-service
       - storage-service
       - instance-service
-      - permission-service
+      - user-service
       - process-service
       - gantt-service
+      - workspace-service
     restart: on-failure
 
   #-------------------------------------------#
@@ -168,7 +170,7 @@ services:
     volumes:
       - logs:/usr/src/app/logs
 
-  permission-service:
+  user-service:
     ports:
       - 8005:8000
     restart: always
@@ -241,6 +243,11 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+
+  workspace-service:
+    ports:
+      - 8012:8000
+    restart: always
 
 volumes:
   elastic_data:

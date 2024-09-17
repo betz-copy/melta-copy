@@ -1,9 +1,8 @@
 import React from 'react';
 import Avatar from '@mui/material/Avatar';
-import { useSelector } from 'react-redux';
 import { useTheme } from '@mui/material';
-import { IUser } from '../services/kartoffelService';
-import { RootState } from '../store';
+import { IUser } from '../interfaces/users';
+import { useDarkModeStore } from '../stores/darkMode';
 
 interface UserAvatarProps {
     user: IUser;
@@ -12,18 +11,15 @@ interface UserAvatarProps {
 }
 
 const getNameInitials = (user: IUser): string => {
-    if (user.firstName && user.lastName) {
-        return user.firstName.charAt(0) + user.lastName.charAt(0);
-    }
-    if (user.fullName) {
-        const names = user.fullName.split(' ');
-        return names.map((name) => name.charAt(0)).join('');
-    }
-    return '';
+    const names = user.fullName?.split(' ') ?? [];
+
+    if (names.length < 3) return names.map((name) => name.charAt(0)).join('');
+
+    return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`;
 };
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
     // eslint-disable-next-line no-nested-ternary
@@ -32,8 +28,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
     return (
         <Avatar
             sx={{
-                border: '#FF006B 3px solid',
-                borderRadius: 10,
                 height: size,
                 width: size,
                 maxWidth: '100%',
