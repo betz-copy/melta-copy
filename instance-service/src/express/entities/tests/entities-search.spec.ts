@@ -2,7 +2,6 @@ import { Express } from 'express';
 import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
 import Neo4jClient from '../../../utils/neo4j';
-import RedisClient from '../../../utils/redis';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../../config';
 import EntityManager from '../manager';
@@ -18,7 +17,7 @@ import {
 import RelationshipManager from '../../relationships/manager';
 import { IRelationship } from '../../relationships/interfaces';
 
-const { neo4j, redis } = config;
+const { neo4j } = config;
 
 const defaultTemplateId = uuidv4(); // supposed to be mongoId, but good enough
 // const defaultProperties = { testProp: 'testProp' };
@@ -810,25 +809,11 @@ describe('e2e search entities batch tests', () => {
                 )`,
                 () => {},
             );
-
-            // Configure redis and set latest index
-            await RedisClient.initialize(redis.url);
-
-            const redisClient = RedisClient.getClient();
-
-            await redisClient.set(redis.globalSearchKeyName, 'globalSearchTest');
         });
 
         afterAll(async () => {
             // Delete global search index in neo4j
             await Neo4jClient.writeTransaction(`CALL db.index.fulltext.drop('globalSearchTest')`, () => {});
-
-            // Delete latest index in redis
-            const redisClient = RedisClient.getClient();
-
-            await redisClient.del(redis.globalSearchKeyName);
-
-            redisClient.disconnect();
         });
 
         beforeEach(async () => {

@@ -38,11 +38,6 @@ const config = {
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
     },
-    redis: {
-        url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
-        globalSearchKeyName: env.get('REDIS_GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
-        templateSearchKeyNamePrefix: env.get('REDIS_TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
-    },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),

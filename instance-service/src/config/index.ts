@@ -54,11 +54,6 @@ const config = {
                 .asString(),
         },
     },
-    redis: {
-        url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
-        globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
-        templateSearchKeyNamePrefix: env.get('TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
-    },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',
         relationshipAlreadyExists: 'RELATIONSHIP_ALREADY_EXISTS',
