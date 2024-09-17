@@ -460,7 +460,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         const query = `
             UNWIND $templateIds AS templateId
-            WITH templateId, $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefixes}' + templateId AS indexName
+            WITH templateId, $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName
             CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
             RETURN templateId, count(node) AS count;
         `;

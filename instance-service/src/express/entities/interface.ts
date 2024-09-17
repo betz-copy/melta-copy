@@ -1,6 +1,5 @@
 import { IRelationship } from '../relationships/interfaces';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 
 export interface IEntity {
     templateId: string;
@@ -92,10 +91,6 @@ export interface ISearchEntitiesByTemplatesBody {
     searchConfigs: {
         [templateId: string]: ISearchEntitiesOfTemplateBody;
     };
-}
-
-export interface ISearchEntitiesByYemplates {
-    [templateId: string]: { searchBody: ISearchEntitiesOfTemplateBody; entityTemplate: IMongoEntityTemplate };
 }
 
 export interface ISearchBatchBody {

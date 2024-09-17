@@ -103,7 +103,6 @@ const ValidateRequest = (schema: Joi.ObjectSchema<any>, options: Joi.ValidationO
     const validator = async (req: Request) => {
         const { error, value } = schema.unknown().validate(req, options);
         if (error) {
-            console.log(error);
             throw error;
         }
 

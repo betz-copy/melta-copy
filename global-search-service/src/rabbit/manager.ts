@@ -7,7 +7,7 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: { globalSearchIndexes: primaryGlobalSearchIndex, templateSearchIndexPrefixes: primaryTemplateSearchIndexPrefix, stringPropertySuffix },
+    neo4j: { globalSearchIndex, templateSearchIndexPrefix, stringPropertySuffix },
 } = config;
 
 export const runInTransactionAndNormalize = async <T>(
@@ -112,7 +112,7 @@ export default class Manager extends DefaultManagerNeo4j {
             }),
         );
 
-        await this.upsertSearchIndex(primaryGlobalSearchIndex, templateIds, Array.from(allTemplatesProperties));
+        await this.upsertSearchIndex(globalSearchIndex, templateIds, Array.from(allTemplatesProperties));
     }
 
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
@@ -120,10 +120,10 @@ export default class Manager extends DefaultManagerNeo4j {
         const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(changedTemplate);
         const allProperties = [...relationshipReferencesProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
 
-        await this.upsertSearchIndex(`${primaryTemplateSearchIndexPrefix}${changedTemplateId}`, [changedTemplateId], allProperties);
+        await this.upsertSearchIndex(`${templateSearchIndexPrefix}${changedTemplateId}`, [changedTemplateId], allProperties);
     }
 
     async deleteTemplateSearchIndex(templateId: string) {
-        await this.dropIndexTransaction(`${primaryTemplateSearchIndexPrefix}${templateId}`);
+        await this.dropIndexTransaction(`${templateSearchIndexPrefix}${templateId}`);
     }
 }
