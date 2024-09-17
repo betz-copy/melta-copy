@@ -1,5 +1,12 @@
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, GetQuickFilterTextParams, ICellRendererParams } from '@ag-grid-community/core';
+import {
+    ColDef,
+    GetQuickFilterTextParams,
+    ICellRendererParams,
+    IServerSideDatasource,
+    IServerSideGetRowsParams,
+    ModuleRegistry,
+} from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
@@ -12,6 +19,7 @@ import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import i18next from 'i18next';
 import React from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -19,8 +27,14 @@ import { ICompact, IInstancesPermission } from '../../interfaces/permissions/per
 import { IUser } from '../../interfaces/users';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
+import { searchUsersRequest } from '../../services/userService';
+import { trycatch } from '../../utils/trycatch';
+import { IWorkspace } from '../../interfaces/workspaces';
 
 const { defaultRowHeight } = environment.agGrid;
+const { infiniteScrollPageCount } = environment.permission;
+
+ModuleRegistry.registerModules([ServerSideRowModelModule]);
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
@@ -184,13 +198,47 @@ const columnDefs = (
     },
 ];
 
+export const getDatasource = <Data extends any = IUser>(
+    workspace: IWorkspace,
+    quickFilter: string | undefined,
+    onFail: ((err: unknown) => void) | undefined,
+): IServerSideDatasource => {
+    return {
+        async getRows(params: IServerSideGetRowsParams<Data>) {
+            const agGridRequest = params.request;
+            const { startRow, endRow } = agGridRequest;
+            console.log({ startRow, endRow });
+
+            const { result: data, err } = await trycatch(() =>
+                searchUsersRequest({
+                    workspaceId: workspace._id,
+                    step: startRow! / infiniteScrollPageCount,
+                    limit: endRow! - startRow!,
+                    search: quickFilter === '' ? undefined : quickFilter,
+                }),
+            );
+            console.log({ data, err });
+
+            if (err || !data) {
+                onFail?.(err);
+                params.fail();
+                return;
+            }
+            params.success({
+                rowData: data.users,
+                rowCount: data.count,
+            });
+        },
+    };
+};
+
 const Table: React.FC<{
-    users: IUser[];
     categories: IMongoCategory[];
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
-}> = ({ users, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
+    datasourceOnFail: ((err: unknown) => void) | undefined;
+}> = ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText, datasourceOnFail }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
@@ -198,13 +246,16 @@ const Table: React.FC<{
             className="ag-theme-material"
             modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
-            rowData={users}
             defaultColDef={defaultColDef}
             columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
-            rowModelType="clientSide"
+            rowModelType="serverSide"
+            serverSideDatasource={getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail)}
             getRowId={({ data: { _id } }) => _id}
             pagination
             paginationAutoPageSize
+            cacheBlockSize={infiniteScrollPageCount}
+            maxBlocksInCache={infiniteScrollPageCount}
+            paginationPageSize={infiniteScrollPageCount}
             rowHeight={defaultRowHeight}
             rowStyle={{ alignItems: 'center' }}
             enableRtl

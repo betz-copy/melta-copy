@@ -1,35 +1,19 @@
 import { AddCircle } from '@mui/icons-material';
-import { CircularProgress, Grid, IconButton, TextField } from '@mui/material';
+import { Grid, IconButton, TextField } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IUser } from '../../interfaces/users';
-import { searchUsersRequest } from '../../services/userService';
-import { useWorkspaceStore } from '../../stores/workspace';
 import DeletePermissionsOfUserDialog from './deleteDialog';
 import Table from './table';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-
-    const { data: users, isLoading: isLoadingUsers } = useQuery(
-        'getAllUsers',
-        () => searchUsersRequest({ workspaceId: workspace._id, limit: 1000 }),
-        {
-            onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed loading all users:', error);
-                toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
-            },
-        },
-    );
 
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);
     const [deletePermissionDialogState, setDeletePermissionDialogState] = useState<{
@@ -72,14 +56,16 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                     </Grid>
                 </Grid>
                 <Grid item xs={12}>
-                    {isLoadingUsers && <CircularProgress size={20} />}
-                    {Boolean(users) && Boolean(categories) && (
+                    {Boolean(categories) && (
                         <Table
-                            users={users!}
                             categories={Array.from(categories.values())}
                             onDeletePermissionsOfUser={(existingUser) => setDeletePermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             onEditPermissionsOfUser={(existingUser) => setEditPermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             quickFilterText={quickFilterText}
+                            datasourceOnFail={(error) => {
+                                console.log('failed loading all users:', error);
+                                toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
+                            }}
                         />
                     )}
                 </Grid>
