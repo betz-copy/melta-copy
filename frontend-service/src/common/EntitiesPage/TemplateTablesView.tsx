@@ -11,7 +11,7 @@ import { getCountByTemplateIdsRequest, searchEntitiesByTemplatesRequest } from '
 import { environment } from '../../globals';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
-import { ISearchEntitiesByTemplatesBody, ISearchResultByTemplates } from '../../interfaces/entities';
+import { ISearchEntitiesByTemplatesBody } from '../../interfaces/entities';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
@@ -77,25 +77,6 @@ const TemplateTablesViewResults = forwardRef<
             },
         },
     ); // TODO: yona - use the fetched entities by templates and give them the corect search body
-
-    useEffect(() => {
-        if (!isLoadingEntitiesByTemplates) {
-            const newEntitiesByTemplates = entitiesByTemplates as ISearchResultByTemplates;
-            const newTemplateTablesRefs = templateTablesRefs.current;
-            templates.forEach((template) => {
-                const entities = newEntitiesByTemplates[template._id]?.entities;
-                const tableRef = newTemplateTablesRefs[template._id];
-                // if (entities && tableRef) {
-                //     tableRef.(entities);
-                // }
-            });
-        }
-    }, [entitiesByTemplates]);
-
-    useImperativeHandle(ref, () => ({
-        refetch: refetchEntitiesByTemplates,
-        templateTablesRefs: templateTablesRefs.current,
-    }));
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {

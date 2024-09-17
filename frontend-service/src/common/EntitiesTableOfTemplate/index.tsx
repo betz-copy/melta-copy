@@ -67,7 +67,7 @@ export const getDatasource = <Data extends any = IEntity>(
     return {
         // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
-            if (rowData && mainEntity) {
+            if (rowData) {
                 params.success({
                     rowData,
                     rowCount: rowData.length,
@@ -111,8 +111,6 @@ const getRowModelProps = <Data extends any = IEntity>(
     datasourceOnFail: ((err: unknown) => void) | undefined,
     mainEntity?: IEntityExpanded,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
-    console.log('rowData', rowData);
-
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
@@ -292,7 +290,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, entities, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
+            () => getRowModelProps(rowModelType, template, entities || rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
             [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 
