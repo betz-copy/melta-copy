@@ -207,7 +207,6 @@ export const getDatasource = <Data extends any = IUser>(
         async getRows(params: IServerSideGetRowsParams<Data>) {
             const agGridRequest = params.request;
             const { startRow, endRow } = agGridRequest;
-            console.log({ startRow, endRow });
 
             const { result: data, err } = await trycatch(() =>
                 searchUsersRequest({
@@ -217,7 +216,6 @@ export const getDatasource = <Data extends any = IUser>(
                     search: quickFilter === '' ? undefined : quickFilter,
                 }),
             );
-            console.log({ data, err });
 
             if (err || !data) {
                 onFail?.(err);
