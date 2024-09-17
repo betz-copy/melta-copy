@@ -1,5 +1,3 @@
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
-
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
     sourceEntityId: string;

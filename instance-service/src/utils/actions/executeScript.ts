@@ -37,7 +37,7 @@ const addDefaultFunctionsToActionCode = (
             }
         }
         ${generateInterfaceWithRelationships(entitiesTemplatesByIds)}
-        const actions: any[] = [];
+        const actions: { entityId: string; properties: Record<string, any> }[] = [];
         function updateEntity(entityId: string, properties: Record<string, any>): void {
           actions.push({ entityId, properties });
         }`;
