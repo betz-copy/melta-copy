@@ -18,6 +18,14 @@ export default class TemplatesController extends DefaultController<TemplatesMana
         res.json(await this.manager.getAllAllowedTemplates(user.id, permissionsOfUserId));
     }
 
+    async getAllAllowedTemplatesFromParamUser(req: Request, res: Response) {
+        const { user, permissionsOfUserId } = req as RequestWithPermissionsOfUserId;
+
+        assert(user, 'User doesnt exists under request');
+
+        res.json(await this.manager.getAllAllowedTemplates(req.params.userId, permissionsOfUserId));
+    }
+
     // categories
     async createCategory(req: Request, res: Response) {
         res.json(await this.manager.createCategory(req.body, req.file));

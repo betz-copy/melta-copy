@@ -47,6 +47,10 @@ export class Authorizer extends DefaultController {
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.user!.id);
     }
 
+    async userFromParamsHasSomePermissions(req: Request) {
+        (req as RequestWithPermissionsOfUserId).permissionsOfUserId = await this.getWorkspacePermissions(req.params!.userId);
+    }
+
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {
         return this.authorizeUser(req, req.user!.id, authPermissions);
     }

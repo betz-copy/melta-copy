@@ -44,6 +44,11 @@ const templatesControllerMiddleware = createWorkspacesController(TemplatesContro
 const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
 
 // all needed categories
+templatesRouter.get(
+    '/all/:userId',
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.getAllAllowedTemplatesFromParamUser,
+);
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
 
 // categories
