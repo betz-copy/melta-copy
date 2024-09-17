@@ -26,9 +26,7 @@ class EntityController extends DefaultController<EntityManager> {
     async searchEntitiesByTemplates(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
 
-        console.log('entityTemplatesMap', entityTemplatesMap);
-
-        res.json(await this.manager.searchEntitiesByTemplates(req.body));
+        res.json(await this.manager.searchEntitiesByTemplates(req.body, entityTemplatesMap));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {

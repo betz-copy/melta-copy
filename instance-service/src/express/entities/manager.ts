@@ -41,9 +41,11 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IEntityWithDirectRelationships,
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
@@ -432,25 +434,25 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
-    async searchEntitiesByTemplates(data: any) {
-        // const results: Record<
-        //     string,
-        //     {
-        //         entities: IEntityWithDirectRelationships[];
-        //         count: number;
-        //     }
-        // > = {};
+    async searchEntitiesByTemplates(searchByTemplates: ISearchEntitiesByTemplatesBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+        const results: {
+            [templateId: string]: {
+                entities: IEntityWithDirectRelationships[];
+                count: number;
+            };
+        } = {};
 
-        console.log(data);
+        const { searchConfigs } = searchByTemplates;
 
-        // await Promise.all(
-        //     Object.entries(data).map(async ([templateId, { searchBody, entityTemplate }]) => {
-        //         const { entities, count } = await this.searchEntitiesOfTemplate(searchBody, entityTemplate);
-        //         results[templateId] = { entities, count };
-        //     }),
-        // );
+        await Promise.all(
+            Object.entries(searchConfigs).map(async ([templateId, searchBody]) => {
+                const entityTemplate = entityTemplatesMap.get(templateId)!;
+                const { entities, count } = await this.searchEntitiesOfTemplate(searchBody, entityTemplate);
+                results[templateId] = { entities, count };
+            }),
+        );
 
-        return data;
+        return results;
     }
 
     async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '') {
