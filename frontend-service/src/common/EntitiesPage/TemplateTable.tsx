@@ -6,7 +6,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { exportEntitiesRequest } from '../../services/entitiesService';
@@ -35,10 +35,11 @@ const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
         template: IMongoEntityTemplatePopulated;
+        entities: IEntityWithDirectConnections[];
         quickFilterText: string;
         page: string;
     }
->(({ template, quickFilterText, page }, ref) => {
+>(({ template, entities, quickFilterText, page }, ref) => {
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -212,6 +213,7 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
+                    entities={entities.map(({ entity }) => entity)}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}

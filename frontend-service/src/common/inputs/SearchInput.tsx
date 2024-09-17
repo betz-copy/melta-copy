@@ -25,7 +25,7 @@ const SearchInput: React.FC<{
     height = '34px',
     width = '231px',
 }) => {
-    const theme = useTheme(); // TODO: yona - fix searching from ui requests
+    const theme = useTheme();
 
     return (
         <TextField

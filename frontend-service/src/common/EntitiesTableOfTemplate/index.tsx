@@ -83,22 +83,6 @@ export const getDatasource = <Data extends any = IEntity>(
                 ),
             );
 
-            const newRequestBody = {
-                searchConfigs: {
-                    [template._id]: {
-                        ...agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
-                    },
-                },
-            };
-
-            const { result: data2, err: err2 } = await trycatch(() => searchEntitiesByTemplatesRequest(newRequestBody));
-
-            if (err2 || !data2) {
-                console.log('failed to load data from datasource. err:', err2);
-            } else {
-                console.log('data2:', data2);
-            }
-
             if (err || !data) {
                 onFail?.(err);
                 params.fail();
@@ -127,6 +111,8 @@ const getRowModelProps = <Data extends any = IEntity>(
     datasourceOnFail: ((err: unknown) => void) | undefined,
     mainEntity?: IEntityExpanded,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
+    console.log('rowData', rowData);
+
     if (rowModelType === 'clientSide') {
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
@@ -147,6 +133,7 @@ export { getRowModelProps };
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
+    entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -190,6 +177,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     <Data extends any>(
         {
             template,
+            entities,
             onRowSelected,
             showNavigateToRowButton,
             getRowId,
@@ -304,7 +292,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
+            () => getRowModelProps(rowModelType, template, entities, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
             [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 

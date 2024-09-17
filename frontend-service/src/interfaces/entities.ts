@@ -116,6 +116,10 @@ export interface ISearchResult {
     entities: IEntityWithDirectConnections[];
 }
 
+export interface ISearchResultByTemplates {
+    [templateId: string]: ISearchResult;
+}
+
 export interface IExportEntitiesBody {
     fileName: string;
     textSearch?: string;
