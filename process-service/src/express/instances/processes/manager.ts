@@ -3,12 +3,7 @@ import { ClientSession, FilterQuery, Types } from 'mongoose';
 import { Request } from 'express';
 import config from '../../../config';
 import ajv from '../../../utils/ajv';
-import {
-    createDocumentOnElastic,
-    deleteDocumentOnElastic,
-    processGlobalSearch,
-    updateDocumentOnElastic,
-} from '../../../utils/elastic/documentsOnElastic';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, NotFoundError, ServiceError, ValidationError } from '../../error';
@@ -37,10 +32,13 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     private stepInstanceManager: StepInstanceManager;
 
+    private elasticSearchManager: ElasticSearchManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
         this.processTemplateManager = new ProcessTemplateManager(workspaceId);
         this.stepInstanceManager = new StepInstanceManager(workspaceId);
+        this.elasticSearchManager = new ElasticSearchManager(workspaceId);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
@@ -137,7 +135,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
-        await createDocumentOnElastic(populatedProcess);
+        // await this.elasticSearchManager.createDocumentOnElastic(populatedProcess);
 
         return populatedProcess;
     }
@@ -149,7 +147,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             await this.stepInstanceManager.deleteStepsByIds(stepsIds, session);
             return this.model.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
         });
-        await deleteDocumentOnElastic(deletedProcess._id);
+        await this.elasticSearchManager.deleteDocumentOnElastic(deletedProcess._id);
 
         return { ...deletedProcess, steps: processSteps };
     }
@@ -189,7 +187,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 .lean();
         });
 
-        await updateDocumentOnElastic(updatedProcess);
+        await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
 
         return updatedProcess;
     }
@@ -234,7 +232,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         }
 
         if (searchText) {
-            processIds = await processGlobalSearch(searchText, skip, limit);
+            processIds = await this.elasticSearchManager.processGlobalSearch(searchText, skip, limit);
             query._id = { $in: processIds.map((id) => new Types.ObjectId(id)) };
         }
 

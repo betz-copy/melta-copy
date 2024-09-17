@@ -1,7 +1,7 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
 import config from '../../../config';
-import { updateDocumentOnElastic } from '../../../utils/elastic/documentsOnElastic';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
@@ -11,8 +11,11 @@ import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interfac
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
+    private elasticSearchManager: ElasticSearchManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
+        this.elasticSearchManager = new ElasticSearchManager(workspaceId);
     }
 
     validateStepIds(validStepIds: string[], stepIdsToCheck: string[]) {
@@ -85,7 +88,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
             });
         }
         const updatedProcess = await processInstanceManager.getProcessById(processId, true);
-        await updateDocumentOnElastic(updatedProcess);
+        await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
 
         return updatedStep;
     }
