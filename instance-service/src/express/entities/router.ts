@@ -15,6 +15,7 @@ import {
     getExpandedGraphByIdRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
     updateEntityByIdRequestSchema,
@@ -49,7 +50,12 @@ entityRouter.post(
     entityController.searchEntitiesOfTemplate,
 );
 entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
-entityRouter.post('/search/templates', entityValidatorController.validateSearchBatchBody, entityController.searchEntitiesByTemplates);
+entityRouter.post(
+    '/search/templates',
+    ValidateRequest(searchEntitiesByTemplatesSchema),
+    entityValidatorController.validateSearchByTemplatesBody,
+    entityController.searchEntitiesByTemplates,
+);
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),

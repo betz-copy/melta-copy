@@ -102,20 +102,16 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
     params: {},
 });
 
-const seachByTemplateSchema = Joi.object({
-    skip: Joi.number().integer().min(0).default(0),
-    limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
-    textSearch: Joi.string().allow(''),
-    filter: Joi.any(),
-    showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
-    sort: Joi.any(),
-});
-
 // POST /api/instances/search/templates
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
         searchConfigs: Joi.object().pattern(Joi.string(), {
-            ...seachByTemplateSchema,
+            skip: Joi.number().integer().min(0).default(0),
+            limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
+            textSearch: Joi.string().allow(''),
+            filter: Joi.any(),
+            showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+            sort: Joi.any(),
         }),
     },
     query: {},

@@ -54,7 +54,7 @@ InstancesRouter.post('/entities/count', AuthorizerControllerMiddleware.userCanRe
 InstancesRouter.post(
     '/entities/search/templates',
     ValidateRequest(searchEntitiesByTemplatesSchema),
-    InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
     InstanceManagerProxy,
 );
 

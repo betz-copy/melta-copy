@@ -35,8 +35,6 @@ const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
         template: IMongoEntityTemplatePopulated;
-        entities: IEntity[];
-        setEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
         quickFilterText: string;
         page: string;
     }

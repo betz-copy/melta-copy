@@ -88,6 +88,12 @@ export interface ISearchEntitiesOfTemplateBody {
     sort: ISearchSort;
 }
 
+export interface ISearchEntitiesByTemplatesBody {
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
+}
+
 export interface ISearchEntitiesByYemplates {
     [templateId: string]: { searchBody: ISearchEntitiesOfTemplateBody; entityTemplate: IMongoEntityTemplate };
 }

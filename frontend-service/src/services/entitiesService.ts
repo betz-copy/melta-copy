@@ -10,6 +10,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
+    ISearchEntitiesByTemplatesBody,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
@@ -230,9 +231,9 @@ export const getCountByTemplateIdsRequest = async (templateIds: string[], textSe
     return data;
 };
 
-export const searchEntitiesByTemplatesRequest = async (templateId: string, searchBody: ISearchEntitiesOfTemplateBody) => {
-    const test = { [templateId]: searchBody };
-    const { data } = await axios.post<ISearchResult>(`${entities}/search/templates`, { templates: test });
+export const searchEntitiesByTemplatesRequest = async (searchBodyByTemplates: ISearchEntitiesByTemplatesBody) => {
+    const { data } = await axios.post<any>(`${entities}/search/templates`, searchBodyByTemplates);
+
     return data;
 };
 

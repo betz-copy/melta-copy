@@ -152,30 +152,47 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
     },
 });
 
+const seachByTemplateSchema = {
+    skip: Joi.number().integer().min(0).default(0),
+    limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
+    textSearch: Joi.string().allow(''),
+    filter: searchFilterSchema,
+    showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+    sort: Joi.array()
+        .items(
+            Joi.object({
+                field: variableNameValidation, // important when translating to neo4j query (prevent injection)
+                sort: Joi.string().valid('asc', 'desc'),
+            }),
+        )
+        .unique('field')
+        .default([]),
+};
+
 /*
  * POST /api/instances/entities/search/template/:templateId
  */
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
-        skip: Joi.number().integer().min(0).default(0),
-        limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
-        textSearch: Joi.string().allow(''),
-        filter: searchFilterSchema,
-        showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
-        sort: Joi.array()
-            .items(
-                Joi.object({
-                    field: variableNameValidation, // important when translating to neo4j query (prevent injection)
-                    sort: Joi.string().valid('asc', 'desc'),
-                }),
-            )
-            .unique('field')
-            .default([]),
+        ...seachByTemplateSchema,
     },
     query: {},
     params: {
         templateId: Joi.string().required(),
     },
+});
+
+/*
+ * POST /api/instances/search/templates
+ */
+export const searchEntitiesByTemplatesSchema = Joi.object({
+    body: {
+        searchConfigs: Joi.object().pattern(Joi.string(), {
+            ...seachByTemplateSchema,
+        }),
+    },
+    query: {},
+    params: {},
 });
 
 /*
