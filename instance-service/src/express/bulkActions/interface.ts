@@ -35,28 +35,13 @@ export interface IUpdateEntityStatusMetadata {
     disabled: boolean;
 }
 
-export interface IPopulatedCreateEntityMetadata extends Omit<ICreateEntityMetadata, 'templateId'> {
-    entityTemplate: IMongoEntityTemplate;
-}
-
-export interface IPopulatedUpdateEntityMetadata extends IUpdateEntityMetadata {
-    entityTemplate: IMongoEntityTemplate;
-}
-
-export interface IPopulatedDuplicateEntityMetadata extends Omit<IDuplicateEntityMetadata, 'templateId'> {
-    entityTemplate: IMongoEntityTemplate;
-}
-
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata
     | ICreateEntityMetadata
     | IDuplicateEntityMetadata
     | IUpdateEntityMetadata
-    | IUpdateEntityStatusMetadata
-    | IPopulatedDuplicateEntityMetadata
-    | IPopulatedCreateEntityMetadata
-    | IPopulatedUpdateEntityMetadata;
+    | IUpdateEntityStatusMetadata;
 
 export enum ActionTypes {
     CreateRelationship = 'create-relationship',
