@@ -26,8 +26,10 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
     return data;
 };
 
-export const updateUserRequest = async (userId: string, kartoffelId: string, digitalIdentitySource: string) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}`, { kartoffelId, digitalIdentitySource });
+export const updateUserRequest = async (userId: string, preferences) => {
+    console.log({ preferences });
+    const { data } = await axios.patch<IUser>(`${users}/${userId}`, preferences);
+
     return data;
 };
 

@@ -10,8 +10,6 @@ export const baseUserSchema = joi.object({
     preferences: joi
         .object({
             darkMode: joi.boolean(),
-            // mailsNotificationsTypes: joi.array().items(NotificationType),
-            mailsNotificationsTypes: joi.array().items(joi.string()),
         })
         .required(),
     externalMetadata: joi

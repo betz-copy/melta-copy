@@ -19,11 +19,12 @@ export class RabbitManager {
         NotificationMetadataPopulated extends IMailNotificationMetadataPopulated,
     >(viewers: string[], type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated) {
         if (!viewers.length) return;
+        console.log({ type, metadata });
 
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
-        console.log({ viewers }, { filteredViewers });
+
         if (filteredViewers.length > 0) {
             const mailData = await new MailManager(this.workspaceId).createMail({ viewers: filteredViewers, type, populatedMetaData });
             await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });

@@ -21,17 +21,17 @@ export const baseUserSchema = joi.object({
             mailsNotificationsTypes: joi.array().items(joi.string()),
         })
         .required(),
-    // fullName: joi.string().required(),
-    // jobTitle: joi.string().required(),
-    // hierarchy: joi.string().required(),
-    // mail: joi.string().required(),
+    fullName: joi.string().required(),
+    jobTitle: joi.string().required(),
+    hierarchy: joi.string().required(),
+    mail: joi.string().required(),
 
-    // externalMetadata: joi
-    //     .object({
-    //         kartoffelId: joi.string().required(),
-    //         digitalIdentitySource: joi.string().required(),
-    //     })
-    //     .required(),
+    externalMetadata: joi
+        .object({
+            kartoffelId: joi.string().required(),
+            digitalIdentitySource: joi.string().required(),
+        })
+        .required(),
 });
 export const partialBaseUserSchema = partialSchema(baseUserSchema);
 
@@ -76,7 +76,7 @@ export const createUserRequestSchema = joi.object({
 // PATCH /api/users/:id
 export const updateUserRequestSchema = joi.object({
     query: {},
-    body: partialBaseUserSchema.required(),
+    body: baseUserSchema.required(),
     params: {
         userId: joi.string().required(),
     },

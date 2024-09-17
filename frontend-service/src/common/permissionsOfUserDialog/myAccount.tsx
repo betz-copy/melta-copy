@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react';
 import { IUser } from '../../interfaces/users';
 import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
+import { updateUserRequest } from '../../services/userService';
 
 const { notificationsMoreData } = environment.notifications;
 const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
@@ -18,7 +19,11 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
 
             setSelectedNotifications(updatedSelections);
 
-            // await updateUser({ mailsNotificationsTypes: updatedSelections });
+            if (existingUser)
+                await updateUserRequest(existingUser._id, {
+                    ...existingUser.preferences,
+                    mailsNotificationsTypes: updatedSelections,
+                });
         },
         [selectedNotifications],
     );

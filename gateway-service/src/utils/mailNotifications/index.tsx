@@ -411,7 +411,6 @@ export class MailManager {
 
     async createMail({ viewers, type, populatedMetaData }: IMailNotification) {
         const viewersMail = viewers.map((viewer: IUser) => viewer.mail);
-        // const viewersMail = await Promise.all(viewersMailPromises);
         const title = mailTitle[type];
 
         const html = renderToString(await this.getMailHtml(type, populatedMetaData));

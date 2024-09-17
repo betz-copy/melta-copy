@@ -23,11 +23,13 @@ usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
+
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
 usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
 
 usersRouter.patch('/:userId', ValidateRequest(updateUserRequestSchema), wrapController(UsersController.updateUser));
+
 usersRouter.patch(
     '/:userId/external',
     ValidateRequest(updateUserExternalMetadataRequestSchema),

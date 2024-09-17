@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
-import { NotificationType } from '../../externalServices/notificationService/interfaces';
+// import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import { UserService } from '../../externalServices/userService';
 import {
     ICompactNullablePermissions,
@@ -62,11 +62,15 @@ export class UsersManager {
         });
     }
 
-    static async updateUser(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
+    static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
+        console.log('here?');
+
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async updateUserExternalMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
+    static async updateUser(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
+        console.log({ preferences });
+
         return UserService.updateUser(userId, { preferences });
     }
 
@@ -83,6 +87,7 @@ export class UsersManager {
 
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
+        console.log('got the user ', { user });
 
         const { _id, displayName, permissions, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
             user.externalMetadata.kartoffelId,
@@ -90,8 +95,10 @@ export class UsersManager {
         );
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
+        console.log('pass the validate');
 
         if (objectContains(user, digitalIdentity)) return user;
+        console.log({ digitalIdentity });
 
         return UserService.updateUser(userId, digitalIdentity);
     }
