@@ -131,7 +131,7 @@ templatesRouter.delete(
 );
 
 templatesRouter.post(
-    '/entities/search',
+    '/entities/search/template',
     ValidateRequest(searchEntityTemplatesSchema),
     AuthorizerControllerMiddleware.userHasSomePermissions,
     templatesControllerMiddleware.searchEntityTemplates,
