@@ -33,7 +33,7 @@ const steps: StepsType<RuleWizardValues> = [
 const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = {
         name: '',
         description: '',
@@ -51,8 +51,9 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchRulesTemplates']);
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.rule.editedSuccefully'));
+                    toast.success(i18next.t('wizard.rule.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.rule.createdSuccessfully'));
                 }
@@ -73,12 +74,12 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.rule.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

@@ -10,7 +10,7 @@ export const config = {
         url: env.get('MONGO_URL').required().asString(),
         permissionsCollectionName: env.get('MONGO_PERMISSIONS_COLLECTION_NAME').default('permissions').asString(),
         usersCollectionName: env.get('MONGO_USERS_COLLECTION_NAME').default('users').asString(),
-        maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(1000).asIntPositive(),
+        maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(10000).asIntPositive(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

@@ -62,6 +62,7 @@ import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { RabbitManager } from '../../utils/rabbit';
 import { UsersManager } from '../users/manager';
+import { WorkspaceManager } from '../workspaces/manager';
 
 const { errorCodes } = config;
 
@@ -253,8 +254,10 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         NotificationMetadata extends INotificationMetadata,
         NotificationMetadataPopulated extends INotificationMetadataPopulated,
     >(type: NotificationType, metadata: NotificationMetadata, populatedMetaData: NotificationMetadataPopulated, extraViewers: string[] = []) {
+        const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
+
         const userIdsWithPermission = await UsersManager.searchUserIds({
-            workspaceId: this.workspaceId,
+            workspaceIds,
             permissions: {
                 [PermissionType.rules]: {
                     scope: PermissionScope.write,

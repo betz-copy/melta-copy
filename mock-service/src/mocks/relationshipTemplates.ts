@@ -18,6 +18,12 @@ export const relationshipTemplates = [
         destinationEntityId: { name: 'flight' },
     },
     {
+        name: 'flightOf', 
+        displayName: 'טיסה של',
+        sourceEntityId: { name: 'flight' },
+        destinationEntityId: { name: 'tourist' },
+    },
+    {
         name: 'departureFrom',
         displayName: 'ממריא מ',
         sourceEntityId: { name: 'flight' },

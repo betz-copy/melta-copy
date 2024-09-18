@@ -63,7 +63,7 @@ export const searchUsersRequestSchema = joi.object({
     body: {
         search: joi.string(),
         permissions: joi.object(),
-        workspaceId: MongoIdSchema,
+        workspaceIds: joi.array().items(MongoIdSchema.required()),
         limit: joi.number().integer().required(),
         step: joi.number().integer(),
     },

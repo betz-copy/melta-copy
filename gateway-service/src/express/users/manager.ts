@@ -160,7 +160,7 @@ export class UsersManager {
 
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
-        const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({} as IUser));
+        const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
 
         return {
             _id: kartoffelId,
