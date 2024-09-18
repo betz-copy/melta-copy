@@ -64,3 +64,11 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
 }
 
 export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;
+
+export interface ISearchEntityTemplateQuery {
+    search?: string;
+    ids?: string[];
+    categoryIds?: string[];
+    limit: number;
+    skip: number;
+}

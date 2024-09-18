@@ -67,7 +67,7 @@ const EditEntityDetails: React.FC<{
             updateEntityRequestForMultiple(entity.properties._id, newEntityData, ignoredRules),
         {
             onSuccess: (data) => {
-                toast.success(i18next.t('wizard.entity.editedSuccefully'));
+                toast.success(i18next.t('wizard.entity.editedSuccessfully'));
                 onSuccessUpdate(data);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },

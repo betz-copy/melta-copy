@@ -2,7 +2,13 @@ import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
 import { environment } from '../../globals';
-import { IEntitySingleProperty, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import {
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    ISearchEntityTemplateQuery,
+} from '../../interfaces/entityTemplates';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
@@ -219,6 +225,11 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
     };
 };
 
+const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) => {
+    const { data } = await axios.post<IEntityTemplateMap>(`${entityTemplates}/search`, searchQuery);
+    return data;
+};
+
 const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWizardValues) => {
     const formData = new FormData();
 
@@ -333,6 +344,7 @@ const updateActionToEntity = async (entityTemplateId: string, actions: string) =
 
 export {
     createEntityTemplateRequest,
+    searchEntityTemplates,
     updateEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     deleteEntityTemplateRequest,

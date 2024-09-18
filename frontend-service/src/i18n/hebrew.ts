@@ -59,6 +59,8 @@ export default {
         columns: 'עמודות',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
+    noSearchLeft: 'אין עוד תוצאות',
+    failedToLoadResults: 'נכשל לטעון תוצאות',
     actions: {
         edit: 'עריכה',
         editment: 'עריכת',
@@ -388,7 +390,7 @@ export default {
         category: {
             title: 'יצירת קטגוריה',
             createdSuccessfully: 'קטגוריה נוצרה בהצלחה',
-            editedSuccefully: 'קטגוריה עודכנה בהצלחה',
+            editedSuccessfully: 'קטגוריה עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור קטגוריה',
             failedToEdit: 'נכשל בעריכת קטגוריה',
             deletedSuccessfully: 'קטגוריה נמחקה בהצלחה',
@@ -400,7 +402,7 @@ export default {
         entityTemplate: {
             title: 'יצירת תבנית ישות',
             createdSuccessfully: 'תבנית ישות נוצרה בהצלחה',
-            editedSuccefully: 'תבנית ישות עודכנה בהצלחה',
+            editedSuccessfully: 'תבנית ישות עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית ישות',
             failedToDisable: 'נכשל להשבית תבנית ישות',
             disabledSuccessfully: 'תבנית ישות הושבתה בהצלחה',
@@ -458,7 +460,7 @@ export default {
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',
             createdSuccessfully: 'תבנית קשר נוצרה בהצלחה',
-            editedSuccefully: 'תבנית קשר עודכנה בהצלחה',
+            editedSuccessfully: 'תבנית קשר עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית קשר',
             failedToEdit: 'נכשל בעריכת תבנית קשר',
             deletedSuccessfully: 'תבנית קשר נמחקה בהצלחה',
@@ -470,7 +472,7 @@ export default {
             title: 'יצירת תבנית תהליך',
             editTitle: 'עריכת תבנית תהליך',
             createdSuccessfully: 'תבנית תהליך נוצרה בהצלחה',
-            editedSuccefully: 'תבנית תהליך עודכנה בהצלחה',
+            editedSuccessfully: 'תבנית תהליך עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית תהליך',
             failedToEdit: 'נכשל בעריכת תבנית תהליך',
             deletedSuccessfully: 'תבנית תהליך נמחקה בהצלחה',
@@ -499,7 +501,7 @@ export default {
             title: 'יצירת ישות',
             createNewEntity: 'ישות חדשה',
             createdSuccessfully: 'ישות נוצרה בהצלחה',
-            editedSuccefully: 'ישות עודכנה בהצלחה',
+            editedSuccessfully: 'ישות עודכנה בהצלחה',
             duplicatedSuccessfully: 'ישות שוכפלה בהצלחה',
             failedToCreate: 'נכשל ליצור ישות',
             missingInputForRequiredField: 'חסר הזנה עבור שדה חובה',
@@ -521,7 +523,7 @@ export default {
         rule: {
             title: 'יצירת חוק',
             createdSuccessfully: 'חוק נוצר בהצלחה',
-            editedSuccefully: 'חוק עודכן בהצלחה',
+            editedSuccessfully: 'חוק עודכן בהצלחה',
             failedToCreate: 'נכשל ליצור חוק',
             failedToDisable: 'נכשל להשבית חוק',
             disabledSuccessfully: 'חוק הושבת בהצלחה',
