@@ -66,6 +66,10 @@ spec:
                                 value: '1000000000'
                               - name: ELASTIC_APM_ACTIVE
                                 value: 'false'
+                              - name: USER_SERVICE_URL
+                                value: 'http://user-service:8000'
+                              - name: WORKSPACE_SERVICE_URL
+                                value: 'http://workspace-service:8000'
                     restartPolicy: Never
 # Commands:
 
