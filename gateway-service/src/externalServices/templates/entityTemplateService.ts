@@ -1,5 +1,6 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
     templateService: {
@@ -82,12 +83,19 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
     updatedAt: string;
 }
 
-export interface ISearchEntityTemplatesBody {
+export interface ISearchBody {
     search?: string;
-    ids?: string[];
-    categoryIds?: string[];
     limit?: number;
     skip?: number;
+}
+
+export interface ISearchEntityTemplatesBody extends ISearchBody {
+    ids?: string[];
+    categoryIds?: string[];
+}
+
+export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
+    searchQuery: ISearchEntityTemplatesBody;
 }
 
 export class EntityTemplateService extends TemplatesManagerService {

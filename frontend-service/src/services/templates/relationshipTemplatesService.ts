@@ -2,7 +2,7 @@ import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate, IRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -50,6 +50,11 @@ const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string)
     return data;
 };
 
+const searchRelationshipTemplates = async (searchBody: ISearchRelationshipTemplatesBody) => {
+    const { data } = await axios.post<IMongoRelationshipTemplate[]>(`${relationshipTemplates}/search`, searchBody);
+    return data;
+};
+
 const getAllRelationshipTemplatesRequest = async () => {
     const { data } = await axios.get<IMongoRelationshipTemplate[]>(`${relationshipTemplates}/all`);
     return data;
@@ -61,5 +66,6 @@ export {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
     relationshipTemplateFormToRelationshipTemplateObject,
+    searchRelationshipTemplates,
     getAllRelationshipTemplatesRequest,
 };

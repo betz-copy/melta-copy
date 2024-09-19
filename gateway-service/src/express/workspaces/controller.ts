@@ -28,7 +28,7 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     }
 
     async createOne(req: Request, res: Response) {
-        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[], req.user!.id));
+        res.json(await this.manager.createOne(req.body, req.files as Express.Multer.File[]));
     }
 
     async updateOne(req: Request, res: Response) {
