@@ -1,4 +1,5 @@
-import { Box, Checkbox } from '@mui/material';
+import { Check, Remove } from '@mui/icons-material';
+import { Box, Checkbox, useTheme } from '@mui/material';
 import React from 'react';
 
 interface MeltaCheckboxProps {
@@ -9,6 +10,8 @@ interface MeltaCheckboxProps {
 }
 
 const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange }) => {
+    const theme = useTheme();
+
     return (
         <Checkbox
             checked={checked}
@@ -19,7 +22,8 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                 <Box
                     sx={{
                         borderRadius: '4px',
-                        background: disabled ? '#9398C2' : '#4752B6',
+                        background: theme.palette.primary.main,
+                        opacity: disabled ? 0.5 : 1,
                         width: '20px',
                         height: '20px',
                         display: 'flex',
@@ -27,14 +31,15 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                         alignItems: 'center',
                     }}
                 >
-                    <img src="/icons/checked-icon.svg" style={{ width: '9.33px', height: '6.42px' }} />
+                    <Check sx={{ color: '#fff', fontSize: '0.75rem' }} />
                 </Box>
             }
             indeterminateIcon={
                 <Box
                     sx={{
                         borderRadius: '4px',
-                        background: disabled ? '#9398C2' : '#4752B6',
+                        background: theme.palette.primary.main,
+                        opacity: disabled ? 0.5 : 1,
                         border: 'none',
                         width: '20px',
                         height: '20px',
@@ -43,14 +48,14 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                         alignItems: 'center',
                     }}
                 >
-                    <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />
+                    <Remove fontSize="small" sx={{ color: '#fff', fontSize: '0.75rem' }} />
                 </Box>
             }
             icon={
                 <Box
                     sx={{
                         borderRadius: '4px',
-                        border: disabled ? '1px solid #9398C2' : '1px solid #4752B6',
+                        border: `1px solid ${theme.palette.primary.main}`,
                         width: '20px',
                         height: '20px',
                         display: 'flex',
@@ -59,7 +64,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                     }}
                 />
             }
-            sx={{ borderRadius: '4px', color: '#4752B6' }}
+            sx={{ borderRadius: '4px', color: theme.palette.primary.main }}
         />
     );
 };

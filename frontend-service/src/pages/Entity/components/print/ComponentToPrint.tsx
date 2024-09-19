@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Grid, Typography, useTheme } from '@mui/material';
+import { Box, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
@@ -29,17 +29,15 @@ const ComponentToPrint = React.forwardRef<
         };
     }
 >(({ entityTemplate, expandedEntity, connectionsTemplatesToPrint, options, filesToPrint, setSelectedFiles, setFilesLoadingStatus }, ref) => {
-    const theme = useTheme();
-
     const queryClient = useQueryClient();
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
     return (
-        <Box ref={ref} margin="20px" style={{ direction: 'rtl' }}>
+        <Box ref={ref} margin="20px" style={{ direction: 'rtl', color: '#000' }}>
             <Grid style={{ pageBreakInside: 'avoid' }}>
                 <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
                     <Box display="flex" alignItems="center">
-                        <Typography component="h4" variant="h4" color={theme.palette.primary.main} fontWeight="800">
+                        <Typography component="h4" variant="h4" color="#1E2775" fontWeight="800">
                             {entityTemplate.category.displayName}
                         </Typography>
 
@@ -47,11 +45,11 @@ const ComponentToPrint = React.forwardRef<
                             /
                         </Typography>
 
-                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color={theme.palette.primary.main}>
+                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#1E2775">
                             {entityTemplate.displayName}
                         </Typography>
                     </Box>
-                    {options.showDate && <Box> {new Date().toLocaleDateString('en-uk')}</Box>}
+                    {options.showDate && <Box>{new Date().toLocaleDateString('en-uk')}</Box>}
                 </Box>
                 <EntityComponentToPrint
                     entityTemplate={entityTemplate}
@@ -61,7 +59,7 @@ const ComponentToPrint = React.forwardRef<
             </Grid>
             {connectionsTemplatesToPrint.length !== 0 && (
                 <>
-                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
+                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} toPrint />
 
                     {connectionsTemplatesToPrint.map(
                         ({ relationshipTemplate: { _id, destinationEntity, sourceEntity, displayName }, isExpandedEntityRelationshipSource }) => {
@@ -103,7 +101,7 @@ const ComponentToPrint = React.forwardRef<
                                                 paddingRight="7px"
                                                 paddingLeft="7px"
                                                 fontWeight="800"
-                                                color={theme.palette.primary.main}
+                                                color="#1E2775"
                                                 component="h5"
                                                 variant="h5"
                                             >

@@ -87,8 +87,6 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                                     <Typography
                                         style={{
                                             fontSize: '12px',
-                                            color: '#9398C2',
-                                            fontWeight: '400',
                                             textOverflow: 'ellipsis',
                                             whiteSpace: 'nowrap',
                                             overflow: 'hidden',
@@ -107,7 +105,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                 <Grid container direction="column">
                     <Divider style={{ width: '100%' }} />
                     <ProcessProperties properties={processTemplate.details.properties.properties} />
-                    <Typography color="#9398C2">{i18next.t('wizard.processTemplate.levels')}</Typography>
+                    <Typography>{i18next.t('wizard.processTemplate.levels')}</Typography>
                     {processTemplate.steps.map((step) => {
                         return <ProcessStep key={step._id} step={step} />;
                     })}

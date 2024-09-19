@@ -1,39 +1,40 @@
 /* eslint-disable jsx-a11y/no-static-element-interactions */
-import React, { useEffect, useRef, useState } from 'react';
+import { AppRegistration as AppRegistrationIcon, Edit } from '@mui/icons-material';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
-import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
+import { ErrorToast } from '../../../common/ErrorToast';
+import SearchInput from '../../../common/inputs/SearchInput';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
+import { environment } from '../../../globals';
+import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
+import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,
     entityTemplateObjectToEntityTemplateForm,
     updateEntityTemplateRequest,
     updateEntityTemplateStatusRequest,
 } from '../../../services/templates/enitityTemplatesService';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import SearchInput from '../../../common/inputs/SearchInput';
-import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { Box } from './Box';
-import { getEntityTemplateColor } from '../../../utils/colors';
-import { CardMenu } from './CardMenu';
-import { updateCategoryRequest } from '../../../services/templates/categoriesService';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { environment } from '../../../globals';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
+import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
+import { Box } from './Box';
+import { ViewingCard } from './Card';
+import { CardMenu } from './CardMenu';
+import { CreateButton } from './CreateButton';
+import { FilterButton } from './FilterButton';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -164,15 +165,15 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             expendedCard={
                 <Grid container gap="10px" alignItems="center" width="232px" paddingLeft="20px">
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('category')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
+                        <Grid item flexBasis="70%">
                             {entityTemplate.category.displayName}
                         </Grid>
                     </Grid>
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.properties')}</Typography>
                         </Grid>
                     </Grid>
@@ -180,10 +181,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .filter(([, value]) => value.format !== 'fileId')
                         .map(([key, value]) => (
                             <Grid key={key} item container gap="5px" flexWrap="nowrap">
-                                <Grid item flexBasis="4%" color="#9398C2">
+                                <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                     <Typography>-</Typography>
                                 </Grid>
-                                <Grid item color="#53566E">
+                                <Grid item>
                                     <MeltaTooltip title={key}>
                                         <Typography
                                             style={{
@@ -198,13 +199,13 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color="#9398C2" fontWeight="400">
+                                <Grid item color={theme.palette.primary.main} fontWeight="400" sx={{ opacity: 0.75 }}>
                                     {i18next.t(`propertyTypes.${value.type}`)}
                                 </Grid>
                             </Grid>
                         ))}
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.entityTemplate.attachments')}</Typography>
                         </Grid>
                     </Grid>
@@ -212,10 +213,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                         .filter(([, value]) => value.format === 'fileId')
                         .map(([key]) => (
                             <Grid key={key} item container gap="5px">
-                                <Grid item flexBasis="4%" color="#9398C2">
+                                <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                     <Typography>-</Typography>
                                 </Grid>
-                                <Grid item color="#53566E">
+                                <Grid item>
                                     <MeltaTooltip title={key}>
                                         <Typography
                                             style={{
@@ -230,24 +231,24 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                         </Typography>
                                     </MeltaTooltip>
                                 </Grid>
-                                <Grid item color="#9398C2" fontWeight="400">
+                                <Grid item color={theme.palette.primary.main} fontWeight="400">
                                     {entityTemplate.properties.required.includes(key) ? i18next.t('validation.required') : ''}
                                 </Grid>
                             </Grid>
                         ))}
                     {!!entityTemplate.documentTemplatesIds?.length && (
                         <Grid item container justifyContent="space-between">
-                            <Grid item color="#9398C2">
+                            <Grid item color={theme.palette.primary.main}>
                                 <Typography>{i18next.t('wizard.entityTemplate.exportDocuments')}</Typography>
                             </Grid>
                         </Grid>
                     )}
                     {entityTemplate.documentTemplatesIds?.map((documentTemplateId) => (
                         <Grid key={documentTemplateId} item container gap="5px">
-                            <Grid item flexBasis="4%" color="#9398C2">
+                            <Grid item flexBasis="4%" color={theme.palette.primary.main}>
                                 <Typography>-</Typography>
                             </Grid>
-                            <Grid item color="#53566E">
+                            <Grid item>
                                 <MeltaTooltip title={getFileName(documentTemplateId)}>
                                     <Typography
                                         style={{
@@ -311,6 +312,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     const [isEditableCategory, setIsEditableCategory] = useState(false);
     const containerWrapperRef = useRef<HTMLDivElement>(null);
 
+    const theme = useTheme();
+
     useEffect(() => {
         containerWrapperRef.current?.focus();
     }, [isEditableCategory]);
@@ -335,8 +338,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     style={{
                                         fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
-                                        color: isEditableCategory ? 'black' : '#9398C2',
-                                        outline: isEditableCategory ? '1px solid black' : '',
+                                        color: isEditableCategory ? theme.palette.primary.main : '#9398C2',
+                                        outline: isEditableCategory ? `1px solid ${theme.palette.primary.main}` : '',
                                         borderRadius: '5px',
                                         padding: '5px',
                                         textOverflow: isEditableCategory ? undefined : 'ellipsis',
@@ -367,23 +370,21 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                         }}
                                         className="edit-btn"
                                     >
-                                        <img src="\icons\edit-icon.svg" />
+                                        <Edit color="primary" />
                                     </IconButton>
                                 )}
                             </Grid>
                         }
                         addingIcon={
-                            <IconButton
-                                style={{ borderRadius: '5px', width: 'fit-content' }}
+                            <CreateButton
                                 onClick={() =>
                                     setEntityTemplateWizardDialogState({
                                         isWizardOpen: true,
                                         entityTemplate: { ...defaultEntityTemplatePopulated, category: entityTemplatesWithCategory.category },
                                     })
                                 }
-                            >
-                                <img src="/icons/add-new-entity-template.svg" />
-                            </IconButton>
+                                text={i18next.t('systemManagement.newEntityTemplate')}
+                            />
                         }
                         onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
                     >
@@ -428,6 +429,12 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [searchText, setSearchText] = useState('');
     const [loadedEntityTemplateId, setLoadedEntityTemplateId] = useState('');
+
+    const isFilterButtonDisabled = useMemo(
+        () => !(categoriesToShow.length < categoriesArray.length || searchText.length),
+        [categoriesToShow, searchText, categoriesArray],
+    );
+
     const [deleteEntityTemplateDialogState, setDeleteEntityTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         entityTemplateId: string | null;
@@ -559,21 +566,14 @@ const EntityTemplatesRow: React.FC = () => {
                     />
                 </Grid>
                 <Grid item>
-                    {categoriesToShow.length < categoriesArray.length || searchText.length ? (
-                        <IconButton
-                            style={{ borderRadius: '5px' }}
-                            onClick={() => {
-                                setSearchText('');
-                                setCategoriesToShow(categoriesArray);
-                            }}
-                        >
-                            <img src="/icons/delete-filters-enable.svg" />
-                        </IconButton>
-                    ) : (
-                        <IconButton style={{ borderRadius: '5px', cursor: 'default' }}>
-                            <img src="/icons/delete-filters.svg" />
-                        </IconButton>
-                    )}
+                    <FilterButton
+                        onClick={() => {
+                            setSearchText('');
+                            setCategoriesToShow(categoriesArray);
+                        }}
+                        text={i18next.t('entitiesTableOfTemplate.resetFilters')}
+                        disabled={isFilterButtonDisabled}
+                    />
                 </Grid>
             </Grid>
 

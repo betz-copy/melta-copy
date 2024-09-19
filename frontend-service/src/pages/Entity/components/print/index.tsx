@@ -1,14 +1,17 @@
+import { PrintOutlined } from '@mui/icons-material';
+import { Button } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
+import { IConnectionTemplateOfExpandedEntity } from '../..';
+import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
 import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import { ComponentToPrint } from './ComponentToPrint';
-import { PrintOptionsDialog } from '../../../../common/print/PrintOptionsDialog';
-import { IConnectionTemplateOfExpandedEntity } from '../..';
 import { IFile } from '../../../../interfaces/preview';
+import { ComponentToPrint } from './ComponentToPrint';
+import './print.css';
 
 const Print: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -39,6 +42,7 @@ const Print: React.FC<{
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${entityTemplate.category.displayName}-${entityTemplate.displayName}-${new Date().toLocaleDateString('en-uk')}`,
+        bodyClass: 'print-body',
     });
 
     const getPageMargins = () => {
@@ -48,9 +52,12 @@ const Print: React.FC<{
 
     return (
         <>
-            <IconButtonWithPopover popoverText={i18next.t('entityPage.print.header')} iconButtonProps={{ onClick: handleOpen }}>
-                <img src="/icons/print.svg" />
-            </IconButtonWithPopover>
+            <MeltaTooltip title={i18next.t('entityPage.print.header')}>
+                <Button variant="contained" startIcon={<PrintOutlined />} onClick={handleOpen}>
+                    {i18next.t('actions.print')}
+                </Button>
+            </MeltaTooltip>
+
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
                 <ComponentToPrint

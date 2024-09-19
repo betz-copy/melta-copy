@@ -19,6 +19,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -33,6 +34,8 @@ import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
+import { SwitchThemeButton } from './SwitchThemeButton';
+import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
     toggleDrawer: () => any;
@@ -45,6 +48,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -81,16 +86,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
-        <Drawer
-            ref={drawerRef}
-            variant="permanent"
-            open={isDrawerOpen}
-            PaperProps={{ sx: { backgroundColor: theme.palette.primary.main } }}
-            data-tour="side-bar"
-            style={{ zIndex: '1' }}
-            sx={{ zIndex: '1' }}
-        >
-            <Grid container direction="column" wrap="nowrap" height="100%" bgcolor={theme.palette.primary.main}>
+        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
+            <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
                 <Grid
                     item
                     container
@@ -214,14 +211,14 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         )}
                     </Grid>
 
-                    {/* 
-                    // TODO - implement when dark mode will be supported
-                    <SwitchThemeButton
-                        text={i18next.t('sideBar.changeTheme')}
-                        isDrawerOpen={isDrawerOpen}
-                        darkMode={darkMode}
-                        onClick={() => dispatch(toggleDarkMode())}
-                    /> */}
+                    <Grid container item marginTop="1rem" width="90%" justifyContent="center">
+                        <SwitchThemeButton
+                            text={i18next.t('sideBar.changeTheme')}
+                            isDrawerOpen={isDrawerOpen}
+                            darkMode={darkMode}
+                            onClick={toggleDarkMode}
+                        />
+                    </Grid>
                 </Grid>
 
                 <Grid
@@ -237,7 +234,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
-                        marginTop: isDrawerOpen ? '25px' : '0px',
+                        marginTop: isDrawerOpen ? '0.5rem' : '0.25rem',
                     }}
                 >
                     {Array.from(
@@ -386,7 +383,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         onClick={toggleDrawer}
                         style={{
                             height: '50px',
-                            width: '30px',
+                            width: '27px',
                             position: 'fixed',
                             marginRight: isDrawerOpen ? '219px' : '73px',
                             marginTop: '-4.25rem',
@@ -394,7 +391,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             transition: sideBarTransition,
                         }}
                     >
-                        <img src={`/icons/${isDrawerOpen ? 'close-menu' : 'open-menu'}.svg`} />
+                        {isDrawerOpen ? <CloseDrawerButton /> : <OpenDrawerButton />}
                     </IconButton>
                 </Grid>
             </Grid>

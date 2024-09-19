@@ -1,4 +1,4 @@
-import { Hive as HiveIcon } from '@mui/icons-material';
+import { AddCircle, CloseFullscreenRounded, Expand, Hive as HiveIcon, TableRowsOutlined } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
@@ -12,8 +12,8 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
+import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
@@ -30,6 +30,7 @@ import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
+import { RelationshipIcon } from './RelationshipIcon';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -182,59 +183,57 @@ const ConnectionsTable: React.FC<{
 
                 <Grid item container justifyContent="space-between" alignItems="center">
                     <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('entitiesTableOfTemplate.columns')}
-                            iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            <img src="/icons/columns-settings.svg" />
-                        </IconButtonWithPopover>
-                        <IconButtonWithPopover
-                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                            iconButtonProps={{
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
-                                size: 'small',
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('entitiesTableOfTemplate.columns'),
+                                iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
                             }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
-                        </IconButtonWithPopover>
+                            icon={<TableRowsOutlined fontSize="small" />}
+                            text={i18next.t('entitiesTableOfTemplate.columns')}
+                        />
+
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: isExpand
+                                    ? i18next.t('entitiesTableOfTemplate.expandLess')
+                                    : i18next.t('entitiesTableOfTemplate.expandMore'),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        setIsExpand(!isExpand);
+                                    },
+                                },
+                            }}
+                            icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
+                            text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
+                        />
+
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                     </Grid>
-                    <IconButtonWithPopover
-                        style={{ borderRadius: '10px' }}
-                        popoverText={
-                            isEditButtonsDisabled
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: isEditButtonsDisabled
                                 ? disabledButtonText
-                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`)
-                        }
-                        disabled={isEditButtonsDisabled || relationshipTemplate.isProperty}
-                        iconButtonProps={{
-                            onClick: () => {
-                                const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
-                                    ? [expandedEntity.entity, null]
-                                    : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
-                                setCreateRelationshipDialogState({
-                                    isOpen: true,
-                                    initialValues: {
-                                        relationshipTemplate,
-                                        sourceEntity: defaultSourceEntity,
-                                        destinationEntity: defaultDestinationEntity,
-                                    },
-                                });
+                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`),
+                            disabled: isEditButtonsDisabled || relationshipTemplate.isProperty,
+                            iconButtonProps: {
+                                onClick: () => {
+                                    const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
+                                        ? [expandedEntity.entity, null]
+                                        : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
+                                    setCreateRelationshipDialogState({
+                                        isOpen: true,
+                                        initialValues: {
+                                            relationshipTemplate,
+                                            sourceEntity: defaultSourceEntity,
+                                            destinationEntity: defaultDestinationEntity,
+                                        },
+                                    });
+                                },
                             },
                         }}
-                    >
-                        <img
-                            src={
-                                isEditButtonsDisabled || relationshipTemplate.isProperty
-                                    ? '/icons/add-relation-icon-disabled.svg'
-                                    : '/icons/add-relation-icon.svg'
-                            }
-                        />
-                    </IconButtonWithPopover>
+                        icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
+                        text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
+                    />
                 </Grid>
             </Grid>
             <Box
@@ -429,7 +428,7 @@ const Entity: React.FC = () => {
                 <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
                     <Grid item container xs={5} alignItems="center" gap="20px">
                         <Grid item alignContent="center">
-                            <img src="\icons\relations-icon.svg" />
+                            <RelationshipIcon />
                         </Grid>
                         <Grid item>
                             <BlueTitle
@@ -536,7 +535,9 @@ const Entity: React.FC = () => {
                                                     connectionTemplate={connectionTemplate}
                                                     isEditButtonsDisabled={isEditButtonsDisabled}
                                                     disabledButtonText={disabledButtonText}
-                                                    hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
+                                                    hasPermissionToCategory={Boolean(
+                                                        currentUser.currentWorkspacePermissions.admin || permissionToRelatedCategory,
+                                                    )}
                                                 />
                                             ))}
                                         </TabPanel>
