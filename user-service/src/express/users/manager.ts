@@ -47,6 +47,7 @@ export class UsersManager {
         const users = await UsersModel.find(query, {}, { limit, skip: step * limit })
             .lean()
             .exec();
+
         const count = await UsersModel.countDocuments(query);
 
         return { users, count };
@@ -59,8 +60,8 @@ export class UsersManager {
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
-        return baseUsers.users.map(({ _id }) => _id);
+        const { users } = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
+        return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(
@@ -70,8 +71,8 @@ export class UsersManager {
         limit: number,
         step: number,
     ): Promise<{ users: IUser[]; count: number }> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
-        return { users: await this.appendPermissionsToUsers(baseUsers.users), count: baseUsers.count };
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
+        return { users: await this.appendPermissionsToUsers(users), count };
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {

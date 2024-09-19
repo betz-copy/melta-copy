@@ -1,12 +1,5 @@
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import {
-    ColDef,
-    GetQuickFilterTextParams,
-    ICellRendererParams,
-    IServerSideDatasource,
-    IServerSideGetRowsParams,
-    ModuleRegistry,
-} from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams, ModuleRegistry } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
@@ -61,15 +54,6 @@ const columnDefs = (
         field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
         filter: 'agTextColumnFilter',
-        getQuickFilterText: (params) => {
-            const {
-                _id,
-                displayName,
-                externalMetadata: { digitalIdentitySource },
-            } = params.data;
-
-            return `${_id} ${displayName} ${digitalIdentitySource}`;
-        },
     },
     {
         field: 'externalMetadata.digitalIdentitySource',
@@ -105,21 +89,6 @@ const columnDefs = (
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
-        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
-            const permissionsOfCategories =
-                params.data?.permissions[workspaceId]?.admin?.scope === PermissionScope.write
-                    ? Object.keys(params.value ?? {}).map((category) => {
-                          return (
-                              categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
-                                  _id: category,
-                                  name: category,
-                                  displayName: category,
-                              }
-                          );
-                      })
-                    : categories;
-            return permissionsOfCategories.map(({ displayName }) => displayName).join(' ');
-        },
         filter: false, // todo: do set filter with `.includes` logic
         suppressMenu: true,
         // filter: 'agSetColumnFilter',
@@ -198,31 +167,28 @@ const columnDefs = (
     },
 ];
 
-export const getDatasource = <Data extends any = IUser>(
-    workspace: IWorkspace,
+const getDatasource = <Data extends any = IUser>(
+    { _id }: IWorkspace,
     quickFilter: string | undefined,
-    onFail: ((err: unknown) => void) | undefined,
+    onFail: (err: unknown) => void | undefined,
 ): IServerSideDatasource => {
     return {
-        async getRows(params: IServerSideGetRowsParams<Data>) {
-            const agGridRequest = params.request;
-            const { startRow, endRow } = agGridRequest;
-
+        async getRows({ request: { startRow, endRow }, success, fail }: IServerSideGetRowsParams<Data>) {
             const { result: data, err } = await trycatch(() =>
                 searchUsersRequest({
-                    workspaceId: workspace._id,
+                    workspaceId: _id,
                     step: startRow! / infiniteScrollPageCount,
                     limit: endRow! - startRow!,
-                    search: quickFilter === '' ? undefined : quickFilter,
+                    search: quickFilter || undefined,
                 }),
             );
 
             if (err || !data) {
                 onFail?.(err);
-                params.fail();
+                fail();
                 return;
             }
-            params.success({
+            success({
                 rowData: data.users,
                 rowCount: data.count,
             });
@@ -235,7 +201,7 @@ const Table: React.FC<{
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
-    datasourceOnFail: ((err: unknown) => void) | undefined;
+    datasourceOnFail: (err: unknown) => void | undefined;
 }> = ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText, datasourceOnFail }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 

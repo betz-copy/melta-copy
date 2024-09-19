@@ -307,6 +307,7 @@ export default {
         },
     },
     permissions: {
+        searchUser: 'חיפוש שם משתמש',
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
         sourceHeaderName: 'מקור',
