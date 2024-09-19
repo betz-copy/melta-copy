@@ -10,9 +10,10 @@ import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import i18next from 'i18next';
-import React from 'react';
+import React, { useMemo } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -196,14 +197,41 @@ const getDatasource = <Data extends any = IUser>(
     };
 };
 
+const getRowModelProps = <Data extends any = IUser>(
+    workspace: IWorkspace,
+    paginationPageSize: number,
+    quickFilterText: string | undefined,
+    datasourceOnFail: (err: unknown) => void,
+): React.ComponentProps<typeof AgGridReact<Data>> => {
+    return {
+        rowModelType: 'serverSide',
+        serverSideDatasource: getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail),
+        cacheBlockSize: infiniteScrollPageCount,
+        maxBlocksInCache: infiniteScrollPageCount,
+        pagination: true,
+        paginationPageSize,
+    };
+};
+
+export { getRowModelProps };
+
 const Table: React.FC<{
     categories: IMongoCategory[];
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
     quickFilterText: string;
-    datasourceOnFail: (err: unknown) => void | undefined;
-}> = ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText, datasourceOnFail }) => {
+}> = ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const datasourceOnFail = (error) => {
+        console.log('failed loading all users:', error);
+        toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
+    };
+
+    const rowModelProps = useMemo(
+        () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail),
+        [quickFilterText, workspace],
+    );
 
     return (
         <AgGridReact<IUser>
@@ -212,14 +240,9 @@ const Table: React.FC<{
             containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
             defaultColDef={defaultColDef}
             columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
-            rowModelType="serverSide"
-            serverSideDatasource={getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail)}
             getRowId={({ data: { _id } }) => _id}
-            pagination
+            {...rowModelProps}
             paginationAutoPageSize
-            cacheBlockSize={infiniteScrollPageCount}
-            maxBlocksInCache={infiniteScrollPageCount}
-            paginationPageSize={infiniteScrollPageCount}
             rowHeight={defaultRowHeight}
             rowStyle={{ alignItems: 'center' }}
             enableRtl

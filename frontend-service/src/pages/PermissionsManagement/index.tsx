@@ -3,7 +3,6 @@ import { Divider, Grid, IconButton, InputAdornment, TextField, useTheme } from '
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
 import _debounce from 'lodash.debounce';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
 import '../../css/pages.css';
@@ -93,7 +92,14 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                                                 backgroundColor: theme.palette.primary.main,
                                             }}
                                         />
-                                        <img color="#1E2775" width="14px" height="14px" style={{}} src="/icons/search-blue.svg" />
+                                        <IconButton
+                                            style={{ color: theme.palette.primary.main }}
+                                            onClick={() => setQuickFilterText(search)}
+                                            sx={{ padding: 0 }}
+                                            disableRipple
+                                        >
+                                            <img color="#1E2775" width="14px" height="14px" style={{}} src="/icons/search-blue.svg" />
+                                        </IconButton>
                                     </InputAdornment>
                                 ),
                                 startAdornment: <InputAdornment position="start" />,
@@ -113,10 +119,6 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                             onDeletePermissionsOfUser={(existingUser) => setDeletePermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             onEditPermissionsOfUser={(existingUser) => setEditPermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             quickFilterText={quickFilterText}
-                            datasourceOnFail={(error) => {
-                                console.log('failed loading all users:', error);
-                                toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
-                            }}
                         />
                     )}
                 </Grid>
