@@ -257,7 +257,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }
