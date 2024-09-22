@@ -60,7 +60,7 @@ const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
 const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = {
         _id: uuid(),
         createdAt: '',
@@ -82,8 +82,9 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', (prevData) => prevData!.set(data._id, data));
+                queryClient.invalidateQueries(['searchProcessTemplates']);
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.processTemplate.editedSuccefully'));
+                    toast.success(i18next.t('wizard.processTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.processTemplate.createdSuccessfully'));
                 }
@@ -104,12 +105,12 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t(isEditMode ? 'wizard.processTemplate.editTitle' : 'wizard.processTemplate.title')}
             steps={stepsComponents}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

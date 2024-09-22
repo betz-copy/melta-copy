@@ -69,7 +69,7 @@ const steps: StepsType<RelationshipTemplateWizardValues> = [
 const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { ...defaultInitialValues },
     isEditMode = false,
 }) => {
@@ -88,9 +88,10 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
                     relationshipTemplateMap!.set(data._id, data),
                 );
+                queryClient.invalidateQueries(['searchRelationshipTemplates']);
 
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.relationshipTemplate.editedSuccefully'));
+                    toast.success(i18next.t('wizard.relationshipTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.relationshipTemplate.createdSuccessfully'));
                 }
@@ -111,12 +112,12 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.relationshipTemplate.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={mutateAsync}
+            submitFunction={mutateAsync}
         />
     );
 };

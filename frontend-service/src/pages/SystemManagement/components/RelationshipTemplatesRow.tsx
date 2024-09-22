@@ -8,6 +8,7 @@ import { toast } from 'react-toastify';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
@@ -27,6 +28,8 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -82,9 +85,12 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                         },
                                     });
                                 }}
-                                onDeleteClick={() =>
-                                    setDeleteRelationshipTemplateDialogState({ isDialogOpen: true, relationshipTemplateId: relationshipTemplate._id })
-                                }
+                                onDeleteClick={() => {
+                                    setDeleteRelationshipTemplateDialogState({
+                                        isDialogOpen: true,
+                                        relationshipTemplateId: relationshipTemplate._id,
+                                    });
+                                }}
                                 disabledProps={{
                                     isDisabled: false,
                                     canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
@@ -125,6 +131,8 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const [searchText, setSearchText] = useState('');
 
+    const [isSrcRelationChecked, setIsSrcRelationChecked] = useState(true);
+
     const isFilterButtonDisabled = useMemo(
         () =>
             !(
@@ -134,8 +142,6 @@ const RelationshipTemplatesRow: React.FC = () => {
             ),
         [destinationEntityTemplatesToShow, entityTemplatesArray, searchText, sourceEntityTemplatesToShow],
     );
-
-    const [isSrcRelationChecked, setIsSrcRelationChecked] = useState(true);
 
     const [deleteRelationshipTemplateDialogState, setDeleteRelationshipTemplateDialogState] = useState<{
         isDialogOpen: boolean;
@@ -160,6 +166,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relationshipTemplateMap!;
             });
             setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
+            queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
         onError: (error: AxiosError) => {
@@ -264,89 +271,112 @@ const RelationshipTemplatesRow: React.FC = () => {
             </Grid>
 
             <Grid container gap="30px" marginTop="30px">
-                {getRelationshipGroupedByEntitiesTemplate(
-                    filterRelationships({
-                        relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
-                            populateRelationshipTemplate(relationshipTemplate, entityTemplates),
-                        ),
-                        destinationEntityTemplatesToShow,
-                        sourceEntityTemplatesToShow,
-                        searchText,
-                    }),
-                ).map((relationshipTemplateWithEntity) => (
-                    <Box
-                        header={
-                            <Grid
-                                item
-                                container
-                                direction={isSrcRelationChecked ? 'row' : 'row-reverse'}
-                                justifyContent="flex-start"
-                                alignItems="center"
-                                gap="10px"
-                                padding="0px 15px"
-                                sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
-                            >
-                                {relationshipTemplateWithEntity.entityTemplate.iconFileId ? (
-                                    <CustomIcon
-                                        iconUrl={relationshipTemplateWithEntity.entityTemplate.iconFileId}
-                                        height="24px"
-                                        width="24px"
-                                        color={theme.palette.primary.main}
-                                    />
-                                ) : (
-                                    <AppRegistrationIcon color="primary" style={{ ...environment.iconSize }} fontSize="small" />
-                                )}
-                                <Typography
-                                    color={theme.palette.primary.main}
-                                    style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                <InfiniteScroll<{
+                    entityTemplate: IMongoEntityTemplatePopulated;
+                    relationships: IMongoRelationshipTemplatePopulated[];
+                }>
+                    queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow]}
+                    queryFunction={({ pageParam }) => {
+                        return getRelationshipGroupedByEntitiesTemplate(
+                            filterRelationships({
+                                relationshipTemplates: Array.from(relationshipTemplates.values()).map((relationshipTemplate) =>
+                                    populateRelationshipTemplate(relationshipTemplate, entityTemplates),
+                                ),
+                                destinationEntityTemplatesToShow,
+                                sourceEntityTemplatesToShow,
+                                searchText,
+                            }),
+                        ).splice(pageParam, infiniteScrollPageCount);
+                    }}
+                    onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.log('failed to search process templates error:', error);
+                        toast.error(i18next.t('failedToLoadResults'));
+                    }}
+                    getItemId={(relationshipTemplateWithEntity) => relationshipTemplateWithEntity.entityTemplate._id}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
+                    }}
+                    endText={i18next.t('noSearchLeft')}
+                    emptyText={i18next.t('failedToGetTemplates')}
+                    useContainer={false}
+                >
+                    {(relationshipTemplateWithEntity) => (
+                        <Box
+                            header={
+                                <Grid
+                                    item
+                                    container
+                                    direction={isSrcRelationChecked ? 'row' : 'row-reverse'}
+                                    justifyContent="flex-start"
+                                    alignItems="center"
+                                    gap="10px"
+                                    padding="0px 15px"
+                                    sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}
                                 >
-                                    {relationshipTemplateWithEntity.entityTemplate.displayName}
-                                </Typography>
-                                <ArrowBack color="primary" fontSize="small" />
-                            </Grid>
-                        }
-                        key={relationshipTemplateWithEntity.entityTemplate._id}
-                        addingIcon={
-                            <CreateButton
-                                onClick={() => {
-                                    if (isSrcRelationChecked)
-                                        setRelationshipTemplateWizardDialogState({
-                                            isWizardOpen: true,
-                                            relationshipTemplate: {
-                                                ...defaultRelationshipTemplate,
-                                                sourceEntityId: relationshipTemplateWithEntity.entityTemplate._id,
-                                            },
-                                        });
-                                    else
-                                        setRelationshipTemplateWizardDialogState({
-                                            isWizardOpen: true,
-                                            relationshipTemplate: {
-                                                ...defaultRelationshipTemplate,
-                                                destinationEntityId: relationshipTemplateWithEntity.entityTemplate._id,
-                                            },
-                                        });
-                                }}
-                                text={i18next.t('systemManagement.newRelationshipTemplate')}
-                            />
-                        }
-                    >
-                        {relationshipTemplateWithEntity.relationships.map((relationshipTemplate) => (
-                            <RelationshipTemplateCard
-                                key={relationshipTemplate._id}
-                                relationshipTemplate={relationshipTemplate}
-                                setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
-                                setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
-                            />
-                        ))}
-                    </Box>
-                ))}
+                                    {relationshipTemplateWithEntity.entityTemplate.iconFileId ? (
+                                        <CustomIcon
+                                            iconUrl={relationshipTemplateWithEntity.entityTemplate.iconFileId}
+                                            height="24px"
+                                            width="24px"
+                                            color={theme.palette.primary.main}
+                                        />
+                                    ) : (
+                                        <AppRegistrationIcon color="primary" style={{ ...environment.iconSize }} fontSize="small" />
+                                    )}
+                                    <Typography
+                                        color={theme.palette.primary.main}
+                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                                    >
+                                        {relationshipTemplateWithEntity.entityTemplate.displayName}
+                                    </Typography>
+                                    <ArrowBack color="primary" fontSize="small" />
+                                </Grid>
+                            }
+                            key={relationshipTemplateWithEntity.entityTemplate._id}
+                            addingIcon={
+                                <CreateButton
+                                    onClick={() => {
+                                        if (isSrcRelationChecked)
+                                            setRelationshipTemplateWizardDialogState({
+                                                isWizardOpen: true,
+                                                relationshipTemplate: {
+                                                    ...defaultRelationshipTemplate,
+                                                    sourceEntityId: relationshipTemplateWithEntity.entityTemplate._id,
+                                                },
+                                            });
+                                        else
+                                            setRelationshipTemplateWizardDialogState({
+                                                isWizardOpen: true,
+                                                relationshipTemplate: {
+                                                    ...defaultRelationshipTemplate,
+                                                    destinationEntityId: relationshipTemplateWithEntity.entityTemplate._id,
+                                                },
+                                            });
+                                    }}
+                                    text={i18next.t('systemManagement.newRelationshipTemplate')}
+                                />
+                            }
+                        >
+                            {relationshipTemplateWithEntity.relationships.map((relationshipTemplate) => (
+                                <RelationshipTemplateCard
+                                    key={relationshipTemplate._id}
+                                    relationshipTemplate={relationshipTemplate}
+                                    setDeleteRelationshipTemplateDialogState={setDeleteRelationshipTemplateDialogState}
+                                    setRelationshipTemplateWizardDialogState={setRelationshipTemplateWizardDialogState}
+                                />
+                            ))}
+                        </Box>
+                    )}
+                </InfiniteScroll>
             </Grid>
 
             <RelationshipTemplateWizard
                 open={relationshipTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: false, relationshipTemplate: null })}
                 initialValues={relationshipTemplateObjectToRelationshipTemplateForm(
-                    entityTemplates,
+                    entityTemplates!,
                     relationshipTemplateWizardDialogState.relationshipTemplate,
                 )}
                 isEditMode={Boolean(relationshipTemplateWizardDialogState.relationshipTemplate?._id)}

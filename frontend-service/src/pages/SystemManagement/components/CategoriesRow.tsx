@@ -153,14 +153,15 @@ const CategoriesRow: React.FC = () => {
                 }
                 onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
             >
-                {Array.from(categories.values(), (category) => (
-                    <CategoryCard
-                        key={category._id}
-                        category={category}
-                        setCategoryWizardDialogState={setCategoryWizardDialogState}
-                        setDeleteCategoryDialogState={setDeleteCategoryDialogState}
-                    />
-                ))}
+                {categories &&
+                    Array.from(categories.values(), (category) => (
+                        <CategoryCard
+                            key={category._id}
+                            category={category}
+                            setCategoryWizardDialogState={setCategoryWizardDialogState}
+                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
+                        />
+                    ))}
             </Box>
 
             {/* TODO - add when category group will be supported */}
