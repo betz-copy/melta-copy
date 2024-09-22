@@ -17,37 +17,6 @@ const cacheRtl = createCache({
 const Main: React.FC = () => {
     // const [activeTheme, setActiveTheme] = useState(lightTheme);
 
-    // useEffect(() => {
-    //     const savedScrollPosition = sessionStorage.getItem(`scrollPosition-${window.location.pathname}`);
-
-    //     if (savedScrollPosition && pageScrollTarget) {
-    //         setTimeout(() => {
-    //             requestAnimationFrame(() => {
-    //                 pageScrollTarget.scrollTo({
-    //                     top: parseInt(savedScrollPosition, 10),
-    //                     behavior: 'smooth',
-    //                 });
-    //             });
-    //         }, 150);
-    //     }
-
-    //     const handleScroll = debounce(() => {
-    //         if (pageScrollTarget) {
-    //             sessionStorage.setItem(`scrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
-    //         }
-    //     }, 300);
-
-    //     if (pageScrollTarget) {
-    //         pageScrollTarget.addEventListener('scroll', handleScroll);
-    //     }
-
-    //     return () => {
-    //         if (pageScrollTarget) {
-    //             pageScrollTarget.removeEventListener('scroll', handleScroll);
-    //         }
-    //     };
-    // }, [pageScrollTarget, window.location.pathname]);
-
     // TODO - implement when dark mode will be supported
     // const handleToggleTheme = () => {
     //     if (activeTheme.palette.mode === 'light') setActiveTheme(darkTheme);

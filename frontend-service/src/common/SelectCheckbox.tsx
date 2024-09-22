@@ -534,6 +534,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         horizontal: horizontalOrigin,
                     },
                 }}
+                // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={() => (
                     <Box
                         display="flex"
