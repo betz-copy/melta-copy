@@ -8,7 +8,12 @@ import { IUser } from '../../interfaces/users';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 
-const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void }> = ({ isOpen, handleClose, user }) => {
+const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | null; handleClose: () => void; onSuccess: () => void }> = ({
+    isOpen,
+    handleClose,
+    user,
+    onSuccess,
+}) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const { mutateAsync: deleteAllPermissionsOfUser, isLoading: isLoadingDeleteAllPermissionsOfUser } = useMutation(
         () =>
@@ -21,6 +26,7 @@ const DeletePermissionsOfUserDialog: React.FC<{ isOpen: boolean; user: IUser | n
                 toast.error(i18next.t('permissions.failedToDeleteUser'));
             },
             onSuccess: (_data) => {
+                onSuccess();
                 toast.success(i18next.t('permissions.succeededToDeleteUser'));
             },
         },

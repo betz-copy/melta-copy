@@ -48,7 +48,8 @@ const PermissionsOfUserDialog: React.FC<{
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
-}> = ({ isOpen, handleClose, mode, existingUser }) => {
+    onSuccess?: (user?: IUser) => void;
+}> = ({ isOpen, handleClose, mode, existingUser, onSuccess }) => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -70,6 +71,7 @@ const PermissionsOfUserDialog: React.FC<{
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
             onSuccess: () => {
+                onSuccess?.();
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
                 handleClose();
             },
@@ -374,6 +376,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                     userHasNoPermissions(formikProps.values.permissions[workspace._id])
                                                 }
                                                 variant="contained"
+                                                onClick={() => mode === 'edit' && onSuccess?.(formikProps.values)}
                                             >
                                                 {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                                 {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
