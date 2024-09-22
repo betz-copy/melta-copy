@@ -64,7 +64,7 @@ describe('Entity manager', () => {
 
     describe('Create entity', () => {
         it('Should create new entity', async () => {
-            const res = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+            const res = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);
@@ -81,13 +81,13 @@ describe('Entity manager', () => {
         };
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+            const { properties } = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             id = properties._id;
         });
 
         it('Should update an entity', async () => {
-            const res = await EntityManager.updateEntityById(id, newProperties, entityTemplate, [], neo4j.mockUserId);
+            const res = await EntityManager.updateEntityById(id, newProperties, entityTemplate, [], neo4j.mockUserId).updatedEntity;
 
             expect(res).toBeDefined();
             expect(res.templateId).toBe(defaultTemplateId);
@@ -119,7 +119,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            const { properties } = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+            const { properties } = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             id = properties._id;
         });
@@ -146,7 +146,7 @@ describe('Entity manager', () => {
         mapTemplate.set(defaultTemplateId, entityTemplate);
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+            firstEntity = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             id = firstEntity.properties._id;
         });
@@ -182,7 +182,7 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId);
+                const secondEntity = (await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -242,7 +242,7 @@ describe('Entity manager', () => {
 
             beforeEach(async () => {
                 // Create second entity
-                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId);
+                const secondEntity = (await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -258,7 +258,7 @@ describe('Entity manager', () => {
                 );
 
                 // Create third entity
-                const thirdEntity = await EntityManager.createEntity(thirdEntityProperties, entityTemplate, [], neo4j.mockUserId);
+                const thirdEntity = (await EntityManager.createEntity(thirdEntityProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(
@@ -314,7 +314,7 @@ describe('Entity manager', () => {
         let id: string;
 
         beforeEach(async () => {
-            firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+            firstEntity = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             id = firstEntity.properties._id;
         });
@@ -330,7 +330,7 @@ describe('Entity manager', () => {
                 // Create second entity
                 const secondEntityProperties = { testProp: 'testProp' };
 
-                const secondEntity = await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId);
+                const secondEntity = (await EntityManager.createEntity(secondEntityProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
                 // Create relationship between two entities
                 await RelationshipManager.createRelationshipByEntityIds(

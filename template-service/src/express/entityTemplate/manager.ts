@@ -252,6 +252,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             .lean()
             .exec();
     }
+
+    async updateEntityTemplateAction(id: string, actions: string) {
+        return this.model
+            .findByIdAndUpdate(id, { actions }, { new: true })
+            .populate('category')
+            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .lean()
+            .exec();
+    }
 }
 
 export default EntityTemplateManager;

@@ -67,7 +67,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     refetchQuery,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
     const currentUser = useUserStore((state) => state.user);
@@ -205,7 +205,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     if (!userHasWritePermissions) return;
                                     setEditDialog({ isOpen: true, entity });
                                     setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                                    setExternalErrors({ files: false, unique: {} });
+                                    setExternalErrors({ files: false, unique: {}, action: '' });
                                     toast.dismiss();
                                 },
                                 popoverText: i18next.t(
@@ -481,7 +481,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     initialCurrValues={editDialog.wizardValues}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setExternalErrors({ files: false, unique: {}, action: '' });
                         refetchQuery?.();
                     }}
                     handleClose={() => {

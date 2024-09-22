@@ -48,7 +48,7 @@
     "passport": "^0.7.0",
     "passport-http": "^0.3.0",
     "passport-jwt": "^4.0.1",
-    "passport-shraga": "^1.4.0",
+    "@yesodot/passport-shraga": "^1.5.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "supertest": "^7.0.0",
