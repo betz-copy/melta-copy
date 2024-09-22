@@ -20,7 +20,7 @@ export class UsersManager {
     static async searchBaseUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
     ): Promise<{ users: IBaseUser[]; count: number }> {
@@ -38,8 +38,8 @@ export class UsersManager {
             ];
         }
 
-        if (permissions || workspaceId) {
-            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceId);
+        if (permissions || workspaceIds) {
+            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
             query._id = { $in: [...usersIds] };
         }
@@ -56,22 +56,22 @@ export class UsersManager {
     static async searchUserIds(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const { users } = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
+        const { users } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
         return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
     ): Promise<{ users: IUser[]; count: number }> {
-        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
         return { users: await this.appendPermissionsToUsers(users), count };
     }
 
