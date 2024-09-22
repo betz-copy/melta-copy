@@ -7,7 +7,7 @@ COPY .npmrc ./
 
 RUN --mount=type=secret,id=npm_token \
     NPM_TOKEN=$(cat /run/secrets/npm_token) \
-    npm install --silent --progress=false
+    npm ci --silent --progress=false
 
 COPY . .
 
@@ -24,7 +24,7 @@ COPY .npmrc ./
 
 RUN --mount=type=secret,id=npm_token \
     NPM_TOKEN=$(cat /run/secrets/npm_token) \
-    npm install --omit=dev --silent --progress=false
+    npm ci --omit=dev --silent --progress=false
 
 RUN rm -f .npmrc
 
