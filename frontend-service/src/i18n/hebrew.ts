@@ -315,7 +315,7 @@ export default {
         sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
-        permissionsManagmentPageTitle: 'ניהול הרשאות',
+        permissionsManagementPageTitle: 'ניהול הרשאות',
         rulesManagement: 'ניהול חוקים',
         processesManagement: 'ניהול תהליכים',
         failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',

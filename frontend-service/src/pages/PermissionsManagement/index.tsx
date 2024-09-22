@@ -1,7 +1,7 @@
 import { AddCircle } from '@mui/icons-material';
 import { Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import _debounce from 'lodash.debounce';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
@@ -36,10 +36,14 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
 
     const [search, setSearch] = useState('');
 
-    useEffect(() => setTitle(i18next.t('permissions.permissionsManagmentPageTitle')), [setTitle]);
+    useEffect(() => setTitle(i18next.t('permissions.permissionsManagementPageTitle')), [setTitle]);
 
     const permissionsTableRef = useRef<PermissionsTableRef<IUser>>(null);
 
+    const debouncedSetQuickFilterText = useCallback(
+        _debounce((value: string) => setQuickFilterText(value), 1000),
+        [],
+    );
     return (
         <Grid container className="pageMargin" spacing={3}>
             <Grid item container xs={12} spacing={1}>
@@ -48,9 +52,9 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                     <Grid item flex={1}>
                         <SearchInput
                             value={search}
-                            onChange={setSearch}
-                            onKeyDown={(event) => {
-                                if (event.key === 'Enter') setQuickFilterText(search);
+                            onChange={(value) => {
+                                setSearch(value);
+                                debouncedSetQuickFilterText(value);
                             }}
                             placeholder={i18next.t('permissions.searchUser')}
                             size="medium"
