@@ -1,9 +1,8 @@
-import passport from 'passport';
-import { Strategy as ShragaStrategy } from 'passport-shraga';
-import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
-import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
-
 import { Request } from 'express';
+import passport from 'passport';
+import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
+import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
+import { Strategy as ShragaStrategy } from '@yesodot/passport-shraga';
 import config from '../../config/index';
 
 const {
@@ -32,7 +31,7 @@ export interface ShragaUser {
     jti: string;
 }
 
-export interface IUser {
+export interface IConnectedUser {
     id: string;
 }
 
@@ -44,7 +43,7 @@ const verifyAllowedUserBasicStrategy: BasicVerifyFunctionWithRequest = (_req, us
         return;
     }
 
-    done(null, { id: userId } as IUser);
+    done(null, { id: userId } as IConnectedUser);
 };
 
 export const initPassport = () => {
@@ -57,7 +56,7 @@ export const initPassport = () => {
                 },
                 secretOrKey: tokenSecret,
             },
-            (payload: IUser, next: VerifiedCallback) => {
+            (payload: IConnectedUser, next: VerifiedCallback) => {
                 if (payload) {
                     return next(null, payload);
                 }
@@ -85,6 +84,6 @@ declare global {
     // These declaration are merged into express's Request type
     // this extends @types/passport which extends @types/express
     namespace Express {
-        export interface User extends IUser {}
+        export interface User extends IConnectedUser {}
     }
 }

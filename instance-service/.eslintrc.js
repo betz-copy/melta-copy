@@ -40,7 +40,9 @@ module.exports = {
         'no-plusplus': 'off', // shitty rule
         'import/prefer-default-export': 'off',
         'no-restricted-syntax': 'off',
+        'class-methods-use-this': 'off',
         'valid-typeof': ['error', { requireStringLiterals: false }],
         semi: [2, 'always'],
+        'class-methods-use-this': 'off',
     },
 };

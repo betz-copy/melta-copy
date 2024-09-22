@@ -5,6 +5,7 @@ const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
         meltaBaseUrl: env.get('SYSTEM_MELTA_BASE_URL').required().asString(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         systemUnavailableURL: env.get('SYSTEM_UNAVAILABLE_URL').required().asString(),
         uploadsFolderPath: env.get('UPLOADS_FOLDER_PATH').default('public/uploads/').asString(),
         maxFileSize: env.get('MAX_FILE_BYTE_SIZE').required().asInt(),
@@ -30,6 +31,7 @@ const config = {
             useEnrichId: env.get('USE_ENRICH_ID').default('true').asBool(),
             accessTokenName: env.get('ACCESS_TOKEN_NAME').required().asString(),
             accessTokenExpirationTime: env.get('ACCESS_TOKEN_EXPIRATION_TIME').default('1d').asString(),
+            unauthorizedId: env.get('UNAUTHORIZED_ID').default('unauthorized').asString(),
         },
         basicAuthentication: {
             // userId must be users of kartoffel with permissions in our permissions-api DB
@@ -39,6 +41,7 @@ const config = {
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates').asString(),
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
@@ -55,6 +58,7 @@ const config = {
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('STORAGE_SERVICE_BASE_ROUTE').default('/api/files').asString(),
         uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),
         uploadFilesRoute: env.get('STORAGE_SERVICE_UPLOAD_FILES_ROUTE').default('api/files/bulk').asString(),
         downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').default('api/files').asString(),
@@ -66,6 +70,7 @@ const config = {
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('INSTANCE_SERVICE_BASE_ROUTE').default('/api/instances').asString(),
         baseEntitiesRoute: env.get('INSTANCE_SERVICE_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
         baseRelationshipsRoute: env.get('INSTANCE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
@@ -74,9 +79,10 @@ const config = {
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
     },
-    permissionService: {
-        baseUrl: env.get('PERMISSION_SERVICE_BASE_URL').required().asString(),
-        baseRoute: env.get('PERMISSION_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
+    userService: {
+        url: env.get('USER_SERVICE_URL').required().asString(),
+        usersRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/users').asString(),
+        permissionsRoute: env.get('USER_SERVICE_BASE_ROUTE').default('/api/permissions').asString(),
         checkAuthorizationRoute: env.get('PERMISSION_SERVICE_CHECK_AUTHERIZATION_ROUTE').default('authorization').asString(),
         requestTimeout: env.get('PERMISSION_SERVICE_REQUEST_TIMEOUT').default(100000).asIntPositive(),
     },
@@ -113,15 +119,20 @@ const config = {
         baseRoute: env.get('PREVIEW_SERVICE_BASE_ROUTE').default('/api/preview').asString(),
         requestTimeout: env.get('PREVIEW_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    workspaceService: {
+        url: env.get('WORKSPACE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('WORKSPACES_SERVICE_BASE_ROUTE').default('/api/workspaces').asString(),
+        requestTimeout: env.get('WORKSPACES_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
     getUsersLimitForPermissionsOfUsers: env.get('GET_USERS_LIMIT_FOR_PERMISSIONS_OF_USERS').default(20).asIntPositive(),
     kartoffel: {
-        baseUrl: env.get('KARTOFFEL_BASE_URL').required().asString(),
+        url: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
+        getByIdentifierRoute: env.get('KARTOFFEL_FIND_USER_BY_IDENTIFIER_ROUTE').default('/identifier').asString(),
+        getByDigitalIdentityRoute: env.get('KARTOFFEL_FIND_USER_BY_DIGITAL_IDENTITY_ROUTE').default('/digitalIdentity').asString(),
+        getByFullNameRoute: env.get('KARTOFFEL_SEARCH_USER_BY_FULLNAME_ROUTE').default('/search').asString(),
+        getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
-        identifierRoute: env.get('KARTOFFEL_FIND_USER_BY_IDENTIFIER_ROUTE').default('/identifier').asString(),
-        digitalIdentityRoute: env.get('KARTOFFEL_FIND_USER_BY_DIGITAL_IDENTITY_ROUTE').default('/digitalIdentity').asString(),
-        idRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
-        fullNameRoute: env.get('KARTOFFEL_SEARCH_USER_BY_FULLNAME_ROUTE').default('/search').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
@@ -142,6 +153,7 @@ const config = {
         },
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
         mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
+        deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),

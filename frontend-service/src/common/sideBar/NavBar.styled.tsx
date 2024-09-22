@@ -1,11 +1,11 @@
 import { styled, ListItemText } from '@mui/material';
-import { NavLink } from 'react-router-dom';
+import { Link } from 'wouter';
 
 const StyledListItemText = styled(ListItemText)({
     marginLeft: '20px',
 });
 
-const StyledLink = styled(NavLink)({
+const StyledLink = styled(Link)({
     textDecoration: 'none',
     color: 'inherit',
 });

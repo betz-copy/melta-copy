@@ -12,12 +12,12 @@ export const getRuleByIdRequestSchema = Joi.object({
 
 // POST api/templates/rule/getMany
 export const getManyRulesByIdsRequestSchema = Joi.object({
-    query: {},    
+    query: {},
     body: {
         rulesIds: Joi.array().items(MongoIdSchema),
     },
-    params: {}
-})
+    params: {},
+});
 
 // POST /api/templates/rules
 export const createRuleRequestSchema = Joi.object({

@@ -1,32 +1,29 @@
-import React, { useEffect, useState } from 'react';
-import i18next from 'i18next';
-import { useSelector, useDispatch } from 'react-redux';
-import { toast } from 'react-toastify';
-import { useQuery, useQueryClient } from 'react-query';
-import Bowser from 'bowser';
-import 'react-toastify/dist/ReactToastify.css';
 import { MatomoProvider } from '@datapunt/matomo-tracker-react';
-import { AuthService } from './services/authService';
-import Main from './Main';
-import { RootState } from './store';
-import { setUser } from './store/reducers/user';
-import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
-import { getAllTemplates, GetAllTemplatesType } from './services/templates/getAllTemplates';
-import { getMyPermissionsRequest, IPermissionsOfUser } from './services/permissionsService';
+import Bowser from 'bowser';
+import i18next from 'i18next';
+import React, { useEffect, useState } from 'react';
+import { useQuery } from 'react-query';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { useLocation } from 'wouter';
+import { LoadingAnimation } from './common/LoadingAnimation';
 import './css/index.css';
-import { ICategoryMap } from './interfaces/categories';
-import { IEntityTemplateMap } from './interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from './interfaces/relationshipTemplates';
-import ErrorPage from './pages/ErrorPage';
-import { environment } from './globals';
 import './css/loading.css';
-import { IRuleMap } from './interfaces/rules';
-import { mapTemplates } from './utils/templates';
-import { IProcessTemplateMap } from './interfaces/processes/processTemplate';
+import { environment } from './globals';
+import Main from './Main';
 import matomoInstance from './matomo';
+import ErrorPage from './pages/ErrorPage';
+import { AuthService } from './services/authService';
+import { BackendConfigState, getBackendConfigRequest } from './services/backendConfigService';
+import { getMyUserRequest } from './services/userService';
+import { getById } from './services/workspacesService';
+import { useUserStore } from './stores/user';
 
 const App: React.FC = () => {
-    const queryClient = useQueryClient();
+    const [isLoadingUser, setIsLoadingUser] = useState(true);
+    const [isErrorMyUser, setIsErrorMyUser] = useState(false);
+
+    const [location, navigate] = useLocation();
 
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
@@ -39,82 +36,55 @@ const App: React.FC = () => {
         }
     }, []);
 
-    const currentUser = useSelector((state: RootState) => state.user);
-    useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
+
+    const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
             toast.error(i18next.t('error.config'));
         },
+        enabled: !isLoadingUser && !isErrorMyUser,
     });
-
-    // use queries enabled false, setting query data by hand "queryClient.setQueryData" (setting from getAllTemplates)
-    useQuery('getCategories', () => undefined, { enabled: false });
-    useQuery('getEntityTemplates', () => undefined, { enabled: false });
-    useQuery('getRelationshipTemplates', () => undefined, { enabled: false });
-    useQuery('getRules', () => undefined, { enabled: false });
-    useQuery('getProcessTemplates', () => undefined, { enabled: false });
-
-    const { isLoading: isLoadingAllTemplates, isError: isErrorAllTemplates } = useQuery<GetAllTemplatesType>('getAllTemplates', getAllTemplates, {
-        onError: (error) => {
-            toast.error(i18next.t('failedToGetTemplates'));
-            // eslint-disable-next-line no-console
-            console.log('failed to get templates error:', error);
-        },
-        onSuccess: ({ categories, entityTemplates, relationshipTemplates, processTemplates, rules }) => {
-            queryClient.setQueryData<ICategoryMap>('getCategories', mapTemplates(categories));
-            queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', mapTemplates(entityTemplates));
-            queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', mapTemplates(relationshipTemplates));
-            queryClient.setQueryData<IProcessTemplateMap>('getProcessTemplates', mapTemplates(processTemplates));
-            queryClient.setQueryData<IRuleMap>('getRules', mapTemplates(rules, 'name'));
-        },
-    });
-    const { isLoading: isLoadingMyPermissions, isError: isErrorMyPermissions } = useQuery<IPermissionsOfUser>(
-        'getMyPermissions',
-        getMyPermissionsRequest,
-        {
-            onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed loading my permissions:', error);
-                toast.error(i18next.t('permissions.failedToLoadMyPermissions'));
-            },
-        },
-    );
-
-    const dispatch = useDispatch();
-
-    const [isLoadingUser, setIsLoadingUser] = useState(true);
 
     useEffect(() => {
         const initUser = async () => {
             const user = AuthService.getUser();
-            if (user) {
-                dispatch(setUser(user));
-                setIsLoadingUser(false);
+
+            const isUserUnauthorized = user?.id === environment.unauthorizedId;
+
+            if (!user || isUserUnauthorized) {
+                if (isUserUnauthorized) setIsErrorMyUser(true);
+                return;
             }
+
+            try {
+                const userFromDb = await getMyUserRequest();
+                setUser({ ...user, ...userFromDb });
+
+                const workspaceIds = Object.keys(userFromDb.permissions);
+                if (workspaceIds.length === 1) {
+                    const workspace = await getById(workspaceIds[0]);
+                    const path = `${workspace.path}/${workspace.name}${workspace.type}`;
+                    if (workspace.name !== '' && workspace.path !== '/')
+                        navigate(`${path}${location.length <= path.length ? '' : location.replace(path, '')}`);
+                }
+            } catch {
+                setIsErrorMyUser(true);
+            }
+
+            setIsLoadingUser(false);
         };
 
         initUser();
-    }, [dispatch]);
+    }, [setUser, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    const isLoading = isLoadingUser || isLoadingAllTemplates || isLoadingMyPermissions;
-    if (isLoading) {
-        return (
-            <div style={{ display: 'flex', justifyContent: 'center', marginTop: '40vh' }}>
-                <img className="ld ld-bounce" src="/icons/Melta_Logo.svg" width="300px" />
-            </div>
-        );
-    }
+    if (isErrorMyUser) return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
 
-    if (!currentUser) {
-        return <span>unauthorized</span>;
-    }
+    if (isLoadingUser) return <LoadingAnimation isLoading={isLoadingUser} />;
 
-    if (isErrorMyPermissions) {
-        return <ErrorPage errorText={i18next.t('errorPage.noPermissions')} />;
-    }
+    if (!currentUser) return <span>unauthorized</span>;
 
-    if (isErrorAllTemplates) {
-        return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
-    }
+    if (isErrorBackendConfig) return <ErrorPage errorText={i18next.t('errorPage.systemUnavailable')} />;
 
     return (
         <MatomoProvider value={matomoInstance}>

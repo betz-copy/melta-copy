@@ -2,16 +2,15 @@ import React, { ReactElement, useEffect } from 'react';
 import { Grid, Box, Tab, useTheme } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
 import { CategoriesRow } from './components/CategoriesRow';
 import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
-
 import '../../css/pages.css';
-import { IPermissionsOfUser } from '../../services/permissionsService';
 import { NoPermissions } from './components/NoPermissions';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();
@@ -20,8 +19,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
 
     const [tabValue, setTabValue] = React.useState('categories');
 
-    const queryClient = useQueryClient();
-    const myPermissions = queryClient.getQueryData<IPermissionsOfUser>('getMyPermissions')!;
+    const currentUser = useUserStore((state) => state.user);
 
     const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
         categories: <CategoriesRow />,
@@ -31,12 +29,22 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
         processTemplates: <ProcessTemplatesRow />,
     };
 
-    const tabsPermissionsMapping: Record<string, string | null> = {
-        categories: myPermissions.templatesManagementId,
-        entityTemplates: myPermissions.templatesManagementId,
-        relationshipTemplates: myPermissions.templatesManagementId,
-        rules: myPermissions.rulesManagementId,
-        processTemplates: myPermissions.processesManagementId,
+    const tabsPermissionsMapping: Record<string, boolean> = {
+        categories:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        entityTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        relationshipTemplates:
+            currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        rules:
+            currentUser.currentWorkspacePermissions.rules?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+        processTemplates:
+            currentUser.currentWorkspacePermissions.processes?.scope === PermissionScope.write ||
+            currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
     };
 
     return (

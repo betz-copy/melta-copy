@@ -3,11 +3,10 @@ import { Box, Grid, IconButton, Pagination, TextField } from '@mui/material';
 import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import _debounce from 'lodash.debounce';
-import { useSelector } from 'react-redux';
 
-import { RootState } from '../../store';
 import '../../css/index.css';
 import { allIcons } from '../../utils/icons';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 interface IconPickerProps {
     width: CSSProperties['width'];
@@ -27,7 +26,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
 
     const [displayedIcons, setDisplayedIcons] = useState([...iconsEntries]);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const displayIndex = (page - 1) * iconsPerPage;
     const pageCount = Math.ceil(displayedIcons.length / iconsPerPage);

@@ -4,16 +4,16 @@ import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleBut
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
-import { useSelector } from 'react-redux';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import { IMongoCategory } from '../../interfaces/categories';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { BlueTitle } from '../BlueTitle';
-import { RootState } from '../../store';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
+import { IEntity } from '../../interfaces/entities';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -91,10 +91,43 @@ const EntitiesPageHeadline: React.FC<{
         setViewMode: (newViewMode: 'cards-view' | 'templates-tables-view') => void;
     };
     pageTitle: string;
-}> = ({ searchInput, setSearchInput, onSearch, entityTemplateSelectCheckboxProps, excelExportProps, viewModeProps, pageTitle }) => {
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    onAddEntity: (id: string) => void;
+    refreshServerSide: (templateId: string) => void;
+    setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
+}> = ({
+    searchInput,
+    setSearchInput,
+    onSearch,
+    entityTemplateSelectCheckboxProps,
+    excelExportProps,
+    viewModeProps,
+    pageTitle,
+    onAddEntity,
+    refreshServerSide,
+    setUpdatedEntities,
+}) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
+    const onSuccessCreate = (entity: IEntity) => {
+        const handleTemplatesTablesView = () => {
+            const template = entityTemplateSelectCheckboxProps.templates.find((entityTemplate) => entityTemplate._id === entity.templateId);
+
+            if (template) {
+                try {
+                    refreshServerSide(template._id);
+                } catch {
+                    onAddEntity(entity.templateId);
+                }
+            }
+        };
+
+        if (viewModeProps.viewMode === 'templates-tables-view') {
+            handleTemplatesTablesView();
+        } else {
+            onAddEntity(entity.properties._id);
+        }
+    };
     return (
         <Grid
             container
@@ -190,6 +223,8 @@ const EntitiesPageHeadline: React.FC<{
                         <AddEntityButton
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            onSuccessCreate={onSuccessCreate}
+                            setUpdatedEntities={setUpdatedEntities}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

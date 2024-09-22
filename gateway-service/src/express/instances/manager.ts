@@ -7,8 +7,9 @@ import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
+import { menash } from 'menashmq';
 import config from '../../config';
-import { InstanceManagerService } from '../../externalServices/instanceService';
+import { InstancesService } from '../../externalServices/instanceService';
 import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -19,14 +20,15 @@ import {
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
-import { deleteFiles, downloadFile, duplicateFiles, uploadFiles } from '../../externalServices/storageService';
+import { StorageService } from '../../externalServices/storageService';
 import {
-    EntityTemplateManagerService,
+    EntityTemplateService,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
 import { ServiceError } from '../error';
@@ -34,20 +36,36 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 
-const { errorCodes } = config;
+const { errorCodes, rabbit, ruleBreachService } = config;
 
-export class InstancesManager {
-    static async uploadInstanceFiles(files: Express.Multer.File[], props: any): Promise<any> {
+export class InstancesManager extends DefaultManagerProxy<InstancesService> {
+    private entityTemplateService: EntityTemplateService;
+
+    private storageService: StorageService;
+
+    private ruleBreachesManager: RuleBreachesManager;
+
+    constructor(workspaceId: string) {
+        super(new InstancesService(workspaceId));
+        this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.storageService = new StorageService(workspaceId);
+        this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+    }
+
+    async uploadInstanceFiles<TProps = Record<string, any>>(
+        files: Express.Multer.File[],
+        props: TProps = {} as TProps,
+    ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
-            return { props, files };
+            return { props, files: {} };
         }
 
-        const fileIds = await uploadFiles(files);
+        const fileIds = await this.storageService.uploadFiles(files);
         const filePropertiesEntries = files.map((file, index) => {
             return [file.fieldname, fileIds[index]];
         });
 
-        const filesToUpload: any = {};
+        const filesToUpload: Record<string, any> = {};
         // not for image picker
         Object.entries(Object.fromEntries(filePropertiesEntries)).forEach(([key, value]) => {
             const [group, _index] = key.split('.');
@@ -73,10 +91,11 @@ export class InstancesManager {
                 props[key] = filesToUpload[key];
             }
         });
+
         return { props, files: filesToUpload };
     }
 
-    static async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
+    async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
         try {
             await this.addWorksheetsToWB(exportEntitiesBody, workbook);
@@ -88,16 +107,16 @@ export class InstancesManager {
         return filePath;
     }
 
-    private static async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
+    private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
         const tasks = Object.entries(templates).map(async ([templateId, { filter, sort }]) => {
-            const template = await EntityTemplateManagerService.getEntityTemplateById(templateId);
+            const template = await this.entityTemplateService.getEntityTemplateById(templateId);
             await this.createWorksheet(workbook, template, filter, sort, textSearch);
         });
 
         await Promise.all(tasks);
     }
 
-    private static async createWorksheet(
+    private async createWorksheet(
         workbook: stream.xlsx.WorkbookWriter,
         template: IMongoEntityTemplatePopulated,
         filter: ISearchFilter | undefined,
@@ -106,20 +125,20 @@ export class InstancesManager {
     ) {
         const worksheet = await cerateWorksheet(workbook, template);
         const { searchEntitiesChunkSize } = config.service;
-        const { count } = await InstanceManagerService.searchEntitiesOfTemplateRequest(template._id, {
+        const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
             limit: 1,
             filter,
             sort,
         });
         for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
-            const { entities: chunk } = await InstanceManagerService.searchEntitiesOfTemplateRequest(template._id, {
+            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter,
                 sort,
             });
-            const rows = await fixComplexProperties(
+            const rows = fixComplexProperties(
                 chunk.map((row) => row.entity.properties),
                 template,
             );
@@ -132,14 +151,14 @@ export class InstancesManager {
         }
     }
 
-    static getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
+    getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
         return objectFilter(entityProperties, (key) => {
             const propertyTemplate = template.properties.properties[key];
-            return propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId';
+            return propertyTemplate && (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId');
         });
     }
 
-    private static async setSerialPropertiesAndUpdateTemplate(
+    private async setSerialPropertiesAndUpdateTemplate(
         entityProperties: IEntity['properties'],
         entityTemplate: IMongoEntityTemplatePopulated,
     ): Promise<IEntity['properties']> {
@@ -162,7 +181,7 @@ export class InstancesManager {
         });
         if (isTemplateUpdated) {
             const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
-            await EntityTemplateManagerService.updateEntityTemplate(entityTemplate._id, {
+            await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
                 ...restOfEntityTemplate,
                 category: category._id,
                 properties: {
@@ -175,11 +194,11 @@ export class InstancesManager {
         return updatedProperties;
     }
 
-    static async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
-        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, instanceData.properties);
+    async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
+        const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(instanceData.templateId);
-        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
+        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
 
         return {
             templateId: instanceData.templateId,
@@ -187,29 +206,29 @@ export class InstancesManager {
         };
     }
 
-    static async createEntityInstance(
+    async createEntityInstance(
         instanceData: IEntity,
         files: Express.Multer.File[],
         ignoredRules: IBrokenRule[],
         userId: string,
         createAlert: boolean = true,
     ) {
-        const newInstanceData: IEntity = await InstancesManager.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+        const { createdEntity, actions } = await this.service
+            .createEntityInstance(newInstanceData, ignoredRules, userId)
+            .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.CreateEntity,
                             actionMetadata: {
-                                templateId: entity.templateId,
-                                properties: entity.properties,
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
                             },
                         },
                     ],
@@ -218,14 +237,14 @@ export class InstancesManager {
             );
         }
 
-        return entity;
+        return createdEntity;
     }
 
-    private static async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+    private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
         const newFilesKeys = files.map((file) => file.fieldname);
 
-        const fileProperties = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
+        const fileProperties = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
 
         const fileIdsToDelete = Object.entries(fileProperties).flatMap(([key, value]) => {
             if (Array.isArray(value)) {
@@ -242,26 +261,28 @@ export class InstancesManager {
             return [];
         }
 
-        return deleteFiles(fileIdsToDelete);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+
+        return fileIdsToDelete;
     }
 
-    static async exportEntityToDocumentTemplate({
+    async exportEntityToDocumentTemplate({
         documentTemplateId,
         entityProperties,
     }: {
         documentTemplateId: string;
         entityProperties: IEntity['properties'];
     }) {
-        return patchDocumentAsStream(await downloadFile(documentTemplateId), entityProperties);
+        return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
     }
 
-    static async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const entity = await InstanceManagerService.updateEntityStatus(id, disabledStatus, ignoredRules, userId).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+    async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
+        const entity = await this.service
+            .updateEntityStatus(id, disabledStatus, ignoredRules, userId)
+            .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
                     actions: [
@@ -281,7 +302,7 @@ export class InstancesManager {
         return entity;
     }
 
-    static verifyFilePropertiesToDuplicateExistInCurrent(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
+    verifyFilePropertiesToDuplicateExistInCurrent(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
         Object.entries(fileProperties).forEach(([key, value]) => {
             if (!value) return;
 
@@ -299,11 +320,11 @@ export class InstancesManager {
         });
     }
 
-    static async duplicateFileProperties(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
-        InstancesManager.verifyFilePropertiesToDuplicateExistInCurrent(fileProperties, currentEntity);
+    async duplicateFileProperties(fileProperties: Record<string, string | string[]>, currentEntity: IEntity) {
+        this.verifyFilePropertiesToDuplicateExistInCurrent(fileProperties, currentEntity);
 
         const filePropertiesToDuplicateEntries = Object.entries(fileProperties);
-        const duplicatedFiles = await duplicateFiles(filePropertiesToDuplicateEntries.flatMap(([_key, value]) => value));
+        const duplicatedFiles = await this.storageService.duplicateFiles(filePropertiesToDuplicateEntries.flatMap(([_key, value]) => value));
 
         let duplicatedFileIndex = 0;
         const duplicatedFilesProperties: Record<string, string | string[]> = {};
@@ -323,7 +344,7 @@ export class InstancesManager {
         return duplicatedFilesProperties;
     }
 
-    static async duplicateEntityInstance(
+    async duplicateEntityInstance(
         id: string,
         instanceData: IEntity,
         files: Express.Multer.File[],
@@ -332,42 +353,42 @@ export class InstancesManager {
         duplicateFileProperties = true,
         createAlert: boolean = true,
     ) {
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const currentEntityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+        const currentEntity = await this.service.getEntityInstanceById(id);
+        const currentEntityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
-        const fileProperties = InstancesManager.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
+        const fileProperties = this.getEntityFileProperties(instanceData.properties, currentEntityTemplate);
 
         let duplicatedFileProperties: Record<string, string | string[]> = {};
         if (duplicateFileProperties) {
-            duplicatedFileProperties = await InstancesManager.duplicateFileProperties(fileProperties, currentEntity);
+            duplicatedFileProperties = await this.duplicateFileProperties(fileProperties, currentEntity);
         }
 
-        const { props: propertiesWithFiles } = await InstancesManager.uploadInstanceFiles(files, {
+        const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, {
             ...instanceData.properties,
             ...duplicatedFileProperties,
         });
 
-        const newInstanceProperties = await InstancesManager.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, currentEntityTemplate);
+        const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, currentEntityTemplate);
 
         const newInstanceData: IEntity = {
             templateId: instanceData.templateId,
             properties: newInstanceProperties,
         };
 
-        const entity = await InstanceManagerService.createEntityInstance(newInstanceData, ignoredRules, userId, id).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+        const { createdEntity, actions } = await this.service
+            .createEntityInstance(newInstanceData, ignoredRules, userId, id)
+            .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.DuplicateEntity,
                             actionMetadata: {
-                                templateId: entity.templateId,
-                                properties: entity.properties,
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
                                 entityIdToDuplicate: id,
                             },
                         },
@@ -377,10 +398,10 @@ export class InstancesManager {
             );
         }
 
-        return entity;
+        return createdEntity;
     }
 
-    static checkSerialFieldWasUpdated(
+    checkSerialFieldWasUpdated(
         entityTemplate: IMongoEntityTemplatePopulated,
         updatedInstanceDataProperties: IEntity['properties'],
         currentEntity: IEntity,
@@ -394,7 +415,7 @@ export class InstancesManager {
         });
     }
 
-    static async updateEntityInstance(
+    async updateEntityInstance(
         id: string,
         updatedInstanceData: IEntity,
         files: Express.Multer.File[],
@@ -402,23 +423,25 @@ export class InstancesManager {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const { props: uploadedFilesAndProperties } = await InstancesManager.uploadInstanceFiles(files, updatedInstanceData.properties);
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
+        const { props: uploadedFilesAndProperties } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        const currentEntity = await this.service.getEntityInstanceById(id);
 
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
-        InstancesManager.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
+        this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
-        const updatedInstance = await InstanceManagerService.updateEntityInstance(
-            id,
-            {
-                templateId: updatedInstanceData.templateId,
-                properties: { ...uploadedFilesAndProperties },
-            },
-            ignoredRules,
-            userId,
-        ).catch(InstancesManager.handleBrokenRulesError);
-        await InstancesManager.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
+        const { updatedEntity, actions } = await this.service
+            .updateEntityInstance(
+                id,
+                {
+                    templateId: updatedInstanceData.templateId,
+                    properties: { ...uploadedFilesAndProperties },
+                },
+                ignoredRules,
+                userId,
+            )
+            .catch((err) => this.handleBrokenRulesError(err));
+        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
             logger.error(`failed to delete files of instanceId ${id}`),
         );
 
@@ -431,12 +454,12 @@ export class InstancesManager {
 
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+                newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
             } else if (propertyTemplate?.format === 'relationshipReference') {
-                if (updatedInstance.properties[field]?.properties) newValue = updatedInstance.properties[field].properties._id;
+                if (updatedEntity.properties[field]?.properties) newValue = updatedEntity.properties[field].properties._id;
                 if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
             } else {
-                newValue = updatedInstance.properties[field];
+                newValue = updatedEntity.properties[field];
             }
             if (
                 newValue !== undefined &&
@@ -451,10 +474,10 @@ export class InstancesManager {
         }
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: {
@@ -469,27 +492,29 @@ export class InstancesManager {
             );
         }
 
-        return updatedInstance;
+        return updatedEntity;
     }
 
-    private static async deleteAllEntityFiles(currentEntity: IEntity) {
-        const entityTemplate = await EntityTemplateManagerService.getEntityTemplateById(currentEntity.templateId);
+    private async deleteAllEntityFiles(currentEntity: IEntity) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
 
-        const filePropertiesToRemove = InstancesManager.getEntityFileProperties(currentEntity.properties, entityTemplate);
+        const filePropertiesToRemove = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
         const fileIdsToRemove = Object.values(filePropertiesToRemove).flat();
 
         if (fileIdsToRemove.length === 0) {
             return [];
         }
 
-        return deleteFiles(fileIdsToRemove);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+
+        return fileIdsToRemove;
     }
 
-    static async deleteEntityInstance(id: string) {
-        const currentEntity = await InstanceManagerService.getEntityInstanceById(id);
-        const deletedInstance = await InstanceManagerService.deleteEntityInstance(id);
+    async deleteEntityInstance(id: string) {
+        const currentEntity = await this.service.getEntityInstanceById(id);
+        const deletedInstance = await this.service.deleteEntityInstance(id);
 
-        const { err: error } = await trycatch(() => InstancesManager.deleteAllEntityFiles(currentEntity));
+        const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
 
         if (error) {
             logger.error(`failed to delete files of instanceId ${id}`, { error });
@@ -498,13 +523,13 @@ export class InstancesManager {
         return deletedInstance;
     }
 
-    static async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const createdRelationship = await InstanceManagerService.createRelationshipInstance(relationship, ignoredRules, userId).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+    async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
+        const createdRelationship = await this.service
+            .createRelationshipInstance(relationship, ignoredRules, userId)
+            .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
                     actions: [
@@ -525,13 +550,13 @@ export class InstancesManager {
         return createdRelationship;
     }
 
-    static async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
-        const relationship = await InstanceManagerService.deleteRelationshipInstance(relationshipId, ignoredRules, userId).catch(
-            InstancesManager.handleBrokenRulesError,
-        );
+    async deleteRelationshipInstance(relationshipId: string, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
+        const relationship = await this.service
+            .deleteRelationshipInstance(relationshipId, ignoredRules, userId)
+            .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
-            await RuleBreachesManager.createRuleBreachAlert(
+            await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
                     actions: [
@@ -553,21 +578,26 @@ export class InstancesManager {
         return relationship;
     }
 
-    static async handleBrokenRulesError(error: any): Promise<never> {
+    async handleBrokenRulesError(error: any): Promise<never> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
-            const { brokenRules } = error.response.data.metadata;
+            const { brokenRules, actions } = error.response.data.metadata;
 
             throw new ServiceError(400, error.message, {
                 errorCode: errorCodes.ruleBlock,
-                brokenRules: await RuleBreachesManager.populateBrokenRules(brokenRules),
+                brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
+                // in case that entityTemplate has actions
+                ...(actions && {
+                    actions: await this.ruleBreachesManager.populateActionsMetaData(actions),
+                    rawActions: actions,
+                }),
             });
         }
 
         throw error;
     }
 
-    static extractEntitiesAndTemplatesIds(actionsGroups: IAction[][]): {
+    extractEntitiesAndTemplatesIds(actionsGroups: IAction[][]): {
         templateIds: string[];
         entitiesIds: string[];
     } {
@@ -581,11 +611,11 @@ export class InstancesManager {
                 } else if (action.actionType === ActionTypes.CreateRelationship) {
                     const { destinationEntityId, sourceEntityId } = action.actionMetadata as ICreateRelationshipMetadata;
 
-                    if (!destinationEntityId.startsWith('$')) entitiesIds.add(destinationEntityId);
-                    if (!sourceEntityId.startsWith('$')) entitiesIds.add(sourceEntityId);
+                    if (!destinationEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(destinationEntityId);
+                    if (!sourceEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(sourceEntityId);
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
-                    if (!entityId.startsWith('$')) entitiesIds.add(entityId);
+                    if (!entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(entityId);
                 }
             }),
         );
@@ -593,11 +623,11 @@ export class InstancesManager {
         return { templateIds: [...templateIds], entitiesIds: [...entitiesIds] };
     }
 
-    static async getManyEntitiesNewPropertiesToUpdate(entitiesToUpdate: IEntity[], templatesByIds: Dictionary<IMongoEntityTemplatePopulated[]>) {
-        const entitiesNewPropertiesPromises = entitiesToUpdate.map((entityToUpdate) => {
+    async getManyEntitiesNewPropertiesToUpdate(entitiesToUpdate: IEntity[], templatesByIds: Dictionary<IMongoEntityTemplatePopulated[]>) {
+        const entitiesNewPropertiesPromises = entitiesToUpdate.map(async (entityToUpdate) => {
             const [entityTemplate] = templatesByIds[entityToUpdate.templateId];
 
-            return InstancesManager.setSerialPropertiesAndUpdateTemplate(entityToUpdate.properties, entityTemplate).then((properties) => {
+            return this.setSerialPropertiesAndUpdateTemplate(entityToUpdate.properties, entityTemplate).then((properties) => {
                 return {
                     templateId: entityToUpdate.templateId,
                     properties,
@@ -608,14 +638,14 @@ export class InstancesManager {
         return Promise.all(entitiesNewPropertiesPromises);
     }
 
-    static async getAllActionsTemplatesByIds(actionsGroups: IAction[][]) {
-        const { templateIds: templateIdsFromReq, entitiesIds } = InstancesManager.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
+    async getAllActionsTemplatesByIds(actionsGroups: IAction[][]) {
+        const { templateIds: templateIdsFromReq, entitiesIds } = this.extractEntitiesAndTemplatesIds(actionsGroups as IAction[][]);
         const templateIds = new Set<string>([...templateIdsFromReq]);
 
-        const entities = await InstanceManagerService.getEntityInstancesByIds(entitiesIds);
+        const entities = await this.service.getEntityInstancesByIds(entitiesIds);
         entities.forEach((entity) => templateIds.add(entity.templateId));
 
-        const templates = await EntityTemplateManagerService.searchEntityTemplates({ ids: [...templateIds] });
+        const templates = await this.entityTemplateService.searchEntityTemplates({ ids: [...templateIds] });
 
         return {
             templatesByIds: groupBy(templates, (template) => template._id),
@@ -623,8 +653,8 @@ export class InstancesManager {
         };
     }
 
-    static async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean, ignoredRules: IBrokenRule[] = [], userId: string) {
-        const { templatesByIds, entitiesByIds } = await InstancesManager.getAllActionsTemplatesByIds(actionsGroups);
+    async runBulkOfActions(actionsGroups: IAction[][], dryRun: boolean, userId: string, ignoredRules: IBrokenRule[] = []) {
+        const { templatesByIds, entitiesByIds } = await this.getAllActionsTemplatesByIds(actionsGroups);
         const entitiesToCreate: IEntity[] = [];
 
         actionsGroups.forEach((actionGroup) =>
@@ -639,12 +669,12 @@ export class InstancesManager {
                     const entity = entitiesByIds[actionMetadata.entityId][0];
                     const templateOfEntity = templatesByIds[entity.templateId][0];
 
-                    InstancesManager.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
+                    this.checkSerialFieldWasUpdated(templateOfEntity, actionMetadata.updatedFields, entity);
                 }
             }),
         );
 
-        const newEntitiesToCreateByActionsGroups = await InstancesManager.getManyEntitiesNewPropertiesToUpdate(entitiesToCreate, templatesByIds);
+        const newEntitiesToCreateByActionsGroups = await this.getManyEntitiesNewPropertiesToUpdate(entitiesToCreate, templatesByIds);
         let indexOfEntityToCreate = 0;
 
         const newActionsGroups = actionsGroups.map((actionsGroup) =>
@@ -661,6 +691,6 @@ export class InstancesManager {
             }),
         );
 
-        return InstanceManagerService.runBulkOfActions(newActionsGroups, dryRun, ignoredRules, userId);
+        return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
     }
 }

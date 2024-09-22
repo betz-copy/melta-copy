@@ -9,6 +9,7 @@ import {
     IUpdateProcessTemplateBody,
     IProcessDetails,
     IProcessSingleProperty,
+    ISearchProcessTemplatesBody,
 } from '../../interfaces/processes/processTemplate';
 
 const { processTemplates } = environment.api;
@@ -193,7 +194,7 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTe
 
         addAttachmentProperties(stepSchema.properties, stepPropertiesOrder, step.attachmentProperties);
 
-        const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer.id);
+        const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
             _id: step._id!,
             properties: stepSchema,
@@ -247,4 +248,15 @@ const deleteProcessTemplateRequest = async (processTemplateId: string) => {
     return data;
 };
 
-export { createProcessTemplateRequest, updateProcessTemplateRequest, deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm };
+const searchProcessTemplates = async (searchBody: ISearchProcessTemplatesBody) => {
+    const { data } = await axios.post<IMongoProcessTemplatePopulated[]>(`${processTemplates}/search`, searchBody);
+    return data;
+};
+
+export {
+    createProcessTemplateRequest,
+    updateProcessTemplateRequest,
+    deleteProcessTemplateRequest,
+    processTemplateObjectToProcessTemplateForm,
+    searchProcessTemplates,
+};

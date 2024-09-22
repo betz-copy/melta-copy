@@ -1,9 +1,4 @@
-import React, { forwardRef, ForwardedRef, useImperativeHandle, useRef, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import sortBy from 'lodash.sortby';
-import { Box, debounce } from '@mui/material';
-import pickBy from 'lodash.pickby';
-import isEqual from 'lodash.isequal';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import {
     BodyScrollEvent,
     ColumnMovedEvent,
@@ -16,33 +11,38 @@ import {
     PaginationChangedEvent,
 } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@noam7700/ag-grid-enterprise-core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import i18next from 'i18next';
-import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import '../../css/table.css';
-import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
-import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
-import { IGetColumnDefsOptions, getColumnDefs } from './getColumnDefs';
-import { trycatch } from '../../utils/trycatch';
-import { LocalStorage } from '../../utils/localStorage';
-import { environment } from '../../globals';
-import useDeepCompareMemo from '../../utils/useDeepCompareMemo';
-import { ResizeBox } from '../EntitiesPage/ResizeBox';
+import { Box, debounce } from '@mui/material';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import '@noam7700/ag-grid-enterprise-core';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
+import i18next from 'i18next';
+import isEqual from 'lodash.isequal';
+import pickBy from 'lodash.pickby';
+import sortBy from 'lodash.sortby';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { toast } from 'react-toastify';
+import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
-import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import '../../css/table.css';
+import { environment } from '../../globals';
+import { IEntity, IEntityExpanded } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
+import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
+import { IAGGridRequest } from '../../utils/agGrid/interfaces';
+import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
+import { LocalStorage } from '../../utils/localStorage';
+import { trycatch } from '../../utils/trycatch';
+import { ResizeBox } from '../EntitiesPage/ResizeBox';
+import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
+import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -64,15 +64,10 @@ export const getDatasource = <Data extends any = IEntity>(
     onFail: ((err: unknown) => void) | undefined,
     rowData?: IConnection[],
     mainEntity?: IEntityExpanded,
-    isInfinite: boolean = false,
 ): IServerSideDatasource => {
-    let lastPage = 0;
     return {
         // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
-            lastPage++;
-            if (!isInfinite && lastPage === 1) return;
-
             if (rowData && mainEntity) {
                 params.success({
                     rowData,
@@ -82,20 +77,10 @@ export const getDatasource = <Data extends any = IEntity>(
             }
 
             const agGridRequest = params.request;
-            const currentPage = params.api.paginationGetCurrentPage();
-            const pageSize = params.api.paginationGetPageSize();
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest(
-                        {
-                            ...agGridRequest,
-                            quickFilter: quickFilterText,
-                            skip: 0,
-                            limit: (currentPage + 1) * pageSize,
-                        } as IAGGridRequest,
-                        template,
-                    ),
+                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
                 ),
             );
 
@@ -132,26 +117,14 @@ const getRowModelProps = <Data extends any = IEntity>(
     }
 
     const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
-    if (rowModelType === 'serverSide') {
-        return {
-            rowModelType,
-            serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-            cacheBlockSize,
-            maxBlocksInCache,
-            pagination: true,
-            paginationPageSize,
-        };
-    }
-
-    // 'infinite' row model type
     return {
         rowModelType: 'serverSide',
-        pagination: false,
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity, true),
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
         cacheBlockSize,
         maxBlocksInCache,
-        maxConcurrentDatasourceRequests,
-        infiniteInitialRowCount,
+        pagination: rowModelType === 'serverSide',
+        paginationPageSize,
+        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
     };
 };
 
@@ -195,6 +168,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     isFiltered: () => boolean;
     getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
+    scrollIntoView: () => void;
     showSideBar: () => void;
 };
 
@@ -231,9 +205,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
-        const navigate = useNavigate();
+        const [_, navigate] = useLocation();
 
-        const gridRef = useRef<AgGridReact<Data>>(null);
+        const gridRef = useRef<AgGridReact<Data> & HTMLDivElement>(null);
+        const tableRef = useRef<HTMLDivElement>(null);
+
         // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
@@ -273,6 +249,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 getSortModel() {
                     return getSortModel();
+                },
+                scrollIntoView: () => {
+                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
                 },
                 showSideBar() {
                     const gridApi = gridRef.current?.api;
@@ -397,6 +376,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                 }}
+                ref={tableRef}
             >
                 <AgGridReact<Data>
                     ref={gridRef}

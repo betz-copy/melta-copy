@@ -11,12 +11,13 @@ import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
+import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import { environment } from '../../../../globals';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
-    const queryClient = useQueryClient();
     const [searchText, setSearchText] = useState('');
-
-    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
     const [deleteProcessTemplateDialogState, setDeleteProcessTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         processTemplateId: string | null;
@@ -33,6 +34,10 @@ const ProcessTemplatesRow: React.FC = () => {
         processTemplate: null,
     });
 
+    const queryClient = useQueryClient();
+
+    const processTemplates = queryClient.getQueryData<IMongoProcessTemplatePopulated[]>('getProcessTemplates')!;
+
     const { isLoading: deleteTemplateIsLoading, mutateAsync: deleteTemplateMutateAsync } = useMutation(
         (id: string) => deleteProcessTemplateRequest(id),
         {
@@ -42,6 +47,7 @@ const ProcessTemplatesRow: React.FC = () => {
                     return processTemplateMap!;
                 });
                 setDeleteProcessTemplateDialogState({ isDialogOpen: false, processTemplateId: null });
+                queryClient.invalidateQueries(['searchProcessTemplates', searchText]);
                 toast.success(i18next.t('wizard.processTemplate.deletedSuccessfully'));
             },
             onError: (error: AxiosError) => {
@@ -61,20 +67,40 @@ const ProcessTemplatesRow: React.FC = () => {
                         style={{ borderRadius: '5px' }}
                         onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
                     >
-                        <img src="icons/Add-New-Process.svg" />
+                        <img src="/icons/Add-New-Process.svg" />
                     </IconButton>
                 </Grid>
             </Grid>
-            {Array.from(processTemplates.values())
-                .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
-                .map((processTemplate) => (
+            <InfiniteScroll<IMongoProcessTemplatePopulated>
+                queryKey={['searchProcessTemplates', searchText]}
+                queryFunction={({ pageParam }) =>
+                    Array.from(processTemplates.values())
+                        .filter((processTemplate) => searchText === '' || processTemplate.displayName.includes(searchText))
+                        .splice(pageParam, infiniteScrollPageCount)
+                }
+                onQueryError={(error) => {
+                    // eslint-disable-next-line no-console
+                    console.log('failed to search process templates error:', error);
+                    toast.error(i18next.t('failedToLoadResults'));
+                }}
+                getItemId={(processTemplate) => processTemplate._id}
+                getNextPageParam={(lastPage, allPages) => {
+                    const nextPage = allPages.length * infiniteScrollPageCount;
+                    return lastPage.length ? nextPage : undefined;
+                }}
+                endText={i18next.t('noSearchLeft')}
+                emptyText={i18next.t('failedToGetTemplates')}
+                useContainer={false}
+            >
+                {(processTemplate) => (
                     <ProcessTemplateCard
                         key={processTemplate._id}
                         processTemplate={processTemplate}
                         setDeleteProcessTemplateDialogState={setDeleteProcessTemplateDialogState}
                         setProcessTemplateWizardDialogState={setProcessTemplateWizardDialogState}
                     />
-                ))}
+                )}
+            </InfiniteScroll>
             <ProcessTemplateWizard
                 open={processTemplateWizardDialogState.isWizardOpen}
                 handleClose={() => setProcessTemplateWizardDialogState({ isWizardOpen: false, processTemplate: null })}

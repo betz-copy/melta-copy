@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
+        workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     neo4j: {
@@ -12,7 +13,6 @@ const config = {
             username: env.get('NEO4J_USERNAME').default('neo4j').asString(),
             password: env.get('NEO4J_PASSWORD').default('test').asString(),
         },
-        database: env.get('NEO4J_DATABASE').default('neo4j').asString(),
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
@@ -21,6 +21,7 @@ const config = {
         // taken from lucene 8.2.0 syntax (for neo4j 4.0.6):
         // https://lucene.apache.org/core/8_2_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#Escaping_Special_Characters
         specialCharsToEscapeNeo4jQuery: env.get('SPECIAL_CHARS_TO_ESCAPE_NEO4J_QUERY').default('+,-,&&,||,!,(,),{,},[,],^,",~,*,?,:,\\,/').asArray(),
+        workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -62,7 +63,9 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
+    brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
     uniqueConstraintsPrefixName: env.get('UNIQUE_CONSTRAINTS_PREFIX_NAME').default('uniqueConstraint').asString(),

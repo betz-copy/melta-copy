@@ -18,10 +18,10 @@ export const getPreviewContentType = (name: string) => {
     const extension = getFileExtension(name).toLowerCase();
 
     if (extension === 'pdf') return 'pdf';
-    if (video.includes(extension)) return 'video';
-    if (audio.includes(extension)) return 'audio';
-    if (image.includes(extension)) return 'image';
-    if (document.includes(extension)) return 'document';
+    if ((video as unknown as string[]).includes(extension)) return 'video';
+    if ((audio as unknown as string[]).includes(extension)) return 'audio';
+    if ((image as unknown as string[]).includes(extension)) return 'image';
+    if ((document as unknown as string[]).includes(extension)) return 'document';
     return 'unsupported';
 };
 

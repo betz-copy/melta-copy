@@ -8,6 +8,7 @@ import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '.
 import {
     ActionTypes,
     IActionMetadataPopulated,
+    IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,
@@ -17,24 +18,23 @@ import {
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
-import { IUser } from '../../services/kartoffelService';
+import { IUser } from '../../interfaces/users';
 import { EntityLink } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
 
-export const EntityInfo: React.FC<{
+interface EntityInfoProps {
     entity: IEntity | string | null;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
     entityPropertiesToHighlightColor?: CSSProperties['color'];
-}> = ({
+}
+
+export const EntityInfo: React.FC<EntityInfoProps> = ({
     entity,
     entityTemplate,
     actions,
@@ -53,29 +53,46 @@ export const EntityInfo: React.FC<{
         // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
         const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
-
         const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
+
+        let mergedProperties = { ...properties };
+
+        // if the created entity updated by actions- show the updated properties
+        actions.forEach((currentAction) => {
+            if (
+                currentAction.actionType === ActionTypes.UpdateEntity &&
+                (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === properties._id
+            ) {
+                const { updatedFields } = currentAction.actionMetadata as IUpdateEntityMetadataPopulated;
+
+                mergedProperties = {
+                    ...properties,
+                    ...updatedFields,
+                };
+            }
+        });
+
         entityForLink = {
             templateId,
             properties: {
-                // if entity wasnt created yet, put generated properties. if it has, it will override
+                // if entity wasn't created yet, put generated properties. if it has, it will override
                 _id: entity,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
                 disabled: false,
 
-                ...properties,
+                ...mergedProperties,
             },
         };
 
         tooltipHeader = (
             <Typography variant="body2" fontStyle="italic">
-                {entityForLink.properties._id.startsWith('&')
+                {entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
                     ? i18next.t('ruleBreachInfo.theEntityThatIsSupposedToBeCreated')
                     : i18next.t('ruleBreachInfo.theEntityThatWasCreated')}
             </Typography>
         );
-        linkable = entityForLink.properties._id.startsWith('&');
+        linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
@@ -113,10 +130,7 @@ export const EntityForBrokenRules: React.FC<{
     ruleTemplate: IMongoRule;
     entity: IEntityForBrokenRules;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     entityPropertiesToShowTooltipOverride?: string[];
     entityPropertiesToHighlightTooltip?: string[];
 }> = ({ ruleTemplate, entity, entityTemplate, actions, entityPropertiesToShowTooltipOverride, entityPropertiesToHighlightTooltip }) => {
@@ -138,10 +152,7 @@ export const RelationshipInfo: React.FC<{
     relationshipTemplatePopulated: IMongoRelationshipTemplatePopulated;
     sourceEntity: IEntity | string | null;
     destinationEntity: IEntity | string | null;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ relationshipTemplatePopulated, sourceEntity, destinationEntity, actions }) => {
     return (
         <>
@@ -160,10 +171,7 @@ export const RelationshipInfo: React.FC<{
 const CreateOrDeleteRelActionInfo: React.FC<{
     actionType: ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship;
     actionMetadata: ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ actionType, actionMetadata, actions }) => {
     const queryClient = useQueryClient();
 
@@ -177,10 +185,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
 
     return (
         <Typography component="p" variant="body1">
-            <Box component="span">
-                {actionType === ActionTypes.CreateRelationship && i18next.t('ruleBreachInfo.relActionInfo.creation')}
-                {actionType === ActionTypes.DeleteRelationship && i18next.t('ruleBreachInfo.relActionInfo.deletion')}
-            </Box>
+            <Box component="span">{`${i18next.t(`ruleBreachInfo.relActionInfo.${actionType}`)} `}</Box>
             <RelationshipInfo
                 relationshipTemplatePopulated={relationshipTemplatePopulated}
                 sourceEntity={sourceEntity}
@@ -214,8 +219,6 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
         },
     };
 
-    console.log({ entity });
-
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(templateId)!;
 
@@ -228,7 +231,11 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                         {actionType === ActionTypes.DuplicateEntity &&
                             i18next.t('ruleBreachInfo.createOrDuplicateEntityActionInfo.duplicatingEntity')}
                     </Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={!entity.properties._id.startsWith('$')} />
+                    <EntityLink
+                        entity={entity}
+                        entityTemplate={entityTemplate}
+                        linkable={!entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                    />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
@@ -248,6 +255,7 @@ const UpdateEntityActionInfo: React.FC<{
     const queryClient = useQueryClient();
 
     const { entity } = actionMetadata;
+
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
 
@@ -256,7 +264,7 @@ const UpdateEntityActionInfo: React.FC<{
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} />
+                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={entity?.properties._id !== undefined} />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
@@ -297,10 +305,7 @@ export const ActionInfo: React.FC<{
     actionMetadata: IActionMetadataPopulated;
     isCompact: boolean;
     actionIndex: number;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions }) => {
     return (
         <Grid container flexDirection="column">

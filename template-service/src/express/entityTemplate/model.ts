@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
-
-import { IMongoEntityTemplate } from './interface';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongoose';
 
-const EntityTemplateSchema = new mongoose.Schema(
+export const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
             type: String,
@@ -49,6 +47,9 @@ const EntityTemplateSchema = new mongoose.Schema(
         iconFileId: {
             type: String,
         },
+        actions: {
+            type: String,
+        },
         documentTemplatesIds: {
             type: [String],
         },
@@ -65,7 +66,3 @@ EntityTemplateSchema.index({ displayName: 'text' });
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
-
-const EntityTemplateModel = mongoose.model<IMongoEntityTemplate>(config.mongo.entityTemplatesCollectionName, EntityTemplateSchema);
-
-export default EntityTemplateModel;

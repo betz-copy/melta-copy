@@ -1,12 +1,11 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import { Server } from './express/server';
 import { config } from './config';
-import { minioClient } from './utils/minio';
+import { Server } from './express/server';
 import logger from './utils/logger/logsLogger';
+import { declareTopology } from './utils/rabbit';
 
 const { rabbit } = config;
-
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
@@ -17,14 +16,13 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.previewQueue);
 
+    await declareTopology();
+
     logger.info('Rabbit initialized');
 };
 
 const main = async () => {
     await initializeRabbit();
-
-    const { url: endPoint, port, accessKey, secretKey, bucketName, useSSL, transportAgent } = config.minio;
-    await minioClient.initialize(endPoint, port, accessKey, secretKey, transportAgent, bucketName, useSSL);
 
     logger.info(`Storage connection established!`);
 

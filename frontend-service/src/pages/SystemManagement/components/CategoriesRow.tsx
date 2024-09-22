@@ -154,23 +154,24 @@ const CategoriesRow: React.FC = () => {
                 }
                 onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
             >
-                {Array.from(categories.values(), (category) => (
-                    <CategoryCard
-                        key={category._id}
-                        category={category}
-                        setCategoryWizardDialogState={setCategoryWizardDialogState}
-                        setDeleteCategoryDialogState={setDeleteCategoryDialogState}
-                    />
-                ))}
+                {categories &&
+                    Array.from(categories.values(), (category) => (
+                        <CategoryCard
+                            key={category._id}
+                            category={category}
+                            setCategoryWizardDialogState={setCategoryWizardDialogState}
+                            setDeleteCategoryDialogState={setDeleteCategoryDialogState}
+                        />
+                    ))}
             </Box>
-            {
-                // TODO - add when category group will be supported
-                <Grid>
-                    <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
-                        <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
-                    </IconButtonWithPopover>
-                </Grid>
-            }
+
+            {/* TODO - add when category group will be supported */}
+            <Grid>
+                <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
+                    <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
+                </IconButtonWithPopover>
+            </Grid>
+
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
                 handleClose={() => setCategoryWizardDialogState({ isWizardOpen: false, category: null })}

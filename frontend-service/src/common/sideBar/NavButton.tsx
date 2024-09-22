@@ -1,16 +1,19 @@
-import React from 'react';
 import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect } from 'react';
+import { Link, useRoute } from 'wouter';
+import { MeltaTooltip } from '../MeltaTooltip';
 import { StyledLink, StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
-import { MeltaTooltip } from '../MeltaTooltip';
 
 interface NavButtonProps {
     to: string;
     isDrawerOpen: boolean;
     text: string;
     disabled?: boolean;
-    onChangeToActive: (boolean) => void;
+    onChangeToActive: (isActive: boolean) => void;
+    isActiveButton?: boolean;
+    onClick?: () => void;
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
@@ -30,7 +33,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
                     <MeltaTooltip
                         title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
                         placement="left"
-                        disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+                        disableHoverListener={!disabled && isDrawerOpen}
                     >
                         <div>
                             <ListItemButton

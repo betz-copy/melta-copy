@@ -37,8 +37,9 @@ const TemplateTable = forwardRef<
         template: IMongoEntityTemplatePopulated;
         quickFilterText: string;
         page: string;
+        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
->(({ template, quickFilterText, page }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -46,17 +47,7 @@ const TemplateTable = forwardRef<
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
-    useImperativeHandle(ref, () => ({
-        getFilterModel: () => entitiesTableRef.current?.getFilterModel() ?? {},
-        getSortModel: () => entitiesTableRef.current?.getSortModel() ?? [],
-        getExcelData: () => entitiesTableRef.current?.getExcelData(),
-        resetFilter: () => entitiesTableRef.current?.resetFilter(),
-        refreshServerSide: () => entitiesTableRef.current?.refreshServerSide(),
-        updateRowDataClientSide: (data: IEntity) => entitiesTableRef.current?.updateRowDataClientSide(data),
-        isFiltered: () => entitiesTableRef.current?.isFiltered() ?? false,
-        scrollIntoView: () => entitiesTableRef.current?.scrollIntoView(),
-        showSideBar: () => entitiesTableRef.current?.showSideBar(),
-    }));
+    useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     const handleExpandClick = useCallback(() => {
         setIsExpand((prevExpand) => {
@@ -93,7 +84,8 @@ const TemplateTable = forwardRef<
     );
 
     const [isFiltered, setIsFiltered] = useState(false);
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const initializedExternalErrors = { files: false, unique: {}, action: '' };
+    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         isEditMode: boolean;
@@ -185,6 +177,7 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        setUpdatedEntities={setUpdatedEntities}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
@@ -213,7 +206,7 @@ const TemplateTable = forwardRef<
                                 draft={draft}
                                 openEditDialog={() => {
                                     setDraftId(draft.uniqueId);
-                                    setExternalErrors({ files: false, unique: {} });
+                                    setExternalErrors(initializedExternalErrors);
                                     setEditDialog({
                                         isOpen: true,
                                         isEditMode: false,
@@ -258,7 +251,7 @@ const TemplateTable = forwardRef<
                                 isEditMode: true,
                                 entity: currEntity,
                             });
-                            setExternalErrors({ files: false, unique: {} });
+                            setExternalErrors(initializedExternalErrors);
                             setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                             toast.dismiss();
                         },
@@ -281,10 +274,16 @@ const TemplateTable = forwardRef<
                     entityToUpdate={editDialog.entity!}
                     onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
-                        if (editDialog.isEditMode) entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        else entitiesTableRef.current?.refreshServerSide();
+                        if (editDialog.isEditMode) {
+                            entitiesTableRef.current?.updateRowDataClientSide(entity);
+                            setUpdatedEntities(
+                                Object.values(entity.properties).filter(
+                                    (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                                ),
+                            );
+                        } else entitiesTableRef.current?.refreshServerSide();
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setExternalErrors(initializedExternalErrors);
                     }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));

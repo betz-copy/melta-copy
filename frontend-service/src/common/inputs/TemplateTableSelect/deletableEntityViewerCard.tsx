@@ -2,12 +2,11 @@ import React from 'react';
 import { Card, CardContent, CardHeader, IconButton } from '@mui/material';
 import { Clear as ClearIcon, AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
-import { useSelector } from 'react-redux';
 import { IEntity } from '../../../interfaces/entities';
 import { EntityPropertiesInternal } from '../../EntityProperties';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CustomIcon } from '../../CustomIcon';
-import { RootState } from '../../../store';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => void }> = ({ entity, onDelete }) => {
     const queryClient = useQueryClient();
@@ -15,7 +14,7 @@ const DeletableEntityViewerCard: React.FC<{ entity: IEntity; onDelete: () => voi
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = entityTemplates.get(entity.templateId);
 
-    const darkMode = useSelector((state: RootState) => state.darkMode);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Card variant="outlined" sx={{ overflowX: 'auto', maxWidth: '470px', backgroundColor: darkMode ? '#1e1e1e' : 'white' }}>
