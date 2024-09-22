@@ -1,4 +1,8 @@
-version: "3.4"
+version: "3.8"
+
+secrets:
+  npm_token:
+    file: ./npm_token_secret.txt
 
 services:
   user-service:
@@ -150,7 +154,10 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   gateway-service:
-    build: ./gateway-service
+    build:
+      context: ./gateway-service
+      secrets:
+        - npm_token
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
