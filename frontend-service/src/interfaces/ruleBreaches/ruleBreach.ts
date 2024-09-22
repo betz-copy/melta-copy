@@ -1,7 +1,7 @@
 import { IUser } from '../users';
 import { IEntity } from '../entities';
 import { IRelationship } from '../relationships';
-import { ActionTypes, IAction, IActionMetadataPopulated } from './actionMetadata';
+import { IAction, IActionPopulated } from './actionMetadata';
 
 export interface ICauseInstance {
     // same format of IVariable in Formula interfaces, but with instance ids
@@ -58,10 +58,7 @@ export interface IRuleBreachPopulated {
     _id: string;
     originUser: IUser;
     brokenRules: IBrokenRulePopulated[];
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     createdAt: Date;
 }
 

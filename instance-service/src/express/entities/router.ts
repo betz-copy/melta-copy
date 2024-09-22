@@ -64,12 +64,17 @@ entityRouter.post(
     entityController.getExpandedGraphById,
 );
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntity, entityController.createEntity);
+entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
-entityRouter.put('/:id', ValidateRequest(updateEntityByIdRequestSchema), entityValidatorController.validateEntity, entityController.updateEntityById);
+entityRouter.put(
+    '/:id',
+    ValidateRequest(updateEntityByIdRequestSchema),
+    entityValidatorController.validateEntityRequest,
+    entityController.updateEntityById,
+);
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
 
 export default entityRouter;
