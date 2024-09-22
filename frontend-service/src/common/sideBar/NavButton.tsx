@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { Link, useRoute } from 'wouter';
 import { MeltaTooltip } from '../MeltaTooltip';
-import { StyledLink, StyledListItemText } from './NavBar.styled';
+import { StyledListItemText } from './NavBar.styled';
 import './NavButton.css';
 
 interface NavButtonProps {
@@ -16,54 +16,56 @@ interface NavButtonProps {
     onClick?: () => void;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive }) => {
-    const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, isActive: boolean) => {
-        if (disabled) {
-            e.preventDefault();
-        } else if (!isActive) {
-            sessionStorage.clear();
-        }
-    };
+const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, isActiveButton, onClick }) => {
+    const [isActive] = useRoute(to);
+
+    useEffect(() => {
+        if (isActive) onChangeToActive(isActive);
+    }, [onChangeToActive, isActive]);
 
     return (
-        <StyledLink to={to} onClick={(e) => handleClick(e, false)} className="nav-button">
-            {({ isActive }) => {
-                onChangeToActive(isActive);
-                return (
-                    <MeltaTooltip
-                        title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
-                        placement="left"
-                        disableHoverListener={!disabled && isDrawerOpen}
-                    >
-                        <div>
-                            <ListItemButton
-                                disabled={disabled}
-                                sx={{
-                                    color: 'black',
-                                }}
-                                style={{
-                                    justifyContent: 'space-around',
-                                    direction: 'rtl',
-                                    backgroundColor: isActive ? '#ffffffcc' : 'transparent',
-                                    borderRadius: '20px',
-                                    height: '32px',
-                                }}
-                                className="child"
-                            >
-                                {children}
-                                {isDrawerOpen && (
-                                    <StyledListItemText
-                                        primary={text}
-                                        sx={{ color: isActive ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
-                                        className="child"
-                                    />
-                                )}
-                            </ListItemButton>
-                        </div>
-                    </MeltaTooltip>
-                );
+        <Link
+            href={to}
+            onClick={(e) => {
+                if (disabled) {
+                    e.preventDefault();
+                    return;
+                }
+                onClick?.();
             }}
-        </StyledLink>
+            className="nav-button"
+            style={{ textDecoration: 'none', color: 'inherit' }}
+        >
+            <MeltaTooltip
+                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
+                placement="left"
+                disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+            >
+                <div>
+                    <ListItemButton
+                        disabled={disabled}
+                        sx={{ color: 'black' }}
+                        style={{
+                            justifyContent: 'space-around',
+                            direction: 'rtl',
+                            backgroundColor: isActiveButton ? '#ffffffcc' : 'transparent',
+                            borderRadius: '20px',
+                            height: '32px',
+                        }}
+                        className="child"
+                    >
+                        {children}
+                        {isDrawerOpen && (
+                            <StyledListItemText
+                                primary={text}
+                                sx={{ color: isActiveButton ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
+                                className="child"
+                            />
+                        )}
+                    </ListItemButton>
+                </div>
+            </MeltaTooltip>
+        </Link>
     );
 };
 
