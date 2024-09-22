@@ -93,3 +93,8 @@ export interface IAction {
     actionType: ActionTypes;
     actionMetadata: IActionMetadata;
 }
+
+export interface IActionPopulated {
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+}

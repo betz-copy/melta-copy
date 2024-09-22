@@ -7,7 +7,6 @@ import { EntityTemplatesRow } from './components/EntityTemplatesRow';
 import { RelationshipTemplatesRow } from './components/RelationshipTemplatesRow';
 import { RulesRow } from './components/RulesRow';
 import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTemplatesRow';
-
 import '../../css/pages.css';
 import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';

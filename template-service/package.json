@@ -36,7 +36,8 @@
     "mongoose": "^8.5.3",
     "morgan": "^1.10.0",
     "winston": "^3.14.1",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "typescript-actions": "npm:typescript@^5.5.4"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.5",

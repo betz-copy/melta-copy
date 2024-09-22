@@ -43,3 +43,11 @@ export const wrapController = (func: (req: Request, res: Response) => Promise<vo
         func(req, res).catch(next);
     };
 };
+
+export const addPropertyToRequest = (req: any, key: string, value: any) => {
+    req[key] = value;
+};
+
+export const fetchPropertyFromRequest = <T>(req: any, key: string): T => {
+    return req[key];
+};

@@ -14,6 +14,9 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
+
+const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -65,7 +68,9 @@ export const RuleCard: React.FC<{
                                             rule,
                                         });
                                     }}
-                                    onDeleteClick={() => setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id })}
+                                    onDeleteClick={() => {
+                                        setDeleteRuleWizardState({ isWizardOpen: true, ruleId: rule._id });
+                                    }}
                                     onDisableClick={() => updateDisabledMutateAsync(rule)}
                                     disabledProps={{
                                         isDisabled: rule.disabled,
@@ -139,6 +144,7 @@ const RulesRow: React.FC = () => {
     const { mutateAsync: updateDisabledMutateAsync } = useMutation((rule: IMongoRule) => updateDisabledRuleRequest(rule._id, !rule.disabled), {
         onSuccess: (data) => {
             queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
+            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             if (data.disabled) toast.success(i18next.t('wizard.rule.disabledSuccessfully'));
             else toast.success(i18next.t('wizard.rule.activatedSuccessfully'));
         },
@@ -153,6 +159,7 @@ const RulesRow: React.FC = () => {
                 ruleMap!.delete(id);
                 return ruleMap!;
             });
+            queryClient.invalidateQueries(['searchRulesTemplates', searchText]);
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },
@@ -160,6 +167,7 @@ const RulesRow: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
         },
     });
+
     return (
         <Grid item container>
             <Grid container spacing={1} alignItems="center">
@@ -173,20 +181,38 @@ const RulesRow: React.FC = () => {
                 </Grid>
             </Grid>
             <Grid item container direction="row" gap="30px" marginTop="30px">
-                {Array.from(rules.values())
-                    .filter(({ name }) => searchText === '' || name.includes(searchText))
-                    .map((rule) => {
-                        return (
-                            <RuleCard
-                                key={rule._id}
-                                entityTemplates={entityTemplates}
-                                rule={rule}
-                                setDeleteRuleWizardState={setDeleteRuleWizardState}
-                                setRuleWizardDialogState={setRuleWizardDialogState}
-                                updateDisabledMutateAsync={updateDisabledMutateAsync}
-                            />
-                        );
-                    })}
+                <InfiniteScroll<IMongoRule>
+                    queryKey={['searchRulesTemplates', searchText]}
+                    queryFunction={({ pageParam }) =>
+                        Array.from(rules.values())
+                            .filter(({ name }) => searchText === '' || name.includes(searchText))
+                            .splice(pageParam, infiniteScrollPageCount)
+                    }
+                    onQueryError={(error) => {
+                        // eslint-disable-next-line no-console
+                        console.log('failed to search process templates error:', error);
+                        toast.error(i18next.t('failedToLoadResults'));
+                    }}
+                    getItemId={(rule) => rule._id}
+                    getNextPageParam={(lastPage, allPages) => {
+                        const nextPage = allPages.length * infiniteScrollPageCount;
+                        return lastPage.length ? nextPage : undefined;
+                    }}
+                    endText={i18next.t('noSearchLeft')}
+                    emptyText={i18next.t('failedToGetTemplates')}
+                    useContainer={false}
+                >
+                    {(rule) => (
+                        <RuleCard
+                            key={rule._id}
+                            entityTemplates={entityTemplates}
+                            rule={rule}
+                            setDeleteRuleWizardState={setDeleteRuleWizardState}
+                            setRuleWizardDialogState={setRuleWizardDialogState}
+                            updateDisabledMutateAsync={updateDisabledMutateAsync}
+                        />
+                    )}
+                </InfiniteScroll>
             </Grid>
             <RuleWizard
                 open={ruleWizardDialogState.isWizardOpen}
