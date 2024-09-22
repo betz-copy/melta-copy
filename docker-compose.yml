@@ -1,4 +1,8 @@
-version: "3.4"
+version: "3.8"
+
+secrets:
+  npm_token:
+    file: ./npm_token_secret.txt
 
 services:
   user-service:
@@ -151,6 +155,8 @@ services:
 
   gateway-service:
     build: ./gateway-service
+    secrets:
+      - npm_token
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
@@ -180,8 +186,8 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
-  frontend-service:
-    build: ./frontend-service
+  # frontend-service:
+  #   build: ./frontend-service
 
   nginx:
     image: nginx:alpine
