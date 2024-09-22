@@ -17,6 +17,7 @@
   "author": "Unknown",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
     "body-parser": "^1.20.2",
     "dotenv": "^16.4.5",
     "elastic-apm-node": "^4.7.3",

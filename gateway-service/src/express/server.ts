@@ -5,12 +5,12 @@ import helmet from 'helmet';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 
+import { StatusCodes } from 'http-status-codes';
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';
 import morganMiddleware from '../utils/express/morgan.middleware';
 import config from '../config';
-import { StatusCodes } from 'http-status-codes';
 
 class Server {
     private app: express.Application;

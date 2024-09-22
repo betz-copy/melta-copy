@@ -8,12 +8,16 @@ const stream: StreamOptions = {
         logger.info('morgan-log', logObject);
     },
 };
-morgan.format('jsonFormat', (_tokens: any, req: any, _res: any) => {
+morgan.format('jsonFormat', (tokens: any, req: any, res: any) => {
     const logObject = {
         userId: req?.user?.id,
         path: req.path,
         method: req.method,
         body: req.body,
+        status: tokens.status(req, res),
+        responseTime: `${tokens['response-time'](req, res)} ms`,
+        headers: req.headers,
+        workspaceId: req.workspaceId,
     };
 
     return JSON.stringify(logObject);

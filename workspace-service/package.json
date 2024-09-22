@@ -18,6 +18,7 @@
   "author": "Nadav Hammer",
   "license": "ISC",
   "dependencies": {
+    "axios": "^1.7.7",
     "dotenv": "^16.4.1",
     "elastic-apm-node": "^4.7.3",
     "env-var": "^7.4.1",

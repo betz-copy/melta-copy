@@ -65,51 +65,71 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
     return axiosErrorData;
 };
 
-export const errorMiddleware = async (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    let statusCode: number;
+    let errorResponse: any;
     if (error.name === 'ValidationError') {
-        res.status(StatusCodes.BAD_REQUEST).send({
+        statusCode = StatusCodes.BAD_REQUEST;
+        errorResponse = {
             type: error.name,
             message: error.message,
-        });
+        };
     } else if (error instanceof ServiceError) {
-        res.status(error.code).send({
+        statusCode = error.code;
+        errorResponse = {
             type: error.name,
             message: error.message,
             metadata: error.metadata,
-        });
+        };
     } else if (['TokenExpiredError', 'JsonWebTokenError'].includes(error.name)) {
-        res.status(StatusCodes.UNAUTHORIZED).send({
+        statusCode = StatusCodes.UNAUTHORIZED;
+        errorResponse = {
             type: error.name,
             message: error.message,
-        });
+        };
     } else if (axios.isAxiosError(error) && error.response?.status) {
-        res.status(error.response?.status).send({
+        statusCode = error.response.status;
+        errorResponse = {
             type: error.name,
-            message: error.message,
+            message: error.response.data?.message || error.message,
+            responseMessage: error.response.statusText,
             metadata: formatAxiosErrorData(error.response.data),
-        });
+        };
     } else {
-        res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({
+        statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+        errorResponse = {
             type: 'InternalServerError',
-            message: 'internal server error',
-        });
-
-        logger.error('error for handling new request', {
-            error: {
-                request: {
-                    method: req.method,
-                    url: req.url,
-                    body: req.body,
-                },
-                response: {
-                    status: res.statusCode,
-                    message: res.statusMessage,
-                },
-                ...error,
-            },
-        });
+            message: error.message || 'Internal server error',
+        };
     }
-
+    const logData = {
+        error: {
+            message: error.message,
+            name: error.name,
+            ...(error instanceof ServiceError && { metadata: error.metadata }),
+            ...(axios.isAxiosError(error) && {
+                responseData: error.response?.data,
+                code: error.code,
+                config: {
+                    method: error.config?.method,
+                    url: error.config?.url,
+                    headers: error.config?.headers,
+                },
+            }),
+        },
+        request: {
+            method: req.method,
+            url: req.originalUrl,
+            headers: req.headers,
+            body: req.body,
+        },
+        response: {
+            status: statusCode,
+            errorResponse,
+        },
+    };
+    logger.error('Error handling request', logData);
+    res.status(statusCode).send(errorResponse);
     next();
 };
 
