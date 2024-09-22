@@ -1,18 +1,14 @@
-import * as schedule from 'node-schedule';
-import { StatusCodes } from 'http-status-codes';
-import config from '../../config';
-import { UsersManager } from '../../express/users/manager';
-import { WorkspaceTypes } from '../../express/workspaces/interface';
-import { WorkspaceManager } from '../../express/workspaces/manager';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IFilterDatesRange } from '../../externalServices/instanceService/interfaces/entities';
-import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
-import { IDateAboutToExpireMetadataPopulated } from '../../externalServices/notificationService/interfaces/populated';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import logger from '../logger/logsLogger';
-import { RabbitManager } from '../rabbit';
-import { ServiceError } from '../../express/error';
+import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../notification/interface';
+import config from '../config';
+import { UsersManager } from '../users/manager';
+import { WorkspaceTypes } from '../workspaces/inteface';
+import { InstancesService } from '../ services/instance';
+import { IFilterDatesRange } from '../instance/entity/interface';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../ services/entityTemplate';
+import { PermissionScope } from '../users/intefaces/permissions';
+import { WorkspaceManager } from '../workspaces/manager';
+import { RabbitManager } from '../utils/rabbit/rabbit';
+import logger from '../utils/logger/logsLogger';
 
 const { notifications } = config;
 
@@ -85,7 +81,7 @@ const sendNotificationsForEntityTemplate = async (
                 },
             },
         },
-        limit: config.instanceService.dateNotificationLimit,
+        limit: config.instanceService.searchEntitiesFlowMaxLimit,
     });
 
     const propertiesWithDateNotifications: IFilterDatesRange[] = Object.entries(entityTemplate.properties.properties)
@@ -115,7 +111,7 @@ const sendNotificationsForEntityTemplate = async (
                         (isDailyAlert && notificationDate.getTime() <= today.getTime()) ||
                         (!isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue, dateNotificationValue))
                     ) {
-                        await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata, IDateAboutToExpireMetadataPopulated>(
+                        await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata>(
                             userIdsWithPermission,
                             NotificationType.dateAboutToExpire,
                             {
@@ -123,7 +119,6 @@ const sendNotificationsForEntityTemplate = async (
                                 propertyName,
                                 datePropertyValue,
                             },
-                            { entity, propertyName, datePropertyValue },
                         );
                     }
                 });
@@ -133,31 +128,28 @@ const sendNotificationsForEntityTemplate = async (
 };
 
 const checkForDateNotifications = async () => {
-    schedule.scheduleJob(notifications.dateAlertTime, async () => {
-        logger.info('Checking for Date Notifications...');
-        const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
+    logger.info('Checking for Date Notifications...');
+    const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
 
-        await Promise.all(
-            workspaceIds.map(async (workspaceId) => {
-                const entityTemplateService = new EntityTemplateService(workspaceId);
-                const instancesService = new InstancesService(workspaceId);
-                const rabbitManager = new RabbitManager(workspaceId);
+    await Promise.all(
+        workspaceIds.map(async (workspaceId) => {
+            const entityTemplateService = new EntityTemplateService(workspaceId);
+            const instancesService = new InstancesService(workspaceId);
+            const rabbitManager = new RabbitManager(workspaceId);
 
-                try {
-                    const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
-                    await Promise.all(
-                        allEntityTemplates.map((entityTemplate) =>
-                            sendNotificationsForEntityTemplate(workspaceId, instancesService, rabbitManager, entityTemplate),
-                        ),
-                    );
-                } catch (error) {
-                    logger.error('Error checking date notifications:', { error });
-                }
-            }),
-        );
-    });
+            try {
+                const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
+                await Promise.all(
+                    allEntityTemplates.map((entityTemplate) =>
+                        sendNotificationsForEntityTemplate(workspaceId, instancesService, rabbitManager, entityTemplate),
+                    ),
+                );
+            } catch (error) {
+                logger.error('Error checking date notifications:', { error });
+            }
+        }),
+    );
 };
 
-checkForDateNotifications().catch((error) => {
-    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'error in checkForDateNotifications', { error });
-});
+// checkForDateNotifications().catch(logger.error);
+checkForDateNotifications();

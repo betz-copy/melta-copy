@@ -198,3 +198,6 @@ services:
       USE_AUTH: "true"
       RABBIT_URI: ${RABBIT_URL}
       REDIS_CONNECTION_URI: ${REDIS_HOST}
+
+  cron-service:
+    build: ./cron-service
