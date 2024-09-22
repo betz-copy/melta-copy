@@ -7,6 +7,7 @@ import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
+import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
@@ -35,7 +36,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 
-const { errorCodes } = config;
+const { errorCodes, rabbit } = config;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -152,7 +153,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
         return objectFilter(entityProperties, (key) => {
             const propertyTemplate = template.properties.properties[key];
-            return propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId';
+            return propertyTemplate && (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId');
         });
     }
 
@@ -259,7 +260,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        return this.storageService.deleteFiles(fileIdsToDelete);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
+
+        return fileIdsToDelete;
     }
 
     async exportEntityToDocumentTemplate({
@@ -503,7 +506,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        return this.storageService.deleteFiles(fileIdsToRemove);
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+
+        return fileIdsToRemove;
     }
 
     async deleteEntityInstance(id: string) {

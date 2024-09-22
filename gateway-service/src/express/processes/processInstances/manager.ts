@@ -42,6 +42,7 @@ import { RabbitManager } from '../../../utils/rabbit';
 import { ServiceError } from '../../error';
 import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
+import { WorkspaceManager } from '../../workspaces/manager';
 import { EntityNotExist, NotFoundError } from '../error';
 import StepsInstancesManager from '../stepInstances/manager';
 
@@ -324,8 +325,10 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     }
 
     private async sendNewProcessNotification(process: IMongoProcessInstancePopulated) {
+        const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
+
         const processesManagersIds = await UsersManager.searchUserIds({
-            workspaceId: this.workspaceId,
+            workspaceIds,
             permissions: {
                 [PermissionType.processes]: {
                     scope: PermissionScope.write,
@@ -493,11 +496,12 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
     }
 
     private async getAllReviewersIds(steps: IGenericStepPopulated[], withManagers?: boolean) {
+        const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(this.workspaceId);
         const reviewersIds = new Set<string>();
 
         if (withManagers) {
             const userIdsWithPermission = await UsersManager.searchUserIds({
-                workspaceId: this.workspaceId,
+                workspaceIds,
                 permissions: {
                     [PermissionType.processes]: {
                         scope: PermissionScope.write,

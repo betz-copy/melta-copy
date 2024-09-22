@@ -7,7 +7,7 @@ export class ServiceError extends Error {
     constructor(
         public code: number,
         message: string,
-        public metadata: object = {},
+        public metadata: any = {},
     ) {
         super(message);
         this.code = code;
