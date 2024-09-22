@@ -177,7 +177,7 @@ const getDatasource = <Data extends any = IUser>(
         async getRows({ request: { startRow, endRow }, success, fail }: IServerSideGetRowsParams<Data>) {
             const { result: data, err } = await trycatch(() =>
                 searchUsersRequest({
-                    workspaceId: _id,
+                    workspaceIds: [_id],
                     step: startRow! / infiniteScrollPageCount,
                     limit: endRow! - startRow!,
                     search: quickFilter || undefined,
