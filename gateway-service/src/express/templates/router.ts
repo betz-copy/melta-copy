@@ -17,6 +17,7 @@ import {
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getCategoriesSchema,
+    searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
@@ -48,11 +49,6 @@ const templatesControllerMiddleware = createWorkspacesController(TemplatesContro
 const templatesValidatorMiddleware = createWorkspacesController(TemplatesValidator, true);
 
 // all needed categories
-templatesRouter.get(
-    '/all/:userId',
-    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
-    templatesControllerMiddleware.getAllAllowedTemplatesFromParamUser,
-);
 templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermissions, templatesControllerMiddleware.getAllAllowedTemplates);
 
 // categories
@@ -134,6 +130,13 @@ templatesRouter.delete(
     ValidateRequest(deleteEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityTemplate,
+);
+
+templatesRouter.post(
+    '/entities/search/template/:userId',
+    ValidateRequest(searchEntityTemplatesOfUserFromParamsSchema),
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
 );
 
 templatesRouter.post(
