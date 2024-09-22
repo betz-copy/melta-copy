@@ -11,7 +11,9 @@ class AuthenticationController {
     static async createTokenAndRedirect(req: Request, res: Response) {
         const { RelayState, id } = req.user as unknown as ShragaUser;
 
-        const user = await UserService.getUserByExternalId(id).catch(() => {});
+        console.log(id);
+
+        const user = await UserService.getUserByExternalId('5e5688324203fc40043591aa').catch(() => {});
 
         if (user) await UsersManager.syncUser(user._id);
 

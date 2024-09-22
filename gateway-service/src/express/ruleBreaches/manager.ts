@@ -267,7 +267,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         });
 
         const viewers = new Set<string>(userIdsWithPermission);
-        console.log({ userIdsWithPermission }, { viewers });
 
         extraViewers.forEach((extraViewer) => viewers.add(extraViewer));
 

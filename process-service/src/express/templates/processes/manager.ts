@@ -36,19 +36,17 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
-        console.log('1');
         const templateId: string = await transaction(async (session) => {
-            console.log('2');
             const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);
-            console.log('3');
+
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
-            console.log('4', _id);
+
             return _id!.toString();
         });
-        console.log('5');
+
         return this.getProcessTemplateById(templateId);
     }
 
