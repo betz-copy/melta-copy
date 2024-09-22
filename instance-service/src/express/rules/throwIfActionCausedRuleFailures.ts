@@ -10,14 +10,21 @@ import { ServiceError } from '../error';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { IBrokenRule, ICausesOfInstance, IRuleFailure } from './interfaces';
 import { ICause } from './interfaces/formulaWithCauses/cause';
+import { IAction } from '../bulkActions/interface';
 
-const getRelationshipIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], relationshipId) => {
+const getRelationshipIdFormattedForBrokenRules = (
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    relationshipId,
+) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdRelationshipId === relationshipId);
 
     return index === -1 ? relationshipId : `$${index}._id`;
 };
 
-const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[], entityId: string) => {
+const getEntityIdFormattedForBrokenRules = (
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    entityId: string,
+) => {
     const index = actionsResults.findIndex((actionResult) => actionResult.createdEntityId === entityId);
 
     return index === -1 ? entityId : `$${index}._id`;
@@ -25,7 +32,7 @@ const getEntityIdFormattedForBrokenRules = (actionsResults: { createdRelationshi
 
 const getCauseFormattedForBrokenRules = (
     cause: ICausesOfInstance,
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
 ): ICausesOfInstance => {
     const {
         instance: { entityId, aggregatedRelationship },
@@ -52,7 +59,7 @@ const getCauseFormattedForBrokenRules = (
 
 const getBrokenRuleFormatted = (
     brokenRule: IBrokenRule,
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
 ): IBrokenRule => {
     const { ruleId, failures } = brokenRule;
 
@@ -99,7 +106,8 @@ export const throwIfActionCausedRuleFailures = (
     ignoredRules: IBrokenRule[],
     ruleFailuresBeforeAction: IRuleFailure[],
     ruleFailuresAfterAction: IRuleFailure[],
-    actionsResults: { createdRelationshipId?: string; createdEntityId?: string }[],
+    actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
+    actions?: IAction[],
 ) => {
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
@@ -130,6 +138,7 @@ export const throwIfActionCausedRuleFailures = (
         throw new ServiceError(400, `[NEO4J] action is blocked by rules.`, {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules,
+            actions,
         });
     }
 };

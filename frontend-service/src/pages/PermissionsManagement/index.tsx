@@ -21,7 +21,7 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
 
     const { data: users, isLoading: isLoadingUsers } = useQuery(
         'getAllUsers',
-        () => searchUsersRequest({ workspaceId: workspace._id, limit: 1000 }),
+        () => searchUsersRequest({ workspaceIds: [workspace._id], limit: 1000 }),
         {
             onError: (error) => {
                 // eslint-disable-next-line no-console

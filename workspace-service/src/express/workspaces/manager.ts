@@ -26,9 +26,9 @@ export class WorkspacesManager {
             path = parentPath;
         }
 
-        queries.unshift({ name: '', path: '/' });
+        if (queries[0].name !== '') queries.unshift({ name: '', path: '/' });
 
-        return Promise.all(
+        const workspaceIds = await Promise.all(
             queries.map(async (query) => {
                 const { _id } = await WorkspacesModel.findOne({ ...query, type: WorkspaceTypes.dir }, { _id: 1 })
                     .orFail(new PathDoesNotExistError(`${query.path}/${query.name}`))
@@ -37,6 +37,10 @@ export class WorkspacesManager {
                 return _id;
             }),
         );
+
+        workspaceIds.push(workspaceId);
+
+        return workspaceIds;
     }
 
     static async getFile(path: IWorkspace['path']) {

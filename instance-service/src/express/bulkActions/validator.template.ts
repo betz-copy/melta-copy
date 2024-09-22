@@ -11,6 +11,9 @@ import { IEntity } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { ValidationError } from '../error';
 import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+import config from '../../config';
+
+const { brokenRulesFakeEntityIdPrefix } = config;
 
 const ajv = new Ajv();
 
@@ -119,9 +122,9 @@ export class BulkActionValidator extends DefaultController {
                     const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
                     if (
-                        !metadata.relationshipTemplateId.startsWith('$') &&
-                        !metadata.sourceEntityId.startsWith('$') &&
-                        !metadata.destinationEntityId.startsWith('$')
+                        !metadata.relationshipTemplateId.startsWith(brokenRulesFakeEntityIdPrefix) &&
+                        !metadata.sourceEntityId.startsWith(brokenRulesFakeEntityIdPrefix) &&
+                        !metadata.destinationEntityId.startsWith(brokenRulesFakeEntityIdPrefix)
                     ) {
                         this.validateRelationship(
                             relationshipTemplatesByRelationshipTemplatesIds[metadata.relationshipTemplateId][0],
@@ -132,7 +135,7 @@ export class BulkActionValidator extends DefaultController {
                 } else if (action.actionType === ActionTypes.CreateEntity) {
                     const metadata = action.actionMetadata as ICreateEntityMetadata;
 
-                    if (!metadata.templateId.startsWith('$')) {
+                    if (!metadata.templateId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                         this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
                     }
                 }

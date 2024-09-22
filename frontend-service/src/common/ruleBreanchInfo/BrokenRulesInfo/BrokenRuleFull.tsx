@@ -5,7 +5,7 @@ import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import isEqual from 'lodash.isequal';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { ActionTypes, IActionMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
 import { EntityForBrokenRules } from '../ActionInfo';
@@ -16,10 +16,7 @@ import { IEntity } from '../../../interfaces/entities';
 export const BrokenRuleFull: React.FC<{
     brokenRule: IBrokenRulePopulated;
     ruleTemplate: IMongoRule;
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
 }> = ({ brokenRule, ruleTemplate, actions }) => {
     const [open, setOpen] = useState(false);
     const queryClient = useQueryClient();

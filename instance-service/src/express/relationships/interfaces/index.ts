@@ -5,4 +5,3 @@ export interface IRelationship {
     sourceEntityId: string;
     destinationEntityId: string;
 }
-

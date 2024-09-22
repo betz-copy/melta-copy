@@ -4,6 +4,7 @@ import { transaction } from '../../utils/mongoose';
 import { RecursiveNullable } from '../../utils/types';
 import { UsersManager } from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
+import { PermissionScope, PermissionType } from './interface';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interface/permissions';
 import { PermissionsModel } from './model';
 
@@ -74,13 +75,23 @@ export class PermissionsManager {
             .exec();
     }
 
-    static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions, workspaceId?: string): Promise<IPermission[]> {
-        const query: FilterQuery<IPermission> = { workspaceId };
+    static async searchBySubCompactPermissions(subCompactPermissions: ISubCompactPermissions, workspaceIds?: string[]): Promise<IPermission[]> {
+        const workspaceId = workspaceIds ? workspaceIds[workspaceIds.length - 1] : undefined;
+
+        const query: FilterQuery<IPermission> = Object.keys(subCompactPermissions).length ? {} : { workspaceId };
         const subQueries: FilterQuery<IPermission>[] = [];
 
         typedObjectEntries(subCompactPermissions).forEach(([type, metadata]) => {
-            subQueries.push({ type, metadata });
+            subQueries.push({ type, workspaceId, ...flattenObject(metadata!, ['metadata']) });
         });
+
+        if (workspaceIds && workspaceIds.length > 1) {
+            workspaceIds.pop();
+
+            workspaceIds.forEach((workspaceId) => {
+                subQueries.push({ type: PermissionType.admin, metadata: { scope: PermissionScope.write }, workspaceId });
+            });
+        }
 
         if (subQueries.length) query.$or = subQueries;
 

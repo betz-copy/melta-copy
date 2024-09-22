@@ -21,6 +21,7 @@ interface InstanceFileInputProps {
         React.SetStateAction<{
             files: boolean;
             unique: {};
+            action: string;
         }>
     >;
 }
