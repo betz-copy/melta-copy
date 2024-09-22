@@ -22,8 +22,6 @@ type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemp
 export default class ProcessTemplateManager extends DefaultManagerMongo<IProcessTemplate> {
     public stepTemplateManager: StepTemplateManager;
 
-    private processInstanceManager: ProcessInstanceManager;
-
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
         this.stepTemplateManager = new StepTemplateManager(workspaceId);
@@ -47,7 +45,8 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async throwIfProcessTemplateHasInstances(templateId: string) {
-        const processInstances = await this.processInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
+        const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
+        const processInstances = await processInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
         if (processInstances) throw new ServiceError(400, 'process template still has instances');
     }
 
@@ -88,7 +87,8 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     private async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
-        const processInstances = await this.processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
+        const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
+        const processInstances = await processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
         if (processInstances.length === 0) {
             return;
         }

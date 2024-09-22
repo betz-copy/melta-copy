@@ -135,7 +135,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         });
 
         const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
-        // await this.elasticSearchManager.createDocumentOnElastic(populatedProcess);
+        await this.elasticSearchManager.createDocumentOnElastic(populatedProcess);
 
         return populatedProcess;
     }
