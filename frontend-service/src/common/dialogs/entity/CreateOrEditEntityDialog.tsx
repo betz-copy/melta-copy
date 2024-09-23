@@ -232,7 +232,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         render() {
                             return (
                                 <Grid display="flex" alignItems="center">
-                                    <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}</span>
+                                    <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`)}. `}</span>
                                     <Button
                                         variant="text"
                                         onClick={() => {
