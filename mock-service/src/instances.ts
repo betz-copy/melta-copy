@@ -66,6 +66,14 @@ export const createRelationshipInstances = async (
             const relevantSourceEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.sourceEntityId);
             const relevantDestinationEntities = entities.filter((entity) => entity.templateId === relationshipTemplate.destinationEntityId);
 
+            if (relevantSourceEntities.length === 0 || relevantDestinationEntities.length === 0) {
+                console.warn('No relevant source or destination entities found for this template, skipping...');
+                return [];
+            }
+
+            if (minNumberOfRelationships > maxNumberOfRelationships) {
+                throw new Error('Min cannot be greater than Max for relationships range.');
+            }
             return Array.from({ length: chance.integer({ min: minNumberOfRelationships, max: maxNumberOfRelationships }) }, () => {
                 const sourceEntityId = relevantSourceEntities[chance.integer({ min: 0, max: relevantSourceEntities.length - 1 })].properties._id;
                 const destinationEntityId =
@@ -85,6 +93,7 @@ export const createRelationshipInstances = async (
                     } catch (error) {
                         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
                             console.log('Relationship already exists, skipping...');
+                            return;
                         }
 
                         throw error;

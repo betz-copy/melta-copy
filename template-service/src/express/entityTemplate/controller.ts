@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import { IMongoEntityTemplate } from './interface';
 import { EntityTemplateManager } from './manager';
+import { fetchPropertyFromRequest } from '../../utils/express';
 
 class EntityTemplateController extends DefaultController<IMongoEntityTemplate, EntityTemplateManager> {
     constructor(workspaceId: string) {
@@ -39,6 +40,12 @@ class EntityTemplateController extends DefaultController<IMongoEntityTemplate, E
     async updateEntityTemplateStatus(req: Request, res: Response) {
         const { templateId: id } = req.params;
         res.json(await this.manager.updateEntityTemplateStatus(id, req.body.disabled));
+    }
+
+    async updateEntityTemplateAction(req: Request, res: Response) {
+        const { templateId: id } = req.params;
+        const actionToUpsert = fetchPropertyFromRequest<string>(req, 'actions');
+        res.json(await this.manager.updateEntityTemplateAction(id, actionToUpsert));
     }
 }
 

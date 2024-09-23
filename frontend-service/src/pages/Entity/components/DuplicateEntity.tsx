@@ -1,5 +1,5 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
-import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { Box, Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import { Form, Formik } from 'formik';
 import i18next from 'i18next';
@@ -16,7 +16,7 @@ import { ajvValidate, JSONSchemaFormik } from '../../../common/inputs/JSONSchema
 import { environment } from '../../../globals';
 import { IEntity, IEntityExpanded, IUniqueConstraint } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { duplicateEntityRequest } from '../../../services/entitiesService';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
@@ -40,12 +40,14 @@ const DuplicateEntity: React.FC<{}> = () => {
     if (!state) {
         navigate(`/entity/${entity?.properties._id}`);
     }
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
 
     const [duplicateEntityWithRuleBreachDialogState, setDuplicateEntityWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IRuleBreach['brokenRules'];
+        actions?: IActionPopulated[];
+        rawActions?: IAction[];
     }>({ isOpen: false });
 
     const { isLoading: isDuplicateLoading, mutateAsync: duplicateMutation } = useMutation(
@@ -55,7 +57,7 @@ const DuplicateEntity: React.FC<{}> = () => {
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.duplicatedSuccessfully'));
                 navigate(`/entity/${data?.properties._id}`);
-                setExternalErrors({ files: false, unique: {} });
+                setExternalErrors({ files: false, unique: {}, action: '' });
             },
             onError: (err: AxiosError) => {
                 if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -77,11 +79,18 @@ const DuplicateEntity: React.FC<{}> = () => {
                     return;
                 }
 
+                if (errorMetadata?.errorCode === errorCodes.actionsCustomError)
+                    setExternalErrors((prev) => ({ ...prev, action: externalErrors.action }));
+
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
                     setDuplicateEntityWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
+                        actions,
+                        rawActions,
                     });
                 }
 
@@ -155,6 +164,11 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 touched={touched.properties ?? {}}
                                                                 setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                             />
+                                                            {externalErrors.action && (
+                                                                <Typography color="error" variant="caption" fontSize="14px">
+                                                                    {externalErrors.action}
+                                                                </Typography>
+                                                            )}
                                                         </Box>
                                                         {templateFileKeys.length > 0 && (
                                                             <Box>
@@ -238,7 +252,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                                                                 startIcon={<ClearIcon />}
                                                                 onClick={() => {
                                                                     navigate(`/entity/${entity.properties._id}`);
-                                                                    setExternalErrors({ files: false, unique: {} });
+                                                                    setExternalErrors({ files: false, unique: {}, action: '' });
                                                                 }}
                                                             >
                                                                 {i18next.t('entityPage.cancel')}
@@ -276,8 +290,10 @@ const DuplicateEntity: React.FC<{}> = () => {
                                 onCreateRuleBreachRequest={() => {
                                     setDuplicateEntityWithRuleBreachDialogState({ isOpen: false });
                                     navigate(`/entity/${entity.properties._id}`); // go back to entity. todo: use shirel's link to request
-                                    setExternalErrors({ files: false, unique: {} });
+                                    setExternalErrors({ files: false, unique: {}, action: '' });
                                 }}
+                                actions={duplicateEntityWithRuleBreachDialogState.actions}
+                                rawActions={duplicateEntityWithRuleBreachDialogState.rawActions}
                             />
                         )}
                     </>
