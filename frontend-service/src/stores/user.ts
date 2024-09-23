@@ -6,6 +6,7 @@ export interface UserState {
     user: {
         id: string;
         adfsId: string;
+        isRoot: boolean;
         name: {
             firstName: string;
             lastName: string;
@@ -34,6 +35,7 @@ export const useUserStore = create<UserState>((set) => ({
         rank: '',
         exp: 0,
         iat: 0,
+        isRoot: false,
 
         _id: '',
         fullName: '',

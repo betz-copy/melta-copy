@@ -1,6 +1,14 @@
-import { Editor, Monaco } from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
+/* eslint-disable new-cap */
+/* eslint-disable import/no-unresolved */
 import React from 'react';
+import { Editor, Monaco, loader } from '@monaco-editor/react';
+import { editor } from 'monaco-editor';
+import * as monaco from 'monaco-editor';
+import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
+import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
+import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
+import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
+import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
 interface codeEditorProps {
     language: string;
@@ -11,6 +19,31 @@ interface codeEditorProps {
     defaultValue?: string;
     onValidate?: (markers: editor.IMarker[]) => void;
 }
+
+// eslint-disable-next-line no-restricted-globals
+self.MonacoEnvironment = {
+    getWorker(_, label) {
+        switch (label) {
+            case 'json':
+                return new jsonWorker();
+            case 'css':
+            case 'scss':
+            case 'less':
+                return new cssWorker();
+            case 'html':
+            case 'handlebars':
+            case 'razor':
+                return new htmlWorker();
+            case 'typescript':
+            case 'javascript':
+                return new tsWorker();
+            default:
+                return new editorWorker();
+        }
+    },
+};
+
+loader.config({ monaco });
 
 export const CodeEditor: React.FC<codeEditorProps> = ({ language, style, value, defaultValue, onChange, onMount, onValidate }) => {
     return (

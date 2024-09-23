@@ -59,9 +59,13 @@ const App: React.FC = () => {
 
             try {
                 const userFromDb = await getMyUserRequest();
+                const workspaceIds = Object.keys(userFromDb.permissions);
+                const adminWorkspaceIds = workspaceIds.filter((workspaceId) => userFromDb.permissions[workspaceId].admin);
+
+                const isAdminRoot = (await Promise.all(adminWorkspaceIds.map((id) => getById(id)))).some((workspace) => workspace.path === '/');
+                user.isRoot = isAdminRoot;
                 setUser({ ...user, ...userFromDb });
 
-                const workspaceIds = Object.keys(userFromDb.permissions);
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);
                     const path = `${workspace.path}/${workspace.name}${workspace.type}`;
