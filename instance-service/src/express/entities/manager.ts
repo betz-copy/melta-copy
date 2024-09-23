@@ -216,8 +216,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         duplicatedFromId?: string,
     ) {
-        const createdRelationships: IRelationship[] = [];
-
         const fixedProperties = JSON.parse(JSON.stringify(properties));
         const relatedEntitiesByIds: Record<string, IEntity> = {};
 
@@ -251,39 +249,19 @@ export class EntityManager extends DefaultManagerNeo4j {
             Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
                 if (property.format === 'relationshipReference') {
                     if (createdEntity.properties[name]) {
-                        const { createdRelationship } = await this.createRelationshipReference(
+                        await this.createRelationshipReference(
                             property.relationshipReference!,
                             relatedEntitiesByIds[createdEntity.properties[name].properties._id],
                             createdEntity.properties._id,
                             transaction,
                             userId,
                         );
-                        createdRelationships.push(createdRelationship);
                     }
                 }
             }),
         );
 
         const allActivityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
-
-        await Promise.all(
-            createdRelationships.map(async (relationship) => {
-                const relatedEntityId =
-                    relationship.sourceEntityId === createdEntity.properties._id ? relationship.destinationEntityId : relationship.sourceEntityId;
-
-                allActivityLogsToCreate.push({
-                    action: ActionsLog.CREATE_RELATIONSHIP,
-                    entityId: relatedEntityId,
-                    metadata: {
-                        relationshipTemplateId: relationship.templateId,
-                        relationshipId: relationship.properties._id,
-                        entityId: createdEntity.properties._id,
-                    },
-                    timestamp: new Date(),
-                    userId,
-                });
-            }),
-        );
 
         allActivityLogsToCreate.push({
             action: duplicatedFromId ? ActionsLog.DUPLICATE_ENTITY : ActionsLog.CREATE_ENTITY,
@@ -1151,8 +1129,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
-        let createdRelationships: IRelationship[] = [];
-        let deletedRelationships: IRelationship[] = [];
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
 
@@ -1166,11 +1142,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             entityTemplate,
         );
 
-        const {
-            fixedProperties,
-            createdRelationships: newCreatedRelationships,
-            deletedRelationships: newDeletedRelationships,
-        } = await this.handleRelationshipReferenceFieldsChanges(
+        const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
             entityTemplate,
             entityProperties,
@@ -1178,8 +1150,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             transaction,
             userId ?? '',
         );
-        createdRelationships = newCreatedRelationships;
-        deletedRelationships = newDeletedRelationships;
 
         const updatedEntity = await runInTransactionAndNormalize(
             transaction,
@@ -1236,42 +1206,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         }
 
         if (userId) {
-            await Promise.all(
-                createdRelationships.map(async (relationship) => {
-                    const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
-
-                    activityLogsToCreate.push({
-                        action: ActionsLog.CREATE_RELATIONSHIP,
-                        entityId: relatedEntityId,
-                        metadata: {
-                            relationshipTemplateId: relationship.templateId,
-                            relationshipId: relationship.properties._id,
-                            entityId: id,
-                        },
-                        timestamp: new Date(),
-                        userId,
-                    });
-                }),
-            );
-
-            await Promise.all(
-                deletedRelationships.map(async (relationship) => {
-                    const relatedEntityId = relationship.sourceEntityId === id ? relationship.destinationEntityId : relationship.sourceEntityId;
-
-                    activityLogsToCreate.push({
-                        action: ActionsLog.DELETE_RELATIONSHIP,
-                        entityId: relatedEntityId,
-                        metadata: {
-                            relationshipTemplateId: relationship.templateId,
-                            relationshipId: relationship.properties._id,
-                            entityId: id,
-                        },
-                        timestamp: new Date(),
-                        userId,
-                    });
-                }),
-            );
-
             activityLogsToCreate.push({
                 action: ActionsLog.UPDATE_ENTITY,
                 entityId: id,
