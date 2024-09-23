@@ -1327,13 +1327,34 @@ export class EntityManager extends DefaultManagerNeo4j {
         });
     }
 
-    async deletePropertiesOfTemplate(templateId: string, properties: Record<string, boolean>) {
+    async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
         const propertiesToRemove: string[] = [];
+        const currentEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
-        Object.entries(properties).forEach(([key, value]) => {
-            if (!value) propertiesToRemove.push(key, `${key}${config.neo4j.stringPropertySuffix}`);
-            else propertiesToRemove.push(key);
-        });
+        await Promise.all(
+            properties.map(async (property) => {
+                const propertyTemplate = currentEntityTemplate.properties.properties[property];
+
+                if (propertyTemplate.type !== 'string') {
+                    propertiesToRemove.push(property, `${property}${config.neo4j.stringPropertySuffix}`);
+                } else propertiesToRemove.push(property);
+
+                if (propertyTemplate.relationshipReference) {
+                    const x = await this.entityTemplateManagerService.getEntityTemplateById(propertyTemplate.relationshipReference.relatedTemplateId);
+
+                    Object.keys(x.properties.properties).forEach((relatedProperty) => {
+                        propertiesToRemove.push(`${property}.properties.${relatedProperty}${config.neo4j.relationshipReferencePropertySuffix}`);
+                    });
+
+                    ['_id', 'createdAt', 'updatedAt', 'disabled'].map((defaultValue) =>
+                        propertiesToRemove.push(`${property}.properties.${defaultValue}${config.neo4j.relationshipReferencePropertySuffix}`),
+                    );
+
+                    propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
+                }
+            }),
+        );
+        console.log({ propertiesToRemove });
 
         return this.neo4jClient.writeTransaction(
             `MATCH (e: \`${templateId}\`)

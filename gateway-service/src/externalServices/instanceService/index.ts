@@ -143,7 +143,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deletePropertiesOfTemplate(templateId: string, properties: Record<string, boolean>) {
+    async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
         const { data } = await this.api.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
             properties,
         });

@@ -74,7 +74,7 @@ export interface FieldEditCardProps {
     errors?: FormikErrors<CommonFormInputProperties>;
     setFieldValue: (field: keyof CommonFormInputProperties, value: any) => void;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number, isnewProperty: boolean) => any;
+    remove: (index: number, isNewProperty: boolean) => any;
     supportSerialNumberType: boolean;
     supportEntityReferenceType: boolean;
     supportChangeToRequiredWithInstances: boolean;
@@ -1044,15 +1044,13 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             )}
                                         </Box>
                                         <MeltaTooltip
-                                            disableHoverListener={!(initialValue?.required || initialValue?.uniqueCheckbox)}
+                                            disableHoverListener={!initialValue?.required}
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
                                             <Grid>
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}
-                                                    disabled={
-                                                        !supportDeleteForExistingInstances || initialValue?.uniqueCheckbox || initialValue?.required
-                                                    }
+                                                    disabled={!supportDeleteForExistingInstances || initialValue?.required}
                                                 >
                                                     {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                 </IconButton>

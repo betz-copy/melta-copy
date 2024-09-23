@@ -1,24 +1,13 @@
 import config from '../../../config';
 import { ServiceError } from '../../error';
-import {
-    IEquation,
-    ISumAggFunction,
-    isAggregationGroup,
-    isCountAggFunction,
-    isEquation,
-    isGroup,
-    isRegularFunction,
-    isSumAggFunction,
-} from './interfaces';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from './interfaces/argument';
 import { IFormula } from './interfaces/formula';
+import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from './interfaces/formula/argument';
+import { IEquation, isEquation } from './interfaces/formula/equation';
+import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from './interfaces/formula/function';
+import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
-const checkPropertyInUsed = (propertyOfVariable: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
-    const { variableName, property } = propertyOfVariable;
-
-    const variable = variableName.split('.');
-    const id = variable.length > 1 ? variable[2] : variableName;
-    if (id === entityId && properties.includes(property)) {
+const checkPropertyInUsed = ({ variable, property }: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
+    if (variable.entityTemplateId === entityId && properties.includes(property)) {
         throw new ServiceError(400, 'can not delete field that used in rules', {
             errorCode: config.errorCodes.failedToDeleteField,
             type: 'rules',

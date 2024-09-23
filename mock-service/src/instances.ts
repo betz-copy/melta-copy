@@ -83,11 +83,13 @@ export const createRelationshipInstances = async (
                         });
                         return data;
                     } catch (error) {
-                        if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
-                            console.log('Relationship already exists, skipping...');
-                        }
+                        // if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
+                        //     console.log('Relationship already exists, skipping...');
+                        // }
 
-                        throw error;
+                        // throw error;
+                        console.log({ error });
+                        return '';
                     }
                 });
             });

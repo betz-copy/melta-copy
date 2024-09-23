@@ -206,6 +206,8 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                 )
                 .map((property) => property.relationshipReference!.relationshipTemplateId!);
 
+            console.dir({ relationshipTemplateIdsToDelete }, { depth: null });
+
             await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
 
             return updatedEntityTemplate;

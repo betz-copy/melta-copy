@@ -134,6 +134,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     const remove = (index: number, isNewProperty: Boolean) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
         const isDeleted = displayValuesCopy[index].deleted;
+
         if (isDeleted) {
             setFieldDisplayValue(index, 'deleted' as keyof Values, false);
         } else if (areThereAnyInstances && !isNewProperty) {
