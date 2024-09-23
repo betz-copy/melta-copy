@@ -5,10 +5,11 @@ import { WorkspaceTypes } from '../workspaces/inteface';
 import { InstancesService } from '../ services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
 import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../ services/entityTemplate';
-import { PermissionScope } from '../users/intefaces/permissions';
+import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
 import logger from '../utils/logger/logsLogger';
+import * as schedule from 'node-schedule';
 
 const { notifications } = config;
 
@@ -127,29 +128,28 @@ const sendNotificationsForEntityTemplate = async (
     }
 };
 
-const checkForDateNotifications = async () => {
-    logger.info('Checking for Date Notifications...');
-    const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
+export const checkForDateNotifications = async () => {
+    schedule.scheduleJob(notifications.dateAlertTime, async () => {
+        logger.info('Checking for Date Notifications...');
+        const workspaceIds = await WorkspaceManager.getWorkspaceIds(WorkspaceTypes.mlt);
 
-    await Promise.all(
-        workspaceIds.map(async (workspaceId) => {
-            const entityTemplateService = new EntityTemplateService(workspaceId);
-            const instancesService = new InstancesService(workspaceId);
-            const rabbitManager = new RabbitManager(workspaceId);
+        await Promise.all(
+            workspaceIds.map(async (workspaceId) => {
+                const entityTemplateService = new EntityTemplateService(workspaceId);
+                const instancesService = new InstancesService(workspaceId);
+                const rabbitManager = new RabbitManager(workspaceId);
 
-            try {
-                const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
-                await Promise.all(
-                    allEntityTemplates.map((entityTemplate) =>
-                        sendNotificationsForEntityTemplate(workspaceId, instancesService, rabbitManager, entityTemplate),
-                    ),
-                );
-            } catch (error) {
-                logger.error('Error checking date notifications:', { error });
-            }
-        }),
-    );
+                try {
+                    const allEntityTemplates = await entityTemplateService.searchEntityTemplates();
+                    await Promise.all(
+                        allEntityTemplates.map((entityTemplate) =>
+                            sendNotificationsForEntityTemplate(workspaceId, instancesService, rabbitManager, entityTemplate),
+                        ),
+                    );
+                } catch (error) {
+                    logger.error('Error checking date notifications:', { error });
+                }
+            }),
+        );
+    });
 };
-
-// checkForDateNotifications().catch(logger.error);
-checkForDateNotifications();
