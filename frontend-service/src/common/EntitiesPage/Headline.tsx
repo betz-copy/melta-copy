@@ -4,6 +4,7 @@ import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleBut
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import { GridApi } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -19,13 +20,14 @@ export const GlobalSearchBar: React.FC<{
     inputValue?: string;
     setInputValue?: (newInputValue: string) => void;
     onSearch: (searchValue: string) => void;
+    gridApi?: GridApi;
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
@@ -35,12 +37,15 @@ export const GlobalSearchBar: React.FC<{
             onChange={(newSearchValue) => {
                 valueForSearchButtonRef.current = newSearchValue;
                 setInputValue?.(newSearchValue);
-            }}
-            onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                    onSearch(valueForSearchButtonRef.current);
+                if (gridApi) {
+                    gridApi.setQuickFilter(newSearchValue);
                 }
             }}
+            // onKeyDown={(event) => {
+            //     if (event.key === 'Enter') {
+            //         onSearch(valueForSearchButtonRef.current);
+            //     }
+            // }}
             endAdornmentChildren={
                 <IconButton
                     style={{ color: theme.palette.primary.main }}

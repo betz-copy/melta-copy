@@ -303,6 +303,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             '.ag-paging-panel > *': { fontSize: '15px' },
         });
 
+        const handleSearchInputChange = (searchValue: string) => {
+            if (gridRef.current) {
+                gridRef.current.api.setQuickFilter(searchValue);
+            }
+        };
         // function save to localStorage:
 
         // visibility of columns
@@ -490,6 +495,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             }
                         }
                     }}
+                    quickFilterText={quickFilterText}
                     defaultColDef={{
                         filterParams: {
                             suppressAndOrCondition: true,
