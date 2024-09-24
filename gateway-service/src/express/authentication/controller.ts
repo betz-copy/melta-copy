@@ -18,7 +18,7 @@ class AuthenticationController {
         const token = AuthenticationManager.createAccessToken({ id: user?._id || config.authentication.shragaAuthentication.unauthorizedId });
         res.cookie(accessTokenName, token);
 
-        return res.redirect(RelayState ? decodeURIComponent(RelayState) : '/');
+        return res.redirect(RelayState || '/');
     }
 }
 
