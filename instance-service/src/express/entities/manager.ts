@@ -566,7 +566,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             if (actionType === ActionTypes.UpdateEntity) {
                 const { entityId } = actionMetadata as IUpdateEntityMetadata;
 
-                if (entityId.startsWith('$')) {
+                if (entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                     const numberPart = parseInt(entityId.slice(1, -4), 10);
                     const createdEntity = results[numberPart] as IEntity;
 
@@ -1244,9 +1244,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
-        if (entity.properties.disabled) {
-            throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-        }
+        if (entity.properties.disabled) throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(
