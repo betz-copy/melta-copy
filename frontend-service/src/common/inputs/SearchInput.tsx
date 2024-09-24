@@ -30,7 +30,10 @@ const SearchInput: React.FC<{
     return (
         <TextField
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={(e) => {
+                onChange(e.target.value);
+                sessionStorage.clear();
+            }}
             onKeyDown={onKeyDown}
             placeholder={placeholder}
             fullWidth

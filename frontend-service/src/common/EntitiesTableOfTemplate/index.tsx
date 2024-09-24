@@ -113,18 +113,18 @@ const getRowModelProps = <Data extends any = IEntity>(
     mainEntity?: IEntityExpanded,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
+        return { rowModelType, rowData, pagination: false, paginationPageSize };
     }
 
-    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
+    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests } = environment.agGrid;
     return {
         rowModelType: 'serverSide',
         serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize,
+        cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         maxBlocksInCache,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
-        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
+        maxConcurrentDatasourceRequests,
     };
 };
 
