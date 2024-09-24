@@ -1,10 +1,9 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import i18next from 'i18next';
 import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
-import { GridApi } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -20,39 +19,42 @@ export const GlobalSearchBar: React.FC<{
     inputValue?: string;
     setInputValue?: (newInputValue: string) => void;
     onSearch: (searchValue: string) => void;
-    gridApi?: GridApi;
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
-    const valueForSearchButtonRef = useRef(inputValue ?? '');
+}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+    const [searchTerm, setSearchTerm] = useState(inputValue ?? '');
     const theme = useTheme();
+    const debounceTimeoutRef = useRef<any>(null);
+
+    useEffect(() => {
+        if (debounceTimeoutRef.current) {
+            clearTimeout(debounceTimeoutRef.current);
+        }
+
+        debounceTimeoutRef.current = setTimeout(() => {
+            onSearch(searchTerm);
+        }, 500);
+
+        return () => {
+            if (debounceTimeoutRef.current) {
+                clearTimeout(debounceTimeoutRef.current);
+            }
+        };
+    }, [searchTerm, onSearch]);
 
     return (
         <SearchInput
-            value={inputValue}
+            value={searchTerm}
             onChange={(newSearchValue) => {
-                valueForSearchButtonRef.current = newSearchValue;
+                setSearchTerm(newSearchValue);
                 setInputValue?.(newSearchValue);
-                if (gridApi) {
-                    gridApi.setQuickFilter(newSearchValue);
-                }
             }}
-            // onKeyDown={(event) => {
-            //     if (event.key === 'Enter') {
-            //         onSearch(valueForSearchButtonRef.current);
-            //     }
-            // }}
             endAdornmentChildren={
-                <IconButton
-                    style={{ color: theme.palette.primary.main }}
-                    onClick={() => onSearch(valueForSearchButtonRef.current)}
-                    sx={{ padding: 0 }}
-                    disableRipple
-                >
+                <IconButton style={{ color: theme.palette.primary.main }} onClick={() => onSearch(searchTerm)} sx={{ padding: 0 }} disableRipple>
                     <img
                         color="#1E2775"
                         width="14px"
