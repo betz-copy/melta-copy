@@ -92,7 +92,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = {
         name: '',
         displayName: '',
@@ -110,16 +110,16 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     const queryClient = useQueryClient();
 
     const { isLoading, mutateAsync } = useMutation(
-        (enitiyTemplate: EntityTemplateWizardValues) =>
+        (entityTemplate: EntityTemplateWizardValues) =>
             isEditMode
-                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, enitiyTemplate)
-                : createEntityTemplateRequest(enitiyTemplate),
+                ? updateEntityTemplateRequest((initialValues as EntityTemplateWizardValues & { _id: string })._id, entityTemplate)
+                : createEntityTemplateRequest(entityTemplate),
         {
             onSuccess: async (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
-
+                queryClient.invalidateQueries(['searchEntityTemplates']);
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.entityTemplate.editedSuccefully'));
+                    toast.success(i18next.t('wizard.entityTemplate.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.entityTemplate.createdSuccessfully'));
                 }
@@ -132,7 +132,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 }
                 handleClose();
             },
-            onError: (error: AxiosError, enitiyTemplateValues) => {
+            onError: (error: AxiosError, entityTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
@@ -148,7 +148,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(enitiyTemplateValues, false);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];
@@ -188,12 +188,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={isEditMode ? i18next.t('wizard.entityTemplate.editTitle') : i18next.t('wizard.entityTemplate.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

@@ -36,7 +36,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 
-const { errorCodes, rabbit } = config;
+const { errorCodes, rabbit, ruleBreachService } = config;
 
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
@@ -80,21 +80,19 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         });
 
-        const updatedProps = { ...props };
-
         Object.keys(filesToUpload).forEach((key) => {
             if (props?.[key] !== undefined) {
                 if (Array.isArray(props[key])) {
-                    updatedProps[key] = [...props[key], ...filesToUpload[key]];
+                    props[key] = [...props[key], ...filesToUpload[key]];
                 } else {
-                    updatedProps[key] = [props[key], ...filesToUpload[key]];
+                    props[key] = [props[key], ...filesToUpload[key]];
                 }
             } else if (props) {
-                updatedProps[key] = filesToUpload[key];
+                props[key] = filesToUpload[key];
             }
         });
 
-        return { props: updatedProps, files: filesToUpload };
+        return { props, files: filesToUpload };
     }
 
     async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
@@ -217,7 +215,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
-        const entity = await this.service
+        const { createdEntity, actions } = await this.service
             .createEntityInstance(newInstanceData, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -225,12 +223,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.CreateEntity,
                             actionMetadata: {
-                                templateId: entity.templateId,
-                                properties: entity.properties,
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
                             },
                         },
                     ],
@@ -239,7 +237,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return entity;
+        return createdEntity;
     }
 
     private async deleteUnusedFiles(currentEntity: IEntity, instanceData: IEntity, files: Express.Multer.File[]) {
@@ -377,7 +375,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             properties: newInstanceProperties,
         };
 
-        const entity = await this.service
+        const { createdEntity, actions } = await this.service
             .createEntityInstance(newInstanceData, ignoredRules, userId, id)
             .catch((err) => this.handleBrokenRulesError(err));
 
@@ -385,12 +383,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.DuplicateEntity,
                             actionMetadata: {
-                                templateId: entity.templateId,
-                                properties: entity.properties,
+                                templateId: createdEntity.templateId,
+                                properties: createdEntity.properties,
                                 entityIdToDuplicate: id,
                             },
                         },
@@ -400,7 +398,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return entity;
+        return createdEntity;
     }
 
     checkSerialFieldWasUpdated(
@@ -432,7 +430,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         this.checkSerialFieldWasUpdated(entityTemplate, updatedInstanceData.properties, currentEntity);
 
-        const updatedInstance = await this.service
+        const { updatedEntity, actions } = await this.service
             .updateEntityInstance(
                 id,
                 {
@@ -456,12 +454,12 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
             let newValue: any;
             if (propertyTemplate?.format === 'fileId' || propertyTemplate?.items?.format === 'fileId') {
-                newValue = uploadedFilesAndProperties[field] ?? updatedInstance.properties[field];
+                newValue = uploadedFilesAndProperties[field] ?? updatedEntity.properties[field];
             } else if (propertyTemplate?.format === 'relationshipReference') {
-                if (updatedInstance.properties[field]?.properties) newValue = updatedInstance.properties[field].properties._id;
+                if (updatedEntity.properties[field]?.properties) newValue = updatedEntity.properties[field].properties._id;
                 if (currentEntity.properties[field]?.properties) currentEntity.properties[field] = currentEntity.properties[field].properties._id;
             } else {
-                newValue = updatedInstance.properties[field];
+                newValue = updatedEntity.properties[field];
             }
             if (
                 newValue !== undefined &&
@@ -479,7 +477,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             await this.ruleBreachesManager.createRuleBreachAlert(
                 {
                     brokenRules: ignoredRules,
-                    actions: [
+                    actions: actions ?? [
                         {
                             actionType: ActionTypes.UpdateEntity,
                             actionMetadata: {
@@ -494,7 +492,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         }
 
-        return updatedInstance;
+        return updatedEntity;
     }
 
     private async deleteAllEntityFiles(currentEntity: IEntity) {
@@ -582,12 +580,17 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async handleBrokenRulesError(error: any): Promise<never> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
-            const { brokenRules } = error.response.data.metadata;
+            const { brokenRules, actions } = error.response.data.metadata;
 
             throw new ServiceError(400, error.message, {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
+                // in case that entityTemplate has actions
+                ...(actions && {
+                    actions: await this.ruleBreachesManager.populateActionsMetaData(actions),
+                    rawActions: actions,
+                }),
             });
         }
 
@@ -608,11 +611,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 } else if (action.actionType === ActionTypes.CreateRelationship) {
                     const { destinationEntityId, sourceEntityId } = action.actionMetadata as ICreateRelationshipMetadata;
 
-                    if (!destinationEntityId.startsWith('$')) entitiesIds.add(destinationEntityId);
-                    if (!sourceEntityId.startsWith('$')) entitiesIds.add(sourceEntityId);
+                    if (!destinationEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(destinationEntityId);
+                    if (!sourceEntityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(sourceEntityId);
                 } else if (action.actionType === ActionTypes.UpdateEntity) {
                     const { entityId } = action.actionMetadata as IUpdateEntityMetadata;
-                    if (!entityId.startsWith('$')) entitiesIds.add(entityId);
+                    if (!entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) entitiesIds.add(entityId);
                 }
             }),
         );

@@ -1,5 +1,6 @@
 import { TemplatesManagerService } from '.';
 import config from '../../config';
+import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
     templateService: {
@@ -64,6 +65,7 @@ export interface IEntityTemplate {
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     disabled: boolean;
     iconFileId: string | null;
+    actions?: string;
     documentTemplatesIds?: string[];
 }
 
@@ -83,12 +85,19 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
     updatedAt: string;
 }
 
-export interface ISearchEntityTemplatesBody {
+export interface ISearchBody {
     search?: string;
-    ids?: string[];
-    categoryIds?: string[];
     limit?: number;
     skip?: number;
+}
+
+export interface ISearchEntityTemplatesBody extends ISearchBody {
+    ids?: string[];
+    categoryIds?: string[];
+}
+
+export interface RequestWithSearchEntityTemplateBody extends RequestWithPermissionsOfUserId {
+    searchQuery: ISearchEntityTemplatesBody;
 }
 
 export class EntityTemplateService extends TemplatesManagerService {

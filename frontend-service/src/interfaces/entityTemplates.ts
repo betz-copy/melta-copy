@@ -47,6 +47,7 @@ export interface IEntityTemplate {
     propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
+    actions?: string;
     uniqueConstraints: IUniqueConstraintOfTemplate[];
     documentTemplatesIds?: string[];
 }
@@ -64,3 +65,11 @@ export interface IMongoEntityTemplatePopulated extends IEntityTemplatePopulated 
 }
 
 export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;
+
+export interface ISearchEntityTemplateQuery {
+    search?: string;
+    ids?: string[];
+    categoryIds?: string[];
+    limit: number;
+    skip: number;
+}

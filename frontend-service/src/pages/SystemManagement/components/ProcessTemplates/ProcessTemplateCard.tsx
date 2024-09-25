@@ -69,10 +69,12 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                         <Grid item container flexBasis="10%">
                             {isHoverOnCard && (
                                 <CardMenu
-                                    onEditClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate })}
-                                    onDeleteClick={() =>
-                                        setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id })
-                                    }
+                                    onEditClick={() => {
+                                        setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate });
+                                    }}
+                                    onDeleteClick={() => {
+                                        setDeleteProcessTemplateDialogState({ isDialogOpen: true, processTemplateId: processTemplate._id });
+                                    }}
                                 />
                             )}
                         </Grid>
