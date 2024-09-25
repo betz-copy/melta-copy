@@ -11,13 +11,15 @@ import '../../css/pages.css';
 import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
     const theme = useTheme();
 
     useEffect(() => setTitle(i18next.t('pages.systemManagement')), [setTitle]);
 
-    const [tabValue, setTabValue] = React.useState('categories');
+    const [searchParams, setSearchParams] = useSearchParams({ tab: 'categories' });
+    const tabValue = searchParams.get('tab') ?? 'categories';
 
     const currentUser = useUserStore((state) => state.user);
 
@@ -59,7 +61,7 @@ const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction
             <TabContext value={tabValue}>
                 <Grid container direction="column">
                     <Grid item>
-                        <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
+                        <TabList onChange={(_event, newValue) => setSearchParams({ tab: newValue })} scrollButtons="auto" variant="scrollable">
                             {Object.keys(tabsComponentsMapping).map((tabName) => (
                                 <Tab
                                     key={tabName}
