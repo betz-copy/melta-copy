@@ -98,9 +98,12 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         };
     };
 
-    getEntitiesIdsRulesReasonsBefore = async (actions: IAction[], relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>) => {
+    getEntitiesIdsRulesReasonsBefore = async (
+        actions: IAction[],
+        relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>,
+        transaction: Transaction,
+    ) => {
         const entitiesIdsRulesReasonsMapBeforeRunActions: EntitiesIdsRulesReasonsMap = new Map();
-
         const entitiesTemplatesIdsOfRules = new Set<string>();
 
         await Promise.all(
@@ -146,6 +149,26 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
                         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
                         entitiesTemplatesIdsOfRules.add(entityTemplate._id);
+
+                        const reasons = entitiesIdsRulesReasonsMapBeforeRunActions.get(actionMetadata.entityId)?.reasons || [];
+                        reasons.push({
+                            type: RunRuleReason.dependentOnEntity,
+                            updatedProperties: Object.keys(actionMetadata.updatedFields),
+                        });
+
+                        entitiesIdsRulesReasonsMapBeforeRunActions.set(actionMetadata.entityId, {
+                            reasons,
+                            entityTemplateId: entityTemplate._id,
+                        });
+
+                        await this.getNeighborsOfUpdatedEntity(
+                            actionMetadata.entityId,
+                            transaction,
+                            Object.keys(actionMetadata.updatedFields),
+                            entitiesIdsRulesReasonsMapBeforeRunActions,
+                            entitiesTemplatesIdsOfRules,
+                            true,
+                        );
                     }
                 }
             }),
@@ -154,29 +177,58 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         return { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules };
     };
 
-    getEntitiesIdsRulesReasonsAfter = (
+    getNeighborsOfUpdatedEntity = async (
+        entityId: string,
+        transaction: Transaction,
+        updatedProperties: string[],
+        entitiesIdsRulesReasonsMap: EntitiesIdsRulesReasonsMap,
+        entitiesTemplatesIdsOfRules?: Set<string>,
+        beforeActions = false,
+    ) => {
+        const neighborsOfUpdatedEntity = await this.entityManager.getNeighborsOfUpdatedEntityForRule(transaction, entityId);
+
+        neighborsOfUpdatedEntity.forEach(({ neighborOfEntity, relationshipTemplate }) => {
+            const reasons = entitiesIdsRulesReasonsMap.get(neighborOfEntity.properties._id)?.reasons || [];
+
+            if (beforeActions && entitiesTemplatesIdsOfRules) entitiesTemplatesIdsOfRules.add(neighborOfEntity.templateId);
+
+            reasons.push({
+                type: RunRuleReason.dependentViaAggregation,
+                updatedProperties,
+                dependentRelationshipTemplateId: relationshipTemplate,
+            });
+
+            entitiesIdsRulesReasonsMap.set(neighborOfEntity.properties._id, {
+                reasons,
+                entityTemplateId: neighborOfEntity.templateId,
+            });
+        });
+    };
+
+    addEntityRuleReasonFromResult = (entity: IEntity, entitiesIdsRulesReasonsMapAfterRunActions: EntitiesIdsRulesReasonsMap) => {
+        const entityData = {
+            entityId: entity.properties._id,
+            entityTemplateId: entity.templateId,
+        };
+
+        const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
+        reasons.push({ type: RunRuleReason.dependentOnEntity });
+
+        entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
+    };
+
+    getEntitiesIdsRulesReasonsAfter = async (
         actions: IAction[],
         results: (IEntity | IRelationship)[],
         relationshipsTemplatesByIds: Map<string, IMongoRelationshipTemplate>,
+        transaction: Transaction,
     ) => {
         const entitiesIdsRulesReasonsMapAfterRunActions: EntitiesIdsRulesReasonsMap = new Map();
-        actions.forEach((action, i) => {
-            if (
-                action.actionType === ActionTypes.CreateEntity ||
-                action.actionType === ActionTypes.UpdateEntity ||
-                action.actionType === ActionTypes.DuplicateEntity
-            ) {
-                const entity = results[i] as IEntity;
+        const neighborsPromises: Promise<void>[] = [];
 
-                const entityData = {
-                    entityId: entity.properties._id,
-                    entityTemplateId: entity.templateId,
-                };
-
-                const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
-                reasons.push({ type: RunRuleReason.dependentOnEntity });
-
-                entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
+        for (const [i, action] of actions.entries()) {
+            if (action.actionType === ActionTypes.CreateEntity || action.actionType === ActionTypes.DuplicateEntity) {
+                this.addEntityRuleReasonFromResult(results[i], entitiesIdsRulesReasonsMapAfterRunActions);
             } else if (action.actionType === ActionTypes.CreateRelationship) {
                 const relationship = results[i] as IRelationship;
 
@@ -193,14 +245,32 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                     },
                 ];
 
-                entitiesDatas.forEach((entityData) => {
+                for (const entityData of entitiesDatas) {
                     const reasons = entitiesIdsRulesReasonsMapAfterRunActions.get(entityData.entityId)?.reasons || [];
                     reasons.push({ type: RunRuleReason.dependentViaAggregation, dependentRelationshipTemplateId: relationship.templateId });
 
-                    entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, { reasons, entityTemplateId: entityData.entityTemplateId });
-                });
+                    entitiesIdsRulesReasonsMapAfterRunActions.set(entityData.entityId, {
+                        reasons,
+                        entityTemplateId: entityData.entityTemplateId,
+                    });
+                }
+            } else if (action.actionType === ActionTypes.UpdateEntity) {
+                const updatedEntity = results[i];
+
+                this.addEntityRuleReasonFromResult(updatedEntity, entitiesIdsRulesReasonsMapAfterRunActions);
+
+                neighborsPromises.push(
+                    this.getNeighborsOfUpdatedEntity(
+                        updatedEntity.properties._id,
+                        transaction,
+                        Object.keys((action.actionMetadata as IUpdateEntityMetadata).updatedFields),
+                        entitiesIdsRulesReasonsMapAfterRunActions,
+                    ),
+                );
             }
-        });
+        }
+
+        await Promise.all(neighborsPromises);
 
         return entitiesIdsRulesReasonsMapAfterRunActions;
     };
@@ -309,7 +379,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         );
     };
 
-    async processBeforeRunBulk(actions: IAction[]) {
+    async processBeforeRunBulk(actions: IAction[], transaction: Transaction) {
         const relationshipTemplateIds: string[] = [];
         const entityTemplateIds: string[] = [];
 
@@ -328,7 +398,15 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 if (!actionMetadata.entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                     const entity = await this.entityManager.getEntityById(actionMetadata.entityId);
                     const entityTemplate = await this.entityTemplateService.getEntityTemplateById(entity.templateId);
+
                     entityTemplateIds.push(entityTemplate._id);
+
+                    const neighborsOfUpdatedEntity = await this.entityManager.getNeighborsOfUpdatedEntityForRule(
+                        transaction,
+                        actionMetadata.entityId,
+                    );
+
+                    neighborsOfUpdatedEntity.forEach(({ neighborOfEntity }) => entityTemplateIds.push(neighborOfEntity.templateId));
                 }
             },
         };
@@ -342,7 +420,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
         return this.neo4jClient.performComplexTransaction(
             'writeTransaction',
             async (transaction) => {
-                const { entityTemplateIds, relationshipTemplateIds } = await this.processBeforeRunBulk(actions);
+                const { entityTemplateIds, relationshipTemplateIds } = await this.processBeforeRunBulk(actions, transaction);
 
                 // get all entityTemplates group by entityTemplateId
                 const [entityTemplates, relationshipTemplates] = await Promise.all([
@@ -359,6 +437,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                 const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = await this.getEntitiesIdsRulesReasonsBefore(
                     actions,
                     relationshipsTemplatesByIds,
+                    transaction,
                 );
 
                 // search rules of entities
@@ -377,7 +456,12 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                     this.runBulkOfActionsInTransaction(transaction, actions, entitiesTemplatesByIds, userId),
                 ]);
 
-                const entitiesIdsRulesReasonsMapAfterRunActions = this.getEntitiesIdsRulesReasonsAfter(actions, results, relationshipsTemplatesByIds);
+                const entitiesIdsRulesReasonsMapAfterRunActions = await this.getEntitiesIdsRulesReasonsAfter(
+                    actions,
+                    results,
+                    relationshipsTemplatesByIds,
+                    transaction,
+                );
 
                 const ruleFailuresAfterAll = await this.entityManager.runRulesOnEntitiesWithRuleReasons(
                     transaction,

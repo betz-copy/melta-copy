@@ -19,7 +19,7 @@ import {
     generateDefaultProperties,
     getNeo4jDateTime,
     normalizeGetDbConstraints,
-    normalizeNeighboursOfEntityForRule,
+    normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
@@ -566,7 +566,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             if (actionType === ActionTypes.UpdateEntity) {
                 const { entityId } = actionMetadata as IUpdateEntityMetadata;
 
-                if (entityId.startsWith('$')) {
+                if (entityId.startsWith(brokenRulesFakeEntityIdPrefix)) {
                     const numberPart = parseInt(entityId.slice(1, -4), 10);
                     const createdEntity = results[numberPart] as IEntity;
 
@@ -952,29 +952,32 @@ export class EntityManager extends DefaultManagerNeo4j {
         return runRulesOnEntity(transaction, entity.properties._id, relevantRulesOfEntity);
     };
 
-    private runRulesOnNeighboursOfUpdatedEntity = async (
+    getNeighborsOfUpdatedEntityForRule = (transaction: Transaction, entityId: string) =>
+        runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e {_id: '${entityId}'})-[r]-(neighbor) RETURN type(r) as rTemplate, neighbor`,
+            normalizeNeighborsOfEntityForRule,
+        );
+
+    private runRulesOnNeighborsOfUpdatedEntity = async (
         transaction: Transaction,
         updatedEntity: IEntity,
         updatedProperties: string[],
     ): Promise<IRuleFailure[]> => {
-        const neighboursOfUpdatedEntity = await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (e {_id: '${updatedEntity.properties._id}'})-[r]-(neighbour) RETURN type(r) as rTemplate, neighbour`,
-            normalizeNeighboursOfEntityForRule,
-        );
+        const neighborsOfUpdatedEntity = await this.getNeighborsOfUpdatedEntityForRule(transaction, updatedEntity.properties._id);
 
-        const ruleFailuresForEachNeighbourPromises = neighboursOfUpdatedEntity.map(async ({ relationshipTemplate, neighbourOfEntity }) => {
+        const ruleFailuresForEachNeighborPromises = neighborsOfUpdatedEntity.map(async ({ relationshipTemplate, neighborOfEntity }) => {
             return this.runRulesOnEntityDependentViaAggregation(
                 transaction,
-                neighbourOfEntity.properties._id,
-                neighbourOfEntity.templateId,
+                neighborOfEntity.properties._id,
+                neighborOfEntity.templateId,
                 relationshipTemplate,
                 updatedProperties,
             );
         });
 
-        const ruleFailuresForEachNeighbour = await Promise.all(ruleFailuresForEachNeighbourPromises);
-        const ruleFailures = ruleFailuresForEachNeighbour.flat();
+        const ruleFailuresForEachNeighbor = await Promise.all(ruleFailuresForEachNeighborPromises);
+        const ruleFailures = ruleFailuresForEachNeighbor.flat();
 
         return ruleFailures;
     };
@@ -982,13 +985,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private async runRulesDependOnEntityUpdate(transaction: Transaction, updatedEntity: IEntity, updatedProperties: string[]) {
         const ruleFailuresOfUpdatedEntityPromise = this.runRulesOnEntity(transaction, updatedEntity, updatedProperties);
 
-        const ruleFailuresOnNeighboursOfEntityPromise = this.runRulesOnNeighboursOfUpdatedEntity(transaction, updatedEntity, updatedProperties);
+        const ruleFailuresOnNeighborsOfEntityPromise = this.runRulesOnNeighborsOfUpdatedEntity(transaction, updatedEntity, updatedProperties);
 
-        const [ruleFailuresOfUpdatedEntity, ruleFailuresOfNeighboursOfEntity] = await Promise.all([
+        const [ruleFailuresOfUpdatedEntity, ruleFailuresOfNeighborsOfEntity] = await Promise.all([
             ruleFailuresOfUpdatedEntityPromise,
-            ruleFailuresOnNeighboursOfEntityPromise,
+            ruleFailuresOnNeighborsOfEntityPromise,
         ]);
-        const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighboursOfEntity];
+        const ruleFailures = [...ruleFailuresOfUpdatedEntity, ...ruleFailuresOfNeighborsOfEntity];
 
         return ruleFailures;
     }
@@ -1244,9 +1247,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
-        if (entity.properties.disabled) {
-            throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
-        }
+        if (entity.properties.disabled) throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(
