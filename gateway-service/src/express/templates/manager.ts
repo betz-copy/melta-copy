@@ -557,6 +557,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all([
             this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
             this.isPropertyOfTemplateInUsedInRules(templateId, properties),
+            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties),
         ]);
     }
 
@@ -594,40 +595,47 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(promises);
     }
 
+    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, propertiesToRemove: string[]) {
+        const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
+
+        allEntityTemplates.forEach((entityTemplate) => {
+            const {
+                properties: { properties },
+            } = entityTemplate;
+
+            Object.values(properties).forEach(({ format, relationshipReference }) => {
+                if (
+                    format === 'relationshipReference' &&
+                    relationshipReference?.relatedTemplateId === templateId &&
+                    relationshipReference?.relatedTemplateField in propertiesToRemove
+                )
+                    throw new ServiceError(400, 'that field is used');
+            });
+        });
+    }
+
     private async deletePropertyOfEntityTemplate(
         id: string,
         count: number,
         properties: Record<string, IEntitySingleProperty>,
         removedProperties: string[],
-        currTemplate: IMongoEntityTemplatePopulated,
+        currentTemplate: IMongoEntityTemplatePopulated,
     ) {
-        const propertiesToRemove: string[] = [];
-        const relationShipReference: Record<string, string> = {};
         const removedFilesProperties: Record<string, boolean> = {};
 
         removedProperties.forEach((propertyToRemove) => {
-            const propertyTemplate = currTemplate.properties.properties[propertyToRemove];
+            const propertyTemplate = currentTemplate.properties.properties[propertyToRemove];
 
             if (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId')
                 removedFilesProperties[propertyToRemove] = propertyTemplate.items?.format === 'fileId';
-
-            if (propertyTemplate.format === 'relationshipReference')
-                relationShipReference[propertyToRemove] = propertyTemplate.relationshipReference?.relationshipTemplateId!;
         });
 
         Object.keys(properties).forEach((key) => delete properties[key].isNewPropertyWithNameOfDeletedProperty);
 
         if (Object.keys(removedFilesProperties).length) await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
 
-        if (Object.keys(relationShipReference).length)
-            await Promise.all(
-                Object.values(relationShipReference).map(async (relationShipTemplateId) => {
-                    await this.relationshipTemplateService.deleteRelationshipTemplate(relationShipTemplateId);
-                }),
-            );
-
-        if (Object.keys(removedProperties).length)
-            await this.instancesService.deletePropertiesOfTemplate(id, propertiesToRemove).catch((error) => {
+        if (removedProperties.length)
+            await this.instancesService.deletePropertiesOfTemplate(id, removedProperties).catch((error) => {
                 throw new ServiceError(400, `failed to delete properties ${error}`);
             });
     }
@@ -672,7 +680,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const removedProperties: string[] = [];
         const removedFilesProperties: Record<string, boolean> = {};
-        // const removedRelationshipReference:Record<string,>
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
@@ -680,7 +687,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if (!newValue || ('isNewPropertyWithNameOfDeletedProperty' in newValue && newValue.isNewPropertyWithNameOfDeletedProperty)) {
+                if (
+                    (!newValue || ('isNewPropertyWithNameOfDeletedProperty' in newValue && newValue.isNewPropertyWithNameOfDeletedProperty)) &&
+                    !currTemplate.actions
+                ) {
                     removedProperties.push(key);
                     if (value.format === 'fileId' || value.items?.format === 'fileId') removedFilesProperties[key] = value.items?.format === 'fileId';
                 } else {
