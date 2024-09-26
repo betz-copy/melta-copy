@@ -1,9 +1,13 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
+import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+} from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 
 interface IExcelStyle {
@@ -55,14 +59,22 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated) => {
+const createWorksheet = async (workbook: Excel.Workbook, template: IMongoEntityTemplatePopulated, displayColumns: string[]) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
+
+    const allProperties = properties;
+    Object.keys(allProperties).forEach((key) => {
+        if (!displayColumns.includes(key)) delete allProperties[key];
+    });
+
     const sheetColumns: Partial<Excel.Column>[] = [];
-    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
+    Object.entries(allProperties).forEach(([propertyKey, propertyTemplate]) => {
         sheetColumns.push({ key: propertyKey, header: propertyTemplate.title, width: 20 });
     });
-    worksheet.columns = sheetColumns.concat(excelConfig.excelDefaultColumns);
+
+    const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns.includes(externalColumn.key));
+    worksheet.columns = sheetColumns.concat(externalColumns);
     return worksheet;
 };
 
@@ -70,69 +82,139 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
-const fixComplexProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
-    const { properties } = template.properties;
-    Object.entries(properties).forEach(([key, value]) => {
-        if (value.format === 'relationshipReference') {
-            rows.forEach((row) => {
-                if (row[key] && row[key].properties) {
-                    row[key] = {
-                        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-                        hyperlink: `${config.service.meltaBaseUrl}/entity/${row[key].properties._id}`,
-                    };
-                }
-            });
-        } else if (value.format === 'fileId') {
-            rows.forEach((row) => {
-                if (row[key]) {
-                    row[key] = {
-                        text: getFileName(row[key]),
-                        hyperlink: `${config.service.meltaBaseUrl}/api/files/${encodeURIComponent(row[key])}`,
-                    };
-                }
-            });
-        } else if (value?.items?.format === 'fileId') {
-            rows.forEach((row, index) => {
-                if (row[key]) {
-                    const files = row[key].join('?');
-                    row[key] = {
-                        text: `attachmentZip${index}`,
-                        hyperlink: `${config.service.meltaBaseUrl}/api/files/zip/${encodeURIComponent(files)}`,
-                    };
-                }
-            });
-        }
-    });
+function hexToARGB(hex?: string): string {
+    if (!hex) return 'FF000000';
 
-    return rows;
+    hex = hex.replace(/^#/, '');
+
+    let r: number;
+    let g: number;
+    let b: number;
+    if (hex.length === 6) {
+        r = parseInt(hex.substring(0, 2), 16);
+        g = parseInt(hex.substring(2, 4), 16);
+        b = parseInt(hex.substring(4, 6), 16);
+    } else if (hex.length === 3) {
+        r = parseInt(hex[0] + hex[0], 16);
+        g = parseInt(hex[1] + hex[1], 16);
+        b = parseInt(hex[2] + hex[2], 16);
+    } else {
+        throw new Error('Invalid hex color format');
+    }
+
+    // eslint-disable-next-line no-bitwise
+    return `FF${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
+}
+
+const fixComplexProperties = (
+    cell: Excel.Cell,
+    template: IEntityTemplatePopulated,
+    row: Record<string, any>,
+    [key, value]: [string, IEntitySingleProperty],
+    relationshipRefColors: Record<string, string>,
+    rowIndex: number,
+    workspacePath: string,
+) => {
+    if (value.format === 'relationshipReference') {
+        const { relatedTemplateId } = value.relationshipReference!;
+
+        const colorTemplate = relationshipRefColors[relatedTemplateId];
+
+        cell.value = {
+            text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+        };
+        cell.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: hexToARGB(colorTemplate) },
+        };
+        return true;
+    }
+    if (value.format === 'fileId') {
+        cell.value = {
+            text: getFileName(row[key]),
+            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/api/files/${encodeURIComponent(row[key])}`,
+        };
+        return true;
+    }
+    if (value?.items?.format === 'fileId') {
+        const files = row[key].join('?');
+
+        cell.value = {
+            text: `attachmentZip${rowIndex}`,
+            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/api/files/zip/${encodeURIComponent(files)}`,
+        };
+        return true;
+    }
+    if (value.type === 'array') {
+        const list = row[key].flatMap((text: string, index: number) => (index < row[key].length - 1 ? [text, ', '] : [text]));
+
+        cell.value = {
+            richText: list.map((text: string) => ({
+                text,
+                font: {
+                    ...excelStyle.cell,
+                    color: { argb: text === ', ' ? 'FF000000' : hexToARGB(template.enumPropertiesColors![key][text]) },
+                },
+            })),
+        };
+        return true;
+    }
+    return false;
 };
 
-const styleAWorksheet = (worksheet: Excel.Worksheet) => {
-    worksheet.eachColumnKey((col: Excel.Column) => {
-        col.eachCell({ includeEmpty: true }, (cell) => {
-            cell.font = excelStyle.cell.font;
-            cell.alignment = excelStyle.cell.alignment;
-            if (Number(cell.row) === 1) {
-                cell.font = excelStyle.columnHeader.font;
-                cell.alignment = excelStyle.columnHeader.alignment;
-            }
-            if (typeof cell.value === 'boolean') {
-                cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
-            }
-            // Check if value is date
-            if (excelConfig.regexOfDateFormat.test(String(cell.value))) {
-                const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
-                    timeZone: excelConfig.DATE_TIMEZONE,
-                });
-                cell.value = date;
-            }
-            // Check if value is html tags when format is text area
-            if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
-                cell.value = String(cell.value).replace(/<[^>]*>/g, '');
-                cell.alignment = { vertical: 'top' };
+const styleAWorksheet = (
+    worksheet: Excel.Worksheet,
+    rows: IEntity['properties'][],
+    template: IMongoEntityTemplatePopulated,
+    relationshipRefColors: Record<string, string>,
+    displayColumns: string[],
+    workspacePath: string,
+) => {
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.font = excelStyle.columnHeader.font;
+        cell.alignment = excelStyle.columnHeader.alignment;
+    });
+    const { properties } = template.properties;
+    const { createdAt, updatedAt, disabled } = template;
+
+    const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
+        .filter(([key]) => displayColumns.includes(key))
+        .reduce((acc, [key, value]) => {
+            acc[key] = value;
+            return acc;
+        }, {});
+
+    Object.entries(allProperties).forEach(([key, value], columnIndex) => {
+        rows.forEach((row, rowIndex) => {
+            const cell = worksheet.getCell(`${(columnIndex + 10).toString(36).toUpperCase()}${rowIndex + 2}`);
+            if (row[key]) {
+                cell.alignment = excelStyle.cell.alignment;
+                cell.font = excelStyle.cell.font;
+                const isComplex = fixComplexProperties(cell, template, row, [key, value], relationshipRefColors, rowIndex, workspacePath);
+
+                if (!isComplex) {
+                    cell.value = row[key];
+                    if (typeof cell.value === 'boolean') {
+                        cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
+                    }
+                    // Check if value is date
+                    if (excelConfig.regexOfDateFormat.test(String(cell.value))) {
+                        const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
+                            timeZone: excelConfig.DATE_TIMEZONE,
+                        });
+                        cell.value = date;
+                    }
+                    // Check if value is html tags when format is text area
+                    if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
+                        cell.value = String(cell.value).replace(/<[^>]*>/g, '');
+                        cell.alignment = { vertical: 'top' };
+                    }
+                }
             }
         });
     });
 };
 
-export { styleAWorksheet, cerateWorksheet, createWorkbook, fixComplexProperties };
+export { createWorkbook, createWorksheet, styleAWorksheet };

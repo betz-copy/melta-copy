@@ -42,6 +42,7 @@ import { trycatch } from '../../utils/trycatch';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { getEntityTemplateColor } from '../../utils/colors';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -168,6 +169,8 @@ export type EntitiesTableOfTemplateRef<Data> = {
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
     scrollIntoView: () => void;
     showSideBar: () => void;
+    getDisplayColumns: () => string[];
+    // getColorsFromGrid: () => any;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -259,6 +262,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     // eslint-disable-next-line no-unused-expressions
                     isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
+                getDisplayColumns: () => gridRef.current?.api.columnModel.displayedColumnsCenter.map((column) => column.colId),
             };
         });
 

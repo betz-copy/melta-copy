@@ -27,7 +27,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
@@ -35,6 +35,7 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { WorkspaceService } from '../workspaces/service';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -95,10 +96,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { props, files: filesToUpload };
     }
 
-    async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
+    async exportEntities(exportEntitiesBody: IExportEntitiesBody, workspaceId: string) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
+
+        const workspace = await WorkspaceService.getById(workspaceId);
+        const { path, name, type } = workspace;
+        const workspacePath = `${path}/${name}${type}`;
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook);
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, workspacePath);
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -107,10 +112,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return filePath;
     }
 
-    private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort }]) => {
+    private async addWorksheetsToWB(
+        { templates, textSearch }: IExportEntitiesBody,
+        workbook: stream.xlsx.WorkbookWriter,
+        workspacePath: string,
+    ): Promise<void> {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, relationshipRefColors }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, relationshipRefColors, workspacePath);
         });
 
         await Promise.all(tasks);
@@ -122,8 +131,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
+        displayColumns: string[],
+        relationshipRefColors: Record<string, string>,
+        workspacePath: string,
     ) {
-        const worksheet = await cerateWorksheet(workbook, template);
+        const worksheet = await createWorksheet(workbook, template, displayColumns);
         const { searchEntitiesChunkSize } = config.service;
         const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
             limit: 1,
@@ -138,16 +150,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 filter,
                 sort,
             });
-            const rows = fixComplexProperties(
+            styleAWorksheet(
+                worksheet,
                 chunk.map((row) => row.entity.properties),
                 template,
+                relationshipRefColors,
+                displayColumns,
+                workspacePath,
             );
-
-            rows.forEach((row) => {
-                const excelRow = worksheet.addRow(row);
-                styleAWorksheet(worksheet);
-                excelRow.commit();
-            });
         }
     }
 

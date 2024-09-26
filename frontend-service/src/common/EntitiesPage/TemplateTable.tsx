@@ -3,11 +3,11 @@ import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useMutation } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
@@ -46,7 +46,28 @@ const TemplateTable = forwardRef<
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
     useImperativeHandle(ref, () => entitiesTableRef.current!);
+
+    const getRelationshipRefColor = () => {
+        const colorMap = new Map<string, string>();
+        Object.values(template.properties.properties).forEach((value) => {
+            if (value.format === 'relationshipReference') {
+                const { relatedTemplateId } = value.relationshipReference!;
+                const relatedEntityTemplate = entityTemplates.get(relatedTemplateId);
+
+                if (relatedEntityTemplate) {
+                    const entityTemplateColor = getEntityTemplateColor(relatedEntityTemplate);
+                    colorMap[relatedTemplateId] = entityTemplateColor;
+                }
+            }
+        });
+
+        return colorMap;
+    };
+    console.log('getRelationshipRefColor', getRelationshipRefColor());
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -57,6 +78,8 @@ const TemplateTable = forwardRef<
                     [template._id]: {
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
+                        displayColumns: entitiesTableRef.current?.getDisplayColumns(),
+                        relationshipRefColors: getRelationshipRefColor(),
                     },
                 },
             });

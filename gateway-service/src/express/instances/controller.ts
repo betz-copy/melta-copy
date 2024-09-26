@@ -15,7 +15,8 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async exportEntities(req: Request, res: Response) {
-        const filePath = await this.manager.exportEntities(req.body);
+        const workspaceId = req.headers['workspace-id'] as string;
+        const filePath = await this.manager.exportEntities(req.body, workspaceId);
         try {
             await promisify(res.sendFile.bind(res))(filePath);
         } finally {

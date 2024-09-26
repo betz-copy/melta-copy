@@ -62,6 +62,8 @@ export const exportEntitiesSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
+            displayColumns: Joi.array().items(Joi.string()).required(),
+            relationshipRefColors: Joi.object().pattern(Joi.string(), Joi.string()),
         }),
     },
     query: {},
