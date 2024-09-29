@@ -2,9 +2,9 @@ import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../not
 import config from '../config';
 import { UsersManager } from '../users/manager';
 import { WorkspaceTypes } from '../workspaces/inteface';
-import { InstancesService } from '../ services/instance';
+import { InstancesService } from '../services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../ services/entityTemplate';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
 import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
