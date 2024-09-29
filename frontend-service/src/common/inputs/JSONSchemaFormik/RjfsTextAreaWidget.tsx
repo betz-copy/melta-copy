@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
-import { WidgetProps } from '@rjsf/utils';
-import { Grid, InputLabel, ThemeProvider } from '@mui/material';
-import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
-import { EditorState, convertToRaw, ContentState, convertFromHTML } from 'draft-js';
-import { stateToHTML } from 'draft-js-export-html';
+import { Grid, InputLabel, ThemeProvider, useTheme } from '@mui/material';
 import { createTheme } from '@mui/material/styles';
+import { WidgetProps } from '@rjsf/utils';
+import { ContentState, convertFromHTML, convertToRaw, EditorState } from 'draft-js';
+import { stateToHTML } from 'draft-js-export-html';
+import MUIRichTextEditor, { TMUIRichTextEditorStyles } from 'mui-rte';
+import React, { useEffect, useState } from 'react';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import { containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 
 const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: WidgetProps) => {
@@ -47,14 +48,17 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
         setShowLabel(false);
     };
 
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const globalTheme = useTheme();
+
     const theme = createTheme();
     const muiRteTheme: TMUIRichTextEditorStyles = {
         overrides: {
             MUIRichTextEditor: {
                 root: {
                     borderRadius: readonly ? 0 : '10px',
-                    border: readonly ? 'none' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
-                    borderBottom: readonly ? '1px solid gray' : (showLabel && '1px solid #1E2775') || '1px solid #CCCFE5',
+                    border: readonly ? 'none' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
+                    borderBottom: readonly ? '1px solid gray' : (showLabel && `1px solid ${globalTheme.palette.primary.main}`) || '1px solid #CCCFE5',
                     transition: 'border-color 0.3s',
                 },
                 container: {
@@ -101,12 +105,12 @@ const RjfsTextAreaWidget = ({ id, value, label, readonly, onChange, options }: W
                             top: '0',
                             right: '0',
                             zIndex: 1,
-                            background: '#fff',
+                            background: darkMode ? '#383838' : '#fff',
                             padding: '0 8px',
                             transition: 'top 0.3s',
                             transform: 'translate(-14px,-9px) scale(0.75)',
                             transformOrigin: 'top-right',
-                            color: showLabel ? '#1E2775' : '#9398C2',
+                            color: showLabel ? globalTheme.palette.primary.main : '#9398C2',
                         }}
                         shrink={readonly || undefined}
                     >

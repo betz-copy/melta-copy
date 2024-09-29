@@ -1,5 +1,5 @@
 import { PrintOutlined } from '@mui/icons-material';
-import { Button } from '@mui/material';
+import { Button, ThemeProvider } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
@@ -10,6 +10,7 @@ import { IMongoCategory } from '../../../../interfaces/categories';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IFile } from '../../../../interfaces/preview';
+import { lightTheme } from '../../../../theme';
 import { ComponentToPrint } from './ComponentToPrint';
 import './print.css';
 
@@ -60,16 +61,18 @@ const Print: React.FC<{
 
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
-                <ComponentToPrint
-                    ref={componentRef}
-                    entityTemplate={entityTemplate}
-                    expandedEntity={expandedEntity}
-                    connectionsTemplatesToPrint={selectedConnections}
-                    filesToPrint={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
-                    setFilesLoadingStatus={setFilesLoadingStatus}
-                    options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
-                />
+                <ThemeProvider theme={lightTheme}>
+                    <ComponentToPrint
+                        ref={componentRef}
+                        entityTemplate={entityTemplate}
+                        expandedEntity={expandedEntity}
+                        connectionsTemplatesToPrint={selectedConnections}
+                        filesToPrint={selectedFiles}
+                        setSelectedFiles={setSelectedFiles}
+                        setFilesLoadingStatus={setFilesLoadingStatus}
+                        options={{ showDate, showDisabled, showEntityDates, showEntityFiles: selectedFiles.length !== 0, showPreviewPropertiesOnly }}
+                    />
+                </ThemeProvider>
             </div>
             {openModal && (
                 <PrintOptionsDialog

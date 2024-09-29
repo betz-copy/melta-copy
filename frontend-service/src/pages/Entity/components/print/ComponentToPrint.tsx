@@ -37,7 +37,7 @@ const ComponentToPrint = React.forwardRef<
             <Grid style={{ pageBreakInside: 'avoid' }}>
                 <Box paddingBottom="0.4rem" display="flex" justifyContent="space-between" alignItems="center">
                     <Box display="flex" alignItems="center">
-                        <Typography component="h4" variant="h4" color="#1E2775" fontWeight="800">
+                        <Typography component="h4" variant="h4" color="primary" fontWeight="800">
                             {entityTemplate.category.displayName}
                         </Typography>
 
@@ -45,7 +45,7 @@ const ComponentToPrint = React.forwardRef<
                             /
                         </Typography>
 
-                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="#1E2775">
+                        <Typography paddingBottom="2px" variant="h4" fontSize="28px" color="primary">
                             {entityTemplate.displayName}
                         </Typography>
                     </Box>
@@ -59,7 +59,7 @@ const ComponentToPrint = React.forwardRef<
             </Grid>
             {connectionsTemplatesToPrint.length !== 0 && (
                 <>
-                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} toPrint />
+                    <BlueTitle title={i18next.t('entityPage.relationshipTitle')} component="h4" variant="h4" style={{ marginTop: '2rem' }} />
 
                     {connectionsTemplatesToPrint.map(
                         ({ relationshipTemplate: { _id, destinationEntity, sourceEntity, displayName }, isExpandedEntityRelationshipSource }) => {
@@ -101,7 +101,7 @@ const ComponentToPrint = React.forwardRef<
                                                 paddingRight="7px"
                                                 paddingLeft="7px"
                                                 fontWeight="800"
-                                                color="#1E2775"
+                                                color="primary"
                                                 component="h5"
                                                 variant="h5"
                                             >

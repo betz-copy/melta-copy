@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, useTheme } from '@mui/material';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
 import { IEntity } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
@@ -12,8 +12,10 @@ const EntityComponentToPrint: React.FC<{
     options?: { showDates?: boolean };
     showPreviewPropertiesOnly?: boolean;
 }> = ({ entityTemplate, entity, options = { showDates: true }, showPreviewPropertiesOnly }) => {
+    const theme = useTheme();
+
     return (
-        <Box border="2px solid #1E2775" borderRadius="20px" padding="1rem">
+        <Box border={`2px solid ${theme.palette.primary.main}`} borderRadius="20px" padding="1rem">
             <Box padding="0.2rem">
                 <EntityPropertiesInternal
                     properties={entity.properties}
