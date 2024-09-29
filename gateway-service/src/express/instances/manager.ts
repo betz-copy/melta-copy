@@ -117,9 +117,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         workbook: stream.xlsx.WorkbookWriter,
         workspacePath: string,
     ): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, relationshipRefColors }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, relationshipRefColors, workspacePath);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, workspacePath);
         });
 
         await Promise.all(tasks);
@@ -132,7 +132,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
         displayColumns: string[],
-        relationshipRefColors: Record<string, string>,
         workspacePath: string,
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns);
@@ -154,7 +153,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 worksheet,
                 chunk.map((row) => row.entity.properties),
                 template,
-                relationshipRefColors,
                 displayColumns,
                 workspacePath,
             );

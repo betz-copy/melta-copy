@@ -3,17 +3,17 @@ import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { getEntityTemplateColor, getRelationshipRefColor } from '../../utils/colors';
+import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
@@ -46,9 +46,6 @@ const TemplateTable = forwardRef<
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
-    const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
@@ -61,7 +58,6 @@ const TemplateTable = forwardRef<
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
                         displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
-                        relationshipRefColors: getRelationshipRefColor(template, entityTemplates),
                     },
                 },
             });

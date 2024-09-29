@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import fileDownload from 'js-file-download';
 import { toast } from 'react-toastify';
 import { IMongoCategory } from '../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntitiesPageHeadline } from './Headline';
 import TemplateTablesView, { TemplateTablesViewRef } from './TemplateTablesView';
 import { exportEntitiesRequest } from '../../services/entitiesService';
@@ -15,7 +15,6 @@ import CardsView, { CardsViewRef } from './CardsView';
 import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { getRelationshipRefColor } from '../../utils/colors';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -49,8 +48,6 @@ const EntitiesPage: React.FC<{
 
     const queryClient = useQueryClient();
 
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
     const viewMode = urlSearchParams.get('viewMode');
     const isTableView = viewMode === 'templates-tables-view';
 
@@ -78,7 +75,6 @@ const EntitiesPage: React.FC<{
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
                         displayColumns: templateTableRef.getDisplayColumns(),
-                        relationshipRefColors: getRelationshipRefColor(template, entityTemplates),
                     };
                 },
             );

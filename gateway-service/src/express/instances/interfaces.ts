@@ -14,7 +14,6 @@ export interface IExportEntitiesBody {
             filter?: ISearchFilter;
             sort?: ISearchSort;
             displayColumns: string[];
-            relationshipRefColors: Record<string, string>;
         };
     };
 }

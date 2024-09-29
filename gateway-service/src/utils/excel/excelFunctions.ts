@@ -88,23 +88,13 @@ const fixComplexProperties = (
     template: IEntityTemplatePopulated,
     row: Record<string, any>,
     [key, value]: [string, IEntitySingleProperty],
-    relationshipRefColors: Record<string, string>,
     rowIndex: number,
     workspacePath: string,
 ) => {
     if (value.format === 'relationshipReference') {
-        const { relatedTemplateId } = value.relationshipReference!;
-
-        const colorTemplate = relationshipRefColors[relatedTemplateId];
-
         cell.value = {
             text: row[key].properties[value.relationshipReference!.relatedTemplateField],
             hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
-        };
-        cell.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: hexToARGB(colorTemplate) },
         };
         return true;
     }
@@ -145,7 +135,6 @@ const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
     template: IMongoEntityTemplatePopulated,
-    relationshipRefColors: Record<string, string>,
     displayColumns: string[],
     workspacePath: string,
 ) => {
@@ -169,7 +158,7 @@ const styleAWorksheet = (
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                const isComplex = fixComplexProperties(cell, template, row, [key, value], relationshipRefColors, rowIndex, workspacePath);
+                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspacePath);
 
                 if (!isComplex) {
                     cell.value = row[key];

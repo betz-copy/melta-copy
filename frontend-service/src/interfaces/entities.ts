@@ -118,7 +118,6 @@ export interface IExportEntitiesBody {
             filter?: ISearchFilter;
             sort?: ISearchSort;
             displayColumns: string[];
-            relationshipRefColors: Map<string, string>;
         };
     };
 }
