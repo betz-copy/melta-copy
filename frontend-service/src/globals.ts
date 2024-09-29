@@ -198,6 +198,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',
@@ -1244,5 +1245,11 @@ export const environment = {
     matomo: {
         urlBase: 'matomo.yesodot.services.idf',
         siteId: 24,
+    },
+    systemManagement: {
+        actions: {
+            unusedPropertyErrorCodeTs: '6133',
+            noTypeGivenErrorCodeTs: '7044',
+        },
     },
 } as const;
