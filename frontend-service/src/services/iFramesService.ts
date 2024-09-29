@@ -9,7 +9,6 @@ const { iFrames } = environment.api;
 const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValues | undefined => {
     if (!iFrame) return undefined;
     const { iconFileId, ...restOfIFrame } = iFrame;
-
     if (iconFileId) {
         const file: Partial<File> = { name: iconFileId };
         return { ...restOfIFrame, icon: { file, name: getFileName(iconFileId) } };
@@ -20,13 +19,11 @@ const iFrameObjectToIFrameForm = (iFrame: IMongoIFrame | null): IFrameWizardValu
 
 const searchIFrames = async (query: ISearchIFramesBody) => {
     const { data } = await axios.post<IMongoIFrame[]>(`${iFrames}/search`, query);
-
     return data;
 };
 
 const getIFrameById = async (id: string) => {
     const { data } = await axios.get<IMongoIFrame>(`${iFrames}/${id}`);
-
     return data;
 };
 
@@ -42,13 +39,11 @@ const createIFrame = async (newIFrame: IFrameWizardValues) => {
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
     const { data } = await axios.post<IMongoIFrame>(iFrames, formData);
-
     return data;
 };
 
 const deleteIFrame = async (iFrameId: string) => {
     const { data } = await axios.delete<IMongoIFrame>(`${iFrames}/${iFrameId}`);
-
     return data;
 };
 
@@ -70,7 +65,6 @@ const updateIFrame = async (id: string, updatedIFrame: IFrameWizardValues) => {
     formData.append('placeInSideBar', placeInSideBar?.toString() || 'false');
 
     const { data } = await axios.put<IMongoIFrame>(`${iFrames}/${id}`, formData);
-
     return data;
 };
 

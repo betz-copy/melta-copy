@@ -8,10 +8,10 @@ import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
 
 interface IFramePageProps {
-    iFrame?: IMongoIFrame;
-    setIFramesOrder?: (value) => void;
-    isIFramePage?: boolean;
-    setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
+    iFrame: IMongoIFrame;
+    setIFramesOrder: (value: string[]) => void;
+    isIFramePage: boolean;
+    setIFrameDeleted: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFramePage = true, setIFrameDeleted }) => {
@@ -36,6 +36,17 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
         );
     }
 
+    // const navigateIframeBack = () => {
+    //     const iframe = document.getElementById('myIframe') as HTMLIFrameElement;
+    //     console.log({ iframe });
+
+    //     if (iframe && iframe.contentWindow) {
+    //         // Check if iframe's history has a previous entry
+    //         console.log('dssf', iframe.contentWindow);
+
+    //         iframe.contentWindow.history.back();
+    //     }
+    // };
     return (
         <Grid container width="100%" height="100%" flexDirection="column" flexWrap="nowrap">
             <Grid item>
@@ -53,7 +64,23 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
                     overflow: 'hidden',
                 }}
             >
-                <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
+                <Iframe
+                    id="myIframe"
+                    url={iFrameData!.url}
+                    title={iFrameData!.name}
+                    width="100%"
+                    height="100%"
+                    frameBorder={0}
+                    // sandbox={[
+                    //     'allow-same-origin',
+                    //     'allow-scripts',
+                    //     'allow-popups',
+                    //     'allow-forms',
+                    //     'allow-top-navigation-by-user-activation',
+                    //     'allow-same-origin',
+                    //     'allow-top-navigation',
+                    // ]}
+                />
             </Grid>
         </Grid>
     );

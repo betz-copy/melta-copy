@@ -8,15 +8,11 @@ import { ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
-        console.log('1');
-
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
-        console.log('2');
-        
         const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
     }

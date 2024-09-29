@@ -41,6 +41,7 @@ interface SideBarProps {
 }
 
 const { notifications } = environment;
+
 const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
@@ -55,7 +56,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const iFramesStored = localStorage.getItem('iFramesOrder');
     const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
 
-    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar === true);
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
@@ -70,6 +71,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const [_, navigate] = useLocation();
 
     const handleMenuItemClick = (event, id: string) => {
+        console.log('you click!');
+
         event.stopPropagation();
         navigate(`/iframes/${id}`);
     };
@@ -259,7 +262,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 <NavButton
                                     key={category._id}
                                     to={`/category/${category._id}`}
-                                    title={category.displayName}
+                                    text={category.displayName}
                                     isDrawerOpen={isDrawerOpen}
                                     onChangeToActive={(isActive) => handleChangeActiveButton(isActive, category._id)}
                                     isActiveButton={activeButton === category._id}
@@ -288,7 +291,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     {meltaPlus && (
                         <NavButton
                             to="/fluid-simulation"
-                            title={i18next.t('pages.fluidSimulation')}
+                            text={i18next.t('pages.fluidSimulation')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'fluid-simulation')}
                             isActiveButton={activeButton === 'fluid-simulation'}
@@ -302,11 +305,12 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/iframes"
+                        text={i18next.t('pages.iFrames')}
                         title={
                             iFramesInSidebar?.length! > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid item padding={1}>
-                                        {i18next.t('iFrames.favouritesIFrames')}
+                                        {i18next.t('iFrames.favoritesIFrames')}
                                     </Grid>
                                     <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
@@ -352,7 +356,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 i18next.t('pages.iFrames')
                             )
                         }
-                        text={i18next.t('pages.iFrames')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
                         isActiveButton={activeButton === 'iFrames'}
@@ -362,7 +365,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/rule-management"
-                        title={i18next.t('pages.ruleManagement')}
+                        text={i18next.t('pages.ruleManagement')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'rule-management')}
                         isActiveButton={activeButton === 'rule-management'}
@@ -375,7 +378,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/gantts"
-                        title={i18next.t('pages.gantts')}
+                        text={i18next.t('pages.gantts')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'gantts')}
                         isActiveButton={activeButton === 'gantts'}
@@ -385,7 +388,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
                     <NavButton
                         to="/processes"
-                        title={i18next.t('pages.processInstances')}
+                        text={i18next.t('pages.processInstances')}
                         isDrawerOpen={isDrawerOpen}
                         onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'processes')}
                         isActiveButton={activeButton === 'processes'}
@@ -403,7 +406,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/system-management"
-                            title={i18next.t('pages.systemManagement')}
+                            text={i18next.t('pages.systemManagement')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'system-management')}
                             isActiveButton={activeButton === 'system-management'}
@@ -419,7 +422,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/permissions-management"
-                            title={i18next.t('permissions.permissionsManagmentPageTitle')}
+                            text={i18next.t('permissions.permissionsManagmentPageTitle')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'permissions-management')}
                             isActiveButton={activeButton === 'permissions-management'}
@@ -439,7 +442,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         <Grid container item paddingY="0.5rem" justifyContent="center">
                             <NavButton
                                 to={`~${workspace?.path}`}
-                                title={i18next.t('workspaces.goBack')}
+                                text={i18next.t('workspaces.goBack')}
                                 isDrawerOpen={isDrawerOpen}
                                 onChangeToActive={() => {}}
                             >

@@ -1,7 +1,7 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { Grid } from '@mui/material';
+import { Box, Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
@@ -13,8 +13,9 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { Resizable } from './ResizableBox';
 import { environment } from '../../globals';
 
+const { infiniteScrollPageCount } = environment.iFrames;
+
 const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
-    const { infiniteScrollPageCount } = environment.iFrames;
     const queryClient = useQueryClient();
 
     const [iFrameWizardDialogState, setIFrameWizardDialogState] = useState<{
@@ -27,11 +28,11 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const [searchInput, setSearchInput] = useState<string>();
     const [iFramesOrder, setIFramesOrder] = useState<string[]>([]);
     const [isDimensionsChange, setIsDimensionsChange] = useState(false);
+    const [iFrameDeleted, setIFrameDeleted] = useState(false);
 
     const localStorageKey = 'iFramesOrder';
     const queryKey = ['allIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
-    const [iFrameDeleted, setIFrameDeleted] = useState(false);
     const screenWidth = window.innerWidth;
     const sideBarWidth = 200;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
@@ -62,17 +63,15 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     }, [isSideBarOpen]);
 
     return (
-        <Grid dir="ltr" style={{ maxHeight: '1000px', display: 'flex', flexWrap: 'wrap' }}>
-            <Grid container>
-                <IFramesPageHeadline
-                    onSearch={(searchValue) => setSearchInput(searchValue || undefined)}
-                    setIFrameWizardDialogState={() => {
-                        setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
-                    }}
-                    iFramesOrder={iFramesOrder}
-                    setIFramesOrder={setIFramesOrder}
-                />
-            </Grid>
+        <Grid dir="ltr" style={{ display: 'flex', flexWrap: 'wrap' }}>
+            <IFramesPageHeadline
+                onSearch={(searchValue) => setSearchInput(searchValue || undefined)}
+                setIFrameWizardDialogState={() => {
+                    setIFrameWizardDialogState({ isWizardOpen: true, iFrame: null });
+                }}
+                iFramesOrder={iFramesOrder}
+                setIFramesOrder={setIFramesOrder}
+            />
 
             <Grid
                 style={{

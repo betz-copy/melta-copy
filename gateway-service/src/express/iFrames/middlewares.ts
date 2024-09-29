@@ -35,7 +35,6 @@ export class IFramesValidator extends DefaultController {
         if (userPermissions.admin) return;
 
         const allowedCategoriesIds = Object.keys(userPermissions.instances?.categories ?? {});
-        console.log({ allowedCategoriesIds });
 
         if (newIFrame) {
             await this.validateHasPermissionsToIFrame(newIFrame, allowedCategoriesIds);

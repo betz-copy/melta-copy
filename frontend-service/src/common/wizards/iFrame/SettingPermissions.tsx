@@ -43,7 +43,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>
                     <FormControlLabel
-                        label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
+                        label={i18next.t('permissions.permissionsOfUserDialog.chooseAll')}
                         control={
                             <MeltaCheckbox
                                 checked={selectedCategories.length === allowedCategoriesIds.length}
@@ -68,7 +68,11 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                         <MeltaCheckbox
                                             checked={selectedCategories.includes(currentCategory._id)}
                                             onChange={() => {
+                                                console.log('1');
+
                                                 handleCheckboxChange(currentCategory._id);
+                                                console.log('2');
+
                                                 handleChange({ ...values, categoryIds: selectedCategories });
                                             }}
                                         />

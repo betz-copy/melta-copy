@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
 import { List, Grid, IconButton, Select, Box, MenuItem } from '@mui/material';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
@@ -13,16 +13,15 @@ import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { MenuItemContent } from '../../common/SelectCheckbox';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
     iFramesOrder: string[];
-    setIFramesOrder: (value) => void;
+    setIFramesOrder: (value: string[]) => void;
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const queryClient = useQueryClient();
-    const localStorageKey = 'iFramesOrder';
+    const iFramesOrderKey = 'iFramesOrder';
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const currentUser = useUserStore((state) => state.user);
 
@@ -34,11 +33,11 @@ const IFramesPageHeadline: React.FC<{
         iFramesOrder?.forEach((iFrameId: string) => {
             localStorage.removeItem(`iFrameDimension_${iFrameId}`);
         });
-        LocalStorage.remove(localStorageKey);
+        LocalStorage.remove(iFramesOrderKey);
         window.location.reload();
     };
 
-    const handleOnDragEnd = (result) => {
+    const handleOnDragEnd = (result: DropResult) => {
         if (!result.destination) return;
 
         const updatedItems: string[] = [...iFramesOrder];
@@ -46,7 +45,7 @@ const IFramesPageHeadline: React.FC<{
         const [reorderedItem] = updatedItems.splice(result.source.index, 1);
         updatedItems.splice(result.destination.index, 0, reorderedItem);
 
-        LocalStorage.set(localStorageKey, updatedItems);
+        LocalStorage.set(iFramesOrderKey, updatedItems);
         setIFramesOrder(updatedItems);
 
         queryClient.setQueryData('allIFrames', (oldData: any) => {
@@ -69,6 +68,12 @@ const IFramesPageHeadline: React.FC<{
                     <Select
                         displayEmpty
                         renderValue={() => <Box>{i18next.t('iFrames.arrangementIFrames')}</Box>}
+                        // eslint-disable-next-line react/no-unstable-nested-components
+                        IconComponent={() => (
+                            <Box sx={{ marginRight: '10px' }}>
+                                <img src="/icons/select-checkbox.svg" />
+                            </Box>
+                        )}
                         MenuProps={{
                             PaperProps: {
                                 style: {

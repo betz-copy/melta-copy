@@ -609,7 +609,7 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setEntityTemplateWizardDialogState({ isWizardOpen: false, entityTemplate: null })}
                 initialValues={entityTemplateObjectToEntityTemplateForm(entityTemplateWizardDialogState.entityTemplate)}
                 isEditMode={Boolean(entityTemplateWizardDialogState.entityTemplate?._id)}
-                initalStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
+                initialStep={entityTemplateWizardDialogState.entityTemplate?.category._id ? 1 : 0}
             />
             <AreYouSureDialog
                 open={deleteEntityTemplateDialogState.isDialogOpen}

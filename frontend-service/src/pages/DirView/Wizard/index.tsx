@@ -50,7 +50,7 @@ export const workspaceObjectToWorkspaceForm = (workspace: IWorkspace | null): Wo
 export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { name: '', displayName: '', type: WorkspaceTypes.dir, icon: undefined, logo: undefined, colors: { primary: '#2D3686' } },
     isEditMode = false,
 }) => {
@@ -82,7 +82,7 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.workspace.title')}
             steps={steps}

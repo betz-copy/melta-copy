@@ -31,7 +31,8 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
     };
 
     const [dimensions, setDimensions] = useState(getDimensions);
-    const [isResizing, setIsResizing] = React.useState(false);
+    const [isResizing, setIsResizing] = useState(false);
+
     useEffect(() => {
         if (isDimensionsChange) {
             setDimensions(getDimensions());

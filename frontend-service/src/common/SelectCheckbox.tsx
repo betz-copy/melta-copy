@@ -43,7 +43,7 @@ export const MenuItemContent: React.FC<{
             {!group && (
                 <Grid
                     style={{
-                        width: '40px',
+                        width: '24px',
                         height: '24px',
                         gap: '2px',
                         display: 'flex',
@@ -62,6 +62,10 @@ export const MenuItemContent: React.FC<{
             ) : (
                 <CustomIcon color={theme.palette.primary.main} iconUrl={iconFileId!} height="15px" width="15px" />
             )}
+            {/* {iconFileId === '' && <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />}
+             {iconFileId && iconFileId?.length > 0 && ( 
+                // <CustomIcon color={theme.palette.primary.main} iconUrl={iconFileId!} height="15px" width="15px" />
+            // )} */}
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>

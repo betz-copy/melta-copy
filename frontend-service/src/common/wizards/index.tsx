@@ -5,7 +5,6 @@ import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
 import { Stepper } from './stepper';
-import { IFrameWizardValues } from './iFrame';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 export interface StepComponentHelpers {
@@ -20,12 +19,8 @@ export type WizardBaseType<T extends object> = {
     open: boolean;
     handleClose: () => void;
     initialValues?: T;
-    initalStep?: number;
+    initialStep?: number;
     isEditMode?: boolean;
-};
-
-export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
-    setIFramesOrder: (value: { name: string; id: string }[]) => void;
 };
 
 export type StepsType<T extends object> = {
@@ -41,7 +36,7 @@ const Wizard = <T extends object>({
     title,
     steps,
     initialValues,
-    initalStep = 0,
+    initialStep = 0,
     isLoading,
     submitFucntion,
     isEditMode,
@@ -54,7 +49,7 @@ const Wizard = <T extends object>({
         submitFucntion: (values: T) => Promise<any>;
     }
 >): JSX.Element | null => {
-    const [activeStep, setActiveStep] = useState(initalStep);
+    const [activeStep, setActiveStep] = useState(initialStep);
     const isLastStep = activeStep === steps.length - 1;
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -64,8 +59,8 @@ const Wizard = <T extends object>({
     };
 
     useEffect(() => {
-        setActiveStep(initalStep);
-    }, [open, initalStep]);
+        setActiveStep(initialStep);
+    }, [open, initialStep]);
 
     return (
         <Dialog

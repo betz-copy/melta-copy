@@ -21,6 +21,7 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     onChange={handleChange}
                     error={touched.name && Boolean(errors.name)}
                     helperText={touched.name && errors.name}
+                    sx={{ width: '300px' }}
                 />
             </Grid>
             <Grid item>
@@ -31,6 +32,7 @@ const CreateIFrameDetails: React.FC<StepComponentProps<IFrameWizardValues>> = ({
                     onChange={handleChange}
                     error={touched.url && Boolean(errors.url)}
                     helperText={touched.url && errors.url}
+                    sx={{ width: '300px' }}
                 />
             </Grid>
         </Grid>

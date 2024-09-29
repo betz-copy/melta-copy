@@ -1,9 +1,7 @@
 import React, { CSSProperties } from 'react';
-import { Grid, styled, useTheme } from '@mui/material';
-import { Hive as HiveIcon } from '@mui/icons-material';
+import { Grid, styled } from '@mui/material';
 import { BlueTitle } from './BlueTitle';
 import { environment } from '../globals';
-import { CustomIcon } from './CustomIcon';
 
 export const TopBarGrid = styled(Grid)(({ theme }) => {
     const bgColor: CSSProperties['backgroundColor'] = theme.palette.mode === 'dark' ? '#131313' : '#fcfeff';
@@ -21,17 +19,10 @@ export const TopBarGrid = styled(Grid)(({ theme }) => {
     };
 });
 
-const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties; iconFileId?: string | null }> = ({ title, boxStyle, iconFileId = null }) => {
-    const theme = useTheme();
-
+const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties; iconFileId?: string | null }> = ({ title, boxStyle }) => {
     if (title.length)
         return (
             <TopBarGrid sx={boxStyle} display="flex" alignItems="center">
-                {iconFileId === '' ? (
-                    <HiveIcon style={{ color: theme.palette.primary.main, marginLeft: '25px' }} fontSize="medium" />
-                ) : (
-                    <CustomIcon color={theme.palette.primary.main} iconUrl={iconFileId!} height="24px" width="24px" style={{ marginLeft: '25px' }} />
-                )}
                 <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
             </TopBarGrid>
         );

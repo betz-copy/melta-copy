@@ -9,11 +9,11 @@ import './NavButton.css';
 interface NavButtonProps {
     to: string;
     isDrawerOpen: boolean;
-    title: string | ReactNode;
+    title?: ReactNode;
     disabled?: boolean;
     onChangeToActive: (isActive: boolean) => void;
     isActiveButton?: boolean;
-    text?: string;
+    text: string;
 }
 
 const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, isActiveButton, title }) => {
@@ -33,9 +33,9 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
             style={{ textDecoration: 'none', color: 'inherit' }}
         >
             <MeltaTooltip
-                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : title}
+                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : title ?? text}
                 placement="left-start"
-                disableHoverListener={!disabled && isDrawerOpen && !text} // when drawer is opened text is already shown, so no need for tooltip
+                disableHoverListener={!disabled && isDrawerOpen && !title} // when drawer is opened text is already shown, so no need for tooltip
             >
                 <div>
                     <ListItemButton
@@ -53,7 +53,7 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
                         {children}
                         {isDrawerOpen && (
                             <StyledListItemText
-                                primary={text ?? title}
+                                primary={text}
                                 sx={{ color: isActiveButton ? '#545eb9' : 'white', backgroundColor: 'transparent' }}
                                 className="child"
                             />

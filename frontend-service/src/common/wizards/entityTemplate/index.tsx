@@ -91,7 +91,7 @@ const steps: StepsType<EntityTemplateWizardValues> = [
 const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = {
         name: '',
         displayName: '',
@@ -176,7 +176,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.entityTemplate.title')}
             steps={steps}

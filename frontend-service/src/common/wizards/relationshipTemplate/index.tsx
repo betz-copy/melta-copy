@@ -69,7 +69,7 @@ const steps: StepsType<RelationshipTemplateWizardValues> = [
 const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { ...defaultInitialValues },
     isEditMode = false,
 }) => {
@@ -111,7 +111,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.relationshipTemplate.title')}
             steps={steps}

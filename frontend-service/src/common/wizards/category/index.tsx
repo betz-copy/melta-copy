@@ -36,7 +36,7 @@ const steps: StepsType<CategoryWizardValues> = [
 const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { name: '', displayName: '', icon: undefined, color: '' },
     isEditMode = false,
 }) => {
@@ -68,7 +68,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.category.title')}
             steps={steps}

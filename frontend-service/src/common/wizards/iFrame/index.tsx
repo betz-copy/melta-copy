@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IFrameWizardBaseType, StepsType, Wizard } from '../index';
+import { StepsType, Wizard, WizardBaseType } from '../index';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { IFrame, IMongoIFrame } from '../../../interfaces/iFrames';
@@ -15,6 +15,10 @@ import { ChooseIFrameIcon } from './ChooseIcon';
 export interface IFrameWizardValues extends Omit<IFrame, 'iconFileId'> {
     icon?: fileDetails;
 }
+export type IFrameWizardBaseType = WizardBaseType<IFrameWizardValues> & {
+    setIFramesOrder: (value: { name: string; id: string }[]) => void;
+};
+
 const steps: StepsType<IFrameWizardValues> = [
     {
         label: i18next.t('wizard.iFrame.editDetails'),
@@ -48,7 +52,7 @@ const updateIFramesOrderOnLocalStorage = (data: IMongoIFrame) => {
 const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { name: '', icon: undefined, categoryIds: [], url: '', description: '', placeInSideBar: false },
     isEditMode = false,
     setIFramesOrder,
@@ -57,11 +61,9 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
 
     const { isLoading, mutateAsync } = useMutation(
         (iFrame: IFrameWizardValues) =>
-            isEditMode === true ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
+            isEditMode ? updateIFrame((initialValues as IFrameWizardValues & { _id: string })._id, iFrame) : createIFrame(iFrame),
         {
             onSuccess: async (data: IMongoIFrame) => {
-                // queryClient.invalidateQueries('searchIFrames');
-
                 queryClient.setQueryData(['getIFrame', data._id], data);
 
                 updateIFramesOrderOnLocalStorage(data);
@@ -81,15 +83,16 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                     updatedData[index] = data;
                     return [...updatedData];
                 });
-                i18next.t(isEditMode ? 'wizard.iFrame.editedSuccefully' : 'wizard.iFame.createdSuccefully');
+                i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
             },
             onError: (error: AxiosError) => {
-                if (isEditMode) {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.iFrame.failedToEdit')} />);
-                } else {
-                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.iFrame.failedToCreate')} />);
-                }
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t(`wizard.iFrame.${isEditMode ? 'failedToEdit' : 'failedToCreate'}`)}
+                    />,
+                );
             },
         },
     );
@@ -99,7 +102,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.iFrame.title')}
             steps={steps}

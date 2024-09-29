@@ -26,7 +26,6 @@ interface IWrapControllerOptions {
     responseDataExtractor: ((body: any) => any) | undefined;
 }
 
-
 const defaultWrapControllerOptions: IWrapControllerOptions = {
     toLog: false,
     logRequestFields: [],

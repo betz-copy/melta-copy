@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { Dialog, Grid, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -14,15 +14,14 @@ import { toast } from 'react-toastify';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
-import { TopBarGrid } from '../../common/TopBar';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 
-const IFrameHeadline: React.FC<{
+const 
+IFrameHeadline: React.FC<{
     iFrame: IMongoIFrame;
     setIFramesOrder?: (value) => void;
     isIFramePage: boolean;
@@ -30,17 +29,11 @@ const IFrameHeadline: React.FC<{
 }> = ({ iFrame, setIFramesOrder, isIFramePage, setIFrameDeleted }) => {
     const theme = useTheme();
     const queryClient = useQueryClient();
-    const [isHovered, setIsHovered] = useState(false);
-    const [placeInSideBar, setPlaceInSideBar] = useState<boolean>(iFrame.placeInSideBar ?? false);
     const currentUser = useUserStore((state) => state.user);
 
-    const [open, setOpen] = useState<{
-        isOpen: boolean;
-    }>({ isOpen: false });
-
-    const handleClose = () => {
-        setOpen({ isOpen: false });
-    };
+    const [isHovered, setIsHovered] = useState(false);
+    const [placeInSideBar, setPlaceInSideBar] = useState<boolean>(iFrame.placeInSideBar ?? false);
+    const [openFullSize, setOpenFullSize] = useState<boolean>(false);
 
     const [deleteIFrameDialogState, setDeleteIFrameDialogState] = useState<{
         isDialogOpen: boolean;
@@ -57,6 +50,9 @@ const IFrameHeadline: React.FC<{
         isWizardOpen: false,
         iFrame: null,
     });
+    const handleClose = () => {
+        setOpenFullSize(false);
+    };
     const { isLoading, mutateAsync } = useMutation((id: string) => deleteIFrame(id), {
         onSuccess: (data) => {
             queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
@@ -71,11 +67,12 @@ const IFrameHeadline: React.FC<{
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });
+
     return (
-        <TopBarGrid
+        <Grid
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            sx={{ height: '3rem', margin: 0, padding: 0 }}
+            sx={{ height: '3rem', margin: 0, padding: 0, backgroundColor: 'white' }}
             container
             justifyContent="space-between"
             alignItems="center"
@@ -92,21 +89,23 @@ const IFrameHeadline: React.FC<{
                                 <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
                             )}
                         </Grid>
-                        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                            <Typography
-                                style={{
-                                    textOverflow: 'ellipsis',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textAlign: 'right',
-                                    padding: 20,
-                                    fontWeight: 'bold',
-                                }}
-                                fontSize="20px"
-                            >
-                                {iFrame.name}
-                            </Typography>
-                        </Grid>
+                        <MeltaTooltip title={iFrame.name} placement="bottom-end">
+                            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                                <Typography
+                                    style={{
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        overflow: 'hidden',
+                                        textAlign: 'right',
+                                        padding: 20,
+                                        fontWeight: 'bold',
+                                    }}
+                                    fontSize="20px"
+                                >
+                                    {iFrame.name}
+                                </Typography>
+                            </Grid>
+                        </MeltaTooltip>
                     </Grid>
                 </Grid>
                 {!isIFramePage && (
@@ -136,7 +135,7 @@ const IFrameHeadline: React.FC<{
                                     )}
 
                                     <Grid>
-                                        <MeltaTooltip title={i18next.t('actions.favourites')}>
+                                        <MeltaTooltip title={i18next.t('actions.favorites')}>
                                             <IconButton
                                                 onClick={async () => {
                                                     setPlaceInSideBar(!placeInSideBar);
@@ -170,7 +169,7 @@ const IFrameHeadline: React.FC<{
                                     </Grid>
                                     <Grid>
                                         <MeltaTooltip title={i18next.t('actions.expansion')}>
-                                            <IconButton onClick={() => setOpen({ isOpen: true })}>
+                                            <IconButton onClick={() => setOpenFullSize(true)}>
                                                 <OpenInFullIcon color="primary" fontSize="small" />
                                             </IconButton>
                                         </MeltaTooltip>
@@ -184,7 +183,7 @@ const IFrameHeadline: React.FC<{
 
             <Dialog
                 keepMounted={false}
-                open={open.isOpen}
+                open={openFullSize}
                 onClose={handleClose}
                 maxWidth={false}
                 PaperProps={{
@@ -213,7 +212,7 @@ const IFrameHeadline: React.FC<{
                 onYes={() => mutateAsync(deleteIFrameDialogState.iFrameId!)}
                 isLoading={isLoading}
             />
-        </TopBarGrid>
+        </Grid>
     );
 };
 
