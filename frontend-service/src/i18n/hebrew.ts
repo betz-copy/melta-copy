@@ -77,6 +77,7 @@ export default {
         update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
+        addActions: 'הוספת פעולות',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',
@@ -228,6 +229,14 @@ export default {
         disabledEntityTemplate: 'תבנית לא פעילה',
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
+        entityAction: {
+            copyCode: 'העתק קוד',
+            successCopyCode: 'הקוד הועתק בהצלחה',
+            successUpdateAction: 'הוספת פעולה לישות בוצעה בהצלחה',
+            failedUpdateAction: 'הוספת פעולה לישות נכשלה',
+            cantUseIn: 'אין אפשרות להשתמש ב',
+            theCodeWillBeDeletedOnClose: 'בעת סגירה הקוד ימחק ויחזור למצבו הקודם',
+        },
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',

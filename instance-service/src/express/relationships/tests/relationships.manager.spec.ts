@@ -73,12 +73,12 @@ describe('Relationship manager', () => {
     });
 
     beforeEach(async () => {
-        firstEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+        firstEntity = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
         entityId = firstEntity.properties._id;
 
         // Create second entities
-        secondEntity = await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId);
+        secondEntity = (await EntityManager.createEntity(defaultProperties, entityTemplate, [], neo4j.mockUserId)).createdEntity;
 
         secondEntityId = secondEntity.properties._id;
 

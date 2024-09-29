@@ -8,13 +8,16 @@ import {
     getEntityTemplateByIdSchema,
     getTemplatesUsingRelationshipReferanceSchema,
     searchEntityTemplatesSchema,
+    updateEntityTemplateActionSchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
 } from './validator.schema';
+import { EntityTemplateValidator } from './validator.template';
 
 const entityTemplateRouter: Router = Router();
 
 const controller = createController(EntityTemplateController);
+const validatorController = createController(EntityTemplateValidator, true);
 
 entityTemplateRouter.post('/search', ValidateRequest(searchEntityTemplatesSchema), controller.searchEntityTemplates);
 
@@ -30,7 +33,19 @@ entityTemplateRouter.post('/', ValidateRequest(createEntityTemplateSchema), cont
 
 entityTemplateRouter.delete('/:templateId', ValidateRequest(deleteEntityTemplateSchema), controller.deleteEntityTemplate);
 
-entityTemplateRouter.put('/:templateId', ValidateRequest(updateEntityTemplateSchema), controller.updateEntityTemplate);
+entityTemplateRouter.put(
+    '/:templateId',
+    ValidateRequest(updateEntityTemplateSchema),
+    validatorController.validateEntityTemplateUpdate,
+    controller.updateEntityTemplate,
+);
+
+entityTemplateRouter.patch(
+    '/:templateId/actions',
+    ValidateRequest(updateEntityTemplateActionSchema),
+    validatorController.validateActionCode,
+    controller.updateEntityTemplateAction,
+);
 
 entityTemplateRouter.patch('/:templateId/status', ValidateRequest(updateEntityTemplateStatusSchema), controller.updateEntityTemplateStatus);
 
