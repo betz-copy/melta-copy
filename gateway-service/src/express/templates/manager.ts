@@ -1,5 +1,6 @@
 /* eslint-disable no-param-reassign */
 import { AxiosError } from 'axios';
+import _ from 'lodash';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import config from '../../config';
@@ -555,16 +556,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             iconFileId = currTemplate.iconFileId;
         }
 
-        let newDocumentTemplatesIds: string[] | undefined;
-        if (files) {
-            if (currTemplate?.documentTemplatesIds) {
-                await this.storageService.deleteFiles(currTemplate.documentTemplatesIds);
-            }
+        const { documentTemplatesIdsToKeep = [], documentTemplatesIdsToDelete = [] } = _.groupBy(
+            currTemplate.documentTemplatesIds,
+            (documentTemplateId) => {
+                return updatedTemplateData.documentTemplatesIds?.includes(documentTemplateId)
+                    ? 'documentTemplatesIdsToKeep'
+                    : 'documentTemplatesIdsToDelete';
+            },
+        );
 
-            newDocumentTemplatesIds = await this.storageService.uploadFiles(files);
-        } else {
-            newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
-        }
+        if (documentTemplatesIdsToDelete?.length) await this.storageService.deleteFiles(documentTemplatesIdsToDelete);
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
             id,
@@ -578,7 +579,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            documentTemplatesIds: newDocumentTemplatesIds,
+            documentTemplatesIds: [...documentTemplatesIdsToKeep, ...(files ? await this.storageService.uploadFiles(files) : [])],
         });
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,
