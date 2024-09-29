@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import { ProcessService } from '../../../externalServices/processService';
 import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
@@ -10,10 +9,10 @@ import {
 import { StorageService } from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
-import { ServiceError } from '../../error';
 import { InstancesManager } from '../../instances/manager';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
+import logger from '../../../utils/logger/logsLogger';
 
 export default class StepsInstancesManager extends DefaultManagerProxy<ProcessService> {
     private storageService: StorageService;
@@ -95,10 +94,10 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
             })
             .catch(async (processServiceError) => {
                 await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch((deleteFilesError) => {
-                    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to delete files error', {
-                        error: { deleteFilesError, processServiceError },
-                    });
+                    logger.error('failed to delete files error: ', { error: { deleteFilesError, processServiceError } });
+                    throw processServiceError;
                 });
+
                 throw processServiceError;
             });
 

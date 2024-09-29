@@ -441,11 +441,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             )
             .catch((err) => this.handleBrokenRulesError(err));
-        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) => {
-            throw new BadRequestError(`failed to delete files of instanceId ${id}`, {
-                error,
-            });
-        });
+        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
+            logger.error(`failed to delete files of instanceId ${id}`, { error }),
+        );
 
         const updatedFields: Record<string, any> = {};
 

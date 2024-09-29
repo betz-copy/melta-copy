@@ -16,8 +16,8 @@ morgan.format('jsonFormat', (tokens: any, req: any, res: any) => {
         body: req.body,
         status: tokens.status(req, res),
         responseTime: `${tokens['response-time'](req, res)} ms`,
-        headers: req.headers,
         workspaceId: req.workspaceId,
+        host: req.host,
     };
 
     return JSON.stringify(logObject);

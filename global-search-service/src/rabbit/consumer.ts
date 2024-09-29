@@ -42,8 +42,10 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
                 throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'invalid action type (should be caught in joi validation)');
         }
     } catch (error) {
+        logger.error('Failed to update search index', { error });
         msg.nack(false);
-        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Failed to update search index', { error });
+
+        return;
     }
 
     logger.info(`Successfully updated search index!`);

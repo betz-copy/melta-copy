@@ -1,8 +1,7 @@
 import fs from 'fs';
 import { once } from 'events';
 import { trycatch } from '.';
-import { ServiceError } from '../express/error';
-import { StatusCodes } from 'http-status-codes';
+import logger from './logger/logsLogger';
 
 type BufferEncoding = 'ascii' | 'utf8' | 'utf-8' | 'utf16le' | 'ucs2' | 'ucs-2' | 'base64' | 'latin1' | 'binary' | 'hex';
 
@@ -27,9 +26,7 @@ const fsCreateReadStream = async (path: fs.PathLike, options?: BufferEncoding | 
 
 export const removeTmpFile = async (filePath: string) => {
     const { err: rmTmpFileErr } = await trycatch(() => fs.promises.unlink(filePath));
-    if (rmTmpFileErr) {
-        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to remove tmp file (storage leak)', { error: rmTmpFileErr });
-    }
+    if (rmTmpFileErr) logger.error(`failed to remove tmp file (storage leak)`, { error: rmTmpFileErr });
 };
 
 export default fsCreateReadStream;

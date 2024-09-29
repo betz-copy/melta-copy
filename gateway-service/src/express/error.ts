@@ -6,11 +6,7 @@ import { PermissionScope } from '../externalServices/userService/interfaces/perm
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
-    constructor(
-        public code: number,
-        message: string,
-        public metadata: any = {},
-    ) {
+    constructor(public code: number, message: string, public metadata: any = {}) {
         super(message);
         this.code = code;
         this.metadata = metadata;
@@ -18,10 +14,7 @@ export class ServiceError extends Error {
 }
 
 export class NotFoundError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.NOT_FOUND, message);
         this.name = 'NotFound';
         this.metadata = metadata;
@@ -29,10 +22,7 @@ export class NotFoundError extends ServiceError {
 }
 
 export class ForbiddenError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.FORBIDDEN, message);
         this.name = 'Forbidden';
         this.metadata = metadata;
@@ -40,10 +30,7 @@ export class ForbiddenError extends ServiceError {
 }
 
 export class BadRequestError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
+    constructor(message: string, public metadata: object = {}) {
         super(StatusCodes.BAD_REQUEST, message);
         this.name = 'badRequest';
         this.metadata = metadata;
@@ -120,7 +107,8 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
         request: {
             method: req.method,
             url: req.originalUrl,
-            headers: req.headers,
+            workspaceId: req.headers.workspaceId,
+            host: req.headers.host,
             body: req.body,
         },
         response: {

@@ -87,7 +87,8 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
         request: {
             method: req.method,
             url: req.originalUrl,
-            headers: req.headers,
+            workspaceId: req.headers.workspaceId,
+            host: req.headers.host,
             body: req.body,
         },
         response: {
