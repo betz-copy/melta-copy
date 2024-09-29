@@ -136,13 +136,18 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 const errorMetadata = error.response?.data?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
-                    const { type, property } = errorMetadata;
+                    const { type, property, relatedTemplateName } = errorMetadata;
 
-                    const errorMessage =
-                        type === 'rules'
-                            ? `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules')} - ${property}`
-                            : `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts')} - ${property}`;
-                    toast.error(errorMessage);
+                    const errorMessages = {
+                        rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
+                        gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
+                        relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
+                            property,
+                            relatedTemplateName,
+                        })}`,
+                    };
+
+                    toast.error(errorMessages[type]);
                     return;
                 }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {

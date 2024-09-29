@@ -554,11 +554,12 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     private async checkPropertyInUsedBeforeDelete(templateId: string, properties: string[]) {
-        await Promise.all([
-            this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
-            this.isPropertyOfTemplateInUsedInRules(templateId, properties),
-            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties),
-        ]);
+        if (properties.length)
+            await Promise.all([
+                this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
+                this.isPropertyOfTemplateInUsedInRules(templateId, properties),
+                this.isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId, properties),
+            ]);
     }
 
     private async deleteFilesOfDeletedProperty(templateId: string, removedFilesProperties: Record<string, boolean>, numOfInstances: number) {
@@ -599,17 +600,19 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
 
         allEntityTemplates.forEach((entityTemplate) => {
-            const {
-                properties: { properties },
-            } = entityTemplate;
-
-            Object.values(properties).forEach(({ format, relationshipReference }) => {
+            Object.values(entityTemplate.properties.properties).forEach(({ format, relationshipReference }) => {
                 if (
                     format === 'relationshipReference' &&
                     relationshipReference?.relatedTemplateId === templateId &&
-                    relationshipReference?.relatedTemplateField in propertiesToRemove
-                )
-                    throw new ServiceError(400, 'that field is used');
+                    propertiesToRemove.includes(relationshipReference?.relatedTemplateField)
+                ) {
+                    throw new ServiceError(400, 'that field is used as relationship reference field', {
+                        errorCode: config.errorCodes.failedToDeleteField,
+                        type: 'relationshipReference',
+                        property: relationshipReference?.relatedTemplateField,
+                        relatedTemplateName: entityTemplate.name,
+                    });
+                }
             });
         });
     }
@@ -713,7 +716,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             });
         }
 
-        await this.checkPropertyInUsedBeforeDelete(id, Object.keys(removedProperties));
+        await this.checkPropertyInUsedBeforeDelete(id, removedProperties);
 
         const { iconFileId, newDocumentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
@@ -727,14 +730,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
-        await this.deletePropertyOfEntityTemplate(id, count, restOfTemplatePropertiesObject.properties, removedProperties, currTemplate);
-
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
             documentTemplatesIds: newDocumentTemplatesIds,
         });
+
+        const { err } = await trycatch(() =>
+            this.deletePropertyOfEntityTemplate(id, count, restOfTemplatePropertiesObject.properties, removedProperties, currTemplate),
+        );
+
+        if (err) {
+            await this.entityTemplateService.updateEntityTemplate(id, { ...currTemplate, category: currTemplate.category._id });
+            throw err;
+        }
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,

@@ -308,7 +308,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
     }
 
     async deleteRelationshipByTemplateIds(transaction: Transaction, templateIds: string[]) {
-        const matched = await runInTransactionAndNormalize(
+        return runInTransactionAndNormalize(
             transaction,
             `MATCH (s)-[r]->(d)
              WHERE type(r) IN $templateIds
@@ -318,8 +318,5 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             normalizeReturnedDeletedRelationship,
             { templateIds },
         );
-
-        console.dir({ matched }, { depth: null });
-        return matched;
     }
 }
