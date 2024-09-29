@@ -1,8 +1,8 @@
-import { connection, ClientSession, Types, Model, PipelineStage, FilterQuery } from 'mongoose';
+import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import config from '../../config';
 import { IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import { IStepInstance } from '../../express/instances/steps/interface';
-import { IMongoProcessTemplatePopulated, IProcessTemplate, ProcessTemplateDocument } from '../../express/templates/processes/interface';
+import { IMongoProcessTemplate, IMongoProcessTemplatePopulated, IProcessTemplate } from '../../express/templates/processes/interface';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;
@@ -50,7 +50,7 @@ export const getTemplateAggregation = async (model: Model<IProcessInstance> | Mo
 
 export const getProcessTemplatesByReviewerIdAggregation = async (
     processTemplateModel: Model<IProcessTemplate>,
-    query: FilterQuery<ProcessTemplateDocument>,
+    query: FilterQuery<IMongoProcessTemplate>,
     reviewerId: string,
     limit: number,
     skip: number,

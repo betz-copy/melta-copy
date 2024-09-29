@@ -10,6 +10,7 @@ interface AddIconWithTextProps {
     disabled: boolean;
     iconStyle: React.CSSProperties;
 }
+
 export const AddIconWithText = forwardRef<HTMLDivElement, AddIconWithTextProps>(({ textStyle, onClick, text, disabled, iconStyle }, ref) => {
     return (
         <Typography onClick={onClick} ref={ref} component="p" color={disabled ? 'gray' : 'primary'} justifyContent="space-around" style={textStyle}>

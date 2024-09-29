@@ -57,6 +57,7 @@ export interface IMongoProcessTemplatePopulated extends Omit<IMongoProcessTempla
 
 export interface IBaseSearchProperties {
     ids?: string[];
+    reviewerId?: string;
     limit?: number;
     skip?: number;
 }

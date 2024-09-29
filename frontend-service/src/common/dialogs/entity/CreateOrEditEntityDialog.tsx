@@ -20,7 +20,7 @@ import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
@@ -37,6 +37,8 @@ export type ICreateOrUpdateWithRuleBreachDialogState = {
     brokenRules?: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules?: IRuleBreach['brokenRules'];
     newEntityData?: EntityWizardValues;
+    actions?: IActionPopulated[];
+    rawActions?: IAction[];
 };
 
 const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
@@ -82,18 +84,20 @@ const CreateOrEditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
-    onSuccessUpdate?: (data: IEntity) => void;
+    onSuccessUpdate?: (entity: IEntity) => void;
+    onSuccessCreate?: (entity: IEntity) => void;
     handleClose: () => void;
     onError: (entity: EntityWizardValues) => void;
-    onSuccessCreate?: (entity: IEntity) => void;
     externalErrors: {
         files: boolean;
         unique: {};
+        action: string;
     };
     setExternalErrors: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
             unique: {};
+            action: string;
         }>
     >;
     createOrUpdateWithRuleBreachDialogState: ICreateOrUpdateWithRuleBreachDialogState;
@@ -131,26 +135,54 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated) => {
+    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
         if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
+
         const errorMetadata = err.response?.data?.metadata;
-        if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
-            const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
-            const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
-            constraintPropsDisplayNames.forEach((uniqueProp) => {
-                const [propKey, propTitle] = uniqueProp.split('-');
-                setExternalErrors((prev) => ({
-                    ...prev,
-                    unique: {
-                        ...prev.unique,
-                        [propKey]: `${i18next.t(
-                            `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
-                        )} ${propTitle}`,
-                    },
-                }));
-            });
+
+        switch (errorMetadata?.errorCode) {
+            case errorCodes.failedConstraintsValidation: {
+                const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;
+
+                const constraintPropsDisplayNames = properties.map((prop) => `${prop}-${template.properties.properties[prop].title}`);
+
+                constraintPropsDisplayNames.forEach((uniqueProp) => {
+                    const [propKey, propTitle] = uniqueProp.split('-');
+
+                    setExternalErrors((prev) => ({
+                        ...prev,
+                        unique: {
+                            ...prev.unique,
+                            [propKey]: `${i18next.t(
+                                `wizard.entity.someEntityAlreadyHasTheSameField${constraintPropsDisplayNames.length > 1 ? 's' : ''}`,
+                            )} ${propTitle}`,
+                        },
+                    }));
+                });
+                break;
+            }
+
+            case errorCodes.actionsCustomError:
+                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
+                break;
+
+            case errorCodes.ruleBlock: {
+                const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
+                setCreateOrUpdateWithRuleBreachDialogState!({
+                    isOpen: true,
+                    brokenRules,
+                    rawBrokenRules,
+                    newEntityData,
+                    actions,
+                    rawActions,
+                });
+                break;
+            }
+
+            default:
+                break;
         }
-        return errorMetadata;
     };
 
     const { isLoading: isUpdateLoading, mutateAsync: updateMutation } = useMutation(
@@ -161,15 +193,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 if (onSuccessUpdate) onSuccessUpdate(data);
             },
             onError: (err: AxiosError, { newEntityData }) => {
-                const errorMetadata = handleMutationError(err, entityTemplate);
-                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    setCreateOrUpdateWithRuleBreachDialogState!({
-                        isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
-                        newEntityData,
-                    });
-                }
+                handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );
@@ -186,15 +210,7 @@ const CreateOrEditEntityDetails: React.FC<{
                 entityId = currEntity.properties._id;
             },
             onError: (err: AxiosError, { newEntityData }) => {
-                const errorMetadata = handleMutationError(err, entityTemplate);
-                if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                    setCreateOrUpdateWithRuleBreachDialogState!({
-                        isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
-                        newEntityData,
-                    });
-                }
+                handleMutationError(err, entityTemplate, newEntityData);
             },
         },
     );
@@ -505,6 +521,11 @@ const CreateOrEditEntityDetails: React.FC<{
                                                     <Grid marginTop="20px" marginBottom="20px">
                                                         {isPropertiesFirst ? propertiesFilesComp : propertiesComp}
                                                     </Grid>
+                                                    {externalErrors.action && (
+                                                        <Typography color="error" variant="caption" fontSize="16px">
+                                                            {externalErrors.action}
+                                                        </Typography>
+                                                    )}
                                                 </Box>
                                             </Grid>
                                         </Grid>
@@ -590,6 +611,8 @@ const CreateOrEditEntityDetails: React.FC<{
                                     }))
                                 }
                                 onCreateRuleBreachRequest={() => handleClose()}
+                                actions={createOrUpdateWithRuleBreachDialogState.actions}
+                                rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                             />
                         )}
 

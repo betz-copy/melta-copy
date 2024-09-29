@@ -1,4 +1,4 @@
-import { ClientSession, Document, FilterQuery } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
@@ -49,7 +49,7 @@ export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelat
         skip: number;
     }) {
         const { search, ids, sourceEntityIds, destinationEntityIds, limit, skip } = searchBody;
-        const query: FilterQuery<IRelationshipTemplate & Document> = {};
+        const query: FilterQuery<IRelationshipTemplate> = {};
 
         if (search) {
             query.displayName = { $regex: escapeRegExp(search) };

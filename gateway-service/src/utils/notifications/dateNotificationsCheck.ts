@@ -69,13 +69,15 @@ const sendNotificationsForEntityTemplate = async (
 ) => {
     const today = new Date();
 
+    const workspaceIds = await WorkspaceManager.getWorkspaceHierarchyIds(workspaceId);
+
     const userIdsWithPermission = await UsersManager.searchUserIds({
-        workspaceId,
+        workspaceIds,
         permissions: {
+            // @ts-ignore
             [PermissionType.instances]: {
                 categories: {
                     [entityTemplate.category._id]: {
-                        entityTemplates: {},
                         scope: PermissionScope.write,
                     },
                 },

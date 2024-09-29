@@ -14,3 +14,11 @@ export interface IMongoRule extends IRule {
 }
 
 export type IRuleMap = Map<string, IMongoRule>;
+
+export interface ISearchRuleBody {
+    search?: string;
+    entityTemplateIds?: string[];
+    disabled?: boolean;
+    limit: number;
+    skip: number;
+}
