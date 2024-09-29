@@ -9,7 +9,6 @@ import { ISubCompactPermissions } from '../permissions/interface/permissions';
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findById(id).orFail(new UserDoesNotExistError(id)).lean().exec();
-
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 

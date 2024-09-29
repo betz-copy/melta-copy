@@ -8,6 +8,7 @@ import { updateUserPreferencesMetadataRequest } from '../../services/userService
 const { notificationsMoreData } = environment.notifications;
 const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
+    console.log({ existingUser });
 
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
 
@@ -30,20 +31,24 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
     console.log({ selectedNotifications });
 
     return (
-        <Grid container flexDirection="row" spacing={4}>
-            {allNotifications.map((notification) => (
-                <Grid item key={notification.type}>
-                    <FormControlLabel
-                        control={
-                            <Checkbox
-                                checked={selectedNotifications.includes(notification.type)}
-                                onChange={() => handleCheckboxChange(notification.type)}
-                            />
-                        }
-                        label={notification.displayName()}
-                    />
-                </Grid>
-            ))}
+        <Grid container>
+            <Grid sx={{ backgroundColor: 'grey' }} width="100%" height="100px" />
+
+            <Grid container flexDirection="row" spacing={4}>
+                {allNotifications.map((notification) => (
+                    <Grid item key={notification.type}>
+                        <FormControlLabel
+                            control={
+                                <Checkbox
+                                    checked={selectedNotifications.includes(notification.type)}
+                                    onChange={() => handleCheckboxChange(notification.type)}
+                                />
+                            }
+                            label={notification.displayName()}
+                        />
+                    </Grid>
+                ))}
+            </Grid>
         </Grid>
     );
 };

@@ -10,6 +10,7 @@ export interface IBaseUser {
     preferences: {
         darkMode?: boolean;
         mailsNotificationsTypes?: NotificationType[];
+        profilePath?: any;
     };
     externalMetadata: {
         kartoffelId: string;

@@ -37,7 +37,7 @@ export class MinioMulter {
         return storage;
     }
 
-    static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
+    static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
         if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
@@ -45,7 +45,7 @@ export class MinioMulter {
         Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName)(req, res, next);
     }
 
-    static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
+    static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
         if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));

@@ -41,8 +41,9 @@ export class MinIOClient {
     bucketExists() {
         return this.minioClient.bucketExists(this.bucketName);
     }
-
+    
     makeBucket() {
+        console.log("this.bucketName", this.bucketName);
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 
@@ -92,4 +93,8 @@ export class MinIOClient {
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
         return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
+
+    // uploadToGlobal(filePath, fileName) {
+    //     this.uploadFile(this.globalBucket, filePath, fileName);
+    // }
 }

@@ -27,10 +27,7 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
 };
 
 export const updateUserPreferencesMetadataRequest = async (userId: string, preferences) => {
-    console.log({ preferences });
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, preferences);
-    console.log({ data });
-
     return data;
 };
 

@@ -21,11 +21,11 @@ const PermissionsOfUserDialog: React.FC<{
     // const { setIsOpen, setCurrentStep } = useTour();
     // const [_, navigate] = useLocation();
 
-    const [tabValue, setTabValue] = React.useState('myPermissions');
+    const [tabValue, setTabValue] = React.useState('myAccount');
 
     const tabsComponentsMapping: Record<string, ReactElement<any, any>> = {
-        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
         myAccount: <MyAccount existingUser={existingUser} />,
+        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
     };
 
     return (

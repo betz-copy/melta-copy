@@ -161,6 +161,7 @@ export class UsersManager {
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
+        console.log('dsrhsvs ', kartoffelUser.pictures?.profile);
 
         return {
             _id: kartoffelId,
@@ -173,7 +174,11 @@ export class UsersManager {
                 kartoffelId,
                 digitalIdentitySource: digitalIdentity.source,
             },
-            preferences: {},
+            preferences: {
+                mailsNotificationsTypes: [],
+                // darkMode: false,
+                profilePath: kartoffelUser.pictures?.profile?.meta?.path,
+            },
             permissions: existingUser.permissions || {},
             existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };
