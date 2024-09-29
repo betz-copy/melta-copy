@@ -42,8 +42,9 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
 
     const debouncedSetQuickFilterText = useCallback(
         _debounce((value: string) => setQuickFilterText(value), 1000),
-        [],
+        [setQuickFilterText],
     );
+
     return (
         <Grid container className="pageMargin" spacing={3}>
             <Grid item container xs={12} spacing={1}>
