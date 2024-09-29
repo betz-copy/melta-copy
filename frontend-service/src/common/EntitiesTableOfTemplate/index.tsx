@@ -170,7 +170,6 @@ export type EntitiesTableOfTemplateRef<Data> = {
     scrollIntoView: () => void;
     showSideBar: () => void;
     getDisplayColumns: () => string[];
-    // getColorsFromGrid: () => any;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -262,7 +261,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     // eslint-disable-next-line no-unused-expressions
                     isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
                 },
-                getDisplayColumns: () => gridRef.current?.api.columnModel.displayedColumnsCenter.map((column) => column.colId),
+                getDisplayColumns: () => gridRef.current?.columnApi.getAllDisplayedColumns().map((column) => column.getColId()) || [],
             };
         });
 

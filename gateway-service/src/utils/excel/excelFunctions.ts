@@ -9,6 +9,7 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
+import { hexToARGB } from './colors';
 
 interface IExcelStyle {
     columnHeader: {
@@ -81,30 +82,6 @@ const createWorksheet = async (workbook: Excel.Workbook, template: IMongoEntityT
 export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
-
-function hexToARGB(hex?: string): string {
-    if (!hex) return 'FF000000';
-
-    hex = hex.replace(/^#/, '');
-
-    let r: number;
-    let g: number;
-    let b: number;
-    if (hex.length === 6) {
-        r = parseInt(hex.substring(0, 2), 16);
-        g = parseInt(hex.substring(2, 4), 16);
-        b = parseInt(hex.substring(4, 6), 16);
-    } else if (hex.length === 3) {
-        r = parseInt(hex[0] + hex[0], 16);
-        g = parseInt(hex[1] + hex[1], 16);
-        b = parseInt(hex[2] + hex[2], 16);
-    } else {
-        throw new Error('Invalid hex color format');
-    }
-
-    // eslint-disable-next-line no-bitwise
-    return `FF${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase()}`;
-}
 
 const fixComplexProperties = (
     cell: Excel.Cell,
@@ -189,7 +166,7 @@ const styleAWorksheet = (
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, rowIndex) => {
             const cell = worksheet.getCell(`${(columnIndex + 10).toString(36).toUpperCase()}${rowIndex + 2}`);
-            if (row[key]) {
+            if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
                 const isComplex = fixComplexProperties(cell, template, row, [key, value], relationshipRefColors, rowIndex, workspacePath);

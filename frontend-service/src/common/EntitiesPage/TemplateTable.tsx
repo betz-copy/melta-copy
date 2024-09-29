@@ -13,7 +13,7 @@ import { exportEntitiesRequest } from '../../services/entitiesService';
 import { useDraftIdStore, useDraftsStore } from '../../stores/drafts';
 import { useUserStore } from '../../stores/user';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { getEntityTemplateColor } from '../../utils/colors';
+import { getEntityTemplateColor, getRelationshipRefColor } from '../../utils/colors';
 import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
@@ -51,24 +51,6 @@ const TemplateTable = forwardRef<
 
     useImperativeHandle(ref, () => entitiesTableRef.current!);
 
-    const getRelationshipRefColor = () => {
-        const colorMap = new Map<string, string>();
-        Object.values(template.properties.properties).forEach((value) => {
-            if (value.format === 'relationshipReference') {
-                const { relatedTemplateId } = value.relationshipReference!;
-                const relatedEntityTemplate = entityTemplates.get(relatedTemplateId);
-
-                if (relatedEntityTemplate) {
-                    const entityTemplateColor = getEntityTemplateColor(relatedEntityTemplate);
-                    colorMap[relatedTemplateId] = entityTemplateColor;
-                }
-            }
-        });
-
-        return colorMap;
-    };
-    console.log('getRelationshipRefColor', getRelationshipRefColor());
-
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
             return exportEntitiesRequest({
@@ -78,8 +60,8 @@ const TemplateTable = forwardRef<
                     [template._id]: {
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
-                        displayColumns: entitiesTableRef.current?.getDisplayColumns(),
-                        relationshipRefColors: getRelationshipRefColor(),
+                        displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
+                        relationshipRefColors: getRelationshipRefColor(template, entityTemplates),
                     },
                 },
             });
