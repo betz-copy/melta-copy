@@ -380,6 +380,7 @@ const Graph: React.FC = () => {
                         categories={Array.from(categories.values())}
                         setOpenFilter={setOpenFilter}
                         openFilter={openFilter}
+                        onClick={() => resetGraph(undefined, true)}
                     />
                 </Box>
                 <Backdrop open={(isLoading || !graphData.nodes.length) && !error} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
@@ -412,6 +413,7 @@ const Graph: React.FC = () => {
                             filters={filters}
                             setFilters={setFilters}
                             graphEntityTemplateIds={graphEntityTemplateIds}
+                            onFilter={() => resetGraph(undefined, true)}
                         />
                     </Box>
                 )}
