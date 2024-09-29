@@ -1,35 +1,20 @@
 import { AddCircle } from '@mui/icons-material';
-import { CircularProgress, Grid, IconButton, TextField } from '@mui/material';
+import { Grid, IconButton } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
-import { toast } from 'react-toastify';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useQueryClient } from 'react-query';
+import _debounce from 'lodash.debounce';
 import PermissionsOfUserDialog from '../../common/permissionsOfUserDialog';
 import '../../css/pages.css';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IUser } from '../../interfaces/users';
-import { searchUsersRequest } from '../../services/userService';
-import { useWorkspaceStore } from '../../stores/workspace';
 import DeletePermissionsOfUserDialog from './deleteDialog';
-import Table from './table';
+import SearchInput from '../../common/inputs/SearchInput';
+import PermissionsTable, { PermissionsTableRef } from './table';
 
 const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-
-    const { data: users, isLoading: isLoadingUsers } = useQuery(
-        'getAllUsers',
-        () => searchUsersRequest({ workspaceIds: [workspace._id], limit: 1000 }),
-        {
-            onError: (error) => {
-                // eslint-disable-next-line no-console
-                console.log('failed loading all users:', error);
-                toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
-            },
-        },
-    );
 
     const [isCreatePermissionDialogOpen, setIsCreatePermissionDialogOpen] = useState<boolean>(false);
     const [deletePermissionDialogState, setDeletePermissionDialogState] = useState<{
@@ -49,7 +34,16 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
 
     const [quickFilterText, setQuickFilterText] = useState('');
 
-    useEffect(() => setTitle(i18next.t('permissions.permissionsManagmentPageTitle')), [setTitle]);
+    const [search, setSearch] = useState('');
+
+    useEffect(() => setTitle(i18next.t('permissions.permissionsManagementPageTitle')), [setTitle]);
+
+    const permissionsTableRef = useRef<PermissionsTableRef<IUser>>(null);
+
+    const debouncedSetQuickFilterText = useCallback(
+        _debounce((value: string) => setQuickFilterText(value), 1000),
+        [setQuickFilterText],
+    );
 
     return (
         <Grid container className="pageMargin" spacing={3}>
@@ -57,12 +51,17 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                 <Grid item xs={12} container justifyContent="space-between" alignItems="center">
                     <Grid item flex={1} />
                     <Grid item flex={1}>
-                        <TextField
-                            value={quickFilterText}
-                            onChange={(e) => setQuickFilterText(e.target.value)}
-                            placeholder={i18next.t('searchLabel')}
-                            variant="outlined"
-                            fullWidth
+                        <SearchInput
+                            value={search}
+                            onChange={(value) => {
+                                setSearch(value);
+                                debouncedSetQuickFilterText(value);
+                            }}
+                            placeholder={i18next.t('permissions.searchUser')}
+                            size="medium"
+                            borderRadius="7px"
+                            width="575px"
+                            height="40px"
                         />
                     </Grid>
                     <Grid item container flex={1} justifyContent="flex-end">
@@ -72,10 +71,9 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                     </Grid>
                 </Grid>
                 <Grid item xs={12}>
-                    {isLoadingUsers && <CircularProgress size={20} />}
-                    {Boolean(users) && Boolean(categories) && (
-                        <Table
-                            users={users!}
+                    {Boolean(categories) && (
+                        <PermissionsTable
+                            ref={permissionsTableRef}
                             categories={Array.from(categories.values())}
                             onDeletePermissionsOfUser={(existingUser) => setDeletePermissionDialogState({ isDialogOpen: true, user: existingUser })}
                             onEditPermissionsOfUser={(existingUser) => setEditPermissionDialogState({ isDialogOpen: true, user: existingUser })}
@@ -88,13 +86,20 @@ const PermissionsManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateA
                 isOpen={deletePermissionDialogState.isDialogOpen}
                 user={deletePermissionDialogState.user}
                 handleClose={() => setDeletePermissionDialogState({ isDialogOpen: false, user: null })}
+                onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
             />
-            <PermissionsOfUserDialog mode="create" isOpen={isCreatePermissionDialogOpen} handleClose={() => setIsCreatePermissionDialogOpen(false)} />
+            <PermissionsOfUserDialog
+                mode="create"
+                isOpen={isCreatePermissionDialogOpen}
+                handleClose={() => setIsCreatePermissionDialogOpen(false)}
+                onSuccess={() => permissionsTableRef.current?.refreshServerSide()}
+            />
             <PermissionsOfUserDialog
                 mode="edit"
                 isOpen={editPermissionDialogState.isDialogOpen}
                 handleClose={() => setEditPermissionDialogState({ isDialogOpen: false, user: null })}
                 existingUser={editPermissionDialogState.user || undefined}
+                onSuccess={(user?: IUser) => permissionsTableRef.current?.updateRowDataClientSide(user as IUser)}
             />
         </Grid>
     );
