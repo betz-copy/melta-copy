@@ -19,7 +19,7 @@ export class ServiceError extends Error {
 
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
-        return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };
+        return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR', code: StatusCodes.CONFLICT };
     }
 
     if (axiosErrorData.metadata) {

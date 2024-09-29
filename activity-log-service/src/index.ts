@@ -1,11 +1,11 @@
 import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
+import { StatusCodes } from 'http-status-codes';
 import Server from './express/server';
 import config from './config';
 import logger from './utils/logger/logsLogger';
 import initializeRabbit from './utils/rabbit';
 import { ServiceError } from './express/error';
-import { StatusCodes } from 'http-status-codes';
 
 const { mongo, service } = config;
 
