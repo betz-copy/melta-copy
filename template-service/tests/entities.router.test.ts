@@ -2,6 +2,7 @@
 import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import Server from '../src/express/server';
 
 import CategoryManager from '../src/express/category/manager';
@@ -11,7 +12,6 @@ import EntityTemplateModel from '../src/express/entityTemplate/model';
 import { IEntityTemplate } from '../src/express/entityTemplate/interface';
 import { ICategory } from '../src/express/category/interface';
 import * as relationshipTemplateManager from '../src/relationshipTemplateManager';
-import { StatusCodes } from 'http-status-codes';
 
 jest.mock('../src/relationshipTemplateManager');
 const relationshipTemplateManagerMocked = jest.mocked(relationshipTemplateManager, true);

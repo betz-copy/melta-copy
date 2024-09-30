@@ -1,6 +1,7 @@
 import * as request from 'supertest';
 import mongoose from 'mongoose';
 import { Express } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import Server from '../src/express/server';
 import processTemplateExample1 from './mock/templates';
 import { IMongoProcessTemplatePopulated } from '../src/express/templates/processes/interface';
@@ -15,7 +16,6 @@ import processInstanceExample1, { errStepsPropertiesExample1, stepsPropertiesExa
 import { IMongoStepInstance, UpdateStepReqBody } from '../src/express/instances/steps/interface';
 import StepInstanceManager from '../src/express/instances/steps/manager';
 import { ServiceError } from '../src/express/error';
-import { StatusCodes } from 'http-status-codes';
 
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus } = StatusCodes;
 

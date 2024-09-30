@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { get } from 'lodash';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InvalidWorkspaceHeaderError } from '../../express/error';
 import { WorkspaceService } from '../../express/workspaces/service';
@@ -85,7 +86,7 @@ const handleMulterErrors = (err, _req, res, next) => {
         return next();
     }
 
-    const statusCode = err.code === 'LIMIT_FILE_SIZE' ? 413 : 500;
+    const statusCode = err.code === 'LIMIT_FILE_SIZE' ? StatusCodes.REQUEST_TOO_LONG : StatusCodes.INTERNAL_SERVER_ERROR;
     const errorMessage = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : 'File upload error';
 
     return res.status(statusCode).json({ error: errorMessage, details: err.message });
