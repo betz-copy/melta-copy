@@ -3,6 +3,7 @@ import { AxiosError } from 'axios';
 import React, { isValidElement } from 'react';
 import { useQuery } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
+import { StatusCodes } from 'http-status-codes';
 import { IEntityTemplateMap } from '../interfaces/entityTemplates';
 import { PermissionScope } from '../interfaces/permissions';
 import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
@@ -48,7 +49,7 @@ export const EntityProtectedRoute: React.FC<{ permissions: ISubCompactPermission
         () => getExpandedEntityByIdRequest(entityId!, expanded, { templateIds }),
         {
             onError: (error: AxiosError) => {
-                if (error.response?.status === 404) {
+                if (error.response?.status === StatusCodes.NOT_FOUND) {
                     navigate('/404');
                 }
             },

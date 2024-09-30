@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import { IFile } from '../../interfaces/preview';
 import { getFilePreviewRequest } from '../../services/previewService';
+import { StatusCodes } from 'http-status-codes';
 
 export const useFilePreview = (
     fileId: IFile['id'] | File,
@@ -25,7 +26,7 @@ export const useFilePreview = (
             refetchOnMount: false,
             retry: false,
             onError: (error: any) => {
-                setNoSuchKeyError(error?.response?.status === 404);
+                setNoSuchKeyError(error?.response?.status === StatusCodes.NOT_FOUND);
             },
         },
     );

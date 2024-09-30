@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
+import { StatusCodes } from 'http-status-codes';
 import {
     ActionTypes,
     ICreateRelationshipMetadataPopulated,
@@ -279,24 +280,24 @@ export const generateRuleBreachAlertOrRequest = () => {
 };
 
 export const mockRuleBreaches = (mock: MockAdapter) => {
-    mock.onPost('/api/rule-breaches/requests').reply(() => [200, generateRuleBreachRequest({ nullable: false })]);
+    mock.onPost('/api/rule-breaches/requests').reply(() => [StatusCodes.OK, generateRuleBreachRequest({ nullable: false })]);
 
     mock.onPost('/api/rule-breaches/alerts/search').reply(() => {
         const numberOfBreaches = chance.integer({ min: 0, max: 20 });
         const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachAlert());
-        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+        return [StatusCodes.OK, { rows: breaches, lastRowIndex: numberOfBreaches }];
     });
 
     mock.onPost('/api/rule-breaches/requests/search').reply(() => {
         const numberOfBreaches = chance.integer({ min: 0, max: 20 });
         const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachRequest());
 
-        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+        return [StatusCodes.OK, { rows: breaches, lastRowIndex: numberOfBreaches }];
     });
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [200, generateRuleBreachRequest({})]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({})]);
 };
