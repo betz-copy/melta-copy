@@ -3,7 +3,7 @@ import 'elastic-apm-node/start';
 import menash from 'menashmq';
 
 import config from './config';
-import { updateIndexConsumeFunction } from './rabbit/consumer';
+import { updateIndexConsumeFunction } from './search/consumer';
 import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j/neo4j';
 

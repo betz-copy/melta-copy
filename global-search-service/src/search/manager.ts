@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { QueryResult, Transaction } from 'neo4j-driver';
+import { Transaction } from 'neo4j-driver';
 import config from '../config';
 import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
@@ -9,17 +9,6 @@ import logger from '../utils/logger/logsLogger';
 const {
     neo4j: { globalSearchIndex, templateSearchIndexPrefix, stringPropertySuffix },
 } = config;
-
-export const runInTransactionAndNormalize = async <T>(
-    transaction: Transaction,
-    cypherQuery: string,
-    normalizeFunction: (queryResult: QueryResult) => T,
-    parameters?: Record<string, any>,
-): Promise<T> => {
-    const result = await transaction.run(cypherQuery, parameters);
-
-    return normalizeFunction(result);
-};
 
 export default class Manager extends DefaultManagerNeo4j {
     private templateManagerService: TemplateManagerService;
@@ -34,6 +23,17 @@ export default class Manager extends DefaultManagerNeo4j {
         CREATE FULLTEXT INDEX \`${indexName}\` FOR (n:\`${labels.join('`|`')}\`)
         ON EACH [${properties.map((prop) => `n.${prop}`).join(', ')}]
         OPTIONS { indexConfig: { \`fulltext.analyzer\`: 'unicode_whitespace' } }`;
+
+        // we chose analyzer "unicode_whitespace" because we want to do searches of `*{search}*`.
+        // in fulltext (lucene) query '*' works only on terms, and not phrases.
+        // for example in the standard analyzer "foo,bar" is a phrase (with two terms), so searching "*foo,bar*" wont work at all.
+        // but with "unicode_whitespace" analyzer, adding '*' at start and end, will always search on terms and not phrases,
+        // because in whitespace analyzer "foo,bar" is one term, so '*' will work on it,
+        // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
+        // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
+        // also it will work better for searching dates (standard analyzer breaks apart the dates)
+        // btw, adding custom analyzer to support autocomplete (for example edge-n-gram analyzer) instead of '*' is not possible.
+        // because it requires one analyzer for the index task and one analyzer for the search/query task different analyzer see https://github.com/neo4j/neo4j/issues/9787
 
         return transaction.run(createFullTextIndexCommand);
     }
