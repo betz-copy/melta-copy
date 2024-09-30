@@ -3,7 +3,7 @@ import axios from '../../axios';
 import { RuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
-import { IMongoRule, IRule } from '../../interfaces/rules';
+import { IMongoRule, IRule, ISearchRuleBody } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 
@@ -19,6 +19,11 @@ const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTempla
         ...restOfRule,
         formula: QbUtils.loadTree({ ...jsonTree, properties: { ...jsonTree.properties, isLocked: true } } as JsonTree),
     };
+};
+
+const searchRulesRequest = async (searchBody: ISearchRuleBody) => {
+    const { data } = await axios.post<IMongoRule[]>(`${rules}/search`, searchBody);
+    return data;
 };
 
 const updateDisabledRuleRequest = async (ruleId: string, disabled: boolean) => {
@@ -47,4 +52,4 @@ const deleteRuleRequest = async (ruleId: string) => {
     return data;
 };
 
-export { createRuleRequest, updateRuleRequest, deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest };
+export { createRuleRequest, updateRuleRequest, deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest, searchRulesRequest };

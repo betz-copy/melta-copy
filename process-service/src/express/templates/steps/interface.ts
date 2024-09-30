@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IProcessDetails } from '../processes/interface';
 
 export interface IStepTemplate extends IProcessDetails {
@@ -13,5 +12,3 @@ export interface IMongoStepTemplate extends IStepTemplate {
     createdAt: Date;
     updatedAt: Date;
 }
-
-export type StepTemplateDocument = IStepTemplate & Document;

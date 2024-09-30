@@ -125,7 +125,8 @@ export const archiveProcessRequest = async (processId: string, archived: Boolean
     return data;
 };
 export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
-    const updatedSearchBody = { ...searchBody, name: searchBody.name !== '' ? searchBody.name : undefined };
+    const updatedSearchBody = { ...searchBody, searchText: searchBody.searchText || undefined };
+
     const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };

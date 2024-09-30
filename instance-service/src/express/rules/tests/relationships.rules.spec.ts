@@ -153,55 +153,65 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                firstTravelAgent = await EntityManager.createEntity(
-                    {
-                        firstName: 'Name1',
-                        lastName: 'Name1',
-                        agentId: '1',
-                    },
-                    travelAgentEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                firstTravelAgent = (
+                    await EntityManager.createEntity(
+                        {
+                            firstName: 'Name1',
+                            lastName: 'Name1',
+                            agentId: '1',
+                        },
+                        travelAgentEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                secondTravelAgent = await EntityManager.createEntity(
-                    { firstName: 'Name2', lastName: 'Name2', agentId: '2' },
-                    travelAgentEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                secondTravelAgent = (
+                    await EntityManager.createEntity(
+                        { firstName: 'Name2', lastName: 'Name2', agentId: '2' },
+                        travelAgentEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                flight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: new Date().toISOString(),
-                        landingDate: new Date().toISOString(),
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                flight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                trip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip',
-                        destination: 'New York',
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                trip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                airport = await EntityManager.createEntity(
-                    {
-                        airportName: 'New York Airport',
-                        airportId: '1234',
-                        country: 'New York',
-                    },
-                    airportEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                airport = (
+                    await EntityManager.createEntity(
+                        {
+                            airportName: 'New York Airport',
+                            airportId: '1234',
+                            country: 'New York',
+                        },
+                        airportEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
             });
 
             afterAll(async () => {
@@ -363,70 +373,82 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip',
-                        destination: 'New York',
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                trip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: '2022-04-01T17:00:00.000Z',
-                        landingDate: '2022-04-01T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                firstFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: '2022-04-01T17:00:00.000Z',
+                            landingDate: '2022-04-01T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                secondFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '2',
-                        departureDate: '2022-04-20T17:00:00.000Z',
-                        landingDate: '2022-04-20T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                secondFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '2',
+                            departureDate: '2022-04-20T17:00:00.000Z',
+                            landingDate: '2022-04-20T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                thirdFlightOverlapping = await EntityManager.createEntity(
-                    {
-                        flightNumber: '3',
-                        departureDate: '2022-04-01T08:00:00.000Z',
-                        landingDate: '2022-04-01T08:30:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                thirdFlightOverlapping = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '3',
+                            departureDate: '2022-04-01T08:00:00.000Z',
+                            landingDate: '2022-04-01T08:30:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                fourthFlightNotOverlapping = await EntityManager.createEntity(
-                    {
-                        flightNumber: '4',
-                        departureDate: '2022-04-29T17:00:00.000Z',
-                        landingDate: '2022-04-29T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                fourthFlightNotOverlapping = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '4',
+                            departureDate: '2022-04-29T17:00:00.000Z',
+                            landingDate: '2022-04-29T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                fifthFlightOverlapping = await EntityManager.createEntity(
-                    {
-                        flightNumber: '5',
-                        departureDate: '2022-04-20T08:00:00.000Z',
-                        landingDate: '2022-04-20T08:30:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                fifthFlightOverlapping = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '5',
+                            departureDate: '2022-04-20T08:00:00.000Z',
+                            landingDate: '2022-04-20T08:30:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
             });
 
             afterAll(async () => {
@@ -627,70 +649,82 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                airport = await EntityManager.createEntity(
-                    {
-                        airportName: 'New York Airport',
-                        airportId: '1234',
-                        country: 'New York',
-                    },
-                    airportEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                firstTrip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip1',
-                        destination: 'New York',
-                        startDate: '2022-05-01',
-                        endDate: '2022-05-01',
-                        active: false,
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                secondTrip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip2',
-                        destination: 'New York',
-                        startDate: '2022-05-02',
-                        endDate: '2022-05-02',
-                        active: false,
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: '2022-05-01T17:00:00.000Z',
-                        landingDate: '2022-05-01T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                secondFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '2',
-                        departureDate: '2022-05-02T17:00:00.000Z',
-                        landingDate: '2022-05-02T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                thirdFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '3',
-                        departureDate: '2022-05-02T17:00:00.000Z',
-                        landingDate: '2022-05-02T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                airport = (
+                    await EntityManager.createEntity(
+                        {
+                            airportName: 'New York Airport',
+                            airportId: '1234',
+                            country: 'New York',
+                        },
+                        airportEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                firstTrip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip1',
+                            destination: 'New York',
+                            startDate: '2022-05-01',
+                            endDate: '2022-05-01',
+                            active: false,
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                secondTrip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip2',
+                            destination: 'New York',
+                            startDate: '2022-05-02',
+                            endDate: '2022-05-02',
+                            active: false,
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                firstFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: '2022-05-01T17:00:00.000Z',
+                            landingDate: '2022-05-01T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                secondFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '2',
+                            departureDate: '2022-05-02T17:00:00.000Z',
+                            landingDate: '2022-05-02T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                thirdFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '3',
+                            departureDate: '2022-05-02T17:00:00.000Z',
+                            landingDate: '2022-05-02T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
             });
 
             it('Should create relationship of firstFlight', async () => {
@@ -902,49 +936,57 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                firstTravelAgent = await EntityManager.createEntity(
-                    {
-                        firstName: 'Name1',
-                        lastName: 'Name1',
-                        agentId: '1',
-                    },
-                    travelAgentEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                firstTravelAgent = (
+                    await EntityManager.createEntity(
+                        {
+                            firstName: 'Name1',
+                            lastName: 'Name1',
+                            agentId: '1',
+                        },
+                        travelAgentEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                secondTravelAgent = await EntityManager.createEntity(
-                    {
-                        firstName: 'Name2',
-                        lastName: 'Name2',
-                        agentId: '2',
-                    },
-                    travelAgentEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                secondTravelAgent = (
+                    await EntityManager.createEntity(
+                        {
+                            firstName: 'Name2',
+                            lastName: 'Name2',
+                            agentId: '2',
+                        },
+                        travelAgentEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                thirdTravelAgent = await EntityManager.createEntity(
-                    {
-                        firstName: 'Name3',
-                        lastName: 'Name3',
-                        agentId: '3',
-                    },
-                    travelAgentEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                thirdTravelAgent = (
+                    await EntityManager.createEntity(
+                        {
+                            firstName: 'Name3',
+                            lastName: 'Name3',
+                            agentId: '3',
+                        },
+                        travelAgentEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                flight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: new Date().toISOString(),
-                        landingDate: new Date().toISOString(),
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                flight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: new Date().toISOString(),
+                            landingDate: new Date().toISOString(),
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {
@@ -1161,48 +1203,56 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                trip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip',
-                        destination: 'New York',
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                trip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip',
+                            destination: 'New York',
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: '2022-04-01T17:00:00.000Z',
-                        landingDate: '2022-04-01T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                firstFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: '2022-04-01T17:00:00.000Z',
+                            landingDate: '2022-04-01T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                secondFlightNotOverlapping = await EntityManager.createEntity(
-                    {
-                        flightNumber: '2',
-                        departureDate: '2022-04-20T17:00:00.000Z',
-                        landingDate: '2022-04-20T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                secondFlightNotOverlapping = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '2',
+                            departureDate: '2022-04-20T17:00:00.000Z',
+                            landingDate: '2022-04-20T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
-                thirdFlightOverlapping = await EntityManager.createEntity(
-                    {
-                        flightNumber: '3',
-                        departureDate: '2022-04-01T08:00:00.000Z',
-                        landingDate: '2022-04-01T08:30:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                thirdFlightOverlapping = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '3',
+                            departureDate: '2022-04-01T08:00:00.000Z',
+                            landingDate: '2022-04-01T08:30:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
                 const firstRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {
@@ -1337,60 +1387,70 @@ describe('Relationship manager test rules', () => {
             });
 
             beforeAll(async () => {
-                airport = await EntityManager.createEntity(
-                    {
-                        airportName: 'New York Airport',
-                        airportId: '1234',
-                        country: 'New York',
-                    },
-                    airportEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                firstTrip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip1',
-                        destination: 'New York',
-                        startDate: '2022-05-01',
-                        endDate: '2022-05-01',
-                        active: false,
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                secondTrip = await EntityManager.createEntity(
-                    {
-                        name: 'My trip2',
-                        destination: 'New York',
-                        startDate: '2022-05-02',
-                        endDate: '2022-05-02',
-                        active: false,
-                    },
-                    tripEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                firstFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '1',
-                        departureDate: '2022-05-01T17:00:00.000Z',
-                        landingDate: '2022-05-01T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
-                secondFlight = await EntityManager.createEntity(
-                    {
-                        flightNumber: '2',
-                        departureDate: '2022-05-02T17:00:00.000Z',
-                        landingDate: '2022-05-02T19:00:00.000Z',
-                    },
-                    flightEntityTemplate,
-                    [],
-                    neo4j.mockUserId,
-                );
+                airport = (
+                    await EntityManager.createEntity(
+                        {
+                            airportName: 'New York Airport',
+                            airportId: '1234',
+                            country: 'New York',
+                        },
+                        airportEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                firstTrip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip1',
+                            destination: 'New York',
+                            startDate: '2022-05-01',
+                            endDate: '2022-05-01',
+                            active: false,
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                secondTrip = (
+                    await EntityManager.createEntity(
+                        {
+                            name: 'My trip2',
+                            destination: 'New York',
+                            startDate: '2022-05-02',
+                            endDate: '2022-05-02',
+                            active: false,
+                        },
+                        tripEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                firstFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '1',
+                            departureDate: '2022-05-01T17:00:00.000Z',
+                            landingDate: '2022-05-01T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
+                secondFlight = (
+                    await EntityManager.createEntity(
+                        {
+                            flightNumber: '2',
+                            departureDate: '2022-05-02T17:00:00.000Z',
+                            landingDate: '2022-05-02T19:00:00.000Z',
+                        },
+                        flightEntityTemplate,
+                        [],
+                        neo4j.mockUserId,
+                    )
+                ).createdEntity;
 
                 const firstTripConnectedToAirportRelationship = await RelationshipManager.createRelationshipByEntityIds(
                     {

@@ -60,7 +60,7 @@ const nodeToEntity = (node: Node): IEntity => {
         properties: normalizeFields(node.properties),
     };
 
-    return EntityManager.fixReturnedEntityRefrencesFields(entity);
+    return EntityManager.fixReturnedEntityReferencesFields(entity);
 };
 
 export const normalizeReturnedEntity =
@@ -211,14 +211,14 @@ export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWi
     });
 };
 
-export const normalizeNeighboursOfEntityForRule = (result: QueryResult) => {
+export const normalizeNeighborsOfEntityForRule = (result: QueryResult) => {
     return result.records.map((record) => {
         const relationshipTemplate = record.get('rTemplate') as string;
-        const neighbourOfEntity = record.get('neighbour') as Node;
+        const neighborOfEntity = record.get('neighbor') as Node;
 
         return {
             relationshipTemplate,
-            neighbourOfEntity: nodeToEntity(neighbourOfEntity),
+            neighborOfEntity: nodeToEntity(neighborOfEntity),
         };
     });
 };

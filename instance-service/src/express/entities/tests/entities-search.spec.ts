@@ -135,15 +135,15 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            flight1 = await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, [], neo4j.mockUserId);
-            flight2 = await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, [], neo4j.mockUserId);
-            travelAgent1 = await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            travelAgent2 = await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            travelAgent3 = await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            trip1 = await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, [], neo4j.mockUserId);
-            trip2 = await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, [], neo4j.mockUserId);
-            trip3 = await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, [], neo4j.mockUserId);
-            airport1 = await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, [], neo4j.mockUserId);
+            flight1 = (await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            flight2 = (await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent1 = (await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent2 = (await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent3 = (await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip1 = (await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip2 = (await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip3 = (await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            airport1 = (await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             travelAgent1Toflight1 = await RelationshipManager.createRelationshipByEntityIds(
                 {

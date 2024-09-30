@@ -12,7 +12,7 @@ import {
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
@@ -430,6 +430,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             }
                         }
                     }}
+                    animateRows
+                    loadingCellRenderer={() => <CircularProgress size={20} sx={{marginLeft: 1}} />}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {

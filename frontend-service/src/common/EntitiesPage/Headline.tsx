@@ -93,6 +93,7 @@ const EntitiesPageHeadline: React.FC<{
     pageTitle: string;
     onAddEntity: (id: string) => void;
     refreshServerSide: (templateId: string) => void;
+    setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }> = ({
     searchInput,
     setSearchInput,
@@ -103,6 +104,7 @@ const EntitiesPageHeadline: React.FC<{
     pageTitle,
     onAddEntity,
     refreshServerSide,
+    setUpdatedEntities,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -222,6 +224,7 @@ const EntitiesPageHeadline: React.FC<{
                             disabledToolTip
                             style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
                             onSuccessCreate={onSuccessCreate}
+                            setUpdatedEntities={setUpdatedEntities}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

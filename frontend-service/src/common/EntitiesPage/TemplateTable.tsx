@@ -38,8 +38,9 @@ const TemplateTable = forwardRef<
         entities: IEntityWithDirectConnections[];
         quickFilterText: string;
         page: string;
+        setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
->(({ template, entities, quickFilterText, page }, ref) => {
+>(({ template, entities, quickFilterText, page, setUpdatedEntities }, ref) => {
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -72,7 +73,8 @@ const TemplateTable = forwardRef<
     );
 
     const [isFiltered, setIsFiltered] = useState(false);
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const initializedExternalErrors = { files: false, unique: {}, action: '' };
+    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
     const [editDialog, setEditDialog] = useState<{
         isOpen: boolean;
         isEditMode: boolean;
@@ -165,6 +167,7 @@ const TemplateTable = forwardRef<
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{ borderRadius: '5px' }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        setUpdatedEntities={setUpdatedEntities}
                     >
                         <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
                     </AddEntityButton>
@@ -193,7 +196,7 @@ const TemplateTable = forwardRef<
                                 draft={draft}
                                 openEditDialog={() => {
                                     setDraftId(draft.uniqueId);
-                                    setExternalErrors({ files: false, unique: {} });
+                                    setExternalErrors(initializedExternalErrors);
                                     setEditDialog({
                                         isOpen: true,
                                         isEditMode: false,
@@ -238,7 +241,7 @@ const TemplateTable = forwardRef<
                                 isEditMode: true,
                                 entity: currEntity,
                             });
-                            setExternalErrors({ files: false, unique: {} });
+                            setExternalErrors(initializedExternalErrors);
                             setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                             toast.dismiss();
                         },
@@ -261,10 +264,16 @@ const TemplateTable = forwardRef<
                     entityToUpdate={editDialog.entity!}
                     onError={(currEntityValues) => setEditDialog((prev) => ({ ...prev, isOpen: true, wizardValues: currEntityValues }))}
                     onSuccessUpdate={(entity) => {
-                        if (editDialog.isEditMode) entitiesTableRef.current?.updateRowDataClientSide(entity);
-                        else entitiesTableRef.current?.refreshServerSide();
+                        if (editDialog.isEditMode) {
+                            entitiesTableRef.current?.updateRowDataClientSide(entity);
+                            setUpdatedEntities(
+                                Object.values(entity.properties).filter(
+                                    (property): property is IEntity => typeof property === 'object' && 'templateId' in property,
+                                ),
+                            );
+                        } else entitiesTableRef.current?.refreshServerSide();
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setExternalErrors(initializedExternalErrors);
                     }}
                     handleClose={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));

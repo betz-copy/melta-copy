@@ -65,6 +65,7 @@ InstancesRouter.post(
     InstancesControllerMiddleware.exportEntities,
 );
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/expanded/:id',
