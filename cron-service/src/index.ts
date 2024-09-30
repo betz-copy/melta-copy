@@ -4,7 +4,7 @@ import config from './config';
 import logger from './utils/logger/logsLogger';
 import { checkForDateNotifications } from './cron/dateNotificationsCheck';
 
-const { service, rabbit } = config;
+const { service, rabbit, notifications } = config;
 
 const initializeRabbit = async () => {
     logger.info('Connecting to Rabbit...');
@@ -20,7 +20,7 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
-    await checkForDateNotifications();
+    if (notifications.displayCronDates) await checkForDateNotifications();
 
     logger.info(`Server started on port: ${service.port}`);
 };
