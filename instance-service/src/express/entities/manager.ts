@@ -1691,13 +1691,13 @@ export class EntityManager extends DefaultManagerNeo4j {
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
     }
 
-    async deletePropertiesOfTemplate(templateId: string, properties: string[]) {
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        console.dir({ currentTemplateProperties });
         const propertiesToRemove: string[] = [];
         const relationshipTemplatesToRemove: string[] = [];
-        const currentEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
         for (const property of properties) {
-            const propertyTemplate = currentEntityTemplate.properties.properties[property];
+            const propertyTemplate = currentTemplateProperties[property];
             const isStringType = propertyTemplate.type === 'string';
             propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
 

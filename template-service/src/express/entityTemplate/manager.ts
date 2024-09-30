@@ -128,7 +128,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate:IMongoEntityTemplate = await this.model
+            const deletedEntityTemplate: IMongoEntityTemplate = await this.model
                 .findByIdAndDelete(id, { session })
                 .orFail(new ServiceError(404, 'Entity Template not found'))
                 .lean()
@@ -205,8 +205,6 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                         ),
                 )
                 .map((property) => property.relationshipReference!.relationshipTemplateId!);
-
-            console.dir({ relationshipTemplateIdsToDelete }, { depth: null });
 
             await this.relationshipTemplateManager.deleteManyTemplatesByIds(relationshipTemplateIdsToDelete, session);
 

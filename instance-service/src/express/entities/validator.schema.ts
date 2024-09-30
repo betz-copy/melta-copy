@@ -268,6 +268,7 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
 export const deletePropertiesOfTemplateRequestSchema = Joi.object({
     body: {
         properties: Joi.array().items(Joi.string()).required(),
+        currentTemplateProperties: Joi.object().required(),
     },
     query: {},
     params: {

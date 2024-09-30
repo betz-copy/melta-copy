@@ -7,6 +7,8 @@ import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { MeltaTooltip } from '../../MeltaTooltip';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 interface AttachmentEditCardProps {
     value: CommonFormInputProperties;
@@ -20,6 +22,7 @@ interface AttachmentEditCardProps {
     remove: (index: number, isNewProperty: boolean) => any;
     supportChangeToRequiredWithInstances: boolean;
     supportDeleteForExistingInstances: boolean;
+    hasActions?: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -34,7 +37,10 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     remove,
     supportChangeToRequiredWithInstances,
     supportDeleteForExistingInstances,
+    hasActions,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -146,7 +152,12 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             <Grid>
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}
-                                                    disabled={!supportDeleteForExistingInstances || initialValue?.required}
+                                                    disabled={
+                                                        !supportDeleteForExistingInstances ||
+                                                        initialValue?.required ||
+                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                        hasActions
+                                                    }
                                                 >
                                                     {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                 </IconButton>

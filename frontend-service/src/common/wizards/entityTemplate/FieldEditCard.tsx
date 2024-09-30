@@ -45,6 +45,8 @@ import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import RelationshipReferenceField from './RelationshipReferenceField';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 enum dateNotificationOptions {
     day = 1,
@@ -86,6 +88,7 @@ export interface FieldEditCardProps {
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    hasActions?: boolean;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -112,7 +115,10 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    hasActions,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const isText = value.type === 'string' || value.type === 'text-area';
 
     const name = `properties[${index}].name`;
@@ -1050,7 +1056,12 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             <Grid>
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}
-                                                    disabled={!supportDeleteForExistingInstances || initialValue?.required}
+                                                    disabled={
+                                                        !supportDeleteForExistingInstances ||
+                                                        initialValue?.required ||
+                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                        hasActions
+                                                    }
                                                 >
                                                     {value.deleted ? <DeleteOff /> : <DeleteIcon />}
                                                 </IconButton>

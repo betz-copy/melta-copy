@@ -43,6 +43,7 @@ interface FieldBlockProps<PropertiesType extends string, Values extends Record<P
     supportRelationshipReference: boolean;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    hasActions?: boolean;
     draggable?: { isDraggable: false } | { isDraggable: true; dragHandleProps: DraggableProvided['dragHandleProps'] };
 }
 
@@ -68,6 +69,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    hasActions,
     draggable = { isDraggable: false },
     initialFieldCardDataOnAdd = {
         name: '',
@@ -227,6 +229,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportEditEnum,
                                                 supportRelationshipReference,
                                                 supportUnique,
+                                                hasActions,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

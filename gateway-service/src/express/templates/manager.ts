@@ -11,7 +11,6 @@ import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
     ICategory,
-    IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -553,7 +552,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         });
     }
 
-    private async checkPropertyInUsedBeforeDelete(templateId: string, properties: string[]) {
+    private async checkIfPropertyInUsedBeforeDelete(templateId: string, properties: string[]) {
         if (properties.length)
             await Promise.all([
                 this.isPropertyOfTemplateInUsedInGantts(templateId, properties),
@@ -569,16 +568,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         for (let fileIndex = 0; numOfInstances - fileIndex > 0; fileIndex += searchEntitiesChunkSize) {
             promises.push(
                 (async () => {
+                    const filePaths: string[] = [];
                     const { entities } = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
                         limit: searchEntitiesChunkSize,
                         skip: fileIndex,
                     });
 
-                    const filePaths: string[] = [];
-
                     entities.forEach(({ entity }) => {
                         Object.entries(removedFilesProperties).forEach(([filePropertyName, isMultipleFiles]) => {
                             const fileToRemove = entity.properties[filePropertyName];
+
                             if (fileToRemove) {
                                 if (isMultipleFiles) filePaths.push(...fileToRemove);
                                 else filePaths.push(fileToRemove);
@@ -620,27 +619,47 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     private async deletePropertyOfEntityTemplate(
         id: string,
         count: number,
-        properties: Record<string, IEntitySingleProperty>,
         removedProperties: string[],
         currentTemplate: IMongoEntityTemplatePopulated,
     ) {
-        const removedFilesProperties: Record<string, boolean> = {};
+        if (!removedProperties.length) return;
 
-        removedProperties.forEach((propertyToRemove) => {
-            const propertyTemplate = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
+            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-            if (propertyTemplate.format === 'fileId' || propertyTemplate.items?.format === 'fileId')
-                removedFilesProperties[propertyToRemove] = propertyTemplate.items?.format === 'fileId';
-        });
+            if (format === 'fileId' || items?.format === 'fileId') {
+                acc[propertyToRemove] = items?.format === 'fileId';
+            }
 
-        Object.keys(properties).forEach((key) => delete properties[key].isNewPropertyWithNameOfDeletedProperty);
+            return acc;
+        }, {} as Record<string, boolean>);
 
-        if (Object.keys(removedFilesProperties).length) await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
+        if (Object.keys(removedFilesProperties).length) {
+            await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
+        }
 
-        if (removedProperties.length)
-            await this.instancesService.deletePropertiesOfTemplate(id, removedProperties).catch((error) => {
-                throw new ServiceError(400, `failed to delete properties ${error}`);
+        const { err } = await trycatch(() =>
+            this.instancesService.deletePropertiesOfTemplate(id, removedProperties, currentTemplate.properties.properties),
+        );
+
+        if (err) {
+            const manipulatedTemplate = JSON.parse(JSON.stringify(currentTemplate));
+
+            Object.entries(currentTemplate.properties.properties).forEach(([name, value]) => {
+                if (value.format === 'relationshipReference' && value.relationshipReference) {
+                    const { relationshipTemplateId, ...restData } = value.relationshipReference;
+                    manipulatedTemplate.properties.properties[name].relationshipReference = restData;
+                }
             });
+
+            const updatedTemplate: Omit<IEntityTemplate, 'disabled'> = {
+                ...this.removeBasicFields(manipulatedTemplate),
+                category: currentTemplate.category._id,
+            };
+
+            await this.entityTemplateService.updateEntityTemplate(id, updatedTemplate);
+            throw err;
+        }
     }
 
     private async handleFiles(
@@ -682,7 +701,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
 
         const removedProperties: string[] = [];
-        const removedFilesProperties: Record<string, boolean> = {};
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new ServiceError(400, 'can not change template name');
@@ -690,13 +708,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if (
-                    (!newValue || ('isNewPropertyWithNameOfDeletedProperty' in newValue && newValue.isNewPropertyWithNameOfDeletedProperty)) &&
-                    !currTemplate.actions
-                ) {
-                    removedProperties.push(key);
-                    if (value.format === 'fileId' || value.items?.format === 'fileId') removedFilesProperties[key] = value.items?.format === 'fileId';
-                } else {
+                if ((!newValue || newValue?.isNewPropertyWithNameOfDeletedProperty) && !currTemplate.actions) removedProperties.push(key);
+                else {
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
                     if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
                     if (
@@ -716,7 +729,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             });
         }
 
-        await this.checkPropertyInUsedBeforeDelete(id, removedProperties);
+        await this.checkIfPropertyInUsedBeforeDelete(id, removedProperties);
 
         const { iconFileId, newDocumentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
@@ -730,6 +743,10 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
+        Object.keys(restOfTemplatePropertiesObject.properties).forEach(
+            (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropertyWithNameOfDeletedProperty,
+        );
+
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
@@ -737,14 +754,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             documentTemplatesIds: newDocumentTemplatesIds,
         });
 
-        const { err } = await trycatch(() =>
-            this.deletePropertyOfEntityTemplate(id, count, restOfTemplatePropertiesObject.properties, removedProperties, currTemplate),
-        );
-
-        if (err) {
-            await this.entityTemplateService.updateEntityTemplate(id, { ...currTemplate, category: currTemplate.category._id });
-            throw err;
-        }
+        await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);
 
         await this.instancesService.updateConstraintsOfTemplate(id, {
             uniqueConstraints,

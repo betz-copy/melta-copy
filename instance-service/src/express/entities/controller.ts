@@ -88,7 +88,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async deletePropertiesOfTemplate(req: Request, res: Response) {
-        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties));
+        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties, req.body.currentTemplateProperties));
     }
 }
 
