@@ -7,41 +7,15 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
-import { getCountByTemplateIdsRequest, searchEntitiesByTemplatesRequest } from '../../services/entitiesService';
+import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
-import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
-import { IAGGridRequest } from '../../utils/agGrid/interfaces';
-import { ISearchEntitiesByTemplatesBody, IEntity } from '../../interfaces/entities';
+import { IEntity } from '../../interfaces/entities';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
-export const fetchEntitiesByTemplates = async (
-    templates: IMongoEntityTemplatePopulated[],
-    searchInput: string,
-    templateTablesRefs: Record<string, TemplateTableRef>,
-) => {
-    const configs: ISearchEntitiesByTemplatesBody['searchConfigs'] = {};
-    templates.forEach((template) => {
-        const agGridRequestData: IAGGridRequest = {
-            filterModel: templateTablesRefs[template._id] ? templateTablesRefs[template._id].getFilterModel() : {},
-            quickFilter: searchInput,
-            sortModel: templateTablesRefs[template._id] ? templateTablesRefs[template._id].getSortModel() : [],
-            startRow: 0,
-            endRow: 5,
-        };
-
-        configs[template._id] = {
-            ...agGridToSearchEntitiesOfTemplateRequest(agGridRequestData, template),
-        };
-    });
-
-    console.log(configs);
-
-    return searchEntitiesByTemplatesRequest({ searchConfigs: configs });
-};
 
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
@@ -61,23 +35,6 @@ const TemplateTablesViewResults = forwardRef<
         templateTablesRefs: templateTablesRefs.current,
     }));
 
-    const {
-        data: entitiesByTemplates,
-        refetch: refetchEntitiesByTemplates,
-        isFetching: isLoadingEntitiesByTemplates,
-    } = useQuery(
-        ['fetchEntitiesByTemplates', templates, searchInput],
-        () => fetchEntitiesByTemplates(templates, searchInput, templateTablesRefs.current),
-        {
-            onSuccess(data) {
-                console.log('Fetched entities by templates', data);
-            },
-            onError(error) {
-                console.log('Failed to load templates counts', error);
-                toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            },
-        },
-    ); // TODO: yona - use the fetched entities by templates and give them the corect search body
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
@@ -101,25 +58,23 @@ const TemplateTablesViewResults = forwardRef<
 
     return (
         <Grid container direction="column" spacing={1}>
-            {!isLoadingEntitiesByTemplates &&
-                templates.slice(0, visibleTemplatesCount).map((template) => (
-                    <Grid item key={template._id}>
-                        <TemplateTable
-                            ref={(el) => {
-                                if (el) {
-                                    templateTablesRefs.current[template._id] = el;
-                                } else {
-                                    delete templateTablesRefs.current[template._id];
-                                }
-                            }}
-                            template={template}
-                            quickFilterText={searchInput}
-                            page={pageType}
-                            entities={entitiesByTemplates[template._id]?.entities}
-                            setUpdatedEntities={setUpdatedEntities}
-                        />
-                    </Grid>
-                ))}
+            {templates.slice(0, visibleTemplatesCount).map((template) => (
+                <Grid item key={template._id}>
+                    <TemplateTable
+                        ref={(el) => {
+                            if (el) {
+                                templateTablesRefs.current[template._id] = el;
+                            } else {
+                                delete templateTablesRefs.current[template._id];
+                            }
+                        }}
+                        template={template}
+                        quickFilterText={searchInput}
+                        page={pageType}
+                        setUpdatedEntities={setUpdatedEntities}
+                    />
+                </Grid>
+            ))}
             {visibleTemplatesCount < templates.length && (
                 <Grid item container justifyContent="center" ref={loaderRef}>
                     <CircularProgress />

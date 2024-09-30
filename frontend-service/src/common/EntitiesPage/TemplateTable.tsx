@@ -35,12 +35,11 @@ const TemplateTable = forwardRef<
     EntitiesTableOfTemplateRef<IEntity>,
     {
         template: IMongoEntityTemplatePopulated;
-        entities: IEntityWithDirectConnections[];
         quickFilterText: string;
         page: string;
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
->(({ template, entities, quickFilterText, page, setUpdatedEntities }, ref) => {
+>(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -216,7 +215,6 @@ const TemplateTable = forwardRef<
                 <EntitiesTableOfTemplate
                     ref={entitiesTableRef}
                     template={template}
-                    entities={entities.map(({ entity }) => entity)}
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
