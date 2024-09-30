@@ -2,17 +2,21 @@
 import { ClientSession } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
-import { IMongoStepInstance, IStepInstance, StepInstanceDocument, UpdateStepReqBody } from './interface';
+import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interface';
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {
+    private elasticSearchManager: ElasticSearchManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.stepInstancesCollectionName, StepInstanceSchema);
+        this.elasticSearchManager = new ElasticSearchManager(workspaceId);
     }
 
     validateStepIds(validStepIds: string[], stepIdsToCheck: string[]) {
@@ -38,7 +42,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         return result;
     }
 
-    async createStepsInstances(steps: Pick<IStepInstance, 'reviewers' | 'templateId'>[], session?: ClientSession): Promise<StepInstanceDocument[]> {
+    async createStepsInstances(steps: Pick<IStepInstance, 'reviewers' | 'templateId'>[], session?: ClientSession) {
         return this.model.insertMany(steps, { session });
     }
 
@@ -53,6 +57,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async updateStep(id: string, { processId, properties, comments, statusReview }: UpdateStepReqBody) {
+        let updatedStep: IMongoStepInstance;
         const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
         const currProcess = await processInstanceManager.getProcessById(processId, true);
 
@@ -60,31 +65,33 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         if (currProcess.archived) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, "Can`t edit an archived process's step");
 
         if (!statusReview) {
-            return this.model.findByIdAndUpdate(
-                id,
-                { properties, comments },
-                {
-                    new: true,
-                },
-            );
+            updatedStep = await this.model
+                .findByIdAndUpdate(
+                    id,
+                    { properties, comments },
+                    {
+                        new: true,
+                    },
+                )
+                .orFail(new NotFoundError('step', id))
+                .lean();
+        } else {
+            const currStep = await this.getStepById(id);
+            const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
+
+            updatedStep = await transaction(async (session) => {
+                if (currProcess.status !== updatedProcessStatus) await processInstanceManager.updateStatus(processId, updatedProcessStatus, session);
+
+                return this.model
+                    .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
+                    .orFail(new NotFoundError('step', id))
+                    .lean();
+            });
         }
+        const updatedProcess = await processInstanceManager.getProcessById(processId, true);
+        await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
 
-        const currStep = await this.getStepById(id);
-        const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
-
-        if (currProcess.status === updatedProcessStatus)
-            return this.model
-                .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true })
-                .orFail(new NotFoundError('step', id))
-                .lean();
-
-        return transaction(async (session) => {
-            await processInstanceManager.updateStatus(processId, updatedProcessStatus, session);
-            return this.model
-                .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
-                .orFail(new NotFoundError('step', id))
-                .lean();
-        });
+        return updatedStep;
     }
 
     async deleteStepsByIds(stepIds: string[], session?: ClientSession) {

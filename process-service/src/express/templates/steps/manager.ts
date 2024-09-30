@@ -4,7 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
-import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
+import { IMongoStepTemplate, IStepTemplate } from './interface';
 import { StepTemplateSchema } from './model';
 
 export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
@@ -33,7 +33,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
         if (stepDisplayNames.length > stepUniqueDisplayNames.length) throw new ValidationError('process contains duplicate step display name');
     }
 
-    async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession): Promise<StepTemplateDocument[]> {
+    async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession) {
         this.throwIfDuplicateStepName(steps);
         return this.model.insertMany(steps, { session });
     }

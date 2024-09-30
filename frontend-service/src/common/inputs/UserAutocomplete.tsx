@@ -55,7 +55,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
         ['searchUsers', mode, currentDisplayValue],
         () => {
             if (mode === 'external') return searchExternalUsersRequest(currentDisplayValue, workspace._id);
-            return searchUsersRequest({ search: currentDisplayValue, limit: 10 });
+            return searchUsersRequest({ search: currentDisplayValue || undefined, limit: 10 }).then((baseUsers) => baseUsers.users);
         },
         {
             onError: () => {
@@ -74,7 +74,12 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
             <Autocomplete
                 value={value}
                 inputValue={currentDisplayValue}
-                onChange={onChange}
+                onChange={(_e, newValue, reason) => {
+                    if (newValue) {
+                        setInputValue(newValue.displayName);
+                        onChange?.(_e, newValue, reason);
+                    }
+                }}
                 onInputChange={(_e, newValue, reason) => {
                     setInputValue(newValue);
                     onDisplayValueChange?.(_e, newValue, reason);

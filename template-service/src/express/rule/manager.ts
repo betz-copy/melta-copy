@@ -1,4 +1,4 @@
-import { Document, FilterQuery } from 'mongoose';
+import { FilterQuery } from 'mongoose';
 import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
@@ -45,7 +45,7 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
 
     async searchRules(searchBody: { search?: string; entityTemplateIds?: string[]; disabled?: boolean; limit: number; skip: number }) {
         const { search, entityTemplateIds, disabled, limit, skip } = searchBody;
-        const query: FilterQuery<IRule & Document<any, any, any>> = {};
+        const query: FilterQuery<IMongoRule> = {};
 
         if (disabled !== undefined) {
             query.disabled = disabled;

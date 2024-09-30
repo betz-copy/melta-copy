@@ -1,10 +1,10 @@
+import { ClientSession, FilterQuery, Types } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import { ClientSession, Document, FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
-import { escapeRegExp } from '../../../utils';
 import ajv from '../../../utils/ajv';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstancePropertiesValidationError, NotFoundError, ServiceError, ValidationError } from '../../error';
@@ -26,17 +26,20 @@ import {
 } from './interface';
 import { ProcessInstanceSchema } from './model';
 
-type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated & Document : IMongoProcessInstance & Document;
+type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;
 
 class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     private processTemplateManager: ProcessTemplateManager;
 
     private stepInstanceManager: StepInstanceManager;
 
+    private elasticSearchManager: ElasticSearchManager;
+
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.processInstancesCollectionName, ProcessInstanceSchema);
         this.processTemplateManager = new ProcessTemplateManager(workspaceId);
         this.stepInstanceManager = new StepInstanceManager(workspaceId);
+        this.elasticSearchManager = new ElasticSearchManager(workspaceId);
     }
 
     private static validateInstanceProperties(instanceProperties: InstanceProperties, templateProperties: IProcessDetails['properties']) {
@@ -100,7 +103,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
     async getProcessById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessInstanceType<T>> {
         const query = this.model.findById(id).orFail(new NotFoundError('process', id)).lean();
-        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessInstanceType<T>>;
+        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as unknown as Promise<ProcessInstanceType<T>>;
     }
 
     async getProcessesByTemplateId(id: string) {
@@ -131,7 +134,11 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             const [{ _id }] = await this.model.insertMany([{ ...process, steps: stepIds }], { session });
             return _id.toString();
         });
-        return this.getProcessById(processId);
+
+        const populatedProcess: IMongoProcessInstancePopulated = await this.getProcessById(processId);
+        await this.elasticSearchManager.createDocumentOnElastic(populatedProcess);
+
+        return populatedProcess;
     }
 
     async deleteProcess(id: string): Promise<IMongoProcessInstancePopulated> {
@@ -141,6 +148,8 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
             await this.stepInstanceManager.deleteStepsByIds(stepsIds, session);
             return this.model.findByIdAndDelete(id, { session }).orFail(new NotFoundError('process', id)).lean();
         });
+        await this.elasticSearchManager.deleteDocumentOnElastic(deletedProcess._id);
+
         return { ...deletedProcess, steps: processSteps };
     }
 
@@ -165,12 +174,12 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
 
         this.stepInstanceManager.validateStepIds(currProcess.steps, Object.keys(updatedData.steps));
 
-        return transaction(async (session) => {
+        const updatedProcess: IMongoProcessInstancePopulated = await transaction(async (session) => {
             await this.stepInstanceManager.updateStepsReviewers(stepsReviewers, session);
 
-            const { steps, ...updatedProcess } = updatedData;
+            const { steps, ...processData } = updatedData;
             return this.model
-                .findByIdAndUpdate(id, updatedProcess, {
+                .findByIdAndUpdate(id, processData, {
                     new: true,
                     session,
                 })
@@ -178,6 +187,10 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 .orFail(new NotFoundError('process', id))
                 .lean();
         });
+
+        await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);
+
+        return updatedProcess;
     }
 
     getProcessStatus(process: IMongoProcessInstancePopulated, updatedStep?: IMongoStepInstance) {
@@ -195,7 +208,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
     }
 
     async searchProcesses({
-        name,
+        searchText,
         reviewerId,
         ids,
         limit,
@@ -208,23 +221,30 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         ...restOfQuery
     }: IProcessInstanceSearchProperties) {
         const query: FilterQuery<ProcessInstanceDocument> = { ...restOfQuery };
-
+        let processIds: (string | undefined)[] = [];
         if (archived !== undefined) query.archived = archived;
         if (templateIds) query.templateId = { $in: templateIds };
         if (startDate) query.startDate = { $gte: startDate };
         if (endDate) query.endDate = { $lte: endDate };
-        if (name) query.name = { $regex: escapeRegExp(name) };
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };
         if (status) query.status = { $in: status };
         if (reviewerId) {
             return searchAllowedProcessInstanceForReviewerAggregation(this.model, query, reviewerId, limit, skip);
         }
 
-        return this.model
+        if (searchText) {
+            processIds = await this.elasticSearchManager.processGlobalSearch(searchText, skip, limit);
+            query._id = { $in: processIds.map((id) => new Types.ObjectId(id)) };
+        }
+
+        const processes = await this.model
             .find(query, {}, { limit, skip, sort: { createdAt: -1 } })
             .populate(config.processFields.steps)
             .lean()
             .exec();
+
+        if (processIds) processes.sort((a, b) => processIds.indexOf(a._id.toString()) - processIds.indexOf(b._id.toString()));
+        return processes;
     }
 
     async updateStatus(id: string, status: Status, session?: ClientSession) {
