@@ -38,7 +38,7 @@ const Wizard = <T extends object>({
     initialValues,
     initialStep = 0,
     isLoading,
-    submitFucntion,
+    submitFunction,
     isEditMode,
 }: PropsWithChildren<
     WizardBaseType<T> & {
@@ -46,7 +46,7 @@ const Wizard = <T extends object>({
         title: string;
         steps: StepsType<T>;
         isLoading: boolean;
-        submitFucntion: (values: T) => Promise<any>;
+        submitFunction: (values: T) => Promise<any>;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -100,7 +100,7 @@ const Wizard = <T extends object>({
                     validate={steps[activeStep].validate}
                     onSubmit={async (values, actions) => {
                         if (isLastStep) {
-                            await submitFucntion(values);
+                            await submitFunction(values);
                         } else {
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});

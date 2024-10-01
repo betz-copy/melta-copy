@@ -2,7 +2,7 @@ import { Request } from 'express';
 import passport from 'passport';
 import { BasicStrategy, BasicVerifyFunctionWithRequest } from 'passport-http';
 import { Strategy as JWTStrategy, VerifiedCallback } from 'passport-jwt';
-import { Strategy as ShragaStrategy } from 'passport-shraga';
+import { Strategy as ShragaStrategy } from '@yesodot/passport-shraga';
 import config from '../../config/index';
 
 const {

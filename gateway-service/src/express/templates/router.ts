@@ -3,7 +3,7 @@ import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
+import { createWorkspacesController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import TemplatesController from './controller';
 import { TemplatesValidator } from './middlewares';
@@ -16,6 +16,11 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getCategoriesSchema,
+    searchEntityTemplatesOfUserFromParamsSchema,
+    searchEntityTemplatesSchema,
+    searchRulesRequestSchema,
+    searchTemplatesRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
@@ -25,13 +30,16 @@ import {
 } from './validator.schema';
 
 const {
-    templateService: { url, requestTimeout },
+    templateService: { url, requestTimeout, baseRoute },
     service: { uploadsFolderPath },
 } = config;
 
 const TemplatesServiceProxy = createProxyMiddleware({
-    target: url,
-    onProxyReq: fixRequestBody,
+    target: `${url}${baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: requestTimeout,
 });
 
@@ -47,14 +55,14 @@ templatesRouter.get('/all', AuthorizerControllerMiddleware.userHasSomePermission
 templatesRouter.get('/categories', AuthorizerControllerMiddleware.userHasSomePermissions, TemplatesServiceProxy);
 templatesRouter.post(
     '/categories',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(createCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.createCategory,
 );
 templatesRouter.put(
     '/categories/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(updateCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.updateCategory,
@@ -64,6 +72,13 @@ templatesRouter.delete(
     ValidateRequest(deleteCategorySchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.deleteCategory,
+);
+
+templatesRouter.post(
+    '/categories/search',
+    ValidateRequest(getCategoriesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchCategories,
 );
 
 // entities (templates)
@@ -79,16 +94,28 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
+templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
+templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
+    wrapMulter(
+        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
+            { name: 'file', maxCount: 1 },
+            { name: 'files' },
+        ]),
+    ),
     ValidateRequest(createEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanCreateEntityTemplateUnderCategory,
     templatesControllerMiddleware.createEntityTemplate,
 );
 templatesRouter.put(
     '/entities/:id',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([{ name: 'file', maxCount: 1 }, { name: 'files' }]),
+    wrapMulter(
+        multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).fields([
+            { name: 'file', maxCount: 1 },
+            { name: 'files' },
+        ]),
+    ),
     ValidateRequest(updateEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.updateEntityTemplate,
@@ -103,6 +130,20 @@ templatesRouter.delete(
     ValidateRequest(deleteEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityTemplate,
+);
+
+templatesRouter.post(
+    '/entities/search/template/:userId',
+    ValidateRequest(searchEntityTemplatesOfUserFromParamsSchema),
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
+);
+
+templatesRouter.post(
+    '/entities/search/template',
+    ValidateRequest(searchEntityTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
 );
 
 // relationships (templates)
@@ -131,6 +172,13 @@ templatesRouter.get(
     templatesControllerMiddleware.getAllRelationshipTemplates,
 );
 
+templatesRouter.post(
+    '/relationships/search',
+    ValidateRequest(searchTemplatesRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRelationshipTemplates,
+);
+
 // rules (templates)
 templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
 templatesRouter.patch(
@@ -146,5 +194,12 @@ templatesRouter.delete(
     templatesControllerMiddleware.deleteRuleById,
 );
 templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+
+templatesRouter.post(
+    '/rules/search',
+    ValidateRequest(searchRulesRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRulesTemplates,
+);
 
 export default templatesRouter;

@@ -14,9 +14,20 @@ interface NavButtonProps {
     onChangeToActive: (isActive: boolean) => void;
     isActiveButton?: boolean;
     text: string;
+    onClick?: () => void;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, isActiveButton, title }) => {
+const NavButton: React.FC<NavButtonProps> = ({
+    to,
+    isDrawerOpen,
+    text,
+    children,
+    disabled = false,
+    onChangeToActive,
+    isActiveButton,
+    onClick,
+    title,
+}) => {
     const [isActive] = useRoute(to);
 
     useEffect(() => {
@@ -27,7 +38,11 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
         <Link
             href={to}
             onClick={(e) => {
-                if (disabled) e.preventDefault();
+                if (disabled) {
+                    e.preventDefault();
+                    return;
+                }
+                onClick?.();
             }}
             className="nav-button"
             style={{ textDecoration: 'none', color: 'inherit' }}

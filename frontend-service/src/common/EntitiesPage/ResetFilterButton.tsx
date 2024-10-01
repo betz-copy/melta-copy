@@ -2,9 +2,10 @@ import React from 'react';
 import i18next from 'i18next';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
+import { IEntity } from '../../interfaces/entities';
 
 const ResetFilterButton: React.FC<{
-    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<any>>;
+    entitiesTableRef: React.RefObject<EntitiesTableOfTemplateRef<IEntity> | undefined>;
     disableButton: boolean;
 }> = ({ entitiesTableRef, disableButton }) => {
     return (

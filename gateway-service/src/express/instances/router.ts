@@ -2,8 +2,8 @@ import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
 import multer from 'multer';
 import config from '../../config';
+import { wrapMulter, createWorkspacesController } from '../../utils/express';
 import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
-import { createWorkspacesController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { InstancesController } from './controller';
 import { InstancesValidator } from './middlewares';
@@ -23,8 +23,11 @@ import {
 const { instanceService } = config;
 
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceService.url,
-    onProxyReq: fixRequestBody,
+    target: `${instanceService.url}${instanceService.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: instanceService.requestTimeout,
 });
 
@@ -52,6 +55,7 @@ InstancesRouter.post(
     InstancesControllerMiddleware.exportEntities,
 );
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/expanded/:id',
@@ -62,14 +66,14 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(createEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     InstancesControllerMiddleware.createEntityInstance,
 );
 InstancesRouter.put(
     '/entities/:id',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesValidatorMiddleware.validateUserCanIgnoreRules,
@@ -77,7 +81,7 @@ InstancesRouter.put(
 );
 InstancesRouter.post(
     '/entities/:id/duplicate',
-    multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any(),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     ValidateRequest(updateEntityInstanceSchema),
     InstancesValidatorMiddleware.validateUserCanWriteEntityInstance,
     InstancesControllerMiddleware.duplicateEntityInstance,

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
@@ -17,6 +17,13 @@ interface InstanceFileInputProps {
     value: File | undefined;
     error: string | undefined;
     setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    setExternalErrors?: React.Dispatch<
+        React.SetStateAction<{
+            files: boolean;
+            unique: {};
+            action: string;
+        }>
+    >;
 }
 
 export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
@@ -27,10 +34,10 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     value,
     error,
     setFieldTouched,
+    setExternalErrors,
 }) => {
     const fileId = value?.name;
-    const initialFileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
-    const [fileName, setFileName] = useState<string | undefined>(initialFileName);
+    const fileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
 
     return (
         <Box
@@ -53,15 +60,15 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
                 fileName={fileName}
                 onDropFile={(acceptedFile) => {
-                    setFileName(acceptedFile.name);
                     setFieldValue(fileFieldName, acceptedFile);
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
-                    setFileName(undefined);
                     setFieldValue(fileFieldName, undefined);
                     setFieldTouched(fileFieldName, true, false);
+                    setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 errorText={error}
             />

@@ -12,7 +12,7 @@ import {
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { Box } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
@@ -166,6 +166,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     isFiltered: () => boolean;
     getFilterModel: () => ReturnType<GridApi<Data>['getFilterModel']>;
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
+    scrollIntoView: () => void;
     showSideBar: () => void;
 };
 
@@ -204,7 +205,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const [_, navigate] = useLocation();
 
-        const gridRef = useRef<AgGridReact<Data>>(null);
+        const gridRef = useRef<AgGridReact<Data> & HTMLDivElement>(null);
+        const tableRef = useRef<HTMLDivElement>(null);
+
         // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
@@ -244,6 +247,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 },
                 getSortModel() {
                     return getSortModel();
+                },
+                scrollIntoView: () => {
+                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
                 },
                 showSideBar() {
                     const gridApi = gridRef.current?.api;
@@ -362,6 +368,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
                 }}
+                ref={tableRef}
             >
                 <AgGridReact<Data>
                     ref={gridRef}
@@ -421,6 +428,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             }
                         }
                     }}
+                    animateRows
+                    loadingCellRenderer={() => <CircularProgress size={20} sx={{marginLeft: 1}} />}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {

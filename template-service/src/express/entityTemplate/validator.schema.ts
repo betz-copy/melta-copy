@@ -55,6 +55,7 @@ export const createEntityTemplateSchema = Joi.object({
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
+        actions: Joi.forbidden(),
     },
     query: {},
     params: {},
@@ -73,6 +74,7 @@ export const updateEntityTemplateSchema = Joi.object({
         propertiesPreview: previewPropertiesSchema.required(),
         enumPropertiesColors: enumPropertiesColorsSchema,
         documentTemplatesIds: Joi.array().items(Joi.string()),
+        actions: Joi.string(),
     }).min(1),
     query: {},
     params: {
@@ -84,6 +86,17 @@ export const updateEntityTemplateSchema = Joi.object({
 export const updateEntityTemplateStatusSchema = Joi.object({
     body: {
         disabled: Joi.boolean().required(),
+    },
+    query: {},
+    params: {
+        templateId: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/entities/templates/:templateId/actions
+export const updateEntityTemplateActionSchema = Joi.object({
+    body: {
+        actions: Joi.string().required(),
     },
     query: {},
     params: {

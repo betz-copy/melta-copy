@@ -7,10 +7,12 @@ import {
     MoreVertOutlined as OptionsIcon,
     DoDisturbAlt as DisabledIcon,
     ContentCopy as DuplicateIcon,
+    ControlPoint as AddIcon,
 } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
+import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
@@ -18,9 +20,12 @@ export const CardMenu: React.FC<{
     disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick }) => {
+    onAddActionsClick?: MouseEventHandler;
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
+
+    const currentUser = useUserStore((state) => state.user);
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -63,6 +68,17 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.duplicate')}
                         icon={<DuplicateIcon color="action" />}
+                    />
+                )}
+
+                {onAddActionsClick && currentUser.isRoot && (
+                    <MenuButton
+                        onClick={(e) => {
+                            onAddActionsClick(e);
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.addActions')}
+                        icon={<AddIcon color="action" />}
                     />
                 )}
 

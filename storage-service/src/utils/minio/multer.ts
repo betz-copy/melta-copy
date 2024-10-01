@@ -12,7 +12,7 @@ export class MinioStorage extends DefaultManagerMinio {
     async handleFile(_req: Request, file: Express.Multer.File) {
         const path = generatePath(file.originalname);
 
-        await this.minioClient.uploadFileStream(file.stream, path, { 'content-type': file.mimetype });
+        await this.minioClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
         return { ...(await this.minioClient.statFile(path)), path };
     }
 

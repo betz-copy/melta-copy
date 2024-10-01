@@ -87,7 +87,7 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
             title={i18next.t('wizard.workspace.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

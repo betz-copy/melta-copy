@@ -1,8 +1,8 @@
-import { ClientSession, FilterQuery, Model, Types, connection } from 'mongoose';
+import { ClientSession, connection, FilterQuery, Model, PipelineStage, Types } from 'mongoose';
 import config from '../../config';
 import { IProcessInstance, ProcessInstanceDocument } from '../../express/instances/processes/interface';
 import { IStepInstance } from '../../express/instances/steps/interface';
-import { IMongoProcessTemplatePopulated, IProcessTemplate, ProcessTemplateDocument } from '../../express/templates/processes/interface';
+import { IMongoProcessTemplate, IMongoProcessTemplatePopulated, IProcessTemplate } from '../../express/templates/processes/interface';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {
     let ret;
@@ -18,7 +18,7 @@ export const getTemplateAggregation = async (model: Model<IProcessInstance> | Mo
     return model.aggregate([
         {
             $match: {
-                _id: Types.ObjectId(id),
+                _id: new Types.ObjectId(id),
             },
         },
         {
@@ -50,12 +50,12 @@ export const getTemplateAggregation = async (model: Model<IProcessInstance> | Mo
 
 export const getProcessTemplatesByReviewerIdAggregation = async (
     processTemplateModel: Model<IProcessTemplate>,
-    query: FilterQuery<ProcessTemplateDocument>,
+    query: FilterQuery<IMongoProcessTemplate>,
     reviewerId: string,
     limit: number,
     skip: number,
 ): Promise<IMongoProcessTemplatePopulated[]> => {
-    const aggregationPipeline: FilterQuery<ProcessTemplateDocument>[] = [
+    const aggregationPipeline: PipelineStage[] = [
         { $match: query },
         {
             $lookup: {
@@ -122,7 +122,7 @@ export const searchAllowedProcessInstanceForReviewerAggregation = (
     limit: number,
     skip: number,
 ) => {
-    const aggregationPipeline: FilterQuery<ProcessInstanceDocument>[] = [
+    const aggregationPipeline: PipelineStage[] = [
         { $match: query },
         {
             $lookup: {

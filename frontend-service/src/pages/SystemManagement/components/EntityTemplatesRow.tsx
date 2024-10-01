@@ -31,9 +31,13 @@ import { updateCategoryRequest } from '../../../services/templates/categoriesSer
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { environment } from '../../../globals';
+import { CodeEditorDialog } from './codeEditor';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getFileName } from '../../../utils/getFileName';
+
+const { infiniteScrollPageCount } = environment.processInstances;
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -66,6 +70,12 @@ interface EntityTemplateCardProps {
             entityTemplateId: string | null;
         }>
     >;
+    setAddActionsDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -81,6 +91,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     entityTemplate,
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
+    setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
@@ -133,8 +144,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     <Grid item container flexBasis="10%">
                         {isHoverOnCard && (
                             <CardMenu
-                                onEditClick={() => setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate })}
-                                onDuplicateClick={() =>
+                                onEditClick={() => {
+                                    setEntityTemplateWizardDialogState({ isWizardOpen: true, entityTemplate });
+                                }}
+                                onDuplicateClick={() => {
                                     setEntityTemplateWizardDialogState({
                                         isWizardOpen: true,
                                         entityTemplate: {
@@ -145,9 +158,10 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                             propertiesTypeOrder,
                                             uniqueConstraints,
                                         },
-                                    })
-                                }
+                                    });
+                                }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
+                                onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
@@ -288,6 +302,12 @@ interface CategoryEntitiesBoxProps {
             entityTemplateId: string | null;
         }>
     >;
+    setAddActionsDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -304,6 +324,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     entityTemplatesWithCategory,
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
+    setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
 }) => {
@@ -403,6 +424,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityTemplate={entityTemplate}
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                    setAddActionsDialogState={setAddActionsDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                 />
                                             )}
@@ -444,6 +466,14 @@ const EntityTemplatesRow: React.FC = () => {
         entityTemplate: null,
     });
 
+    const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
+        isWizardOpen: boolean;
+        entityTemplate: IMongoEntityTemplatePopulated | null;
+    }>({
+        isWizardOpen: false,
+        entityTemplate: null,
+    });
+
     const getEntityTemplatesToShowGroupedByCategories = (
         entityTemplatesToShow: IMongoEntityTemplatePopulated[],
     ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
@@ -465,6 +495,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 if (data.disabled) toast.success(i18next.t('wizard.entityTemplate.disabledSuccessfully'));
                 else toast.success(i18next.t('wizard.entityTemplate.activatedSuccessfully'));
             },
@@ -485,6 +516,7 @@ const EntityTemplatesRow: React.FC = () => {
                 });
 
                 setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null });
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('wizard.entityTemplate.deletedSuccessfully'));
                 try {
                     const relationshipTemplates = await getAllRelationshipTemplatesRequest();
@@ -512,6 +544,7 @@ const EntityTemplatesRow: React.FC = () => {
         {
             onSuccess(data) {
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) => entityTemplateMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 setLoadedEntityTemplateId('');
             },
             onError(error: AxiosError) {
@@ -579,29 +612,53 @@ const EntityTemplatesRow: React.FC = () => {
 
             <DragDropContext onDragEnd={onDragEnd}>
                 <Grid container gap="30px" marginTop="30px">
-                    {getEntityTemplatesToShowGroupedByCategories(
-                        Array.from(entityTemplates.values())
-                            .filter(
-                                (entityTemplate) =>
-                                    categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
-                                    (searchText === '' || entityTemplate.displayName.includes(searchText)),
-                            )
-                            .sort((a, b) => {
-                                const res = templatesCompareFunc(a, b);
-                                if (res === 0) return Number(a.disabled) - Number(b.disabled);
-                                return res;
-                            }),
-                    ).map((entityTemplatesWithCategory) => (
-                        <Grid item key={entityTemplatesWithCategory.category._id}>
-                            <CategoryEntitiesBox
-                                entityTemplatesWithCategory={entityTemplatesWithCategory}
-                                setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
-                                setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
-                                updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
-                                loadedEntityTemplateId={loadedEntityTemplateId}
-                            />
-                        </Grid>
-                    ))}
+                    <InfiniteScroll<{
+                        category: IMongoCategory;
+                        entityTemplates: IMongoEntityTemplatePopulated[];
+                    }>
+                        queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
+                        queryFunction={({ pageParam }) =>
+                            getEntityTemplatesToShowGroupedByCategories(
+                                Array.from(entityTemplates.values())
+                                    .filter(
+                                        (entityTemplate) =>
+                                            categoriesToShow.some((categoryToShow) => categoryToShow._id === entityTemplate.category._id) &&
+                                            (searchText === '' || entityTemplate.displayName.includes(searchText)),
+                                    )
+                                    .sort((a, b) => {
+                                        const res = templatesCompareFunc(a, b);
+                                        if (res === 0) return Number(a.disabled) - Number(b.disabled);
+                                        return res;
+                                    }),
+                            ).splice(pageParam, infiniteScrollPageCount)
+                        }
+                        onQueryError={(error) => {
+                            // eslint-disable-next-line no-console
+                            console.log('failed to search process templates error:', error);
+                            toast.error(i18next.t('failedToLoadResults'));
+                        }}
+                        getItemId={(entityTemplatesWithCategory) => entityTemplatesWithCategory.category._id}
+                        getNextPageParam={(lastPage, allPages) => {
+                            const nextPage = allPages.length * infiniteScrollPageCount;
+                            return lastPage.length ? nextPage : undefined;
+                        }}
+                        endText={i18next.t('noSearchLeft')}
+                        emptyText={i18next.t('failedToGetTemplates')}
+                        useContainer={false}
+                    >
+                        {(entityTemplatesWithCategory) => (
+                            <Grid item key={entityTemplatesWithCategory.category._id}>
+                                <CategoryEntitiesBox
+                                    entityTemplatesWithCategory={entityTemplatesWithCategory}
+                                    setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                    setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
+                                    updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
+                                    loadedEntityTemplateId={loadedEntityTemplateId}
+                                    setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
+                                />
+                            </Grid>
+                        )}
+                    </InfiniteScroll>
                 </Grid>
             </DragDropContext>
             <EntityTemplateWizard
@@ -616,6 +673,13 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
                 onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
                 isLoading={deleteTemplateIsLoading}
+            />
+            <CodeEditorDialog
+                open={addActionsToEntityTemplateDialogState.isWizardOpen}
+                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+                searchText={searchText}
+                categoriesToShow={categoriesToShow}
             />
         </Grid>
     );

@@ -1,22 +1,32 @@
 import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
-import Server from './express/server';
 import config from './config';
+import Server from './express/server';
+import ElasticClient from './utils/elastic';
 import logger from './utils/logger/logsLogger';
 
 const { mongo, service } = config;
 
-
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, useCreateIndex: true });
+    await mongoose.connect(mongo.url);
 
     logger.info('Mongo connection established');
 };
 
+const initializeElasticsearch = async () => {
+    logger.info('Connecting to elastic...');
+
+    await ElasticClient.initialize();
+
+    logger.info('elastic connection established');
+};
+
 const main = async () => {
     await initializeMongo();
+
+    await initializeElasticsearch();
 
     const server = new Server(service.port);
 

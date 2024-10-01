@@ -51,8 +51,9 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
         {
             onSuccess: (data) => {
                 queryClient.setQueryData<IRuleMap>('getRules', (ruleMap) => ruleMap!.set(data._id, data));
+                queryClient.invalidateQueries(['searchRulesTemplates']);
                 if (isEditMode) {
-                    toast.success(i18next.t('wizard.rule.editedSuccefully'));
+                    toast.success(i18next.t('wizard.rule.editedSuccessfully'));
                 } else {
                     toast.success(i18next.t('wizard.rule.createdSuccessfully'));
                 }
@@ -78,7 +79,7 @@ const RuleWizard: React.FC<WizardBaseType<RuleWizardValues>> = ({
             title={i18next.t('wizard.rule.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

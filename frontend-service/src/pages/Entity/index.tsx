@@ -105,7 +105,10 @@ const ConnectionsTable: React.FC<{
 
     const [isExpand, setIsExpand] = useState(false);
     const [isFiltered, setIsFiltered] = useState(false);
-    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntityExpanded['connections'][number]>>(null);
+
+    type EntityRef = IEntity | { relationship: Pick<IRelationship, 'properties' | 'templateId'>; sourceEntity: IEntity; destinationEntity: IEntity };
+
+    const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<EntityRef>>(null);
 
     const [createRelationshipDialogState, setCreateRelationshipDialogState] = useState<{
         isOpen: boolean;
