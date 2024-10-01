@@ -1692,7 +1692,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
-        console.dir({ currentTemplateProperties });
         const propertiesToRemove: string[] = [];
         const relationshipTemplatesToRemove: string[] = [];
 

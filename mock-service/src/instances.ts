@@ -95,9 +95,7 @@ export const createRelationshipInstances = async (
                             console.log('Relationship already exists, skipping...');
                         }
 
-                        // throw error;
-                        console.log({ error });
-                        return '';
+                        throw error;
                     }
                 });
             });
