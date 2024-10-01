@@ -4,6 +4,7 @@ import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleBut
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import { GridApi } from '@ag-grid-community/core';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -19,42 +20,55 @@ export const GlobalSearchBar: React.FC<{
     inputValue?: string;
     setInputValue?: (newInputValue: string) => void;
     onSearch: (searchValue: string) => void;
+    gridApi?: GridApi;
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
-    const [searchTerm, setSearchTerm] = useState(inputValue ?? '');
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+    const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
-    const debounceTimeoutRef = useRef<any>(null);
+
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
     useEffect(() => {
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-
-        debounceTimeoutRef.current = setTimeout(() => {
-            onSearch(searchTerm);
+        const handler = setTimeout(() => {
+            if (debouncedSearchValue !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = debouncedSearchValue;
+                onSearch(debouncedSearchValue);
+                if (gridApi) {
+                    gridApi.setQuickFilter(debouncedSearchValue);
+                }
+            }
         }, 500);
 
         return () => {
-            if (debounceTimeoutRef.current) {
-                clearTimeout(debounceTimeoutRef.current);
-            }
+            clearTimeout(handler);
         };
-    }, [searchTerm, onSearch]);
+    }, [debouncedSearchValue, gridApi, onSearch]);
 
     return (
         <SearchInput
-            value={searchTerm}
+            value={debouncedSearchValue}
             onChange={(newSearchValue) => {
-                setSearchTerm(newSearchValue);
+                setDebouncedSearchValue(newSearchValue);
                 setInputValue?.(newSearchValue);
             }}
+            // dont need, has debounce//
+            // onKeyDown={(event) => {
+            //     if (event.key === 'Enter') {
+            //         onSearch(valueForSearchButtonRef.current);
+            //     }
+            // }}
             endAdornmentChildren={
-                <IconButton style={{ color: theme.palette.primary.main }} onClick={() => onSearch(searchTerm)} sx={{ padding: 0 }} disableRipple>
+                <IconButton
+                    style={{ color: theme.palette.primary.main }}
+                    onClick={() => onSearch(valueForSearchButtonRef.current)}
+                    sx={{ padding: 0 }}
+                    disableRipple
+                >
                     <img
                         color="#1E2775"
                         width="14px"
@@ -76,7 +90,6 @@ export const GlobalSearchBar: React.FC<{
         />
     );
 };
-
 const EntitiesPageHeadline: React.FC<{
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
