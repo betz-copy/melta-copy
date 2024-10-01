@@ -189,6 +189,9 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
+    permission: {
+        infiniteScrollPageCount: 13,
+    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,

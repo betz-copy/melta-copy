@@ -678,6 +678,8 @@ const EntityTemplatesRow: React.FC = () => {
                 open={addActionsToEntityTemplateDialogState.isWizardOpen}
                 handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
                 entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+                searchText={searchText}
+                categoriesToShow={categoriesToShow}
             />
         </Grid>
     );

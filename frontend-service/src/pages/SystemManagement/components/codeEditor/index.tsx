@@ -16,6 +16,7 @@ import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { IMongoCategory } from '../../../../interfaces/categories';
 
 const {
     systemManagement: {
@@ -27,7 +28,9 @@ const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-}> = ({ open, handleClose, entityTemplate }) => {
+    searchText: string;
+    categoriesToShow: IMongoCategory[];
+}> = ({ open, handleClose, entityTemplate, searchText, categoriesToShow }) => {
     if (!entityTemplate) return null;
 
     const queryClient = useQueryClient();
@@ -62,6 +65,8 @@ const CodeEditorDialog: React.FC<{
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                     entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                 );
+
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
                 handleClose();
             },
