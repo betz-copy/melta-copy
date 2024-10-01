@@ -16,7 +16,6 @@ type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };
 
-
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
@@ -34,7 +33,6 @@ const TemplateTablesViewResults = forwardRef<
     useImperativeHandle(ref, () => ({
         templateTablesRefs: templateTablesRefs.current,
     }));
-
 
     useEffect(() => {
         const observer = new IntersectionObserver((entries) => {
