@@ -7,7 +7,10 @@ import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunctio
 import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
 const checkPropertyInUsed = ({ variable, property }: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
-    if (variable.entityTemplateId === entityId && properties.includes(property)) {
+    if (
+        (variable.entityTemplateId === entityId || variable.aggregatedRelationship?.otherEntityTemplateId === entityId) &&
+        properties.includes(property)
+    ) {
         throw new ServiceError(400, 'can not delete field that used in rules', {
             errorCode: config.errorCodes.failedToDeleteField,
             type: 'rules',
