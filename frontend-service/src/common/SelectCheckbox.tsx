@@ -73,7 +73,7 @@ export const MenuItemContent: React.FC<{
                                 letterSpacing: '0em',
                                 textAlign: 'right',
                                 color: '#101440',
-                                width: '105px',
+                                width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
                                 textOverflow: 'ellipsis',

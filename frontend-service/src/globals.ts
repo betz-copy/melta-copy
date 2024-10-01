@@ -99,7 +99,7 @@ export const environment = {
         iFrameDimensionKey: 'iFrameDimension_',
         iFramesOrderKey: 'iFramesOrder',
         sideBarOpenKey: 'isSideBarOpen',
-        infiniteScrollPageCount: 4,
+        infiniteScrollPageCount: 6,
         sideBarWidth: 200,
         iFrameSpace: 10,
         sideBarOpenWidth: 320,

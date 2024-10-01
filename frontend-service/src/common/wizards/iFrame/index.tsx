@@ -107,7 +107,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
             title={i18next.t('wizard.iFrame.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

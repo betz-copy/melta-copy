@@ -11,7 +11,7 @@ import {
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
-import { Box, Button, Grid, IconButton, MenuItem, Slide, Typography, useTheme } from '@mui/material';
+import { Box, Button, Grid, IconButton, Menu, MenuItem, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
@@ -74,6 +74,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         console.log('you click!');
 
         event.stopPropagation();
+        // event.preventDefault();
         navigate(`/iframes/${id}`);
     };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
@@ -316,7 +317,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                         {iFramesInSidebar?.map((iFrame) => (
                                             <MenuItem
                                                 key={iFrame._id}
-                                                onClick={(event) => handleMenuItemClick(event, iFrame._id)}
+                                                onClick={(event) => {
+                                                    handleMenuItemClick(event, iFrame._id);
+                                                }}
+                                                // autoFocus={sele}
                                                 sx={{
                                                     '&:hover': {
                                                         backgroundColor: '#B8B8B8',

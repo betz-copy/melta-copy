@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import multer from 'multer';
 import IFramesController from './controller';
-import { createWorkspacesController } from '../../utils/express';
+import { createWorkspacesController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { createIFrameSchema, deleteIFrameSchema, getIFrameByIdSchema, searchIFramesSchema, updateIFrameSchema } from './validator.schema';
 import { IFramesValidator } from './middlewares';
@@ -26,7 +26,7 @@ iFramesRouter.get(
 
 iFramesRouter.post(
     '/',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(createIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanCreateIFrame,
@@ -35,7 +35,7 @@ iFramesRouter.post(
 
 iFramesRouter.put(
     '/:iFrameId',
-    multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file'),
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(updateIFrameSchema),
     AuthorizerControllerMiddleware.userCanWriteTemplates,
     IFramesValidatorMiddleware.validateUserCanUpdateIFrame,

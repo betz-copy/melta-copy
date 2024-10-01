@@ -12,6 +12,7 @@ import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { Resizable } from './ResizableBox';
 import { environment } from '../../globals';
+import { LocalStorage } from '../../utils/localStorage';
 
 const { infiniteScrollPageCount, sideBarWidth, iFrameDimensionKey, sideBarOpenKey } = environment.iFrames;
 
@@ -43,14 +44,14 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     }, [allIFrames, queryClient, iFrameDeleted]);
 
     useEffect(() => {
-        const open: string = localStorage.getItem(sideBarOpenKey) ?? 'false';
+        const open = LocalStorage.get(sideBarOpenKey);
         Object.keys(localStorage)
             .filter((key) => key.startsWith(iFrameDimensionKey))
             .forEach((key) => {
                 const value = JSON.parse(localStorage.getItem(key)!);
-                if (isSideBarOpen && open !== 'true') {
+                if (isSideBarOpen && !open) {
                     value.width *= sideBarWidthPrec;
-                } else if (open === 'true' && !isSideBarOpen) {
+                } else if (open && !isSideBarOpen) {
                     value.width /= sideBarWidthPrec;
                 }
 

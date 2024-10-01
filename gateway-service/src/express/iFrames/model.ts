@@ -12,8 +12,8 @@ const IFrameSchema = new mongoose.Schema<IFrameDocument>(
             required: true,
         },
         categoryIds: {
-            type: [String] || String,
-            require: true,
+            type: [String],
+            required: true,
         },
         iconFileId: {
             type: String,

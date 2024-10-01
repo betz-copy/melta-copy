@@ -922,8 +922,8 @@ export default {
         searchFailed: 'נכשל לחפש קישורים חיצוניים',
         noIFramesFound: 'לא נמצאו קישורים חיצוניים',
         favoritesIFrames: 'מועדפים:',
-        filterDrags: 'פילטור גרירות',
-        addIFrame: 'הוספת קישור חיצוני',
+        filterDrags: 'איפוס גרירות',
+        addIFrame: 'הוסף קישור חיצוני',
     },
     gantts: {
         searchFailed: 'נכשל לחפש טבלאות',

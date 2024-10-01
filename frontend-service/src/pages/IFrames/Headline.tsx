@@ -96,8 +96,9 @@ const IFrameHeadline: React.FC<{
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textAlign: 'right',
-                                        padding: 20,
+                                        padding: 15,
                                         fontWeight: 'bold',
+                                        maxWidth: '240px',
                                     }}
                                     fontSize="20px"
                                 >
