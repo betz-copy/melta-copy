@@ -36,7 +36,6 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
-        console.log('1');
         const templateId: string = await transaction(async (session) => {
             console.log('2');
             const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);

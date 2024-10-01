@@ -20,8 +20,7 @@ import { IMongoIFrame } from '../../interfaces/iFrames';
 import { deleteIFrame, iFrameObjectToIFrameForm, updateIFrame } from '../../services/iFramesService';
 import { useUserStore } from '../../stores/user';
 
-const 
-IFrameHeadline: React.FC<{
+const IFrameHeadline: React.FC<{
     iFrame: IMongoIFrame;
     setIFramesOrder?: (value) => void;
     isIFramePage: boolean;
@@ -115,6 +114,7 @@ IFrameHeadline: React.FC<{
                                 <Grid sx={{ display: 'flex' }}>
                                     {currentUser.currentWorkspacePermissions.admin && (
                                         <>
+                                            {/*  Todo: duplicate iframe */}
                                             <Grid>
                                                 <MeltaTooltip title={i18next.t('actions.delete')}>
                                                     <IconButton

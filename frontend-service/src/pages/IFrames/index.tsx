@@ -13,7 +13,7 @@ import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { Resizable } from './ResizableBox';
 import { environment } from '../../globals';
 
-const { infiniteScrollPageCount } = environment.iFrames;
+const { infiniteScrollPageCount, sideBarWidth, iFrameDimensionKey, sideBarOpenKey } = environment.iFrames;
 
 const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) => {
     const queryClient = useQueryClient();
@@ -34,7 +34,6 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     const queryKey = ['allIFrames', searchInput, iFramesOrder];
     const allIFrames = queryClient.getQueryData<IMongoIFrame[]>('allIFrames');
     const screenWidth = window.innerWidth;
-    const sideBarWidth = 200;
     const sideBarWidthPrec = (screenWidth - sideBarWidth) / screenWidth;
 
     useEffect(() => {
@@ -44,9 +43,9 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
     }, [allIFrames, queryClient, iFrameDeleted]);
 
     useEffect(() => {
-        const open: string = localStorage.getItem('isSideBarOpen') ?? 'false';
+        const open: string = localStorage.getItem(sideBarOpenKey) ?? 'false';
         Object.keys(localStorage)
-            .filter((key) => key.startsWith('iFrameDimension_'))
+            .filter((key) => key.startsWith(iFrameDimensionKey))
             .forEach((key) => {
                 const value = JSON.parse(localStorage.getItem(key)!);
                 if (isSideBarOpen && open !== 'true') {
@@ -58,7 +57,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                 localStorage.setItem(key, JSON.stringify(value));
             });
 
-        localStorage.setItem('isSideBarOpen', `${isSideBarOpen}`);
+        localStorage.setItem(sideBarOpenKey, `${isSideBarOpen}`);
         setIsDimensionsChange(true);
     }, [isSideBarOpen]);
 
@@ -77,7 +76,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                 style={{
                     display: 'flex',
                     flexWrap: 'wrap',
-                    paddingLeft: isSideBarOpen ? 25 : 13,
+                    paddingLeft: isSideBarOpen ? 30 : 25,
                     width: '100%',
                     boxSizing: 'border-box',
                 }}
@@ -124,6 +123,7 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                             width="100%"
                                             style={{
                                                 borderRadius: '15px 15px 25px 15px',
+                                                boxShadow: '4px 4px 8px rgba(0, 0, 0, 0.2)',
                                                 overflow: 'hidden',
                                             }}
                                         >

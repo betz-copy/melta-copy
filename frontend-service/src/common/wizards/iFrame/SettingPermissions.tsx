@@ -14,6 +14,8 @@ const settingIFramesPermissionsSchema = {
 };
 
 const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
+    console.log({ handleChange });
+
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
@@ -49,7 +51,6 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                 checked={selectedCategories.length === allowedCategoriesIds.length}
                                 onChange={(e) => {
                                     handleAllSelected(e.target.checked);
-                                    handleChange({ ...values, categoryIds: selectedCategories });
                                 }}
                             />
                         }
@@ -68,12 +69,7 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
                                         <MeltaCheckbox
                                             checked={selectedCategories.includes(currentCategory._id)}
                                             onChange={() => {
-                                                console.log('1');
-
                                                 handleCheckboxChange(currentCategory._id);
-                                                console.log('2');
-
-                                                handleChange({ ...values, categoryIds: selectedCategories });
                                             }}
                                         />
                                     }

@@ -96,7 +96,15 @@ export const environment = {
         maxNumOfCharactersNotInFullWidth: 700,
     },
     iFrames: {
+        iFrameDimensionKey: 'iFrameDimension_',
+        iFramesOrderKey: 'iFramesOrder',
+        sideBarOpenKey: 'isSideBarOpen',
         infiniteScrollPageCount: 4,
+        sideBarWidth: 200,
+        iFrameSpace: 10,
+        sideBarOpenWidth: 320,
+        sideBarCloseWidth: 140,
+        relativeMaxHight: 160,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,

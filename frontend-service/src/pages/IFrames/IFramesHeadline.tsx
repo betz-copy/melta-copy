@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { List, Grid, IconButton, Select, Box, MenuItem } from '@mui/material';
-import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { Grid, IconButton } from '@mui/material';
+import { DropResult } from 'react-beautiful-dnd';
 import FilterAltOffIcon from '@mui/icons-material/FilterAltOff';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { TopBarGrid } from '../../common/TopBar';
@@ -11,9 +11,11 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { LocalStorage } from '../../utils/localStorage';
 import { IMongoIFrame } from '../../interfaces/iFrames';
-import { MenuItemContent } from '../../common/SelectCheckbox';
+import { SelectCheckbox } from '../../common/SelectCheckbox';
 import { useUserStore } from '../../stores/user';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
+const { iFramesOrderKey } = environment.iFrames;
 const IFramesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     setIFrameWizardDialogState?: () => void;
@@ -21,7 +23,6 @@ const IFramesPageHeadline: React.FC<{
     setIFramesOrder: (value: string[]) => void;
 }> = ({ onSearch, setIFrameWizardDialogState, iFramesOrder, setIFramesOrder }) => {
     const queryClient = useQueryClient();
-    const iFramesOrderKey = 'iFramesOrder';
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
     const currentUser = useUserStore((state) => state.user);
 
@@ -65,84 +66,18 @@ const IFramesPageHeadline: React.FC<{
                     />
                 </Grid>
                 <Grid item>
-                    <Select
-                        displayEmpty
-                        renderValue={() => <Box>{i18next.t('iFrames.arrangementIFrames')}</Box>}
-                        // eslint-disable-next-line react/no-unstable-nested-components
-                        IconComponent={() => (
-                            <Box sx={{ marginRight: '10px' }}>
-                                <img src="/icons/select-checkbox.svg" />
-                            </Box>
-                        )}
-                        MenuProps={{
-                            PaperProps: {
-                                style: {
-                                    height: '190px',
-                                    width: '180px',
-                                    backgroundColor: '#EBEFFA',
-                                    borderRadius: '0px 0px 10px 10px',
-                                    boxShadow: '-2px 2px 4px 0px #1E27754D',
-                                },
-                                sx: {
-                                    overflowY: 'overlay',
-                                    '::-webkit-scrollbar-track': {
-                                        marginY: '1rem',
-                                        bgcolor: '#EBEFFA',
-                                        borderRadius: '5px',
-                                    },
-                                    '::-webkit-scrollbar-thumb': { background: '' },
-                                },
-                            },
-                            transformOrigin: {
-                                vertical: 'top',
-                                horizontal: 120,
-                            },
-                        }}
-                        sx={{
-                            fontFamily: 'Rubik',
-                            fontSize: '14px',
-                            fontWeight: 400,
-                            boxShadow: 'none',
-                            '& .MuiOutlinedInput-notchedOutline': {
-                                display: 'none',
-                            },
-                            background: '#EBEFFA',
-                            maxHeight: '35px',
-                        }}
-                    >
-                        <DragDropContext onDragEnd={handleOnDragEnd}>
-                            <Droppable droppableId="items">
-                                {(provided) => (
-                                    <List {...provided.droppableProps} ref={provided.innerRef}>
-                                        {allIFramesAllowed?.map((iFrame, index) => (
-                                            <Draggable key={iFrame._id} draggableId={iFrame._id} index={index}>
-                                                {(draggableProvided) => (
-                                                    <MenuItem
-                                                        ref={draggableProvided.innerRef}
-                                                        {...draggableProvided.draggableProps}
-                                                        {...draggableProvided.dragHandleProps}
-                                                        sx={{
-                                                            textOverflow: 'ellipsis',
-                                                            overflow: 'hidden',
-                                                            padding: '6px',
-                                                        }}
-                                                    >
-                                                        <MenuItemContent
-                                                            label={iFrame.name}
-                                                            iconFileId={iFrame.iconFileId ?? ''}
-                                                            order={index}
-                                                            isDraggable
-                                                        />
-                                                    </MenuItem>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </List>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
-                    </Select>
+                    <SelectCheckbox
+                        title={i18next.t('iFrames.arrangementIFrames')}
+                        img={<img src="/icons/select-checkbox.svg" />}
+                        options={allIFramesAllowed ?? []}
+                        selectedOptions={[]}
+                        setSelectedOptions={() => {}}
+                        getOptionId={({ _id }) => _id}
+                        getOptionLabel={({ name }) => name}
+                        toTopBar
+                        onDragEnd={handleOnDragEnd}
+                        isSelectDisabled
+                    />
                 </Grid>
 
                 <Grid item>
@@ -154,15 +89,19 @@ const IFramesPageHeadline: React.FC<{
 
             <Grid container justifyContent="flex-end" alignItems="center">
                 <Grid item>
-                    <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
-                        <FilterAltOffIcon sx={{ fontSize: '26px' }} />
-                    </IconButton>
+                    <MeltaTooltip title={i18next.t('iFrames.filterDrags')}>
+                        <IconButton onClick={resetIFramesDimensions} sx={{ borderRadius: 10, height: '35px', width: '35px' }}>
+                            <FilterAltOffIcon sx={{ fontSize: '26px' }} />
+                        </IconButton>
+                    </MeltaTooltip>
                 </Grid>
                 <Grid item>
                     {currentUser.currentWorkspacePermissions.admin && (
-                        <IconButton onClick={setIFrameWizardDialogState}>
-                            <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
-                        </IconButton>
+                        <MeltaTooltip title={i18next.t('iFrames.addIFrame')}>
+                            <IconButton onClick={setIFrameWizardDialogState}>
+                                <AddCircleIcon color="primary" sx={{ fontSize: '30px' }} />
+                            </IconButton>
+                        </MeltaTooltip>
                     )}
                 </Grid>
             </Grid>

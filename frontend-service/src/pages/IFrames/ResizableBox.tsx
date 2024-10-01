@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizable.css';
 import { Grid } from '@mui/material';
+import { environment } from '../../globals';
 
 interface ResizeBoxProps {
     id: string;
@@ -9,17 +10,18 @@ interface ResizeBoxProps {
     isDimensionsChange: boolean;
     setIsDimensionsChange: (value: boolean) => void;
 }
-
+const { iFrameDimensionKey, iFrameSpace, sideBarCloseWidth, sideBarOpenWidth, relativeMaxHight } = environment.iFrames;
 const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = false, isDimensionsChange, setIsDimensionsChange }) => {
-    const localStorageKey = `iFrameDimension_${id}`;
+    const localStorageKey = `${iFrameDimensionKey}${id}`;
 
     const screenWidth = window.innerWidth;
     const screenHeight = window.innerHeight;
-    const sideBarWidth = isSideBarOpen ? 310 : 130;
-    const defaultWidth = (screenWidth - sideBarWidth) / 2;
+    const sideBarWidth = isSideBarOpen ? sideBarOpenWidth : sideBarCloseWidth;
+    const defaultWidth = (screenWidth - sideBarWidth) / 2 - iFrameSpace;
     const defaultHeight = screenHeight / 2;
     const maxWidth = screenWidth - sideBarWidth;
-    const maxHeight = screenHeight - 140;
+    const maxHeight = screenHeight - relativeMaxHight;
+    const minWidth = (screenWidth - sideBarWidth) / 3 - iFrameSpace;
 
     const getDimensions = () => {
         const savedDimensions = localStorage.getItem(localStorageKey);
@@ -56,13 +58,14 @@ const Resizable: React.FC<ResizeBoxProps> = ({ children, id, isSideBarOpen = fal
             resizeHandles={['se']}
             width={dimensions.width}
             height={dimensions.height}
-            minConstraints={[defaultWidth, defaultHeight]}
+            minConstraints={[minWidth, defaultHeight]}
             maxConstraints={[maxWidth, maxHeight]}
             onResizeStart={onResizeStart}
             onResizeStop={onResizeStop}
             axis="both"
             style={{
                 margin: '6px',
+                padding: '6px',
             }}
         >
             <Grid container height="100%" width="100%" sx={{ pointerEvents: isResizing ? 'none' : 'auto' }}>
