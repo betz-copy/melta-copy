@@ -1,7 +1,7 @@
 /* eslint-disable react/no-array-index-key */
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { Box, Grid } from '@mui/material';
+import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
