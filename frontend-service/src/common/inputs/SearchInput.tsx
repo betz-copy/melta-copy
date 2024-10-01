@@ -13,6 +13,7 @@ const SearchInput: React.FC<{
     toTopBar?: boolean;
     height?: string;
     width?: string;
+    isGlobalSearch?: boolean;
 }> = ({
     value,
     onChange,

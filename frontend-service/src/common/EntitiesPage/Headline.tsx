@@ -27,27 +27,31 @@ export const GlobalSearchBar: React.FC<{
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+    isGlobalSearch?: boolean;
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, isGlobalSearch }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
+    // eslint-disable-next-line consistent-return
     useEffect(() => {
-        const handler = setTimeout(() => {
-            if (debouncedSearchValue !== valueForSearchButtonRef.current) {
-                valueForSearchButtonRef.current = debouncedSearchValue;
-                onSearch(debouncedSearchValue);
-                if (gridApi) {
-                    gridApi.setQuickFilter(debouncedSearchValue);
+        if (isGlobalSearch === undefined) {
+            const handler = setTimeout(() => {
+                if (debouncedSearchValue !== valueForSearchButtonRef.current) {
+                    valueForSearchButtonRef.current = debouncedSearchValue;
+                    onSearch(debouncedSearchValue);
+                    if (gridApi) {
+                        gridApi.setQuickFilter(debouncedSearchValue);
+                    }
                 }
-            }
-        }, 500);
+            }, 500);
 
-        return () => {
-            clearTimeout(handler);
-        };
-    }, [debouncedSearchValue, gridApi, onSearch]);
+            return () => {
+                clearTimeout(handler);
+            };
+        }
+    }, [debouncedSearchValue, gridApi, onSearch, isGlobalSearch]);
 
     return (
         <SearchInput
@@ -56,12 +60,11 @@ export const GlobalSearchBar: React.FC<{
                 setDebouncedSearchValue(newSearchValue);
                 setInputValue?.(newSearchValue);
             }}
-            // dont need, has debounce//
-            // onKeyDown={(event) => {
-            //     if (event.key === 'Enter') {
-            //         onSearch(valueForSearchButtonRef.current);
-            //     }
-            // }}
+            onKeyDown={(event) => {
+                if (isGlobalSearch === true && event.key === 'Enter') {
+                    onSearch(valueForSearchButtonRef.current);
+                }
+            }}
             endAdornmentChildren={
                 <IconButton
                     style={{ color: theme.palette.primary.main }}
