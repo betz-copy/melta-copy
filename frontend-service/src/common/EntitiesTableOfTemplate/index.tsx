@@ -1,4 +1,6 @@
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+
+import { AgGridReact } from '@ag-grid-community/react';
 import {
     ColumnMovedEvent,
     ColumnResizedEvent,
@@ -8,26 +10,28 @@ import {
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
+    RowStyle,
 } from '@ag-grid-community/core';
-import { AgGridReact } from '@ag-grid-community/react';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
+
 import { Box, CircularProgress } from '@mui/material';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import '@noam7700/ag-grid-enterprise-core';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+
+import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -57,17 +61,18 @@ export interface IButtonProps<Data> {
     popoverText: string;
     disabledButton: boolean;
 }
-export const getDatasource = <Data extends any = IEntity>(
+
+export const getDatasource = <Data extends IEntity>(
     template: IMongoEntityTemplatePopulated,
-    quickFilterText: string | undefined,
-    onFail: ((err: unknown) => void) | undefined,
-    rowData?: IConnection[],
-    mainEntity?: IEntityExpanded,
+    quickFilterText?: string,
+    onFail?: (err: unknown) => void,
+    rowData?: Data[],
 ): IServerSideDatasource => {
+    console.log('getDatasource');
+
     return {
-        // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
-            if (rowData && mainEntity) {
+            if (rowData) {
                 params.success({
                     rowData,
                     rowCount: rowData.length,
@@ -75,7 +80,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            const agGridRequest = params.request;
+            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel, ...defaultFilterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
@@ -88,11 +93,37 @@ export const getDatasource = <Data extends any = IEntity>(
                 params.fail();
                 return;
             }
+
             params.success({
-                rowData: data.entities.map(({ entity }) => entity),
+                rowData: data.entities.map(({ entity }) => entity as Data),
                 rowCount: data.count,
             });
         },
+    };
+};
+
+export const getRowModelProps = <Data extends IEntity>(
+    rowModelType: 'serverSide' | 'clientSide' | 'infinite',
+    template: IMongoEntityTemplatePopulated,
+    rowData: Data[] | undefined,
+    paginationPageSize: number,
+    quickFilterText?: string,
+    datasourceOnFail?: (err: unknown) => void,
+): React.ComponentProps<typeof AgGridReact<Data>> => {
+    if (rowModelType === 'clientSide') {
+        return { rowModelType, rowData, pagination: true, paginationPageSize };
+    }
+
+    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
+    console.log('getRowModelProps');
+
+    return {
+        rowModelType: 'serverSide',
+        serverSideDatasource: getDatasource<Data>(template, quickFilterText, datasourceOnFail, rowData),
+        cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
+        pagination: rowModelType === 'serverSide',
+        paginationPageSize,
+        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
     };
 };
 
@@ -102,35 +133,9 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-const getRowModelProps = <Data extends any = IEntity>(
-    rowModelType: 'serverSide' | 'clientSide' | 'infinite',
-    template: IMongoEntityTemplatePopulated,
-    rowData: Data[] | undefined,
-    paginationPageSize: number,
-    quickFilterText: string | undefined,
-    datasourceOnFail: ((err: unknown) => void) | undefined,
-    mainEntity?: IEntityExpanded,
-): React.ComponentProps<typeof AgGridReact<Data>> => {
-    if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
-    }
-
-    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
-    return {
-        rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize,
-        maxBlocksInCache,
-        pagination: rowModelType === 'serverSide',
-        paginationPageSize,
-        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
-    };
-};
-
-export { getRowModelProps };
-
-export type EntitiesTableOfTemplateProps<Data> = {
+export type EntitiesTableOfTemplateProps<Data extends IEntity> = {
     template: IMongoEntityTemplatePopulated;
+    entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -158,7 +163,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     mainEntity?: IEntityExpanded;
 };
 
-export type EntitiesTableOfTemplateRef<Data> = {
+export type EntitiesTableOfTemplateRef<Data extends IEntity> = {
     getExcelData: () => string | undefined;
     resetFilter: () => void;
     refreshServerSide: () => void;
@@ -170,353 +175,328 @@ export type EntitiesTableOfTemplateRef<Data> = {
     showSideBar: () => void;
 };
 
-const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
-    <Data extends any>(
-        {
-            template,
-            onRowSelected,
-            showNavigateToRowButton,
-            getRowId,
-            getEntityPropertiesData,
-            rowModelType,
-            deleteRowButtonProps,
-            editRowButtonProps,
-            rowData,
-            quickFilterText,
-            rowHeight,
-            pageRowCount = rowCount,
-            fontSize,
-            hideNonPreview,
-            saveStorageProps,
-            onFilter,
-            hasPermissionToCategory,
-            mainEntity,
-        }: EntitiesTableOfTemplateProps<Data>,
-        ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
-    ) => {
-        const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
-        const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
+const EntitiesTableOfTemplate = <Data extends IEntity>(
+    {
+        template,
+        onRowSelected,
+        showNavigateToRowButton,
+        getRowId,
+        getEntityPropertiesData,
+        rowModelType,
+        deleteRowButtonProps,
+        editRowButtonProps,
+        rowData,
+        quickFilterText,
+        rowHeight,
+        pageRowCount = rowCount,
+        fontSize,
+        hideNonPreview,
+        saveStorageProps,
+        onFilter,
+        hasPermissionToCategory,
+        mainEntity,
+    }: EntitiesTableOfTemplateProps<Data>,
+    ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
+) => {
+    const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
+    const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
-        const saveColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnsOrder = saveColumnsOrder ? JSON.parse(saveColumnsOrder) : {};
+    const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
+    const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
 
-        const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
+    const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+    const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
-        const [_, navigate] = useLocation();
+    const [_, navigate] = useLocation();
 
-        const gridRef = useRef<AgGridReact<Data> & HTMLDivElement>(null);
-        const tableRef = useRef<HTMLDivElement>(null);
+    const gridRef = useRef<AgGridReact<Data>>(null);
+    const tableRef = useRef<HTMLDivElement>(null);
 
-        // height of table includes statusbar and titles
-        const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
-        const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+    const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
+    const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
-        const getSortModel = () => {
-            const colState = gridRef.current!.columnApi.getColumnState();
-            return sortBy(
-                colState.filter((s) => Boolean(s.sort)),
-                (c) => c.sortIndex,
-            ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
-        };
+    const getSortModel = () => {
+        const colState = gridRef.current!.columnApi.getColumnState();
+        return sortBy(
+            colState.filter((s) => Boolean(s.sort)),
+            (c) => c.sortIndex,
+        ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
+    };
 
-        useImperativeHandle(ref, () => {
-            return {
-                getExcelData() {
-                    return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
-                },
-                resetFilter() {
-                    gridRef.current?.api.setFilterModel(defaultFilterModel);
-                },
-                refreshServerSide() {
-                    gridRef.current?.api.refreshServerSide({ purge: true });
-                },
-                updateRowDataClientSide(data: Data) {
-                    gridRef.current?.api.forEachNode((rowNode) => {
-                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                            rowNode.updateData(data);
+    useImperativeHandle(ref, () => ({
+        getExcelData() {
+            return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+        },
+        resetFilter() {
+            gridRef.current?.api.setFilterModel(defaultFilterModel);
+        },
+        refreshServerSide() {
+            gridRef.current?.api.refreshServerSide({ purge: true });
+        },
+        updateRowDataClientSide(data: Data) {
+            gridRef.current?.api.forEachNode((rowNode) => {
+                if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                    rowNode.updateData(data);
+                }
+            });
+        },
+        isFiltered() {
+            const filters = gridRef.current?.api.getFilterModel();
+            return !filters || !isEqual(filters, defaultFilterModel);
+        },
+        getFilterModel() {
+            return gridRef.current!.api.getFilterModel();
+        },
+        getSortModel() {
+            return getSortModel();
+        },
+        scrollIntoView() {
+            tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+        },
+        showSideBar() {
+            const gridApi = gridRef.current?.api;
+            if (!gridApi) return;
+            const isSideBarOpen = gridApi.isToolPanelShowing();
+            gridApi.setSideBarVisible(!isSideBarOpen);
+            if (isSideBarOpen) {
+                gridApi.closeToolPanel();
+            } else {
+                gridApi.openToolPanel('columns');
+            }
+        },
+    }));
+
+    const columnDefProps: IGetColumnDefsOptions<Data> = {
+        template,
+        getEntityPropertiesData,
+        onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
+        deleteRowButtonProps,
+        hideNonPreview,
+        editRowButtonProps,
+        hasPermissionToCategory,
+        defaultVisibleColumns,
+        defaultColumnsOrder,
+        defaultColumnWidths,
+        rowHeight,
+    };
+
+    const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
+
+    const datasourceOnFail = (err: unknown) => {
+        toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
+        console.error('Failed to load data from datasource. Error:', err);
+    };
+
+    const rowModelProps = useMemo(
+        () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
+        [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity],
+    );
+
+    const gridStyles = {
+        '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
+        '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+        '.ag-paging-panel': {
+            height: '45px',
+        },
+        '.ag-paging-panel > *': { fontSize: '15px' },
+    };
+
+    const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
+        if (!saveStorageProps.shouldSaveVisibleColumns) return;
+        const columnState = params.columnApi.getColumnState();
+        const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
+            acc[col.colId] = !col.hide;
+            return acc;
+        }, {});
+        localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
+    };
+
+    const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
+        if (!saveStorageProps.shouldSaveColumnOrder) return;
+        const columnState = params.columnApi.getColumnState();
+        const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
+            acc[column.colId] = { order: index };
+            return acc;
+        }, {});
+        localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
+    };
+
+    const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
+        if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
+            const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
+            const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
+            localStorage.setItem(
+                `columnWidths-${saveStorageProps.pageType}-${template._id}`,
+                JSON.stringify({
+                    ...currColumnWidthsParsed,
+                    [params.column.getColId()]: params.column.getActualWidth(),
+                }),
+            );
+        }
+    };
+
+    const handleSortChanged = () => {
+        if (!saveStorageProps.shouldSaveSorting) return;
+        const sortModel = getSortModel();
+        localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
+    };
+
+    const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
+        if (!saveStorageProps.shouldSavePagination) return;
+        if (params.api && params.newPage) {
+            const currentPage = params.api.paginationGetCurrentPage();
+            sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
+        }
+    };
+
+    const gridContent = (
+        <Box
+            sx={gridStyles}
+            style={{
+                borderRadius: '10px',
+                boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+            }}
+            ref={tableRef}
+        >
+            <AgGridReact<Data>
+                ref={gridRef}
+                getRowStyle={(params): RowStyle | undefined => {
+                    if (params.data && getEntityPropertiesData(params.data).disabled) {
+                        return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
+                    }
+                    return undefined;
+                }}
+                className="ag-theme-material"
+                containerStyle={{
+                    width: '100%',
+                    height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
+                    fontFamily: 'Rubik',
+                    fontSize,
+                    fontWeight: 300,
+                }}
+                modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule, ClientSideRowModelModule, StatusBarModule]}
+                domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
+                getRowId={({ data }) => getRowId(data)}
+                columnDefs={columnDefs}
+                {...rowModelProps}
+                rowHeight={rowHeight}
+                components={{
+                    agDateInput: DateFilterComponent,
+                }}
+                onColumnVisible={handleColumnVisible}
+                onColumnMoved={handleColumnMoved}
+                onColumnResized={handleColumnResized}
+                onPaginationChanged={handlePaginationChanged}
+                onSortChanged={handleSortChanged}
+                enableRtl
+                enableCellTextSelection
+                maintainColumnOrder
+                rowSelection={onRowSelected ? 'single' : undefined}
+                onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
+                rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
+                suppressCellFocus
+                onFilterChanged={(params) => {
+                    onFilter?.();
+                    if (saveStorageProps.shouldSaveFilter) {
+                        const filterModel = params.api.getFilterModel();
+                        if (isEqual(filterModel, defaultFilterModel)) {
+                            LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+                        } else {
+                            LocalStorage.set(
+                                `tableFilter-${saveStorageProps.pageType}-${template._id}`,
+                                pickBy(filterModel, (_value, key) => key !== 'disabled'),
+                            );
                         }
-                    });
-                },
-                isFiltered() {
-                    const filters = gridRef.current?.api.getFilterModel();
-                    return !filters || !isEqual(filters, defaultFilterModel);
-                },
-                getFilterModel() {
-                    return gridRef.current!.api.getFilterModel();
-                },
-                getSortModel() {
-                    return getSortModel();
-                },
-                scrollIntoView: () => {
-                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
-                },
-                showSideBar() {
+                    }
+                }}
+                animateRows
+                loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
+                suppressCsvExport
+                suppressContextMenu
+                onToolPanelVisibleChanged={() => {
                     const gridApi = gridRef.current?.api;
                     if (!gridApi) return;
                     const isSideBarOpen = gridApi.isToolPanelShowing();
-                    gridApi.setSideBarVisible(!isSideBarOpen);
-                    // eslint-disable-next-line no-unused-expressions
-                    isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
-                },
-            };
-        });
-
-        const columnDefProps: IGetColumnDefsOptions<Data> = {
-            template,
-            getEntityPropertiesData,
-            onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
-            deleteRowButtonProps,
-            hideNonPreview,
-            editRowButtonProps,
-            hasPermissionToCategory,
-            defaultVisibleColumns,
-            defaultColumnsOrder,
-            defaultColumnWidths,
-            rowHeight,
-        };
-
-        const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
-
-        const datasourceOnFail = (err: unknown) => {
-            toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            // eslint-disable-next-line no-console
-            console.log('failed to load data from datasource. err:', err);
-        };
-
-        // useMemo because on SSRM if datasource prop changes it reloads rows (because maybe getRows is changed)
-        // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
-        // usually only quickFilterText changes on deps
-        const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText],
-        );
-
-        const getStyles = () => ({
-            '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
-            '.ag-paging-panel': {
-                height: '45px',
-            },
-            '.ag-paging-panel > *': { fontSize: '15px' },
-        });
-
-        // function save to localStorage:
-
-        // visibility of columns
-        const onColumnVisible = (params: ColumnVisibleEvent<Data>) => {
-            if (!saveStorageProps.shouldSaveVisibleColumns) return;
-            const columnState = params.columnApi.getColumnState();
-            const updatedVisibleColumns = columnState.reduce((acc, col) => {
-                // eslint-disable-next-line no-param-reassign
-                acc[col.colId] = col.hide === false;
-                return acc;
-            }, {});
-            localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
-        };
-
-        // order of columns
-        const onColumnMoved = (params: ColumnMovedEvent<Data>) => {
-            if (!saveStorageProps.shouldSaveColumnOrder) return;
-            const columnState = params.columnApi.getColumnState();
-            const newcolumnsOrder = columnState.reduce((acc, column, index) => {
-                // eslint-disable-next-line no-param-reassign
-                acc[column.colId] = { order: index };
-                return acc;
-            }, {});
-            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newcolumnsOrder));
-        };
-
-        // width of columns
-        const onColumnResized = (params: ColumnResizedEvent<Data>) => {
-            if (
-                params.finished &&
-                // only when change was done on single column, and the cause is user resizing deliberately (mouse clicking)
-                params.column &&
-                (params.source === 'autosizeColumns' || params.source === 'uiColumnDragged' || params.source === 'uiColumnResized')
-            ) {
-                const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
-                const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
-                localStorage.setItem(
-                    `columnWidths-${saveStorageProps.pageType}-${template._id}`,
-                    JSON.stringify({ ...currColumnWidthsParsed, [params.column.getColId()]: params.column.getActualWidth() }),
-                );
-            }
-        };
-
-        // sorting Column
-        const onSortChanged = () => {
-            if (!saveStorageProps.shouldSaveSorting) return;
-            const sortModel = getSortModel();
-            localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
-        };
-
-        // page in table - sessionStorage
-        const onPaginationChanged = (params: PaginationChangedEvent<Data>) => {
-            if (!saveStorageProps.shouldSavePagination) return;
-
-            if (params.api && params.newPage) {
-                const currentPage = params.api.paginationGetCurrentPage();
-                sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
-            }
-        };
-
-        const gridContent = (
-            <Box
-                sx={getStyles()}
-                style={{
-                    borderRadius: '10px',
-                    boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
+                    gridApi.setSideBarVisible(isSideBarOpen);
                 }}
-                ref={tableRef}
-            >
-                <AgGridReact<Data>
-                    ref={gridRef}
-                    getRowStyle={(params) => {
-                        if (params.data && getEntityPropertiesData(params.data).disabled) {
-                            return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
-                        }
-                        return { background: 'default', color: 'default' };
-                    }}
-                    className="ag-theme-material"
-                    containerStyle={{
-                        width: '100%',
-                        height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
-                        fontFamily: 'Rubik',
-                        fontSize,
-                        fontWeight: 300,
-                    }}
-                    modules={[
-                        ServerSideRowModelModule,
-                        ColumnsToolPanelModule,
-                        MenuModule,
-                        SetFilterModule,
-                        ClientSideRowModelModule,
-                        StatusBarModule,
-                    ]}
-                    domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
-                    getRowId={({ data }) => getRowId(data)}
-                    columnDefs={columnDefs}
-                    {...rowModelProps}
-                    rowHeight={rowHeight}
-                    components={{
-                        agDateInput: DateFilterComponent,
-                    }}
-                    onColumnVisible={onColumnVisible}
-                    onColumnMoved={onColumnMoved}
-                    onColumnResized={onColumnResized}
-                    onPaginationChanged={onPaginationChanged}
-                    onSortChanged={onSortChanged}
-                    enableRtl
-                    enableCellTextSelection
-                    maintainColumnOrder
-                    rowSelection={onRowSelected ? 'single' : undefined}
-                    onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data!)}
-                    rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
-                    suppressCellFocus
-                    onFilterChanged={(params) => {
-                        onFilter?.();
-                        if (saveStorageProps.shouldSaveFilter) {
-                            const filterModel = params.api.getFilterModel();
-                            if (isEqual(filterModel, defaultFilterModel)) {
-                                LocalStorage.remove(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-                            } else {
-                                LocalStorage.set(
-                                    `tableFilter-${saveStorageProps.pageType}-${template._id}`,
-                                    pickBy(filterModel, (_value, key) => key !== 'disabled'),
-                                );
-                            }
-                        }
-                    }}
-                    animateRows
-                    loadingCellRenderer={() => <CircularProgress size={20} sx={{marginLeft: 1}} />}
-                    suppressCsvExport
-                    suppressContextMenu
-                    onToolPanelVisibleChanged={() => {
-                        const gridApi = gridRef.current?.api;
-                        if (!gridApi) return;
-                        const isSideBarOpen = gridApi.isToolPanelShowing();
-                        gridApi.setSideBarVisible(isSideBarOpen);
-                    }}
-                    onGridReady={(params) => {
-                        params.api.setFilterModel({
-                            ...defaultFilterModel,
-                            ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),
+                onGridReady={(params) => {
+                    const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
+                    if (savedSortModel) {
+                        const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
+                        params.columnApi.applyColumnState({
+                            state: sortModel.map((s, i) => ({ ...s, sortIndex: i })),
+                            defaultState: { sort: null },
                         });
-                        const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
-                        if (savedSortModel) {
-                            const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
-                            params.columnApi.applyColumnState({
-                                state: sortModel.map((s, i) => ({ ...s, sortIndex: i })),
-                                defaultState: { sort: null },
-                            });
-                        }
-                    }}
-                    onFirstDataRendered={(params) => {
-                        const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
-                        if (savedPage !== null) {
-                            const pageToNavigate = JSON.parse(savedPage);
-                            params.api.paginationGoToPage(pageToNavigate);
-                        }
-                    }}
-                    defaultColDef={{
-                        filterParams: {
-                            suppressAndOrCondition: true,
-                            buttons: ['reset'],
-                        },
-                        sortable: true,
-                        menuTabs: ['filterMenuTab'],
-                        minWidth: 120,
-                        resizable: true,
-                        lockPinned: true,
-                        initialWidth: 250,
-                    }}
-                    sideBar={{
-                        toolPanels: [
-                            {
-                                id: 'columns',
-                                labelDefault: 'Columns',
-                                labelKey: 'columns',
-                                iconKey: 'columns',
-                                toolPanel: 'agColumnsToolPanel',
-                                toolPanelParams: {
-                                    suppressRowGroups: true,
-                                    suppressValues: true,
-                                    suppressPivotMode: true,
-                                },
-                            },
-                        ],
-                        hiddenByDefault: true,
-                        position: 'left',
-                    }}
-                    statusBar={
-                        rowModelType === 'infinite'
-                            ? {
-                                  statusPanels: [
-                                      {
-                                          statusPanel: RowCountGridStatusBar,
-                                          align: 'right',
-                                      },
-                                  ],
-                              }
-                            : undefined
                     }
-                    localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
-                />
-            </Box>
-        );
 
-        return rowModelType === 'infinite' ? (
-            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable}>
-                {gridContent}
-            </ResizeBox>
-        ) : (
-            gridContent
-        );
-    },
-);
+                    const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+                    if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
+                }}
+                onFirstDataRendered={(params) => {
+                    const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
+                    if (savedPage !== null) {
+                        const pageToNavigate = JSON.parse(savedPage);
+                        params.api.paginationGoToPage(pageToNavigate);
+                    }
+                }}
+                defaultColDef={{
+                    filterParams: {
+                        suppressAndOrCondition: true,
+                        buttons: ['reset'],
+                    },
+                    sortable: true,
+                    menuTabs: ['filterMenuTab'],
+                    minWidth: 120,
+                    resizable: true,
+                    lockPinned: true,
+                    initialWidth: 250,
+                }}
+                sideBar={{
+                    toolPanels: [
+                        {
+                            id: 'columns',
+                            labelDefault: 'Columns',
+                            labelKey: 'columns',
+                            iconKey: 'columns',
+                            toolPanel: 'agColumnsToolPanel',
+                            toolPanelParams: {
+                                suppressRowGroups: true,
+                                suppressValues: true,
+                                suppressPivotMode: true,
+                            },
+                        },
+                    ],
+                    hiddenByDefault: true,
+                    position: 'left',
+                }}
+                statusBar={
+                    rowModelType === 'infinite'
+                        ? {
+                              statusPanels: [
+                                  {
+                                      statusPanel: RowCountGridStatusBar,
+                                      align: 'right',
+                                  },
+                              ],
+                          }
+                        : undefined
+                }
+                localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+            />
+        </Box>
+    );
 
-// forwardRef loses generic type of component. see https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
-export default EntitiesTableOfTemplate as <Data = IEntity>(
-    props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
+    return rowModelType === 'infinite' ? (
+        <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable}>
+            {gridContent}
+        </ResizeBox>
+    ) : (
+        gridContent
+    );
+};
+
+const ForwardedEntitiesTableOfTemplate = forwardRef(EntitiesTableOfTemplate) as <Data extends IEntity>(
+    props: EntitiesTableOfTemplateProps<Data> & { ref?: ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;
+
+export default ForwardedEntitiesTableOfTemplate;

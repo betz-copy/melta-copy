@@ -181,7 +181,6 @@ export const environment = {
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,
-        maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 10,
     },

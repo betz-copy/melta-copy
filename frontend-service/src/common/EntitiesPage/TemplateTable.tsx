@@ -6,7 +6,7 @@ import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react'
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
+import { IEntity, IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { exportEntitiesRequest } from '../../services/entitiesService';

@@ -9,7 +9,7 @@ export class ActivityLogProducer extends DefaultExternalServiceRabbit {
     async createActivityLog(activityLog: Omit<IActivityLog, '_id'>) {
         try {
             this.sendToQueue(rabbit.activityLogQueue, activityLog);
-            logger.info('Activity log created', { activityLog });
+            // logger.info('Activity log created', { activityLog });
         } catch (error) {
             logger.error('Error creating activity log', { error });
         }

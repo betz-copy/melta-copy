@@ -347,50 +347,8 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
     return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
-const normalSearchToNeoQuery = (
-    searchBody: ISearchBatchBody,
-    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-    calculateOverallCount = false,
-) => {
-    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
-    if (calculateOverallCount) {
-        return {
-            cypherQuery: `
-                MATCH (node) 
-                WHERE ${filterQuery.cypherQuery}
-                RETURN count(node)`,
-            parameters: { ...filterQuery.parameters },
-        };
-    }
-
-    const sort = [...searchBody.sort];
-    if (sort.every(({ field }) => field !== 'updatedAt')) {
-        // if user not specified, by default sort by updatedAt,
-        // but only as the lowest priority (end of array in sortModel), to not override user defined sorts
-        sort.push({ field: 'updatedAt', sort: 'desc' });
-    }
-
-    const sortQuery = `ORDER BY ${sortToNeo4JSort(sort)}`;
-
-    return {
-        cypherQuery: `
-            MATCH (node) 
-            WHERE ${filterQuery.cypherQuery}
-            RETURN node 
-            ${sortQuery}
-            SKIP toInteger($skip)
-            LIMIT toInteger($limit)`,
-        parameters: {
-            skip: searchBody.skip,
-            limit: searchBody.limit,
-            ...filterQuery.parameters,
-        },
-    };
-};
-
 const fulltextSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
-    latestIndex: string,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     calculateOverallCount = false,
 ) => {
@@ -402,7 +360,10 @@ const fulltextSearchToNeoQuery = (
     // because in whitespace analyzer "foo,bar" is one term, so '*' will work on it,
     // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
     // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
-    const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch!)}*`;
+    const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
+
+    let latestIndex: string = config.neo4j.globalSearchIndex;
+    if (entityTemplatesMap.size === 1) latestIndex += `_${entityTemplatesMap.keys().next().value}`;
 
     if (calculateOverallCount) {
         return {
@@ -441,25 +402,22 @@ const fulltextSearchToNeoQuery = (
 
 const searchToNeoQuery = (
     searchBody: ISearchBatchBody,
-    latestIndex: string | null,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     calculateOverallCount = false,
 ): CypherQueryWithParameters => {
-    if (latestIndex) return fulltextSearchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, calculateOverallCount);
-    return normalSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount);
+    return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount);
 };
 
 export const searchWithRelationshipsToNeoQuery = (
     searchBody: ISearchBatchBody,
-    latestIndex: string | null,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     calculateOverallCount = false,
 ): CypherQueryWithParameters => {
     if (calculateOverallCount) {
-        return searchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
+        return searchToNeoQuery(searchBody, entityTemplatesMap, true);
     }
 
-    const searchNeoQuery = searchToNeoQuery(searchBody, latestIndex, entityTemplatesMap, false);
+    const searchNeoQuery = searchToNeoQuery(searchBody, entityTemplatesMap, false);
 
     const showRelationshipsPerTemplate = mapValues(searchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
@@ -472,19 +430,20 @@ export const searchWithRelationshipsToNeoQuery = (
             ${searchNeoQuery.cypherQuery}
         }
         
-        WITH *, $showRelationshipsPerTemplate[labels(node)[0]] as showRelationships
-        WITH *, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
+        WITH node, $showRelationshipsPerTemplate[labels(node)[0]] as showRelationships
+        WITH node, showRelationships.shouldShowRelationships as shouldShowRelationships, showRelationships.relationshipTemplateIds as relationshipTemplateIds
         
         OPTIONAL MATCH (node)-[relationship]-(otherEntity)
         WHERE shouldShowRelationships AND (size(relationshipTemplateIds) = 0 OR type(relationship) IN relationshipTemplateIds)
 
-        WITH node, CASE
+        WITH node, shouldShowRelationships, collect(relationship) AS relationships, collect(otherEntity) AS otherEntities
+        WITH node, relationships, otherEntities, CASE
         WHEN NOT shouldShowRelationships THEN NULL
-        WHEN relationship is NULL then []
-        ELSE collect({relationship: relationship, otherEntity: otherEntity})
-        END as relationships
+        WHEN size(relationships) = 0 then []
+        ELSE [i IN range(0, size(relationships) - 1) | {relationship: relationships[i], otherEntity: otherEntities[i]}]
+        END as relationshipsList
 
-        RETURN node, relationships
+        RETURN node, relationshipsList AS relationships
         `,
         parameters: {
             ...searchNeoQuery.parameters,
