@@ -103,10 +103,3 @@ export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectRelationships[];
 }
-
-export interface IFilterDatesRange {
-    propertyName: string;
-    dateNotificationValue: number;
-    isDateTime: boolean;
-    isDailyAlert: boolean;
-}

@@ -34,6 +34,7 @@ import { mapTemplates, templatesCompareFunc } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
+import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 
@@ -70,6 +71,12 @@ interface EntityTemplateCardProps {
             entityTemplateId: string | null;
         }>
     >;
+    setAddActionsDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -85,6 +92,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     entityTemplate,
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
+    setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
@@ -154,6 +162,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     });
                                 }}
                                 onDeleteClick={() => setDeleteEntityTemplateDialogState({ isDialogOpen: true, entityTemplateId: entityTemplate._id })}
+                                onAddActionsClick={() => setAddActionsDialogState({ isWizardOpen: true, entityTemplate })}
                                 onDisableClick={() =>
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
@@ -294,6 +303,12 @@ interface CategoryEntitiesBoxProps {
             entityTemplateId: string | null;
         }>
     >;
+    setAddActionsDialogState: React.Dispatch<
+        React.SetStateAction<{
+            isWizardOpen: boolean;
+            entityTemplate: IMongoEntityTemplatePopulated | null;
+        }>
+    >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
         IMongoEntityTemplatePopulated,
         unknown,
@@ -310,6 +325,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     entityTemplatesWithCategory,
     setEntityTemplateWizardDialogState,
     setDeleteEntityTemplateDialogState,
+    setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
 }) => {
@@ -409,6 +425,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                                     entityTemplate={entityTemplate}
                                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                                     setEntityTemplateWizardDialogState={setEntityTemplateWizardDialogState}
+                                                    setAddActionsDialogState={setAddActionsDialogState}
                                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                                 />
                                             )}
@@ -449,6 +466,14 @@ const EntityTemplatesRow: React.FC = () => {
     });
 
     const [entityTemplateWizardDialogState, setEntityTemplateWizardDialogState] = useState<{
+        isWizardOpen: boolean;
+        entityTemplate: IMongoEntityTemplatePopulated | null;
+    }>({
+        isWizardOpen: false,
+        entityTemplate: null,
+    });
+
+    const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
         isWizardOpen: boolean;
         entityTemplate: IMongoEntityTemplatePopulated | null;
     }>({
@@ -629,6 +654,7 @@ const EntityTemplatesRow: React.FC = () => {
                                     setDeleteEntityTemplateDialogState={setDeleteEntityTemplateDialogState}
                                     updateEntityTemplateStatusAsync={updateEntityTemplateStatusAsync}
                                     loadedEntityTemplateId={loadedEntityTemplateId}
+                                    setAddActionsDialogState={setAddActionsToEntityTemplateDialogState}
                                 />
                             </Grid>
                         )}
@@ -647,6 +673,13 @@ const EntityTemplatesRow: React.FC = () => {
                 handleClose={() => setDeleteEntityTemplateDialogState({ isDialogOpen: false, entityTemplateId: null })}
                 onYes={() => deleteTemplateMutateAsync(deleteEntityTemplateDialogState.entityTemplateId!)}
                 isLoading={deleteTemplateIsLoading}
+            />
+            <CodeEditorDialog
+                open={addActionsToEntityTemplateDialogState.isWizardOpen}
+                handleClose={() => setAddActionsToEntityTemplateDialogState({ isWizardOpen: false, entityTemplate: null })}
+                entityTemplate={addActionsToEntityTemplateDialogState.entityTemplate}
+                searchText={searchText}
+                categoriesToShow={categoriesToShow}
             />
         </Grid>
     );

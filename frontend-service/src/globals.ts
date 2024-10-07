@@ -59,6 +59,8 @@ export const environment = {
         },
         is3DViewLocalStorageKey: 'isGraph3DView',
         detailsResolution3D: 100,
+        BatchSize: 50,
+        limit3DConnections: 100,
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
@@ -189,6 +191,9 @@ export const environment = {
     processInstances: {
         infiniteScrollPageCount: 10,
     },
+    permission: {
+        infiniteScrollPageCount: 13,
+    },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',
     minimumSupportedChromeVersion: 85,
@@ -198,6 +203,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {
         headlineTitleFontSize: '24px',
@@ -1244,5 +1250,11 @@ export const environment = {
     matomo: {
         urlBase: 'matomo.yesodot.services.idf',
         siteId: 24,
+    },
+    systemManagement: {
+        actions: {
+            unusedPropertyErrorCodeTs: '6133',
+            noTypeGivenErrorCodeTs: '7044',
+        },
     },
 } as const;

@@ -19,6 +19,7 @@ interface GraphFilterProps {
     filterKey: number;
     removeFilterFromFilterList: any;
     filter?: IGraphFilterBody;
+    onFilter: () => void;
 }
 
 const GraphFilter: React.FC<GraphFilterProps> = ({
@@ -29,6 +30,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     filter,
     graphEntityTemplateIds,
     removeFilterFromFilterList,
+    onFilter,
 }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
     const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(filter?.selectedTemplate || null);
@@ -49,6 +51,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             ...prev,
             [filterKey]: { selectedTemplate, selectedProperty, filterField: newFilterField },
         }));
+        onFilter();
     };
     const handleStartDate = (newValue) => {
         if (!newValue && !endDate) {
@@ -253,6 +256,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                             padding: '15px',
                             marginRight: '7px',
                         }}
+                        variant="body1"
                     >
                         {i18next.t('graph.filterEntity')}
                     </Typography>

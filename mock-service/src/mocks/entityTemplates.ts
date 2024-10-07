@@ -161,6 +161,57 @@ export const entityTemplates: IEntityTemplateMock[] = [
         disabled: false,
     },
     {
+        name: 'flightOfSkyPlaner',
+        displayName: 'טיסה של המודל',
+        category: {
+            name: 'flights',
+        },
+        properties: {
+            type: 'object',
+            properties: {
+                FlightNum: {
+                    type: 'string',
+                    title: 'מספר טיסה',
+                },
+                Flighttype: {
+                    type: 'string',
+                    title: 'סוג טיסה',
+                    enum: ['ביזנס', 'עסקים','תיירים'],
+                },
+                FlightPlatform: {
+                    type: 'string',
+                    title: 'פלטפורמת טיסה',
+                    enum: ['פלטפורמה א', 'פלטפורמה ב'],
+                },                
+                FlightDepart: {
+                    type: 'string',
+                    title: 'מוצא',
+                    enum: ['וינה', 'אתונה', 'תל אביב', 'רומא'],
+                },                
+                FlightDest: {
+                    type: 'string',
+                    title: 'יעד',
+                    enum: ['וינה', 'אתונה', 'תל אביב', 'רומא'],
+                },
+                FlightDepTime: {
+                    type: 'string',
+                    title: 'תאריך המראה',
+                    format: 'date-time',
+                },
+                FlightArrTime: {
+                    type: 'string',
+                    title: 'תאריך נחיתה',
+                    format: 'date-time',
+                },
+            },
+            hide: ['FlightPlatform'],
+        },
+        propertiesOrder: ['FlightNum', 'Flighttype', 'FlightPlatform', 'FlightDepart', 'FlightDest', 'FlightDepTime', 'FlightArrTime'],
+        propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        propertiesPreview: ['FlightNum', 'FlightDepart', 'FlightDest'],
+        disabled: false,
+    },
+    {
         name: 'airport',
         displayName: 'שדה תעופה',
         category: {

@@ -14,7 +14,6 @@ import {
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { IEntity } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { NotFoundError, ServiceError } from '../error';
 import { IBrokenRule } from '../rules/interfaces';
@@ -45,7 +44,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return relationship;
     }
 
-    async getRelationshipByEntitiesAndTemplate(sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) {
+    getRelationshipByEntitiesAndTemplate = async (sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) => {
         const relationship = await runInTransactionAndNormalize(
             transaction,
             `MATCH (s {_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->(d {_id: '${destEntityId}'}) RETURN r, s, d`,
@@ -55,7 +54,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         if (!relationship) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
 
         return relationship;
-    }
+    };
 
     async getRelationshipsByIds(ids: string[]) {
         return this.neo4jClient.readTransaction(
@@ -96,7 +95,12 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return ruleFailures.flat();
     }
 
-    async validateCreateRelationshipDuplicate(transaction: Transaction, templateId: string, sourceEntityId: string, destinationEntityId: string) {
+    validateCreateRelationshipDuplicate = async (
+        transaction: Transaction,
+        templateId: string,
+        sourceEntityId: string,
+        destinationEntityId: string,
+    ) => {
         const countOfExistingRelationships = await runInTransactionAndNormalize(
             transaction,
             `MATCH ({_id: '${sourceEntityId}'})-[r: \`${templateId}\`]->({_id: '${destinationEntityId}'}) return count(r)`,
@@ -108,7 +112,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
                 errorCode: config.errorCodes.relationshipAlreadyExists,
             });
         }
-    }
+    };
 
     async createRelationshipByEntityIdsInTransaction(
         relationship: IRelationship,
@@ -146,7 +150,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return { createdRelationship, activityLogsToCreate };
     }
 
-    async createRelationshipInTransaction(transaction: Transaction, relationship: IRelationship, userId: string) {
+    createRelationshipInTransaction = async (transaction: Transaction, relationship: IRelationship, userId: string) => {
         const { templateId, properties, sourceEntityId, destinationEntityId } = relationship;
 
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -184,7 +188,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         });
 
         return { createdRelationship, activityLogsToCreate };
-    }
+    };
 
     async createRelationshipByEntityIds(
         relationship: IRelationship,
@@ -208,20 +212,6 @@ export class RelationshipManager extends DefaultManagerNeo4j {
 
             return createdRelationship;
         });
-    }
-
-    getRelationshipByPrevResults(relationship: IRelationship, results: (IEntity | IRelationship)[]) {
-        const relationshipToReturn: IRelationship = relationship;
-        if (relationship.destinationEntityId.startsWith('$') && relationship.destinationEntityId.endsWith('._id')) {
-            const numberPart = parseInt(relationship.destinationEntityId.slice(1, -4), 10);
-            relationshipToReturn.destinationEntityId = (results[numberPart] as IEntity).properties._id;
-        }
-        if (relationship.sourceEntityId.startsWith('$') && relationship.sourceEntityId.endsWith('._id')) {
-            const numberPart = parseInt(relationship.sourceEntityId.slice(1, -4), 10);
-            relationshipToReturn.sourceEntityId = (results[numberPart] as IEntity).properties._id;
-        }
-
-        return relationshipToReturn;
     }
 
     async deleteRelationshipByIdInTransaction(id: string, ignoredRules: IBrokenRule[], transaction: Transaction) {

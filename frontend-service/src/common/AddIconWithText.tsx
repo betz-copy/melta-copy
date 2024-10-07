@@ -9,6 +9,7 @@ interface AddIconWithTextProps {
     text?: string;
     disabled: boolean;
 }
+
 export const AddIconWithText = forwardRef<HTMLDivElement, AddIconWithTextProps>(({ textStyle, onClick, text, disabled }, ref) => {
     return (
         <Typography onClick={onClick} ref={ref} component="p" color={disabled ? 'gray' : 'primary'} justifyContent="space-around" style={textStyle}>

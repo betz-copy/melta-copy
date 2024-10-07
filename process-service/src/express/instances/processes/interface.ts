@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { IBaseSearchProperties } from '../../templates/processes/interface';
 import { IMongoStepInstance } from '../steps/interface';
 
@@ -41,7 +40,7 @@ export type CreateProcessReqBody = Pick<IProcessInstance, 'templateId' | 'name' 
 export type UpdateProcessReqBody = Partial<Omit<IProcessInstance, 'templateId' | 'steps' | 'status'> & { steps: Record<string, string[]> }>;
 
 export interface IProcessInstanceSearchProperties extends IBaseSearchProperties {
-    name?: string;
+    searchText?: string;
     templateIds?: string[];
     startDate?: Date;
     endDate?: Date;
@@ -49,4 +48,6 @@ export interface IProcessInstanceSearchProperties extends IBaseSearchProperties 
     archived?: boolean;
 }
 
-export type ProcessInstanceDocument = IProcessInstance & Document;
+export interface ProcessInstanceDocument extends IProcessInstance {
+    _id: string;
+}

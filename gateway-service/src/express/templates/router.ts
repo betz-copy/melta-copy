@@ -17,6 +17,7 @@ import {
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getCategoriesSchema,
+    searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
@@ -93,6 +94,7 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
+templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
@@ -128,6 +130,13 @@ templatesRouter.delete(
     ValidateRequest(deleteEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityTemplate,
+);
+
+templatesRouter.post(
+    '/entities/search/template/:userId',
+    ValidateRequest(searchEntityTemplatesOfUserFromParamsSchema),
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
 );
 
 templatesRouter.post(

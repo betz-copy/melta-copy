@@ -2,10 +2,10 @@ import { Dialog } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
-import { IEntity } from '../../interfaces/entities';
-import { useDraftIdStore } from '../../stores/drafts';
 import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
+import { IEntity } from '../../interfaces/entities';
+import { useDraftIdStore } from '../../stores/drafts';
 import { TableButton } from '../TableButton';
 
 const AddEntityButton: React.FC<{
@@ -16,7 +16,8 @@ const AddEntityButton: React.FC<{
     disabledToolTip?: boolean;
     popoverText?: string;
     onSuccessCreate?: (entity: IEntity) => void;
-}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate }) => {
+    setUpdatedEntities?: React.Dispatch<React.SetStateAction<IEntity[]>>;
+}> = ({ style, children, disabled, initialStep, initialValues, popoverText, disabledToolTip = false, onSuccessCreate, setUpdatedEntities }) => {
     const [addEntityWizardState, setAddEntityWizardState] = useState<{
         isOpen: boolean;
         initialStep?: number;
@@ -28,7 +29,7 @@ const AddEntityButton: React.FC<{
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
     });
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
@@ -39,7 +40,7 @@ const AddEntityButton: React.FC<{
                     iconButtonProps: {
                         onClick: () => {
                             setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
-                            setExternalErrors({ files: false, unique: {} });
+                            setExternalErrors({ files: false, unique: {}, action: '' });
                             setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                             toast.dismiss();
                             setDraftId('');
@@ -63,9 +64,16 @@ const AddEntityButton: React.FC<{
                     isEditMode={false}
                     entityTemplate={addEntityWizardState.initialValues?.template || emptyEntityTemplate}
                     initialCurrValues={addEntityWizardState.initialCurrValues}
-                    onSuccessUpdate={() => {
+                    onSuccessUpdate={(entity) => {
+                        setUpdatedEntities?.(
+                            Object.values(entity.properties).filter(
+                                (property): property is IEntity =>
+                                    typeof property === 'object' && 'templateId' in property && 'properties' in property,
+                            ),
+                        );
+
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setExternalErrors({ files: false, unique: {}, action: '' });
                     }}
                     handleClose={() => {
                         setAddEntityWizardState((prev) => ({ ...prev, isOpen: false }));
