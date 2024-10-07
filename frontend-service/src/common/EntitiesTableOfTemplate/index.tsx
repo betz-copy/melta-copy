@@ -420,11 +420,16 @@ const EntitiesTableOfTemplate = <Data extends IEntity>(
                     gridApi.setSideBarVisible(isSideBarOpen);
                 }}
                 onGridReady={(params) => {
-                    // params.api.setFilterModel({
-                    //     ...defaultFilterModel,
-                    //     ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),
-                    // }); It rendered twice beacuse of this code
                     const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
+                    const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+
+                    if (savedFilterModel) {
+                        params.api.setFilterModel({
+                            ...defaultFilterModel,
+                            ...savedFilterModel,
+                        });
+                    }
+
                     if (savedSortModel) {
                         const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
                         params.columnApi.applyColumnState({
