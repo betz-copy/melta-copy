@@ -218,6 +218,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
     openMap,
     setOpenMap,
+    onClick,
 }: {
     options: Option[];
     optionsFiltered: SelectCheckboxProps<Option, Group>['options'];
@@ -234,6 +235,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
             [groupId: string]: boolean;
         }>
     >;
+    onClick?: () => void;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
@@ -288,6 +290,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                         setSelectedOptions(selectedOptionsWithGroup);
                                         return selectedOptionsWithGroup;
                                     });
+                                    onClick?.();
                                 }}
                             >
                                 <MenuItemContent
@@ -440,11 +443,13 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
     selectedOptionsFiltered,
     setSelectedOptions,
     optionsFiltered,
+    onClick,
 }: {
     options: Option[];
     selectedOptionsFiltered: Option[];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     optionsFiltered: Option[];
+    onClick?: () => void;
 }) => {
     return (
         <MenuItem
@@ -456,6 +461,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 } else {
                     setSelectedOptions(options);
                 }
+                onClick?.();
             }}
         >
             <MenuItemContent

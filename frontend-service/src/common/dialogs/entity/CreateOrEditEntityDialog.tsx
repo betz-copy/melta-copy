@@ -545,6 +545,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 <ExportFormats
                                                     properties={{
                                                         createdAt: isEditMode ? entityToUpdate?.properties.createdAt : new Date(),
+                                                        updatedAt: isEditMode ? entityToUpdate?.properties.updatedAt : new Date(),
                                                         ...values.properties,
                                                     }}
                                                     documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}
