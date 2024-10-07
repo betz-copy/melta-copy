@@ -80,7 +80,7 @@ export const getDatasource = <Data extends IEntity>(
                 return;
             }
 
-            const agGridRequest = params.request;
+            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel, ...defaultFilterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
@@ -421,15 +421,6 @@ const EntitiesTableOfTemplate = <Data extends IEntity>(
                 }}
                 onGridReady={(params) => {
                     const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
-                    const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-
-                    if (savedFilterModel) {
-                        params.api.setFilterModel({
-                            ...defaultFilterModel,
-                            ...savedFilterModel,
-                        });
-                    }
-
                     if (savedSortModel) {
                         const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
                         params.columnApi.applyColumnState({
@@ -437,6 +428,9 @@ const EntitiesTableOfTemplate = <Data extends IEntity>(
                             defaultState: { sort: null },
                         });
                     }
+
+                    const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+                    if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                 }}
                 onFirstDataRendered={(params) => {
                     const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
