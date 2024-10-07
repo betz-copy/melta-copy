@@ -59,6 +59,8 @@ export const environment = {
         },
         is3DViewLocalStorageKey: 'isGraph3DView',
         detailsResolution3D: 100,
+        BatchSize: 50,
+        limit3DConnections: 100,
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
@@ -179,7 +181,6 @@ export const environment = {
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,
-        maxBlocksInCache: 10,
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 10,
     },
@@ -188,6 +189,9 @@ export const environment = {
     },
     processInstances: {
         infiniteScrollPageCount: 10,
+    },
+    permission: {
+        infiniteScrollPageCount: 13,
     },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',

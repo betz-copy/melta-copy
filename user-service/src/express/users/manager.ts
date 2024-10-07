@@ -23,7 +23,7 @@ export class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-    ): Promise<IBaseUser[]> {
+    ): Promise<{ users: IBaseUser[]; count: number }> {
         const query: FilterQuery<IBaseUser> = {};
 
         if (search) {
@@ -44,11 +44,13 @@ export class UsersManager {
             query._id = { $in: [...usersIds] };
         }
 
-        const baseUsers = await UsersModel.find(query, {}, { limit, skip: step * limit })
+        const users = await UsersModel.find(query, {}, { limit, skip: step * limit })
             .lean()
             .exec();
 
-        return baseUsers;
+        const count = await UsersModel.countDocuments(query);
+
+        return { users, count };
     }
 
     static async searchUserIds(
@@ -58,8 +60,8 @@ export class UsersManager {
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
-        return baseUsers.map(({ _id }) => _id);
+        const { users } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(
@@ -68,9 +70,9 @@ export class UsersManager {
         workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-    ): Promise<IUser[]> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
-        return this.appendPermissionsToUsers(baseUsers);
+    ): Promise<{ users: IUser[]; count: number }> {
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        return { users: await this.appendPermissionsToUsers(users), count };
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {

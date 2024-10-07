@@ -3,6 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import EntityController from './controller';
 import {
+    countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     deleteEntityByIdRequestSchema,
@@ -14,6 +15,7 @@ import {
     getExpandedGraphByIdRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
     updateEntityByIdRequestSchema,
@@ -46,6 +48,13 @@ entityRouter.post(
     ValidateRequest(searchEntitiesOfTemplateRequestSchema),
     entityValidatorController.validateSearchEntitiesOfTemplateBody,
     entityController.searchEntitiesOfTemplate,
+);
+entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
+entityRouter.post(
+    '/search/templates',
+    ValidateRequest(searchEntitiesByTemplatesSchema),
+    entityValidatorController.validateSearchByTemplatesBody,
+    entityController.searchEntitiesByTemplates,
 );
 entityRouter.post(
     '/search/batch',

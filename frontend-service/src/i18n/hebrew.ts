@@ -211,6 +211,7 @@ export default {
         filterField: 'סינון שדה',
         additionalTemplates: 'תבניות נוספות',
         filterTitle: 'תבניות ויישויות מוצגות',
+        limitWarning: 'מצב תלת מימד מוגבל עד ל100 קשרים. לצפייה בקשרים נוספים יש לסנן תוצאות',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',
@@ -318,12 +319,13 @@ export default {
         },
     },
     permissions: {
+        searchUser: 'חיפוש שם משתמש',
         failedToLoadMyPermissions: 'נכשל לטעון הרשאות',
         userHeaderName: 'משתמש',
         sourceHeaderName: 'מקור',
         permissionsManagement: 'ניהול הרשאות',
         templatesManagement: 'ניהול תבניות',
-        permissionsManagmentPageTitle: 'ניהול הרשאות',
+        permissionsManagementPageTitle: 'ניהול הרשאות',
         rulesManagement: 'ניהול חוקים',
         processesManagement: 'ניהול תהליכים',
         failedToDeleteUser: 'נכשל למחוק הרשאות של משתמש',

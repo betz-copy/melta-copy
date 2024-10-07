@@ -3,7 +3,6 @@ import menash from 'menashmq';
 import axios from 'axios';
 import Server from './express/server';
 import config from './config';
-import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
 const { service, rabbit } = config;
@@ -24,8 +23,6 @@ const initializeRabbit = async () => {
 
 const main = async () => {
     await initializeRabbit();
-
-    await checkForDateNotifications();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

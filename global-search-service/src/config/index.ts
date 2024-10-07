@@ -32,16 +32,11 @@ const config = {
         database: env.get('NEO4J_DATABASE').default('neo4j').asString(),
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
-        globalSearchIndexes: env.get('NEO4J_GLOBAL_SEARCH_INDEXES').default('primaryGlobalSearch,secondaryGlobalSearch').asArray(),
-        templateSearchIndexPrefixes: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIXES').default('primaryGlobalSearch_,secondaryGlobalSearch_').asArray(),
+        globalSearchIndex: env.get('NEO4J_GLOBAL_SEARCH_INDEX').default('primaryGlobalSearch').asString(),
+        templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('primaryGlobalSearch_').asString(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
-    },
-    redis: {
-        url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
-        globalSearchKeyName: env.get('REDIS_GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
-        templateSearchKeyNamePrefix: env.get('REDIS_TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

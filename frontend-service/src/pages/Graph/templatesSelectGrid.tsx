@@ -55,7 +55,8 @@ const TemplatesSelectGrid: React.FC<{
     setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
     setOpenFilter: React.Dispatch<React.SetStateAction<boolean>>;
     openFilter: boolean;
-}> = ({ templates, selectedTemplates, setSelectedTemplates, categories, setTemplates, setOpenFilter, openFilter }) => {
+    onClick: () => void;
+}> = ({ templates, selectedTemplates, setSelectedTemplates, categories, setTemplates, setOpenFilter, openFilter, onClick }) => {
     const classes = useStyles();
     const [showAll, setShowAll] = useState<boolean>(false);
 
@@ -123,7 +124,6 @@ const TemplatesSelectGrid: React.FC<{
                                 padding: '15px',
                                 marginRight: '7px',
                             }}
-                            component="body"
                             variant="body1"
                         >
                             {i18next.t('graph.filterTitle')}
@@ -134,6 +134,7 @@ const TemplatesSelectGrid: React.FC<{
                             selectedOptionsFiltered={selectedTemplatesFiltered}
                             setSelectedOptions={setSelectedTemplates}
                             optionsFiltered={templatesFiltered}
+                            onClick={onClick}
                         />
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
@@ -152,6 +153,7 @@ const TemplatesSelectGrid: React.FC<{
                                 setOptions={setTemplates}
                                 setOpenMap={setOpenMap}
                                 openMap={openMap}
+                                onClick={onClick}
                             />
                             <Button
                                 style={{
@@ -199,6 +201,7 @@ const TemplatesSelectGrid: React.FC<{
                                     setOptions={setTemplates}
                                     setOpenMap={setOpenMap}
                                     openMap={openMap}
+                                    onClick={onClick}
                                 />
                             </div>
                         </Paper>

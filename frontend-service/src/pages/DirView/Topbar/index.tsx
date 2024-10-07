@@ -58,7 +58,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
                 {/*
                 <Grid item>
                     <IconButtonWithPopover
-                        popoverText={i18next.t('permissions.permissionsManagmentPageTitle')}
+                        popoverText={i18next.t('permissions.permissionsManagementPageTitle')}
                         iconButtonProps={{ onClick: openPermissionsDialog, sx: iconButtonStyle }}
                     >
                         <ManageAccounts sx={iconStyle} />

@@ -1,4 +1,4 @@
-import neo4j, { Driver, Neo4jError, Session, SessionMode } from 'neo4j-driver';
+import neo4j, { Driver, Neo4jError, QueryResult, Session, SessionMode, Transaction } from 'neo4j-driver';
 import { retry } from 'ts-retry-promise';
 import config from '../../config';
 import logger from '../logger/logsLogger';
@@ -6,6 +6,7 @@ import logger from '../logger/logsLogger';
 const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
 
 type TransactionType = 'writeTransaction' | 'readTransaction';
+type TransactionWork<T> = (tx: Transaction) => Promise<T> | T;
 
 export default class Neo4jClient {
     private static driver: Driver;
@@ -80,6 +81,31 @@ export default class Neo4jClient {
 
     private async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters: Record<string, any>) {
         return this.wrapDBNotExistsError((session) => session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
+    }
+
+    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
+        return this.wrapDBNotExistsError(
+            async (session) => {
+                const trx = session.beginTransaction();
+                const result = await transactionWork(trx);
+
+                await trx.commit();
+
+                return result;
+            },
+            transactionType === 'readTransaction' ? 'READ' : 'WRITE',
+        );
+    }
+
+    async runInTransactionAndNormalize<T>(
+        transaction: Transaction,
+        cypherQuery: string,
+        normalizeFunction: (queryResult: QueryResult) => T,
+        parameters?: Record<string, any>,
+    ): Promise<T> {
+        const result = await transaction.run(cypherQuery, parameters);
+
+        return normalizeFunction(result);
     }
 
     static async close() {

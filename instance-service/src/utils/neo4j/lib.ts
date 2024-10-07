@@ -49,10 +49,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -77,6 +77,13 @@ export const normalizeReturnedEntity =
 
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
+};
+
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+    return result.records.map((record) => ({
+        templateId: record.get('templateId'),
+        count: +record.get('count'),
+    }));
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {
@@ -204,14 +211,14 @@ export const normalizeSearchWithRelationships = (result: QueryResult): IEntityWi
     });
 };
 
-export const normalizeNeighboursOfEntityForRule = (result: QueryResult) => {
+export const normalizeNeighborsOfEntityForRule = (result: QueryResult) => {
     return result.records.map((record) => {
         const relationshipTemplate = record.get('rTemplate') as string;
-        const neighbourOfEntity = record.get('neighbour') as Node;
+        const neighborOfEntity = record.get('neighbor') as Node;
 
         return {
             relationshipTemplate,
-            neighbourOfEntity: nodeToEntity(neighbourOfEntity),
+            neighborOfEntity: nodeToEntity(neighborOfEntity),
         };
     });
 };
