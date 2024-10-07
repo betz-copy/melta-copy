@@ -36,7 +36,7 @@ const ExecWithRuleBreachDialog: React.FC<{
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', borderColor: 'red', borderWidth: '2px', borderStyle: 'dashed' } }}
         >
             <DialogTitle>
-                {i18next.t('execActionWithRuleBreach.actionBroke')}{' '}
+                {i18next.t('execActionWithRuleBreach.actionBroke')}
                 {brokenRules.length === 1
                     ? i18next.t('execActionWithRuleBreach.rule')
                     : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}

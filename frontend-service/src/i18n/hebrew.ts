@@ -757,6 +757,7 @@ export default {
         noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
         warning: 'אזהרה',
         enforcement: 'אכיפה',
+        relationshipsCombination: 'צירוף הקשרים',
     },
     ruleBreachAlertNotification: {
         breach: 'הפרת חוק',
