@@ -103,9 +103,11 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
             </Grid>
 
             <Grid container item xs={3} justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                <Grid item>
-                    <SwitchThemeButton text="" isDrawerOpen={false} darkMode={darkMode} onClick={toggleDarkMode} />
-                </Grid>
+                {(meltaPlus || darkMode) && (
+                    <Grid item>
+                        <SwitchThemeButton text="" isDrawerOpen={false} darkMode={darkMode} onClick={toggleDarkMode} />
+                    </Grid>
+                )}
 
                 <Grid item>
                     <Box

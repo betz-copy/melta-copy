@@ -211,14 +211,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         )}
                     </Grid>
 
-                    <Grid container item marginTop="1rem" width="90%" justifyContent="center">
-                        <SwitchThemeButton
-                            text={i18next.t('sideBar.changeTheme')}
-                            isDrawerOpen={isDrawerOpen}
-                            darkMode={darkMode}
-                            onClick={toggleDarkMode}
-                        />
-                    </Grid>
+                    {(meltaPlus || darkMode) && (
+                        <Grid container item marginTop="1rem" width="90%" justifyContent="center">
+                            <SwitchThemeButton
+                                text={i18next.t('sideBar.changeTheme')}
+                                isDrawerOpen={isDrawerOpen}
+                                darkMode={darkMode}
+                                onClick={toggleDarkMode}
+                            />
+                        </Grid>
+                    )}
                 </Grid>
 
                 <Grid
