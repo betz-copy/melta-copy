@@ -1,14 +1,19 @@
-import { Box, Checkbox } from '@mui/material';
-import React from 'react';
+import { Check, Remove } from '@mui/icons-material';
+import { Box, Checkbox, SxProps } from '@mui/material';
+import React, { CSSProperties } from 'react';
 
 interface MeltaCheckboxProps {
     checked?: boolean;
     indeterminate?: boolean;
     disabled?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+    sxChecked?: SxProps<any>;
+    sxIndeterminate?: SxProps<any>;
+    sxEmpty?: SxProps<any>;
+    sxIcon?: CSSProperties;
 }
 
-const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange }) => {
+const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange, sxChecked, sxIndeterminate, sxEmpty, sxIcon }) => {
     return (
         <Checkbox
             checked={checked}
@@ -25,9 +30,10 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        ...sxChecked,
                     }}
                 >
-                    <img src="/icons/checked-icon.svg" style={{ width: '9.33px', height: '6.42px' }} />
+                    <Check style={{ width: '14px', height: '14px', color: 'white', ...sxIcon }} />
                 </Box>
             }
             indeterminateIcon={
@@ -41,9 +47,10 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        ...sxIndeterminate,
                     }}
                 >
-                    <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />
+                    <Remove style={{ width: '14px', height: '14px', color: 'white', ...sxIcon }} />
                 </Box>
             }
             icon={
@@ -56,6 +63,7 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
                         display: 'flex',
                         justifyContent: 'center',
                         alignItems: 'center',
+                        ...sxEmpty,
                     }}
                 />
             }
