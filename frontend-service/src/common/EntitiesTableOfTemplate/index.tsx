@@ -110,9 +110,15 @@ const getRowModelProps = <Data extends any = IEntity>(
     quickFilterText: string | undefined,
     datasourceOnFail: ((err: unknown) => void) | undefined,
     mainEntity?: IEntityExpanded,
+    hasInstances?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
+        return {
+            rowModelType,
+            rowData,
+            pagination: hasInstances ?? true,
+            paginationPageSize,
+        };
     }
 
     const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
@@ -128,6 +134,8 @@ const getRowModelProps = <Data extends any = IEntity>(
 };
 
 export { getRowModelProps };
+
+const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
@@ -156,6 +164,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
+    hasInstances?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -191,6 +200,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onFilter,
             hasPermissionToCategory,
             mainEntity,
+            hasInstances,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -288,13 +298,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
         // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity, hasInstances),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, hasInstances],
         );
 
         const getStyles = () => ({
-            '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            '.ag-column-select-virtual-list-viewport': {
+                height: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+            },
+            '.ag-center-cols-clipper': {
+                minHeight: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+            },
             '.ag-paging-panel': {
                 height: '45px',
             },
@@ -372,12 +386,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             >
                 <AgGridReact<Data>
                     ref={gridRef}
-                    getRowStyle={(params) => {
-                        if (params.data && getEntityPropertiesData(params.data).disabled) {
-                            return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
-                        }
-                        return { background: 'default', color: 'default' };
-                    }}
+                    getRowStyle={({ data }) =>
+                        data && getEntityPropertiesData(data).disabled
+                            ? { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' }
+                            : { background: 'default', color: 'default' }
+                    }
                     className="ag-theme-material"
                     containerStyle={{
                         width: '100%',
@@ -429,7 +442,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     animateRows
-                    loadingCellRenderer={() => <CircularProgress size={20} sx={{marginLeft: 1}} />}
+                    loadingCellRenderer={LoadingCellRenderer}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {

@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
@@ -63,6 +64,9 @@ export const getButtonState = (
     return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory };
 };
 
+const templateHasInstances = (relationshipTemplate: IMongoRelationshipTemplatePopulated, expandedEntity: IEntityExpanded) =>
+    expandedEntity.connections.some((connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id);
+
 const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
@@ -119,6 +123,8 @@ const ConnectionsTable: React.FC<{
         open: boolean;
         connectionToDelete?: IEntityExpanded['connections'][number];
     }>({ open: false });
+
+    const hasInstances = templateHasInstances(relationshipTemplate, expandedEntity);
 
     const setQueryDataKey = [
         'getExpandedEntity',
@@ -186,8 +192,9 @@ const ConnectionsTable: React.FC<{
                             popoverText={i18next.t('entitiesTableOfTemplate.columns')}
                             iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
                             style={{ borderRadius: '5px' }}
+                            disabled={!hasInstances}
                         >
-                            <img src="/icons/columns-settings.svg" />
+                            {hasInstances ? <img src="/icons/columns-settings.svg" /> : <img src="/icons/columns-settings-disabled.svg" />}
                         </IconButtonWithPopover>
                         <IconButtonWithPopover
                             popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
@@ -198,8 +205,17 @@ const ConnectionsTable: React.FC<{
                                 size: 'small',
                             }}
                             style={{ borderRadius: '5px' }}
+                            disabled={!hasInstances}
                         >
-                            {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
+                            {hasInstances ? (
+                                isExpand ? (
+                                    <img src="/icons/reduce-table.svg" />
+                                ) : (
+                                    <img src="/icons/expand-table.svg" />
+                                )
+                            ) : (
+                                <img src="/icons/expand-table-disabled.svg" />
+                            )}
                         </IconButtonWithPopover>
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                     </Grid>
@@ -244,6 +260,7 @@ const ConnectionsTable: React.FC<{
                 }}
             >
                 <EntitiesTableOfTemplate
+                    hasInstances={hasInstances}
                     ref={entitiesTableRef}
                     template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
@@ -278,9 +295,8 @@ const ConnectionsTable: React.FC<{
                               },
                     ) => {
                         if ('relationship' in connection) {
-                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
+                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                                 return connection.sourceEntity.properties;
-                            }
                             return connection.destinationEntity.properties;
                         }
                         return connection.properties;
@@ -425,127 +441,137 @@ const Entity: React.FC = () => {
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-
-                <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                    <Grid item container xs={5} alignItems="center" gap="20px">
-                        <Grid item alignContent="center">
-                            <img src="\icons\relations-icon.svg" />
+                {categoriesWithConnectionsTemplates.length > 0 && (
+                    <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
+                        <Grid item container xs={5} alignItems="center" gap="20px">
+                            <Grid item alignContent="center">
+                                <img src="\icons\relations-icon.svg" />
+                            </Grid>
+                            <Grid item>
+                                <BlueTitle
+                                    title={i18next.t('entityPage.relationshipTitle')}
+                                    component="h5"
+                                    variant="h5"
+                                    style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
+                                />
+                            </Grid>
                         </Grid>
                         <Grid item>
-                            <BlueTitle
-                                title={i18next.t('entityPage.relationshipTitle')}
-                                component="h5"
-                                variant="h5"
-                                style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
-                            />
+                            <TabContext value={value}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
+                                        {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
+                                            <Tab
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    gap: '15px',
+                                                    height: '20px',
+                                                    alignItems: 'center',
+                                                }}
+                                                key={_id}
+                                                label={
+                                                    <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
+                                                        <Typography
+                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                            style={{ fontWeight: '500', fontSize: '16px' }}
+                                                        >
+                                                            {displayName}
+                                                        </Typography>
+                                                        <Typography color="#787C9E">
+                                                            {
+                                                                // calculate the amount of the related connections of each entity
+                                                                expandedEntity.connections.filter((connection) => {
+                                                                    const connectionRelationshipTemplate = relationshipTemplates.get(
+                                                                        connection.relationship.templateId,
+                                                                    )!;
+
+                                                                    if (
+                                                                        connectionRelationshipTemplate.isProperty &&
+                                                                        currentEntityTemplate.properties.properties[
+                                                                            connectionRelationshipTemplate.name
+                                                                        ]?.relationshipReference?.relationshipTemplateId ===
+                                                                            connectionRelationshipTemplate._id
+                                                                    )
+                                                                        return false;
+
+                                                                    if (
+                                                                        expandedEntity.entity.properties._id ===
+                                                                        connection.destinationEntity.properties._id
+                                                                    )
+                                                                        return (
+                                                                            entityTemplates.get(connection.sourceEntity.templateId)!.category._id ===
+                                                                            _id
+                                                                        );
+
+                                                                    return (
+                                                                        entityTemplates.get(connection.destinationEntity.templateId)!.category._id ===
+                                                                        _id
+                                                                    );
+                                                                }).length
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                }
+                                                value={String(index)}
+                                                icon={
+                                                    iconFileId ? (
+                                                        <CustomIcon
+                                                            iconUrl={iconFileId}
+                                                            height="24px"
+                                                            width="24px"
+                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                        />
+                                                    ) : (
+                                                        <HiveIcon
+                                                            fontSize="medium"
+                                                            sx={{
+                                                                color: value === String(index) ? theme.palette.primary.main : '#787C9E',
+                                                            }}
+                                                        />
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </TabList>
+                                </Box>
+                                {categoriesWithConnectionsTemplates.map(
+                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
+                                        const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
+                                            isEntityDisabled,
+                                            hasWritePermissionToCurrCategory,
+                                            _id,
+                                            currentUser.currentWorkspacePermissions,
+                                        );
+
+                                        return (
+                                            <TabPanel key={_id} value={String(index)}>
+                                                {connectionsTemplatesOfCategory
+                                                    .sort(
+                                                        (a, b) =>
+                                                            Number(templateHasInstances(b.relationshipTemplate, expandedEntity)) -
+                                                            Number(templateHasInstances(a.relationshipTemplate, expandedEntity)),
+                                                    )
+                                                    .map((connectionTemplate, connectedRelationshipTemplateIndex) => (
+                                                        <ConnectionsTable
+                                                            // eslint-disable-next-line react/no-array-index-key
+                                                            key={connectedRelationshipTemplateIndex}
+                                                            expandedEntity={expandedEntity}
+                                                            templateIds={templateIds}
+                                                            connectionTemplate={connectionTemplate}
+                                                            isEditButtonsDisabled={isEditButtonsDisabled}
+                                                            disabledButtonText={disabledButtonText}
+                                                            hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
+                                                        />
+                                                    ))}
+                                            </TabPanel>
+                                        );
+                                    },
+                                )}
+                            </TabContext>
                         </Grid>
                     </Grid>
-                    <Grid item>
-                        <TabContext value={value}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
-                                    {categoriesWithConnectionsTemplates?.map(({ category: { _id, displayName, iconFileId } }, index) => (
-                                        <Tab
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                gap: '15px',
-                                                height: '20px',
-                                                alignItems: 'center',
-                                            }}
-                                            key={_id}
-                                            label={
-                                                <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
-                                                    <Typography
-                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                        style={{ fontWeight: '500', fontSize: '16px' }}
-                                                    >
-                                                        {displayName}
-                                                    </Typography>
-                                                    <Typography color="#787C9E">
-                                                        {
-                                                            // calculate the amount of the related connections of each entity
-                                                            expandedEntity.connections.filter((connection) => {
-                                                                const connectionRelationshipTemplate = relationshipTemplates.get(
-                                                                    connection.relationship.templateId,
-                                                                )!;
-
-                                                                if (
-                                                                    connectionRelationshipTemplate.isProperty &&
-                                                                    currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]
-                                                                        ?.relationshipReference?.relationshipTemplateId ===
-                                                                        connectionRelationshipTemplate._id
-                                                                )
-                                                                    return false;
-
-                                                                if (
-                                                                    expandedEntity.entity.properties._id ===
-                                                                    connection.destinationEntity.properties._id
-                                                                )
-                                                                    return (
-                                                                        entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id
-                                                                    );
-
-                                                                return (
-                                                                    entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id
-                                                                );
-                                                            }).length
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                            }
-                                            value={String(index)}
-                                            icon={
-                                                iconFileId ? (
-                                                    <CustomIcon
-                                                        iconUrl={iconFileId}
-                                                        height="24px"
-                                                        width="24px"
-                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                    />
-                                                ) : (
-                                                    <HiveIcon
-                                                        fontSize="medium"
-                                                        sx={{
-                                                            color: value === String(index) ? theme.palette.primary.main : '#787C9E',
-                                                        }}
-                                                    />
-                                                )
-                                            }
-                                        />
-                                    ))}
-                                </TabList>
-                            </Box>
-                            {categoriesWithConnectionsTemplates?.map(
-                                ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
-                                    const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
-                                        isEntityDisabled,
-                                        hasWritePermissionToCurrCategory,
-                                        _id,
-                                        currentUser.currentWorkspacePermissions,
-                                    );
-
-                                    return (
-                                        <TabPanel key={_id} value={String(index)}>
-                                            {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
-                                                <ConnectionsTable
-                                                    // eslint-disable-next-line react/no-array-index-key
-                                                    key={connectedRelationshipTemplateIndex}
-                                                    expandedEntity={expandedEntity}
-                                                    templateIds={templateIds}
-                                                    connectionTemplate={connectionTemplate}
-                                                    isEditButtonsDisabled={isEditButtonsDisabled}
-                                                    disabledButtonText={disabledButtonText}
-                                                    hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
-                                                />
-                                            ))}
-                                        </TabPanel>
-                                    );
-                                },
-                            )}
-                        </TabContext>
-                    </Grid>
-                </Grid>
+                )}
             </Grid>
         </>
     );

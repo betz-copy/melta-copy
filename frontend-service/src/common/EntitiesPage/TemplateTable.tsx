@@ -147,7 +147,7 @@ const TemplateTable = forwardRef<
                         }}
                         style={{ borderRadius: '5px' }}
                     >
-                        {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
+                        {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expand-table.svg" />}
                     </IconButtonWithPopover>
                     <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                     <IconButtonWithPopover
