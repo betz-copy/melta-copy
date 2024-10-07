@@ -533,7 +533,7 @@ describe('Test Process Service', () => {
                         // eslint-disable-next-line no-await-in-loop
                         const { status: processInstanceStatus } = (await request(app).get(`/api/processes/instances/${processInstance._id}`)).body;
                         expect(processInstanceStatus).toBe(Status.Rejected);
-                        throw new ServiceError(500, 'test error', { error: response.error });
+                        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'test error', { error: response.error });
                     }
                 });
                 it('should update step status and return step with status 200', async () => {
