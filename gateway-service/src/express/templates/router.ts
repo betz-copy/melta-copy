@@ -16,6 +16,11 @@ import {
     deleteFieldValueSchema,
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
+    getCategoriesSchema,
+    searchEntityTemplatesOfUserFromParamsSchema,
+    searchEntityTemplatesSchema,
+    searchRulesRequestSchema,
+    searchTemplatesRequestSchema,
     updateCategorySchema,
     updateEntityTemplateSchema,
     updateEntityTemplateStatusSchema,
@@ -25,13 +30,16 @@ import {
 } from './validator.schema';
 
 const {
-    templateService: { url, requestTimeout },
+    templateService: { url, requestTimeout, baseRoute },
     service: { uploadsFolderPath },
 } = config;
 
 const TemplatesServiceProxy = createProxyMiddleware({
-    target: url,
-    onProxyReq: fixRequestBody,
+    target: `${url}${baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: requestTimeout,
 });
 
@@ -66,6 +74,13 @@ templatesRouter.delete(
     templatesControllerMiddleware.deleteCategory,
 );
 
+templatesRouter.post(
+    '/categories/search',
+    ValidateRequest(getCategoriesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchCategories,
+);
+
 // entities (templates)
 templatesRouter.put(
     '/entities/update-enum-field/:id',
@@ -79,6 +94,7 @@ templatesRouter.patch(
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityEnumFieldValue,
 );
+templatesRouter.patch('/entities/:id/actions', AuthorizerControllerMiddleware.userIsRootAdmin, TemplatesServiceProxy);
 templatesRouter.post('/entities/search', AuthorizerControllerMiddleware.userCanReadTemplates, TemplatesServiceProxy);
 templatesRouter.post(
     '/entities',
@@ -116,6 +132,20 @@ templatesRouter.delete(
     templatesControllerMiddleware.deleteEntityTemplate,
 );
 
+templatesRouter.post(
+    '/entities/search/template/:userId',
+    ValidateRequest(searchEntityTemplatesOfUserFromParamsSchema),
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
+);
+
+templatesRouter.post(
+    '/entities/search/template',
+    ValidateRequest(searchEntityTemplatesSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
+);
+
 // relationships (templates)
 templatesRouter.post(
     '/relationships',
@@ -142,6 +172,13 @@ templatesRouter.get(
     templatesControllerMiddleware.getAllRelationshipTemplates,
 );
 
+templatesRouter.post(
+    '/relationships/search',
+    ValidateRequest(searchTemplatesRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRelationshipTemplates,
+);
+
 // rules (templates)
 templatesRouter.put('/rules/:ruleId', AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
 templatesRouter.patch(
@@ -157,5 +194,12 @@ templatesRouter.delete(
     templatesControllerMiddleware.deleteRuleById,
 );
 templatesRouter.post(['/rules', '/rules/get-many'], AuthorizerControllerMiddleware.userCanWriteRules, TemplatesServiceProxy);
+
+templatesRouter.post(
+    '/rules/search',
+    ValidateRequest(searchRulesRequestSchema),
+    AuthorizerControllerMiddleware.userHasSomePermissions,
+    templatesControllerMiddleware.searchRulesTemplates,
+);
 
 export default templatesRouter;

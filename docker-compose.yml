@@ -1,4 +1,8 @@
-version: "3.4"
+version: "3.8"
+
+secrets:
+  npm_token:
+    file: ./npm_token_secret.txt
 
 services:
   user-service:
@@ -113,6 +117,9 @@ services:
       MONGO_STEP_TEMPLATES_COLLECTION_NAME: ${MONGO_STEP_TEMPLATES_COLLECTION_NAME}
       MONGO_STEP_INSTANCES_COLLECTION_NAME: ${MONGO_STEP_INSTANCES_COLLECTION_NAME}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      ELASTIC_CLIENT_URL: ${ELASTIC_CLIENT_URL}
+      ELASTIC_PROCESS_SEARCH_INDEX: ${ELASTIC_PROCESS_SEARCH_INDEX}
+      EXCLUDED_KEYS: ${EXCLUDED_KEYS}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
@@ -150,7 +157,10 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
 
   gateway-service:
-    build: ./gateway-service
+    build:
+      context: ./gateway-service
+      secrets:
+        - npm_token
     environment:
       PORT: 8000
       TOKEN_SECRET: ${TOKEN_SECRET}
@@ -198,3 +208,16 @@ services:
       USE_AUTH: "true"
       RABBIT_URI: ${RABBIT_URL}
       REDIS_CONNECTION_URI: ${REDIS_HOST}
+
+  cron-service:
+    build: ./cron-service
+    environment:
+      PORT: 8000
+      INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
+      TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
+      WORKSPACE_SERVICE_URL: ${WORKSPACE_SERVICE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      RABBIT_URL: ${RABBIT_URL}
+      ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
+      WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+      DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}

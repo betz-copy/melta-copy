@@ -41,6 +41,7 @@ const config = {
     },
     templateService: {
         url: env.get('TEMPLATE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('TEMPLATE_SERVICE_BASE_ROUTE').default('/api/templates').asString(),
         entities: {
             baseEntitiesRoute: env.get('TEMPLATE_SERVICE_ENTITIES_BASE_ROUTE').default('/api/templates/entities').asString(),
             baseCategoriesRoute: env.get('TEMPLATE_SERVICE_CATEGORIES_BASE_ROUTE').default('/api/templates/categories').asString(),
@@ -57,17 +58,19 @@ const config = {
     },
     storageService: {
         url: env.get('STORAGE_SERVICE_URL').required().asString(),
-        uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('/api/files').asString(),
-        uploadFilesRoute: env.get('STORAGE_SERVICE_UPLOAD_FILES_ROUTE').default('/api/files/bulk').asString(),
-        downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').default('/api/files').asString(),
-        deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('/api/files').asString(),
-        deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('/api/files/delete-bulk').asString(),
-        duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('/api/files/duplicate-bulk').asString(),
+        baseRoute: env.get('STORAGE_SERVICE_BASE_ROUTE').default('/api/files').asString(),
+        uploadFileRoute: env.get('STORAGE_SERVICE_UPLOAD_FILE_ROUTE').default('api/files').asString(),
+        uploadFilesRoute: env.get('STORAGE_SERVICE_UPLOAD_FILES_ROUTE').default('api/files/bulk').asString(),
+        downloadFileRoute: env.get('STORAGE_SERVICE_DOWNLOAD_FILE_ROUTE').default('api/files').asString(),
+        deleteFileRoute: env.get('STORAGE_SERVICE_DELETE_FILE_ROUTE').default('api/files').asString(),
+        deleteFilesRoute: env.get('STORAGE_SERVICE_DELETE_FILES_ROUTE').default('api/files/delete-bulk').asString(),
+        duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
+        baseRoute: env.get('INSTANCE_SERVICE_BASE_ROUTE').default('/api/instances').asString(),
         baseEntitiesRoute: env.get('INSTANCE_SERVICE_BASE_ENTITIES_ROUTE').default('/api/instances/entities').asString(),
         baseRelationshipsRoute: env.get('INSTANCE_SERVICE_BASE_RELATIONSHIPS_ROUTE').default('/api/instances/relationships').asString(),
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
@@ -150,6 +153,7 @@ const config = {
         },
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
         mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
+        deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
@@ -176,10 +180,6 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
-    },
-    notifications: {
-        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
 };
 

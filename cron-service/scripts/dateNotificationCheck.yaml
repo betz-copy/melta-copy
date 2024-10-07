@@ -1,0 +1,60 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+    name: date-notification-check
+spec:
+    schedule: '0 0 * * *'
+    jobTemplate:
+        spec:
+            template:
+                spec:
+                    containers:
+                        - name: date-notification-check
+                          image: melta-cron-service:latest
+                          imagePullPolicy: IfNotPresent
+                          command: ['node', '/usr/src/app/dist/cron/dateNotificationsCheck.js']
+                          env:
+                            - name: INSTANCE_SERVICE_URL
+                                value: 'http://instance-service:8000'
+                            - name: TEMPLATE_SERVICE_URL
+                                value: 'http://template-service:8000'
+                            - name: WORKSPACE_SERVICE_URL
+                                value: 'http://workspace-service:8000'
+                            - name: USER_SERVICE_URL
+                                value: 'http://user-service:8000'
+                            - name: PORT
+                                value: '8000'
+                            - name: RABBIT_URL
+                                value: 'amqp://rabbit'
+                            - name: WORKSPACE_ID_HEADER_NAME
+                                value: 'workspace-id'
+                            - name: ELASTIC_APM_ACTIVE
+                                value: 'false'
+                    restartPolicy: Never
+# Commands:
+
+# delete:
+# delete all cronjobs: kubectl delete cronjob --all
+# delete dateNotificationCheck: kubectl delete cronjob date-notification-check
+
+# create/ update
+# apply dateNotificationCheck: kubectl apply -f ~/melta/melta/gateway-service/scripts/dateNotificationCheck.yaml
+
+# get:
+# get cronjobs: kubectl get cronjob
+# get jobs: kubectl get job
+# get pods: kubectl get pods
+# get pods: kubectl get pods --watch
+# logs: kubectl logs -f <pod name>
+# kubectl delete pods --all
+
+# minikube:
+# Set Docker Environment to Minikube: eval $(minikube docker-env)
+# Minikube delete: minikube delete
+# Minikube start: minikube start
+# Minikube status: minikube status
+# minikube image load melta-gateway-service:latest
+
+# to build docker image:
+# cd gateway-service
+# docker build -t date-notification-check:latest .

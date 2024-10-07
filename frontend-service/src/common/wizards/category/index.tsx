@@ -36,7 +36,7 @@ const steps: StepsType<CategoryWizardValues> = [
 const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     open,
     handleClose,
-    initalStep = 0,
+    initialStep = 0,
     initialValues = { name: '', displayName: '', icon: undefined, color: '' },
     isEditMode = false,
 }) => {
@@ -50,7 +50,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             onSuccess: (data) => {
                 queryClient.setQueryData<ICategoryMap>('getCategories', (categories) => categories!.set(data._id, data));
 
-                toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccefully' : 'wizard.category.createdSuccessfully'));
+                toast.success(i18next.t(isEditMode ? 'wizard.category.editedSuccessfully' : 'wizard.category.createdSuccessfully'));
                 handleClose();
             },
             onError: (error: AxiosError) => {
@@ -68,12 +68,12 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initalStep={initalStep}
+            initialStep={initialStep}
             isEditMode={isEditMode}
             title={i18next.t('wizard.category.title')}
             steps={steps}
             isLoading={isLoading}
-            submitFucntion={(values) => mutateAsync(values)}
+            submitFunction={(values) => mutateAsync(values)}
         />
     );
 };

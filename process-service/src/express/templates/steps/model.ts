@@ -1,5 +1,6 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 
+// eslint-disable-next-line import/prefer-default-export
 export const StepTemplateSchema = new mongoose.Schema(
     {
         name: {

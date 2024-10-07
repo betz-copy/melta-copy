@@ -89,7 +89,7 @@ export class MinIOClient {
         return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
-    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, metaData = {}) {
-        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, metaData));
+    uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
+        return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
 }

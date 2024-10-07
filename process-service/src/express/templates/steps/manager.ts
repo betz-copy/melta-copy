@@ -3,7 +3,7 @@ import { ClientSession } from 'mongoose';
 import config from '../../../config';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
-import { IMongoStepTemplate, IStepTemplate, StepTemplateDocument } from './interface';
+import { IMongoStepTemplate, IStepTemplate } from './interface';
 import { StepTemplateSchema } from './model';
 
 export default class StepTemplateManager extends DefaultManagerMongo<IStepTemplate> {
@@ -32,7 +32,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
         if (stepDisplayNames.length > stepUniqueDisplayNames.length) throw new ValidationError('process contains duplicate step display name');
     }
 
-    async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession): Promise<StepTemplateDocument[]> {
+    async createStepsTemplates(steps: IStepTemplate[], session?: ClientSession) {
         this.throwIfDuplicateStepName(steps);
         return this.model.insertMany(steps, { session });
     }
@@ -59,7 +59,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
         let newStepsIds: string[] = [];
         if (stepsToCreate.length) {
             const createdSteps = await this.createStepsTemplates(stepsToCreate, session);
-            newStepsIds = createdSteps.map((step) => step._id.toString());
+            newStepsIds = createdSteps.map((step) => step._id!.toString());
         }
         const originalIds = stepsToUpdate.map((step) => step._id!.toString());
         return [...originalIds, ...newStepsIds];

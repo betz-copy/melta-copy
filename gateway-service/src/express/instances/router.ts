@@ -23,8 +23,11 @@ import {
 const { instanceService } = config;
 
 const InstanceManagerProxy = createProxyMiddleware({
-    target: instanceService.url,
-    onProxyReq: fixRequestBody,
+    target: `${instanceService.url}${instanceService.baseRoute}`,
+    changeOrigin: true,
+    on: {
+        proxyReq: fixRequestBody,
+    },
     proxyTimeout: instanceService.requestTimeout,
 });
 
@@ -52,6 +55,7 @@ InstancesRouter.post(
     InstancesControllerMiddleware.exportEntities,
 );
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
+InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/expanded/:id',

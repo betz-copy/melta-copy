@@ -29,7 +29,8 @@ export default class RedisClient {
 
     // Function to get a key with a dynamic prefix (workspaceId)
     public async get(key: string) {
-        return RedisClient.redisClient.get(this.addPrefixToKey(key));
+        const returnedKey = await RedisClient.redisClient.get(this.addPrefixToKey(key));
+        return returnedKey?.replace(this.prefix, '');
     }
 
     // Function to delete a key with a dynamic prefix (workspaceId)

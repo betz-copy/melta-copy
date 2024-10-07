@@ -11,6 +11,8 @@ import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { IEntity } from '../../../interfaces/entities';
 import {
     ActionTypes,
+    IAction,
+    IActionPopulated,
     ICreateEntityMetadata,
     ICreateEntityMetadataPopulated,
     IDuplicateEntityMetadata,
@@ -76,6 +78,8 @@ interface IActionOnEntityWithRuleBreachDialogProps {
     entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
     onCreateRuleBreachRequest: () => void;
+    actions?: IActionPopulated[];
+    rawActions?: IAction[];
 }
 
 const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = ({
@@ -89,6 +93,8 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     entityFormData,
     onUpdatedRuleBlock,
     onCreateRuleBreachRequest,
+    actions,
+    rawActions,
 }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
@@ -137,14 +143,14 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             return createRuleBreachRequestRequest(
                 {
                     brokenRules: rawBrokenRules,
-                    actions: [
+                    actions: rawActions ?? [
                         {
                             actionType,
                             actionMetadata: actionMetadataWithoutFiles,
                         },
                     ],
                 },
-                entityFormData.attachmentsProperties,
+                rawActions ? undefined : attachmentsProperties,
             );
         },
         {
@@ -181,8 +187,11 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 }
             }}
             brokenRules={brokenRules}
+            /// that for one broken
             actionType={actionType}
             actionMetadata={actionMetadataPopulated}
+            /// that for multiple broken- when there was action code
+            actions={actions}
         />
     );
 };

@@ -37,5 +37,6 @@ module.exports = {
         'no-underscore-dangle': ['error', { allow: ['_id'] }],
         'no-shadow': 'off',
         '@typescript-eslint/no-shadow': 'error',
+        'class-methods-use-this': 'off',
     },
 };

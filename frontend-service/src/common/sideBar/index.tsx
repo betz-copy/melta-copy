@@ -350,7 +350,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write) && (
                         <NavButton
                             to="/permissions-management"
-                            text={i18next.t('permissions.permissionsManagmentPageTitle')}
+                            text={i18next.t('permissions.permissionsManagementPageTitle')}
                             isDrawerOpen={isDrawerOpen}
                             onChangeToActive={(isActive) => handleChangeActiveButton(isActive, 'permissions-management')}
                             isActiveButton={activeButton === 'permissions-management'}
@@ -373,6 +373,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 text={i18next.t('workspaces.goBack')}
                                 isDrawerOpen={isDrawerOpen}
                                 onChangeToActive={() => {}}
+                                onClick={() => queryClient.removeQueries('getAllTemplates')}
                             >
                                 <ExitIcon fontSize="large" sx={{ color: 'white', ...environment.iconSize }} />
                             </NavButton>

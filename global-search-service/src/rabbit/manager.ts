@@ -77,7 +77,7 @@ export default class Manager extends DefaultManagerNeo4j {
         }
 
         await this.createIndex(primaryIndexName, labels, properties);
-        await this.redisClient.set(redisKeyName, secondaryIndexName);
+        await this.redisClient.set(redisKeyName, primaryIndexName);
         await this.dropIndex(secondaryIndexName);
     }
 

@@ -1,5 +1,5 @@
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, GetQuickFilterTextParams, ICellRendererParams } from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams, ModuleRegistry } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
@@ -10,8 +10,10 @@ import '@noam7700/ag-grid-enterprise-core';
 import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import i18next from 'i18next';
-import React from 'react';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -19,8 +21,14 @@ import { ICompact, IInstancesPermission } from '../../interfaces/permissions/per
 import { IUser } from '../../interfaces/users';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
+import { searchUsersRequest } from '../../services/userService';
+import { trycatch } from '../../utils/trycatch';
+import { IWorkspace } from '../../interfaces/workspaces';
 
 const { defaultRowHeight } = environment.agGrid;
+const { infiniteScrollPageCount } = environment.permission;
+
+ModuleRegistry.registerModules([ServerSideRowModelModule]);
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
@@ -37,25 +45,16 @@ const defaultColDef: ColDef<IUser> = {
     menuTabs: ['filterMenuTab'],
 };
 
-const columnDefs = (
+const columnDefs = <Data extends IUser>(
     workspaceId: string,
     categories: IMongoCategory[],
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
-): ColDef<IUser>[] => [
+): ColDef<Data>[] => [
     {
         field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
         filter: 'agTextColumnFilter',
-        getQuickFilterText: (params) => {
-            const {
-                _id,
-                displayName,
-                externalMetadata: { digitalIdentitySource },
-            } = params.data;
-
-            return `${_id} ${displayName} ${digitalIdentitySource}`;
-        },
     },
     {
         field: 'externalMetadata.digitalIdentitySource',
@@ -91,21 +90,6 @@ const columnDefs = (
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
-        getQuickFilterText: (params: GetQuickFilterTextParams<IUser, ICompact<IInstancesPermission>['categories']>) => {
-            const permissionsOfCategories =
-                params.data?.permissions[workspaceId]?.admin?.scope === PermissionScope.write
-                    ? Object.keys(params.value ?? {}).map((category) => {
-                          return (
-                              categories.find(({ _id: currCategoryId }) => currCategoryId === category) ?? {
-                                  _id: category,
-                                  name: category,
-                                  displayName: category,
-                              }
-                          );
-                      })
-                    : categories;
-            return permissionsOfCategories.map(({ displayName }) => displayName).join(' ');
-        },
         filter: false, // todo: do set filter with `.includes` logic
         suppressMenu: true,
         // filter: 'agSetColumnFilter',
@@ -184,65 +168,145 @@ const columnDefs = (
     },
 ];
 
-const Table: React.FC<{
-    users: IUser[];
-    categories: IMongoCategory[];
-    onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any;
-    onEditPermissionsOfUser: (permissionsOfUser: IUser) => any;
-    quickFilterText: string;
-}> = ({ users, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }) => {
-    const workspace = useWorkspaceStore((state) => state.workspace);
+const getDatasource = <Data extends any = IUser>(
+    { _id }: IWorkspace,
+    quickFilter: string | undefined,
+    onFail: (err: unknown) => void | undefined,
+): IServerSideDatasource => {
+    return {
+        async getRows({ request: { startRow, endRow }, success, fail }: IServerSideGetRowsParams<Data>) {
+            const { result: data, err } = await trycatch(() =>
+                searchUsersRequest({
+                    workspaceIds: [_id],
+                    step: startRow! / infiniteScrollPageCount,
+                    limit: endRow! - startRow!,
+                    search: quickFilter || undefined,
+                }),
+            );
 
-    return (
-        <AgGridReact<IUser>
-            className="ag-theme-material"
-            modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
-            containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
-            rowData={users}
-            defaultColDef={defaultColDef}
-            columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
-            rowModelType="clientSide"
-            getRowId={({ data: { _id } }) => _id}
-            pagination
-            paginationAutoPageSize
-            rowHeight={defaultRowHeight}
-            rowStyle={{ alignItems: 'center' }}
-            enableRtl
-            enableCellTextSelection
-            suppressMovableColumns
-            suppressCsvExport
-            suppressExcelExport
-            suppressContextMenu
-            onFirstDataRendered={(params) => {
-                params.columnApi.autoSizeColumns([
-                    'actions',
-                    'displayName',
-                    'source',
-                    'permissionsManagement',
-                    'templatesManagement',
-                    'rulesManagement',
-                    'processesManagement',
-                    'categoriesPermissions',
-                ]);
-            }}
-            sideBar={{
-                toolPanels: [
-                    {
-                        id: 'columns',
-                        labelDefault: 'Columns',
-                        labelKey: 'columns',
-                        iconKey: 'columns',
-                        toolPanel: 'agColumnsToolPanel',
-                        toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
-                    },
-                ],
-                position: 'left',
-            }}
-            quickFilterText={quickFilterText}
-            localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
-            animateRows
-        />
-    );
+            if (err || !data) {
+                onFail?.(err);
+                fail();
+                return;
+            }
+            success({
+                rowData: data.users,
+                rowCount: data.count,
+            });
+        },
+    };
 };
 
-export default Table;
+const getRowModelProps = <Data extends any = IUser>(
+    workspace: IWorkspace,
+    paginationPageSize: number,
+    quickFilterText: string | undefined,
+    datasourceOnFail: (err: unknown) => void,
+): React.ComponentProps<typeof AgGridReact<Data>> => {
+    return {
+        rowModelType: 'serverSide',
+        serverSideDatasource: getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail),
+        cacheBlockSize: infiniteScrollPageCount,
+        maxBlocksInCache: infiniteScrollPageCount,
+        pagination: true,
+        paginationPageSize,
+    };
+};
+
+type PermissionsTableProps<Data> = {
+    categories: IMongoCategory[];
+    onDeletePermissionsOfUser: (permissionsOfUser: Data) => any;
+    onEditPermissionsOfUser: (permissionsOfUser: Data) => any;
+    quickFilterText: string;
+};
+
+export type PermissionsTableRef<Data> = {
+    refreshServerSide: () => void;
+    updateRowDataClientSide: (data: Data) => void;
+};
+
+const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
+    ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }, ref: ForwardedRef<PermissionsTableRef<IUser>>) => {
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const gridRef = useRef<AgGridReact<IUser>>(null);
+
+        const getRowId = ({ _id }) => _id;
+
+        useImperativeHandle(ref, () => ({
+            refreshServerSide() {
+                gridRef.current?.api.refreshServerSide({ purge: true });
+            },
+            updateRowDataClientSide(data: IUser) {
+                gridRef.current?.api.forEachNode((rowNode) => {
+                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                        rowNode.updateData(data);
+                    }
+                });
+            },
+        }));
+
+        const datasourceOnFail = (error: unknown) => {
+            console.log('failed loading all users:', error);
+            toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
+        };
+
+        const rowModelProps = useMemo(
+            () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail),
+            [quickFilterText, workspace],
+        );
+
+        return (
+            <AgGridReact<IUser>
+                ref={gridRef}
+                className="ag-theme-material"
+                modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
+                containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
+                defaultColDef={defaultColDef}
+                columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
+                getRowId={(params) => getRowId(params.data)}
+                {...rowModelProps}
+                paginationAutoPageSize
+                rowHeight={defaultRowHeight}
+                rowStyle={{ alignItems: 'center' }}
+                enableRtl
+                enableCellTextSelection
+                suppressMovableColumns
+                suppressCsvExport
+                suppressExcelExport
+                suppressContextMenu
+                onFirstDataRendered={(params) => {
+                    params.columnApi.autoSizeColumns([
+                        'actions',
+                        'displayName',
+                        'source',
+                        'permissionsManagement',
+                        'templatesManagement',
+                        'rulesManagement',
+                        'processesManagement',
+                        'categoriesPermissions',
+                    ]);
+                }}
+                sideBar={{
+                    toolPanels: [
+                        {
+                            id: 'columns',
+                            labelDefault: 'Columns',
+                            labelKey: 'columns',
+                            iconKey: 'columns',
+                            toolPanel: 'agColumnsToolPanel',
+                            toolPanelParams: { suppressRowGroups: true, suppressValues: true, suppressPivotMode: true },
+                        },
+                    ],
+                    position: 'left',
+                }}
+                quickFilterText={quickFilterText}
+                localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+                animateRows
+            />
+        );
+    },
+);
+
+export default PermissionsTable as <Data = IUser>(
+    props: PermissionsTableProps<Data> & { ref?: React.ForwardedRef<PermissionsTableRef<Data>> },
+) => ReturnType<typeof PermissionsTable>;

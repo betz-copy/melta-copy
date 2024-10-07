@@ -1,7 +1,8 @@
-import * as mongoose from 'mongoose';
+import mongoose from 'mongoose';
 import config from '../../../config';
 import { Status } from '../processes/interface';
 
+// eslint-disable-next-line import/prefer-default-export
 export const StepInstanceSchema = new mongoose.Schema(
     {
         templateId: {

@@ -20,10 +20,10 @@ export class UsersManager {
     static async searchBaseUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-    ): Promise<IBaseUser[]> {
+    ): Promise<{ users: IBaseUser[]; count: number }> {
         const query: FilterQuery<IBaseUser> = {};
 
         if (search) {
@@ -38,39 +38,41 @@ export class UsersManager {
             ];
         }
 
-        if (permissions || workspaceId) {
-            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceId);
+        if (permissions || workspaceIds) {
+            const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
             const usersIds = new Set<string>(simplePermissions.map(({ userId }) => userId));
             query._id = { $in: [...usersIds] };
         }
 
-        const baseUsers = await UsersModel.find(query, {}, { limit, skip: step * limit })
+        const users = await UsersModel.find(query, {}, { limit, skip: step * limit })
             .lean()
             .exec();
 
-        return baseUsers;
+        const count = await UsersModel.countDocuments(query);
+
+        return { users, count };
     }
 
     static async searchUserIds(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
     ): Promise<string[]> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
-        return baseUsers.map(({ _id }) => _id);
+        const { users } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        return users.map(({ _id }) => _id);
     }
 
     static async searchUsers(
         search: string | undefined,
         permissions: ISubCompactPermissions | undefined,
-        workspaceId: string | undefined,
+        workspaceIds: string[] | undefined,
         limit: number,
         step: number,
-    ): Promise<IUser[]> {
-        const baseUsers = await this.searchBaseUsers(search, permissions, workspaceId, limit, step);
-        return this.appendPermissionsToUsers(baseUsers);
+    ): Promise<{ users: IUser[]; count: number }> {
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step);
+        return { users: await this.appendPermissionsToUsers(users), count };
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
