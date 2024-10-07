@@ -95,8 +95,6 @@ export const workspaceIdInHeader = async (req: express.Request, res: express.Res
     const { workspaceId } = req.params;
 
     try {
-        req.headers.workspaceId = workspaceId;
-
         const filesController = new FilesController(workspaceId);
 
         if (req.originalUrl.includes('zip')) await filesController.downloadZip(req, res);
