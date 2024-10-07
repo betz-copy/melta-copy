@@ -112,7 +112,12 @@ export default class Manager extends DefaultManagerNeo4j {
             }),
         );
 
-        await this.upsertSearchIndex(globalSearchIndex, templateIds, Array.from(allTemplatesProperties));
+        // https://github.com/neo4j/neo4j/issues/12288
+        // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
+        // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
+        // Here we only create the global search index if we already have more then one template.
+        // But the global search actually works without the global search index initialized.
+        if (templates.length > 1) await this.upsertSearchIndex(globalSearchIndex, templateIds, Array.from(allTemplatesProperties));
     }
 
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
