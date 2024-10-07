@@ -41,15 +41,10 @@ export class MinioMulter {
         if (typeof workspaceId !== 'string') return null;
 
         const storage = new MinioStorage(workspaceId);
-        console.log('hello');
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
-        console.log('1');
-        const x = await storage.globalBucketClient.bucketExists();
-        console.log({ x });
 
-        if (!x) await storage.globalBucketClient.makeBucket();
-        console.log({ storage });
+        if (!(await storage.globalBucketClient.bucketExists())) await storage.globalBucketClient.makeBucket();
 
         return storage;
     }

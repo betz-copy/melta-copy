@@ -5,21 +5,6 @@ import { config } from '../../config';
 import logger from '../logger/logsLogger';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
-
-// export class MinIOClient {
-//     private minioClient: Client;
-
-//     constructor(private bucketName: string) {
-//         this.minioClient = new Client({
-//             endPoint,
-//             port,
-//             useSSL,
-//             accessKey,
-//             secretKey,
-//             transportAgent: new http.Agent(transportAgent),
-//         });
-//     }
-
 export class MinIOClient {
     private minioClient: Client;
 
@@ -38,16 +23,13 @@ export class MinIOClient {
         try {
             return func();
         } catch (err: any) {
-            // Check if the error is caused by non-existing bucket
             if (err.code !== 'NoSuchBucket') throw err;
 
-            // Create the bucket if it doesn't exist
             if (!(await this.bucketExists())) {
                 await this.makeBucket();
                 logger.info(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
-            // Retry
             return func();
         }
     }

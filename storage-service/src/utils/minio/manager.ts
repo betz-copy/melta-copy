@@ -12,11 +12,3 @@ export default abstract class DefaultManagerMinio {
         console.log(this.globalBucketClient);
     }
 }
-
-// export default abstract class DefaultManagerMinio {
-//     public minioClient: MinIOClient;
-
-//     constructor(protected workspaceId: string) {
-//         this.minioClient = new MinIOClient(workspaceId);
-//     }
-// }
