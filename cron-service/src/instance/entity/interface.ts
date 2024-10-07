@@ -1,45 +1,9 @@
-import { IRelationship } from './relationships';
-import { IRelationshipTemplate } from '../../templates/relationshipsTemplateService';
+import { IRelationshipTemplate } from '../../template/relationship/interface';
+import { IRelationship } from '../relationship/interface';
 
 export interface IEntity {
     templateId: string;
     properties: Record<string, any>;
-}
-
-export interface IEntityExpanded {
-    entity: IEntity;
-    connections: {
-        relationship: Pick<IRelationship, 'templateId' | 'properties'>;
-        sourceEntity: IEntity;
-        destinationEntity: IEntity;
-    }[];
-}
-
-export interface IUniqueConstraint {
-    type: 'UNIQUE';
-    constraintName: string;
-    templateId: string;
-    properties: string[];
-}
-
-export interface IRequiredConstraint {
-    type: 'REQUIRED';
-    constraintName: string;
-    templateId: string;
-    property: string;
-}
-
-export type IConstraint = IRequiredConstraint | IUniqueConstraint;
-
-export interface IUniqueConstraintOfTemplate {
-    groupName: string;
-    properties: string[];
-}
-
-export interface IConstraintsOfTemplate {
-    templateId: string;
-    requiredConstraints: string[];
-    uniqueConstraints: IUniqueConstraintOfTemplate[];
 }
 
 export interface IEntityWithDirectRelationships {
@@ -48,6 +12,18 @@ export interface IEntityWithDirectRelationships {
         relationship: IRelationship;
         otherEntity: IEntity;
     }>;
+}
+
+export interface ISearchResult {
+    count: number;
+    entities: IEntityWithDirectRelationships[];
+}
+
+export interface IFilterDatesRange {
+    propertyName: string;
+    dateNotificationValue: number;
+    isDateTime: boolean;
+    isDailyAlert: boolean;
 }
 
 export interface IFilterOfField {
@@ -84,22 +60,4 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
     sort?: ISearchSort;
-}
-
-export interface ISearchBatchBody {
-    skip?: number;
-    limit: number;
-    textSearch?: string;
-    templates: {
-        [templateId: string]: {
-            filter?: ISearchFilter;
-            showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
-        };
-    };
-    sort?: ISearchSort;
-}
-
-export interface ISearchResult {
-    count: number;
-    entities: IEntityWithDirectRelationships[];
 }

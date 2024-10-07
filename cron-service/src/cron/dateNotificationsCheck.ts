@@ -1,16 +1,15 @@
+import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../notification/interface';
+import config from '../config';
+import { UsersManager } from '../users/manager';
+import { WorkspaceTypes } from '../workspaces/inteface';
+import { InstancesService } from '../services/instance';
+import { IFilterDatesRange } from '../instance/entity/interface';
+import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
+import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
+import { WorkspaceManager } from '../workspaces/manager';
+import { RabbitManager } from '../utils/rabbit/rabbit';
+import logger from '../utils/logger/logsLogger';
 import * as schedule from 'node-schedule';
-import config from '../../config';
-import { UsersManager } from '../../express/users/manager';
-import { WorkspaceTypes } from '../../express/workspaces/interface';
-import { WorkspaceManager } from '../../express/workspaces/manager';
-import { InstancesService } from '../../externalServices/instanceService';
-import { IFilterDatesRange } from '../../externalServices/instanceService/interfaces/entities';
-import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
-import { IDateAboutToExpireMetadataPopulated } from '../../externalServices/notificationService/interfaces/populated';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import logger from '../logger/logsLogger';
-import { RabbitManager } from '../rabbit';
 
 const { notifications } = config;
 
@@ -113,7 +112,7 @@ const sendNotificationsForEntityTemplate = async (
                         (isDailyAlert && notificationDate.getTime() <= today.getTime()) ||
                         (!isDailyAlert && checkNotificationDateInCustomAlert(datePropertyValue, dateNotificationValue))
                     ) {
-                        await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata, IDateAboutToExpireMetadataPopulated>(
+                        await rabbitManager.createNotification<IDateAboutToExpireNotificationMetadata>(
                             userIdsWithPermission,
                             NotificationType.dateAboutToExpire,
                             {
@@ -121,7 +120,6 @@ const sendNotificationsForEntityTemplate = async (
                                 propertyName,
                                 datePropertyValue,
                             },
-                            { entity, propertyName, datePropertyValue },
                         );
                     }
                 });
@@ -149,7 +147,7 @@ export const checkForDateNotifications = async () => {
                         ),
                     );
                 } catch (error) {
-                    logger.error('Error checking date notifications:', error);
+                    logger.error('Error checking date notifications:', { error });
                 }
             }),
         );
