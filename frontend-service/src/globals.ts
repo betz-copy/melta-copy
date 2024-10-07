@@ -59,6 +59,8 @@ export const environment = {
         },
         is3DViewLocalStorageKey: 'isGraph3DView',
         detailsResolution3D: 100,
+        BatchSize: 50,
+        limit3DConnections: 100,
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,

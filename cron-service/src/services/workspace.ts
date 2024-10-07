@@ -1,0 +1,24 @@
+import axios from "axios";
+import { IWorkspace } from "../workspaces/inteface";
+import config from "../config";
+
+const {
+  workspaceService: { url, baseRoute, requestTimeout },
+} = config;
+
+export class WorkspaceService {
+  private static api = axios.create({
+    baseURL: `${url}${baseRoute}`,
+    timeout: requestTimeout,
+  });
+
+  static async getWorkspaceIds(type: IWorkspace["type"]) {
+    const { data } = await this.api.post<string[]>(`/ids`, { type });
+    return data;
+  }
+
+  static async getWorkspaceHierarchyIds(id: string) {
+    const { data } = await this.api.get<string[]>(`/${id}/ids/hierarchy`);
+    return data;
+  }
+}
