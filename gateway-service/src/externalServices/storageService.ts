@@ -13,10 +13,11 @@ export class StorageService extends DefaultExternalServiceApi {
         super(workspaceId, { baseURL: url });
     }
 
-    async uploadFile(file: Express.Multer.File) {
+    async uploadFile(file: Express.Multer.File, isUserProfileUpload = false) {
         const formData = new FormData();
         const fileStream = await fsCreateReadStream(file.path);
         formData.append('file', fileStream, file.originalname);
+        formData.append('isUserProfileUpload', isUserProfileUpload);
 
         const { data } = await this.api.post<{ path: string }>(uploadFileRoute, formData, {
             headers: formData.getHeaders(),

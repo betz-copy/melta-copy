@@ -6,6 +6,20 @@ import logger from '../logger/logsLogger';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
+// export class MinIOClient {
+//     private minioClient: Client;
+
+//     constructor(private bucketName: string) {
+//         this.minioClient = new Client({
+//             endPoint,
+//             port,
+//             useSSL,
+//             accessKey,
+//             secretKey,
+//             transportAgent: new http.Agent(transportAgent),
+//         });
+//     }
+
 export class MinIOClient {
     private minioClient: Client;
 
@@ -39,11 +53,13 @@ export class MinIOClient {
     }
 
     bucketExists() {
+        console.log('gg', this.bucketName);
+        
         return this.minioClient.bucketExists(this.bucketName);
     }
-    
+
     makeBucket() {
-        console.log("this.bucketName", this.bucketName);
+        console.log('this.bucketName', this.bucketName);
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 
@@ -93,8 +109,4 @@ export class MinIOClient {
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
         return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
-
-    // uploadToGlobal(filePath, fileName) {
-    //     this.uploadFile(this.globalBucket, filePath, fileName);
-    // }
 }

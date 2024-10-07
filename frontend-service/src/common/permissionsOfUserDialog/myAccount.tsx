@@ -4,6 +4,7 @@ import { IUser } from '../../interfaces/users';
 import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
 import { updateUserPreferencesMetadataRequest } from '../../services/userService';
+import { InstanceSingleFileInput } from '../inputs/InstanceFilesInput/InstanceSingleFileInput';
 
 const { notificationsMoreData } = environment.notifications;
 const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
@@ -33,7 +34,24 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
     return (
         <Grid container>
             <Grid sx={{ backgroundColor: 'grey' }} width="100%" height="100px" />
-
+            <Grid item>
+                <InstanceSingleFileInput
+                    // key={key}
+                    fileFieldName="hhhh"
+                    fieldTemplateTitle="ggg"
+                    // setFieldValue={setFieldValue}
+                    // required={requiredFilesNames.includes(key)}
+                    value={existingUser?.preferences.profileImgId as File | undefined}
+                    error="erorrrrr"
+                    // setFieldTouched={null}
+                    setExternalErrors={() => {}}
+                    // eslint-disable-next-line react/jsx-no-bind
+                    setFieldValue={function (_field: string): void {
+                        throw new Error('Function not implemented.');
+                    }}
+                    required={false}
+                />
+            </Grid>
             <Grid container flexDirection="row" spacing={4}>
                 {allNotifications.map((notification) => (
                     <Grid item key={notification.type}>

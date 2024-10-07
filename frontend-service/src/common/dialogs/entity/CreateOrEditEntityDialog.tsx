@@ -394,7 +394,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         isEditMode={isEditMode}
                     />
                 );
-                console.log({ templateFilesProperties });
+                console.log({ templateFilesProperties }, Object.entries(templateFilesProperties));
 
                 const propertiesFilesComp = templateFileKeys.length > 0 && (
                     <>

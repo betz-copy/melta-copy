@@ -80,6 +80,7 @@ const PermissionsOfUserDialog: React.FC<{
                     </Grid>
                 </TabContext>
             </Box>
+
             {/* <DialogActions>
                 <Grid container justifyContent="space-between">
                     <Grid>

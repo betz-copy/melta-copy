@@ -31,6 +31,9 @@ const UserSchema = new mongoose.Schema(
             mailsNotificationsTypes: {
                 type: [],
             },
+            profileImgId: {
+                type: String,
+            },
         },
         externalMetadata: {
             kartoffelId: {

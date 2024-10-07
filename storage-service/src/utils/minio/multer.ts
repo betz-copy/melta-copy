@@ -9,10 +9,21 @@ import DefaultManagerMinio from './manager';
 const { fileKeyName, filesKeyName } = config.multer;
 
 export class MinioStorage extends DefaultManagerMinio {
-    async handleFile(_req: Request, file: Express.Multer.File) {
-        const path = generatePath(file.originalname);
+    async handleFile(req: Request, file: Express.Multer.File) {
+        const { isUserProfileUpload } = req.body;
+        let path: string;
+        console.log(req.body, { isUserProfileUpload });
 
-        await this.minioClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
+        if (isUserProfileUpload) {
+            const { userId } = req.body;
+            path = `users-profile/${userId}_profile.${file.mimetype.split('/')[1]}`;
+
+            await this.globalBucketClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
+        } else {
+            path = generatePath(file.originalname);
+            await this.minioClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
+        }
+
         return { ...(await this.minioClient.statFile(path)), path };
     }
 
@@ -24,15 +35,21 @@ export class MinioStorage extends DefaultManagerMinio {
 
     public _removeFile = callbackify((req: Request, file: Express.Multer.File) => this.removeFile(req, file));
 }
-
 export class MinioMulter {
     private static async wrapMulterMiddleware(req: Request) {
         const workspaceId = req.headers[config.service.workspaceIdHeaderName];
         if (typeof workspaceId !== 'string') return null;
 
         const storage = new MinioStorage(workspaceId);
+        console.log('hello');
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
+        console.log('1');
+        const x = await storage.globalBucketClient.bucketExists();
+        console.log({ x });
+
+        if (!x) await storage.globalBucketClient.makeBucket();
+        console.log({ storage });
 
         return storage;
     }
@@ -47,6 +64,7 @@ export class MinioMulter {
 
     static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
+        console.log('happy');
 
         if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
 

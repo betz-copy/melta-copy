@@ -16,7 +16,7 @@ interface InstanceFileInputProps {
     required: Boolean;
     value: File | undefined;
     error: string | undefined;
-    setFieldTouched: FormikProps<ProcessFormikProps>['setFieldTouched'];
+    setFieldTouched?: FormikProps<ProcessFormikProps>['setFieldTouched'];
     setExternalErrors?: React.Dispatch<
         React.SetStateAction<{
             files: boolean;
@@ -60,13 +60,13 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 fileName={fileName}
                 onDropFile={(acceptedFile) => {
                     setFieldValue(fileFieldName, acceptedFile);
-                    setFieldTouched(fileFieldName, true, false);
+                    if (setFieldTouched) setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 onDeleteFile={(event: React.MouseEvent<HTMLButtonElement>) => {
                     event.stopPropagation();
                     setFieldValue(fileFieldName, undefined);
-                    setFieldTouched(fileFieldName, true, false);
+                    if (setFieldTouched) setFieldTouched(fileFieldName, true, false);
                     setExternalErrors?.((prev) => ({ ...prev, files: false }));
                 }}
                 errorText={error}
