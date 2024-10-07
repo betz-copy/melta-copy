@@ -1,9 +1,11 @@
 import * as archiver from 'archiver';
 import * as express from 'express';
+import { StatusCodes } from 'http-status-codes';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import logger from '../../utils/logger/logsLogger';
 import { FilesManager } from './manager';
+import { ServiceError } from '../error';
 
 export default class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {
@@ -88,3 +90,18 @@ export default class FilesController extends DefaultController<FilesManager> {
         res.json(await this.manager.deleteFiles(paths));
     }
 }
+
+export const workspaceIdInHeader = async (req: express.Request, res: express.Response) => {
+    const { workspaceId } = req.params;
+
+    try {
+        req.headers.workspaceId = workspaceId;
+
+        const filesController = new FilesController(workspaceId);
+
+        if (req.originalUrl.includes('zip')) await filesController.downloadZip(req, res);
+        else await filesController.downloadFile(req, res);
+    } catch (error) {
+        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error in workspaceIdInHeader', error);
+    }
+};

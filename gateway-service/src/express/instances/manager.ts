@@ -103,7 +103,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { path, name, type } = workspace;
         const workspacePath = `${path}/${name}${type}`;
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook, workspacePath);
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: workspaceId });
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -115,11 +115,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private async addWorksheetsToWB(
         { templates, textSearch }: IExportEntitiesBody,
         workbook: stream.xlsx.WorkbookWriter,
-        workspacePath: string,
+        workspace: { path: string; id: string },
     ): Promise<void> {
         const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, workspacePath);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, workspace);
         });
 
         await Promise.all(tasks);
@@ -132,7 +132,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
         displayColumns: string[],
-        workspacePath: string,
+        workspace: { path: string; id: string },
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns);
         const { searchEntitiesChunkSize } = config.service;
@@ -154,7 +154,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 chunk.map((row) => row.entity.properties),
                 template,
                 displayColumns,
-                workspacePath,
+                workspace,
+                this.storageService,
             );
         }
     }

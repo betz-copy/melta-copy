@@ -10,6 +10,7 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
+import { StorageService } from '../../externalServices/storageService';
 
 interface IExcelStyle {
     columnHeader: {
@@ -89,28 +90,22 @@ const fixComplexProperties = (
     row: Record<string, any>,
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
-    workspacePath: string,
+    workspace: { path: string; id: string },
+    _storageService: StorageService,
 ) => {
+    const isFiles = value?.items?.format === 'fileId';
+
     if (value.format === 'relationshipReference') {
         cell.value = {
             text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+            hyperlink: `${config.service.meltaBaseUrl}${workspace.path}/entity/${row[key].properties._id}`,
         };
         return true;
     }
-    if (value.format === 'fileId') {
+    if (value.format === 'fileId' || isFiles) {
         cell.value = {
-            text: getFileName(row[key]),
-            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/api/files/${encodeURIComponent(row[key])}`,
-        };
-        return true;
-    }
-    if (value?.items?.format === 'fileId') {
-        const files = row[key].join('?');
-
-        cell.value = {
-            text: `attachmentZip${rowIndex}`,
-            hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/api/files/zip/${encodeURIComponent(files)}`,
+            text: isFiles ? `attachmentZip${rowIndex}` : getFileName(row[key]),
+            hyperlink: `${config.service.meltaBaseUrl}/api/files/${isFiles ? 'zip/' : ''}${encodeURIComponent(row[key])}/${workspace.id}`,
         };
         return true;
     }
@@ -136,7 +131,8 @@ const styleAWorksheet = (
     rows: IEntity['properties'][],
     template: IMongoEntityTemplatePopulated,
     displayColumns: string[],
-    workspacePath: string,
+    workspace: { path: string; id: string },
+    storageService: StorageService,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -158,7 +154,7 @@ const styleAWorksheet = (
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspacePath);
+                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspace, storageService);
 
                 if (!isComplex) {
                     cell.value = row[key];

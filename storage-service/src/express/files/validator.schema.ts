@@ -33,3 +33,20 @@ export const bulkFilesRequestSchema = Joi.object({
         paths: Joi.array().items(Joi.string()).required(),
     },
 });
+
+// GET download files with workspaceId in params
+export const workspaceSchema = Joi.object({
+    query: {
+        token: Joi.string(),
+    },
+    body: {},
+    params: {
+        workspaceId: Joi.string().required(),
+        path: Joi.string().required(),
+    },
+    headers: Joi.object({
+        workspaceId: Joi.string().optional(),
+    })
+        .optional()
+        .unknown(true),
+});
