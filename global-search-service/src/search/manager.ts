@@ -21,7 +21,7 @@ export default class Manager extends DefaultManagerNeo4j {
     private async createIndex(indexName: string, labels: string[], properties: string[], transaction: Transaction) {
         const createFullTextIndexCommand = `
         CREATE FULLTEXT INDEX \`${indexName}\` FOR (n:\`${labels.join('`|`')}\`)
-        ON EACH [${properties.map((prop) => `n.${prop}`).join(', ')}]
+        ON EACH [${properties.map((prop) => `n.\`${prop}\``).join(', ')}]
         OPTIONS { indexConfig: { \`fulltext.analyzer\`: 'unicode_whitespace' } }`;
 
         // we chose analyzer "unicode_whitespace" because we want to do searches of `*{search}*`.
