@@ -18,6 +18,8 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
+    await menash.declareQueue(rabbit.sematicSearchQueue);
+
     logger.info('Rabbit initialized');
 };
 

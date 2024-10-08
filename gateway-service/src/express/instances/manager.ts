@@ -35,6 +35,7 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { RabbitManager } from '../../utils/rabbit';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -45,11 +46,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private ruleBreachesManager: RuleBreachesManager;
 
+    private rabbitManager: RabbitManager;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+        this.rabbitManager = new RabbitManager(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -195,7 +199,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
-        const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
+        const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
         const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
@@ -203,6 +207,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return {
             templateId: instanceData.templateId,
             properties: newInstanceProperties,
+            files: upserstedFiles,
         };
     }
 
@@ -213,7 +218,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const newInstanceData = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
         const { createdEntity, actions } = await this.service
             .createEntityInstance(newInstanceData, ignoredRules, userId)
@@ -235,6 +240,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            console.log({ createdEntity });
+            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, newInstanceData.files.);
         }
 
         return createdEntity;
