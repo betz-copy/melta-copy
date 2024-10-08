@@ -1,6 +1,6 @@
 import { Home } from '@mui/icons-material';
 import { Breadcrumbs, Button, Typography } from '@mui/material';
-import React, { useMemo } from 'react';
+import React from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { useLocation } from 'wouter';
 import { useDarkModeStore } from '../../../stores/darkMode';
@@ -10,12 +10,10 @@ export const Navigation: React.FC = () => {
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const iconColor = useMemo(() => (darkMode ? '#000' : '#fff'), [darkMode]);
-
     return (
         <ScrollContainer style={{ display: 'flex', borderRadius: '0.25rem', backgroundColor: darkMode ? '#252525' : '#101440' }}>
             <Breadcrumbs sx={{ '.MuiBreadcrumbs-ol': { flexWrap: 'nowrap' }, '.MuiBreadcrumbs-separator': { color: 'white' } }}>
-                <Button onClick={() => setLocation('/')} sx={{ color: iconColor }}>
+                <Button onClick={() => setLocation('/')} sx={{ color: '#fff' }}>
                     <Home />
                 </Button>
 
@@ -26,7 +24,7 @@ export const Navigation: React.FC = () => {
                         <Button
                             // eslint-disable-next-line react/no-array-index-key
                             key={index}
-                            sx={{ color: iconColor }}
+                            sx={{ color: '#fff' }}
                             onClick={() =>
                                 setLocation(
                                     location

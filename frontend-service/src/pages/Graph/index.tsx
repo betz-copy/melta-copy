@@ -388,19 +388,10 @@ const Graph: React.FC = () => {
                 </Backdrop>
                 {openFilter && (
                     <Button
-                        sx={{
-                            '&:hover': {
-                                backgroundColor: 'transparent',
-                            },
-                            marginRight: 'auto',
-                            zIndex: '100',
-                            display: 'flex',
-                            alignItems: 'center',
-                            bottom: 0,
-                        }}
+                        sx={{ marginRight: 'auto', zIndex: '100' }}
                         onClick={addNewFilter}
+                        startIcon={<BsFillPlusCircleFill style={{ marginLeft: '5px' }} />}
                     >
-                        <BsFillPlusCircleFill style={{ marginLeft: '5px' }} />
                         {i18next.t('graph.filterEntity')}
                     </Button>
                 )}

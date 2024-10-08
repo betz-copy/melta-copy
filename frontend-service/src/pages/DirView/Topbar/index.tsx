@@ -6,6 +6,7 @@ import { useLocation } from 'wouter';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaIcon } from '../../../common/MeltaIcon';
 import { ProfileButton } from '../../../common/sideBar/ProfileButton';
+import { SwitchThemeButton } from '../../../common/sideBar/SwitchThemeButton';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useMeltaPlusStore } from '../../../stores/meltaPlus';
 import { useUserStore } from '../../../stores/user';
@@ -24,6 +25,7 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
     const [location, setLocation] = useLocation();
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
 
@@ -100,30 +102,38 @@ export const Topbar: React.FC<ITopbarProps> = ({ loading, openWizard /* openPerm
                 </Grid>
             </Grid>
 
-            <Grid container item xs={3} justifyContent="flex-end">
-                <Box
-                    position="relative"
-                    onClick={(event) => {
-                        if (event.detail >= 3) toggleMeltaPlus();
-                    }}
-                >
-                    <Slide in={meltaPlus} direction="down">
-                        <Add
-                            sx={{
-                                position: 'absolute',
-                                left: '-1%',
-                                top: '-3%',
-                                fontSize: 60,
-                                color: 'white',
-                                zIndex: 1,
-                                stroke: '#000',
-                                strokeWidth: '0.1px',
-                            }}
-                        />
-                    </Slide>
+            <Grid container item xs={3} justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                {(meltaPlus || darkMode) && (
+                    <Grid item>
+                        <SwitchThemeButton text="" isDrawerOpen={false} darkMode={darkMode} onClick={toggleDarkMode} />
+                    </Grid>
+                )}
 
-                    <MeltaIcon width="300px" height="60px" expanded />
-                </Box>
+                <Grid item>
+                    <Box
+                        position="relative"
+                        onClick={(event) => {
+                            if (event.detail >= 3) toggleMeltaPlus();
+                        }}
+                    >
+                        <Slide in={meltaPlus} direction="down">
+                            <Add
+                                sx={{
+                                    position: 'absolute',
+                                    left: '-1%',
+                                    top: '-3%',
+                                    fontSize: 60,
+                                    color: 'white',
+                                    zIndex: 1,
+                                    stroke: '#000',
+                                    strokeWidth: '0.1px',
+                                }}
+                            />
+                        </Slide>
+
+                        <MeltaIcon width="300px" height="60px" expanded />
+                    </Box>
+                </Grid>
             </Grid>
         </Grid>
     );
