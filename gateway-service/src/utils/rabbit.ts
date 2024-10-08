@@ -27,6 +27,6 @@ export class RabbitManager {
 
     async indexFile(templateId: string, entityId: string, minioFileIds: string[]) {
         const fileData = { template_id: templateId, entity_id: entityId, minio_file_ids: minioFileIds };
-        await menash.send(rabbit.mailNotificationQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+        await menash.send(rabbit.sematicSearchQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 }

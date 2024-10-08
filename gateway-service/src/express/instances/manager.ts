@@ -218,10 +218,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const newInstanceData = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId)
+            .createEntityInstance({ properties, templateId }, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -241,8 +241,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            console.log({ createdEntity });
-            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, newInstanceData.files.);
+            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles));
         }
 
         return createdEntity;
@@ -404,6 +403,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            const fileIds = Object.values(fileProperties).flat();
+            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Array.isArray(fileIds) ? fileIds : [fileIds]);
         }
 
         return createdEntity;
@@ -431,7 +433,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const { props: uploadedFilesAndProperties } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
@@ -498,6 +500,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles));
         }
 
         return updatedEntity;
