@@ -99,7 +99,6 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
-        titleColor: '#4752B6',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [

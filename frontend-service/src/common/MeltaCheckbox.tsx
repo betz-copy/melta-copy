@@ -16,6 +16,15 @@ interface MeltaCheckboxProps {
 const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange, sxChecked, sxIndeterminate, sxEmpty, sxIcon }) => {
     const theme = useTheme();
 
+    const checkboxSx: SxProps = {
+        borderRadius: '4px',
+        width: '20px',
+        height: '20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    };
+
     return (
         <Checkbox
             checked={checked}
@@ -25,14 +34,9 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
             checkedIcon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
+                        ...checkboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
                         ...sxChecked,
                     }}
                 >
@@ -42,15 +46,10 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
             indeterminateIcon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
+                        ...checkboxSx,
                         background: theme.palette.primary.main,
                         opacity: disabled ? 0.5 : 1,
                         border: 'none',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
                         ...sxIndeterminate,
                     }}
                 >
@@ -60,13 +59,8 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
             icon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
+                        ...checkboxSx,
                         border: `1px solid ${theme.palette.primary.main}`,
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
                         ...sxEmpty,
                     }}
                 />

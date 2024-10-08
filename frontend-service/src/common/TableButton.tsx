@@ -14,12 +14,12 @@ export const TableButton: React.FC<{
         <IconButtonWithPopover
             {...iconButtonWithPopoverProps}
             style={{
-                ...(iconButtonWithPopoverProps.iconButtonProps?.style ?? {}),
                 display: 'flex',
                 gap: '0.25rem',
                 borderRadius: '5px',
                 fontSize: '0.75rem',
                 color: theme.palette.primary.main,
+                ...(iconButtonWithPopoverProps.iconButtonProps?.style ?? {}),
             }}
         >
             {children ?? (

@@ -14,6 +14,8 @@ const ResetFilterButton: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
+    const disabledColor = darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)';
+
     return (
         <IconButtonWithPopover
             iconButtonProps={{ onClick: () => entitiesTableRef.current?.resetFilter() }}
@@ -24,8 +26,7 @@ const ResetFilterButton: React.FC<{
                 gap: '0.25rem',
                 borderRadius: '5px',
                 fontSize: '0.75rem',
-                // eslint-disable-next-line no-nested-ternary
-                color: disableButton ? (darkMode ? 'rgba(255, 255, 255, 0.26)' : 'rgba(0, 0, 0, 0.26)') : theme.palette.primary.main,
+                color: disableButton ? disabledColor : theme.palette.primary.main,
             }}
         >
             {disableButton ? <FilterList fontSize="small" /> : <FilterListOff fontSize="small" />}
