@@ -15,6 +15,8 @@ const config = {
         },
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
+        globalSearchIndex: env.get('NEO4J_GLOBAL_SEARCH_INDEX').default('primaryGlobalSearch').asString(),
+        templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('primaryGlobalSearch_').asString(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
@@ -51,11 +53,6 @@ const config = {
                 .default('/api/templates/relationships/search')
                 .asString(),
         },
-    },
-    redis: {
-        url: env.get('REDIS_HOST').default('redis://redis:6379').asString(),
-        globalSearchKeyName: env.get('GLOBAL_SEARCH_KEY_NAME').default('latestIndex').asString(),
-        templateSearchKeyNamePrefix: env.get('TEMPLATE_SEARCH_KEY_NAME_PREFIX').default('latestIndex_').asString(),
     },
     errorCodes: {
         entityHasRelationships: 'ENTITY_HAS_RELATIONSHIPS',

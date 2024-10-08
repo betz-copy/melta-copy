@@ -211,6 +211,7 @@ export default {
         filterField: 'סינון שדה',
         additionalTemplates: 'תבניות נוספות',
         filterTitle: 'תבניות ויישויות מוצגות',
+        limitWarning: 'מצב תלת מימד מוגבל עד ל100 קשרים. לצפייה בקשרים נוספים יש לסנן תוצאות',
     },
     pages: {
         globalSearch: 'חיפוש גלובלי',

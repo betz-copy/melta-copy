@@ -268,7 +268,7 @@ const ConnectionsTable: React.FC<{
                         popoverText: isEditButtonsDisabled
                             ? disabledButtonText
                             : i18next.t(`entityPage.deleteRelationshipPopoverText${relationshipTemplate.isProperty ? '-cant' : ''}`),
-                        onClick: (connectionToDelete) => {
+                        onClick: (connectionToDelete: any) => {
                             setDeleteRelationshipDialogState({ open: true, connectionToDelete });
                         },
                         disabledButton: isEditButtonsDisabled || relationshipTemplate.isProperty || false,
