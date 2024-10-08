@@ -64,9 +64,6 @@ export const getButtonState = (
     return { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory };
 };
 
-const templateHasInstances = (relationshipTemplate: IMongoRelationshipTemplatePopulated, expandedEntity: IEntityExpanded) =>
-    expandedEntity.connections.some((connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id);
-
 const ConnectionsTableTitle: React.FC<{
     expandedEntity: IEntityExpanded;
     connectionTemplate: IConnectionTemplateOfExpandedEntity;
@@ -99,7 +96,7 @@ const ConnectionsTable: React.FC<{
     hasPermissionToCategory: boolean;
 }> = ({
     expandedEntity,
-    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource },
+    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
     templateIds,
     isEditButtonsDisabled,
     disabledButtonText,
@@ -123,8 +120,6 @@ const ConnectionsTable: React.FC<{
         open: boolean;
         connectionToDelete?: IEntityExpanded['connections'][number];
     }>({ open: false });
-
-    const hasInstances = templateHasInstances(relationshipTemplate, expandedEntity);
 
     const setQueryDataKey = [
         'getExpandedEntity',
@@ -354,6 +349,7 @@ const ConnectionsTable: React.FC<{
 export interface IConnectionTemplateOfExpandedEntity {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
+    hasInstances?: boolean;
 }
 
 const Entity: React.FC = () => {
@@ -401,6 +397,10 @@ const Entity: React.FC = () => {
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
+        const hasInstances = expandedEntity.connections.some(
+            (connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id,
+        );
+
         if (
             !(
                 relationshipTemplate.isProperty &&
@@ -409,10 +409,18 @@ const Entity: React.FC = () => {
             )
         ) {
             if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: true });
+                connectionsTemplates.push({
+                    relationshipTemplate,
+                    isExpandedEntityRelationshipSource: true,
+                    hasInstances,
+                });
             }
             if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: false });
+                connectionsTemplates.push({
+                    relationshipTemplate,
+                    isExpandedEntityRelationshipSource: false,
+                    hasInstances,
+                });
             }
         }
     });
@@ -420,12 +428,14 @@ const Entity: React.FC = () => {
     const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
             category,
-            connectionsTemplates: connectionsTemplates.filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                const otherEntityTemplate = isExpandedEntityRelationshipSource
-                    ? relationshipTemplate.destinationEntity
-                    : relationshipTemplate.sourceEntity;
-                return otherEntityTemplate.category._id === category._id;
-            }),
+            connectionsTemplates: connectionsTemplates
+                .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
+                    const otherEntityTemplate = isExpandedEntityRelationshipSource
+                        ? relationshipTemplate.destinationEntity
+                        : relationshipTemplate.sourceEntity;
+                    return otherEntityTemplate.category._id === category._id;
+                })
+                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
         };
     }).filter((currCategory) => currCategory.connectionsTemplates?.length > 0);
 
@@ -546,24 +556,18 @@ const Entity: React.FC = () => {
 
                                         return (
                                             <TabPanel key={_id} value={String(index)}>
-                                                {connectionsTemplatesOfCategory
-                                                    .sort(
-                                                        (a, b) =>
-                                                            Number(templateHasInstances(b.relationshipTemplate, expandedEntity)) -
-                                                            Number(templateHasInstances(a.relationshipTemplate, expandedEntity)),
-                                                    )
-                                                    .map((connectionTemplate, connectedRelationshipTemplateIndex) => (
-                                                        <ConnectionsTable
-                                                            // eslint-disable-next-line react/no-array-index-key
-                                                            key={connectedRelationshipTemplateIndex}
-                                                            expandedEntity={expandedEntity}
-                                                            templateIds={templateIds}
-                                                            connectionTemplate={connectionTemplate}
-                                                            isEditButtonsDisabled={isEditButtonsDisabled}
-                                                            disabledButtonText={disabledButtonText}
-                                                            hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
-                                                        />
-                                                    ))}
+                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
+                                                    <ConnectionsTable
+                                                        // eslint-disable-next-line react/no-array-index-key
+                                                        key={connectedRelationshipTemplateIndex}
+                                                        expandedEntity={expandedEntity}
+                                                        templateIds={templateIds}
+                                                        connectionTemplate={connectionTemplate}
+                                                        isEditButtonsDisabled={isEditButtonsDisabled}
+                                                        disabledButtonText={disabledButtonText}
+                                                        hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
+                                                    />
+                                                ))}
                                             </TabPanel>
                                         );
                                     },
