@@ -396,6 +396,7 @@ const buildFulltextSearchQuery = (
     };
 };
 
+// TODO clean code
 const fulltextSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
@@ -405,7 +406,7 @@ const fulltextSearchToNeoQuery = (
     const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
 
     let latestIndex: string = prefixIndexName;
-    if (entityTemplatesMap.size === 1) latestIndex += `${entityTemplatesMap.keys().next().value}`;
+    if (entityTemplatesMap.size === 1) latestIndex = `${config.neo4j.templateSearchIndexPrefix}${entityTemplatesMap.keys().next().value}`;
 
     const indexHandling = `CALL db.index.fulltext.queryNodes($latestIndex, $query)`;
 
