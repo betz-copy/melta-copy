@@ -1,6 +1,8 @@
-import React, { ReactNode } from 'react';
+import { Search } from '@mui/icons-material';
 import { BaseTextFieldProps, Divider, InputAdornment, TextField, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { ReactNode } from 'react';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const SearchInput: React.FC<{
     value?: string;
@@ -17,7 +19,7 @@ const SearchInput: React.FC<{
     value,
     onChange,
     onKeyDown,
-    endAdornmentChildren = <img color="#1E2775" width="14px" height="14px" src="/icons/search-blue.svg" />,
+    endAdornmentChildren = <Search fontSize="small" />,
     placeholder = i18next.t('searchLabel'),
     size = 'small',
     borderRadius = '7px',
@@ -26,6 +28,7 @@ const SearchInput: React.FC<{
     width = '231px',
 }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <TextField
@@ -40,13 +43,10 @@ const SearchInput: React.FC<{
                 justifyContent: 'center',
                 alignContent: 'center',
                 borderRadius,
-                backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
                 height,
                 width,
                 padding: '0px, 8px, 0px, 8px',
-                '& .MuiOutlinedInput-notchedOutline': {
-                    border: 'none',
-                },
+                ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF', '& .MuiOutlinedInput-notchedOutline': { border: 'none' } }),
             }}
             InputProps={{
                 style: {

@@ -17,6 +17,7 @@ import {
     deleteRelationshipTemplateSchema,
     deleteRuleByIdRequestSchema,
     getCategoriesSchema,
+    searchEntityTemplatesOfUserFromParamsSchema,
     searchEntityTemplatesSchema,
     searchRulesRequestSchema,
     searchTemplatesRequestSchema,
@@ -129,6 +130,13 @@ templatesRouter.delete(
     ValidateRequest(deleteEntityTemplateSchema),
     templatesValidatorMiddleware.validateUserCanUpdateOrDeleteEntityTemplate,
     templatesControllerMiddleware.deleteEntityTemplate,
+);
+
+templatesRouter.post(
+    '/entities/search/template/:userId',
+    ValidateRequest(searchEntityTemplatesOfUserFromParamsSchema),
+    AuthorizerControllerMiddleware.userFromParamsHasSomePermissions,
+    templatesControllerMiddleware.searchEntityTemplates,
 );
 
 templatesRouter.post(

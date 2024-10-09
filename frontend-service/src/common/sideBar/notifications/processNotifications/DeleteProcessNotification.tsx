@@ -5,9 +5,8 @@ import { IDeleteProcessNotificationMetadataPopulated, NotificationType } from '.
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDeleteProcessNotificationMetadataPopulated; titleColor: string }> = ({
+export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDeleteProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { processName },
-    titleColor,
 }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
@@ -16,7 +15,7 @@ export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDelete
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography display="inline" color={titleColor} paddingLeft="10px">
+                <Typography display="inline" color="primary" fontWeight="bold" paddingLeft="10px">
                     {`${i18next.t('deleteProcessNotification.deleteProcessNotification')} `}
                 </Typography>
             </Grid>
