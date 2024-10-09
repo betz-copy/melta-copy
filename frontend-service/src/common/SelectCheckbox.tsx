@@ -15,6 +15,7 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
+import { Hive as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
@@ -24,6 +25,7 @@ import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
+import { CustomIcon } from './CustomIcon';
 
 export const MenuItemContent: React.FC<{
     checked?: boolean;
@@ -34,8 +36,10 @@ export const MenuItemContent: React.FC<{
     group?: boolean;
     insideGroup?: boolean;
     option?: any;
-}> = ({ checked = null, indeterminate, label, isDraggable, group, insideGroup, option }) => {
-    // const theme = useTheme();
+}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
+    const theme = useTheme();
+    console.log({ option });
+
     return (
         <>
             {!group && (
@@ -54,12 +58,13 @@ export const MenuItemContent: React.FC<{
                     {isDraggable && <img src="/icons/draggable-icon.svg" />}
                 </Grid>
             )}
-            {checked !== null && <MeltaCheckbox checked={checked} indeterminate={indeterminate} />}
-            {/* {option.iconFileId?.length > 0 && (
+            {checked ? (
+                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            ) : option.iconFileId?.length > 0 ? (
                 <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
+            ) : (
+                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
             )}
-            {option.iconFileId === '' ||
-                (option.iconFileId === null && <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />)} */}
 
             <ListItemText
                 primary={

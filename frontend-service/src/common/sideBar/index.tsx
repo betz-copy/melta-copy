@@ -11,7 +11,7 @@ import {
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
-import { Box, Button, Grid, IconButton, Menu, MenuItem, Slide, Typography, useTheme } from '@mui/material';
+import { Box, Button, Grid, IconButton, MenuItem, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
@@ -74,7 +74,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
         console.log('you click!');
 
         event.stopPropagation();
-        // event.preventDefault();
+        event.preventDefault();
         navigate(`/iframes/${id}`);
     };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
@@ -307,7 +307,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                     <NavButton
                         to="/iframes"
                         text={i18next.t('pages.iFrames')}
-                        title={
+                        extension={
                             iFramesInSidebar?.length! > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
                                     <Grid item padding={1}>
@@ -315,18 +315,22 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                     </Grid>
                                     <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
-                                            <MenuItem
+                                            <Grid
                                                 key={iFrame._id}
                                                 onClick={(event) => {
                                                     handleMenuItemClick(event, iFrame._id);
                                                 }}
-                                                // autoFocus={sele}
+                                                onMouseUp={(event) => {
+                                                    handleMenuItemClick(event, iFrame._id);
+                                                }}
                                                 sx={{
                                                     '&:hover': {
                                                         backgroundColor: '#B8B8B8',
                                                         borderRadius: '5px',
                                                     },
                                                     padding: '9px 9px 9px 18px',
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
                                                 }}
                                             >
                                                 {iFrame.iconFileId ? (
@@ -352,7 +356,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                                 >
                                                     {iFrame.name}
                                                 </Typography>
-                                            </MenuItem>
+                                            </Grid>
                                         ))}
                                     </Grid>
                                 </Grid>
