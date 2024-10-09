@@ -83,14 +83,19 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDeleteClick && (
-                    <MenuButton
-                        onClick={(e) => {
-                            onDeleteClick(e);
-                            handleClose(e);
-                        }}
-                        text={i18next.t('actions.delete')}
-                        icon={<DeleteIcon color="action" />}
-                    />
+                    <MeltaTooltip placement="right" title={disabledProps?.tooltipTitle || ''} disableHoverListener={!disabledProps?.isDisabled}>
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onDeleteClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.delete')}
+                                disabled={disabledProps?.isDisabled}
+                                icon={<DeleteIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
                 )}
 
                 {onDisableClick && (

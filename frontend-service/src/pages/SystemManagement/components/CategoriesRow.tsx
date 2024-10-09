@@ -3,7 +3,6 @@ import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { Hive as HiveIcon } from '@mui/icons-material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
@@ -18,8 +17,7 @@ import { CardMenu } from './CardMenu';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
-import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -39,7 +37,24 @@ interface CategoryCardProps {
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
     const theme = useTheme();
+    const queryClient = useQueryClient();
+
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+
+    const checkCategoryHasTemplates = (categoryId: string) => {
+        const hasTemplates = Array.from(templates!.values()).some((template) => template.category._id === categoryId);
+        setIsDeleteButtonDisabled(hasTemplates);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkCategoryHasTemplates(category._id);
+        }
+    };
 
     return (
         <ViewingCard
@@ -81,19 +96,23 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <CardMenu
                                 onEditClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category })}
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
+                                disabledProps={{
+                                    isDisabled: isDeleteButtonDisabled,
+                                    canEdit: false,
+                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
+                                }}
                             />
                         )}
                     </Grid>
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
 
 const CategoriesRow: React.FC = () => {
     const queryClient = useQueryClient();
-
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const [deleteCategoryDialogState, setDeleteCategoryDialogState] = useState<{
@@ -164,13 +183,6 @@ const CategoriesRow: React.FC = () => {
                         />
                     ))}
             </Box>
-
-            {/* TODO - add when category group will be supported */}
-            <Grid>
-                <IconButtonWithPopover popoverText={i18next.t('soon')} style={{ height: '40px', borderRadius: '5px', cursor: 'default' }}>
-                    <ImageWithDisable srcPath="/icons/Add-Category-Group.svg" disabled />
-                </IconButtonWithPopover>
-            </Grid>
 
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}
