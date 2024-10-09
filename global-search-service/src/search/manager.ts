@@ -7,7 +7,7 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: { globalSearchIndex, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
+    neo4j: { globalSearchIndexPrefix, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
 } = config;
 
 export default class Manager extends DefaultManagerNeo4j {
@@ -126,11 +126,11 @@ export default class Manager extends DefaultManagerNeo4j {
                 }
                 await Promise.all(
                     propertiesChunks.map(async (properties, index) => {
-                        await this.upsertSearchIndex(`${globalSearchIndex}_${index + 1}`, templateIds, properties);
+                        await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
                     }),
                 );
             } else {
-                await this.upsertSearchIndex(`${globalSearchIndex}_1`, templateIds, Array.from(allTemplatesProperties));
+                await this.upsertSearchIndex(globalSearchIndexPrefix, templateIds, Array.from(allTemplatesProperties));
             }
         }
     }

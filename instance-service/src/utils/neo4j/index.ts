@@ -124,4 +124,14 @@ export default class Neo4jClient {
             logger: logger.info.bind(logger),
         });
     }
+
+    async getAllGlobalSearchIndexNames() {
+        const cypher = `
+            SHOW INDEXES YIELD name
+            WHERE name STARTS WITH '${config.neo4j.globalSearchIndexPrefix}'
+            RETURN name;`;
+
+        const result = await this.readTransaction(cypher, (queryResult: QueryResult) => queryResult.records.map((record) => record.get(0)));
+        return result;
+    }
 }
