@@ -1,5 +1,6 @@
 import { Router } from 'express';
-import { wrapController } from '../../utils/express';
+import multer from 'multer';
+import { wrapController, wrapMulter } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { UsersController } from './controller';
 import {
@@ -13,6 +14,11 @@ import {
     updateUserExternalMetadataRequestSchema,
     updateUserPreferencesMetadataRequestSchema,
 } from './validator.schema';
+import config from '../../config';
+
+const {
+    service: { uploadsFolderPath },
+} = config;
 
 export const usersRouter: Router = Router();
 
@@ -30,6 +36,7 @@ usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(U
 
 usersRouter.patch(
     '/:userId/preferences',
+    wrapMulter(multer({ dest: uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     ValidateRequest(updateUserPreferencesMetadataRequestSchema),
     wrapController(UsersController.updateUserPreferencesMetadata),
 );

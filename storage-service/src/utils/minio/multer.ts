@@ -9,20 +9,20 @@ import DefaultManagerMinio from './manager';
 const { fileKeyName, filesKeyName } = config.multer;
 
 export class MinioStorage extends DefaultManagerMinio {
-    async handleFile(req: Request, file: Express.Multer.File) {
-        const { isUserProfileUpload } = req.body;
-        let path: string;
-        console.log(req.body, { isUserProfileUpload });
+    async handleFile(_req: Request, file: Express.Multer.File) {
+        // const { isUserProfileUpload } = req.body;
+        // let path: string;
+        // console.log(req.body, { isUserProfileUpload });
 
-        if (isUserProfileUpload) {
-            const { userId } = req.body;
-            path = `users-profile/${userId}_profile.${file.mimetype.split('/')[1]}`;
+        // if (isUserProfileUpload) {
+        //     const { userId } = req.body;
+        //     path = `${userId}_user-profile.${file.mimetype.split('/')[1]}`;
 
-            await this.globalBucketClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
-        } else {
-            path = generatePath(file.originalname);
-            await this.minioClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
-        }
+        //     await this.usersGlobalBucketClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
+        // } else {
+        const path = generatePath(file.originalname);
+        await this.minioClient.uploadFileStream(file.stream, path, file.size, { 'content-type': file.mimetype });
+        // }
 
         return { ...(await this.minioClient.statFile(path)), path };
     }
@@ -44,7 +44,7 @@ export class MinioMulter {
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
 
-        if (!(await storage.globalBucketClient.bucketExists())) await storage.globalBucketClient.makeBucket();
+        // if (!(await storage.usersGlobalBucketClient.bucketExists())) await storage.usersGlobalBucketClient.makeBucket();
 
         return storage;
     }

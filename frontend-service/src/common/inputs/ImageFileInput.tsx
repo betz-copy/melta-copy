@@ -40,6 +40,8 @@ const FileInput: React.FC<FileInputProps> = ({
     };
 
     const onDrop = (acceptedFiles: File[]) => {
+        console.log('hii drop');
+
         const file = acceptedFiles[0];
         onDropFile(file);
     };

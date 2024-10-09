@@ -1,6 +1,6 @@
 import joi from 'joi';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi, MongoIdSchema } from '../../utils/joi';
 
 export const partialSchema = (schema: joi.ObjectSchema) => {
     const keys = Object.keys(schema.describe().keys);
@@ -17,7 +17,8 @@ const UserExternalMetadataSchema = joi.object({
 const UserPreferencesMetadataSchema = joi.object({
     darkMode: joi.boolean(),
     // mailsNotificationsTypes: joi.array().items(NotificationType),
-    mailsNotificationsTypes: joi.array().items(joi.string()),
+    mailsNotificationsTypes: ExtendedJoi.stringToArray(),
+    profilePath: joi.string(),
 });
 
 export const baseUserSchema = joi.object({

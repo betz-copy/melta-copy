@@ -35,13 +35,10 @@ export class MinIOClient {
     }
 
     bucketExists() {
-        console.log('gg', this.bucketName);
-        
         return this.minioClient.bucketExists(this.bucketName);
     }
 
     makeBucket() {
-        console.log('this.bucketName', this.bucketName);
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 

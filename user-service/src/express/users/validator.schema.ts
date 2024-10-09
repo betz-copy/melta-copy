@@ -62,9 +62,9 @@ export const updateUserPreferencesMetadataRequestSchema = joi.object({
     query: {},
     body: joi
         .object({
-            darkMode: joi.boolean(),
+            darkMode: joi.boolean().default(false),
             // mailsNotificationsTypes: joi.array().items(NotificationType),
-            mailsNotificationsTypes: joi.array().items(joi.string()),
+            mailsNotificationsTypes: joi.array().items(joi.string()).default([]),
         })
         .required(),
     params: {

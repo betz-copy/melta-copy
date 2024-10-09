@@ -85,6 +85,7 @@ export class UsersManager {
 
     static async updateUser(id: string, updateData: Partial<IBaseUser>): Promise<IUser> {
         const baseUser = await UsersModel.findByIdAndUpdate(id, updateData, { new: true }).orFail(new UserDoesNotExistError(id)).lean().exec();
+
         return this.baseUserToUser(baseUser);
     }
 

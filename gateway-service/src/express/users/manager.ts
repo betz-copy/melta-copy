@@ -1,6 +1,8 @@
 /* eslint-disable no-param-reassign */
+import config from '../../config';
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
+import { StorageService } from '../../externalServices/storageService';
 // import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import { UserService } from '../../externalServices/userService';
 import {
@@ -11,10 +13,14 @@ import {
 } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
 import { objectContains } from '../../utils';
+import { removeTmpFile } from '../../utils/fs';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
 
+const { usersGlobalBucketName } = config.storageService;
 export class UsersManager {
+    private static storageService = new StorageService(usersGlobalBucketName);
+
     static async getUserById(userId: string, workspaceIds?: string[]): Promise<IUser> {
         return UserService.getUserById(userId, workspaceIds);
     }
@@ -53,7 +59,6 @@ export class UsersManager {
         );
 
         UsersManager.validateDigitalIdentity(kartoffelId, digitalIdentity);
-        console.log('lookkkkk', { preferences });
 
         return UserService.createUser({
             ...(digitalIdentity as IUser),
@@ -69,10 +74,35 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>): Promise<IUser> {
-        console.log({ preferences });
+    static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
+        console.log({ userId, file });
+        const {
+            preferences: { profilePath },
+        } = await UserService.getUserById(userId);
+        if (file) {
+            if (profilePath) {
+                await UsersManager.storageService.deleteFile(profilePath);
+            }
+            console.log('here 1.0');
 
+            const newProfilePath = await this.storageService.uploadFile(file);
+            console.log('here 1.1');
+
+            await removeTmpFile(file.path);
+            console.log('here 1.2');
+            preferences.profilePath = newProfilePath;
+            return UserService.updateUser(userId, { preferences });
+            // return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
+        }
+
+        if (profilePath && !preferences.profilePath) {
+            await this.storageService.deleteFile(profilePath);
+
+            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: null } });
+            // return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: null });
+        }
         return UserService.updateUser(userId, { preferences });
+        // return this.entityTemplateService.updateCategory(id, updatedData);
         // return UserService.updateUserPreferencesMetadata(userId, { preferences });
     }
 

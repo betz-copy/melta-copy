@@ -25,7 +25,9 @@ export class UsersController {
     }
 
     static async updateUserPreferencesMetadata(req: Request, res: Response) {
-        res.json(await UsersManager.updateUserPreferencesMetadata(req.params.userId, req.body));
+        console.log('hii', req.body);
+
+        res.json(await UsersManager.updateUserPreferencesMetadata(req.params.userId, req.body, req.file));
     }
 
     static async updateUserExternalMetadata(req: Request, res: Response) {

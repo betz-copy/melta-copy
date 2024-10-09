@@ -40,6 +40,8 @@ const createCategoryRequest = async (newCategory: CategoryWizardValues) => {
 const updateCategoryRequest = async (categoryId: string, updatedCategory: CategoryWizardValues) => {
     const formData = new FormData();
 
+    // console.log(updatedCategory.icon?.file instanceof File);
+
     if (updatedCategory.icon) {
         if (updatedCategory.icon.file instanceof File) {
             formData.append('file', updatedCategory.icon.file);

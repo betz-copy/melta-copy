@@ -5,6 +5,10 @@ import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
 import { updateUserPreferencesMetadataRequest } from '../../services/userService';
 import { InstanceSingleFileInput } from '../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { UserProfilePicker } from '../inputs/userProfilePicker';
+import fileDetails from '../../interfaces/fileDetails';
+import { useMutation } from 'react-query';
+import { AxiosError } from 'axios';
 
 const { notificationsMoreData } = environment.notifications;
 const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
@@ -12,6 +16,7 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
     console.log({ existingUser });
 
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
+    const [preferences, setPreferences] = useState({});
 
     const handleCheckboxChange = useCallback(
         async (type: NotificationType) => {
@@ -31,28 +36,43 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
     );
     console.log({ selectedNotifications });
 
+    const { isLoading, mutateAsync } = useMutation((id: string) => updateUserPreferencesMetadataRequest(id, preferences), {
+        onSuccess: (data) => {
+            // if (onSuccessUpdate) onSuccessUpdate(data);
+            console.log('Efratoshhhh hameamemet');
+        },
+        onError: (err: AxiosError) => {
+            console.log({ err });
+
+            // const errorMetadata = handleMutationError(err, entityTemplate);
+            // if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+            //     setCreateOrUpdateWithRuleBreachDialogState!({
+            //         isOpen: true,
+            //         brokenRules: errorMetadata.brokenRules,
+            //         rawBrokenRules: errorMetadata.rawBrokenRules,
+            //         newEntityData,
+            //     });
+            // }
+            throw err;
+        },
+    });
     return (
         <Grid container>
-            <Grid sx={{ backgroundColor: 'grey' }} width="100%" height="100px" />
             <Grid item>
-                <InstanceSingleFileInput
-                    // key={key}
-                    fileFieldName="hhhh"
-                    fieldTemplateTitle="ggg"
-                    // setFieldValue={setFieldValue}
-                    // required={requiredFilesNames.includes(key)}
-                    value={existingUser?.preferences.profileImgId as File | undefined}
-                    error="erorrrrr"
-                    // setFieldTouched={null}
-                    setExternalErrors={() => {}}
-                    // eslint-disable-next-line react/jsx-no-bind
-                    setFieldValue={function (_field: string): void {
-                        throw new Error('Function not implemented.');
+                <UserProfilePicker
+                    onPick={(value) => {
+                        if (!existingUser) return;
+                        setPreferences({ ...preferences, icon: value, mailsNotificationsTypes: selectedNotifications });
+                        console.log('1');
+
+                        mutateAsync(existingUser._id);
+                        console.log('11');
                     }}
-                    required={false}
+                    onDelete={() => {}}
                 />
             </Grid>
-            <Grid container flexDirection="row" spacing={4}>
+
+            {/* <Grid container flexDirection="row" spacing={4}>
                 {allNotifications.map((notification) => (
                     <Grid item key={notification.type}>
                         <FormControlLabel
@@ -66,7 +86,7 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
                         />
                     </Grid>
                 ))}
-            </Grid>
+            </Grid> */}
         </Grid>
     );
 };

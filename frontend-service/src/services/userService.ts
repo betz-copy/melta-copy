@@ -27,7 +27,27 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
 };
 
 export const updateUserPreferencesMetadataRequest = async (userId: string, preferences) => {
-    const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, preferences);
+    const formData = new FormData();
+    // ?????
+    // if (preferences.icon) {
+    //     formData.append('file', preferences.icon.file as File);
+    // }
+    // console.log('3', preferences.icon.file instanceof File, preferences.mailsNotificationsTypes);
+
+    if (preferences.icon) {
+        if (preferences.icon.file instanceof File) {
+            formData.append('file', preferences.icon.file);
+        } else {
+            formData.append('iconFileId', preferences.icon.file.name!);
+        }
+    }
+    // formData.append('darkMode', JSON.stringify(preferences?.darkMode));
+    formData.append('mailsNotificationsTypes', JSON.stringify(preferences.mailsNotificationsTypes));
+    console.log(...formData);
+    console.log('preferences.mailsNotificationsTypes', preferences.mailsNotificationsTypes);
+
+    const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
+    console.log({ data });
     return data;
 };
 
