@@ -8,7 +8,7 @@ const config = {
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     neo4j: {
-        url: env.get('NEO4J_URL').default('neo4j://localhost').asUrlString(),
+        url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),
         auth: {
             username: env.get('NEO4J_USERNAME').default('neo4j').asString(),
             password: env.get('NEO4J_PASSWORD').default('test').asString(),
