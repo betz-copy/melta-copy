@@ -28,7 +28,7 @@ import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
 import { IEntity } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
 import { BrokenRuleActions } from './BrokenRuleActions';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
+import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { IRelationshipPopulated } from '../../../interfaces/relationships';
 
 export const BrokenRuleFull: React.FC<{
@@ -41,9 +41,9 @@ export const BrokenRuleFull: React.FC<{
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
 
-    const entityTemplate = entityTemplates.get(ruleTemplate.entityTemplateId)!;
-
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+
+    const entityTemplate = entityTemplates.get(ruleTemplate.entityTemplateId)!;
 
     const getActionsByFailureOnEntity = (failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] }) => {
         const actionsToReturn: IActionPopulated[] = [];
@@ -52,9 +52,7 @@ export const BrokenRuleFull: React.FC<{
 
         const failedEntityId = typeof entity === 'string' ? entity : entity?.properties._id;
 
-        const failedProperties: string[] = [];
-
-        causes.forEach((cause) => failedProperties.push(...cause.properties));
+        const failedProperties: string[] = causes.flatMap((cause) => cause.properties);
 
         let numberPart = -1;
         if (typeof entity === 'string' && entity.startsWith('$')) {
@@ -63,38 +61,26 @@ export const BrokenRuleFull: React.FC<{
         }
         actionsToReturn.push(
             ...actions.filter((action, index) => {
+                let updatedFieldsToCheckFail: string[] = [];
+                let entityId = '-';
+
                 if (numberPart === index) return false;
                 if (action.actionType === ActionTypes.CreateEntity) {
-                    const entityId = (action.actionMetadata as ICreateEntityMetadataPopulated).properties._id;
+                    entityId = (action.actionMetadata as ICreateEntityMetadataPopulated).properties._id;
 
-                    return (
-                        failedEntityId === entityId &&
-                        Object.keys((action.actionMetadata as ICreateEntityMetadataPopulated).properties).some((propertyField) =>
-                            failedProperties.includes(propertyField),
-                        )
-                    );
+                    updatedFieldsToCheckFail = Object.keys((action.actionMetadata as ICreateEntityMetadataPopulated).properties);
                 }
                 if (action.actionType === ActionTypes.DuplicateEntity) {
-                    const entityId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).properties._id;
+                    entityId = (action.actionMetadata as IDuplicateEntityMetadataPopulated).properties._id;
 
-                    return (
-                        failedEntityId === entityId &&
-                        Object.keys((action.actionMetadata as IDuplicateEntityMetadataPopulated).properties).some((propertyField) =>
-                            failedProperties.includes(propertyField),
-                        )
-                    );
+                    updatedFieldsToCheckFail = Object.keys((action.actionMetadata as IDuplicateEntityMetadataPopulated).properties);
                 }
                 if (action.actionType === ActionTypes.UpdateEntity) {
-                    const entityId = (action.actionMetadata as IUpdateEntityMetadataPopulated)?.entity?.properties._id;
+                    entityId = (action.actionMetadata as IUpdateEntityMetadataPopulated)?.entity?.properties._id || '-';
 
-                    return (
-                        failedEntityId === entityId &&
-                        Object.keys((action.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields).some((propertyField) =>
-                            failedProperties.includes(propertyField),
-                        )
-                    );
+                    updatedFieldsToCheckFail = Object.keys((action.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields);
                 }
-                return false;
+                return failedEntityId === entityId && updatedFieldsToCheckFail.some((propertyField) => failedProperties.includes(propertyField));
             }),
         );
 
@@ -194,7 +180,7 @@ export const BrokenRuleFull: React.FC<{
         };
     };
 
-    const getFullEntity = (entity: IEntity | string | null): IMongoEntityTemplatePopulated => {
+    const getEntityForRelationshipInfo = (entity: IEntity | string | null): IMongoEntityTemplatePopulated => {
         if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
             return {
                 _id: 'empty',
@@ -286,8 +272,6 @@ export const BrokenRuleFull: React.FC<{
     const getRelationshipForRelationshipInfo = (relationship: IRelationshipForBrokenRules) => {
         let relationshipTemplateId: string | null = null;
 
-        let rel: IMongoRelationshipTemplatePopulated | null = null;
-
         if (!relationship) return null;
 
         if (typeof relationship === 'string' && relationship.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
@@ -305,8 +289,8 @@ export const BrokenRuleFull: React.FC<{
 
             return {
                 _id: 'temp',
-                sourceEntity: getFullEntity(actionMetadata.sourceEntity),
-                destinationEntity: getFullEntity(actionMetadata.destinationEntity),
+                sourceEntity: getEntityForRelationshipInfo(actionMetadata.sourceEntity),
+                destinationEntity: getEntityForRelationshipInfo(actionMetadata.destinationEntity),
                 name: relationshipTemplate.name,
                 displayName: relationshipTemplate.displayName,
                 createdAt: relationshipTemplate.createdAt,
@@ -316,17 +300,15 @@ export const BrokenRuleFull: React.FC<{
 
         const relationshipTemplate = relationshipTemplates.get((relationship as IRelationshipPopulated).templateId);
 
-        rel = {
+        return {
             _id: 'temp',
-            sourceEntity: getFullEntity((relationship as IRelationshipPopulated).sourceEntity),
-            destinationEntity: getFullEntity((relationship as IRelationshipPopulated).destinationEntity),
+            sourceEntity: getEntityForRelationshipInfo((relationship as IRelationshipPopulated).sourceEntity),
+            destinationEntity: getEntityForRelationshipInfo((relationship as IRelationshipPopulated).destinationEntity),
             name: relationshipTemplate?.name || '',
             displayName: relationshipTemplate?.displayName || '',
             createdAt: relationshipTemplate?.createdAt || '',
             updatedAt: relationshipTemplate?.updatedAt || '',
         };
-
-        return rel;
     };
 
     return (
