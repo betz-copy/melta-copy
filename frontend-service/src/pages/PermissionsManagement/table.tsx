@@ -56,6 +56,21 @@ const columnDefs = <Data extends IUser>(
         headerName: i18next.t('permissions.userHeaderName'),
         filter: 'agTextColumnFilter',
     },
+    // {
+    //     field: 'fullName',
+    //     headerName: i18next.t('permissions.userHeaderName'),
+    //     filter: 'agTextColumnFilter',
+    // },
+    // {
+    //     field: 'jobTitle',
+    //     headerName: i18next.t('permissions.userHeaderName'),
+    //     filter: 'agTextColumnFilter',
+    // },
+    // {
+    //     field: 'hierarchy',
+    //     headerName: i18next.t('permissions.userHeaderName'),
+    //     filter: 'agTextColumnFilter',
+    // },
     {
         field: 'externalMetadata.digitalIdentitySource',
         headerName: i18next.t('permissions.sourceHeaderName'),
@@ -174,13 +189,20 @@ const getDatasource = <Data extends any = IUser>(
     onFail: (err: unknown) => void | undefined,
 ): IServerSideDatasource => {
     return {
-        async getRows({ request: { startRow, endRow }, success, fail }: IServerSideGetRowsParams<Data>) {
+        async getRows({ request, success, fail }: IServerSideGetRowsParams<Data>) {
+            console.log({ quickFilter });
+
+            console.log({ request });
+            const { startRow, endRow, filterModel, sortModel } = request;
+
             const { result: data, err } = await trycatch(() =>
                 searchUsersRequest({
                     workspaceIds: [_id],
                     step: startRow! / infiniteScrollPageCount,
                     limit: endRow! - startRow!,
                     search: quickFilter || undefined,
+                    filterModel,
+                    sortModel,
                 }),
             );
 

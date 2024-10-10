@@ -31,6 +31,8 @@ const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) 
     return {
         async getRows(params) {
             const { sortModel, startRow, endRow, filterModel } = params.request;
+            console.log({ filterModel });
+
             const { result: data, err } = await trycatch(() => {
                 const searchRequest = breachType === 'alert' ? getRuleBreachAlertsRequest : getRuleBreachRequestsRequest;
 
@@ -110,6 +112,7 @@ const getColumnDefs = (
             400,
             environment.agGrid.defaultRowHeight,
         ),
+        // TODO: translate enum fields
         dateColDef('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
             format: 'date-time',
