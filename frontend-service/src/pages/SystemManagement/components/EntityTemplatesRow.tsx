@@ -120,6 +120,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
             checkEntityTemplateHasTemplates([entityTemplate], '');
         }
     };
+
     return (
         <ViewingCard
             width={250}
@@ -188,10 +189,16 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
                                 disabledProps={{
-                                    isDisabled: entityTemplate.disabled || isDeleteButtonDisabled,
+                                    isDisabled: isDeleteButtonDisabled,
                                     canEdit: entityTemplate.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    // eslint-disable-next-line no-nested-ternary
+                                    tooltipTitle: entityTemplate.disabled
+                                        ? i18next.t('systemManagement.disabledEntityTemplate')
+                                        : isDeleteButtonDisabled
+                                        ? i18next.t('systemManagement.cannotDeleteWithTemplates')
+                                        : '',
                                 }}
+                                isEntityTemplateDisabled={entityTemplate.disabled}
                             />
                         )}
                     </Grid>

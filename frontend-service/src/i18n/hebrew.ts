@@ -227,7 +227,8 @@ export default {
         search: 'חיפוש',
         sourceTemplates: 'תבניות מקור',
         destinationTemplates: 'תבניות יעד',
-        disabledEntityTemplate: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
+        cannotDeleteWithTemplates: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
+        disabledEntityTemplate: 'תבנית מושבתת',
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
         entityAction: {
@@ -701,6 +702,7 @@ export default {
         ENTITY_TEMPLATE_HAS_INSTANCES: 'קיימות ישויות מהתבנית',
         RELATIONSHIP_TEMPLATE_HAS_INSTANCES: 'קיימים קשרים מהתבנית',
         DUPLICATE_ERROR: 'קיימים מאפיינים זהים',
+        DUPLICATE_ENTITY_NAME_ERROR: 'קיימת תבנית ישות בעלת שם זהה',
         ENTITY_HAS_RELATIONSHIPS: 'קיימים קשרים לישות',
         RELATIONSHIP_ALREADY_EXISTS: 'הקשר קיים כבר',
         RELATIONSHIP_TEMPLATE_HAS_RULES: 'קיימים חוקים לתבנית קשר',

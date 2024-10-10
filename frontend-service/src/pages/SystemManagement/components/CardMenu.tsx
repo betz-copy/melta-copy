@@ -21,7 +21,8 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
+    isEntityTemplateDisabled?: boolean;
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, isEntityTemplateDisabled }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -36,6 +37,7 @@ export const CardMenu: React.FC<{
         event.stopPropagation();
         setAnchorEl(null);
     };
+
     return (
         <>
             <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
@@ -43,7 +45,7 @@ export const CardMenu: React.FC<{
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
                 <MeltaTooltip
-                    placement="right"
+                    placement="left"
                     title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
                     disableHoverListener={!disabledProps?.canEdit}
                 >
@@ -83,7 +85,7 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDeleteClick && (
-                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle || ''} disableHoverListener={!disabledProps?.isDisabled}>
+                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {
@@ -91,7 +93,7 @@ export const CardMenu: React.FC<{
                                     handleClose(e);
                                 }}
                                 text={i18next.t('actions.delete')}
-                                disabled={disabledProps?.isDisabled}
+                                disabled={disabledProps?.isDisabled || isEntityTemplateDisabled}
                                 icon={<DeleteIcon color="action" />}
                             />
                         </Grid>
@@ -104,7 +106,7 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={disabledProps?.isDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                        text={isEntityTemplateDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
                         icon={<DisabledIcon color="action" />}
                     />
                 )}

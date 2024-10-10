@@ -927,7 +927,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                         onChange={(_e, checked) => {
                                                             setValues?.((prevValue) => ({
                                                                 ...prevValue,
-                                                                readOnly: checked ? checked : undefined,
+                                                                readOnly: checked || undefined,
                                                             }));
                                                         }}
                                                         disabled={value.required}
