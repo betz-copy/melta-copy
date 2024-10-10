@@ -83,7 +83,7 @@ export const CardMenu: React.FC<{
                 )}
 
                 {onDeleteClick && (
-                    <MeltaTooltip placement="right" title={disabledProps?.tooltipTitle || ''} disableHoverListener={!disabledProps?.isDisabled}>
+                    <MeltaTooltip placement="left" title={disabledProps?.tooltipTitle || ''} disableHoverListener={!disabledProps?.isDisabled}>
                         <Grid>
                             <MenuButton
                                 onClick={(e) => {

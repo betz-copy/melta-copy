@@ -36,6 +36,7 @@ import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getFileName } from '../../../utils/getFileName';
+import { getCountByTemplateIdsRequest } from '../../../services/entitiesService';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -97,7 +98,28 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
+    const checkEntityTemplateHasTemplates = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
+        const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
+            templates.map(({ _id }) => _id),
+            searchInput,
+        );
+
+        const hasTemplatesWithCount = templates.some(({ _id }) => {
+            const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
+            return count > 0;
+        });
+
+        setIsDeleteButtonDisabled(hasTemplatesWithCount);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkEntityTemplateHasTemplates([entityTemplate], '');
+        }
+    };
     return (
         <ViewingCard
             width={250}
@@ -166,7 +188,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     updateEntityTemplateStatusAsync({ entityTemplateId: entityTemplate._id, disabled: !entityTemplate.disabled })
                                 }
                                 disabledProps={{
-                                    isDisabled: entityTemplate.disabled,
+                                    isDisabled: entityTemplate.disabled || isDeleteButtonDisabled,
                                     canEdit: entityTemplate.disabled,
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
                                 }}
@@ -280,7 +302,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                     ))}
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
