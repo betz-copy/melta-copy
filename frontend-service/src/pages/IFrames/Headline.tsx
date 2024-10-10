@@ -4,7 +4,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import OpenInFullIcon from '@mui/icons-material/OpenInFull';
-import { Dialog, Grid, IconButton, Tooltip, Typography, useTheme } from '@mui/material';
+import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -132,42 +132,44 @@ const IFrameHeadline: React.FC<{
                                                     </IconButton>
                                                 </MeltaTooltip>
                                             </Grid>
+
+                                            <Grid>
+                                                <MeltaTooltip title={i18next.t('actions.favorites')}>
+                                                    <IconButton
+                                                        onClick={async () => {
+                                                            setPlaceInSideBar(!placeInSideBar);
+                                                            await updateIFrame(iFrame._id, {
+                                                                ...iFrame,
+                                                                placeInSideBar: !placeInSideBar,
+                                                            });
+                                                            queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
+                                                                if (!oldData) {
+                                                                    return [];
+                                                                }
+
+                                                                const index = oldData.findIndex(
+                                                                    (existingIframe) => existingIframe._id === iFrame._id,
+                                                                );
+                                                                const updatedData = [...oldData];
+                                                                updatedData[index] = { ...iFrame, placeInSideBar: !placeInSideBar };
+                                                                return [...updatedData];
+                                                            });
+                                                            queryClient.setQueryData(['getIFrame', iFrame._id], {
+                                                                ...iFrame,
+                                                                placeInSideBar: !placeInSideBar,
+                                                            });
+                                                        }}
+                                                    >
+                                                        {placeInSideBar ? (
+                                                            <FavoriteIcon color="primary" fontSize="small" />
+                                                        ) : (
+                                                            <FavoriteBorderIcon color="primary" fontSize="small" />
+                                                        )}
+                                                    </IconButton>
+                                                </MeltaTooltip>
+                                            </Grid>
                                         </>
                                     )}
-
-                                    <Grid>
-                                        <MeltaTooltip title={i18next.t('actions.favorites')}>
-                                            <IconButton
-                                                onClick={async () => {
-                                                    setPlaceInSideBar(!placeInSideBar);
-                                                    await updateIFrame(iFrame._id, {
-                                                        ...iFrame,
-                                                        placeInSideBar: !placeInSideBar,
-                                                    });
-                                                    queryClient.setQueryData<IMongoIFrame[]>('allIFrames', (oldData) => {
-                                                        if (!oldData) {
-                                                            return [];
-                                                        }
-
-                                                        const index = oldData.findIndex((existingIframe) => existingIframe._id === iFrame._id);
-                                                        const updatedData = [...oldData];
-                                                        updatedData[index] = { ...iFrame, placeInSideBar: !placeInSideBar };
-                                                        return [...updatedData];
-                                                    });
-                                                    queryClient.setQueryData(['getIFrame', iFrame._id], {
-                                                        ...iFrame,
-                                                        placeInSideBar: !placeInSideBar,
-                                                    });
-                                                }}
-                                            >
-                                                {placeInSideBar ? (
-                                                    <FavoriteIcon color="primary" fontSize="small" />
-                                                ) : (
-                                                    <FavoriteBorderIcon color="primary" fontSize="small" />
-                                                )}
-                                            </IconButton>
-                                        </MeltaTooltip>
-                                    </Grid>
                                     <Grid>
                                         <MeltaTooltip title={i18next.t('actions.expansion')}>
                                             <IconButton onClick={() => setOpenFullSize(true)}>

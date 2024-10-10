@@ -27,7 +27,7 @@ import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
 import { CustomIcon } from './CustomIcon';
 
-export const MenuItemContent: React.FC<{
+export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
     indeterminate?: boolean;
     label: string;
@@ -35,10 +35,10 @@ export const MenuItemContent: React.FC<{
     isDraggable?: boolean;
     group?: boolean;
     insideGroup?: boolean;
-    option?: any;
-}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
+    option?: Option;
+};
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
     const theme = useTheme();
-    console.log({ option });
 
     return (
         <>
@@ -118,7 +118,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     toTopBar?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
-    onDragEnd?: any;
+    onDragEnd?: (result: DropResult) => void;
     isSelectDisabled?: boolean;
 }>;
 
@@ -150,7 +150,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     menuItemSx?: SxProps<Theme>;
     insideGroup?: boolean;
-    handleOnDragEnd?: any;
+    handleOnDragEnd?: (result: DropResult) => void;
 }) => {
     const isOptionChecked = (option: Option) => selectedOptions?.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 

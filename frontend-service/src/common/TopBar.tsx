@@ -19,7 +19,7 @@ export const TopBarGrid = styled(Grid)(({ theme }) => {
     };
 });
 
-const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties; iconFileId?: string | null }> = ({ title, boxStyle }) => {
+const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties }> = ({ title, boxStyle }) => {
     if (title.length)
         return (
             <TopBarGrid sx={boxStyle} display="flex" alignItems="center">

@@ -11,7 +11,7 @@ import {
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
-import { Box, Button, Grid, IconButton, MenuItem, Slide, Typography, useTheme } from '@mui/material';
+import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
@@ -71,8 +71,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const [_, navigate] = useLocation();
 
     const handleMenuItemClick = (event, id: string) => {
-        console.log('you click!');
-
         event.stopPropagation();
         event.preventDefault();
         navigate(`/iframes/${id}`);

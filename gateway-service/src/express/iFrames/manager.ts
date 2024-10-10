@@ -1,4 +1,5 @@
 import { FilterQuery, Types } from 'mongoose';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { StorageService } from '../../externalServices/storageService';
@@ -50,7 +51,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     }
 
     async getIFrameById(iFrameId: string) {
-        return this.model.findById(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+        return this.model.findById(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
     }
 
     async createIFrame(iFrameData: Omit<IFrame, 'iconFileId'>, file?: Express.Multer.File) {
@@ -65,7 +66,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     }
 
     deleteIFrame(iFrameId: string) {
-        return this.model.findByIdAndDelete(iFrameId).orFail(new ServiceError(404, 'IFrame not found')).lean().exec();
+        return this.model.findByIdAndDelete(iFrameId).orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found')).lean().exec();
     }
 
     async update(
@@ -76,7 +77,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     ) {
         return this.model
             .findByIdAndUpdate(id, updatedIFrame, { new: true, overwrite: true })
-            .orFail(new ServiceError(404, 'IFrame not found'))
+            .orFail(new ServiceError(StatusCodes.NOT_FOUND, 'IFrame not found'))
             .lean()
             .exec();
     }
