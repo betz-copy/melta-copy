@@ -658,6 +658,8 @@ export default {
         colorRequired: 'חובה לבחור צבע',
         requiredFiles: 'קבצים חובה',
         variableName: 'פורמט שם משתנה',
+        existingName: 'שם באנגלית קיים',
+        existingDisplayName: 'שם תצוגה קיים',
         fieldNameExists: 'קיים שם שדה באנגלית זהה',
         fieldTitleExists: 'קיים שם שדה לתצוגה זהה',
         fieldExist: 'שדה זה קיים במערכת',

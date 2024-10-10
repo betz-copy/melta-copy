@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -7,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
-import { CreateTemplateName, createTemplateNameSchema } from '../entityTemplate/CreateTemplateName';
+import { CreateTemplateName, useCreateTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -39,24 +41,6 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
     }>;
 }
 
-const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
-    {
-        label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
-        component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-        validationSchema: createTemplateNameSchema,
-    },
-    {
-        label: i18next.t('wizard.processTemplate.otherDetails'),
-        component: (props, { isEditMode, setBlock }) => <AddDetailsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-        validationSchema: addDetailsFieldsSchema,
-    },
-    {
-        label: i18next.t('wizard.processTemplate.levels'),
-        component: (props, { isEditMode, setBlock }) => <AddStepsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
-        validationSchema: addStepsFieldsSchema,
-    },
-];
-
 const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues>> = ({
     open,
     handleClose,
@@ -74,6 +58,10 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
+
+    // Call the hook inside the component
+    const createTemplateNameSchema = useCreateTemplateNameSchema();
+
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
             isEditMode
@@ -99,6 +87,24 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             },
         },
     );
+
+    const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
+        {
+            label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
+            component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
+            validationSchema: createTemplateNameSchema, // Use schema here
+        },
+        {
+            label: i18next.t('wizard.processTemplate.otherDetails'),
+            component: (props, { isEditMode, setBlock }) => <AddDetailsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+            validationSchema: addDetailsFieldsSchema,
+        },
+        {
+            label: i18next.t('wizard.processTemplate.levels'),
+            component: (props, { isEditMode, setBlock }) => <AddStepsFields {...props} isEditMode={isEditMode} setBlock={setBlock} />,
+            validationSchema: addStepsFieldsSchema,
+        },
+    ];
 
     return (
         <Wizard
