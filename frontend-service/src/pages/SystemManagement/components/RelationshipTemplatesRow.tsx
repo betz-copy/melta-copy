@@ -176,7 +176,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relation.destinationEntity._id === entityTemplate._id;
             });
 
-            relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            if (relatedRelations.length > 0) {
+                relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            }
         });
 
         return relationsGroupedByEntities;
@@ -284,7 +286,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 sourceEntityTemplatesToShow,
                                 searchText,
                             }),
-                        ).splice(pageParam, infiniteScrollPageCount);
+                        )
+                            .filter((group) => group.relationships.length > 0)
+                            .splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console
