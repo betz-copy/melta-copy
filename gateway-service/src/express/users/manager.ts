@@ -75,7 +75,6 @@ export class UsersManager {
     }
 
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
-        console.log({ userId, file });
         const {
             preferences: { profilePath },
         } = await UserService.getUserById(userId);
@@ -83,27 +82,18 @@ export class UsersManager {
             if (profilePath) {
                 await UsersManager.storageService.deleteFile(profilePath);
             }
-            console.log('here 1.0');
-
             const newProfilePath = await this.storageService.uploadFile(file);
-            console.log('here 1.1');
-
             await removeTmpFile(file.path);
-            console.log('here 1.2');
             preferences.profilePath = newProfilePath;
             return UserService.updateUser(userId, { preferences });
-            // return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: newFileId });
         }
 
         if (profilePath && !preferences.profilePath) {
             await this.storageService.deleteFile(profilePath);
 
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: null } });
-            // return this.entityTemplateService.updateCategory(id, { ...updatedData, iconFileId: null });
         }
         return UserService.updateUser(userId, { preferences });
-        // return this.entityTemplateService.updateCategory(id, updatedData);
-        // return UserService.updateUserPreferencesMetadata(userId, { preferences });
     }
 
     static async syncUserPermissions(userId: string, permissions: ICompactNullablePermissions): Promise<ICompactPermissions> {

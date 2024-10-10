@@ -1,5 +1,7 @@
-import { Checkbox, FormControlLabel, Grid } from '@mui/material';
+import { Button, Checkbox, FormControlLabel, Grid } from '@mui/material';
 import React, { useCallback, useState } from 'react';
+import { AxiosError } from 'axios';
+import { useMutation } from 'react-query';
 import { IUser } from '../../interfaces/users';
 import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
@@ -7,16 +9,14 @@ import { updateUserPreferencesMetadataRequest } from '../../services/userService
 import { InstanceSingleFileInput } from '../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { UserProfilePicker } from '../inputs/userProfilePicker';
 import fileDetails from '../../interfaces/fileDetails';
-import { useMutation } from 'react-query';
-import { AxiosError } from 'axios';
 
 const { notificationsMoreData } = environment.notifications;
-const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
+const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'view' }> = ({ existingUser, mode }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
-    console.log({ existingUser });
+    console.log({ existingUser, mode });
 
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
-    const [preferences, setPreferences] = useState({});
+    const [preferences, setPreferences] = useState<any>({ mailsNotificationsTypes: selectedNotifications });
 
     const handleCheckboxChange = useCallback(
         async (type: NotificationType) => {
@@ -25,12 +25,12 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
                 : [...selectedNotifications, type];
 
             setSelectedNotifications(updatedSelections);
-
-            if (existingUser)
-                await updateUserPreferencesMetadataRequest(existingUser._id, {
-                    ...existingUser.preferences,
-                    mailsNotificationsTypes: updatedSelections,
-                });
+            setPreferences({ ...preferences, mailsNotificationsTypes: updatedSelections });
+            // if (existingUser)
+            //     await updateUserPreferencesMetadataRequest(existingUser._id, {
+            //         ...existingUser.preferences,
+            //         mailsNotificationsTypes: updatedSelections,
+            //     });
         },
         [selectedNotifications],
     );
@@ -46,7 +46,7 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
 
             // const errorMetadata = handleMutationError(err, entityTemplate);
             // if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-            //     setCreateOrUpdateWithRuleBreachDialogState!({
+            //     setCreateOrUpdateWithRuleBreachDia   logState!({
             //         isOpen: true,
             //         brokenRules: errorMetadata.brokenRules,
             //         rawBrokenRules: errorMetadata.rawBrokenRules,
@@ -56,38 +56,57 @@ const MyAccount: React.FC<{ existingUser?: IUser }> = ({ existingUser }) => {
             throw err;
         },
     });
-    return (
-        <Grid container>
-            <Grid item>
-                <UserProfilePicker
-                    onPick={(value) => {
-                        if (!existingUser) return;
-                        setPreferences({ ...preferences, icon: value, mailsNotificationsTypes: selectedNotifications });
-                        console.log('1');
 
-                        mutateAsync(existingUser._id);
-                        console.log('11');
-                    }}
-                    onDelete={() => {}}
-                />
+    return (
+        <>
+            <Grid container>
+                <Grid container flexDirection="row" spacing={4}>
+                    {allNotifications.map((notification) => (
+                        <Grid item key={notification.type}>
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={selectedNotifications.includes(notification.type)}
+                                        onChange={() => handleCheckboxChange(notification.type)}
+                                    />
+                                }
+                                label={notification.displayName()}
+                            />
+                        </Grid>
+                    ))}
+                </Grid>
+                <Grid item>
+                    <UserProfilePicker
+                        onPick={(value) => {
+                            if (!existingUser) return;
+                            setPreferences({ ...preferences, icon: value });
+                            console.log('1');
+
+                            // mutateAsync(existingUser._id);
+                            console.log('11');
+                        }}
+                        onDelete={() => {}}
+                    />
+                </Grid>
             </Grid>
 
-            {/* <Grid container flexDirection="row" spacing={4}>
-                {allNotifications.map((notification) => (
-                    <Grid item key={notification.type}>
-                        <FormControlLabel
-                            control={
-                                <Checkbox
-                                    checked={selectedNotifications.includes(notification.type)}
-                                    onChange={() => handleCheckboxChange(notification.type)}
-                                />
-                            }
-                            label={notification.displayName()}
-                        />
-                    </Grid>
-                ))}
-            </Grid> */}
-        </Grid>
+            <Grid>
+                <Button
+                    // type="button"
+                    //     formikProps.isSubmitting ||
+                    //     didPermissionsChange(formikProps.initialValues.permissions, formikProps.values.permissions) ||
+                    //     userHasNoPermissions(formikProps.values.permissions[workspace._id])
+                    // }
+                    onClick={() => mutateAsync(existingUser!._id)}
+                    variant="contained"
+                >
+                    סיים
+                    {/* {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                    {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
+                    {formikProps.isSubmitting && <CircularProgress size={20} />} */}
+                </Button>
+            </Grid>
+        </>
     );
 };
 export default MyAccount;

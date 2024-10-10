@@ -23,7 +23,7 @@ export class FilesManager extends DefaultManagerMinio {
             await menash.send(
                 rabbit.previewQueue,
                 documentFiles.map((file) => file.path),
-                { headers: { [workspaceIdHeaderName]: this.workspaceId } },
+                { headers: { [workspaceIdHeaderName]: this.bucketName } },
             );
         return files;
     }

@@ -9,8 +9,8 @@ const {
 } = config;
 
 export class StorageService extends DefaultExternalServiceApi {
-    constructor(workspaceId: string) {
-        super(workspaceId, { baseURL: url });
+    constructor(bucketName: string) {
+        super(bucketName, { baseURL: url });
     }
 
     async uploadFile(file: Express.Multer.File) {
