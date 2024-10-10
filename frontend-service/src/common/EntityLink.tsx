@@ -64,7 +64,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
             {linkable ? (
                 <Link
                     to={`/entity/${entity && typeof entity !== 'string' ? entity.properties._id : 'unknownEntity'}`}
-                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold' }}
+                    style={{ color: theme.palette.primary.main, textDecoration: 'inherit', fontWeight: 'bold', fontSize: '14px' }}
                 >
                     {linkText}
                 </Link>

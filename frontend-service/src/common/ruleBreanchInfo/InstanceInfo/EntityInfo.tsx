@@ -2,10 +2,8 @@ import React, { useState } from 'react';
 import { Collapse, Divider, Grid, Typography } from '@mui/material';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import i18next from 'i18next';
-import { useQueryClient } from 'react-query';
 import { IEntity } from '../../../interfaces/entities';
 import { environment } from '../../../globals';
-import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { EntityTemplateColor } from '../../EntityTemplateColor';
 import { getEntityTemplateColor } from '../../../utils/colors';
@@ -13,78 +11,13 @@ import { EntityPropertiesInternal } from '../../EntityProperties';
 
 interface EntityInfoProps {
     entity: IEntity | null;
-    actions: IActionPopulated[];
     entityTemplate: IEntityTemplatePopulated;
 }
 
-export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, actions, entityTemplate }) => {
+export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate }) => {
     const [open, setOpen] = useState(false);
 
-    const queryClient = useQueryClient();
-
-    let entityForLink: IEntity | null;
-
-    // const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-
-    // if (!entity) {
-    //     entityForLink = null;
-    // } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
-    //     // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
-    //     // and the '._id' in the end
-    //     const numberPart = entity.slice(1, -4);
-    //     const actionIndex = Number(numberPart) < actions.length ? Number(numberPart) : 0;
-    //     const { templateId, properties } = actions[actionIndex].actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
-
-    //     let mergedProperties = { ...properties };
-
-    //     // if the created entity updated by actions- show the updated properties
-    //     actions.forEach((currentAction) => {
-    //         if (
-    //             currentAction.actionType === ActionTypes.UpdateEntity &&
-    //             (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === properties._id
-    //         ) {
-    //             const { updatedFields } = currentAction.actionMetadata as IUpdateEntityMetadataPopulated;
-
-    //             mergedProperties = {
-    //                 ...properties,
-    //                 ...updatedFields,
-    //             };
-    //         }
-    //     });
-
-    //     entityForLink = {
-    //         templateId,
-    //         properties: {
-    //             // if entity wasn't created yet, put generated properties. if it has, it will override
-    //             _id: entity,
-    //             createdAt: new Date().toISOString(),
-    //             updatedAt: new Date().toISOString(),
-    //             disabled: false,
-
-    //             ...mergedProperties,
-    //         },
-    //     };
-    // } else {
-    //     const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
-    //         if (
-    //             currentAction.actionType === ActionTypes.UpdateEntity &&
-    //             (currentAction.actionMetadata as IUpdateEntityMetadataPopulated).entity?.properties._id === (entity as IEntity).properties._id
-    //         ) {
-    //             return {
-    //                 ...previousUpdatedProperties,
-    //                 ...(currentAction.actionMetadata as IUpdateEntityMetadataPopulated).updatedFields,
-    //             };
-    //         }
-    //         return previousUpdatedProperties;
-    //     }, (entity as IEntity).properties);
-
-    //     entityForLink = {
-    //         templateId: (entity as IEntity).templateId,
-    //         properties: updatedProperties,
-    //     };
-    // }
-
-    // const entityTemplate = entityForLink?.templateId ? entityTemplates.get(entityForLink.templateId) : null;
+    if (!entity) return <Grid />;
 
     const entityTemplateColor = entityTemplate ? getEntityTemplateColor(entityTemplate) : '';
 
@@ -124,12 +57,10 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, actions, entityT
                 style={{
                     flexDirection: 'row',
                     flexWrap: 'wrap',
-                    rowGap: '20px',
-                    columnGap: '20px',
                     alignItems: 'center',
                     width: '100%',
                 }}
-                innerStyle={{ width: '32%' }}
+                innerStyle={{ width: '30%' }}
                 showPreviewPropertiesOnly
                 textWrap
                 mode="normal"
@@ -153,11 +84,11 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, actions, entityT
                 paddingTop="10px"
                 paddingBottom="10px"
                 gap="5px"
-                style={{ backgroundColor: '#FFFFFF', borderRadius: '10px', width: 'fit-content', maxWidth: '90%' }}
+                style={{ backgroundColor: '#FFFFFF', borderRadius: '10px', width: 'fit-content', maxWidth: '460px' }}
             >
                 {header}
-                <Collapse in={open} timeout="auto" unmountOnExit>
-                    <Grid container item gap="20px">
+                <Collapse in={open} timeout="auto" unmountOnExit style={{ width: '460px' }}>
+                    <Grid container item gap="20px" width="100%" flexDirection="column">
                         <Divider orientation="horizontal" style={{ width: '95%', alignSelf: 'center' }} />
                         <Grid item>{header}</Grid>
                         <Grid item>{entityPropertiesTooltip}</Grid>

@@ -748,6 +748,8 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        brokenRules: 'חריגות',
+        actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
         actionBrokeTheFollowingRules: 'הפעולה שנעשתה',
         brokeTheFollowingRule: 'הפרה את החוק',

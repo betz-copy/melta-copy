@@ -38,8 +38,8 @@ const ExecWithRuleBreachDialog: React.FC<{
             <DialogTitle>
                 {i18next.t('execActionWithRuleBreach.actionBroke')}
                 {brokenRules.length === 1
-                    ? i18next.t('execActionWithRuleBreach.rule')
-                    : `${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
+                    ? ` ${i18next.t('execActionWithRuleBreach.rule')}`
+                    : ` ${brokenRules.length} ${i18next.t('execActionWithRuleBreach.rules')}`}
             </DialogTitle>
             <DialogContent>
                 <RuleBreachInfo brokenRules={brokenRules} actions={actions ?? [{ actionType, actionMetadata }]} isCompact={false} />
