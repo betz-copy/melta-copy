@@ -372,9 +372,9 @@ const buildFulltextSearchQuery = (
         };
     }
 
-    const sortQueryOfUser = searchBody.sort && searchBody.sort.length > 0 ? `${sortToNeo4JSort(searchBody.sort)},` : '';
-    const defaultSortQuery = 'score DESC';
-    const sortQuery = `ORDER BY ${sortQueryOfUser} ${defaultSortQuery}`;
+    const sortQueryOfUser = searchBody.sort && searchBody.sort.length > 0 ? sortToNeo4JSort(searchBody.sort) : '';
+    const defaultSortQuery = 'node.createdAt DESC';
+    const sortQuery = `ORDER BY ${sortQueryOfUser ? sortQueryOfUser + ', ' : ''}${defaultSortQuery}`;
 
     return {
         cypherQuery: `
