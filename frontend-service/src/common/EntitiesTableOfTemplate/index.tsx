@@ -349,9 +349,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
-        const onBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
+        const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
             if (!saveStorageProps.shouldSaveScrollPosition) return;
-            if (params.api.getVerticalPixelRange().top > 0 && rowModelType === 'infinite') {
+            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
             }
         }, 300);
@@ -401,7 +401,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     onColumnMoved={handleColumnMoved}
                     onColumnResized={handleColumnResized}
                     onPaginationChanged={handlePaginationChanged}
-                    onBodyScroll={rowModelType === 'infinite' ? onBodyScroll : undefined}
+                    onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                     onSortChanged={handleSortChanged}
                     enableRtl
                     enableCellTextSelection

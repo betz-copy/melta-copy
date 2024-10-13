@@ -195,6 +195,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 size="small"
                                 borderRadius="30px"
                                 width="199px"
+                                autoSearch
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>

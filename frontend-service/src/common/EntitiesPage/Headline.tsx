@@ -3,19 +3,10 @@ import AddIcon from '@mui/icons-material/Add';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
-import {
-    BaseTextFieldProps,
-    CircularProgress,
-    debounce,
-    Grid,
-    IconButton,
-    ToggleButton,
-    ToggleButtonGroup,
-    Typography,
-    useTheme,
-} from '@mui/material';
+import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -39,31 +30,32 @@ export const GlobalSearchBar: React.FC<{
     height?: string;
     width?: string;
     autoSearch?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch }) => {
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const handleSearch = useCallback(
-        debounce((searchValue) => {
-            if (searchValue !== valueForSearchButtonRef.current) {
-                valueForSearchButtonRef.current = searchValue;
-                onSearch(searchValue);
-                if (gridApi) {
-                    gridApi.setQuickFilter(searchValue);
-                }
-            }
-        }, 500),
-        [gridApi, onSearch],
-    );
-
+    // eslint-disable-next-line consistent-return
     useEffect(() => {
         if (autoSearch) {
-            handleSearch(debouncedSearchValue);
+            const debouncedSearch = debounce((value: string) => {
+                if (value !== valueForSearchButtonRef.current) {
+                    valueForSearchButtonRef.current = value;
+                    onSearch(value);
+                    if (gridApi) {
+                        gridApi.setQuickFilter(value);
+                    }
+                }
+            }, 300);
+
+            debouncedSearch(debouncedSearchValue);
+
+            return () => {
+                debouncedSearch.cancel();
+            };
         }
-    }, [debouncedSearchValue, autoSearch, handleSearch]);
+    }, [debouncedSearchValue, gridApi, onSearch, autoSearch]);
 
     return (
         <SearchInput
@@ -192,6 +184,7 @@ const EntitiesPageHeadline: React.FC<{
                                     borderRadius="7px"
                                     placeholder={i18next.t('globalSearch.searchInPage')}
                                     toTopBar
+                                    autoSearch
                                 />
                             </Grid>
                         </Grid>

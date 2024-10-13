@@ -7,8 +7,7 @@ import { useWorkspaceStore } from '../../../stores/workspace';
 
 const StartPageSearch: React.FC<{
     onSearch: (searchValue: string) => void;
-    isGlobalSearch?: boolean;
-}> = ({ onSearch, isGlobalSearch = true }) => {
+}> = ({ onSearch }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
@@ -29,7 +28,6 @@ const StartPageSearch: React.FC<{
                     borderRadius="30px"
                     height="56px"
                     width="768px"
-                    autoSearch={isGlobalSearch}
                 />
             </Grid>
         </Grid>
