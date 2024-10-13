@@ -308,6 +308,7 @@ const ConnectionsTable: React.FC<{
                         shouldSaveSorting: false,
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
+                        shouldSaveScrollPosition: false,
                         pageType: `entity-${expandedEntity.entity.properties._id}`,
                     }}
                     onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
