@@ -22,7 +22,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
-    isNewPropertyWithNameOfDeletedProperty?: boolean;
+    isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';

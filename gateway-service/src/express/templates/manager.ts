@@ -708,7 +708,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             Object.entries(currTemplate.properties.properties).forEach(([key, value]) => {
                 const newValue = updatedTemplateData.properties.properties[key];
 
-                if ((!newValue || newValue?.isNewPropertyWithNameOfDeletedProperty) && !currTemplate.actions) removedProperties.push(key);
+                if ((!newValue || newValue?.isNewPropNameEqualDeletedPropName) && !currTemplate.actions) removedProperties.push(key);
                 else {
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
                     if (value.type !== newValue.type) throw new ServiceError(400, 'can not change property type');
@@ -744,7 +744,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const { required: requiredConstraints, ...restOfTemplatePropertiesObject } = properties;
 
         Object.keys(restOfTemplatePropertiesObject.properties).forEach(
-            (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropertyWithNameOfDeletedProperty,
+            (key) => delete restOfTemplatePropertiesObject.properties[key].isNewPropNameEqualDeletedPropName,
         );
 
         const updatedTemplate = await this.entityTemplateService.updateEntityTemplate(id, {

@@ -174,7 +174,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 if (isEditMode) {
                     schema.properties[name] = {
                         ...schema.properties[name],
-                        isNewPropertyWithNameOfDeletedProperty: properties.some((property) => property.id !== id && property.name === name),
+                        isNewPropNameEqualDeletedPropName: properties.some((property) => property.id !== id && property.name === name),
                     };
                 }
 
@@ -221,7 +221,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             if (isEditMode) {
                 schema.properties[name] = {
                     ...schema.properties[name],
-                    isNewPropertyWithNameOfDeletedProperty: attachmentProperties.some((property) => property.id !== id && property.name === name),
+                    isNewPropNameEqualDeletedPropName: attachmentProperties.some((property) => property.id !== id && property.name === name),
                 };
             }
 
