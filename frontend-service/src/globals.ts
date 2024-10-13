@@ -182,6 +182,7 @@ export const environment = {
         maxBlocksInCache: 50,
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 1,
+        defaultExpandedTableHeight: 650,
     },
     activityLog: {
         infiniteScrollPageCount: 10,

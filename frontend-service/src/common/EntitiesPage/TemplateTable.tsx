@@ -26,8 +26,9 @@ import { AddEntityButton } from './AddEntityButton';
 import { EntityWizardValues } from '../dialogs/entity';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
+import { json } from 'stream/consumers';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = environment.agGrid;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -55,7 +56,7 @@ const TemplateTable = forwardRef<
             sessionStorage.setItem(`isExpand-${template._id}`, newExpandState.toString());
             sessionStorage.setItem(`currentPage-${page}-${template._id}`, '0');
             sessionStorage.setItem(`scrollPosition-${template._id}`, '0');
-            sessionStorage.setItem(`resizeHeight-${template._id}`, '650');
+            sessionStorage.setItem(`resizeHeight-${template._id}`, JSON.stringify(defaultExpandedTableHeight));
             return newExpandState;
         });
     }, [template._id, page]);
