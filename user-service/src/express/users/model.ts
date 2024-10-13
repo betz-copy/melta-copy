@@ -24,6 +24,9 @@ const UserSchema = new mongoose.Schema(
             required: true,
             index: true,
         },
+        profile: {
+            type: String,
+        },
         preferences: {
             darkMode: {
                 type: Boolean,

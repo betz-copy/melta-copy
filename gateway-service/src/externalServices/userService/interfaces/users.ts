@@ -7,6 +7,7 @@ export interface IBaseUser {
     jobTitle: string;
     hierarchy: string;
     mail: string;
+    profile?: string;
     preferences: {
         darkMode?: boolean;
         mailsNotificationsTypes?: NotificationType[];
@@ -30,5 +31,5 @@ export interface IUserSearchBody {
     step?: number;
 }
 
-export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
-    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>> & { existingDigitalIdentitySource?: string };
+export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail' | 'profile'> &
+    Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail' | 'profile'>> & { existingDigitalIdentitySource?: string };

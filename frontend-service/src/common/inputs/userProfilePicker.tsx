@@ -13,7 +13,6 @@ const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete
 
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
-
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
 
@@ -22,13 +21,15 @@ const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete
         const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
 
         if (!selectedValue) {
+            console.log('gggggggggggggggggggggggggggg');
+
             onDelete();
             return;
         }
 
         onPick(selectedValue);
     };
-    console.log({ inputType });
+    console.log({ inputType, fileInputValue });
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
@@ -79,7 +80,7 @@ const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete
                             setFileInputValue(undefined);
                             onDelete();
                         }}
-                        fileName={image?.name}
+                        fileName={fileInputValue?.name}
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
                     />

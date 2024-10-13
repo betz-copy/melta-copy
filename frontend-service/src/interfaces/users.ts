@@ -1,3 +1,4 @@
+import fileDetails from './fileDetails';
 import { NotificationType } from './notifications';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
@@ -7,6 +8,7 @@ export interface IBaseUser {
     jobTitle: string;
     hierarchy: string;
     mail: string;
+    profile?: string;
     preferences: {
         darkMode?: boolean;
         mailsNotificationsTypes?: NotificationType[];
@@ -29,6 +31,11 @@ export interface IUserSearchBody {
     limit: number;
     step?: number;
 }
+
+export type IUserPreferences = Pick<IBaseUser, 'preferences'>['preferences'] & {
+    icon?: fileDetails;
+    kartoffelProfile?: boolean;
+};
 
 export type IExternalUser = Omit<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'> &
     Partial<Pick<IUser, 'fullName' | 'jobTitle' | 'hierarchy' | 'mail'>>;

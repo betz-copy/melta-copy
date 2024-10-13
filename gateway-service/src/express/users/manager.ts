@@ -78,7 +78,10 @@ export class UsersManager {
         const {
             preferences: { profilePath },
         } = await UserService.getUserById(userId);
+
         if (file) {
+            console.log('have file!');
+
             if (profilePath) {
                 await UsersManager.storageService.deleteFile(profilePath);
             }
@@ -88,11 +91,12 @@ export class UsersManager {
             return UserService.updateUser(userId, { preferences });
         }
 
-        if (profilePath && !preferences.profilePath) {
+        if (profilePath) {
             await this.storageService.deleteFile(profilePath);
-
-            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: null } });
+            console.log('cencel the file');
+            if (!preferences.profilePath) return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: null } });
         }
+        // kartoffel profile path and first time of profile
         return UserService.updateUser(userId, { preferences });
     }
 
@@ -177,7 +181,7 @@ export class UsersManager {
         const mail = digitalIdentity.mail || kartoffelUser.mail;
 
         const kartoffelId = kartoffelUser._id || kartoffelUser.id;
-
+        const profile = kartoffelUser.pictures?.profile?.meta?.path;
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
@@ -190,6 +194,7 @@ export class UsersManager {
             jobTitle,
             mail,
             displayName: `[${digitalIdentity.source}] ${fullName} - ${hierarchy}/${jobTitle}`,
+            profile,
             externalMetadata: {
                 kartoffelId,
                 digitalIdentitySource: digitalIdentity.source,
@@ -197,7 +202,7 @@ export class UsersManager {
             preferences: {
                 mailsNotificationsTypes: [],
                 // darkMode: false,
-                profilePath: kartoffelUser.pictures?.profile?.meta?.path,
+                profilePath: profile,
             },
             permissions: existingUser.permissions || {},
             existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,

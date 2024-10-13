@@ -74,8 +74,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                     <FileInput
                         fileFieldName="icon"
                         onDropFile={(acceptedFile) => {
-                            console.log({ acceptedFile });
-
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);
                             onPick(detailedFile);

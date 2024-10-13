@@ -40,6 +40,7 @@ const MyPermissions: React.FC<{
         jobTitle: '',
         hierarchy: '',
         mail: '',
+        profile: '',
         preferences: {
             darkMode: false,
         },

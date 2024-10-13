@@ -15,7 +15,7 @@ const UserExternalMetadataSchema = joi.object({
 });
 
 const UserPreferencesMetadataSchema = joi.object({
-    darkMode: joi.boolean(),
+    // darkMode: joi.boolean(),
     // mailsNotificationsTypes: joi.array().items(NotificationType),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
     profilePath: joi.string(),
@@ -26,6 +26,7 @@ export const baseUserSchema = joi.object({
     jobTitle: joi.string().required(),
     hierarchy: joi.string().required(),
     mail: joi.string().required(),
+    profile: joi.string(),
     externalMetadata: joi
         .object({
             kartoffelId: joi.string().required(),

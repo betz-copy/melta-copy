@@ -16,7 +16,7 @@ const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'vie
     console.log({ existingUser, mode });
 
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
-    const [preferences, setPreferences] = useState<any>({ mailsNotificationsTypes: selectedNotifications });
+    const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
 
     const handleCheckboxChange = useCallback(
         async (type: NotificationType) => {
@@ -39,7 +39,6 @@ const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'vie
     const { isLoading, mutateAsync } = useMutation((id: string) => updateUserPreferencesMetadataRequest(id, preferences), {
         onSuccess: (data) => {
             // if (onSuccessUpdate) onSuccessUpdate(data);
-            console.log('Efratoshhhh hameamemet');
         },
         onError: (err: AxiosError) => {
             console.log({ err });
@@ -85,8 +84,15 @@ const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'vie
                             // mutateAsync(existingUser._id);
                             console.log('11');
                         }}
-                        onDelete={() => {}}
+                        onDelete={() => {
+                            setPreferences({ ...preferences, icon: undefined });
+                        }}
                     />
+                </Grid>
+                <Grid>
+                    <Button onClick={() => setPreferences({ ...preferences, profilePath: existingUser?.profile, icon: undefined })}>
+                        kartoffel proofile
+                    </Button>
                 </Grid>
             </Grid>
 

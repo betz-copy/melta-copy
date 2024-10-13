@@ -40,6 +40,7 @@ export const useUserStore = create<UserState>((set) => ({
         jobTitle: '',
         hierarchy: '',
         mail: '',
+        profile: '',
         preferences: {
             darkMode: false,
         },

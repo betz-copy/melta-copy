@@ -17,6 +17,7 @@ export interface IBaseUser {
     jobTitle: string;
     hierarchy: string;
     mail: string;
+    profile?: string;
     preferences: {
         darkMode?: boolean;
         mailsNotificationsTypes?: any[];

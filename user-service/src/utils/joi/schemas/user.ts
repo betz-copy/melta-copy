@@ -7,11 +7,12 @@ export const baseUserSchema = joi.object({
     jobTitle: joi.string(), // .required(),
     hierarchy: joi.string(), // .required(),
     mail: joi.string(), // .required(),
+    profile: joi.string(),
     preferences: joi.object({
         darkMode: joi.boolean(),
         // mailsNotificationsTypes: joi.array().items(NotificationType),
         mailsNotificationsTypes: joi.array().items(joi.string()),
-        profilePath: joi.string(),
+        profilePath: joi.string().allow(null),
     }),
     // .required(),
     externalMetadata: joi.object({

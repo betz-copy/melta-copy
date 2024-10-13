@@ -1,7 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const { users } = environment.api;
@@ -26,18 +26,23 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
     return data;
 };
 
-export const updateUserPreferencesMetadataRequest = async (userId: string, preferences) => {
+export const updateUserPreferencesMetadataRequest = async (userId: string, updatedPreferences: IUserPreferences) => {
     const formData = new FormData();
+    console.log({ updatedPreferences });
 
-    if (preferences.icon) {
-        if (preferences.icon.file instanceof File) {
-            formData.append('file', preferences.icon.file);
+    if (updatedPreferences.icon) {
+        console.log('have icon!!');
+
+        if (updatedPreferences.icon.file instanceof File) {
+            formData.append('file', updatedPreferences.icon.file);
         } else {
-            formData.append('iconFileId', preferences.icon.file.name!);
+            console.log('noooooow its else');
+
+            formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
-    }
-    // formData.append('darkMode', JSON.stringify(preferences?.darkMode));
-    formData.append('mailsNotificationsTypes', JSON.stringify(preferences.mailsNotificationsTypes));
+    } else formData.append('profilePath', updatedPreferences.profilePath ?? 'bla bla');
+
+    formData.append('mailsNotificationsTypes', JSON.stringify(updatedPreferences.mailsNotificationsTypes));
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;
