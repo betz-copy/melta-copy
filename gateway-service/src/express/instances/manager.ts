@@ -10,7 +10,7 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, ISearchBatchBody, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -36,6 +36,7 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
+import { SemanticSearchService } from '../../externalServices/semanticSearchService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -43,6 +44,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
 
     private storageService: StorageService;
+
+    private semanticSearchSearch: SemanticSearchService;
 
     private ruleBreachesManager: RuleBreachesManager;
 
@@ -52,6 +55,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         super(new InstancesService(workspaceId));
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
+        this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
         this.rabbitManager = new RabbitManager(workspaceId);
     }
@@ -281,6 +285,30 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entityProperties: IEntity['properties'];
     }) {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+    }
+
+    async searchEntitiesBatch(searchBody: ISearchBatchBody) {
+        const { count, entities } = await this.service.searchEntitiesBatch(searchBody);
+
+        const semanticSearchBody = {
+            search_text: searchBody.textSearch,
+            limit: searchBody.limit,
+            skip: searchBody.skip,
+            templates: Object.keys(searchBody.templates),
+        };
+        const { count: semanticCount, results } = await this.semanticSearchSearch.search(semanticSearchBody);
+
+        let combinedResults = this.semanticSearchSearch.combineResults({ results, entities }).slice(searchBody.skip, searchBody.limit);
+        combinedResults = await Promise.all(
+            combinedResults.map(async (entity) =>
+                entity?.entity_id ? { entity: await this.service.getEntityInstanceById(entity.entity_id) } : entity,
+            ),
+        );
+
+        return {
+            count: +count + +semanticCount,
+            entities: combinedResults,
+        };
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

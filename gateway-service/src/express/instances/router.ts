@@ -42,7 +42,7 @@ InstancesRouter.post(
     '/entities/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesBatch,
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
