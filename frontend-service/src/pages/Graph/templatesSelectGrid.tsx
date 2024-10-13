@@ -1,25 +1,25 @@
-import React, { Dispatch, useState } from 'react';
-import { Box, Button, Divider, Grid, Paper, Typography } from '@mui/material';
-import i18next from 'i18next';
+import { FilterList } from '@mui/icons-material';
+import { Box, Button, Divider, Grid, SxProps, Typography } from '@mui/material';
 import { makeStyles } from '@mui/styles';
+import i18next from 'i18next';
+import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoCategory } from '../../interfaces/categories';
 import {
     ChooseAllMenuItem,
+    getOptionsAndGroupsMiniFiltered,
     MiniFilter,
     SelectCheckboxGroupProps,
     SelectCheckboxProps,
     SelectOptionsMenuItemsGrouped,
-    getOptionsAndGroupsMiniFiltered,
 } from '../../common/SelectCheckbox';
+import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const useStyles = makeStyles(() => ({
     button: {
-        backgroundColor: 'white',
         boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.3)',
         borderRadius: '8px',
-        borderColor: 'white',
     },
     popper: {
         borderRadius: '10px',
@@ -85,39 +85,40 @@ const TemplatesSelectGrid: React.FC<{
     const extendedCategoriesFiltered = categoriesFiltered!.slice(3);
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
+    const floatingBoxStyle: SxProps = {
+        backgroundColor: darkMode ? '#121212' : '#fff',
+        borderColor: darkMode ? '#121212' : '#fff',
+        borderRadius: '0.5rem',
+    };
+
     return (
         <Grid container gap="10px">
             <Grid item>
-                <Box style={{ marginBottom: '20px', overflowY: 'auto' }} borderRadius="10px">
+                <Box sx={{ marginBottom: '20px', overflowY: 'auto', ...floatingBoxStyle }}>
                     <Button
                         className={classes.button}
-                        variant="outlined"
                         onClick={() => {
                             setOpenFilter(!openFilter);
                         }}
                         style={{
                             width: openFilter ? '235px' : '120px',
                             height: '50px',
-                            gap: '20px',
                             zIndex: '100',
-                            padding: '17px, 20px, 17px, 20px',
-                            display: 'flex',
                             justifyContent: openFilter ? 'space-between' : 'center',
-                            alignContent: 'center',
                         }}
                     >
-                        <Box>
-                            <img src="/icons/select-checkbox.svg" style={{ marginLeft: '15px' }} />
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem', paddingLeft: openFilter ? '1rem' : '' }}>
+                            <FilterList />
                             {i18next.t('graph.filter')}
                         </Box>
-                        {openFilter && <img src="/icons/star.svg" />}
                     </Button>
                 </Box>
                 {openFilter && (
-                    <Paper className={classes.popper} style={{ zIndex: '100', position: 'relative', padding: '5px', width: '235px' }}>
+                    <Box sx={{ zIndex: '100', position: 'relative', padding: '5px', width: '235px', ...floatingBoxStyle }}>
                         <Typography
                             style={{
-                                color: '#1E2775',
                                 fontWeight: '500',
                                 fontFamily: 'Rubik',
                                 fontSize: '14px',
@@ -174,20 +175,13 @@ const TemplatesSelectGrid: React.FC<{
                                 </Typography>
                             </Button>
                         </Box>
-                    </Paper>
+                    </Box>
                 )}
             </Grid>
             <Grid item>
                 <Box style={{ marginTop: '4.4rem' }}>
                     {openFilter && showAll && (
-                        <Paper
-                            className={classes.popper}
-                            style={{
-                                zIndex: '100',
-                                position: 'absolute',
-                                width: '235px',
-                            }}
-                        >
+                        <Box sx={{ zIndex: '100', position: 'absolute', width: '235px', ...floatingBoxStyle }}>
                             <div style={{ width: '100%', maxHeight: '28rem', overflowY: 'auto', paddingBottom: '4px' }}>
                                 <SelectOptionsMenuItemsGrouped
                                     options={templates}
@@ -204,7 +198,7 @@ const TemplatesSelectGrid: React.FC<{
                                     onClick={onClick}
                                 />
                             </div>
-                        </Paper>
+                        </Box>
                     )}
                 </Box>
             </Grid>

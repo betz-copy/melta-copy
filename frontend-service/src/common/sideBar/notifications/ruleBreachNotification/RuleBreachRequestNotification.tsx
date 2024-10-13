@@ -6,10 +6,9 @@ import { IRuleBreachRequestNotificationMetadataPopulated, NotificationType } fro
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const RuleBreachRequestNotification: React.FC<{
-    notificationMetadata: IRuleBreachRequestNotificationMetadataPopulated;
-    titleColor: string;
-}> = ({ notificationMetadata: { request }, titleColor }) => {
+export const RuleBreachRequestNotification: React.FC<{ notificationMetadata: IRuleBreachRequestNotificationMetadataPopulated }> = ({
+    notificationMetadata: { request },
+}) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.requests.find((notificationData) => notificationData.type === NotificationType.ruleBreachRequest)?.color;
 
@@ -17,7 +16,7 @@ export const RuleBreachRequestNotification: React.FC<{
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography component="p" variant="body1" color={titleColor} paddingLeft="10px">
+                <Typography component="p" variant="body1" color="primary" fontWeight="bold" paddingLeft="10px">
                     {i18next.t('ruleBreachRequestNotification.requestWaitingForApproval')}
                 </Typography>
             </Grid>
