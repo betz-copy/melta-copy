@@ -241,7 +241,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles));
+            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
         return createdEntity;
@@ -405,7 +405,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         } else {
             const fileIds = Object.values(fileProperties).flat();
-            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Array.isArray(fileIds) ? fileIds : [fileIds]);
+            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
         return createdEntity;
@@ -501,7 +501,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles));
+            this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
         return updatedEntity;

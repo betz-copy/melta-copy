@@ -3,6 +3,7 @@ import config from '../config';
 import { INotificationMetadata, NotificationType } from '../externalServices/notificationService/interfaces';
 import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';
+import logger from './logger/logsLogger';
 
 const {
     rabbit,
@@ -25,8 +26,10 @@ export class RabbitManager {
         await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 
-    async indexFile(templateId: string, entityId: string, minioFileIds: string[]) {
+    indexFile(templateId: string, entityId: string, minioFileIds: string[]) {
         const fileData = { template_id: templateId, entity_id: entityId, minio_file_ids: minioFileIds };
-        await menash.send(rabbit.sematicSearchQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
+        menash.send(rabbit.sematicSearchQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
+            logger.error('Failed at indexing file', err);
+        });
     }
 }
