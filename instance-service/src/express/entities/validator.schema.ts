@@ -291,6 +291,20 @@ export const updateConstraintsOfTemplateRequestSchema = Joi.object({
     },
 });
 
+/*
+ * PATCH /api/instances/entities/deletePropertiesOfTemplate/:templateId
+ */
+export const deletePropertiesOfTemplateRequestSchema = Joi.object({
+    body: {
+        properties: Joi.array().items(Joi.string()).required(),
+        currentTemplateProperties: Joi.object().required(),
+    },
+    query: {},
+    params: {
+        templateId: Joi.string().required(),
+    },
+});
+
 export const enumerateNewSerialNumberFieldsRequestSchema = Joi.object({
     body: Joi.object({
         newSerialNumberFields: Joi.object().required(),

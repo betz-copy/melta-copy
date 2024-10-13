@@ -203,6 +203,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {
