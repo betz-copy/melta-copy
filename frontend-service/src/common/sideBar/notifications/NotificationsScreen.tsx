@@ -1,6 +1,6 @@
 import { CalendarToday, FilterList, FilterListOff, MarkChatUnreadOutlined, SmsOutlined } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { CircularProgress, Grid, IconButton, Tab, Tabs, Typography } from '@mui/material';
+import { CircularProgress, Grid, IconButton, Tab, Tabs, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { useMutation } from 'react-query';
@@ -60,6 +60,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     );
     const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
 
+    const theme = useTheme();
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const onSetStartDate = (newStartDateInput: Date | null) => {
@@ -111,7 +113,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs value={selectedGroup} onChange={handleGroupChange}>
+                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ width: '90%', margin: 'auto' }}>
                     {groupNames.map((groupName) => (
                         <Tab
                             value={groupName}
@@ -148,8 +150,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ display: 'flex', justifyContent: 'space-around', padding: '18px' }}>
-                        <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-between', padding: '18px' }}>
+                        <Grid item>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
@@ -161,8 +163,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 horizontalOrigin={openCalenders ? 61 : 89}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
-                                        color: '#9398C2',
-                                        boxShadow: '-2px 2px 6px 0px #1E277540',
+                                        color: '#       ',
                                         border: 0,
                                         width: openCalenders ? '15rem' : '11.5rem',
                                     },
@@ -187,7 +188,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                         )}
                     </Grid>
                     {openCalenders && (
-                        <Grid sx={{ padding: '17px' }}>
+                        <Grid sx={{ padding: '17px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <DateRange
                                 onStartDateChange={onSetStartDate}
                                 onEndDateChange={onSetEndDate}
@@ -195,7 +196,19 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 endDateInput={endDate}
                                 directionIsRow
                                 {...(darkMode
-                                    ? {}
+                                    ? {
+                                          overrideSx: {
+                                              '& input': {
+                                                  backgroundColor: 'none',
+                                                  fontSize: '15px',
+                                              },
+
+                                              '.MuiOutlinedInput-notchedOutline': {
+                                                  border: 0,
+                                                  borderRadius: '12px',
+                                              },
+                                          },
+                                      }
                                     : {
                                           overrideSx: {
                                               '& input': {
@@ -222,7 +235,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             <IconButtonWithPopover
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText=""
-                                disabled={!(startDate || endDate)}
+                                // disabled={!(startDate || endDate)}
                                 style={{
                                     borderRadius: '5px',
                                     marginRight: '208px',
@@ -230,7 +243,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             >
                                 {startDate || endDate ? <FilterList /> : <FilterListOff />}
 
-                                <Typography fontSize="0.9rem" noWrap>
+                                <Typography fontSize="0.9rem" noWrap color={theme.palette.primary.main}>
                                     {i18next.t('entitiesTableOfTemplate.resetFilters')}
                                 </Typography>
                             </IconButtonWithPopover>

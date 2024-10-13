@@ -547,7 +547,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 }}
                 IconComponent={() => (
                     <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
-                        {img || (isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />)}
+                        {img ||
+                            (isOpen ? (
+                                <IoIosArrowUp style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
+                            ) : (
+                                <IoIosArrowDown style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
+                            ))}
                     </Box>
                 )}
                 size={size}
@@ -568,7 +573,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: 'none',
+                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
                         : {
