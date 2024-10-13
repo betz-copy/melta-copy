@@ -351,10 +351,17 @@ export const BrokenRuleFull: React.FC<{
                                             <>
                                                 <Grid paddingBottom="10px">
                                                     <Grid style={{ width: 'fit-content', cursor: 'pointer' }}>
-                                                        <EntityInfo entity={getEntityForEntityInfo(entity)} entityTemplate={entityTemplate} />
+                                                        <EntityInfo
+                                                            entity={getEntityForEntityInfo(entity)}
+                                                            entityTemplate={entityTemplate}
+                                                            failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                        />
                                                     </Grid>
                                                 </Grid>
-                                                <BrokenRuleActions actions={getActionsByFailureOnEntity({ entity, causes })} />
+                                                <BrokenRuleActions
+                                                    actions={getActionsByFailureOnEntity({ entity, causes })}
+                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                />
                                             </>
                                         )}
                                     </Grid>
@@ -372,12 +379,18 @@ export const BrokenRuleFull: React.FC<{
                                                     return (
                                                         <Grid key={j} paddingBottom="10px">
                                                             <Grid style={{ width: 'fit-content', cursor: 'pointer' }}>
-                                                                <RelationshipInfo relationship={getRelationshipForRelationshipInfo(relationship)} />
+                                                                <RelationshipInfo
+                                                                    relationship={getRelationshipForRelationshipInfo(relationship)}
+                                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                                />
                                                             </Grid>
                                                         </Grid>
                                                     );
                                                 })}
-                                                <BrokenRuleActions actions={getActionsByFailureOnRelationship({ entity, causes })} />
+                                                <BrokenRuleActions
+                                                    actions={getActionsByFailureOnRelationship({ entity, causes })}
+                                                    failedProperties={causes.flatMap((cause) => cause.properties)}
+                                                />
                                             </>
                                         )}
                                     </Grid>

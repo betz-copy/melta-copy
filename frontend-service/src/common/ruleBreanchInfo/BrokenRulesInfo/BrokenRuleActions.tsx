@@ -8,7 +8,8 @@ import { ActionInfo } from '../ActionInfo';
 
 export const BrokenRuleActions: React.FC<{
     actions: IActionPopulated[];
-}> = ({ actions }) => {
+    failedProperties: string[];
+}> = ({ actions, failedProperties }) => {
     const [openActions, setOpenActions] = useState(false);
 
     return (
@@ -27,10 +28,10 @@ export const BrokenRuleActions: React.FC<{
                             {i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}
                         </Grid>
                     </Grid>
-                    <Collapse in={openActions} timeout="auto" unmountOnExit>
+                    <Collapse in={openActions} timeout="auto" unmountOnExit style={{ marginRight: '15px' }}>
                         {actions.map((action, index) => {
                             return (
-                                <Grid item container key={index} spacing={2}>
+                                <Grid item container key={index} spacing={1}>
                                     <Grid item>
                                         <Typography>{index + 1}.</Typography>
                                     </Grid>
@@ -42,6 +43,7 @@ export const BrokenRuleActions: React.FC<{
                                             isCompact
                                             actionIndex={index}
                                             actions={actions}
+                                            failedProperties={failedProperties}
                                         />
                                     </Grid>
                                 </Grid>

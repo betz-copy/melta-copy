@@ -12,9 +12,10 @@ import { getEntityTemplateColor } from '../../../utils/colors';
 
 interface RelationshipInfoProps {
     relationship: IMongoRelationshipTemplatePopulated | null;
+    failedProperties: string[];
 }
 
-export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship }) => {
+export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship, failedProperties }) => {
     const [open, setOpen] = useState(false);
 
     const queryClient = useQueryClient();
@@ -98,6 +99,8 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                                         showPreviewPropertiesOnly
                                         textWrap
                                         mode="normal"
+                                        propertiesToHighlight={failedProperties}
+                                        propertiesToHighlightColor="red"
                                     />
                                 )}
                             </Grid>
@@ -124,6 +127,8 @@ export const RelationshipInfo: React.FC<RelationshipInfoProps> = ({ relationship
                                     showPreviewPropertiesOnly
                                     textWrap
                                     mode="normal"
+                                    propertiesToHighlight={failedProperties}
+                                    propertiesToHighlightColor="red"
                                 />
                             )}
                         </Grid>

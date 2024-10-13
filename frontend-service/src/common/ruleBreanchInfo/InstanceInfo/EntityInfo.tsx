@@ -12,9 +12,10 @@ import { EntityPropertiesInternal } from '../../EntityProperties';
 interface EntityInfoProps {
     entity: IEntity | null;
     entityTemplate: IEntityTemplatePopulated;
+    failedProperties: string[];
 }
 
-export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate }) => {
+export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate, failedProperties }) => {
     const [open, setOpen] = useState(false);
 
     if (!entity) return <Grid />;
@@ -60,10 +61,12 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({ entity, entityTemplate }
                     alignItems: 'center',
                     width: '100%',
                 }}
-                innerStyle={{ width: '30%' }}
+                innerStyle={{ width: '30%', color: 'red' }}
                 showPreviewPropertiesOnly
                 textWrap
                 mode="normal"
+                propertiesToHighlightColor="red"
+                propertiesToHighlight={failedProperties}
             />
         );
 
