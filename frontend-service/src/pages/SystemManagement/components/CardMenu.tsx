@@ -9,11 +9,9 @@ import {
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
 } from '@mui/icons-material';
-import { useQuery } from 'react-query';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
-import { getFile } from '../../../services/workspacesService';
 import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
@@ -28,11 +26,6 @@ export const CardMenu: React.FC<{
     const open = Boolean(anchorEl);
 
     const currentUser = useUserStore((state) => state.user);
-
-    const { data: rootWorkspace } = useQuery({
-        queryKey: ['workspace', '/'],
-        queryFn: () => getFile('/'),
-    });
 
     const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
@@ -78,7 +71,7 @@ export const CardMenu: React.FC<{
                     />
                 )}
 
-                {onAddActionsClick && currentUser.permissions[rootWorkspace?._id ?? '']?.admin?.scope && (
+                {onAddActionsClick && currentUser.isRoot && (
                     <MenuButton
                         onClick={(e) => {
                             onAddActionsClick(e);

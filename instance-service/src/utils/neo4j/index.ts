@@ -54,16 +54,24 @@ export default class Neo4jClient {
             // Check if the error is caused by non-existing database
             if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
                 // Create the db if it doesn't exist
-                const newWorkspaceSession = Neo4jClient.driver.session();
-                await newWorkspaceSession.run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`).catch(() => {});
+                const newWorkspaceSession = Neo4jClient.driver.session({ database: 'system' });
+                await newWorkspaceSession.run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`).catch((error) => {
+                    logger.error('Failed to create database', { error });
+                });
                 await newWorkspaceSession.close();
 
                 const newSession = this.createSession();
 
                 // Retry
-                const result = await func(newSession);
-                await this.closeSession(newSession);
-                return result;
+                try {
+                    const result = await func(newSession);
+                    await this.closeSession(newSession);
+                    return result;
+                } catch (error) {
+                    await this.closeSession(newSession);
+                    logger.error('Failed to perform transaction after creating database', { error });
+                    throw error;
+                }
             }
 
             // Throw the error if it's not caused by non-existing database
@@ -115,5 +123,15 @@ export default class Neo4jClient {
             delay: connectionRetryDelay,
             logger: logger.info.bind(logger),
         });
+    }
+
+    async getAllGlobalSearchIndexNames() {
+        const cypher = `
+            SHOW INDEXES YIELD name
+            WHERE name STARTS WITH '${config.neo4j.globalSearchIndexPrefix}'
+            RETURN name;`;
+
+        const result = await this.readTransaction(cypher, (queryResult: QueryResult) => queryResult.records.map((record) => record.get(0)));
+        return result;
     }
 }

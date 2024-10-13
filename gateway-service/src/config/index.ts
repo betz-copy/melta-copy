@@ -78,6 +78,7 @@ const config = {
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
+        searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
     },
     userService: {
         url: env.get('USER_SERVICE_URL').required().asString(),
@@ -180,10 +181,6 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
-    },
-    notifications: {
-        dateAlertOptions: env.get('DATE_NOTIFICATIONS_OPTIONS').default('1, 7, 14, 30, 90, 180').asArray(',').map(Number),
-        dateAlertTime: env.get('DATE_ALERT_TIME').default('0 0 * * *').asString(),
     },
 };
 

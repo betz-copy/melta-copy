@@ -23,6 +23,16 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.searchEntitiesOfTemplate(req.body, entityTemplate));
     }
 
+    async searchEntitiesByTemplates(req: Request, res: Response) {
+        const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
+
+        res.json(await this.manager.searchEntitiesByTemplates(req.body, entityTemplatesMap));
+    }
+
+    async getEntitiesCountByTemplates(req: Request, res: Response) {
+        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.textSearch));
+    }
+
     async searchEntitiesBatch(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
 

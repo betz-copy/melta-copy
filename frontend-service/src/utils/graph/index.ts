@@ -69,13 +69,24 @@ export const getGraphDataWithNodeSizes = (graphData: GraphData) => {
     return { links, nodes: expendedNodes };
 };
 
+const iconLoadCache: Map<string, Promise<HTMLImageElement>> = new Map();
+
 export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTemplatePopulated): Promise<NodeObject> => {
     let icon: HTMLImageElement | undefined;
 
     if (entityTemplate.iconFileId) {
-        icon = new Image();
+        if (!iconLoadCache.has(entityTemplate.iconFileId)) {
+            const iconLoadPromise = (async () => {
+                const img = new Image();
 
-        icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+                img.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+                return img;
+            })();
+
+            iconLoadCache.set(entityTemplate.iconFileId, iconLoadPromise);
+
+            icon = await iconLoadPromise;
+        } else icon = await iconLoadCache.get(entityTemplate.iconFileId);
     }
 
     return {
@@ -136,24 +147,24 @@ export const highlightNode = (node: NodeObject, graphData: GraphData, highlight:
     graphData.links.forEach((link) => {
         if ((link.target as NodeObject).id === node.id) {
             (link.source as NodeObject).highlighted += count;
-            link.highlighted += count;
+            (link as LinkObject).highlighted += count;
         }
         if ((link.source as NodeObject).id === node.id) {
             (link.target as NodeObject).highlighted += count;
-            link.highlighted += count;
+            (link as LinkObject).highlighted += count;
         }
     });
 };
 
 export const fixHighlighted = (graphData: GraphData) => {
     graphData.links.forEach((link) => {
-        link.highlighted = 0;
+        (link as LinkObject).highlighted = 0;
         (link.source as NodeObject).highlighted = 0;
         (link.target as NodeObject).highlighted = 0;
     });
     graphData.nodes.forEach((node) => {
-        if (node.mainHighlighted) {
-            highlightNode(node, graphData);
+        if ((node as NodeObject).mainHighlighted) {
+            highlightNode(node as NodeObject, graphData);
         }
     });
 };

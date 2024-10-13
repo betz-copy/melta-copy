@@ -59,6 +59,8 @@ export const environment = {
         },
         is3DViewLocalStorageKey: 'isGraph3DView',
         detailsResolution3D: 100,
+        BatchSize: 50,
+        limit3DConnections: 100,
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
@@ -97,7 +99,6 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
-        titleColor: '#4752B6',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -189,6 +190,9 @@ export const environment = {
     },
     processInstances: {
         infiniteScrollPageCount: 10,
+    },
+    permission: {
+        infiniteScrollPageCount: 13,
     },
     accessTokenName: 'rabaz-access-token',
     brokenRulesFakeEntityIdPrefix: '$',

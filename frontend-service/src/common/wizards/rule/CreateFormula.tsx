@@ -26,6 +26,7 @@ import { LTRProvider } from '../../../LTRProvider';
 import RaqbMuiFieldSelect from './raqb/RaqbMuiFieldSelect';
 import RaqbMuiValueSources from './raqb/RaqbMuiValueSources';
 import { RaqbMuiAutocompeleteAutoWidth } from './raqb/RaqbAutocompleteAutoWidth';
+import { lightTheme } from '../../../theme';
 
 const { MuiTextWidget } = MuiWidgets;
 
@@ -128,6 +129,7 @@ const CreateFormula: React.FC<StepComponentProps<RuleWizardValues>> = ({ values,
                     return <RaqbMuiFieldSelect {...operatorProps} customProps={{ MenuProps: { PaperProps: { dir: 'ltr' } } }} />;
                 },
                 renderValueSources: (valueSourcesProps) => <RaqbMuiValueSources {...valueSourcesProps} />,
+                theme: { mui: lightTheme },
             },
             operators: {
                 equal: MuiConfig.operators.equal,

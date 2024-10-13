@@ -65,7 +65,7 @@ export const deleteInstanceByIdRequestSchema = Joi.object({
 export const searchInstanceRequestSchema = Joi.object({
     query: {},
     body: {
-        name: Joi.string(),
+        searchText: Joi.string(),
         templateIds: Joi.array().items(MongoIdSchema),
         ids: Joi.array().items(MongoIdSchema),
         startDate: Joi.date(),

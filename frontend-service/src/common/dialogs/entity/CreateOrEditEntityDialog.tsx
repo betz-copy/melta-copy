@@ -232,7 +232,7 @@ const CreateOrEditEntityDetails: React.FC<{
                         render() {
                             return (
                                 <Grid display="flex" alignItems="center">
-                                    <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccefully' : 'createdSuccessfully'}`)}. `}</span>
+                                    <span>{`${i18next.t(`wizard.entity.${isEditMode ? 'editedSuccessfully' : 'createdSuccessfully'}`)}. `}</span>
                                     <Button
                                         variant="text"
                                         onClick={() => {
@@ -544,6 +544,7 @@ const CreateOrEditEntityDetails: React.FC<{
                                                 <ExportFormats
                                                     properties={{
                                                         createdAt: isEditMode ? entityToUpdate?.properties.createdAt : new Date(),
+                                                        updatedAt: isEditMode ? entityToUpdate?.properties.updatedAt : new Date(),
                                                         ...values.properties,
                                                     }}
                                                     documentTemplateIds={entityTemplate.documentTemplatesIds || values.template.documentTemplatesIds}

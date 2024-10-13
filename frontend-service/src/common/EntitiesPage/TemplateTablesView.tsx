@@ -2,13 +2,12 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import _isEqual from 'lodash.isequal';
 import { CircularProgress, Grid, Typography } from '@mui/material';
 import { useQuery } from 'react-query';
-import pLimit from 'p-limit';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { IEntity } from '../../interfaces/entities';
 
 type TemplateTablesViewResultsRef = {
@@ -54,21 +53,14 @@ const TemplateTablesViewResults = forwardRef<
     );
 });
 
-const getTemplateCount = async (templateId: string, searchInput: string) => {
-    const { count } = await searchEntitiesOfTemplateRequest(templateId, {
-        skip: 0,
-        limit: 1,
-        textSearch: searchInput,
-    });
-    return count;
-};
-
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
-    const pLimitGetTemplateCount = pLimit(10);
-    const templatesCountsPromises = templates.map(({ _id }) => pLimitGetTemplateCount(() => getTemplateCount(_id, searchInput)));
-    const templatesCounts = await Promise.all(templatesCountsPromises);
-    return templates.filter((_template, index) => {
-        const count = templatesCounts[index];
+    const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
+        templates.map(({ _id }) => _id),
+        searchInput,
+    );
+
+    return templates.filter(({ _id }) => {
+        const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
         return count > 0;
     });
 };

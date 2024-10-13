@@ -1,3 +1,4 @@
+import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 import { SelectCheckbox } from '../../common/SelectCheckbox';
@@ -11,7 +12,7 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
     return (
         <SelectCheckbox
             title={i18next.t('entityTemplatesCheckboxLabel')}
-            img={<img src="/icons/select-checkbox.svg" />}
+            img={<FilterList />}
             options={templates}
             selectedOptions={selectedTemplates}
             setSelectedOptions={setSelectedTemplates}

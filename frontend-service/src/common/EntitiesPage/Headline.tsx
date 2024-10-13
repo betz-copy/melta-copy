@@ -1,10 +1,21 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
-import i18next from 'i18next';
-import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
-import CardsViewIcon from '@mui/icons-material/RecentActors';
+import { Search, TableChartOutlined } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
+import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
+import {
+    BaseTextFieldProps,
+    CircularProgress,
+    debounce,
+    Grid,
+    IconButton,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
+    useTheme,
+} from '@mui/material';
+import i18next from 'i18next';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -27,31 +38,32 @@ export const GlobalSearchBar: React.FC<{
     toTopBar?: boolean;
     height?: string;
     width?: string;
-    isGlobalSearch?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, isGlobalSearch }) => {
+    autoSearch?: boolean;
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
-    // eslint-disable-next-line consistent-return
-    useEffect(() => {
-        if (isGlobalSearch === undefined) {
-            const handler = setTimeout(() => {
-                if (debouncedSearchValue !== valueForSearchButtonRef.current) {
-                    valueForSearchButtonRef.current = debouncedSearchValue;
-                    onSearch(debouncedSearchValue);
-                    if (gridApi) {
-                        gridApi.setQuickFilter(debouncedSearchValue);
-                    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const handleSearch = useCallback(
+        debounce((searchValue) => {
+            if (searchValue !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = searchValue;
+                onSearch(searchValue);
+                if (gridApi) {
+                    gridApi.setQuickFilter(searchValue);
                 }
-            }, 500);
+            }
+        }, 500),
+        [gridApi, onSearch],
+    );
 
-            return () => {
-                clearTimeout(handler);
-            };
+    useEffect(() => {
+        if (autoSearch) {
+            handleSearch(debouncedSearchValue);
         }
-    }, [debouncedSearchValue, gridApi, onSearch, isGlobalSearch]);
+    }, [debouncedSearchValue, autoSearch, handleSearch]);
 
     return (
         <SearchInput
@@ -61,7 +73,7 @@ export const GlobalSearchBar: React.FC<{
                 setInputValue?.(newSearchValue);
             }}
             onKeyDown={(event) => {
-                if (isGlobalSearch === true && event.key === 'Enter') {
+                if (!autoSearch && event.key === 'Enter') {
                     onSearch(valueForSearchButtonRef.current);
                 }
             }}
@@ -72,16 +84,7 @@ export const GlobalSearchBar: React.FC<{
                     sx={{ padding: 0 }}
                     disableRipple
                 >
-                    <img
-                        color="#1E2775"
-                        width="14px"
-                        height="14px"
-                        style={{
-                            top: '7px',
-                            left: '8px',
-                        }}
-                        src="/icons/search-blue.svg"
-                    />
+                    <Search sx={{ fontSize: '1.25rem' }} />
                 </IconButton>
             }
             placeholder={placeholder}
@@ -217,9 +220,7 @@ const EntitiesPageHeadline: React.FC<{
                             </ToggleButton>
                             <ToggleButton value="templates-tables-view">
                                 <MeltaTooltip title={i18next.t('templateTablesView')!}>
-                                    <Icon>
-                                        <img src="/icons/Tables-View.svg" height="15px" style={{ marginBottom: '10px' }} />
-                                    </Icon>
+                                    <TableChartOutlined />
                                 </MeltaTooltip>
                             </ToggleButton>
                         </ToggleButtonGroup>
@@ -245,7 +246,12 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <AddEntityButton
                             disabledToolTip
-                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            style={{
+                                background: theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '135px',
+                                height: '35px',
+                            }}
                             onSuccessCreate={onSuccessCreate}
                             setUpdatedEntities={setUpdatedEntities}
                         >
