@@ -8,15 +8,15 @@ const config = {
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
     neo4j: {
-        url: env.get('NEO4J_URL').default('neo4j://localhost').asUrlString(),
+        url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),
         auth: {
             username: env.get('NEO4J_USERNAME').default('neo4j').asString(),
             password: env.get('NEO4J_PASSWORD').default('test').asString(),
         },
         connectionRetries: env.get('NEO4J_CONNECTION_RETRIES').default(5).asIntPositive(),
         connectionRetryDelay: env.get('NEO4J_CONNECTION_RETRY_DELAY').default(3000).asIntPositive(),
-        globalSearchIndex: env.get('NEO4J_GLOBAL_SEARCH_INDEX').default('primaryGlobalSearch').asString(),
-        templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('primaryGlobalSearch_').asString(),
+        globalSearchIndexPrefix: env.get('NEO4J_GLOBAL_SEARCH_INDEX').default('globalSearch').asString(),
+        templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('templateSearch_').asString(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),

@@ -6,9 +6,8 @@ import { IRuleBreachAlertNotificationMetadataPopulated, NotificationType } from 
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRuleBreachAlertNotificationMetadataPopulated; titleColor: string }> = ({
+export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRuleBreachAlertNotificationMetadataPopulated }> = ({
     notificationMetadata: { alert },
-    titleColor,
 }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.ruleBreachAlert)?.color;
@@ -17,7 +16,7 @@ export const RuleBreachAlertNotification: React.FC<{ notificationMetadata: IRule
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography component="p" variant="body1" color={titleColor} paddingLeft="10px">
+                <Typography component="p" variant="body1" color="primary" fontWeight="bold" paddingLeft="10px">
                     {i18next.t('ruleBreachAlertNotification.breach')}
                 </Typography>
             </Grid>

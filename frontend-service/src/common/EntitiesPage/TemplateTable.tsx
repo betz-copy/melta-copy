@@ -1,4 +1,11 @@
-import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
+import {
+    AddCircle,
+    AppRegistration as DefaultEntityTemplateIcon,
+    CloseFullscreenRounded,
+    Download,
+    Expand,
+    TableRowsOutlined,
+} from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
@@ -17,13 +24,12 @@ import { getEntityTemplateColor } from '../../utils/colors';
 import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';
 import { BlueTitle } from '../BlueTitle';
 import { CustomIcon } from '../CustomIcon';
+import { EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef } from '../EntitiesTableOfTemplate';
 import { EntityTemplateColor } from '../EntityTemplateColor';
-import IconButtonWithPopover from '../IconButtonWithPopover';
-import { ImageWithDisable } from '../ImageWithDisable';
+import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
-import { EntityWizardValues } from '../dialogs/entity';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
 
@@ -130,33 +136,38 @@ const TemplateTable = forwardRef<
 
             <Grid container flexDirection="row" alignItems="center">
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                    <IconButtonWithPopover
-                        popoverText={i18next.t('entitiesTableOfTemplate.columns')}
-                        iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
-                        style={{ borderRadius: '5px' }}
-                    >
-                        <img src="/icons/columns-settings.svg" />
-                    </IconButtonWithPopover>
-                    <IconButtonWithPopover
-                        popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                        iconButtonProps={{
-                            onClick: () => {
-                                setIsExpand(!isExpand);
-                            },
-                            size: 'small',
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('entitiesTableOfTemplate.columns'),
+                            iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
                         }}
-                        style={{ borderRadius: '5px' }}
-                    >
-                        {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
-                    </IconButtonWithPopover>
+                        icon={<TableRowsOutlined fontSize="small" />}
+                        text={i18next.t('entitiesTableOfTemplate.columns')}
+                    />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore'),
+                            iconButtonProps: {
+                                onClick: () => {
+                                    setIsExpand(!isExpand);
+                                },
+                            },
+                        }}
+                        icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
+                        text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
+                    />
+
                     <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
-                    <IconButtonWithPopover
-                        popoverText={i18next.t('entitiesTableOfTemplate.downloadOneTable')}
-                        iconButtonProps={{ onClick: () => exportTemplateToExcel(), size: 'medium' }}
-                        style={{ borderRadius: '5px' }}
-                    >
-                        {isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <img src="/icons/download.svg" />}
-                    </IconButtonWithPopover>
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),
+                            iconButtonProps: { onClick: () => exportTemplateToExcel() },
+                        }}
+                        icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
+                        text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
+                    />
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
@@ -164,11 +175,18 @@ const TemplateTable = forwardRef<
                         initialStep={1}
                         disabled={!userHasWritePermissions}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
-                        style={{ borderRadius: '5px' }}
+                        style={{
+                            display: 'flex',
+                            gap: '0.25rem',
+                            borderRadius: '5px',
+                            fontSize: '0.75rem',
+                            color: theme.palette.primary.main,
+                        }}
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         setUpdatedEntities={setUpdatedEntities}
                     >
-                        <ImageWithDisable srcPath="/icons/add-entity.svg" disabled={!userHasWritePermissions} />
+                        <AddCircle fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
+                        {i18next.t('entitiesTableOfTemplate.addEntityTitle')}
                     </AddEntityButton>
                 </Grid>
             </Grid>

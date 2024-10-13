@@ -59,7 +59,6 @@ const DashedSelectBox: React.FC<{
                         <IconButtonWithPopover popoverText={popoverText} disabled={disabled} style={{ borderRadius: '5px' }}>
                             <AddIconWithText
                                 textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}
-                                iconStyle={{ marginLeft: '11px' }}
                                 text={text}
                                 disabled={disabled}
                                 ref={disabledReasonAnchorRef}
@@ -84,7 +83,6 @@ const DashedSelectBox: React.FC<{
                             >
                                 <AddIconWithText
                                     textStyle={{ display: 'flex', alignItems: 'center', fontSize: '19px', fontVariant: 'h4' }}
-                                    iconStyle={{ marginLeft: '11px' }}
                                     text={addNewEntityLabel}
                                     disabled={disabled}
                                 />

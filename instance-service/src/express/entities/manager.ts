@@ -710,8 +710,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap);
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true);
+        const globalSearchIndexes = await this.neo4jClient.getAllGlobalSearchIndexNames();
+
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),

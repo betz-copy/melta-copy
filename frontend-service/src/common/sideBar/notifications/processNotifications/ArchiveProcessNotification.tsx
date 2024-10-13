@@ -6,9 +6,8 @@ import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchiveProcessNotificationMetadataPopulated; titleColor: string }> = ({
+export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchiveProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { process, isArchived },
-    titleColor,
 }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.archivedProcess)?.color;
@@ -17,7 +16,7 @@ export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchi
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography display="inline" color={titleColor} paddingLeft="10px">
+                <Typography display="inline" color="primary" fontWeight="bold" paddingLeft="10px">
                     {isArchived
                         ? i18next.t('archiveProcessNotification.sendProcessToArchive')
                         : i18next.t('archiveProcessNotification.removeProcessFromArchive')}
