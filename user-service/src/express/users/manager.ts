@@ -24,11 +24,14 @@ export class UsersManager {
     private static handleAgGridPermissions(
         permissionsQuery: Omit<ISubCompactPermissions, 'instances'>,
         type: PermissionType,
-        permissions?: { $in: [null, PermissionScope] | [PermissionScope] },
+        permissionsFilter?: { $in: [] | [null] | [PermissionScope] | [null, PermissionScope] },
     ) {
-        if (permissions?.$in.length) {
-            permissionsQuery[type] = { scope: permissions.$in[0] ?? permissions.$in[1] };
-        }
+        if (!permissionsFilter?.$in) return;
+
+        if (permissionsFilter.$in.length === 1 && permissionsFilter?.$in[0] === null) permissionsQuery[type] = null;
+        else if (permissionsFilter.$in.length === 1) permissionsQuery[type] = { scope: permissionsFilter?.$in[0] };
+        else if (permissionsFilter.$in.length === 2) permissionsQuery[type] = { scope: permissionsFilter?.$in[0] ?? permissionsFilter?.$in[1] };
+        else permissionsQuery[type] = { scope: undefined };
     }
 
     static async searchBaseUsers(
@@ -38,7 +41,9 @@ export class UsersManager {
         limit: number,
         step: number,
         { displayName, permissionsManagement, templatesManagement, rulesManagement, processesManagement, ...query }: FilterQuery<IBaseUser> = {},
+        { displayName: displayNameSort }: Record<string, number> = {},
     ): Promise<{ users: IBaseUser[]; count: number }> {
+        const sort: FilterQuery<IBaseUser> = {};
         if (displayName) query.$or = [{ fullName: displayName.$regex }, { jobTitle: displayName.$regex }, { hierarchy: displayName.$regex }];
 
         if (search) {
@@ -57,13 +62,13 @@ export class UsersManager {
             } else query.$or = searchQuery;
         }
 
+        if (displayNameSort) sort.fullName = displayNameSort;
+
         if (!permissions) permissions = {};
         UsersManager.handleAgGridPermissions(permissions, PermissionType.permissions, permissionsManagement);
         UsersManager.handleAgGridPermissions(permissions, PermissionType.templates, templatesManagement);
         UsersManager.handleAgGridPermissions(permissions, PermissionType.rules, rulesManagement);
         UsersManager.handleAgGridPermissions(permissions, PermissionType.processes, processesManagement);
-
-        console.dir(permissions, { depth: null });
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);
@@ -71,7 +76,7 @@ export class UsersManager {
             query._id = { $in: [...usersIds] };
         }
 
-        const users = await UsersModel.find(query, {}, { limit, skip: step * limit })
+        const users = await UsersModel.find(query, {}, { limit, skip: step * limit, sort })
             .lean()
             .exec();
 
@@ -92,70 +97,12 @@ export class UsersManager {
     }
 
     static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
-        console.log({ request });
-
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
         const sort = translateAgGridSortModel(sortModel);
         const query = translateAgGridFilterModel(filterModel);
-        console.dir({ sort, query }, { depth: null });
 
-        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query);
+        const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
         return { users: await this.appendPermissionsToUsers(users), count };
-
-        /*
-        [
-  {
-    $match: filterModelWithoutPermissions
-  },
-  {
-    $lookup: {
-      from: "permissions",
-      let: {
-        userId: "$_id"
-      },
-      pipeline: [
-        {
-          $match: {
-            $expr: {
-              $eq: [
-                "$userId",
-                {
-                  $toString: "$$userId"
-                }
-              ]
-            }
-          }
-        }
-      ],
-      as: "permissions"
-    }
-  },
-  {
-    $unwind: "$permissions"
-  },
-  {
-    $match: {
-        $or: Object.entries(agGridPermissions).map(([permissionType, permission]) => ({
-            "permissions.type": permissionType,
-            "permissions.metadata.scope": permission
-        }))
-      "permissions.type": "admin",
-      "permissions.metadata.scope": "write"
-    }
-  },
-  {
-    $group: {
-      _id: "$_id",
-      fullName: {
-        $first: "$fullName"
-      }
-    }
-  },
-  {
-    $sort: sortModel
-  }
-]
-        */
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {
