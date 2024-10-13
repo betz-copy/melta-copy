@@ -71,6 +71,8 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
         margin: 'auto', // Center the container horizontally
     };
 
+    const isFileFromInput = (file: FilesInputProps['files'][number]) => file instanceof File;
+
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
             <Grid item>
@@ -81,7 +83,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                 <input {...getInputProps()} />
                 {files.length > 0 ? (
                     <Grid item flexWrap="wrap" overflow="auto" width="100%">
-                        {files.map((file: File | { name: string }, index) => (
+                        {files.map((file: FilesInputProps['files'][number], index) => (
                             <Grid key={`${file.name}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
@@ -97,12 +99,12 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                                             maxWidth: inputWidth * 0.7,
                                         }}
                                     >
-                                        {file instanceof File ? file.name : getFileName(file.name)}
+                                        {isFileFromInput(file) ? file.name : getFileName(file.name)}
                                     </Typography>
                                 </Grid>
                                 <Grid item container xs={1}>
                                     <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                                        {!(file instanceof File) && (
+                                        {!isFileFromInput(file) && (
                                             <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 

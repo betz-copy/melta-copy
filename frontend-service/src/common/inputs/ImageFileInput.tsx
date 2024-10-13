@@ -1,4 +1,4 @@
-import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
@@ -84,6 +84,8 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         cursor: 'pointer',
     };
 
+    const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
     return (
         <>
             <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
@@ -98,7 +100,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                             <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
-                                        <FileIcon extension={getFileExtension(file.name)} style={{ height: '20px' }} />
+                                        <FileIcon extension={getFileExtension(file.name!)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
                                 <Grid item xs={10}>
@@ -110,13 +112,13 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
                                             maxWidth: inputWidth * 0.7,
                                         }}
                                     >
-                                        {file instanceof File ? file.name : getFileName(file.name)}
+                                        {isFileFromInput ? file.name : getFileName(file.name!)}
                                     </Typography>
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
                                     <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
-                                        {!(file instanceof File) && (
-                                            <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
+                                        {!isFileFromInput && (
+                                            <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
                                         )}
 
                                         <IconButton
