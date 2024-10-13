@@ -8,7 +8,6 @@ import { UserDoesNotExistError } from './errors';
 import { ISubCompactPermissions } from '../permissions/interface/permissions';
 import { IAgGridRequest } from '../../utils/agGrid/interfaces';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
-import { PermissionScope, PermissionType } from '../permissions/interface';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -19,19 +18,6 @@ export class UsersManager {
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
         return this.baseUserToUser(baseUser, workspaceIds);
-    }
-
-    private static handleAgGridPermissions(
-        permissionsQuery: Omit<ISubCompactPermissions, 'instances'>,
-        type: PermissionType,
-        permissionsFilter?: { $in: [] | [null] | [PermissionScope] | [null, PermissionScope] },
-    ) {
-        if (!permissionsFilter?.$in) return;
-
-        if (permissionsFilter.$in.length === 1 && permissionsFilter?.$in[0] === null) permissionsQuery[type] = null;
-        else if (permissionsFilter.$in.length === 1) permissionsQuery[type] = { scope: permissionsFilter?.$in[0] };
-        else if (permissionsFilter.$in.length === 2) permissionsQuery[type] = { scope: permissionsFilter?.$in[0] ?? permissionsFilter?.$in[1] };
-        else permissionsQuery[type] = { scope: undefined };
     }
 
     static async searchBaseUsers(
@@ -63,12 +49,6 @@ export class UsersManager {
         }
 
         if (displayNameSort) sort.fullName = displayNameSort;
-
-        if (!permissions) permissions = {};
-        UsersManager.handleAgGridPermissions(permissions, PermissionType.permissions, permissionsManagement);
-        UsersManager.handleAgGridPermissions(permissions, PermissionType.templates, templatesManagement);
-        UsersManager.handleAgGridPermissions(permissions, PermissionType.rules, rulesManagement);
-        UsersManager.handleAgGridPermissions(permissions, PermissionType.processes, processesManagement);
 
         if (permissions || workspaceIds) {
             const simplePermissions = await PermissionsManager.searchBySubCompactPermissions(permissions ?? {}, workspaceIds);

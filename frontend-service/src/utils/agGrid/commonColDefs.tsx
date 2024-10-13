@@ -320,6 +320,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
+    suppressMenu = false,
 ): ColDef<Data> => {
     const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
@@ -343,5 +344,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
+        suppressMenu,
+        sortable: !suppressMenu,
     };
 };
