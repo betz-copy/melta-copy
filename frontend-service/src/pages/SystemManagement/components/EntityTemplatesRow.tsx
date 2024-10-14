@@ -596,6 +596,8 @@ const EntityTemplatesRow: React.FC = () => {
                         size="small"
                         isDraggableDisabled
                         horizontalOrigin={156}
+                        hasSearchBar={true}
+                        hasChooseAll={true}
                     />
                 </Grid>
                 <Grid item>

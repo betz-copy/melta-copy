@@ -263,6 +263,8 @@ const PrintOptionsDialog: React.FC<{
                                             ),
                                         )!,
                                 }}
+                                hasSearchBar={true}
+                                hasChooseAll={true}
                             />
                         )}
                         {files.length !== 0 && (
@@ -274,6 +276,8 @@ const PrintOptionsDialog: React.FC<{
                                 setSelectedOptions={setSelectedFiles}
                                 getOptionId={(file) => file.id}
                                 getOptionLabel={(file) => file.name}
+                                hasSearchBar={true}
+                                hasChooseAll={true}
                             />
                         )}
                     </Grid>

@@ -21,6 +21,8 @@ const ProcessTemplatesSelectCheckbox: React.FC<{
             size="small"
             toTopBar
             isDraggableDisabled
+            hasSearchBar={true}
+            hasChooseAll={true}
         />
     );
 };

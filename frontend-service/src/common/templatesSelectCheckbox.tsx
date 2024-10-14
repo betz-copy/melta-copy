@@ -48,6 +48,8 @@ const TemplatesSelectCheckbox: React.FC<{
             setOptions={setTemplates}
             size={size}
             toTopBar={toTopBar}
+            hasSearchBar={true}
+            hasChooseAll={true}
         />
     );
 };

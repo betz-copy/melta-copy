@@ -170,6 +170,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 }}
                                 handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
+                                hasSearchBar={false}
+                                hasChooseAll={false}
                             />
                         </Grid>
                         {!openCalenders && (
@@ -196,19 +198,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 endDateInput={endDate}
                                 directionIsRow
                                 {...(darkMode
-                                    ? {
-                                          overrideSx: {
-                                              '& input': {
-                                                  backgroundColor: 'none',
-                                                  fontSize: '15px',
-                                              },
-
-                                              '.MuiOutlinedInput-notchedOutline': {
-                                                  border: 0,
-                                                  borderRadius: '12px',
-                                              },
-                                          },
-                                      }
+                                    ? {}
                                     : {
                                           overrideSx: {
                                               '& input': {

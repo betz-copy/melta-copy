@@ -105,6 +105,8 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     toTopBar?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
+    hasSearchBar: boolean;
+    hasChooseAll: boolean;
 }>;
 
 export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -493,6 +495,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     toTopBar,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
+    hasSearchBar,
+    hasChooseAll,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -587,16 +591,24 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
             >
-                <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />
-                <ChooseAllMenuItem
-                    options={options}
-                    selectedOptionsFiltered={selectedOptionsFiltered}
-                    setSelectedOptions={setSelectedOptions}
-                    optionsFiltered={optionsFiltered}
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
-                    <Divider style={{ width: '199px' }} />
-                </Box>
+                {hasSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {hasChooseAll ? (
+                    <>
+                        <ChooseAllMenuItem
+                            options={options}
+                            selectedOptionsFiltered={selectedOptionsFiltered}
+                            setSelectedOptions={setSelectedOptions}
+                            optionsFiltered={optionsFiltered}
+                        />
+                        <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
+                            <Divider style={{ width: '199px' }} />
+                        </Box>
+                    </>
+                ) : (
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
+                        {title}
+                    </Typography>
+                )}
                 {groupsProps.useGroups ? (
                     <SelectOptionsMenuItemsGrouped
                         options={options}
