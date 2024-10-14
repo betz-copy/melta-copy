@@ -311,6 +311,24 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
     }
 
+    async countEntitiesByTemplates(templateIds: string[], textSearch: string = '') {
+        const semanticSearchBody = {
+            search_text: textSearch,
+            limit: 10,
+            templates: Object.keys(templateIds),
+        };
+        const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
+
+        const entitiesCountByTemplates = await this.service.countEntitiesByTemplates(templateIds, textSearch);
+        console.log(semanticResults);
+
+        return entitiesCountByTemplates.map((templateCount) => {
+            const count =
+                templateCount.count + semanticResults.filter((semanticResult) => templateCount.templateId === semanticResult.template_id).length;
+            return { ...templateCount, count };
+        });
+    }
+
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
         const entity = await this.service
             .updateEntityStatus(id, disabledStatus, ignoredRules, userId)
