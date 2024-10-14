@@ -1,22 +1,37 @@
 import { Button, Checkbox, FormControlLabel, Grid } from '@mui/material';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
 import { IUser } from '../../interfaces/users';
 import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
-import { updateUserPreferencesMetadataRequest } from '../../services/userService';
-import { InstanceSingleFileInput } from '../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { getKartoffelUseByIdRequest, updateUserPreferencesMetadataRequest } from '../../services/userService';
 import { UserProfilePicker } from '../inputs/userProfilePicker';
-import fileDetails from '../../interfaces/fileDetails';
+import { IKartoffelUser } from '../../interfaces/kartoffel';
 
 const { notificationsMoreData } = environment.notifications;
-const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'view' }> = ({ existingUser, mode }) => {
+const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view' }> = ({ existingUser, mode }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
     console.log({ existingUser, mode });
 
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
+    const [kartoffelUser, setKartoffelUser] = useState<IKartoffelUser>();
+
+    useEffect(() => {
+        const getKartoffelUser = async () => {
+            try {
+                const user: IKartoffelUser = await getKartoffelUseByIdRequest(existingUser.externalMetadata.kartoffelId);
+                setKartoffelUser(user);
+            } catch (error) {
+                console.error('Failed to fetch Kartoffel user:', error);
+            }
+        };
+
+        if (existingUser?.externalMetadata?.kartoffelId) {
+            getKartoffelUser();
+        }
+    }, [existingUser]);
 
     const handleCheckboxChange = useCallback(
         async (type: NotificationType) => {
@@ -26,11 +41,6 @@ const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'vie
 
             setSelectedNotifications(updatedSelections);
             setPreferences({ ...preferences, mailsNotificationsTypes: updatedSelections });
-            // if (existingUser)
-            //     await updateUserPreferencesMetadataRequest(existingUser._id, {
-            //         ...existingUser.preferences,
-            //         mailsNotificationsTypes: updatedSelections,
-            //     });
         },
         [selectedNotifications],
     );
@@ -78,21 +88,14 @@ const MyAccount: React.FC<{ existingUser?: IUser; mode: 'create' | 'edit' | 'vie
                     <UserProfilePicker
                         onPick={(value) => {
                             if (!existingUser) return;
-                            setPreferences({ ...preferences, icon: value });
-                            console.log('1');
-
-                            // mutateAsync(existingUser._id);
-                            console.log('11');
+                            if (value.file) setPreferences({ ...preferences, icon: value, profilePath: undefined });
+                            else setPreferences({ ...preferences, profilePath: value, icon: undefined });
                         }}
                         onDelete={() => {
                             setPreferences({ ...preferences, icon: undefined });
                         }}
+                        kartoffelProfile={kartoffelUser?.pictures?.profile?.meta?.path}
                     />
-                </Grid>
-                <Grid>
-                    <Button onClick={() => setPreferences({ ...preferences, profilePath: existingUser?.profile, icon: undefined })}>
-                        kartoffel proofile
-                    </Button>
                 </Grid>
             </Grid>
 

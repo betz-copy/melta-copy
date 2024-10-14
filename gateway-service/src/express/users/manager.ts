@@ -25,6 +25,10 @@ export class UsersManager {
         return UserService.getUserById(userId, workspaceIds);
     }
 
+    static async getKartoffelUserById(kartoffelId: string): Promise<IKartoffelUser> {
+        return Kartoffel.getUserById(kartoffelId);
+    }
+
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
         return UserService.searchUserIds(searchBody);
     }
@@ -94,7 +98,7 @@ export class UsersManager {
         if (profilePath) {
             await this.storageService.deleteFile(profilePath);
             console.log('cencel the file');
-            if (!preferences.profilePath) return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: null } });
+            if (!preferences.profilePath) return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: undefined } });
         }
         // kartoffel profile path and first time of profile
         return UserService.updateUser(userId, { preferences });

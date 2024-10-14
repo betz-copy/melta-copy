@@ -25,7 +25,7 @@ const PermissionsOfUserDialog: React.FC<{
     const [tabValue, setTabValue] = React.useState(initialTab);
 
     const tabsComponentsMapping: Record<string, ReactElement> = {
-        ...(mode === 'view' && { myAccount: <MyAccount existingUser={existingUser} mode={mode} /> }),
+        ...(mode === 'view' && { myAccount: <MyAccount existingUser={existingUser!} mode={mode} /> }),
         myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
     };
     return (

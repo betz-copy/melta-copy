@@ -680,6 +680,7 @@ export default {
             iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
+            kartoffelProfile: 'תמונת חוגר',
             dragFile: 'גרור את הקובץ לכאן',
             dragFiles: 'גרור את הקבצים לכאן',
         },

@@ -1,5 +1,6 @@
 import axios from '../axios';
 import { environment } from '../globals';
+import { IKartoffelUser } from '../interfaces/kartoffel';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { IExternalUser, IUser, IUserPreferences, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
@@ -37,7 +38,6 @@ export const updateUserPreferencesMetadataRequest = async (userId: string, updat
             formData.append('file', updatedPreferences.icon.file);
         } else {
             console.log('noooooow its else');
-
             formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
     } else formData.append('profilePath', updatedPreferences.profilePath ?? 'bla bla');
@@ -69,5 +69,10 @@ export const deletePermissionsFromMetadata = async (
     metadata: RecursiveNullable<ISubCompactPermissions>,
 ) => {
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
+    return data;
+};
+
+export const getKartoffelUseByIdRequest = async (kartoffelId: string) => {
+    const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
     return data;
 };

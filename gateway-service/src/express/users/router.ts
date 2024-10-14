@@ -6,6 +6,7 @@ import { UsersController } from './controller';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
+    getKartoffelUserByIdRequestSchema,
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
@@ -25,6 +26,12 @@ export const usersRouter: Router = Router();
 usersRouter.get('/my', ValidateRequest(getMyUserRequestSchema), wrapController(UsersController.getMyUser));
 
 usersRouter.get('/external', ValidateRequest(searchExternalUsersRequestSchema), wrapController(UsersController.searchExternalUsers));
+
+usersRouter.get(
+    '/kartoffelUser/:kartoffelId',
+    ValidateRequest(getKartoffelUserByIdRequestSchema),
+    wrapController(UsersController.getKartoffelUserById),
+);
 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));
 

@@ -1,28 +1,38 @@
 import React, { useState } from 'react';
-import { Grid, ToggleButtonGroup, ToggleButton } from '@mui/material';
+import { Grid, ToggleButtonGroup, ToggleButton, Avatar } from '@mui/material';
 import i18next from 'i18next';
 import FileInput from './ImageFileInput';
-import IconPicker from './IconPicker';
 import fileDetails from '../../interfaces/fileDetails';
-import { ImagePickerProps } from './ImagePicker';
+import UserAvatar from '../UserAvatar';
 
-type InputSelectType = 'chooseFile' | 'chooseFromOptions';
+type InputSelectType = 'chooseFile' | 'chooseFromOptions' | 'kartoffelProfile';
 
-const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defaultInputType }) => {
+export interface UserProfilePickerProps {
+    image?: fileDetails;
+    onPick: (image: fileDetails) => void;
+    onDelete: () => void;
+    defaultInputType?: InputSelectType;
+    kartoffelProfile?: string;
+}
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, onDelete, defaultInputType, kartoffelProfile }) => {
     const [inputType, setInputType] = useState(defaultInputType);
 
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
     const [iconPickerValue, setIconPickerValue] = useState<fileDetails>();
+
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
+        console.log({ selected });
 
         setInputType(selected);
 
-        const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
-
+        let selectedValue;
+        if (selected === 'chooseFile') selectedValue = fileInputValue;
+        if (selected === 'chooseFromOptions') selectedValue = iconPickerValue;
+        if (selected === 'kartoffelProfile') {
+            selectedValue = kartoffelProfile;
+        }
         if (!selectedValue) {
-            console.log('gggggggggggggggggggggggggggg');
-
             onDelete();
             return;
         }
@@ -40,6 +50,9 @@ const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete
                     </ToggleButton>
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
+                    </ToggleButton>
+                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }}>
+                        {i18next.t('input.imagePicker.kartoffelProfile')}
                     </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
@@ -84,6 +97,11 @@ const UserProfilePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
                     />
+                </Grid>
+            )}
+            {inputType === 'kartoffelProfile' && (
+                <Grid padding="20px">
+                    <Avatar src={kartoffelProfile} />
                 </Grid>
             )}
         </Grid>
