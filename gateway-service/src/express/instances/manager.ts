@@ -10,7 +10,13 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchBatchBody, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntity,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    ISearchSort,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -311,22 +317,48 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
     }
 
+    async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, templateId: string) {
+        const semanticSearchBody = {
+            search_text: searchBody.textSearch,
+            limit: searchBody.limit,
+            skip: searchBody.skip,
+            templates: [templateId],
+        };
+        if (searchBody.filter) {
+            const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
+            const entityIdsInSemanticSearch = [...new Set(semanticResults.map((result) => result.entity_id))];
+
+            if (searchBody.filter.$or) {
+                searchBody.filter.$or.push({ _id: { $in: entityIdsInSemanticSearch } });
+            } else {
+                searchBody.filter.$or = [{ _id: { $in: entityIdsInSemanticSearch } }];
+            }
+        }
+        console.log('searchBody', searchBody);
+
+        return this.service.searchEntitiesOfTemplateRequest(templateId, searchBody);
+    }
+
     async countEntitiesByTemplates(templateIds: string[], textSearch: string = '') {
         const semanticSearchBody = {
             search_text: textSearch,
             limit: 10,
-            templates: Object.keys(templateIds),
+            skip: 0,
+            templates: templateIds,
         };
         const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
 
         const entitiesCountByTemplates = await this.service.countEntitiesByTemplates(templateIds, textSearch);
-        console.log(semanticResults);
 
-        return entitiesCountByTemplates.map((templateCount) => {
-            const count =
-                templateCount.count + semanticResults.filter((semanticResult) => templateCount.templateId === semanticResult.template_id).length;
-            return { ...templateCount, count };
-        });
+        const result = templateIds
+            .map((templateId) => {
+                const fullTextCount = entitiesCountByTemplates.find((templateCount) => templateCount.templateId === templateId)?.count ?? 0;
+                const semanticCount = semanticResults.filter((semanticResult) => templateId === semanticResult.template_id).length;
+                return { templateId, count: fullTextCount + semanticCount };
+            })
+            .filter((template) => template.count > 0);
+
+        return result;
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

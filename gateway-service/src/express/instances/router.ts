@@ -18,6 +18,7 @@ import {
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesOfTemplateRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
@@ -47,11 +48,12 @@ InstancesRouter.post(
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
+    ValidateRequest(searchEntitiesOfTemplateRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    InstanceManagerProxy,
+    // InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesOfTemplate,
 );
 
-// InstancesRouter.post('/entities/count', InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates, InstanceManagerProxy);
 InstancesRouter.post(
     '/entities/count',
     ValidateRequest(countEntitiesOfTemplatesRequestSchema),
