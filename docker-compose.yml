@@ -222,12 +222,15 @@ services:
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
 
   semantic-service:
-    build: ../neo4j-graph-rag
+    build:
+      context: ../neo4j-graph-rag
+      dockerfile: Dockerfile-dev
     environment:
       SERVER_PORT: 8000
       RABBIT_URL: rabbit
       REDIS_CONNECTION_URI: ${REDIS_HOST}
       ELASTIC_HOST: ${ELASTIC_CLIENT_URL}
+      ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       MINIO_URL: http://minio:9000
       MINIO_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY}

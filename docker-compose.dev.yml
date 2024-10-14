@@ -319,6 +319,8 @@ services:
     restart: always
     volumes:
       - logs:/usr/src/app/logs
+      - ../neo4j-graph-rag/src:/app/src
+
     networks:
       - network
 
