@@ -11,7 +11,7 @@ import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 
-const { tablesPerLoadingChunkSize } = environment.ganttSettings;
+const { tablesPerLoadingChunkSize } = environment.staticConfigs.ganttSettings;
 type TemplateTablesViewResultsRef = {
     templateTablesRefs: Record<string, TemplateTableRef>;
 };

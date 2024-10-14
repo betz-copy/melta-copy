@@ -13,7 +13,7 @@ import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBre
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
 
-const { defaultRowHeight } = environment.agGrid;
+const { defaultRowHeight } = environment.dynamicConfigs.agGrid;
 
 interface RuleBreachDialogContainerProps {
     breachType: string;

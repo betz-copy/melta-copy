@@ -38,7 +38,7 @@ export const CardMenu: React.FC<{
     };
     return (
         <>
-            <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
+            <IconButton onClick={handleClick} style={{ ...environment.dynamicConfigs.iconSize }}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

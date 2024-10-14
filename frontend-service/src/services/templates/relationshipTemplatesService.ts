@@ -4,7 +4,7 @@ import { environment } from '../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../../interfaces/relationshipTemplates';
 
-const { relationshipTemplates } = environment.api;
+const { relationshipTemplates } = environment.staticConfigs.api;
 
 const relationshipTemplateObjectToRelationshipTemplateForm = (
     entityTemplates: IEntityTemplateMap,

@@ -8,7 +8,7 @@ import { NotificationColor } from '../../../notificationColor';
 export const DeleteProcessNotification: React.FC<{ notificationMetadata: IDeleteProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { processName },
 }) => {
-    const { notificationsMoreData } = environment.notifications;
+    const { notificationsMoreData } = environment.staticConfigs.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.deleteProcess)?.color;
 
     return (

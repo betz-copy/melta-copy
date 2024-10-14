@@ -19,7 +19,7 @@ import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTempla
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { mapTemplates } from '../../../utils/templates';
 
-const { errorCodes } = environment;
+const { errorCodes } = environment.staticConfigs;
 
 // TODO: implement type array to all types
 interface IBaseFormInputPropertyTypes {

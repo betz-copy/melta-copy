@@ -41,7 +41,7 @@ const ProcessInstancesHeadline: React.FC<{
                             title={i18next.t('pages.processInstances')}
                             component="h4"
                             variant="h4"
-                            style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }}
+                            style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize }}
                         />
                     </Grid>
                     <Grid item>

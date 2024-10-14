@@ -38,7 +38,7 @@ import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 
-const { infiniteScrollPageCount } = environment.processInstances;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -121,14 +121,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon style={{ ...environment.iconSize }} fontSize="small" />
+                                <AppRegistrationIcon style={{ ...environment.dynamicConfigs.iconSize }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
                             <MeltaTooltip title={entityTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -357,7 +357,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
                                         color: isEditableCategory ? theme.palette.primary.main : '#9398C2',
                                         outline: isEditableCategory ? `1px solid ${theme.palette.primary.main}` : '',

@@ -47,7 +47,7 @@ import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 
-const { rowCount, defaultExpandedRowCount } = environment.agGrid;
+const { rowCount, defaultExpandedRowCount } = environment.dynamicConfigs.agGrid;
 
 export const defaultFilterModel = {
     disabled: {
@@ -118,7 +118,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
+    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.dynamicConfigs.agGrid;
 
     return {
         rowModelType: 'serverSide',

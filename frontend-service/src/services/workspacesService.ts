@@ -5,7 +5,7 @@ import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {
     api: { workspaces },
-} = environment;
+} = environment.staticConfigs;
 
 export const getDir = async (path: IWorkspace['path']) => {
     const { data } = await axios.post<IWorkspace[]>(`${workspaces}/dir`, { path });

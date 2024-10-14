@@ -8,7 +8,7 @@ import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchPro
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
 import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
 
-const { processes } = environment.api;
+const { processes } = environment.staticConfigs.api;
 export const getProcessByIdRequest = async (processId: string) => {
     const { data } = await axios.get<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
     return data;

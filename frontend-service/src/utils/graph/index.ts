@@ -11,7 +11,7 @@ import { drawText, getRectangleDimensionsByString, traceRectangle } from '../can
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
 import { ILabelIcon, rangeAsString } from './helperTypes';
 
-const { graphSettings } = environment;
+const { graphSettings } = environment.staticConfigs;
 
 const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCountRangesToSizeDict: Record<rangeAsString, number>) => {
     const ranges = Object.keys(connectionsCountRangesToSizeDict) as rangeAsString[];
@@ -31,15 +31,15 @@ const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCou
 };
 
 export const getSizeOfNodeByConnections = (nodeId: string, links: LinkObject[]) => {
-    const { nodeConnectionsCountRangesToNodeSize, maximumNodeSize } = graphSettings;
+    const { nodeConnectionsCountRangesToNodeSize, maxNodeSize } = graphSettings;
 
     const connections = links.filter((curr) => curr.target === nodeId || curr.source === nodeId);
     const connectionsCount = connections.length;
 
     const selectedNodeSize = searchNodeSizeInsideRangesDict(connectionsCount, nodeConnectionsCountRangesToNodeSize);
 
-    if (selectedNodeSize > maximumNodeSize) {
-        return maximumNodeSize;
+    if (selectedNodeSize > maxNodeSize) {
+        return maxNodeSize;
     }
 
     return selectedNodeSize;
@@ -79,7 +79,7 @@ export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTempl
             const iconLoadPromise = (async () => {
                 const img = new Image();
 
-                img.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
+                img.src = await apiUrlToImageSource(`/api${environment.staticConfigs.api.storage}/${entityTemplate.iconFileId}`);
                 return img;
             })();
 

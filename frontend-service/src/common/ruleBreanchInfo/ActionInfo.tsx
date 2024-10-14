@@ -48,7 +48,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 
     if (!entity) {
         entityForLink = null;
-    } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
+    } else if (typeof entity === 'string' && entity.startsWith(environment.staticConfigs.brokenRulesFakeEntityIdPrefix)) {
         // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
         // and the '._id' in the end
         const numberPart = entity.slice(1, -4);
@@ -87,12 +87,12 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 
         tooltipHeader = (
             <Typography variant="body2" fontStyle="italic">
-                {entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
+                {entityForLink.properties._id.startsWith(environment.staticConfigs.brokenRulesFakeEntityIdPrefix)
                     ? i18next.t('ruleBreachInfo.theEntityThatIsSupposedToBeCreated')
                     : i18next.t('ruleBreachInfo.theEntityThatWasCreated')}
             </Typography>
         );
-        linkable = !entityForLink.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix);
+        linkable = !entityForLink.properties._id.startsWith(environment.staticConfigs.brokenRulesFakeEntityIdPrefix);
     } else {
         const updatedProperties = actions.reduce((previousUpdatedProperties, currentAction) => {
             if (
@@ -234,7 +234,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                     <EntityLink
                         entity={entity}
                         entityTemplate={entityTemplate}
-                        linkable={!entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                        linkable={!entity.properties._id.startsWith(environment.staticConfigs.brokenRulesFakeEntityIdPrefix)}
                     />
                     {!isCompact ? ':' : ''}
                 </Typography>

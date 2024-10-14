@@ -19,7 +19,7 @@ const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<v
                 <Typography
                     sx={{
                         marginRight: '5px',
-                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                         textOverflow: 'ellipsis',
                         overflow: 'hidden',
                         whiteSpace: 'nowrap',
@@ -50,7 +50,7 @@ const OpenPreview: React.FC<{
     return (
         <Grid>
             {download ? (
-                <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
+                <Link href={`/api${environment.staticConfigs.api.storage}/${fileId}`} target="_blank" download>
                     <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
                 </Link>
             ) : (

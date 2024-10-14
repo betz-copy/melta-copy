@@ -12,7 +12,7 @@ import {
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
-const { entityTemplates } = environment.api;
+const { entityTemplates } = environment.staticConfigs.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
 export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];

@@ -29,7 +29,7 @@ import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 
-const { infiniteScrollPageCount } = environment.processInstances;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -323,11 +323,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                                             color={theme.palette.primary.main}
                                         />
                                     ) : (
-                                        <AppRegistrationIcon color="primary" style={{ ...environment.iconSize }} fontSize="small" />
+                                        <AppRegistrationIcon color="primary" style={{ ...environment.dynamicConfigs.iconSize }} fontSize="small" />
                                     )}
                                     <Typography
                                         color={theme.palette.primary.main}
-                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                                        style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
                                     >
                                         {relationshipTemplateWithEntity.entityTemplate.displayName}
                                     </Typography>

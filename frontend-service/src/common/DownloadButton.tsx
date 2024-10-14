@@ -17,13 +17,13 @@ const DownloadButton: React.FC<{ fileId: string | File }> = ({ fileId }) => {
         <IconButton
             onClick={async (event) => {
                 event.stopPropagation();
-                const url = typeof fileId === 'string' ? `/api${environment.api.storage}/${fileId}` : URL.createObjectURL(fileId);
+                const url = typeof fileId === 'string' ? `/api${environment.staticConfigs.api.storage}/${fileId}` : URL.createObjectURL(fileId);
                 try {
                     await new Downloader({
                         url,
                         filename: fileName,
                         withCredentials: true,
-                        headers: [{ name: environment.workspaceIdHeaderName, value: workspace._id }],
+                        headers: [{ name: environment.staticConfigs.workspaceIdHeaderName, value: workspace._id }],
                     });
 
                     if (typeof fileId !== 'string') URL.revokeObjectURL(url);

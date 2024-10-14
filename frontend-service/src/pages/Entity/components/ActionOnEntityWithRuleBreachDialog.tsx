@@ -25,7 +25,7 @@ import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
 
-const { errorCodes } = environment;
+const { errorCodes } = environment.staticConfigs;
 
 interface UploadedFile {
     name: string;

@@ -18,7 +18,7 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 
-const { infiniteScrollPageCount } = environment.entitiesCardsView;
+const { infiniteScrollPageCount } = environment.staticConfigs.entitiesCardsView;
 
 export const RuleCard: React.FC<{
     rule: IMongoRule;
@@ -55,7 +55,10 @@ export const RuleCard: React.FC<{
                                 )}
                                 <Typography
                                     display="inline-block"
-                                    sx={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main }}
+                                    sx={{
+                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                        color: theme.palette.primary.main,
+                                    }}
                                 >
                                     {rule.name}
                                 </Typography>

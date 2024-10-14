@@ -61,7 +61,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -135,7 +135,13 @@ const CategoriesRow: React.FC = () => {
             <Box
                 header={
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                        <Typography
+                            style={{
+                                fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                fontWeight: '400',
+                                color: '#9398C2',
+                            }}
+                        >
                             {i18next.t('general')}
                         </Typography>
                         {isHoverOnBox && (

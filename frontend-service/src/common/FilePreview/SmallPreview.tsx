@@ -27,7 +27,7 @@ const isUnsupported = (type: string) => type === 'unsupported';
 const SmallPreview: React.FC<IPreviewProps> = ({
     file,
     width = '100%',
-    height = `${environment.smallPreviewHeight.number}${environment.smallPreviewHeight.unit}`,
+    height = `${environment.dynamicConfigs.smallPreviewHeight.number}${environment.dynamicConfigs.smallPreviewHeight.unit}`,
     sx,
 }) => {
     const [noSuchKeyError, setNoSuchKeyError] = useState<boolean>(true);

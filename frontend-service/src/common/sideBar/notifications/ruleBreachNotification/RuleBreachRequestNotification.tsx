@@ -9,7 +9,7 @@ import { NotificationColor } from '../../../notificationColor';
 export const RuleBreachRequestNotification: React.FC<{ notificationMetadata: IRuleBreachRequestNotificationMetadataPopulated }> = ({
     notificationMetadata: { request },
 }) => {
-    const { notificationsMoreData } = environment.notifications;
+    const { notificationsMoreData } = environment.staticConfigs.notifications;
     const color = notificationsMoreData.requests.find((notificationData) => notificationData.type === NotificationType.ruleBreachRequest)?.color;
 
     return (

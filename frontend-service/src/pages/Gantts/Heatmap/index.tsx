@@ -8,7 +8,7 @@ import { getGanttHeatmapData } from '../../../utils/gantts';
 import { HeatmapBox } from './HeatmapBox';
 import { ViewingBox } from '../../SystemManagement/components/ViewingBox';
 
-const { heatmapColors } = environment.ganttSettings;
+const { heatmapColors } = environment.staticConfigs.ganttSettings;
 
 interface IHeatmapProps {
     ganttEvents: IScheduleComponentData[];

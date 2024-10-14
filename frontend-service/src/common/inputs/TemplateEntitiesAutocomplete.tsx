@@ -46,7 +46,7 @@ const TemplateEntitiesAutocomplete: React.FC<{
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
 
-    const { cacheBlockSize } = environment.agGrid;
+    const { cacheBlockSize } = environment.dynamicConfigs.agGrid;
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],

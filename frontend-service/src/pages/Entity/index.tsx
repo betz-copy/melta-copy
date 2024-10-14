@@ -32,7 +32,7 @@ import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
 import { RelationshipIcon } from './RelationshipIcon';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.dynamicConfigs.agGrid;
 
 export const getButtonState = (
     isEntityDisabled: boolean,

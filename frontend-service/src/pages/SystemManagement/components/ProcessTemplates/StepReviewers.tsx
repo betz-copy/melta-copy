@@ -32,7 +32,7 @@ export const StepReviewers: React.FC<StepReviewersProps> = ({ reviewers }) => {
                     <Grid item key={reviewer._id}>
                         <Typography
                             style={{
-                                fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',

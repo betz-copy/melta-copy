@@ -39,7 +39,7 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
             if (!currentWorkspace) return;
 
             setWorkspace(currentWorkspace);
-            document.title = environment.defaultTitle;
+            document.title = environment.staticConfigs.defaultTitle;
 
             const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
             if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;

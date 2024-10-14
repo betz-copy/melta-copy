@@ -23,7 +23,7 @@ import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPrope
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 import { DuplicateTopBar } from './DuplicateTopBar';
 
-const { errorCodes } = environment;
+const { errorCodes } = environment.staticConfigs;
 
 const DuplicateEntity: React.FC<{}> = () => {
     const { state } = window.history;

@@ -23,7 +23,12 @@ const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties }> = ({ title, 
     if (title.length) {
         return (
             <TopBarGrid sx={boxStyle} display="flex" alignItems="center">
-                <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
+                <BlueTitle
+                    title={title}
+                    component="h4"
+                    variant="h4"
+                    style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize }}
+                />
             </TopBarGrid>
         );
     }

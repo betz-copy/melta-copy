@@ -22,7 +22,7 @@ import { environment } from '../../../globals';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { PermissionScope } from '../../../interfaces/permissions';
 
-const { errorCodes } = environment;
+const { errorCodes } = environment.staticConfigs;
 
 export interface ICreateRelationshipValues {
     relationshipTemplate: IMongoRelationshipTemplatePopulated | null;

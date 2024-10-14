@@ -16,7 +16,7 @@ import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 
-const { infiniteScrollPageCount } = environment.processInstances;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
 
 const ProcessesList: React.FC<{
     onSetStartDate: (newStartDateInput: Date) => void;

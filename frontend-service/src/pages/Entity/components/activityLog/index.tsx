@@ -12,7 +12,7 @@ import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemp
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 
-const { infiniteScrollPageCount } = environment.activityLog;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.activityLog;
 
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,

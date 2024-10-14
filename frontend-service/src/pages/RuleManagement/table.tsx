@@ -108,7 +108,7 @@ const getColumnDefs = (
             { title: i18next.t('ruleManagement.actionType') },
             Object.values(actionTypeTranslations),
             400,
-            environment.agGrid.defaultRowHeight,
+            environment.dynamicConfigs.agGrid.defaultRowHeight,
         ),
         dateColDef('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),

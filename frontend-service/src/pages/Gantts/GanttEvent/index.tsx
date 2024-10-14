@@ -10,7 +10,7 @@ import { FieldsDisplay } from './FieldsDisplay';
 import { environment } from '../../../globals';
 import { filteredMap } from '../../../utils/filteredMap';
 
-const { ganttSettings } = environment;
+const { ganttSettings } = environment.staticConfigs;
 
 type GanttEventProps = IScheduleComponentData & { expanded?: boolean };
 

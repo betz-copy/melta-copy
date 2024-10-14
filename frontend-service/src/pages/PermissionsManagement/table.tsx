@@ -25,8 +25,8 @@ import { searchUsersRequest } from '../../services/userService';
 import { trycatch } from '../../utils/trycatch';
 import { IWorkspace } from '../../interfaces/workspaces';
 
-const { defaultRowHeight } = environment.agGrid;
-const { infiniteScrollPageCount } = environment.permission;
+const { defaultRowHeight } = environment.dynamicConfigs.agGrid;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.permission;
 
 ModuleRegistry.registerModules([ServerSideRowModelModule]);
 

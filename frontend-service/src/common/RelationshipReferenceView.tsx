@@ -40,16 +40,16 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                         relatedEntityTemplate.iconFileId ? (
                             <CustomIcon
                                 iconUrl={relatedEntityTemplate.iconFileId}
-                                height={environment.iconSize.height}
-                                width={environment.iconSize.width}
+                                height={environment.dynamicConfigs.iconSize.height}
+                                width={environment.dynamicConfigs.iconSize.width}
                                 color={theme.palette.primary.main}
                             />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{
                                     color: theme.palette.primary.main,
-                                    height: environment.iconSize.height,
-                                    width: environment.iconSize.width,
+                                    height: environment.dynamicConfigs.iconSize.height,
+                                    width: environment.dynamicConfigs.iconSize.width,
                                 }}
                             />
                         )
@@ -103,16 +103,16 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             relatedEntityTemplate.iconFileId ? (
                                 <CustomIcon
                                     iconUrl={relatedEntityTemplate.iconFileId}
-                                    height={environment.iconSize.height}
-                                    width={environment.iconSize.width}
+                                    height={environment.dynamicConfigs.iconSize.height}
+                                    width={environment.dynamicConfigs.iconSize.width}
                                     color={theme.palette.primary.main}
                                 />
                             ) : (
                                 <DefaultEntityTemplateIcon
                                     sx={{
                                         color: theme.palette.primary.main,
-                                        height: environment.iconSize.height,
-                                        width: environment.iconSize.width,
+                                        height: environment.dynamicConfigs.iconSize.height,
+                                        width: environment.dynamicConfigs.iconSize.width,
                                     }}
                                 />
                             )

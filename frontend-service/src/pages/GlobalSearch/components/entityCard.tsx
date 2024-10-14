@@ -180,11 +180,13 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <CustomIcon
                                     color={entityTemplateColor}
                                     iconUrl={entityTemplate.iconFileId}
-                                    height={environment.iconSize.height}
-                                    width={environment.iconSize.width}
+                                    height={environment.dynamicConfigs.iconSize.height}
+                                    width={environment.dynamicConfigs.iconSize.width}
                                 />
                             ) : (
-                                <AppRegistrationIcon sx={{ fontSize: environment.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }} />
+                                <AppRegistrationIcon
+                                    sx={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }}
+                                />
                             )}
                         </Grid>
                         <BlueTitle title={entityTemplate.displayName} component="h4" variant="h6" style={{ fontWeight: 400 }} />

@@ -3,7 +3,7 @@ import { environment } from '../globals';
 import { IRelationship } from '../interfaces/relationships';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
-const { relationships } = environment.api;
+const { relationships } = environment.staticConfigs.api;
 
 const createRelationshipRequest = async (requestBody: {
     relationshipInstance: Omit<IRelationship, 'properties'> & { properties: Omit<IRelationship['properties'], '_id'> };

@@ -4,7 +4,7 @@ import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { getFileName } from '../../utils/getFileName';
 
-const { categories } = environment.api;
+const { categories } = environment.staticConfigs.api;
 
 const categoryObjectToCategoryForm = (category: IMongoCategory | null): CategoryWizardValues | undefined => {
     if (!category) return undefined;

@@ -6,7 +6,7 @@ import { PartialRequired } from '../typeHelpers';
 import { environment } from '../../globals';
 import { drawLabel, drawNodeIcon } from '.';
 
-const { graphSettings } = environment;
+const { graphSettings } = environment.staticConfigs;
 
 const getNodeRadius = (node: NodeObject) => {
     // formula taken from react-force-graph source code

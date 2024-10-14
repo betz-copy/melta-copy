@@ -33,7 +33,7 @@ import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize } = environment.dynamicConfigs.agGrid;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -113,13 +113,17 @@ const TemplateTable = forwardRef<
                         {template.iconFileId ? (
                             <CustomIcon
                                 iconUrl={template.iconFileId}
-                                height={environment.iconSize.height}
-                                width={environment.iconSize.width}
+                                height={environment.dynamicConfigs.iconSize.height}
+                                width={environment.dynamicConfigs.iconSize.width}
                                 color={theme.palette.primary.main}
                             />
                         ) : (
                             <DefaultEntityTemplateIcon
-                                sx={{ color: theme.palette.primary.main, height: environment.iconSize.height, width: environment.iconSize.width }}
+                                sx={{
+                                    color: theme.palette.primary.main,
+                                    height: environment.dynamicConfigs.iconSize.height,
+                                    width: environment.dynamicConfigs.iconSize.width,
+                                }}
                             />
                         )}
                     </Grid>

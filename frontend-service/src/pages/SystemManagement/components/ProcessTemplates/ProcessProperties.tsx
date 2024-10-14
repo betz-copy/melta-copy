@@ -33,7 +33,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                         <Grid item container key={key} direction="row" wrap="nowrap" alignItems="center">
                             <Typography
                                 style={{
-                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                    fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
@@ -44,7 +44,7 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                             </Typography>
                             <Typography
                                 style={{
-                                    fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                    fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',

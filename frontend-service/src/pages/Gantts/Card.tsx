@@ -9,7 +9,7 @@ interface IGanttCardProps {
 }
 const {
     searchParams: { heatmapModeKey },
-} = environment.ganttSettings;
+} = environment.staticConfigs.ganttSettings;
 
 export const GanttsCard: React.FC<IGanttCardProps> = ({ gantt }) => {
     const [_, navigate] = useLocation();

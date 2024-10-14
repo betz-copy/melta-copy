@@ -41,7 +41,7 @@ const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ tit
             <Typography
                 variant="h6"
                 marginLeft="10px"
-                fontSize={environment.mainFontSizes.headlineSubTitleFontSize}
+                fontSize={environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize}
                 noWrap
                 style={{
                     textOverflow: 'ellipsis',

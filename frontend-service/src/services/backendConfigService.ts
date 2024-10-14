@@ -1,7 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 
-const { config } = environment.api;
+const { config } = environment.staticConfigs.api;
 
 export interface BackendConfigState {
     contactByMailLink: string;

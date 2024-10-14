@@ -7,7 +7,7 @@ import { IMongoRule, IRule, ISearchRuleBody } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';
 
-const { rules } = environment.api;
+const { rules } = environment.staticConfigs.api;
 
 const ruleObjectToRuleForm = (rule: IRule | null, entityTemplates: IEntityTemplateMap): RuleWizardValues | undefined => {
     if (!rule) return undefined;

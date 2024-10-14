@@ -22,7 +22,7 @@ const {
     systemManagement: {
         actions: { noTypeGivenErrorCodeTs, unusedPropertyErrorCodeTs },
     },
-} = environment;
+} = environment.staticConfigs;
 
 const CodeEditorDialog: React.FC<{
     open: boolean;

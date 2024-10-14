@@ -53,7 +53,7 @@ export const ProcessTemplateCard: React.FC<ProcessTemplateCardProps> = ({
                             <MeltaTooltip title={processTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',

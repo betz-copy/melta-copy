@@ -2,7 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { IBasicGantt, IGantt, ISearchGanttsBody } from '../interfaces/gantts';
 
-const { gantts } = environment.api;
+const { gantts } = environment.staticConfigs.api;
 
 export const searchGantts = async (query: ISearchGanttsBody) => {
     const { data } = await axios.post<IGantt[]>(`${gantts}/search`, query);

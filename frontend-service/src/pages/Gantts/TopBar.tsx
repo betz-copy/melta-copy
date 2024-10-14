@@ -28,7 +28,7 @@ import { PermissionScope } from '../../interfaces/permissions';
 const {
     separators,
     searchParams: { heatmapModeKey },
-} = environment.ganttSettings;
+} = environment.staticConfigs.ganttSettings;
 
 interface IGanttTopBar {
     title: string;

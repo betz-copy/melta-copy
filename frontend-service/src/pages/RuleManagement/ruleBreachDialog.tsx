@@ -16,7 +16,7 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 
-const { errorCodes } = environment;
+const { errorCodes } = environment.staticConfigs;
 
 const RuleBreachDialog: React.FC<{
     isOpen: boolean;

@@ -5,7 +5,7 @@ import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../interfaces/ruleBreaches/ruleBreachRequest';
 
-const { ruleBreachesRequests, ruleBreachesAlerts } = environment.api;
+const { ruleBreachesRequests, ruleBreachesAlerts } = environment.staticConfigs.api;
 
 export const createRuleBreachRequestRequest = async (
     ruleBreachRequest: Omit<IRuleBreach, '_id' | 'createdAt' | 'originUserId'>,

@@ -15,7 +15,7 @@ import { ProcessTemplateCard } from './ProcessTemplateCard';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
 
-const { infiniteScrollPageCount } = environment.processInstances;
+const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
 
 const ProcessTemplatesRow: React.FC = () => {
     const [searchText, setSearchText] = useState('');

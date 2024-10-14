@@ -134,7 +134,12 @@ const EntitiesPageHeadline: React.FC<{
         >
             <Grid item>
                 <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
-                    <BlueTitle title={pageTitle} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
+                    <BlueTitle
+                        title={pageTitle}
+                        component="h4"
+                        variant="h4"
+                        style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize }}
+                    />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap" gap="15px">
                             <Grid item data-tour="template-filter">

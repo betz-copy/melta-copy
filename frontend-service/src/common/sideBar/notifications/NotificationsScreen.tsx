@@ -17,7 +17,7 @@ import { SelectCheckbox } from '../../SelectCheckbox';
 import { NotificationCard } from './NotificationCard';
 import { NotificationCount } from './NotificationCount';
 
-const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.notifications;
+const { infiniteScrollPageCount, groups, notificationsMoreData } = environment.staticConfigs.notifications;
 
 interface NotificationsScreenProps {
     open: boolean;
