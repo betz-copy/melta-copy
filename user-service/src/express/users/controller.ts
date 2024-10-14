@@ -17,8 +17,6 @@ export class UsersController {
     }
 
     static async searchUsers(req: Request, res: Response) {
-        // const { search, permissions, workspaceIds, limit, step } = req.body;
-
         res.json(await UsersManager.searchUsers(req.body));
     }
 

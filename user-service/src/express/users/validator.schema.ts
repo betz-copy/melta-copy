@@ -40,13 +40,13 @@ export const searchUsersRequestSchema = joi.object({
         search: joi.string(),
         filterModel: joi
             .object()
-            .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema)), // .required(),
+            .pattern(/^/, joi.alternatives(agGridTextFilterSchema, agGridDateFilterSchema, agGridNumberFilterSchema, agGridSetFilterSchema)),
         sortModel: joi.array().items(
             joi.object({
                 colId: joi.string(),
                 sort: joi.string().valid('asc', 'desc'),
             }),
-        ), // .required(),
+        ),
     }),
     params: {},
 });

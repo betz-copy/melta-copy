@@ -78,11 +78,14 @@ export class UsersManager {
 
     static async searchUsers(request: IAgGridRequest): Promise<{ users: IUser[]; count: number }> {
         const { limit, step, workspaceIds, permissions, filterModel, sortModel, search } = request;
+
         const sort = translateAgGridSortModel(sortModel);
         const query = translateAgGridFilterModel(filterModel);
 
         const { users, count } = await this.searchBaseUsers(search, permissions, workspaceIds, limit, step, query, sort);
-        return { users: await this.appendPermissionsToUsers(users), count };
+        const permissionsToUsers = await this.appendPermissionsToUsers(users);
+
+        return { users: permissionsToUsers, count };
     }
 
     static async createUser({ permissions, ...userData }: Omit<IUser, '_id'>): Promise<IUser> {

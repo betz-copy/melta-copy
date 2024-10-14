@@ -192,9 +192,6 @@ const getDatasource = <Data extends any = IUser>(
 ): IServerSideDatasource => {
     return {
         async getRows({ request, success, fail }: IServerSideGetRowsParams<Data>) {
-            console.log({ quickFilter });
-
-            console.log({ request });
             const { startRow, endRow, filterModel, sortModel } = request;
 
             const { result: data, err } = await trycatch(() =>
