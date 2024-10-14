@@ -9,6 +9,10 @@ export enum WorkspaceTypes {
     mlt = '.mlt',
 }
 
+export interface IMetadata {
+    shouldDisplayProcesses: boolean;
+}
+
 export interface IWorkspace {
     _id: string;
     name: string;
@@ -18,4 +22,5 @@ export interface IWorkspace {
     colors: Record<Colors, HexColor>;
     iconFileId?: string;
     logoFileId?: string;
+    metadata: Partial<IMetadata>;
 }

@@ -16,6 +16,7 @@ export const config = {
     mongo: {
         url: env.get('MONGO_URL').required().asString(),
         workspacesCollectionName: env.get('MONGO_WORKSPACES_COLLECTION_NAME').required().asString(),
+        configsCollectionName:  env.get('MONGO_CONFIGS_COLLECTION_NAME').default('configs').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),

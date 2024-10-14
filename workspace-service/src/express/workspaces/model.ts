@@ -1,8 +1,14 @@
 import mongoose from 'mongoose';
 import { config } from '../../config';
 import { ServiceError } from '../error';
-import { Colors, IWorkspace } from './interface';
+import { Colors, IMetadata, IWorkspace } from './interface';
 import { AllowedEmptyString } from '../../utils/mongoose';
+
+const MetadataSchema = new mongoose.Schema<IMetadata>({
+    shouldDisplayProcesses: {
+        type: Boolean,
+    },
+});
 
 const ColorsSchema = new mongoose.Schema<IWorkspace['colors']>(
     Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: { type: String, required: true } }), {}),
@@ -36,6 +42,11 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
         },
         logoFileId: {
             type: String,
+        },
+        metadata: {
+            type: MetadataSchema,
+            default: {},
+            _id: false,
         },
     },
     { timestamps: true, versionKey: false },
