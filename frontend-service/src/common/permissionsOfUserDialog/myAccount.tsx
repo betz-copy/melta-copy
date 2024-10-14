@@ -1,4 +1,4 @@
-import { Button, Checkbox, FormControlLabel, Grid } from '@mui/material';
+import { Avatar, Button, Checkbox, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
@@ -17,6 +17,12 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
     const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
     const [kartoffelUser, setKartoffelUser] = useState<IKartoffelUser>();
+    const userDetailsMap: { [key: string]: string | boolean | undefined } = {
+        'Full Name': existingUser.fullName,
+        Email: existingUser.mail,
+        'Job Title': existingUser.jobTitle,
+        Hierarchy: existingUser.hierarchy,
+    };
 
     useEffect(() => {
         const getKartoffelUser = async () => {
@@ -28,10 +34,9 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
             }
         };
 
-        if (existingUser?.externalMetadata?.kartoffelId) {
-            getKartoffelUser();
-        }
+        getKartoffelUser();
     }, [existingUser]);
+    console.log('gg', { kartoffelUser });
 
     const handleCheckboxChange = useCallback(
         async (type: NotificationType) => {
@@ -68,8 +73,32 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
 
     return (
         <>
-            <Grid container>
-                <Grid container flexDirection="row" spacing={4}>
+            <Grid container spacing={2} style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+                <Grid item xs={12}>
+                    <Avatar src={existingUser.preferences.profilePath} sx={{ width: 80, height: 80 }} />
+                    <Typography fontSize={13}>{existingUser.fullName} </Typography>
+                </Grid>
+
+                {Object.entries(userDetailsMap).map(([key, value]) => (
+                    <React.Fragment key={key}>
+                        <Grid item xs={6}>
+                            <Typography variant="body1" style={{ fontWeight: 'bold' }}>
+                                {key}
+                            </Typography>
+                        </Grid>
+                        <Grid item xs={6} style={{ textAlign: 'right' }}>
+                            <Typography variant="body1">{String(value)}</Typography>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Divider />
+                        </Grid>
+                    </React.Fragment>
+                ))}
+
+                <Grid container>
+                    <Typography variant="h6">התראות מייל </Typography>
+                </Grid>
+                <Grid container flexDirection="row" spacing={2}>
                     {allNotifications.map((notification) => (
                         <Grid item key={notification.type}>
                             <FormControlLabel
@@ -97,8 +126,8 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
                         kartoffelProfile={kartoffelUser?.pictures?.profile?.meta?.path}
                     />
                 </Grid>
+                {/* <img src="/icons/profileAvatar/avatar.jpg" /> */}
             </Grid>
-
             <Grid>
                 <Button
                     // type="button"
@@ -114,6 +143,8 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
                     {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
                     {formikProps.isSubmitting && <CircularProgress size={20} />} */}
                 </Button>
+
+                {/* <UserProfile /> */}
             </Grid>
         </>
     );

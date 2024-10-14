@@ -73,6 +73,10 @@ export const deletePermissionsFromMetadata = async (
 };
 
 export const getKartoffelUseByIdRequest = async (kartoffelId: string) => {
+    console.log({ kartoffelId });
+
     const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
+    console.log({ data });
+
     return data;
 };

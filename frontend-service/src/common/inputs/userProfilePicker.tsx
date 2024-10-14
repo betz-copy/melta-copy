@@ -3,7 +3,6 @@ import { Grid, ToggleButtonGroup, ToggleButton, Avatar } from '@mui/material';
 import i18next from 'i18next';
 import FileInput from './ImageFileInput';
 import fileDetails from '../../interfaces/fileDetails';
-import UserAvatar from '../UserAvatar';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions' | 'kartoffelProfile';
 
@@ -101,7 +100,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
             )}
             {inputType === 'kartoffelProfile' && (
                 <Grid padding="20px">
-                    <Avatar src={kartoffelProfile} />
+                    <Avatar src={kartoffelProfile ?? '/icons/arrow-more.svg'} />
                 </Grid>
             )}
         </Grid>
