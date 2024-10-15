@@ -79,7 +79,7 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    rank_window_size: rrfWindowConstant,
+                    window_size: rrfWindowConstant,
                     rank_constant: rrfRankConstant,
                 },
             },
