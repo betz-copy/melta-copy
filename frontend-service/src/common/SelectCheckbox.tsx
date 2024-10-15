@@ -105,8 +105,9 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     toTopBar?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
-    hasSearchBar: boolean;
-    hasChooseAll: boolean;
+    hideSearchBar: boolean;
+    hideChooseAll: boolean;
+    dynamicWidth?: number;
 }>;
 
 export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -495,8 +496,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     toTopBar,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
-    hasSearchBar,
-    hasChooseAll,
+    hideSearchBar,
+    hideChooseAll,
+    dynamicWidth,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -513,9 +515,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     });
 
     // eslint-disable-next-line no-nested-ternary
+
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
-
     return (
         <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
@@ -526,13 +528,15 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         style: {
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
-                            width: horizontalOrigin === 154 ? '219px' : undefined,
+                            width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
                             ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
-                            borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
+                            borderRadius: overrideSx ? '10px 10px 10px 10px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
-                            boxShadow: '-2px 2px 4px 0px #1E27754D',
+                            boxShadow: '-2px 2px 6px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
+                            marginTop: '5px',
+                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
                         },
                         sx: {
                             overflowY: 'overlay',
@@ -545,8 +549,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         },
                     },
                     transformOrigin: {
-                        vertical: 'top',
-                        horizontal: horizontalOrigin,
+                        vertical: overrideSx ? 'top' : 'top',
+                        horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
                 IconComponent={() => (
@@ -591,8 +595,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
             >
-                {hasSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
-                {hasChooseAll ? (
+                {!hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {!hideChooseAll ? (
                     <>
                         <ChooseAllMenuItem
                             options={options}

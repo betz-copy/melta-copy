@@ -75,7 +75,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
-        setOpenCalendars(false);
+        setOpenCalendars(!openCalenders);
     };
 
     const { mutate, isLoading } = useMutation(
@@ -103,6 +103,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         setSelectedGroup(newGroup);
     };
 
+    const width = openCalenders ? 310 : 255;
+    
     return (
         <PopperSidebar
             open={open}
@@ -160,7 +162,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOrigin={openCalenders ? 61 : 89}
+                                horizontalOrigin={openCalenders ? 61 : 128}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
                                         color: '#       ',
@@ -170,8 +172,9 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 }}
                                 handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
-                                hasSearchBar={false}
-                                hasChooseAll={false}
+                                hideSearchBar
+                                hideChooseAll
+                                dynamicWidth={width}
                             />
                         </Grid>
                         {!openCalenders && (
