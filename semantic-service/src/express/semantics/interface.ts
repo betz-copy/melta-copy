@@ -10,6 +10,14 @@ export interface IDeleteFilesRequest {
     minioFileIds: string[];
 }
 
+export interface ISearchRequest {
+    // TODO: convert to js naming format
+    search_text: string;
+    limit: number;
+    skip: number;
+    templates: string[];
+}
+
 export interface Chunk extends Omit<IIndexFilesRequest, 'minioFileIds'> {
     text: string;
     // embedding: number[];

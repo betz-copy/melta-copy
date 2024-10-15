@@ -4,7 +4,7 @@ import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks, streamToString } from '../../utils/fs';
 import logger from '../../utils/logger/logsLogger';
 import { MinIOClient } from '../../utils/minio/minioClient';
-import { IDeleteFilesRequest, IIndexFilesRequest } from './interface';
+import { IDeleteFilesRequest, IIndexFilesRequest, ISearchRequest } from './interface';
 
 const {
     consts: { fileIdLength },
@@ -25,9 +25,10 @@ export class SemanticManager {
         this.modelApiService = new ModelApiService();
     }
 
-    public async search(limit: number, step: number, query: any) {
-        const embeddedQuery = await this.modelApiService.search([query.text]);
-        return await this.elasticClient.search(limit, step, query);
+    public async search(searchBody: ISearchRequest) {
+        const embeddedQuery = await this.modelApiService.search([searchBody.search_text]);
+
+        return this.elasticClient.hybridSearch(searchBody.search_text, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
     }
 
     public async createIndex(indexName: string) {
@@ -35,11 +36,11 @@ export class SemanticManager {
     }
 
     public async deleteIndex() {
-        return await this.elasticClient.deleteIndex();
+        return this.elasticClient.deleteIndex();
     }
 
     public async initIndex() {
-        return await this.elasticClient.initIndex();
+        return this.elasticClient.initIndex();
     }
 
     private async indexFile({ workspaceId, minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
