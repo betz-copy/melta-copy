@@ -1,13 +1,7 @@
 export interface IIndexFilesRequest {
-    workspace_id: string;
     minio_file_ids: string[];
     template_id: string;
     entity_id: string;
-}
-
-export interface IDeleteFilesRequest {
-    workspaceId: string;
-    minioFileIds: string[];
 }
 
 export interface ISearchRequest {
@@ -23,4 +17,5 @@ export interface Chunk extends Omit<IIndexFilesRequest, 'minio_file_ids'> {
     embedding: number[];
     title: string;
     minio_file_id: string;
+    workspace_id: string;
 }

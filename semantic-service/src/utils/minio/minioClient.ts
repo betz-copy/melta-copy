@@ -1,7 +1,9 @@
 import * as http from 'http';
 import { Client } from 'minio';
+import * as pdf from 'pdf-parse';
+import * as mammoth from 'mammoth';
 import config from '../../config';
-import { streamToString } from '../fs';
+import { streamToBuffer } from '../fs';
 import logger from '../logger/logsLogger';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
@@ -52,6 +54,18 @@ export class MinIOClient {
 
     async readFile(filePath: string) {
         const fileStream = await this.downloadFileStream(filePath);
-        return streamToString(fileStream);
+        const buffer = await streamToBuffer(fileStream);
+        const fileExtension = filePath.split('.').pop();
+        switch (fileExtension) {
+            case 'pdf':
+                return (await pdf(buffer)).text;
+            case 'txt':
+                return buffer.toString();
+            case 'doc':
+            case 'docx':
+                return (await mammoth.extractRawText({ buffer })).value;
+            default:
+                return buffer.toString();
+        }
     }
 }

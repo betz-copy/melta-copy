@@ -7,16 +7,11 @@ const config = {
         workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
         maxRequestSize: env.get('MAX_REQUEST_BYTE_SIZE').required().asInt(),
     },
-    mongo: {
-        url: env.get('MONGO_URL').required().asString(),
-        notificationsCollectionName: env.get('MONGO_NOTIFICATIONS_COLLECTION_NAME').default('notifications').asString(),
-        maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(500).asIntPositive(),
-    },
     consts: {
         fileIdLength: env.get('FILE_ID_LENGTH').default('32').asInt(),
     },
     model: {
-        chunkSize: env.get('MODEL_CHUNK_SIZE').default('1').asInt(),
+        chunkSize: env.get('MODEL_CHUNK_SIZE').default(1).asInt(),
         chunkSplitter: env.get('MODEL_CHUNK_SPLITTER').default('.').asString(),
         charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('["\n","\t",",","."]').asArray(),
     },
@@ -51,7 +46,7 @@ const config = {
         label: env.get('LOG_LABEL').default('notification').asString(),
         extraDefault: {
             serviceName: env.get('LOG_SERVICE_NAME').default('notification-service').asString(),
-            environment: env.get('LOG_ENVIRONMENT').default('dev').required().asString(),
+            environment: env.get('LOG_ENVIRONMENT').default('dev').asString(),
         },
         fileSettings: {
             datePattern: env.get('FILE_LOG_DATE_PATTERN').default('YYYY-MM-DD').asString(),
@@ -74,7 +69,6 @@ const config = {
         knnGroupSize: env.get('ELASTIC_KNN_GROUP_SIZE').default(20).asInt(),
         rrfWindowConstant: env.get('ELASTIC_RRF_WINDOW_CONSTANT').default(50).asInt(),
         rrfRankConstant: env.get('ELASTIC_RRF_RANK_CONSTANT').default(60).asInt(),
-        vectorFieldName: env.get('ELASTIC_VECTOR_FIELD_NAME').default('embed').asString(),
         vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
         similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
     },
@@ -82,7 +76,9 @@ const config = {
         url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
         searchRoute: env.get('MODEL_API_SEARCH_ROUTE').default('').asString(),
         endpoint: env.get('MODEL_API_ENDPOINT').default('embed').asString(),
-        chunkBatchSize: env.get('MODEL_API_CHUNK_BATCH_SIZE').default(10).asInt(),
+        chunkBatchSize: env.get('MODEL_API_CHUNK_BATCH_SIZE').default(100).asInt(),
+        token: env.get('MODEL_API_TOKEN').default('pa-Ij1f9ka-IVcyRfdg9sfLntx36vDiRmvXhTY1Dr_EZxc').asString(),
+        modelName: env.get('MODEL_API_MODEL_NAME').default('voyage-2').asString(),
     },
 };
 

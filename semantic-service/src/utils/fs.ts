@@ -8,14 +8,11 @@ const {
     modelApi: { chunkBatchSize },
 } = config;
 
-export const streamToString = (stream: Stream) => {
-    return new Promise<string>((resolve, reject) => {
-        let data: string = '';
-
-        stream.on('data', (chunk) => {
-            data += chunk.toString();
-        });
-        stream.on('end', () => resolve(data));
+export const streamToBuffer = (stream: Stream) => {
+    return new Promise<Buffer>((resolve, reject) => {
+        const buffer: Uint8Array[] = [];
+        stream.on('data', (chunk) => buffer.push(chunk));
+        stream.on('end', () => resolve(Buffer.concat(buffer)));
         stream.on('error', reject);
     });
 };
@@ -33,7 +30,7 @@ export const splitTextIntoChunks = async (
     const cleanedText = cleanText(text);
 
     if (!chunkSize) {
-        const embedding = ModelApiService.embed([cleanedText])[0];
+        const embedding = await ModelApiService.embed([cleanedText])[0];
 
         return [
             {
@@ -49,12 +46,11 @@ export const splitTextIntoChunks = async (
     }
 
     const splitText = cleanedText.split(chunkSplitter);
-    let joinedChunk = '';
     const textChunks: string[] = [];
     const chunks: Chunk[] = [];
 
     for (let i = 0; i < splitText.length; i += chunkSize) {
-        joinedChunk += splitText.slice(i, i + chunkSize).join(chunkSplitter);
+        const joinedChunk = splitText.slice(i, i + chunkSize).join(chunkSplitter);
         textChunks.push(joinedChunk);
     }
 
@@ -65,11 +61,15 @@ export const splitTextIntoChunks = async (
         return acc;
     }, []);
 
+    console.log('splittedTextChunks', splittedTextChunks);
+
     await Promise.all(
         splittedTextChunks.map(async (splittedTextChunk) => {
-            const embeddings = await ModelApiService.embed(splittedTextChunk);
+            const filtered = splittedTextChunk.filter((textChunk) => textChunk.length > 0);
+            const embeddings = await ModelApiService.embed(filtered);
+            // console.log('embeddings', embeddings);
 
-            textChunks.forEach((textChunk, index) => {
+            filtered.forEach((textChunk, index) => {
                 chunks.push({
                     text: textChunk,
                     embedding: embeddings[index],

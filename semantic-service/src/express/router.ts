@@ -3,7 +3,7 @@ import semanticRouter from './semantics/router';
 
 const appRouter = Router();
 
-appRouter.use('/api/semantic', semanticRouter);
+appRouter.use('/api', semanticRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
     res.status(200).send('alive');

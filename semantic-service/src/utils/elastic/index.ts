@@ -4,7 +4,7 @@ import { Chunk } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
-    elastic: { index, url, vectorFieldName, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant },
+    elastic: { index, url, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant },
 } = config;
 
 class ElasticClient {
@@ -34,7 +34,7 @@ class ElasticClient {
             index: `${index}-${this.workspaceId}`,
             mappings: {
                 properties: {
-                    [vectorFieldName]: {
+                    embedding: {
                         type: 'dense_vector',
                         dims: vectorDims,
                         index: true,
@@ -60,7 +60,7 @@ class ElasticClient {
 
         const searchBody = {
             knn: {
-                field: vectorFieldName,
+                field: 'embedding',
                 query_vector: embeddedQuery,
                 k: limit,
                 num_candidates: knnGroupSize,

@@ -4,7 +4,7 @@ import ElasticClient from '../../utils/elastic';
 import { splitTextIntoChunks } from '../../utils/fs';
 import logger from '../../utils/logger/logsLogger';
 import { MinIOClient } from '../../utils/minio/minioClient';
-import { IDeleteFilesRequest, IIndexFilesRequest, ISearchRequest } from './interface';
+import { IIndexFilesRequest, ISearchRequest } from './interface';
 
 const {
     consts: { fileIdLength },
@@ -50,7 +50,9 @@ export class SemanticManager {
         }
 
         const title = minioFileId.length > fileIdLength ? minioFileId.slice(fileIdLength) : minioFileId;
+
         const chunks = await splitTextIntoChunks(content, title, templateId, entityId, minioFileId, this.workspaceId);
+
         await this.elasticClient.bulkIndexDocuments(chunks);
     }
 
@@ -58,7 +60,7 @@ export class SemanticManager {
         await Promise.allSettled(fileData.minio_file_ids.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
     }
 
-    public deleteFiles({ minioFileIds }: IDeleteFilesRequest) {
+    public deleteFiles(minioFileIds: string[]) {
         return this.elasticClient.deleteFiles(minioFileIds);
     }
 }

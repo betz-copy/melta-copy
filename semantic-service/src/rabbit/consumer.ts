@@ -1,10 +1,10 @@
 import { ConsumerMessage } from 'menashmq';
 import { basicValidateRequest } from '../utils/joi';
-import { semanticDeleteFilesSchema, semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
+import { semanticIndexFilesSchema } from '../utils/joi/schemas/semantic';
 import logger from '../utils/logger/logsLogger';
 import config from '../config';
 import { SemanticManager } from '../express/semantics/manager';
-import { IDeleteFilesRequest, IIndexFilesRequest } from '../express/semantics/interface';
+import { IIndexFilesRequest } from '../express/semantics/interface';
 
 const {
     service: { workspaceIdHeaderName },
@@ -18,6 +18,8 @@ class SemanticConsumer {
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
+            console.log('Indexing files: ', value);
+
             await manager.indexFiles(value);
 
             msg.ack();
@@ -30,11 +32,13 @@ class SemanticConsumer {
     static async deleteFiles(msg: ConsumerMessage) {
         try {
             const msgContent = msg.getContent();
-            const value: IDeleteFilesRequest = basicValidateRequest(semanticDeleteFilesSchema, msgContent);
+            const value = basicValidateRequest(semanticIndexFilesSchema, msgContent);
 
             const manager = new SemanticManager(msg.properties.headers[workspaceIdHeaderName]);
 
-            await manager.deleteFiles(value);
+            console.log('Deleting files: ', value);
+
+            await manager.deleteFiles(value.minio_file_ids);
 
             msg.ack();
         } catch (err: any) {
