@@ -21,6 +21,7 @@ import {
     updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
+    deletePropertiesOfTemplateRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -85,5 +86,10 @@ entityRouter.put(
     entityController.updateEntityById,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
+entityRouter.patch(
+    '/deletePropertiesOfTemplate/:templateId',
+    ValidateRequest(deletePropertiesOfTemplateRequestSchema),
+    entityController.deletePropertiesOfTemplate,
+);
 
 export default entityRouter;

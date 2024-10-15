@@ -50,7 +50,8 @@ InstancesRouter.post(
     InstanceManagerProxy,
 );
 
-InstancesRouter.post('/entities/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
+InstancesRouter.post('/entities/count', InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates, InstanceManagerProxy);
+
 InstancesRouter.post(
     '/entities/search/templates',
     ValidateRequest(searchEntitiesByTemplatesSchema),

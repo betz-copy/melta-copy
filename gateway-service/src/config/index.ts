@@ -144,6 +144,7 @@ const config = {
         relationshipTemplateHasRules: 'RELATIONSHIP_TEMPLATE_HAS_RULES',
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
