@@ -104,7 +104,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     };
 
     const width = openCalenders ? 310 : 255;
-    
+
     return (
         <PopperSidebar
             open={open}
@@ -258,6 +258,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             toast.error(i18next.t('notifications.failedToGetNotifications'));
                         }}
                         endText={i18next.t('notifications.noNotificationsLeft')}
+                        style={{
+                            '::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.primary.main },
+                            '::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+                        }}
                     >
                         {(notification) => (
                             <Grid item style={{ padding: '8px' }}>

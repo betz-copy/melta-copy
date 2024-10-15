@@ -105,8 +105,8 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     toTopBar?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
-    hideSearchBar: boolean;
-    hideChooseAll: boolean;
+    hideSearchBar?: boolean;
+    hideChooseAll?: boolean;
     dynamicWidth?: number;
 }>;
 
