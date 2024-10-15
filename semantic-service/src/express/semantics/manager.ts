@@ -1,13 +1,27 @@
-import DefaultManagerElastic from '../../utils/elastic/manager';
+import ElasticClient from '../../utils/elastic';
+import { streamToBuffer } from '../../utils/fs';
+import { MinIOClient } from '../../utils/minio/minioClient';
 import { IDeleteFilesRequest, IIndexFilesRequest } from './interface';
 
-export class SemanticManager extends DefaultManagerElastic {
+export class SemanticManager {
+    workspaceId: string;
+
+    elasticClient: ElasticClient;
+
+    minioClient: MinIOClient;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+        this.elasticClient = new ElasticClient(workspaceId);
+        this.minioClient = new MinIOClient(workspaceId);
+    }
+
     public async search(limit: number, step: number, query: any) {
         return await this.elasticClient.search(limit, step, query);
     }
 
-    public async createIndex() {
-        return await this.elasticClient.createIndex();
+    public async createIndex(indexName: string) {
+        return this.elasticClient.index(indexName);
     }
 
     public async deleteIndex() {
@@ -19,7 +33,9 @@ export class SemanticManager extends DefaultManagerElastic {
     }
 
     public async indexFiles({ workspaceId, minioFileIds, templateId, entityId }: IIndexFilesRequest) {
-        return await this.elasticClient.indexFiles();
+        const fileStream = await this.minioClient.downloadFileStream(workspaceId);
+        const fileBuffer = await streamToBuffer(fileStream);
+        await Promise.allSettled(minioFileIds.map((minioFile: string) => {}));
     }
 
     public async deleteFiles({ workspaceId, minioFileIds }: IDeleteFilesRequest) {

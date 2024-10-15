@@ -12,6 +12,20 @@ const config = {
         notificationsCollectionName: env.get('MONGO_NOTIFICATIONS_COLLECTION_NAME').default('notifications').asString(),
         maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(500).asIntPositive(),
     },
+    minio: {
+        url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
+        port: env.get('MINIO_PORT').default(9000).asPortNumber(),
+        accessKey: env.get('MINIO_ACCESS_KEY').default('minioadmin').asString(),
+        secretKey: env.get('MINIO_SECRET_KEY').default('minioadmin').asString(),
+        bucketName: env.get('MINIO_BUCKET_NAME').default('bucket').asString(),
+        useSSL: false,
+        transportAgent: {
+            timeout: env.get('TRANSPORT_AGENT_TIMEOUT').default(60000).asIntPositive(),
+            maxSockets: env.get('TRANSPORT_AGENT_MAX_SOCKETS').default(1000).asIntPositive(),
+            keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
+            keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
+        },
+    },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
         insertQueue: env.get('RABBIT_INSERT_QUEUE').default('insert_documents_queue').asString(),
@@ -47,8 +61,7 @@ const config = {
     },
     elastic: {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
-        index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('process-global-search').asString(),
-        excludedKeys: env.get('EXCLUDED_KEYS').default('_id,templateId,reviewers').asArray(','),
+        index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('documents').asString(),
     },
 };
 

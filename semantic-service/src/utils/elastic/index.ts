@@ -1,6 +1,7 @@
 import { Client } from '@elastic/elasticsearch';
 import config from '../../config';
 import logger from '../logger/logsLogger';
+import { IndexRequest } from '@elastic/elasticsearch/lib/api/types';
 
 class ElasticClient {
     static client: Client | null;
@@ -22,6 +23,13 @@ class ElasticClient {
             logger.error('Error initializing ElasticSearch client:', { error });
             throw error;
         }
+    }
+
+    index(params: Omit<IndexRequest<unknown>, 'index'>) {
+        return ElasticClient.client!.index({
+            index: `${config.elastic.index}-${this.workspaceId}`,
+            ...params,
+        });
     }
 }
 
