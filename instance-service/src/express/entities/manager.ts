@@ -21,14 +21,14 @@ import {
     normalizeGetDbConstraints,
     normalizeNeighborsOfEntityForRule,
     normalizeResponseCount,
+    normalizeResponseTemplatesCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import { getLatestGlobalSearchIndex, getLatestTemplateSearchIndex } from '../../utils/redis/getLatestIndex';
+import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { NotFoundError, ServiceError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -41,11 +41,13 @@ import {
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
+    IEntityWithDirectRelationships,
     IEntityCrudAction,
     IExecutionOutput,
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
@@ -634,16 +636,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, entityTemplate: IMongoEntityTemplate) {
-        let latestIndex: string | null = null;
-
-        if (searchBody.textSearch) {
-            latestIndex = await getLatestTemplateSearchIndex(this.workspaceId, entityTemplate._id);
-
-            if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
-            }
-        }
-
         const searchBodyOfTemplate: ISearchBatchBody = {
             skip: searchBody.skip,
             limit: searchBody.limit,
@@ -654,17 +646,9 @@ export class EntityManager extends DefaultManagerNeo4j {
             sort: searchBody.sort,
         };
 
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(
-            searchBodyOfTemplate,
-            latestIndex,
-            new Map([[entityTemplate._id, entityTemplate]]),
-        );
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(
-            searchBodyOfTemplate,
-            latestIndex,
-            new Map([[entityTemplate._id, entityTemplate]]),
-            true,
-        );
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
+
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]), true);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
@@ -672,6 +656,40 @@ export class EntityManager extends DefaultManagerNeo4j {
         ]);
 
         return { entities, count };
+    }
+
+    async searchEntitiesByTemplates(searchByTemplates: ISearchEntitiesByTemplatesBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
+        const results: {
+            [templateId: string]: {
+                entities: IEntityWithDirectRelationships[];
+                count: number;
+            };
+        } = {};
+
+        const { searchConfigs } = searchByTemplates;
+
+        await Promise.all(
+            Object.entries(searchConfigs).map(async ([templateId, searchBody]) => {
+                const entityTemplate = entityTemplatesMap.get(templateId)!;
+                const { entities, count } = await this.searchEntitiesOfTemplate(searchBody, entityTemplate);
+                results[templateId] = { entities, count };
+            }),
+        );
+
+        return results;
+    }
+
+    async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '') {
+        const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch || '')}*`;
+
+        const query = `
+            UNWIND $templateIds AS templateId
+            WITH templateId, $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName
+            CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
+            RETURN templateId, count(node) AS count;
+        `;
+
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, { templateIds, textSearchFixed });
     }
 
     searchRelatedEntitiesOfEntitiesInTransaction(
@@ -692,17 +710,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
-        let latestIndex: string | null = null;
-        if (searchBody.textSearch) {
-            latestIndex = await getLatestGlobalSearchIndex(this.workspaceId);
+        const globalSearchIndexes = await this.neo4jClient.getAllGlobalSearchIndexNames();
 
-            if (!latestIndex) {
-                throw new ServiceError(400, `[NEO4J] Global search index not found.`);
-            }
-        }
-
-        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap);
-        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, latestIndex, entityTemplatesMap, true);
+        const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
+        const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
 
         const [entities, count] = await Promise.all([
             this.neo4jClient.readTransaction(searchCypherQuery.cypherQuery, normalizeSearchWithRelationships, searchCypherQuery.parameters),
@@ -1404,7 +1415,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getConstraintsOfTemplate(templateId: string) {
-        const constraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const constraints = await this.neo4jClient.readTransaction('show constraints', normalizeGetDbConstraints);
         const constraintsArrayOfTemplate = constraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
@@ -1416,7 +1427,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getAllConstraints() {
-        const neo4jConstraints = await this.neo4jClient.readTransaction('call db.constraints', normalizeGetDbConstraints);
+        const neo4jConstraints = await this.neo4jClient.readTransaction('show constraints', normalizeGetDbConstraints);
         const constraints = neo4jConstraints
             .filter(({ name }) => {
                 return name.startsWith(config.requiredConstraintsPrefixName) || name.startsWith(config.uniqueConstraintsPrefixName);
@@ -1475,9 +1486,9 @@ export class EntityManager extends DefaultManagerNeo4j {
         const createRequiredConstraintsPromises = requiredConstraintsToCreate.map(async (constraint) => {
             await transaction
                 .run(
-                    `CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT exists(n.\`${constraint.property}${
+                    `CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (n.\`${constraint.property}${
                         template.properties.properties[constraint.property].format === 'relationshipReference' ? '.properties._id_reference' : ''
-                    }\`)`,
+                    }\`) IS NOT NULL`,
                 )
                 .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
@@ -1525,7 +1536,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
 
             await transaction
-                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` ON (n:\`${templateId}\`) ASSERT (${propsPart}) IS NODE KEY`)
+                .run(`CREATE CONSTRAINT \`${constraint.constraintName}\` FOR (n:\`${templateId}\`) REQUIRE (${propsPart}) IS NODE KEY`)
                 .catch((err) => this.throwServiceErrorIfFailedToCreateConstraint(err, constraint));
         });
 
@@ -1542,7 +1553,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         uniqueConstraints: IUniqueConstraintOfTemplate[],
     ) {
         return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-            const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'call db.constraints', normalizeGetDbConstraints);
+            const existingNeo4jConstraints = await runInTransactionAndNormalize(transaction, 'show constraints', normalizeGetDbConstraints);
 
             const updateConstraintsPromises: Promise<any>[] = [];
 
@@ -1588,6 +1599,69 @@ export class EntityManager extends DefaultManagerNeo4j {
                 .join(', ')}
             RETURN count(currentEntity) AS numEntitiesUpdated`;
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
+        });
+    }
+
+    deletePropertiesOfTemplateInTransaction(transaction: Transaction, templateId: string, properties: string[]) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e: \`${templateId}\`)
+            WITH collect(e) AS nodes
+            CALL apoc.create.removeProperties(nodes, $properties) YIELD node
+            RETURN node`,
+            normalizeReturnedEntity('multipleResponses'),
+            {
+                properties,
+            },
+        );
+    }
+
+    removeRelationshipReferences(relatedEntityTemplate: IMongoEntityTemplate, property: string, propertiesToRemove: string[]) {
+        const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
+            ...relatedEntityTemplate.properties.properties,
+            disabled: { title: 'doesntMatter', type: 'string' },
+            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            _id: { title: 'doesntMatter', type: 'string' },
+        };
+
+        Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
+            propertiesToRemove.push(
+                `${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`,
+                ...(value.type === 'string'
+                    ? []
+                    : [`${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`]),
+            );
+        });
+
+        propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const propertiesToRemove: string[] = [];
+        const relationshipTemplatesToRemove: string[] = [];
+
+        for (const property of properties) {
+            const propertyTemplate = currentTemplateProperties[property];
+            const isStringType = propertyTemplate.type === 'string';
+            propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
+
+            if (propertyTemplate.format !== 'relationshipReference') continue;
+
+            relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
+
+            const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(
+                propertyTemplate.relationshipReference?.relatedTemplateId as string,
+            );
+
+            this.removeRelationshipReferences(relatedEntityTemplate, property, propertiesToRemove);
+        }
+
+        this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            await Promise.all([
+                this.deletePropertiesOfTemplateInTransaction(transaction, templateId, propertiesToRemove),
+                this.relationshipManager.deleteRelationshipByTemplateIds(transaction, relationshipTemplatesToRemove),
+            ]);
         });
     }
 }

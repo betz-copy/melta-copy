@@ -1,11 +1,14 @@
 import React, { memo } from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
+import { Delete as DeleteIcon, DeleteForever as DeleteOff, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { TextField, Box, Grid, Card, CardContent, Switch, FormControlLabel, IconButton, MenuItem } from '@mui/material';
-import { Delete as DeleteIcon, DragHandle as DragHandleIcon } from '@mui/icons-material';
 import { Draggable } from 'react-beautiful-dnd';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import { CommonFormInputProperties } from './commonInterfaces';
+import { MeltaTooltip } from '../../MeltaTooltip';
+import { PermissionScope } from '../../../interfaces/permissions';
+import { useUserStore } from '../../../stores/user';
 
 interface AttachmentEditCardProps {
     value: CommonFormInputProperties;
@@ -16,8 +19,10 @@ interface AttachmentEditCardProps {
     touched?: FormikTouched<CommonFormInputProperties>;
     errors?: FormikErrors<CommonFormInputProperties>;
     onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
-    remove: (index: number) => any;
+    remove: (index: number, isNewProperty: boolean) => any;
     supportChangeToRequiredWithInstances: boolean;
+    supportDeleteForExistingInstances: boolean;
+    hasActions?: boolean;
 }
 
 export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
@@ -31,7 +36,11 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
     onChange,
     remove,
     supportChangeToRequiredWithInstances,
+    supportDeleteForExistingInstances,
+    hasActions,
 }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const name = `attachmentProperties[${index}].name`;
     const touchedName = touched?.name;
     const errorName = errors?.name;
@@ -52,7 +61,15 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
         <Draggable draggableId={value.id} index={index}>
             {(draggableProvided) => (
                 <Grid item ref={draggableProvided.innerRef} {...draggableProvided.draggableProps} alignSelf="stretch" marginBottom="1rem">
-                    <Card elevation={3} sx={{ padding: '0.5rem' }}>
+                    <Card
+                        elevation={3}
+                        sx={{
+                            padding: '0.5rem',
+                            ...(value.deleted && {
+                                backgroundColor: 'rgb(224, 225, 237,0.4)',
+                            }),
+                        }}
+                    >
                         <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                             <Grid container justifyContent="space-between" wrap="nowrap" alignItems="center">
                                 <Box {...draggableProvided.dragHandleProps}>
@@ -69,7 +86,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedName && Boolean(errorName)}
                                             helperText={touchedName && errorName}
-                                            disabled={isDisabled}
+                                            disabled={isDisabled || value.deleted}
                                             sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
@@ -80,6 +97,7 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             onChange={onChange}
                                             error={touchedTitle && Boolean(errorTitle)}
                                             helperText={touchedTitle && errorTitle}
+                                            disabled={value.deleted}
                                             sx={{ width: '70%', marginRight: '5px' }}
                                         />
                                         <TextField
@@ -114,11 +132,11 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                                             onChange={onChange}
                                                             checked={value.required}
                                                             disabled={
-                                                                supportChangeToRequiredWithInstances
+                                                                (supportChangeToRequiredWithInstances
                                                                     ? false
                                                                     : isEditMode &&
                                                                       areThereAnyInstances &&
-                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))
+                                                                      (isNewProperty || (!isNewProperty && !initialValue?.required))) || value.deleted
                                                             }
                                                         />
                                                     }
@@ -127,9 +145,24 @@ export const AttachmentEditCard: React.FC<AttachmentEditCardProps> = ({
                                             )}
                                         </Box>
 
-                                        <IconButton disabled={isDisabled} onClick={() => remove(index)}>
-                                            <DeleteIcon />
-                                        </IconButton>
+                                        <MeltaTooltip
+                                            disableHoverListener={!initialValue?.required}
+                                            title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
+                                        >
+                                            <Grid>
+                                                <IconButton
+                                                    onClick={() => remove(index, isNewProperty)}
+                                                    disabled={
+                                                        !supportDeleteForExistingInstances ||
+                                                        initialValue?.required ||
+                                                        currentUser.currentWorkspacePermissions.admin?.scope !== PermissionScope.write ||
+                                                        hasActions
+                                                    }
+                                                >
+                                                    {value.deleted ? <DeleteOff /> : <DeleteIcon />}
+                                                </IconButton>
+                                            </Grid>
+                                        </MeltaTooltip>
                                     </Grid>
                                 </Grid>
                             </Grid>

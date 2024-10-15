@@ -111,6 +111,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     removeFiles = false,
     style,
     innerStyle,
+    darkMode,
     textWrap = false,
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
@@ -143,7 +144,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     pureString,
                 });
 
-                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyValueColor = getPropertyColor(
+                    propertyKey,
+                    propertiesToHighlight,
+                    propertiesToHighlightColor,
+                    mode,
+                    darkMode ? '#dcdde2' : '#53566E',
+                );
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
                 let innerContent;

@@ -67,7 +67,7 @@ const GraphTopBar: React.FC<GraphTopBarProps> = ({ onReset, set3DView, is3DView,
             </Grid>
 
             <Grid item>
-                <Grid container alignItems="center" spacing={0.8}>
+                <Grid container alignItems="center" spacing={0.8} wrap="nowrap">
                     <Grid item>
                         <ToggleButtonGroup value={is3DView ? '3D' : '2D'} size="small" sx={{ height: '2rem', marginX: '0.2rem' }}>
                             <ToggleButton value="3D" onClick={() => set3DView(true)} sx={{ borderRadius: 4 }}>

@@ -1,15 +1,17 @@
-import React from 'react';
 import { Box, Typography, useTheme } from '@mui/material';
+import React from 'react';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../../stores/darkMode';
 
 const DuplicateTopBar: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;
 }> = ({ entityTemplate }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Box
-            bgcolor="#fcfeff"
+            bgcolor={darkMode ? '#131313' : '#fcfeff'}
             paddingRight="2.5rem"
             paddingTop="0.5rem"
             paddingLeft="2.5rem"

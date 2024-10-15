@@ -105,14 +105,12 @@ const CodeEditorDialog: React.FC<{
         await mutateAsync();
     };
 
-    const mainColor = (theme) => theme.palette.primary.main;
-
     return (
         <Box>
-            <Dialog open={open} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: 'white' } }} disableEnforceFocus>
+            <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
                 <DialogTitle>
                     <Grid display="flex" flexDirection="row" alignItems="center" gap=".25rem">
-                        <Typography color={mainColor} fontSize="20px" fontWeight="600" fontFamily="Rubik">
+                        <Typography color="primary" fontSize="20px" fontWeight="600" fontFamily="Rubik">
                             {i18next.t('actions.addActions')}
                         </Typography>
                         <IconButtonWithPopover
@@ -124,7 +122,7 @@ const CodeEditorDialog: React.FC<{
                                 },
                             }}
                         >
-                            <ContentCopy sx={{ color: mainColor }} />
+                            <ContentCopy color="primary" />
                         </IconButtonWithPopover>
                     </Grid>
                     <IconButton
@@ -132,14 +130,9 @@ const CodeEditorDialog: React.FC<{
                         onClick={() => {
                             setCloseActionDialog(true);
                         }}
-                        sx={{
-                            position: 'absolute',
-                            right: 12,
-                            top: 12,
-                            color: mainColor,
-                        }}
+                        sx={{ position: 'absolute', right: 12, top: 12 }}
                     >
-                        <CloseOutlined />
+                        <CloseOutlined color="primary" />
                     </IconButton>
                 </DialogTitle>
                 <DialogContent>

@@ -10,20 +10,12 @@
     font-size: 16px;
 }
 
-.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #1E2775;
-}
-
 /* Removed in order to manipulate scroll-bar
 /* .ag-body-viewport,
 .ag-layout-normal,
 .ag-row-no-animation {
     overflow: hidden !important;
 } */
-
-.ag-theme-material .ag-checkbox-input-wrapper.ag-checked::after {
-    color: #1E2775;
-}
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-track,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-track {
@@ -32,13 +24,7 @@
 
 .ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb,
 .ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb {
-    background: #1E2775;
     border-radius: 7px;
-}
-
-.ag-column-select-virtual-list-viewport::-webkit-scrollbar-thumb:hover,
-.ag-body-horizontal-scroll-viewport::-webkit-scrollbar-thumb:hover {
-    background: #105aa3;
 }
 
 .ag-horizontal-left-spacer {

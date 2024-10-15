@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import React from 'react';
 import { useReactToPrint } from 'react-to-print';
-import { IconButton } from '@mui/material';
+import { IconButton, ThemeProvider } from '@mui/material';
 import { Print as PrintIcon } from '@mui/icons-material';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction } from 'react-query';
@@ -13,6 +13,8 @@ import { ProcessDetailsValues } from '../../../common/wizards/processInstance/Pr
 import { IFile } from '../../../interfaces/preview';
 import { MenuButton } from '../../../common/MenuButton';
 import { PrintOptionsDialog } from '../../../common/print/PrintOptionsDialog';
+import '../../Entity/components/print/print.css';
+import { lightTheme } from '../../../theme';
 
 const Print: React.FC<{
     processTemplate: IMongoProcessTemplatePopulated;
@@ -30,6 +32,7 @@ const Print: React.FC<{
     const handlePrint = useReactToPrint({
         content: () => componentRef.current,
         documentTitle: `${processTemplate.displayName}-${processInstance.name}-${new Date().toLocaleDateString('en-uk')}`,
+        bodyClass: 'print-body',
     });
 
     const [files, setFiles] = React.useState<IFile[]>([]);
@@ -65,18 +68,20 @@ const Print: React.FC<{
 
             <div style={{ display: 'none' }}>
                 <style>{getPageMargins()}</style>
-                <ComponentToPrint
-                    ref={componentRef}
-                    processTemplate={processTemplate}
-                    processInstance={processInstance}
-                    options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
-                    filesToPrint={selectedFiles}
-                    setSelectedFiles={setSelectedFiles}
-                    mutateAsync={mutateAsync}
-                    setFilesLoadingStatus={setFilesLoadingStatus}
-                    setCurrProcessInstance={setCurrProcessInstance}
-                    setIsProcessChanged={setIsProcessChanged}
-                />
+                <ThemeProvider theme={lightTheme}>
+                    <ComponentToPrint
+                        ref={componentRef}
+                        processTemplate={processTemplate}
+                        processInstance={processInstance}
+                        options={{ showSummary, showFiles: selectedFiles.length !== 0 }}
+                        filesToPrint={selectedFiles}
+                        setSelectedFiles={setSelectedFiles}
+                        mutateAsync={mutateAsync}
+                        setFilesLoadingStatus={setFilesLoadingStatus}
+                        setCurrProcessInstance={setCurrProcessInstance}
+                        setIsProcessChanged={setIsProcessChanged}
+                    />
+                </ThemeProvider>
             </div>
             {openModal && (
                 <PrintOptionsDialog

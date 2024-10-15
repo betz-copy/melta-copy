@@ -1,6 +1,7 @@
-import React from 'react';
+import { CalendarToday } from '@mui/icons-material';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
+import React from 'react';
 import DatePickerWrapper from './DatePickerWrapper';
 
 const DateRange: React.FC<{
@@ -11,7 +12,6 @@ const DateRange: React.FC<{
     directionIsRow: boolean;
     overrideSx?: object;
 }> = ({ onStartDateChange, onEndDateChange, startDateInput, endDateInput, overrideSx, directionIsRow }) => {
-    // const darkMode = useSelector((state: RootState) => state.darkMode);
     return (
         <Grid
             container
@@ -33,7 +33,7 @@ const DateRange: React.FC<{
                     components={
                         overrideSx && {
                             // eslint-disable-next-line react/no-unstable-nested-components
-                            OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
+                            OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
                         }
                     }
                     isStartDate
@@ -51,7 +51,7 @@ const DateRange: React.FC<{
                     components={
                         overrideSx && {
                             // eslint-disable-next-line react/no-unstable-nested-components
-                            OpenPickerIcon: () => <img src="/icons/calendar.svg" style={{ height: '20px' }} alt="calendar icon" />,
+                            OpenPickerIcon: () => <CalendarToday color="primary" fontSize="small" />,
                         }
                     }
                     directionIsRow={directionIsRow}

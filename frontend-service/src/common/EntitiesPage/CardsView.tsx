@@ -24,7 +24,6 @@ export interface CardsViewProps {
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput }, ref) => {
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
-
     const queryClient = useQueryClient();
 
     const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });

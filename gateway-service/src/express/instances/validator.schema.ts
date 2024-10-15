@@ -1,6 +1,13 @@
 import Joi from 'joi';
 import { ExtendedJoi, fileSchema, MongoIdSchema } from '../../utils/joi';
 import { brokenRuleSchema } from '../ruleBreaches/validator.schema';
+import config from '../../config';
+
+const {
+    instanceService: { searchEntitiesMaxLimit },
+} = config;
+
+export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
@@ -90,6 +97,22 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
         }),
         sort: Joi.any(),
+    },
+    query: {},
+    params: {},
+});
+
+// POST /api/instances/search/templates
+export const searchEntitiesByTemplatesSchema = Joi.object({
+    body: {
+        searchConfigs: Joi.object().pattern(Joi.string(), {
+            skip: Joi.number().integer().min(0).default(0),
+            limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
+            textSearch: Joi.string().allow(''),
+            filter: Joi.any(),
+            showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
+            sort: Joi.any(),
+        }),
     },
     query: {},
     params: {},
