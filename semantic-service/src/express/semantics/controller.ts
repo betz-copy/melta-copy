@@ -2,13 +2,13 @@ import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
 import SemanticManager from './manager';
 
-class SemanticController extends DefaultController<SemanticManager> {
+class SemanticController extends DefaultController {
     constructor(workspaceId: string) {
         super(new SemanticManager(workspaceId));
     }
 
-    async search(_req: Request, res: Response) {
-        res.json(await this.manager.search(limit, step, query));
+    async search(req: Request, res: Response) {
+        res.json(await this.manager.search(req.body));
     }
 
     async createIndex(_req: Request, res: Response) {
@@ -17,10 +17,6 @@ class SemanticController extends DefaultController<SemanticManager> {
 
     async deleteIndex(_req: Request, res: Response) {
         res.json(await this.manager.deleteIndex());
-    }
-
-    async initIndex(_req: Request, res: Response) {
-        res.json(await this.manager.initIndex());
     }
 }
 

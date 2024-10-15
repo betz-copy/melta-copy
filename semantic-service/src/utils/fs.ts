@@ -38,7 +38,7 @@ export const splitTextIntoChunks = (
                 title,
                 template_id: templateId,
                 entity_id: entityId,
-                minioFileId,
+                minio_file_id: minioFileId,
                 workspace_id: workspaceId,
             },
         ];
@@ -57,7 +57,7 @@ export const splitTextIntoChunks = (
             title,
             template_id: templateId,
             entity_id: entityId,
-            minioFileId,
+            minio_file_id: minioFileId,
             workspace_id: workspaceId,
         });
 

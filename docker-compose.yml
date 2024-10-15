@@ -223,7 +223,7 @@ services:
 
   semantic-service:
     build:
-      context: ../neo4j-graph-rag
+      context: ./semantic-service
       dockerfile: Dockerfile
     environment:
       SERVER_PORT: 8000

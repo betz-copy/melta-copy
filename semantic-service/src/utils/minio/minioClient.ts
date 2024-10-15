@@ -1,9 +1,8 @@
 import * as http from 'http';
-import { BucketItem, Client, CopyConditions } from 'minio';
-import { Readable } from 'stream';
+import { Client } from 'minio';
 import config from '../../config';
-import logger from '../logger/logsLogger';
 import { streamToString } from '../fs';
+import logger from '../logger/logsLogger';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 

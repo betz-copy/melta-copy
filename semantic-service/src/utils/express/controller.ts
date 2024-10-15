@@ -1,9 +1,9 @@
-import DefaultManagerElastic from '../elastic/manager';
+// eslint-disable-next-line import/extensions
 
-export default abstract class DefaultController<T extends DefaultManagerElastic> {
-    public manager: T;
+export default abstract class DefaultController {
+    public manager;
 
-    constructor(manager: T) {
+    constructor(manager) {
         this.manager = manager;
     }
 }

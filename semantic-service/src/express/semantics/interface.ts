@@ -18,9 +18,9 @@ export interface ISearchRequest {
     templates: string[];
 }
 
-export interface Chunk extends Omit<IIndexFilesRequest, 'minioFileIds'> {
+export interface Chunk extends Omit<IIndexFilesRequest, 'minio_file_ids'> {
     text: string;
     // embedding: number[];
     title: string;
-    minioFileId: string;
+    minio_file_id: string;
 }

@@ -4,7 +4,7 @@ import { ServiceError } from '../../express/error';
 import { FunctionKey } from '../types';
 import DefaultController from './controller';
 
-export const createController = <T extends InstanceType<typeof DefaultController<any, any>>>(Controller: { new (workspaceId: string): T }) => {
+export const createController = <T extends InstanceType<typeof DefaultController>>(Controller: { new (workspaceId: string): T }) => {
     return new Proxy(
         {},
         {
