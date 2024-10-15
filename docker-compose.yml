@@ -189,8 +189,8 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
       SEMANTIC_SEARCH_SERVICE: ${SEMANTIC_SEARCH_SERVICE}
 
-  frontend-service:
-    build: ./frontend-service
+  # frontend-service:
+  #   build: ./frontend-service
 
   nginx:
     image: nginx:alpine
@@ -224,7 +224,7 @@ services:
   semantic-service:
     build:
       context: ../neo4j-graph-rag
-      dockerfile: Dockerfile-dev
+      dockerfile: Dockerfile
     environment:
       SERVER_PORT: 8000
       RABBIT_URL: rabbit
