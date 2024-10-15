@@ -55,8 +55,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         iconsPerPage={130}
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
-                            console.log({ icon });
-
                             const detailedFile = { file: icon, name: icon.name };
 
                             setIconPickerValue(detailedFile);

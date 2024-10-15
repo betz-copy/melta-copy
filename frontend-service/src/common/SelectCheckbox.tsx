@@ -177,7 +177,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                     );
                                                 }
                                                 return [...prevSelectedOptions, option];
-                                            });
+                                             });
                                         }}
                                         sx={{
                                             ...menuItemSx,

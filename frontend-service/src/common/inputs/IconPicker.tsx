@@ -59,6 +59,7 @@ const IconPicker: React.FC<IconPickerProps> = ({ width, height, iconsPerPage, se
     const handleIconClick = (event: React.MouseEvent<HTMLButtonElement>) => {
         const svg = event.currentTarget.querySelector('svg');
         const iconName = `${event.currentTarget.value}.svg`;
+        console.log({ svg, iconName });
 
         if (!svg) return;
 

@@ -27,7 +27,11 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
     return data;
 };
 
-export const updateUserPreferencesMetadataRequest = async (userId: string, updatedPreferences: IUserPreferences) => {
+export const updateUserPreferencesMetadataRequest = async (
+    userId: string,
+    updatedPreferences: IUserPreferences,
+    notificationsToShowCheckbox: any,
+) => {
     const formData = new FormData();
     console.log({ updatedPreferences });
 
@@ -40,9 +44,9 @@ export const updateUserPreferencesMetadataRequest = async (userId: string, updat
             console.log('noooooow its else');
             formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
-    } else formData.append('profilePath', updatedPreferences.profilePath ?? 'bla bla');
+    } else formData.append('profilePath', updatedPreferences.profilePath ?? 'bla bla ');
 
-    formData.append('mailsNotificationsTypes', JSON.stringify(updatedPreferences.mailsNotificationsTypes));
+    formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;

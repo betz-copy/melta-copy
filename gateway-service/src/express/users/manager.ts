@@ -185,11 +185,10 @@ export class UsersManager {
         const mail = digitalIdentity.mail || kartoffelUser.mail;
 
         const kartoffelId = kartoffelUser._id || kartoffelUser.id;
-        const profile = kartoffelUser.pictures?.profile?.meta?.path;
+        const profile = kartoffelUser.pictures?.profile?.url;
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
-        console.log('dsrhsvs ', kartoffelUser.pictures?.profile);
 
         return {
             _id: kartoffelId,

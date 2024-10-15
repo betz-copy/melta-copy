@@ -354,6 +354,12 @@ export default {
             write: 'עריכה',
         },
     },
+    user: {
+        fullName: 'שם מלא',
+        email: 'מייל',
+        jobTitle: 'תפקיד',
+        hierarchy: 'היררכיה',
+    },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
         noSearchLeft: 'אין עוד תוצאות',
@@ -680,6 +686,7 @@ export default {
             iconSearch: 'חיפוש אייקון (חיפוש באנגלית)',
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
+            chooseAvatar: 'בחירת אווטר',
             kartoffelProfile: 'תמונת חוגר',
             dragFile: 'גרור את הקובץ לכאן',
             dragFiles: 'גרור את הקבצים לכאן',

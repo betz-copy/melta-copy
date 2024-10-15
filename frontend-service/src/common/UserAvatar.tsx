@@ -1,16 +1,19 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import { useTheme } from '@mui/material';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
+import { apiUrlToImageSource } from '../services/storageService';
+import { environment } from '../globals';
 
 interface UserAvatarProps {
     user: IUser;
     size?: number;
     bgColor?: string;
+    defualtProfile?: boolean;
 }
 
-const getNameInitials = (user: IUser): string => {
+export const getNameInitials = (user: IUser): string => {
     const names = user.fullName?.split(' ') ?? [];
 
     if (names.length < 3) return names.map((name) => name.charAt(0)).join('');
@@ -18,12 +21,29 @@ const getNameInitials = (user: IUser): string => {
     return `${names[0].charAt(0)}${names[names.length - 1].charAt(0)}`;
 };
 
-const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => {
+const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defualtProfile = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? theme.palette.primary.main : darkMode ? 'black' : 'white';
+    const [profile, setProfile] = useState<string>();
+    useEffect(() => {
+        if (!defualtProfile) {
+            const getUserProfile = async () => {
+                if (user.preferences.profilePath) {
+                    if (user.preferences.profilePath.startsWith('/icons/profileAvatar') || user.preferences.profilePath.startsWith('http://')) {
+                        setProfile(user.preferences.profilePath);
+                    } else {
+                        const icon = new Image();
+                        icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${user.preferences.profilePath}`, 'users-global-bucket');
+                        setProfile(icon.src);
+                    }
+                }
+            };
+            getUserProfile();
+        }
+    }, []);
 
     return (
         <Avatar
@@ -33,11 +53,13 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor }) => 
                 maxWidth: '100%',
                 padding: '0.5rem',
                 font: `${Math.round(size / 2)}px Rubik`,
-                fontSize: Math.round(size / 2),
+                fontSize: Math.round(size /2),
                 backgroundColor: bgColor ?? '#fcfeff',
                 fontWeight: 500,
                 color: fontColor,
+                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
             }}
+            src={profile}
         >
             {getNameInitials(user)}
         </Avatar>
