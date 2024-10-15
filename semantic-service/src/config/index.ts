@@ -12,6 +12,14 @@ const config = {
         notificationsCollectionName: env.get('MONGO_NOTIFICATIONS_COLLECTION_NAME').default('notifications').asString(),
         maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(500).asIntPositive(),
     },
+    consts: {
+        fileIdLength: env.get('FILE_ID_LENGTH').default('32').asInt(),
+    },
+    model: {
+        chunkSize: env.get('MODEL_CHUNK_SIZE').default('1').asInt(),
+        chunkSplitter: env.get('MODEL_CHUNK_SPLITTER').default('.').asString(),
+        charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('["\n","\t",",","."]').asArray(),
+    },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),
         port: env.get('MINIO_PORT').default(9000).asPortNumber(),
