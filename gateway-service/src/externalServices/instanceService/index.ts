@@ -9,6 +9,7 @@ import {
     ISearchResult,
     IUniqueConstraintOfTemplate,
 } from './interfaces/entities';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
 
 const {
@@ -168,6 +169,15 @@ export class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const { data } = await this.api.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
+            properties,
+            currentTemplateProperties,
+        });
+
         return data;
     }
 
