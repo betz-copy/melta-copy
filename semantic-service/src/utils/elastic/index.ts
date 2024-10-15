@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 import { Client } from '@elastic/elasticsearch';
 import config from '../../config';
 import { Chunk } from '../../express/semantics/interface';
@@ -55,6 +56,17 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
+    async formatElasticHits(hits: any[]) {
+        return hits.map((hit) => ({
+            text: hit._source.text,
+            title: hit._source.title,
+            template_id: hit._source.template_id,
+            entity_id: hit._source.entity_id,
+            minio_file_id: hit._source.minio_file_id,
+            workspace_id: hit._source.workspace_id,
+        }));
+    }
+
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
         const filters = templates && templates.length > 0 ? { terms: { template_id: templates } } : {};
 
@@ -97,7 +109,7 @@ class ElasticClient {
             rank: searchBody.rank,
         });
 
-        return response.hits.hits;
+        return { results: this.formatElasticHits(response.hits.hits), count: 0 };
     }
 
     async bulkIndexDocuments(documents: Chunk[]) {
