@@ -65,6 +65,8 @@ const config = {
     elastic: {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('documents').asString(),
+        user: env.get('ELASTIC_USER').default('elastic').asString(),
+        password: env.get('ELASTIC_PASSWORD').default('elastic').asString(),
         lexicalFuzziness: env.get('ELASTIC_LEXICAL_FUZZINESS').default('1').asString(),
         knnGroupSize: env.get('ELASTIC_KNN_GROUP_SIZE').default(20).asInt(),
         rrfWindowConstant: env.get('ELASTIC_RRF_WINDOW_CONSTANT').default(50).asInt(),

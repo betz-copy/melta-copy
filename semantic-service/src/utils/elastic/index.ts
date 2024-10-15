@@ -4,7 +4,7 @@ import { Chunk } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
-    elastic: { index, url, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant },
+    elastic: { index, url, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant, user, password },
 } = config;
 
 class ElasticClient {
@@ -20,7 +20,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: url });
+            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
