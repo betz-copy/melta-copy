@@ -95,6 +95,7 @@ export const environment = {
     },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
+        numOfFixedDigits: 18,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,

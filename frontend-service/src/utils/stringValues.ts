@@ -1,10 +1,13 @@
 import BigNumber from 'bignumber.js';
 import { Direction } from '@mui/material';
 import { RJSFSchema } from '@rjsf/utils';
+import { environment } from '../globals';
+
+const { numOfFixedDigits } = environment.entitiesProperties;
 
 export const getFixedNumber = (value: number) => {
-    const b = new BigNumber(value);
-    return b.toFixed(18).replace(/\.?0+$/, '');
+    const bigNumberFormatted = new BigNumber(value);
+    return bigNumberFormatted.toFixed(numOfFixedDigits).replace(/\.?0+$/, '');
 };
 
 export const isStartWithHebrewLetter = (value: string) => {
