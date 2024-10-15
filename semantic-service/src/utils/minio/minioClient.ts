@@ -3,6 +3,7 @@ import { BucketItem, Client, CopyConditions } from 'minio';
 import { Readable } from 'stream';
 import config from '../../config';
 import logger from '../logger/logsLogger';
+import { streamToString } from '../fs';
 
 const { url: endPoint, port, accessKey, secretKey, useSSL, transportAgent } = config.minio;
 
@@ -46,7 +47,12 @@ export class MinIOClient {
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 
-    downloadFileStream(filePath: string) {
+    private downloadFileStream(filePath: string) {
         return this.wrapDBNotExistsError(() => this.minioClient.getObject(this.bucketName, filePath));
+    }
+
+    async readFile(filePath: string) {
+        const fileStream = await this.downloadFileStream(filePath);
+        return streamToString(fileStream);
     }
 }

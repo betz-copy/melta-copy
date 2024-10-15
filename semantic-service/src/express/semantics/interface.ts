@@ -17,3 +17,10 @@ export interface ISearchRequest {
     skip: number;
     templates: string[];
 }
+
+export interface Chunk extends Omit<IIndexFilesRequest, 'minioFileIds'> {
+    text: string;
+    // embedding: number[];
+    title: string;
+    minioFileId: string;
+}

@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
+    "target": "ES2022",
     "module": "CommonJS",
     "allowJs": false,
     "sourceMap": true,
@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
-    "lib": ["ES2020.Promise"],
+    "lib": ["ES2022"],
     "skipLibCheck": true
   },
   "include": ["src/**/*"]

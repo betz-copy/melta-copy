@@ -1,9 +1,14 @@
 import { ModelApiService } from '../../externalServices/modelApi';
+import config from '../../config';
 import ElasticClient from '../../utils/elastic';
-import { streamToBuffer } from '../../utils/fs';
+import { splitTextIntoChunks, streamToString } from '../../utils/fs';
+import logger from '../../utils/logger/logsLogger';
 import { MinIOClient } from '../../utils/minio/minioClient';
 import { IDeleteFilesRequest, IIndexFilesRequest, ISearchRequest } from './interface';
 
+const {
+    consts: { fileIdLength },
+} = config;
 export class SemanticManager {
     workspaceId: string;
 
@@ -38,10 +43,21 @@ export class SemanticManager {
         return this.elasticClient.initIndex();
     }
 
-    public async indexFiles({ workspaceId, minioFileIds, templateId, entityId }: IIndexFilesRequest) {
-        const fileStream = await this.minioClient.downloadFileStream(workspaceId);
-        const fileBuffer = await streamToBuffer(fileStream);
-        await Promise.allSettled(minioFileIds.map((minioFile: string) => {}));
+    private async indexFile({ workspaceId, minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
+        const content = await this.minioClient.readFile(minioFileId);
+
+        if (!content) {
+            logger.error(`Content is None for minio_file_id: ${minioFileId}`);
+            return;
+        }
+
+        const title = minioFileId.length > fileIdLength ? minioFileId.slice(fileIdLength) : minioFileId;
+        const chunks = splitTextIntoChunks(content, title, templateId, entityId, minioFileId, workspaceId);
+        await es.bulk_insert_documents(chunks, workspace_id);
+    }
+
+    public async indexFiles(fileData: IIndexFilesRequest) {
+        await Promise.allSettled(fileData.minioFileIds.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
     }
 
     public async deleteFiles({ workspaceId, minioFileIds }: IDeleteFilesRequest) {
