@@ -251,7 +251,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
+            await this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
         return createdEntity;
@@ -318,22 +318,22 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, templateId: string) {
-        const semanticSearchBody = {
-            search_text: searchBody.textSearch,
-            limit: searchBody.limit,
-            skip: searchBody.skip,
-            templates: [templateId],
-        };
-        if (searchBody.filter) {
-            const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
-            const entityIdsInSemanticSearch = [...new Set(semanticResults.map((result) => result.entity_id))];
+        // const semanticSearchBody = {
+        //     search_text: searchBody.textSearch,
+        //     limit: searchBody.limit,
+        //     skip: searchBody.skip,
+        //     templates: [templateId],
+        // };
+        // if (searchBody.filter) {
+        //     const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
+        //     const entityIdsInSemanticSearch = [...new Set(semanticResults.map((result) => result.entity_id))];
 
-            if (searchBody.filter.$or) {
-                searchBody.filter.$or.push({ _id: { $in: entityIdsInSemanticSearch } });
-            } else {
-                searchBody.filter.$or = [{ _id: { $in: entityIdsInSemanticSearch } }];
-            }
-        }
+        //     if (searchBody.filter.$or) {
+        //         searchBody.filter.$or.push({ _id: { $in: entityIdsInSemanticSearch } });
+        //     } else {
+        //         searchBody.filter.$or = [{ _id: { $in: entityIdsInSemanticSearch } }];
+        //     }
+        // }
         console.log('searchBody', searchBody);
 
         return this.service.searchEntitiesOfTemplateRequest(templateId, searchBody);
@@ -483,7 +483,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         } else {
             const fileIds = Object.values(fileProperties).flat();
-            this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, fileIds);
+            await this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
         return createdEntity;
@@ -579,7 +579,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
+            await this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
         return updatedEntity;
@@ -595,6 +595,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFile(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
         return fileIdsToRemove;

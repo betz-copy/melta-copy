@@ -159,7 +159,8 @@ const config = {
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
         mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
         deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
-        sematicSearchQueue: env.get('SEMATIC_SEARCH_QUEUE').default('documents_queue').asString(),
+        insertDocsSemanticQueue: env.get('INSERT_DOCS_SEMATIC_QUEUE').default('insert_documents_queue').asString(),
+        deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),

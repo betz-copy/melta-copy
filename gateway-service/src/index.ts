@@ -18,7 +18,11 @@ const initializeRabbit = async () => {
 
     await menash.declareQueue(rabbit.mailNotificationQueue);
 
-    await menash.declareQueue(rabbit.sematicSearchQueue);
+    await menash.declareQueue(rabbit.deleteUnusedFilesQueue);
+
+    await menash.declareQueue(rabbit.insertDocsSemanticQueue);
+
+    await menash.declareQueue(rabbit.deleteDocsSemanticQueue);
 
     logger.info('Rabbit initialized');
 };
