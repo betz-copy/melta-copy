@@ -9,3 +9,11 @@ export interface IDeleteFilesRequest {
     workspaceId: string;
     minioFileIds: string[];
 }
+
+export interface ISearchRequest {
+    // TODO: convert to js naming format
+    search_text: string;
+    limit: number;
+    skip: number;
+    templates: string[];
+}
