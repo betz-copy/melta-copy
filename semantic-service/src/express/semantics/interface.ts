@@ -20,7 +20,7 @@ export interface ISearchRequest {
 
 export interface Chunk extends Omit<IIndexFilesRequest, 'minio_file_ids'> {
     text: string;
-    // embedding: number[];
+    embedding: number[];
     title: string;
     minio_file_id: string;
 }

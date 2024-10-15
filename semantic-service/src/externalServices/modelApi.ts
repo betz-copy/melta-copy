@@ -1,18 +1,16 @@
-import DefaultExternalServiceApi from '../utils/express/externalService';
+import axios from 'axios';
 import config from '../config';
 
 const {
     modelApi: { url, searchRoute, endpoint },
 } = config;
 
-export class ModelApiService extends DefaultExternalServiceApi {
-    constructor() {
-        super({ baseURL: url });
-    }
+export class ModelApiService {
+    static api = axios.create({ baseURL: url });
 
-    async search(texts: string[]): Promise<number[][]> {
+    static async embed(texts: string[]): Promise<number[][]> {
         try {
-            const { data } = await this.api.post<number[][]>(searchRoute, {
+            const { data } = await ModelApiService.api.post<number[][]>(searchRoute, {
                 endpoint,
                 inputs: texts,
             });

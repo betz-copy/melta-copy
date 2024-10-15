@@ -17,17 +17,14 @@ export class SemanticManager {
 
     minioClient: MinIOClient;
 
-    modelApiService: ModelApiService;
-
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
         this.elasticClient = new ElasticClient(workspaceId);
         this.minioClient = new MinIOClient(workspaceId);
-        this.modelApiService = new ModelApiService();
     }
 
     public async search(searchBody: ISearchRequest) {
-        const embeddedQuery = await this.modelApiService.search([searchBody.search_text]);
+        const embeddedQuery = await ModelApiService.embed([searchBody.search_text]);
 
         return this.elasticClient.hybridSearch(searchBody.search_text, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
     }
@@ -53,7 +50,7 @@ export class SemanticManager {
         }
 
         const title = minioFileId.length > fileIdLength ? minioFileId.slice(fileIdLength) : minioFileId;
-        const chunks = splitTextIntoChunks(content, title, templateId, entityId, minioFileId, this.workspaceId);
+        const chunks = await splitTextIntoChunks(content, title, templateId, entityId, minioFileId, this.workspaceId);
         await this.elasticClient.bulkIndexDocuments(chunks);
     }
 
