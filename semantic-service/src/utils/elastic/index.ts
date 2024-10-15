@@ -1,9 +1,11 @@
 import { Client } from '@elastic/elasticsearch';
-import { IndexRequest } from '@elastic/elasticsearch/lib/api/types';
 import config from '../../config';
+import { Chunk } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
-const { elastic } = config;
+const {
+    elastic: { index, url, vectorFieldName, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant },
+} = config;
 
 class ElasticClient {
     static client: Client | null;
@@ -18,7 +20,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: config.elastic.url });
+            ElasticClient.client = new Client({ node: url });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
@@ -27,10 +29,25 @@ class ElasticClient {
         }
     }
 
-    index(params: Omit<IndexRequest<unknown>, 'index'>) {
-        return ElasticClient.client!.index({
-            index: `${config.elastic.index}-${this.workspaceId}`,
-            ...params,
+    createIndex() {
+        return ElasticClient.client!.indices.create({
+            index: `${index}-${this.workspaceId}`,
+            mappings: {
+                properties: {
+                    [vectorFieldName]: {
+                        type: 'dense_vector',
+                        dims: vectorDims,
+                        index: true,
+                        similarity: similarityAlgorithm,
+                    },
+                    text: { type: 'text' },
+                    title: { type: 'text' },
+                    workspace_id: { type: 'text' },
+                    template_id: { type: 'text' },
+                    entity_id: { type: 'text' },
+                    minio_file_id: { type: 'text' },
+                },
+            },
         });
     }
 
@@ -43,10 +60,10 @@ class ElasticClient {
 
         const searchBody = {
             knn: {
-                field: elastic.vectorFieldName,
+                field: vectorFieldName,
                 query_vector: embeddedQuery,
                 k: limit,
-                num_candidates: elastic.knnGroupSize,
+                num_candidates: knnGroupSize,
             },
             query: {
                 bool: {
@@ -54,7 +71,7 @@ class ElasticClient {
                         multi_match: {
                             query,
                             fields: ['text'],
-                            fuzziness: elastic.lexicalFuzziness,
+                            fuzziness: lexicalFuzziness,
                         },
                     },
                     filter: Object.keys(filters).length > 0 ? [filters] : [],
@@ -62,14 +79,14 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    rank_window_size: elastic.rrfWindowConstant,
-                    rank_constant: elastic.rrfRankConstant,
+                    rank_window_size: rrfWindowConstant,
+                    rank_constant: rrfRankConstant,
                 },
             },
             size: limit,
         };
 
-        const indexName = `${elastic.index}-${this.workspaceId}`;
+        const indexName = `${index}-${this.workspaceId}`;
 
         const response = await ElasticClient.client!.search({
             index: indexName,
@@ -81,6 +98,17 @@ class ElasticClient {
         });
 
         return response.hits.hits;
+    }
+
+    async bulkIndexDocuments(documents: Chunk[]) {
+        const body = documents.flatMap((doc) => [{ index: { _index: `${index}-${this.workspaceId}` } }, doc]);
+        const response = await ElasticClient.client!.bulk({ refresh: true, body });
+        return response?.items;
+    }
+
+    async deleteFiles(minioFileIds: string[]) {
+        const indexName = `${index}-${this.workspaceId}`;
+        return ElasticClient.client!.deleteByQuery({ index: indexName, query: { terms: { minio_file_id: minioFileIds } } });
     }
 }
 

@@ -71,10 +71,12 @@ const config = {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('documents').asString(),
         lexicalFuzziness: env.get('ELASTIC_LEXICAL_FUZZINESS').default('1').asString(),
-        vectorFieldName: env.get('ELASTIC_VECTOR_FIELD_NAME').default('embedding').asString(),
         knnGroupSize: env.get('ELASTIC_KNN_GROUP_SIZE').default(20).asInt(),
         rrfWindowConstant: env.get('ELASTIC_RRF_WINDOW_CONSTANT').default(50).asInt(),
         rrfRankConstant: env.get('ELASTIC_RRF_RANK_CONSTANT').default(60).asInt(),
+        vectorFieldName: env.get('ELASTIC_VECTOR_FIELD_NAME').default('embed').asString(),
+        vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
+        similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
     },
     modelApi: {
         url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),

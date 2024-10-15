@@ -36,10 +36,10 @@ export const splitTextIntoChunks = (
                 text: cleanedText,
                 // embedding,
                 title,
-                templateId,
-                entityId,
+                template_id: templateId,
+                entity_id: entityId,
                 minioFileId,
-                workspaceId,
+                workspace_id: workspaceId,
             },
         ];
     }
@@ -55,10 +55,10 @@ export const splitTextIntoChunks = (
             text: joinedChunk,
             // embedding,
             title,
-            templateId,
-            entityId,
+            template_id: templateId,
+            entity_id: entityId,
             minioFileId,
-            workspaceId,
+            workspace_id: workspaceId,
         });
 
         joinedChunk = '';

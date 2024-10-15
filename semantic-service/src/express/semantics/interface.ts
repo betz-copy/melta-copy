@@ -1,8 +1,8 @@
 export interface IIndexFilesRequest {
-    workspaceId: string;
-    minioFileIds: string[];
-    templateId: string;
-    entityId: string;
+    workspace_id: string;
+    minio_file_ids: string[];
+    template_id: string;
+    entity_id: string;
 }
 
 export interface IDeleteFilesRequest {

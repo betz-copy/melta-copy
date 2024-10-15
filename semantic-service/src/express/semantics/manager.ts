@@ -1,7 +1,7 @@
-import { ModelApiService } from '../../externalServices/modelApi';
 import config from '../../config';
+import { ModelApiService } from '../../externalServices/modelApi';
 import ElasticClient from '../../utils/elastic';
-import { splitTextIntoChunks, streamToString } from '../../utils/fs';
+import { splitTextIntoChunks } from '../../utils/fs';
 import logger from '../../utils/logger/logsLogger';
 import { MinIOClient } from '../../utils/minio/minioClient';
 import { IDeleteFilesRequest, IIndexFilesRequest, ISearchRequest } from './interface';
@@ -9,6 +9,7 @@ import { IDeleteFilesRequest, IIndexFilesRequest, ISearchRequest } from './inter
 const {
     consts: { fileIdLength },
 } = config;
+
 export class SemanticManager {
     workspaceId: string;
 
@@ -31,19 +32,19 @@ export class SemanticManager {
         return this.elasticClient.hybridSearch(searchBody.search_text, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
     }
 
-    public async createIndex(indexName: string) {
-        return this.elasticClient.index(indexName);
+    public createIndex() {
+        return this.elasticClient.createIndex();
     }
 
-    public async deleteIndex() {
+    public deleteIndex() {
         return this.elasticClient.deleteIndex();
     }
 
-    public async initIndex() {
-        return this.elasticClient.initIndex();
-    }
-
-    private async indexFile({ workspaceId, minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
+    private async indexFile({
+        minioFileId,
+        template_id: templateId,
+        entity_id: entityId,
+    }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
         const content = await this.minioClient.readFile(minioFileId);
 
         if (!content) {
@@ -52,16 +53,16 @@ export class SemanticManager {
         }
 
         const title = minioFileId.length > fileIdLength ? minioFileId.slice(fileIdLength) : minioFileId;
-        const chunks = splitTextIntoChunks(content, title, templateId, entityId, minioFileId, workspaceId);
-        await es.bulk_insert_documents(chunks, workspace_id);
+        const chunks = splitTextIntoChunks(content, title, templateId, entityId, minioFileId, this.workspaceId);
+        await this.elasticClient.bulkIndexDocuments(chunks);
     }
 
     public async indexFiles(fileData: IIndexFilesRequest) {
-        await Promise.allSettled(fileData.minioFileIds.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
+        await Promise.allSettled(fileData.minio_file_ids.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
     }
 
-    public async deleteFiles({ workspaceId, minioFileIds }: IDeleteFilesRequest) {
-        return await this.elasticClient.indexFile(file);
+    public deleteFiles({ minioFileIds }: IDeleteFilesRequest) {
+        return this.elasticClient.deleteFiles(minioFileIds);
     }
 }
 

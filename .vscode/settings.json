@@ -6,5 +6,6 @@
     "statusBarItem.hoverBackground": "#b8b8a8",
     "statusBarItem.remoteBackground": "#cfcfc4",
     "statusBarItem.remoteForeground": "#15202b"
-  }
+  },
+  "cSpell.words": ["consts", "minio"]
 }
