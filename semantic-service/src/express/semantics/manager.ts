@@ -1,3 +1,4 @@
+import { ModelApiService } from '../../externalServices/modelApi';
 import ElasticClient from '../../utils/elastic';
 import { streamToBuffer } from '../../utils/fs';
 import { MinIOClient } from '../../utils/minio/minioClient';
@@ -10,13 +11,17 @@ export class SemanticManager {
 
     minioClient: MinIOClient;
 
+    modelApiService: ModelApiService;
+
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
         this.elasticClient = new ElasticClient(workspaceId);
         this.minioClient = new MinIOClient(workspaceId);
+        this.modelApiService = new ModelApiService();
     }
 
     public async search(limit: number, step: number, query: any) {
+        const embeddedQuery = await this.modelApiService.search([query.text]);
         return await this.elasticClient.search(limit, step, query);
     }
 

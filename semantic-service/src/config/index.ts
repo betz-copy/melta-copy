@@ -63,6 +63,11 @@ const config = {
         url: env.get('ELASTIC_CLIENT_URL').default('http://elastic:9200').asUrlString(),
         index: env.get('ELASTIC_PROCESS_SEARCH_INDEX').default('documents').asString(),
     },
+    modelApi: {
+        url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
+        searchRoute: env.get('MODEL_API_SEARCH_ROUTE').default('').asString(),
+        endpoint: env.get('MODEL_API_ENDPOINT').default('embed').asString(),
+    },
 };
 
 export default config;
