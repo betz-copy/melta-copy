@@ -1,29 +1,12 @@
 /* eslint-disable import/no-extraneous-dependencies */
 /* eslint-disable no-underscore-dangle */
 import React from 'react';
-import { getDisplayLabel, WidgetProps, RJSFSchema } from '@rjsf/utils';
+import { getDisplayLabel, WidgetProps } from '@rjsf/utils';
 import validator from '@rjsf/validator-ajv8';
-import { Direction, TextField } from '@mui/material';
+import { TextField } from '@mui/material';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
+import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
 
-export const isStartWithHebrewLetter = (value: string) => {
-    const uniqueCharsPattern = /^[^a-zA-Z\u0590-\u05FF]+/g;
-    const cleanedStr = value.replace(uniqueCharsPattern, '');
-    const isHebrewLetter = /^[\u0590-\u05FF]/.test(cleanedStr.charAt(0));
-
-    return isHebrewLetter;
-};
-
-export const getTextDirection = (value: string, schema: RJSFSchema): Direction => {
-    if (schema.type === 'string' && value) {
-        return isStartWithHebrewLetter(value) ? 'rtl' : 'ltr';
-    }
-
-    if (schema.serialCurrent === undefined) {
-        return schema.type === 'number' || Boolean(schema.pattern) ? 'ltr' : 'rtl';
-    }
-    return 'ltr';
-};
 const RjsfTextWidget = ({
     id,
     placeholder,
@@ -47,8 +30,10 @@ const RjsfTextWidget = ({
     propertyReadOnly,
     ...textFieldProps
 }: WidgetProps) => {
-    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) =>
-        onChange(newValue === '' ? options.emptyValue : newValue);
+    const _onChange = ({ target: { value: newValue } }: React.ChangeEvent<HTMLInputElement>) => {
+        const parsedValue = (type || schema.type) === 'number' && newValue !== '' ? Number(newValue) : newValue;
+        onChange(newValue === '' ? options.emptyValue : parsedValue);
+    };
     const _onBlur = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue);
     const _onFocus = ({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue);
     const variant = readonly && !schema.readOnly ? 'standard' : 'outlined';
@@ -61,6 +46,7 @@ const RjsfTextWidget = ({
 
     if (options.hardCodedValue) finalValue = options.hardCodedValue;
     else if (isTextArea) finalValue = convertToPlainText(value);
+    else if (schema.type === 'number' && value) finalValue = getFixedNumber(Number(value));
     else finalValue = value ?? '';
 
     return (
