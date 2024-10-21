@@ -2,6 +2,32 @@ import * as Joi from 'joi';
 import { FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
 import { Colors, WorkspaceTypes } from './interface';
 
+// Joi schema for IMetadata
+const metadataSchema = Joi.object({
+    shouldDisplayProcesses: Joi.boolean().required(),
+    agGrid: Joi.object({
+        rowCount: Joi.number().required(),
+        defaultExpandedRowCount: Joi.number().required(),
+        defaultRowHeight: Joi.number().required(),
+        defaultFontSize: Joi.number().required(),
+        cacheBlockSize: Joi.number().required(),
+        infiniteInitialRowCount: Joi.number().required(),
+    }).required(),
+    mainFontSizes: Joi.object({
+        headlineTitleFontSize: Joi.string().required(),
+        headlineSubTitleFontSize: Joi.string().required(),
+    }).required(),
+    smallPreviewHeight: Joi.object({
+        number: Joi.string().required(),
+        unit: Joi.string().required(),
+    }).required(),
+    iconSize: Joi.object({
+        width: Joi.string().required(),
+        height: Joi.string().required(),
+    }).required(),
+});
+
+// Joi schema for Workspace
 const workspaceSchema = Joi.object({
     name: WorkspaceNameSchema,
     displayName: Joi.string().required(),
@@ -12,6 +38,7 @@ const workspaceSchema = Joi.object({
     colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
     iconFileId: Joi.string(),
     logoFileId: Joi.string(),
+    metadata: metadataSchema.required(),
 });
 
 // POST /api/workspaces/ids

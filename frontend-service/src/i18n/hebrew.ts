@@ -13,6 +13,7 @@ export default {
     relationshipTemplate: 'תבנית קשר',
     relationshipTemplates: 'תבניות קשר',
     processTemplates: 'תבניות תהליך',
+    configurationManagement: 'ניהול קונפיגורציות',
     rules: 'חוקים',
     failedToGetTemplates: 'נכשל לטעון תבניות',
     entityTemplatesCheckboxLabel: 'סינון תבניות',

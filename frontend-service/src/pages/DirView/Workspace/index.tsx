@@ -19,14 +19,14 @@ interface IWorkspaceProps {
 }
 
 export const Workspace: React.FC<IWorkspaceProps> = ({
-    workspace: { name, displayName, path, type, colors, iconFileId, logoFileId, _id },
+    workspace: { name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id },
     openWizard,
     setMovedWorkspace,
     isMovedWorkspace,
 }) => {
     const minimalWorkspace = useMemo(
-        () => ({ name, displayName, path, type, colors, iconFileId, logoFileId, _id }),
-        [name, displayName, path, type, colors, iconFileId, logoFileId, _id],
+        () => ({ name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id }),
+        [name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id],
     );
 
     const currentUser = useUserStore((state) => state.user);

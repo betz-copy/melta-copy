@@ -4,11 +4,32 @@ import { ServiceError } from '../error';
 import { Colors, IMetadata, IWorkspace } from './interface';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
-const MetadataSchema = new mongoose.Schema<IMetadata>({
-    shouldDisplayProcesses: {
-        type: Boolean,
+const MetadataSchema = new mongoose.Schema<IMetadata>(
+    {
+        shouldDisplayProcesses: { type: Boolean, required: true },
+        agGrid: {
+            rowCount: { type: Number, required: true },
+            defaultExpandedRowCount: { type: Number, required: true },
+            defaultRowHeight: { type: Number, required: true },
+            defaultFontSize: { type: Number, required: true },
+            cacheBlockSize: { type: Number, required: true },
+            infiniteInitialRowCount: { type: Number, required: true },
+        },
+        mainFontSizes: {
+            headlineTitleFontSize: { type: String, required: true },
+            headlineSubTitleFontSize: { type: String, required: true },
+        },
+        smallPreviewHeight: {
+            number: { type: String, required: true },
+            unit: { type: String, required: true },
+        },
+        iconSize: {
+            width: { type: String, required: true },
+            height: { type: String, required: true },
+        },
     },
-});
+    { _id: false },
+);
 
 const ColorsSchema = new mongoose.Schema<IWorkspace['colors']>(
     Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: { type: String, required: true } }), {}),

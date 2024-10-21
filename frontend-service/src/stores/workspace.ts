@@ -16,6 +16,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set) => ({
         colors: {
             primary: '#1E2775',
         },
+        metadata: {},
     },
     setWorkspace: (workspace) => set({ workspace }),
 }));

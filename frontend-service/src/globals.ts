@@ -1255,7 +1255,7 @@ export const environment = {
         },
         smallPreviewHeight: {
             number: '150',
-            unit: 'px',
+            unit: '1px',
         },
         iconSize: {
             width: '24px',

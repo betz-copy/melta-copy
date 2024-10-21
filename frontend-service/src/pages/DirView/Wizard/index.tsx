@@ -51,7 +51,15 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
     open,
     handleClose,
     initialStep = 0,
-    initialValues = { name: '', displayName: '', type: WorkspaceTypes.dir, icon: undefined, logo: undefined, colors: { primary: '#2D3686' } },
+    initialValues = {
+        name: '',
+        displayName: '',
+        type: WorkspaceTypes.dir,
+        icon: undefined,
+        logo: undefined,
+        colors: { primary: '#2D3686' },
+        metadata: {},
+    },
     isEditMode = false,
 }) => {
     const [location] = useLocation();
