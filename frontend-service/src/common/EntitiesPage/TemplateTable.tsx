@@ -9,7 +9,7 @@ import {
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import fileDownload from 'js-file-download';
-import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
+import React, { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
@@ -33,7 +33,7 @@ import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
 
-const { defaultRowHeight, defaultFontSize } = environment.agGrid;
+const { defaultRowHeight, defaultFontSize, defaultExpandedTableHeight } = environment.agGrid;
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -52,7 +52,19 @@ const TemplateTable = forwardRef<
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
+    const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
     useImperativeHandle(ref, () => entitiesTableRef.current!);
+
+    const handleExpandClick = useCallback(() => {
+        setIsExpand((prevExpand) => {
+            const newExpandState = !prevExpand;
+            sessionStorage.setItem(`isExpand-${template._id}`, newExpandState.toString());
+            sessionStorage.setItem(`currentPage-${page}-${template._id}`, '0');
+            sessionStorage.setItem(`scrollPosition-${template._id}`, '0');
+            sessionStorage.setItem(`resizeHeight-${template._id}`, JSON.stringify(defaultExpandedTableHeight));
+            return newExpandState;
+        });
+    }, [template._id, page]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -92,8 +104,6 @@ const TemplateTable = forwardRef<
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
     });
-    const [isExpand, setIsExpand] = useState(false);
-
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
@@ -101,6 +111,9 @@ const TemplateTable = forwardRef<
     const drafts = useDraftsStore((state) => state.drafts);
 
     const setDraftId = useDraftIdStore((state) => state.setDraftId);
+    useEffect(() => {
+        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
+    }, [isExpand, template._id]);
 
     return (
         <Grid container minWidth="fit-content">
@@ -149,9 +162,7 @@ const TemplateTable = forwardRef<
                         iconButtonWithPopoverProps={{
                             popoverText: isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore'),
                             iconButtonProps: {
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
+                                onClick: handleExpandClick,
                             },
                         }}
                         icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
@@ -247,6 +258,7 @@ const TemplateTable = forwardRef<
                         shouldSaveSorting: true,
                         shouldSaveColumnOrder: true,
                         shouldSavePagination: true,
+                        shouldSaveScrollPosition: true,
                         pageType: page,
                     }}
                     editRowButtonProps={{

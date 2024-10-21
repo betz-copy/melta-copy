@@ -95,6 +95,7 @@ export const environment = {
     },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
+        numOfFixedDigits: 18,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -180,8 +181,10 @@ export const environment = {
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,
+        maxBlocksInCache: 50,
         maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 10,
+        infiniteInitialRowCount: 1,
+        defaultExpandedTableHeight: 650,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -201,6 +204,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {

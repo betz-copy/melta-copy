@@ -1,6 +1,7 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
@@ -149,6 +150,15 @@ export class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const { data } = await this.api.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
+            properties,
+            currentTemplateProperties,
+        });
+
         return data;
     }
 
