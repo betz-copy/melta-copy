@@ -4,27 +4,27 @@ import { Colors, WorkspaceTypes } from './interface';
 
 // Joi schema for IMetadata
 const metadataSchema = Joi.object({
-    shouldDisplayProcesses: Joi.boolean().required(),
+    shouldDisplayProcesses: Joi.boolean(),
     agGrid: Joi.object({
-        rowCount: Joi.number().required(),
-        defaultExpandedRowCount: Joi.number().required(),
-        defaultRowHeight: Joi.number().required(),
-        defaultFontSize: Joi.number().required(),
-        cacheBlockSize: Joi.number().required(),
-        infiniteInitialRowCount: Joi.number().required(),
-    }).required(),
+        rowCount: Joi.number(),
+        defaultExpandedRowCount: Joi.number(),
+        defaultRowHeight: Joi.number(),
+        defaultFontSize: Joi.number(),
+        cacheBlockSize: Joi.number(),
+        infiniteInitialRowCount: Joi.number(),
+    }),
     mainFontSizes: Joi.object({
-        headlineTitleFontSize: Joi.string().required(),
-        headlineSubTitleFontSize: Joi.string().required(),
-    }).required(),
+        headlineTitleFontSize: Joi.string(),
+        headlineSubTitleFontSize: Joi.string(),
+    }),
     smallPreviewHeight: Joi.object({
-        number: Joi.string().required(),
-        unit: Joi.string().required(),
-    }).required(),
+        number: Joi.string(),
+        unit: Joi.string(),
+    }),
     iconSize: Joi.object({
-        width: Joi.string().required(),
-        height: Joi.string().required(),
-    }).required(),
+        width: Joi.string(),
+        height: Joi.string(),
+    }),
 });
 
 // Joi schema for Workspace
@@ -38,7 +38,7 @@ const workspaceSchema = Joi.object({
     colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
     iconFileId: Joi.string(),
     logoFileId: Joi.string(),
-    metadata: metadataSchema.required(),
+    metadata: metadataSchema,
 });
 
 // POST /api/workspaces/ids

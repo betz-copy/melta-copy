@@ -15,6 +15,7 @@ const ConfigurationManagement: React.FC = () => {
 
     const updateConfig = (path: string, newValue: any) => {
         const keys = path.split('.');
+
         const updated = deepClone(updatedConfigs);
 
         let obj = updated;
@@ -54,67 +55,67 @@ const ConfigurationManagement: React.FC = () => {
     };
 
     // eslint-disable-next-line consistent-return
-    const renderField = (key: string, value: any) => {
-        if (typeof value === 'boolean') {
-            return (
-                <Grid item key={key} xs={12}>
-                    <Typography>{key}</Typography>
-                    <Switch checked={updatedConfigs[key]} onChange={(e) => updateConfig(key, e.target.checked)} />
-                </Grid>
-            );
-        }
-        if (typeof value === 'string') {
-            const numericValue = value.endsWith('px') ? value.replace('px', '') : value;
+    const renderField = (configKey: string, configValue: any) => {
+        switch (typeof configValue) {
+            case 'boolean':
+                return (
+                    <Grid item key={configKey} xs={12}>
+                        <Typography>{configKey}</Typography>
+                        <Switch checked={updatedConfigs[configKey]} onChange={(e) => updateConfig(configKey, e.target.checked)} />
+                    </Grid>
+                );
+            case 'string':
+                // eslint-disable-next-line no-case-declarations
+                const numericValue = configValue.endsWith('px') ? configValue.replace('px', '') : configValue;
 
-            return (
-                <Grid item key={key} xs={12}>
-                    <TextField
-                        label={key}
-                        value={updatedConfigs[key]}
-                        defaultValue={numericValue}
-                        variant="standard"
-                        type="number"
-                        InputProps={{
-                            startAdornment: value.endsWith('px') ? <InputAdornment position="start">px</InputAdornment> : null,
-                        }}
-                        onChange={(e) => {
-                            const inputValue = e.target.value;
-                            if (/^\d*$/.test(inputValue)) {
-                                updateConfig(key, `${inputValue}px`);
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (['e', 'E', '+', '-'].includes(e.key)) {
-                                e.preventDefault();
-                            }
-                        }}
-                    />
-                </Grid>
-            );
-        }
-
-        if (typeof value === 'number') {
-            return (
-                <Grid item key={key} xs={12}>
-                    <TextField
-                        label={key}
-                        type="number"
-                        value={updatedConfigs[key]}
-                        variant="standard"
-                        defaultValue={value}
-                        onChange={(e) => updateConfig(key, parseInt(e.target.value, 10))}
-                    />
-                </Grid>
-            );
-        }
-        if (typeof value === 'object') {
-            return Object.keys(value).map((subkey) => renderField(`${key}.${subkey}`, value[subkey]));
+                return (
+                    <Grid item key={configKey} xs={12}>
+                        <TextField
+                            label={configKey}
+                            value={updatedConfigs[configKey]}
+                            defaultValue={numericValue}
+                            variant="standard"
+                            type="number"
+                            InputProps={{
+                                startAdornment: configValue.endsWith('px') ? <InputAdornment position="start">px</InputAdornment> : null,
+                            }}
+                            onChange={(e) => {
+                                const inputValue = e.target.value;
+                                if (/^\d*$/.test(inputValue)) {
+                                    updateConfig(configKey, `${inputValue}px`);
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (['e', 'E', '+', '-'].includes(e.key)) {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
+                    </Grid>
+                );
+            case 'number':
+                return (
+                    <Grid item key={configKey} xs={12}>
+                        <TextField
+                            label={configKey}
+                            type="number"
+                            value={updatedConfigs[configKey]}
+                            variant="standard"
+                            defaultValue={configValue}
+                            onChange={(e) => updateConfig(configKey, parseInt(e.target.value, 10))}
+                        />
+                    </Grid>
+                );
+            case 'object':
+                return Object.keys(configValue).map((subkey) => renderField(`${configKey}.${subkey}`, configValue[subkey]));
+            default:
+                break;
         }
     };
 
     return (
         <Grid container spacing={3}>
-            {Object.keys(configs).map((key) => renderField(key, configs[key]))}
+            {Object.entries(workspace.metadata).map(([configKey, configValue]) => renderField(configKey, configValue))}
             <Grid item xs={12}>
                 <Button variant="contained" color="primary" onClick={handleUpdate}>
                     Update

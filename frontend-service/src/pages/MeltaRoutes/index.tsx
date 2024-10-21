@@ -17,6 +17,7 @@ import { getWorkspacePermissions } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
 import { MeltaRoutesInner } from './routes';
+import { environment } from '../../globals';
 
 interface IMeltaRoutesProps {
     path: string;
@@ -64,6 +65,8 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
     useEffect(() => {
         const handleWorkspace = async () => {
             if (!workspace) return;
+
+            workspace.metadata = { ...environment.dynamicConfigs, ...workspace.metadata };
 
             setWorkspace(workspace);
             document.title = workspace.displayName;

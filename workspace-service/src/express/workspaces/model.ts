@@ -6,26 +6,26 @@ import { AllowedEmptyString } from '../../utils/mongoose';
 
 const MetadataSchema = new mongoose.Schema<IMetadata>(
     {
-        shouldDisplayProcesses: { type: Boolean, required: true },
+        shouldDisplayProcesses: { type: Boolean },
         agGrid: {
-            rowCount: { type: Number, required: true },
-            defaultExpandedRowCount: { type: Number, required: true },
-            defaultRowHeight: { type: Number, required: true },
-            defaultFontSize: { type: Number, required: true },
-            cacheBlockSize: { type: Number, required: true },
-            infiniteInitialRowCount: { type: Number, required: true },
+            rowCount: { type: Number },
+            defaultExpandedRowCount: { type: Number },
+            defaultRowHeight: { type: Number },
+            defaultFontSize: { type: Number },
+            cacheBlockSize: { type: Number },
+            infiniteInitialRowCount: { type: Number },
         },
         mainFontSizes: {
-            headlineTitleFontSize: { type: String, required: true },
-            headlineSubTitleFontSize: { type: String, required: true },
+            headlineTitleFontSize: { type: String },
+            headlineSubTitleFontSize: { type: String },
         },
         smallPreviewHeight: {
-            number: { type: String, required: true },
-            unit: { type: String, required: true },
+            number: { type: String },
+            unit: { type: String },
         },
         iconSize: {
-            width: { type: String, required: true },
-            height: { type: String, required: true },
+            width: { type: String },
+            height: { type: String },
         },
     },
     { _id: false },
