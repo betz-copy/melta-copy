@@ -1,5 +1,4 @@
 import { StatusCodes } from 'http-status-codes';
-import logger from '../../utils/logger/logsLogger';
 import { IActivityLog } from './interface';
 import config from '../../config';
 import { DefaultExternalServiceRabbit } from '../../utils/rabbit/manager';
