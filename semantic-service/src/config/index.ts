@@ -73,6 +73,7 @@ const config = {
         rrfRankConstant: env.get('ELASTIC_RRF_RANK_CONSTANT').default(60).asInt(),
         vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
         similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
+        queryMinScore: env.get('ELASTIC_QUERY_MIN_SCORE').default(0.1).asFloat(),
     },
     modelApi: {
         url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),

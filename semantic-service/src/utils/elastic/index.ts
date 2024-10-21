@@ -5,7 +5,19 @@ import { Chunk } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
-    elastic: { index, url, vectorDims, similarityAlgorithm, knnGroupSize, lexicalFuzziness, rrfWindowConstant, rrfRankConstant, user, password },
+    elastic: {
+        index,
+        url,
+        vectorDims,
+        similarityAlgorithm,
+        knnGroupSize,
+        lexicalFuzziness,
+        rrfWindowConstant,
+        queryMinScore,
+        rrfRankConstant,
+        user,
+        password,
+    },
 } = config;
 
 class ElasticClient {
@@ -70,13 +82,11 @@ class ElasticClient {
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
         const filters = templates && templates.length > 0 ? { terms: { template_id: templates } } : {};
 
+        const indexName = `${index}-${this.workspaceId}`;
         const searchBody = {
-            knn: {
-                field: 'embedding',
-                query_vector: embeddedQuery,
-                k: limit,
-                num_candidates: knnGroupSize,
-            },
+            index: indexName,
+            from: skip,
+            size: limit,
             query: {
                 bool: {
                     must: {
@@ -89,25 +99,38 @@ class ElasticClient {
                     filter: Object.keys(filters).length > 0 ? [filters] : [],
                 },
             },
+            knn: {
+                field: 'embedding',
+                query_vector: embeddedQuery,
+                k: limit,
+                num_candidates: knnGroupSize,
+            },
             rank: {
                 rrf: {
                     window_size: rrfWindowConstant,
                     rank_constant: rrfRankConstant,
                 },
             },
-            size: limit,
+            min_score: queryMinScore,
+            aggs: {
+                group_by_entity_id: {
+                    terms: {
+                        field: 'entity_id',
+                        size: 100,
+                    },
+                    aggs: {
+                        top_hits_by_group: {
+                            top_hits: {
+                                size: 1,
+                                sort: [{ _score: { order: 'desc' } }],
+                            },
+                        },
+                    },
+                },
+            },
         };
 
-        const indexName = `${index}-${this.workspaceId}`;
-
-        const response = await ElasticClient.client!.search({
-            index: indexName,
-            from: skip,
-            size: limit,
-            query: searchBody.query,
-            knn: searchBody.knn,
-            rank: searchBody.rank,
-        });
+        const response = await ElasticClient.client!.search(searchBody);
 
         return { results: this.formatElasticHits(response.hits.hits), count: 0 };
     }
