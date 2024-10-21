@@ -13,7 +13,6 @@ import i18next from 'i18next';
 import React, { useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
@@ -196,6 +195,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 size="small"
                                 borderRadius="30px"
                                 width="199px"
+                                autoSearch
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>

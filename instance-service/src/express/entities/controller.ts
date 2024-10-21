@@ -96,6 +96,10 @@ class EntityController extends DefaultController<EntityManager> {
     async enumerateNewSerialNumberFields(req: Request, res: Response) {
         res.json(await this.manager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
     }
+
+    async deletePropertiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties, req.body.currentTemplateProperties));
+    }
 }
 
 export default EntityController;

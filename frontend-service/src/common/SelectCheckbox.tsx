@@ -553,6 +553,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
+                // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={() => (
                     <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
                         {img ||
