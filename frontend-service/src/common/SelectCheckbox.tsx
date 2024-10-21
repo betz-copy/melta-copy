@@ -530,7 +530,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             minWidth: '219px',
                             width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
                             ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
-                            borderRadius: overrideSx ? '10px 10px 10px 10px' : '20px 0px 20px 20px',
+                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 6px 0px #1E27754D',
                             top: '39px',
