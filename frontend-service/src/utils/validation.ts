@@ -48,14 +48,19 @@ const testFields = (
     properties1.forEach((field1, index1) => {
         properties2.forEach((field2, index2) => {
             if (field1.id === field2.id) return;
-
-            if (field1.name === field2.name) {
-                addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'name', context, errors);
-                addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'name', context, errors);
-            }
-            if (field1.title === field2.title) {
-                addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'title', context, errors);
-                addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'title', context, errors);
+            if (
+                !('deleted' in field1 || 'deleted' in field2) ||
+                ('deleted' in field1 && !field1.deleted) ||
+                ('deleted' in field2 && !field2.deleted)
+            ) {
+                if (field1.name === field2.name) {
+                    addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'name', context, errors);
+                    addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'name', context, errors);
+                }
+                if (field1.title === field2.title) {
+                    addDuplicateFieldsError(`${properties1Path}[${index1}]`, properties2Type, 'title', context, errors);
+                    addDuplicateFieldsError(`${properties2Path}[${index2}]`, properties1Type, 'title', context, errors);
+                }
             }
         });
     });

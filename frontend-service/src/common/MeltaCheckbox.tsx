@@ -1,14 +1,30 @@
-import { Box, Checkbox } from '@mui/material';
-import React from 'react';
+import { Check, Remove } from '@mui/icons-material';
+import { Box, Checkbox, SxProps, useTheme } from '@mui/material';
+import React, { CSSProperties } from 'react';
 
 interface MeltaCheckboxProps {
     checked?: boolean;
     indeterminate?: boolean;
     disabled?: boolean;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+    sxChecked?: SxProps<any>;
+    sxIndeterminate?: SxProps<any>;
+    sxEmpty?: SxProps<any>;
+    sxIcon?: CSSProperties;
 }
 
-const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange }) => {
+const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange, sxChecked, sxIndeterminate, sxEmpty, sxIcon }) => {
+    const theme = useTheme();
+
+    const checkboxSx: SxProps = {
+        borderRadius: '4px',
+        width: '20px',
+        height: '20px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    };
+
     return (
         <Checkbox
             checked={checked}
@@ -18,48 +34,38 @@ const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, d
             checkedIcon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
-                        background: disabled ? '#9398C2' : '#4752B6',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        ...checkboxSx,
+                        background: theme.palette.primary.main,
+                        opacity: disabled ? 0.5 : 1,
+                        ...sxChecked,
                     }}
                 >
-                    <img src="/icons/checked-icon.svg" style={{ width: '9.33px', height: '6.42px' }} />
+                    <Check sx={{ color: '#fff', fontSize: '0.75rem', ...sxIcon }} />
                 </Box>
             }
             indeterminateIcon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
-                        background: disabled ? '#9398C2' : '#4752B6',
+                        ...checkboxSx,
+                        background: theme.palette.primary.main,
+                        opacity: disabled ? 0.5 : 1,
                         border: 'none',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        ...sxIndeterminate,
                     }}
                 >
-                    <img src="/icons/not-checked-icon.svg" style={{ width: '11px', height: '14px' }} />
+                    <Remove fontSize="small" sx={{ color: '#fff', fontSize: '0.75rem', ...sxIcon }} />
                 </Box>
             }
             icon={
                 <Box
                     sx={{
-                        borderRadius: '4px',
-                        border: disabled ? '1px solid #9398C2' : '1px solid #4752B6',
-                        width: '20px',
-                        height: '20px',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        ...checkboxSx,
+                        border: `1px solid ${theme.palette.primary.main}`,
+                        ...sxEmpty,
                     }}
                 />
             }
-            sx={{ borderRadius: '4px', color: '#4752B6' }}
+            sx={{ borderRadius: '4px', color: theme.palette.primary.main }}
         />
     );
 };

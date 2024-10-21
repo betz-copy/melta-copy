@@ -1,4 +1,5 @@
 /* eslint-disable no-nested-ternary */
+import { Menu, Search } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -55,7 +56,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                         marginRight: insideGroup ? '30px' : '7px',
                     }}
                 >
-                    {isDraggable && <img src="/icons/draggable-icon.svg" />}
+                    {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
             {checked ? (
@@ -236,6 +237,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
     groupsProps: { groups, getGroupOfOption, getGroupId, getGroupLabel },
     openMap,
     setOpenMap,
+    onClick,
 }: {
     options: Option[];
     optionsFiltered: SelectCheckboxProps<Option, Group>['options'];
@@ -252,6 +254,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
             [groupId: string]: boolean;
         }>
     >;
+    onClick?: () => void;
 }) => {
     const optionsByGroups = groupByWithInitial(options, groups.map(getGroupId), (option) => getGroupId(getGroupOfOption(option, groups)));
     const filteredOptionsByGroups = groupByWithInitial(optionsFiltered, groups.map(getGroupId), (option) =>
@@ -306,6 +309,7 @@ export const SelectOptionsMenuItemsGrouped = <Option extends any, Group extends 
                                         setSelectedOptions(selectedOptionsWithGroup);
                                         return selectedOptionsWithGroup;
                                     });
+                                    onClick?.();
                                 }}
                             >
                                 <MenuItemContent
@@ -383,6 +387,8 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
     templatesSelectGrid,
 }) => {
     const theme = useTheme();
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     // must wrap with TextField with Grid. no idea why, but it works :O
     return (
         <Grid container>
@@ -403,14 +409,16 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                         }
                     }}
                     sx={{
-                        background: toTopBar || templatesSelectGrid ? '#FFFFFF' : '#EBEFFA',
+                        ...(darkMode
+                            ? {}
+                            : {
+                                  background: toTopBar || templatesSelectGrid ? '#FFFFFF' : '#EBEFFA',
+                                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                              }),
                         boxShadow: templatesSelectGrid ? '-2px 2px 6px 0px #1E27754D' : '',
                         borderRadius: '7px',
                         width: '199px',
                         height: '34px',
-                        '& .MuiOutlinedInput-notchedOutline': {
-                            border: 'none',
-                        },
                     }}
                     placeholder={i18next.t('searchLabel')}
                     fullWidth
@@ -418,7 +426,6 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                         style: {
                             fontFamily: 'Rubik',
                             fontSize: '12px',
-                            color: '#8D8D8E',
                             textAlign: 'right',
                             borderRadius: '7px',
                         },
@@ -442,7 +449,7 @@ export const MiniFilter: React.FC<{ value: string; onChange: (value: string) => 
                                         backgroundColor: theme.palette.primary.main,
                                     }}
                                 />
-                                <img color="#1E2775" width="14px" height="14px" style={{}} src="/icons/search-blue.svg" />
+                                <Search sx={{ fontSize: '1.3rem', color: theme.palette.primary.main }} />
                             </InputAdornment>
                         ),
                         startAdornment: <InputAdornment position="start" />,
@@ -458,11 +465,13 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
     selectedOptionsFiltered,
     setSelectedOptions,
     optionsFiltered,
+    onClick,
 }: {
     options: Option[];
     selectedOptionsFiltered: Option[];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     optionsFiltered: Option[];
+    onClick?: () => void;
 }) => {
     return (
         <MenuItem
@@ -474,6 +483,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 } else {
                     setSelectedOptions(options);
                 }
+                onClick?.();
             }}
         >
             <MenuItemContent
@@ -510,6 +520,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
+    const theme = useTheme();
+
     const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
 
     let selectedOptionsFiltered;
@@ -524,7 +536,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
 
     return (
-        <FormControl style={{ background: darkMode ? '#242424' : 'white', borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
+        <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
                 displayEmpty
                 renderValue={() => <Box>{title}</Box>}
@@ -534,7 +546,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
                             width: horizontalOrigin === 154 ? '219px' : undefined,
-                            backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                            ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
                             borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
                             boxShadow: '-2px 2px 4px 0px #1E27754D',
@@ -558,12 +570,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                 }}
                 // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={() => (
-                    <Box
-                        display="flex"
-                        alignContent="center"
-                        alignItems="center"
-                        sx={{ width: '16px', height: '12px', gap: '10px', marginRight: '14px' }}
-                    >
+                    <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
                         {img || (isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />)}
                     </Box>
                 )}
@@ -586,15 +593,15 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontSize: '14px',
                     fontWeight: 400,
                     boxShadow: 'none',
-                    // eslint-disable-next-line no-nested-ternary
-                    '& .MuiOutlinedInput-notchedOutline': {
-                        display: 'none',
-                    },
-                    background: toTopBar ? '#EBEFFA' : '#FFFFFF',
-                    // eslint-disable-next-line no-nested-ternary
+                    ...(darkMode
+                        ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
+                        : {
+                              '& .MuiOutlinedInput-notchedOutline': { display: 'none' },
+                              background: toTopBar ? '#EBEFFA' : '#FFFFFF',
+                              color: toTopBar ? '#1E2775' : '#787C9E',
+                          }),
                     maxWidth: !overrideSx ? (toTopBar ? '130px' : '131px') : undefined,
                     maxHeight: toTopBar ? '35px' : '34px',
-                    color: toTopBar ? '#1E2775' : '#787C9E',
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
             >

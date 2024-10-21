@@ -11,12 +11,14 @@ export default class GanttManager extends DefaultManagerMongo<IGantt> {
         super(workspaceId, config.mongo.ganttsCollectionName, GanttSchema);
     }
 
-    async searchGantts({ search, limit, step }: ISearchGanttsBody) {
+    async searchGantts({ search, limit, step, entityTemplateId, relationshipTemplateIds }: ISearchGanttsBody) {
         const query: FilterQuery<IGantt> = {};
 
-        if (search) {
-            query.name = { $regex: escapeRegExp(search) };
-        }
+        if (search) query.name = { $regex: escapeRegExp(search) };
+
+        if (entityTemplateId) query['items.entityTemplate.id'] = entityTemplateId;
+
+        if (relationshipTemplateIds) query['items.connectedEntityTemplates.relationshipTemplateId'] = { $in: relationshipTemplateIds };
 
         return this.model
             .find(query)

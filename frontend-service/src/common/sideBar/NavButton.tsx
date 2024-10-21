@@ -34,19 +34,22 @@ const NavButton: React.FC<NavButtonProps> = ({
         if (isActive) onChangeToActive(isActive);
     }, [onChangeToActive, isActive]);
 
+    const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>) => {
+        if (disabled) {
+            e.preventDefault();
+            return;
+        }
+
+        // Clear sessionStorage if not active
+        if (!isActive) {
+            sessionStorage.clear();
+        }
+
+        onClick?.();
+    };
+
     return (
-        <Link
-            href={to}
-            onClick={(e) => {
-                if (disabled) {
-                    e.preventDefault();
-                    return;
-                }
-                onClick?.();
-            }}
-            className="nav-button"
-            style={{ textDecoration: 'none', color: 'inherit' }}
-        >
+        <Link href={to} onClick={(e) => handleClick(e)} className="nav-button" style={{ textDecoration: 'none', color: 'inherit' }}>
             <MeltaTooltip
                 title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : extension ?? text}
                 placement="left-start"

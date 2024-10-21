@@ -93,7 +93,6 @@ export const createRelationshipInstances = async (
                     } catch (error) {
                         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === 'RELATIONSHIP_ALREADY_EXISTS') {
                             console.log('Relationship already exists, skipping...');
-                            return;
                         }
 
                         throw error;

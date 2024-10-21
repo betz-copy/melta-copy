@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { Box, Button, CircularProgress } from '@mui/material';
+import { Backdrop, Box, Button, CircularProgress } from '@mui/material';
 import { forceManyBody } from 'd3-force';
 import i18next from 'i18next';
 import uniqBy from 'lodash.uniqby';
@@ -11,6 +11,7 @@ import ForceGraph3D, { ForceGraphMethods as ForceGraphMethods3D, ForceGraphProps
 import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
@@ -30,6 +31,8 @@ import { GraphNodeMenu } from './GraphNodeMenu';
 import { GraphTopBar } from './GraphTopBar';
 import { NodeTooltip } from './NodeTooltip';
 import TemplatesSelectGrid from './templatesSelectGrid';
+// eslint-disable-next-line import/no-unresolved
+import { ILinkObject, INodeObject } from '../../customTypes';
 
 interface genericMenuState {
     node: NodeObject;
@@ -40,6 +43,7 @@ interface genericMenuState {
 }
 
 const { graphSettings } = environment;
+const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {
     const ref = useRef<any>(null);
@@ -70,6 +74,9 @@ const Graph: React.FC = () => {
     const [load, setLoad] = useState<boolean>(false);
     const reload = () => setLoad(!load);
     const [is3DGraph, setIs3DGraph] = useLocalStorage(graphSettings.is3DViewLocalStorageKey, false);
+    const [initialExpandedEntity, setInitialExpandedEntity] = useState<{ entity?: IEntityExpanded; expand?: boolean }>();
+    const [currentBatchIndex, setCurrentBatchIndex] = useState<number>(0);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
 
     const templateOptions = Array.from(entityTemplates.values());
     const updateGraphSize = () => {
@@ -88,7 +95,15 @@ const Graph: React.FC = () => {
         return updateGraphSize();
     }, []);
 
-    const graphEntityTemplateIds = uniqBy(graphData.nodes, ({ templateId }) => templateId).map((element) => element.templateId);
+    const resetGraph = (data?: IEntityExpanded, resetData?: true) => {
+        setInitialExpandedEntity({ entity: data, expand: !resetData });
+        if (resetData) {
+            setGraphData({ nodes: [], links: [] });
+            setCurrentBatchIndex(0);
+        }
+    };
+
+    const graphEntityTemplateIds = uniqBy(graphData.nodes as INodeObject[], ({ templateId }) => templateId).map((element) => element.templateId);
     const addNewGraphData = (newGraphData: GraphData) => {
         setGraphData((prevGraphData) => {
             const mergedGraphNodes = [...prevGraphData.nodes, ...newGraphData.nodes];
@@ -113,7 +128,7 @@ const Graph: React.FC = () => {
         ...JSON.parse(searchParams.get('expandedEntities')!),
     };
 
-    const { refetch: getExpandedEntityById } = useQuery<IEntityExpanded>(
+    const { refetch: getExpandedEntityById, error } = useQuery<IEntityExpanded>(
         [
             'getExpandedEntity',
             entityId,
@@ -139,21 +154,60 @@ const Graph: React.FC = () => {
         },
     );
 
-    const setGraphDataOnStart = async () => {
-        const { data: initialExpandedEntity } = await getExpandedEntityById();
-        const expandedEntityGraphData = getGraphDataWithNodeSizes(
-            await expandedEntityToGraphData(initialExpandedEntity!, entityTemplates, relationshipTemplates),
+    const createGraphData = async () => {
+        let expandedEntity = initialExpandedEntity?.entity;
+        if (!initialExpandedEntity?.expand) {
+            const { data } = await getExpandedEntityById();
+            if (data && data.connections.length !== initialExpandedEntity?.entity?.connections.length) expandedEntity = data;
+        }
+
+        setIsLoading(expandedEntity !== undefined);
+
+        const nextBatch = currentBatchIndex + BatchSize;
+        let expandedEntityGraphData = await expandedEntityToGraphData(
+            {
+                ...expandedEntity,
+                connections:
+                    expandedEntity?.connections?.slice(
+                        currentBatchIndex,
+                        nextBatch > expandedEntity!.connections.length ? expandedEntity!.connections.length : nextBatch,
+                    ) ?? [],
+                entity: expandedEntity!.entity,
+            },
+            entityTemplates,
+            relationshipTemplates,
         );
 
-        expandedEntityGraphData.nodes.find((node) => node.id === entityId)!.numberOfConnectionsExpanded++;
-        setGraphData(expandedEntityGraphData);
-        const shouldZoom = !(initialExpandedEntity && initialExpandedEntity?.connections.length < 1);
+        if (initialExpandedEntity?.expand) expandedEntityGraphData = getGraphDataWithNodeSizes(expandedEntityGraphData);
+
+        const currEntityExpand = (expandedEntityGraphData.nodes as INodeObject[]).find((node) => node.id === entityId);
+        if (currEntityExpand) currEntityExpand.numberOfConnectionsExpanded++;
+
+        return { expandedEntityGraphData, expandedEntity };
+    };
+
+    const loadNextBatch = async () => {
+        const { expandedEntityGraphData, expandedEntity } = await createGraphData();
+
+        const shouldZoom = !(expandedEntity && expandedEntity?.connections.length < 1);
+
+        addNewGraphData(expandedEntityGraphData);
         setShouldZoomToFit(shouldZoom);
+
+        const nextBatch = currentBatchIndex + BatchSize;
+
+        if (currentBatchIndex < expandedEntity!.connections.length && ((is3DGraph && currentBatchIndex < limit3DConnections) || !is3DGraph))
+            if (nextBatch > expandedEntity!.connections.length) setCurrentBatchIndex(expandedEntity!.connections.length);
+            else setCurrentBatchIndex(nextBatch);
+        else {
+            setIsLoading(false);
+            if (is3DGraph && currentBatchIndex < expandedEntity!.connections.length) toast.warning(i18next.t('graph.limitWarning'));
+        }
     };
 
     useEffect(() => {
-        setGraphDataOnStart();
-    }, [entityId, filteredEntityTemplates, load, filterRecord]); // eslint-disable-line react-hooks/exhaustive-deps
+        loadNextBatch();
+    }, [currentBatchIndex, initialExpandedEntity, is3DGraph, entityId, filteredEntityTemplates, load, filterRecord]);
 
     const renderTooltip = (node: NodeObject) => {
         const entityTemplate = entityTemplates.get(node.templateId)!;
@@ -213,13 +267,6 @@ const Graph: React.FC = () => {
         },
     };
     const getGraph = () => {
-        if (!graphData.nodes.length)
-            return (
-                <Box display="flex" justifyContent="center" alignContent="center" height="100%">
-                    <CircularProgress size={80} />
-                </Box>
-            );
-
         if (is3DGraph) {
             return (
                 <ForceGraph3D
@@ -227,16 +274,23 @@ const Graph: React.FC = () => {
                     ref={forceRef as React.MutableRefObject<ForceGraphMethods3D>}
                     rendererConfig={{ powerPreference: 'low-power', precision: 'lowp' }}
                     linkDirectionalArrowLength={4}
-                    linkDirectionalParticleWidth={(link) => (link.highlighted ? 2.5 : 0)}
-                    linkWidth={(link) => (link.highlighted ? 1 : 0.5)}
+                    linkDirectionalParticleWidth={(link) => ((link as ILinkObject).highlighted ? 2.5 : 0)}
+                    linkWidth={(link) => ((link as ILinkObject).highlighted ? 1 : 0.5)}
                     linkDirectionalParticleResolution={6}
                     linkOpacity={0.45}
                     nodeResolution={16}
                     nodeThreeObjectExtend
-                    nodeThreeObject={(node) => create3DNodeDetails(node, entityTemplates.get(node.templateId)!, entityId === node.data._id, darkMode)}
+                    nodeThreeObject={(node) =>
+                        create3DNodeDetails(
+                            node as INodeObject,
+                            entityTemplates.get((node as INodeObject).templateId)!,
+                            entityId === (node as INodeObject).data._id,
+                            darkMode,
+                        )
+                    }
                     linkThreeObjectExtend
                     linkThreeObject={(link) => {
-                        const labelText = relationshipTemplates.get(link.templateId)!.displayName;
+                        const labelText = relationshipTemplates.get((link as ILinkObject).templateId)!.displayName;
 
                         const { label } = create3DLabel(labelText, graphSettings.linkLabelFontSize);
                         return label;
@@ -246,7 +300,7 @@ const Graph: React.FC = () => {
                         return false;
                     }}
                     onNodeClick={(node) => {
-                        lookAt3D(node, forceRef.current as ForceGraphMethods3D);
+                        lookAt3D(node as INodeObject, forceRef.current as ForceGraphMethods3D);
                     }}
                 />
             );
@@ -258,19 +312,19 @@ const Graph: React.FC = () => {
                 ref={forceRef as React.MutableRefObject<ForceGraphMethods>}
                 nodeCanvasObjectMode={() => 'after'}
                 nodeCanvasObject={(node, ctx) => {
-                    const entityTemplate = entityTemplates.get(node.templateId)!;
+                    const entityTemplate = entityTemplates.get((node as INodeObject).templateId)!;
 
-                    updateNodeLabelIcons(node, entityId === node.data._id);
+                    updateNodeLabelIcons(node as INodeObject, entityId === (node as INodeObject).data._id);
                     drawNode(ctx, node as PartialRequired<NodeObject, 'x' | 'y' | 'nodeSize'>, entityTemplate);
                 }}
                 linkCanvasObjectMode={() => 'after'}
                 linkCanvasObject={(link, ctx) => {
-                    const label = relationshipTemplates.get(link.templateId)?.displayName || '';
+                    const label = relationshipTemplates.get((link as ILinkObject).templateId)?.displayName || '';
 
-                    drawLinkLabel(link, label, ctx);
+                    drawLinkLabel(link as ILinkObject, label, ctx);
                 }}
                 onNodeClick={(node) => {
-                    lookAt(node, forceRef.current as ForceGraphMethods);
+                    lookAt(node as INodeObject, forceRef.current as ForceGraphMethods);
                 }}
             />
         );
@@ -280,8 +334,13 @@ const Graph: React.FC = () => {
     const addNewFilter = () => {
         setFilters((prevFilters) => [...prevFilters, Date.now()]);
     };
+
+    const onSuccessExpandGraph = (data: IEntityExpanded) => {
+        if (initialExpandedEntity?.entity !== data) resetGraph(data);
+    };
+
     return (
-        <Box ref={ref} position="relative">
+        <Box ref={ref} position="relative" height="100%" width="100%">
             <GraphTopBar
                 entityId={entityId}
                 filteredEntityTemplates={filteredEntityTemplates}
@@ -292,10 +351,13 @@ const Graph: React.FC = () => {
                     reload();
                     setFilters([]);
                     setFilterRecord({});
+                    resetGraph(undefined, true);
                 }}
                 set3DView={(is3DView) => {
                     setIs3DGraph(is3DView);
                     setShouldZoomToFit(true);
+                    setCurrentBatchIndex(0);
+                    setGraphData({ nodes: [], links: [] });
                 }}
                 is3DView={is3DGraph}
             />
@@ -318,23 +380,18 @@ const Graph: React.FC = () => {
                         categories={Array.from(categories.values())}
                         setOpenFilter={setOpenFilter}
                         openFilter={openFilter}
+                        onClick={() => resetGraph(undefined, true)}
                     />
                 </Box>
+                <Backdrop open={(isLoading || !graphData.nodes.length) && !error} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+                    <CircularProgress />
+                </Backdrop>
                 {openFilter && (
                     <Button
-                        sx={{
-                            '&:hover': {
-                                backgroundColor: 'transparent',
-                            },
-                            marginRight: 'auto',
-                            zIndex: '100',
-                            display: 'flex',
-                            alignItems: 'center',
-                            bottom: 0,
-                        }}
+                        sx={{ marginRight: 'auto', zIndex: '100' }}
                         onClick={addNewFilter}
+                        startIcon={<BsFillPlusCircleFill style={{ marginLeft: '5px' }} />}
                     >
-                        <BsFillPlusCircleFill style={{ marginLeft: '5px' }} />
                         {i18next.t('graph.filterEntity')}
                     </Button>
                 )}
@@ -347,6 +404,7 @@ const Graph: React.FC = () => {
                             filters={filters}
                             setFilters={setFilters}
                             graphEntityTemplateIds={graphEntityTemplateIds}
+                            onFilter={() => resetGraph(undefined, true)}
                         />
                     </Box>
                 )}
@@ -362,8 +420,8 @@ const Graph: React.FC = () => {
                         forceRef.current?.resumeAnimation();
                         setNodeMenuState(undefined);
                     }}
-                    addNewGraphData={addNewGraphData}
                     filterRecord={filterRecord}
+                    onSuccessExpandGraph={(data: IEntityExpanded) => onSuccessExpandGraph(data)}
                 />
             )}
             {graphMenuState && (
@@ -375,7 +433,7 @@ const Graph: React.FC = () => {
                         setGraphMenuState(undefined);
                     }}
                     onCenterMain={() => {
-                        const mainNode = graphData.nodes.find((node) => node.id === entityId)!;
+                        const mainNode = graphData.nodes.find((node) => node.id === entityId)! as INodeObject;
 
                         if (is3DGraph) {
                             lookAt3D(mainNode, forceRef.current as ForceGraphMethods3D);

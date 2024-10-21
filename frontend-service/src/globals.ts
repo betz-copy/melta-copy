@@ -60,6 +60,8 @@ export const environment = {
         },
         is3DViewLocalStorageKey: 'isGraph3DView',
         detailsResolution3D: 100,
+        BatchSize: 50,
+        limit3DConnections: 100,
     },
     canvasSettings: {
         heightPaddingMultiplier: 0.3,
@@ -94,6 +96,7 @@ export const environment = {
     },
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
+        numOfFixedDigits: 18,
     },
     iFrames: {
         iFrameDimensionKey: 'iFrameDimension_',
@@ -109,7 +112,6 @@ export const environment = {
     notifications: {
         updateInterval: 1000 * 60 * 10,
         infiniteScrollPageCount: 10,
-        titleColor: '#4752B6',
         groups: {
             requests: [NotificationType.ruleBreachRequest],
             general: [
@@ -191,9 +193,10 @@ export const environment = {
         defaultRowHeight: 50,
         defaultFontSize: 14,
         cacheBlockSize: 5,
-        maxBlocksInCache: 10,
+        maxBlocksInCache: 50,
         maxConcurrentDatasourceRequests: 1,
-        infiniteInitialRowCount: 10,
+        infiniteInitialRowCount: 1,
+        defaultExpandedTableHeight: 650,
     },
     activityLog: {
         infiniteScrollPageCount: 10,
@@ -213,6 +216,7 @@ export const environment = {
         ruleBlock: 'RULE_BLOCK',
         failedToCreateConstraints: 'FAILED_TO_CREATE_CONSTRAINTS',
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
     mainFontSizes: {

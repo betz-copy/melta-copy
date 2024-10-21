@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography, useTheme } from '@mui/material';
+import React, { useState } from 'react';
 import { CustomIcon } from '../../../../common/CustomIcon';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { ProcessProperties } from './ProcessProperties';
 import { StepReviewers } from './StepReviewers';
 
@@ -25,17 +26,12 @@ export const ProcessStep: React.FC<StepProps> = ({ step }) => {
                         event.stopPropagation();
                     }}
                 >
-                    {isOpen ? (
-                        <img style={{ marginLeft: '10px' }} src="/icons/Close-Arrow.svg" />
-                    ) : (
-                        <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
-                    )}
+                    {isOpen ? <ExpandMore fontSize="small" /> : <ChevronLeft fontSize="small" />}
+
                     {step.iconFileId && <CustomIcon iconUrl={step.iconFileId} height="24px" width="24px" color={theme.palette.primary.main} />}
                     <MeltaTooltip title={step.displayName}>
                         <Typography
                             style={{
-                                color: '#9398C2',
-                                fontWeight: '400',
                                 textOverflow: 'ellipsis',
                                 whiteSpace: 'nowrap',
                                 overflow: 'hidden',

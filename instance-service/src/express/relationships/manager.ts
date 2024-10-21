@@ -306,4 +306,17 @@ export class RelationshipManager extends DefaultManagerNeo4j {
 
         return edge;
     }
+
+    async deleteRelationshipByTemplateIds(transaction: Transaction, templateIds: string[]) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s)-[r]->(d)
+             WHERE type(r) IN $templateIds
+             WITH *, properties(r) as rProps, type(r) as rType
+             DELETE r 
+             RETURN rProps, rType, s, d`,
+            normalizeReturnedDeletedRelationship,
+            { templateIds },
+        );
+    }
 }

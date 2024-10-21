@@ -4,7 +4,6 @@ import * as mongoose from 'mongoose';
 import axios from 'axios';
 import Server from './express/server';
 import config from './config';
-import { checkForDateNotifications } from './utils/notifications/dateNotificationsCheck';
 import logger from './utils/logger/logsLogger';
 
 const { service, rabbit, mongo } = config;
@@ -39,8 +38,6 @@ const main = async () => {
     await initializeMongo();
 
     await initializeRabbit();
-
-    await checkForDateNotifications();
 
     axios.defaults.maxBodyLength = service.maxRequestSize;
     axios.defaults.maxContentLength = service.maxRequestSize;

@@ -49,10 +49,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-      ? Data
-      : ResType extends 'multipleResponses'
-        ? Data[]
-        : never;
+    ? Data
+    : ResType extends 'multipleResponses'
+    ? Data[]
+    : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -77,6 +77,13 @@ export const normalizeReturnedEntity =
 
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
+};
+
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+    return result.records.map((record) => ({
+        templateId: record.get('templateId'),
+        count: +record.get('count'),
+    }));
 };
 
 export const normalizeRuleResult = (result: QueryResult) => {

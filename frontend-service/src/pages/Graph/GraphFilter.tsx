@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
-import { Autocomplete, Box, Button, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
-import { IoIosArrowDown } from 'react-icons/io';
-import CloseIcon from '@mui/icons-material/Close';
-import i18next from 'i18next';
+import { KeyboardArrowDown, KeyboardArrowUp } from '@mui/icons-material';
 import ClearIcon from '@mui/icons-material/Clear';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import CloseIcon from '@mui/icons-material/Close';
+import { Autocomplete, Box, Checkbox, Chip, Divider, Grid, IconButton, ListItemText, MenuItem, TextField, Typography } from '@mui/material';
+import i18next from 'i18next';
+import React, { useState } from 'react';
+import { IoIosArrowDown } from 'react-icons/io';
+import { CustomIcon } from '../../common/CustomIcon';
 import DateRange from '../../common/inputs/DateRange';
 import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { CustomIcon } from '../../common/CustomIcon';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 interface GraphFilterProps {
     templateOptions: IMongoEntityTemplatePopulated[];
@@ -17,6 +19,7 @@ interface GraphFilterProps {
     filterKey: number;
     removeFilterFromFilterList: any;
     filter?: IGraphFilterBody;
+    onFilter: () => void;
 }
 
 const GraphFilter: React.FC<GraphFilterProps> = ({
@@ -27,6 +30,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
     filter,
     graphEntityTemplateIds,
     removeFilterFromFilterList,
+    onFilter,
 }) => {
     // const darkMode = useSelector((state: RootState) => state.darkMode);
     const [selectedTemplate, setSelectedTemplate] = useState<IMongoEntityTemplatePopulated | null>(filter?.selectedTemplate || null);
@@ -47,6 +51,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             ...prev,
             [filterKey]: { selectedTemplate, selectedProperty, filterField: newFilterField },
         }));
+        onFilter();
     };
     const handleStartDate = (newValue) => {
         if (!newValue && !endDate) {
@@ -220,13 +225,14 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
         );
     };
 
-    const [isHovered, setIsHovered] = useState(false);
     const [fullView, setFullView] = useState<boolean>(true);
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
 
     return (
         <Grid
             sx={{
-                backgroundColor: 'white',
+                backgroundColor: darkMode ? '#121212' : 'white',
                 marginBottom: '5px',
                 borderRadius: '10px',
                 boxShadow: '0px 2px 1px -1px rgba(0,0,0,0.2)',
@@ -236,9 +242,6 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
             }}
             container
             direction="column"
-            onDoubleClick={() => {
-                setFullView(!fullView);
-            }}
         >
             <Grid item sx={{ position: 'relative' }}>
                 <Grid
@@ -247,36 +250,30 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                 >
                     <Typography
                         style={{
-                            color: '#1E2775',
                             fontWeight: '500',
                             fontFamily: 'Rubik',
                             fontSize: '14px',
                             padding: '15px',
                             marginRight: '7px',
                         }}
-                        component="body"
                         variant="body1"
                     >
                         {i18next.t('graph.filterEntity')}
                     </Typography>
-                    <Button
-                        sx={{
-                            backgroundColor: 'transparent',
-                            '&:hover': {
-                                backgroundColor: 'transparent',
-                                color: 'black',
-                            },
-                            color: '#1E2775',
-                        }}
-                        onClick={handleFilterErasion}
-                    >
-                        <CloseIcon fontSize="small" />
-                    </Button>
+                    <Box>
+                        <IconButton onClick={() => setFullView(!fullView)}>
+                            {fullView ? <KeyboardArrowDown fontSize="small" /> : <KeyboardArrowUp fontSize="small" />}
+                        </IconButton>
+
+                        <IconButton onClick={handleFilterErasion}>
+                            <CloseIcon fontSize="small" />
+                        </IconButton>
+                    </Box>
                 </Grid>
                 <Box display={fullView ? undefined : 'none'}>
                     {!selectedTemplate && (
                         <Autocomplete
-                            popupIcon={<IoIosArrowDown color="#1E2775" size="20px" />}
+                            popupIcon={<IoIosArrowDown size="20px" />}
                             size="small"
                             style={{ width: '195px', margin: 'auto', paddingBottom: '10px' }}
                             value={null}
@@ -287,31 +284,17 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                         />
                     )}
                     {selectedTemplate && (
-                        <Grid
-                            container
-                            alignItems="center"
-                            spacing={1}
-                            style={{ width: '80%', margin: 'auto', height: '40px' }}
-                            onMouseEnter={() => setIsHovered(true)}
-                            onMouseLeave={() => setIsHovered(false)}
-                        >
+                        <Grid container justifyContent="space-around" alignItems="center">
                             <Grid item>
                                 {selectedTemplate.iconFileId && <CustomIcon iconUrl={selectedTemplate.iconFileId} height="24px" width="24px" />}
                             </Grid>
                             <Grid item>
-                                <Typography
-                                    variant="subtitle1"
-                                    style={{ fontFamily: 'Rubik', fontSize: '14px', color: '#53566E', fontWeight: '400' }}
-                                >
-                                    {selectedTemplate.displayName}
-                                </Typography>
+                                <Typography variant="subtitle1">{selectedTemplate.displayName}</Typography>
                             </Grid>
                             <Grid item>
-                                {isHovered && (
-                                    <IconButton onClick={() => handleSelectTemplate(null)}>
-                                        <ClearIcon />
-                                    </IconButton>
-                                )}
+                                <IconButton onClick={() => handleSelectTemplate(null)}>
+                                    <ClearIcon fontSize="small" />
+                                </IconButton>
                             </Grid>
                         </Grid>
                     )}
@@ -322,7 +305,7 @@ const GraphFilter: React.FC<GraphFilterProps> = ({
                     <Grid item sx={{ height: '90px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <Divider sx={{ width: '195px', margin: 'auto', border: '1px 0px 0px 0px' }} />
                         <Autocomplete
-                            popupIcon={<IoIosArrowDown color="#1E2775" size="20px" />}
+                            popupIcon={<IoIosArrowDown size="20px" />}
                             size="small"
                             style={{ width: '80%', margin: 'auto', paddingBottom: '10px' }}
                             value={selectedProperty}
