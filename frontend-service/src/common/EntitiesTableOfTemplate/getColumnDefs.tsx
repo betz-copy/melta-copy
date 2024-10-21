@@ -17,6 +17,8 @@ import {
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
+    // userArrayColDef, // TODO
+    userColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
@@ -61,6 +63,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
+        console.log({ type, property, format }); // TODO
+
         if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')
@@ -101,9 +105,35 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
-        if (propertyTemplate.items) {
+        if (propertyTemplate.items?.format === 'fileId') {
             return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
         }
+        if (propertyTemplate.format === 'user') {
+            return userColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                [],
+                defaultColumnWidths[property],
+                rowHeight,
+                template.enumPropertiesColors?.[property],
+                hideColumn,
+                hideField,
+            );
+        } // TODO
+        // if (propertyTemplate.items?.format === 'user') {
+        //     return userArrayColDef(
+        //         property,
+        //         valueGetter,
+        //         { title: propertyTemplate.title },
+        //         [],
+        //         defaultColumnWidths[property],
+        //         rowHeight,
+        //         template.enumPropertiesColors?.[property],
+        //         hideColumn,
+        //         hideField,
+        //     );
+        // }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(

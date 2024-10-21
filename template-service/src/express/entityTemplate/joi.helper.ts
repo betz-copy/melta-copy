@@ -9,6 +9,13 @@ const { notifications } = config;
 
 const ajv = new Ajv();
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
@@ -29,10 +36,11 @@ ajv.addKeyword({
     keyword: 'serialCurrent',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()
@@ -54,8 +62,10 @@ const propertiesArraySchema = Joi.array()
             items: Joi.object({
                 type: Joi.string().valid('string').required(),
                 format: Joi.string().valid('fileId'),
+                // format: Joi.string().valid('fileId', 'user'), // TODO
                 enum: Joi.when('format', {
                     is: 'fileId',
+                    // is: Joi.string().valid('fileId', 'user'), // TODO
                     then: Joi.forbidden(), // If format is fileId, enum is not allowed
                     otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
                 }),
@@ -66,6 +76,7 @@ const propertiesArraySchema = Joi.array()
                 otherwise: Joi.forbidden(),
             }),
             uniqueItems: Joi.when(Joi.ref('items.format'), {
+                // is: Joi.string().valid('fileId', 'user'), // TODO
                 is: 'fileId',
                 then: Joi.forbidden(),
                 otherwise: Joi.valid(true).when('type', {

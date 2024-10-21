@@ -14,7 +14,8 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
-export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
+export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
+// export const arrayTypes = ['multipleFiles', 'enumArray', 'users']; TODO
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
@@ -35,14 +36,18 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
+        console.log({ key, properties, value }); // TODO
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
+        // else if (value.items?.format === 'user') type = 'users'; // TODO
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
         else if (value.items?.format === 'text-area') type = 'text-area';
+
+        console.log({ type });
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -126,6 +131,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             relationshipReference,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
+            console.log({ propertyType: type }); // TODO
             switch (type) {
                 case 'string':
                 case 'number':
@@ -167,6 +173,24 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                       }
                     : undefined,
             };
+
+            // if (type === 'users') { // TODO
+            //     schema.properties[name] = {
+            //         title,
+            //         type: 'array',
+            //         items: {
+            //             type: 'object',
+            //             format: 'user',
+            //             // user: [{
+            //             //     fullName: {type: 'string' },
+            //             //     jobTitle: string;
+            //             //     hierarchy: string;
+            //             //     mail: string;
+            //             // }],
+            //         },
+            //         minItems: 1,
+            //     };
+            // }
 
             propertiesOrder.push(name);
 

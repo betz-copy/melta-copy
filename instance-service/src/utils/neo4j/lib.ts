@@ -6,6 +6,7 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+import { userPropertySuffix } from '../../express/entities/validator.template';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -22,8 +23,15 @@ export const formatDate = (date: string) => {
 const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
+    const userKeys: Set<string> = new Set<string>();
+
     Object.entries(properties).forEach(([key, value]) => {
         if (key.endsWith(config.neo4j.stringPropertySuffix)) {
+            return;
+        }
+
+        if (Object.values(userPropertySuffix).some((propertySuff) => key.endsWith(propertySuff))) {
+            userKeys.add(key.split('.')[0]);
             return;
         }
 
@@ -41,6 +49,22 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
 
         props[key] = value;
     });
+
+    if (userKeys.size) {
+        userKeys.forEach((userKey) => {
+            props[userKey] = properties[`${userKey}.ids`].map((id, index) => {
+                return {
+                    _id: id,
+                    fullName: properties[`${userKey}.fullNames`][index],
+                    jobTitle: properties[`${userKey}.jobTitles`][index],
+                    hierarchy: properties[`${userKey}.hierarchies`][index],
+                    mail: properties[`${userKey}.mails`][index],
+                };
+            });
+        });
+    }
+
+    console.log({ props });
 
     return props;
 };

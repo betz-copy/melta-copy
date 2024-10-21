@@ -17,6 +17,8 @@ export const filterFieldsFromPropertiesSchema = (
                     schema.properties[requiredKey].format !== 'fileId' &&
                     schema.properties[requiredKey].format !== 'entityReference' &&
                     schema.properties[requiredKey].items?.format !== 'fileId' &&
+                    schema.properties[requiredKey].format !== 'user' &&
+                    // schema.properties[requiredKey].items?.format !== 'user' && // TODO
                     schema.properties[requiredKey].serialCurrent === undefined,
             ) ?? [],
     };

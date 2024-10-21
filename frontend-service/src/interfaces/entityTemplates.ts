@@ -10,6 +10,13 @@ export interface IEntitySingleProperty {
         type: 'string';
         enum?: string[];
         format?: 'fileId';
+        // format?: 'fileId' | 'user'; TODO
+        // user?: {
+        //     fullName: string;
+        //     jobTitle: string;
+        //     hierarchy: string;
+        //     mail: string;
+        // }[];
     };
     minItems?: 1;
     readOnly?: true;

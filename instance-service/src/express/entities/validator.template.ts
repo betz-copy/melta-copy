@@ -28,9 +28,24 @@ import {
 
 const { neo4j } = config;
 
+export const userPropertySuffix = {
+    ids: '.ids',
+    fullNames: '.fullNames',
+    jobTitles: '.jobTitles',
+    hierarchies: '.hierarchies',
+    mails: '.mails',
+};
+
 const ajv = new Ajv();
 
 ajv.addFormat('fileId', /.*/);
+ajv.addFormat('user', {
+    type: 'string',
+    validate: (user) => {
+        const userObj = JSON.parse(user);
+        return userObj._id && userObj.fullName && userObj.jobTitle && userObj.hierarchy && userObj.mail;
+    },
+});
 ajv.addFormat('text-area', /.*/);
 ajv.addFormat('relationshipReference', /.*/);
 addFormats(ajv);
@@ -45,6 +60,7 @@ ajv.addKeyword({
     keyword: 'serialStarter',
     type: 'number',
 });
+ajv.addKeyword({ keyword: 'user', type: 'string' });
 ajv.addKeyword({
     keyword: 'relationshipReference',
     type: 'string',
@@ -418,6 +434,16 @@ export const addStringFieldsAndNormalizeDateValues = (
 
         const propertyValue = entityProperties[key];
         const { type, format } = value;
+        if (format === 'user') {
+            normalizedEntity[`${key}${userPropertySuffix.ids}`] = [JSON.parse(propertyValue)._id];
+            normalizedEntity[`${key}${userPropertySuffix.fullNames}`] = [JSON.parse(propertyValue).fullName];
+            normalizedEntity[`${key}${userPropertySuffix.jobTitles}`] = [JSON.parse(propertyValue).jobTitle];
+            normalizedEntity[`${key}${userPropertySuffix.hierarchies}`] = [JSON.parse(propertyValue).hierarchy];
+            normalizedEntity[`${key}${userPropertySuffix.mails}`] = [JSON.parse(propertyValue).mail];
+
+            return;
+        }
+
         // For Neo4j fulltext search (supports only string properties)
         if (type !== 'string') {
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);

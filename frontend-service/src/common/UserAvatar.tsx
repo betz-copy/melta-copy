@@ -4,12 +4,12 @@ import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 
 interface UserAvatarProps {
-    user: IUser;
+    user: Partial<IUser>;
     size?: number;
     bgColor?: string;
 }
 
-const getNameInitials = (user: IUser): string => {
+const getNameInitials = (user: Partial<IUser>): string => {
     const names = user.fullName?.split(' ') ?? [];
 
     if (names.length < 3) return names.map((name) => name.charAt(0)).join('');

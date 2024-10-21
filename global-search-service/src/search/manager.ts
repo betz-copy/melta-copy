@@ -95,6 +95,22 @@ export default class Manager extends DefaultManagerNeo4j {
         return relationshipReferencesProperties;
     }
 
+    private getUserPropertiesIndex(template: IEntityTemplate) {
+        const userProperties: string[] = [];
+
+        Object.entries(template.properties.properties).map(async ([key, value]) => {
+            if (value.format === 'user') {
+                userProperties.push(`${key}.ids`);
+                userProperties.push(`${key}.fullNames`);
+                userProperties.push(`${key}.jobTitles`);
+                userProperties.push(`${key}.hierarchies`);
+                userProperties.push(`${key}.mails`);
+            }
+        });
+
+        return userProperties;
+    }
+
     async upsertGlobalSearchIndex() {
         const templates = await this.templateManagerService.searchEntityTemplates();
 
@@ -108,7 +124,8 @@ export default class Manager extends DefaultManagerNeo4j {
         await Promise.all(
             templates.map(async (template) => {
                 const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
-                relationshipReferencesProperties.forEach((property) => allTemplatesProperties.add(property));
+                const userProperties = this.getUserPropertiesIndex(template);
+                [...relationshipReferencesProperties, ...userProperties].forEach((property) => allTemplatesProperties.add(property));
             }),
         );
 
@@ -138,7 +155,9 @@ export default class Manager extends DefaultManagerNeo4j {
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {
         const changedTemplate = await this.templateManagerService.getEntityTemplateById(changedTemplateId);
         const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(changedTemplate);
-        const allProperties = [...relationshipReferencesProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
+        const userProperties = this.getUserPropertiesIndex(changedTemplate);
+
+        const allProperties = [...relationshipReferencesProperties, ...userProperties, ...this.getTemplatePropertiesIndex(changedTemplate)];
 
         await this.upsertSearchIndex(`${templateSearchIndexPrefix}${changedTemplateId}`, [changedTemplateId], allProperties);
     }

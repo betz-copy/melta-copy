@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { AvatarGroup, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -16,6 +16,7 @@ import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
+import UserAvatar from './UserAvatar';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -52,12 +53,28 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
                 />
             );
         }
+        if (format === 'user') {
+            return (
+                <AvatarGroup max={1}>
+                    <MeltaTooltip title={value[0].fullName}>
+                        <Grid>
+                            <UserAvatar user={value[0]} size={25} bgColor="1E2775" />
+                        </Grid>
+                    </MeltaTooltip>
+                </AvatarGroup>
+            );
+        }
     }
     if (keyEnumColors?.[value] && valueType === 'string') return pureString ? value : <ColoredEnumChip label={value} color={keyEnumColors[value]} />;
     if (valueType === 'array') {
         if (property.items?.format === 'fileId') {
             return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
         }
+        // TODO
+        // if (property.items?.format === 'user') {
+        //     console.log('entity properties: ', value);
+        //     return value.join(', ');
+        // }
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (
@@ -175,7 +192,10 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
                 const textDirection =
                     // todo: make getTextDirection handle all possible value and reuse everywhere
-                    propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'
+                    propertySchema.format !== 'text-area' &&
+                    propertySchema.format !== 'fileId' &&
+                    propertySchema.format !== 'relationshipReference' &&
+                    propertySchema.format !== 'user'
                         ? getTextDirection(propertyValue, {
                               type: propertySchema.type,
                               serialCurrent: propertySchema.serialCurrent,

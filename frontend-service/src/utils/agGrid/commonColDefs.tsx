@@ -1,6 +1,7 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
+import { Avatar, AvatarGroup, Grid } from '@mui/material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -9,6 +10,9 @@ import { Value } from './Value';
 import { agGridLocaleText } from './agGridLocaleText';
 import { getFileName } from '../getFileName';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import { IUser } from '../../interfaces/users';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
+import UserAvatar from '../../common/UserAvatar';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -209,6 +213,94 @@ export const enumArrayColDef = <Data extends any = IEntity>(
                     renderItem={(item) => <Value hideValue={hideValue} value={item} color={enumColorOptions?.[item] || 'default'} />}
                     containerStyle={{ height: `${rowHeight}px` }}
                 />
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+// TODO -use the same component using 'multiple' parameter....
+export const userColDef = <Data extends any = IUser>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
+            console.log({ propsValue: props.value });
+            if (!props.value) return '';
+            return (
+                <AvatarGroup max={1}>
+                    <MeltaTooltip title={props.value[0].fullName}>
+                        <Grid>
+                            <UserAvatar user={props.value[0]} size={25} bgColor="1E2775" />
+                        </Grid>
+                    </MeltaTooltip>
+                </AvatarGroup>
+            );
+        },
+
+        filter: 'agSetColumnFilter',
+        filterParams,
+        width: hardcodedWidth,
+        flex: hardcodedWidth ? 0 : 1,
+        hide: hideColumn,
+    };
+};
+
+// TODO
+export const userArrayColDef = <Data extends any = IEntity>(
+    field: string,
+    valueGetter: ValueGetterFunc<Data>,
+    value: { title: string },
+    values: Array<string>,
+    hardcodedWidth: number | undefined,
+    rowHeight: number,
+    enumColorOptions?: Record<string, string>,
+    hideColumn = false,
+    hideValue = false,
+): ColDef<Data> => {
+    const filterParams: ISetFilterParams<Data, string | undefined> = {
+        suppressMiniFilter: true,
+        values: [...values, undefined],
+    };
+
+    console.log({ value });
+
+    return {
+        field,
+        headerName: value.title,
+        valueGetter,
+
+        cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
+            console.log({ props });
+            if (!props.value) return '';
+            console.log({ propsValue: props.value });
+            return (
+                <AvatarGroup max={5}>
+                    {props.value.map((val) => (
+                        <Avatar key={val}>{val}</Avatar>
+                    ))}
+                </AvatarGroup>
             );
         },
 
