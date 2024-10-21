@@ -111,11 +111,7 @@ const RjfsSelectWidget = ({
                 />
             )}
             renderOption={(props, option) => {
-                return (
-                    <span {...props} style={{ backgroundColor: option === value ? 'Gainsboro' : 'white' }}>
-                        {option}
-                    </span>
-                );
+                return <span {...props}>{option}</span>;
             }}
             options={enumOptions!.map((o) => o.value).sort()}
             getOptionDisabled={(option) => (multiple ? Boolean(value?.includes(option)) : false)}

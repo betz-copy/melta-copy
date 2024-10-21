@@ -128,7 +128,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate:IMongoEntityTemplate = await this.model
+            const deletedEntityTemplate: IMongoEntityTemplate = await this.model
                 .findByIdAndDelete(id, { session })
                 .orFail(new NotFoundError('Entity Template not found'))
                 .lean()

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { ResizableBox } from 'react-resizable';
 import '../../css/resizeTable.css';
 import { Grid } from '@mui/material';
@@ -7,19 +7,31 @@ interface ResizeBoxProps {
     initialHeight: number;
     setHeight: React.Dispatch<React.SetStateAction<number>>;
     minHeight: number;
+    templateId: string;
 }
 
-const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeight, children }) => {
+const ResizeBox: React.FC<ResizeBoxProps> = ({ initialHeight, setHeight, minHeight, templateId, children }) => {
     const [isResizing, setIsResizing] = React.useState(false);
 
-    const onResizeStart = () => {
-        setIsResizing(true);
-    };
+    useEffect(() => {
+        const savedHeight = sessionStorage.getItem(`resizeHeight-${templateId}`);
+        if (savedHeight) {
+            setHeight(parseInt(savedHeight, 10));
+        }
+    }, [templateId, setHeight]);
 
-    const onResizeStop = (_event, { size }) => {
-        setHeight(size.height);
-        setIsResizing(false);
-    };
+    const onResizeStart = useCallback(() => {
+        setIsResizing(true);
+    }, []);
+
+    const onResizeStop = useCallback(
+        (_event, { size }) => {
+            setHeight(size.height);
+            sessionStorage.setItem(`resizeHeight-${templateId}`, size.height.toString());
+            setIsResizing(false);
+        },
+        [setHeight, templateId],
+    );
 
     return (
         <ResizableBox

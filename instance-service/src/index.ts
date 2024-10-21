@@ -8,20 +8,10 @@ import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
 import { ServiceError } from './express/error';
-import RedisClient from './utils/redis';
 
 const { service } = config;
 
-const initializeRedis = async () => {
-    logger.info('Connecting to Redis...');
-
-    await RedisClient.initialize();
-
-    logger.info('Redis connection established');
-};
-
 const main = async () => {
-    await initializeRedis();
     await initializeRabbit();
     await Neo4jClient.initialize();
 

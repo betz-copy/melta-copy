@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
+import React, { useState } from 'react';
 import { environment } from '../../../../globals';
+import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 
 interface ProcessPropertiesProps {
     properties: Record<string, IProcessSingleProperty>;
@@ -21,13 +22,9 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                         event.stopPropagation();
                     }}
                 >
-                    {isOpen ? (
-                        <img style={{ marginLeft: '10px' }} src="/icons/Close-Arrow.svg" />
-                    ) : (
-                        <img style={{ marginLeft: '10px' }} src="/icons/Open-Arrow.svg" />
-                    )}
+                    {isOpen ? <ExpandMore fontSize="small" /> : <ChevronLeft fontSize="small" />}
 
-                    <Typography color="#9398C2">{i18next.t('wizard.processTemplate.properties')}</Typography>
+                    <Typography>{i18next.t('wizard.processTemplate.properties')}</Typography>
                 </Button>
             </Grid>
             {isOpen && (
@@ -37,8 +34,6 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                             <Typography
                                 style={{
                                     fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                                    color: '#53566E',
-                                    fontWeight: '400',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
@@ -50,8 +45,6 @@ export const ProcessProperties: React.FC<ProcessPropertiesProps> = ({ properties
                             <Typography
                                 style={{
                                     fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                                    color: '#53566E',
-                                    fontWeight: '400',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
                                     overflow: 'hidden',
