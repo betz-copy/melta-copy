@@ -38,7 +38,7 @@ const PopperSidebar: React.FC<{
                                 position="sticky"
                                 overflow="none"
                             >
-                                <Grid item padding="15px">
+                                <Grid item padding="15px" sx={{ position: 'relative' }}>
                                     <Grid container alignItems="center" height="2.5rem" paddingX="0.2rem">
                                         <Typography
                                             color={theme.palette.primary.main}
@@ -50,15 +50,16 @@ const PopperSidebar: React.FC<{
                                         >
                                             {title}
                                         </Typography>
-                                        <IconButton
-                                            onClick={() => {
-                                                setOpen(false);
-                                            }}
-                                            size="small"
-                                        >
-                                            <CloseSharp />
-                                        </IconButton>
                                     </Grid>
+                                    <IconButton
+                                        onClick={() => {
+                                            setOpen(false);
+                                        }}
+                                        size="small"
+                                        sx={{ position: 'absolute', top: '20px', right: '15px' }} //
+                                    >
+                                        <CloseSharp sx={{ color: theme.palette.primary.main }} />
+                                    </IconButton>
                                 </Grid>
 
                                 {children}
