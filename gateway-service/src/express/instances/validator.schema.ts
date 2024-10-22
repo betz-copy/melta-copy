@@ -36,7 +36,7 @@ const searchFilterSchema = Joi.object({
     $or: Joi.array().items(filterOfTemplateSchema).min(1),
 }).min(1);
 
-const seachByTemplateSchema = {
+const searchByTemplateSchema = {
     skip: Joi.number().integer().min(0).default(0),
     limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
     textSearch: Joi.string().allow(''),
@@ -151,7 +151,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
  */
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
-        ...seachByTemplateSchema,
+        ...searchByTemplateSchema,
     },
     query: {},
     params: {

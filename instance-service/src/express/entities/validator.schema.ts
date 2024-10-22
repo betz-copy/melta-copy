@@ -152,7 +152,7 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
     },
 });
 
-const seachByTemplateSchema = {
+const searchByTemplateSchema = {
     skip: Joi.number().integer().min(0).default(0),
     limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
     textSearch: Joi.string().allow(''),
@@ -174,7 +174,7 @@ const seachByTemplateSchema = {
  */
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
-        ...seachByTemplateSchema,
+        ...searchByTemplateSchema,
     },
     query: {},
     params: {
@@ -188,7 +188,7 @@ export const searchEntitiesOfTemplateRequestSchema = Joi.object({
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
         searchConfigs: Joi.object().pattern(Joi.string(), {
-            ...seachByTemplateSchema,
+            ...searchByTemplateSchema,
         }),
     },
     query: {},
