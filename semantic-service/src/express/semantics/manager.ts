@@ -37,11 +37,7 @@ export class SemanticManager {
         return this.elasticClient.deleteIndex();
     }
 
-    private async indexFile({
-        minioFileId,
-        templateId,
-        entityId,
-    }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
+    private async indexFile({ minioFileId, templateId, entityId }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
         const content = await this.minioClient.readFile(minioFileId);
 
         if (!content) {

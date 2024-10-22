@@ -11,7 +11,7 @@ export interface ISearchRequest {
     templates: string[];
 }
 
-export interface Chunk extends Omit<IIndexFilesRequest, 'minioFileIds'> {
+export interface IElasticDoc extends Omit<IIndexFilesRequest, 'minioFileIds'> {
     text: string;
     embedding: number[];
     title: string;

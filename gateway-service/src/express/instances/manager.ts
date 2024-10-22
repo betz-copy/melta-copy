@@ -251,7 +251,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            await this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
         return createdEntity;
@@ -278,6 +278,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
 
         return fileIdsToDelete;
@@ -306,6 +307,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             skip: searchBody.skip,
             templates: Object.keys(searchBody.templates),
         };
+
         const { count: semanticCount, results } = await this.semanticSearchSearch.search(semanticSearchBody);
 
         let combinedResults = this.semanticSearchSearch.combineResults({ results, entities }).slice(searchBody.skip, searchBody.limit);
@@ -345,7 +347,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async countEntitiesByTemplates(templateIds: string[], textSearch: string = '') {
         const semanticSearchBody = {
-            textSearch: textSearch,
+            textSearch,
             limit: 10,
             skip: 0,
             templates: templateIds,
@@ -487,7 +489,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             );
         } else {
             const fileIds = Object.values(fileProperties).flat();
-            await this.rabbitManager.indexFile(createdEntity.templateId, createdEntity.properties._id, fileIds);
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
         return createdEntity;
@@ -583,7 +585,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             );
         } else {
-            await this.rabbitManager.indexFile(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
+            await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
         return updatedEntity;
@@ -599,7 +601,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
-        await this.rabbitManager.deleteFile(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
         return fileIdsToRemove;

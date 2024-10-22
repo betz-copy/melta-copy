@@ -26,14 +26,14 @@ export class RabbitManager {
         await menash.send(rabbit.mailNotificationQueue, mailData, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
     }
 
-    async indexFile(templateId: string, entityId: string, minioFileIds: string[]) {
+    async indexFiles(templateId: string, entityId: string, minioFileIds: string[]) {
         const fileData = { templateId, entityId, minioFileIds };
         await menash.send(rabbit.insertDocsSemanticQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
             logger.error('Failed at indexing file', err);
         });
     }
 
-    async deleteFile(templateId: string, entityId: string, minioFileIds: string[]) {
+    async deleteFiles(templateId: string, entityId: string, minioFileIds: string[]) {
         const fileData = { templateId, entityId, minioFileIds };
         await menash.send(rabbit.deleteDocsSemanticQueue, fileData, { headers: { [workspaceIdHeaderName]: this.workspaceId } }).catch((err) => {
             logger.error('Failed at deleting file', err);

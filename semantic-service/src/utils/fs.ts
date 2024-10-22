@@ -1,6 +1,6 @@
 import { Stream } from 'stream';
 import config from '../config';
-import { Chunk } from '../express/semantics/interface';
+import { IElasticDoc } from '../express/semantics/interface';
 import { ModelApiService } from '../externalServices/modelApi';
 
 const {
@@ -37,7 +37,7 @@ const getTextForEmbedding = (splittedText: string[]): string[][] => {
         const sentence = splittedText.slice(index, index + maxSentenceLength).join(sentenceSplitter);
 
         if (arraysOfJoinedSentences.at(-1)?.length === concurrentSentenceEmbeddingLimit) {
-            arraysOfJoinedSentences.push([]);            
+            arraysOfJoinedSentences.push([]);
         }
 
         arraysOfJoinedSentences.at(-1)?.push(sentence);
@@ -53,7 +53,7 @@ export const splitTextIntoChunks = async (
     entityId: string,
     minioFileId: string,
     workspaceId: string,
-): Promise<Chunk[]> => {
+): Promise<IElasticDoc[]> => {
     const cleanedText = cleanText(text);
 
     if (!maxSentenceLength) {
@@ -74,10 +74,10 @@ export const splitTextIntoChunks = async (
 
     const splitText = cleanedText.split(sentenceSplitter);
     const chunksForEmbedding = getTextForEmbedding(splitText);
-    
+
     console.log('chunksForEmbedding', chunksForEmbedding);
 
-    const chunks: Chunk[] = [];
+    const chunks: IElasticDoc[] = [];
 
     await Promise.all(
         chunksForEmbedding.map(async (splittedTextChunk) => {

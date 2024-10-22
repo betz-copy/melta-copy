@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
-import { Client } from '@elastic/elasticsearch';
+import { Client, estypes } from '@elastic/elasticsearch';
 import config from '../../config';
-import { Chunk } from '../../express/semantics/interface';
+import { IElasticDoc } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
@@ -21,6 +21,14 @@ const {
         groupByEntityIdSize,
     },
 } = config;
+
+interface IGroupByEntityIdAggregate {
+    group_by_entity_id: estypes.AggregationsTermsAggregateBase<
+        estypes.AggregationsAggregate & {
+            top_hits_by_group: estypes.AggregationsTopHitsAggregate;
+        }
+    >;
+}
 
 class ElasticClient {
     static client: Client | null;
@@ -70,8 +78,12 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticHits(hits: any[]) {
-        return hits.map((hit) => ({
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>) {
+        const { buckets } = response.aggregations!.group_by_entity_id;
+
+        if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return [];
+
+        return buckets[0].top_hits_by_group.hits.hits.map((hit) => ({
             text: hit._source.text,
             title: hit._source.title,
             templateId: hit._source.templateId,
@@ -124,7 +136,6 @@ class ElasticClient {
                         top_hits_by_group: {
                             top_hits: {
                                 size: topHitsByGroupSize,
-                                sort: [{ _score: { order: 'desc' } }],
                             },
                         },
                     },
@@ -132,12 +143,13 @@ class ElasticClient {
             },
         };
 
-        const response = await ElasticClient.client!.search(searchBody);
+        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
+        const a = this.formatElasticResponse(response);
 
-        return { results: this.formatElasticHits(response.hits.hits), count: 0 };
+        return { results: a, count: a.length };
     }
 
-    async bulkIndexDocuments(documents: Chunk[]) {
+    async bulkIndexDocuments(documents: IElasticDoc[]) {
         const body = documents.flatMap((doc) => [{ index: { _index: `${index}-${this.workspaceId}` } }, doc]);
         const response = await ElasticClient.client!.bulk({ refresh: true, body });
         return response?.items;
