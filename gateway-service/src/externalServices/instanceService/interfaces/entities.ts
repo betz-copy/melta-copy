@@ -84,6 +84,7 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
     sort?: ISearchSort;
+    includedEntityIds?: string[];
 }
 
 export interface ISearchBatchBody {

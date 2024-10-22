@@ -324,23 +324,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, templateId: string) {
-        // const semanticSearchBody = {
-        //     textSearch: searchBody.textSearch,
-        //     limit: searchBody.limit,
-        //     skip: searchBody.skip,
-        //     templates: [templateId],
-        // };
-        // if (searchBody.filter) {
-        //     const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
-        //     const entityIdsInSemanticSearch = [...new Set(semanticResults.map((result) => result.entity_id))];
+        if (searchBody.textSearch) {
+            const semanticSearchBody = {
+                textSearch: searchBody.textSearch,
+                limit: searchBody.limit,
+                skip: searchBody.skip,
+                templates: [templateId],
+            };
 
-        //     if (searchBody.filter.$or) {
-        //         searchBody.filter.$or.push({ _id: { $in: entityIdsInSemanticSearch } });
-        //     } else {
-        //         searchBody.filter.$or = [{ _id: { $in: entityIdsInSemanticSearch } }];
-        //     }
-        // }
-        console.log('searchBody', searchBody);
+            const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
+            const entityIdsInSemanticSearch = semanticResults.map((result) => result.entityId);
+            searchBody.includedEntityIds = entityIdsInSemanticSearch;
+        }
 
         return this.service.searchEntitiesOfTemplateRequest(templateId, searchBody);
     }
