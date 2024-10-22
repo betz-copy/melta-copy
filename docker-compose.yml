@@ -242,3 +242,5 @@ services:
     build:
       context: ./scripts/mock-model-api
       dockerfile: Dockerfile
+    environment:
+      JINA_API_KEY: ${JINA_API_KEY}
