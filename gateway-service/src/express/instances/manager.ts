@@ -296,6 +296,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async searchEntitiesBatch(searchBody: ISearchBatchBody) {
         const { count, entities } = await this.service.searchEntitiesBatch(searchBody);
 
+        if (!searchBody.textSearch) {
+            return { count, entities };
+        }
+
         const semanticSearchBody = {
             search_text: searchBody.textSearch,
             limit: searchBody.limit,

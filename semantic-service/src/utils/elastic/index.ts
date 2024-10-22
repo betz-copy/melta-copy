@@ -68,7 +68,7 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    async formatElasticHits(hits: any[]) {
+    formatElasticHits(hits: any[]) {
         return hits.map((hit) => ({
             text: hit._source.text,
             title: hit._source.title,
@@ -107,7 +107,7 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    window_size: rrfWindowConstant,
+                    rank_window_size: rrfWindowConstant, // When merge to prod change to 'window_size'
                     rank_constant: rrfRankConstant,
                 },
             },
@@ -115,7 +115,7 @@ class ElasticClient {
             aggs: {
                 group_by_entity_id: {
                     terms: {
-                        field: 'entity_id',
+                        field: 'entity_id.keyword',
                         size: 100,
                     },
                     aggs: {
