@@ -4,8 +4,8 @@ import { Chunk } from '../express/semantics/interface';
 import { ModelApiService } from '../externalServices/modelApi';
 
 const {
-    model: { charsToRemove, chunkSplitter, chunkSize },
-    modelApi: { chunkBatchSize },
+    model: { charsToRemove, sentenceSplitter, maxSentenceLength },
+    modelApi: { concurrentSentenceEmbeddingLimit },
 } = config;
 
 export const streamToBuffer = (stream: Stream) => {
@@ -19,6 +19,33 @@ export const streamToBuffer = (stream: Stream) => {
 
 const cleanText = (text: string) => text.replaceAll(new RegExp(`[${charsToRemove.join()}]`, 'g'), '');
 
+/**
+ * Example: chunks: ['Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing']
+ * concurrentSentenceEmbeddingLimit = 2, maxSentenceLength = 3, sentenceSplitter = ' '
+ * returns: [['Lorem ipsum sit', 'sit amet consectetur'], [adipiscing]]
+ * Each sentence is 3 words long. And each sub array has at most 2 elements
+
+ * @param splittedText The text after it has been splitted.
+ * @returns A 2 dimensional string array. Each of the array's size is detemined by concurrentSentenceEmbeddingLimit
+ * (meaning how many sentences the model can embbed at once). Each element of the inner array is detemined by
+ * maxSentenceLength (meaning how long of a sentence can the model embbed).
+ */
+const getTextForEmbedding = (splittedText: string[]): string[][] => {
+    const arraysOfJoinedSentences: string[][] = [[]];
+
+    for (let index = 0; index < splittedText.length; index += maxSentenceLength) {
+        const sentence = splittedText.slice(index, index + maxSentenceLength).join(sentenceSplitter);
+
+        if (arraysOfJoinedSentences.at(-1)?.length === concurrentSentenceEmbeddingLimit) {
+            arraysOfJoinedSentences.push([]);            
+        }
+
+        arraysOfJoinedSentences.at(-1)?.push(sentence);
+    }
+
+    return arraysOfJoinedSentences;
+};
+
 export const splitTextIntoChunks = async (
     text: string,
     title: string,
@@ -29,7 +56,7 @@ export const splitTextIntoChunks = async (
 ): Promise<Chunk[]> => {
     const cleanedText = cleanText(text);
 
-    if (!chunkSize) {
+    if (!maxSentenceLength) {
         const embedding = await ModelApiService.embed([cleanedText])[0];
 
         return [
@@ -45,29 +72,17 @@ export const splitTextIntoChunks = async (
         ];
     }
 
-    const splitText = cleanedText.split(chunkSplitter);
-    const textChunks: string[] = [];
+    const splitText = cleanedText.split(sentenceSplitter);
+    const chunksForEmbedding = getTextForEmbedding(splitText);
+    
+    console.log('chunksForEmbedding', chunksForEmbedding);
+
     const chunks: Chunk[] = [];
 
-    for (let i = 0; i < splitText.length; i += chunkSize) {
-        const joinedChunk = splitText.slice(i, i + chunkSize).join(chunkSplitter);
-        textChunks.push(joinedChunk);
-    }
-
-    const splittedTextChunks = textChunks.reduce((acc: string[][], textChunk, index) => {
-        if (index % chunkBatchSize === 0) acc.push([]);
-        acc[acc.length - 1].push(textChunk);
-
-        return acc;
-    }, []);
-
-    console.log('splittedTextChunks', splittedTextChunks);
-
     await Promise.all(
-        splittedTextChunks.map(async (splittedTextChunk) => {
+        chunksForEmbedding.map(async (splittedTextChunk) => {
             const filtered = splittedTextChunk.filter((textChunk) => textChunk.length > 0);
             const embeddings = await ModelApiService.embed(filtered);
-            // console.log('embeddings', embeddings);
 
             filtered.forEach((textChunk, index) => {
                 chunks.push({

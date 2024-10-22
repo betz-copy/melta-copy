@@ -11,8 +11,8 @@ const config = {
         fileIdLength: env.get('FILE_ID_LENGTH').default('32').asInt(),
     },
     model: {
-        chunkSize: env.get('MODEL_CHUNK_SIZE').default(1).asInt(),
-        chunkSplitter: env.get('MODEL_CHUNK_SPLITTER').default('.').asString(),
+        maxSentenceLength: env.get('MODEL_MAX_SENTENCE_LENGTH').default(1).asInt(),
+        sentenceSplitter: env.get('MODEL_SENTENCE_SPILTTER').default('.').asString(),
         charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('["\n","\t",",","."]').asArray(),
     },
     minio: {
@@ -81,7 +81,7 @@ const config = {
         url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),
         searchRoute: env.get('MODEL_API_SEARCH_ROUTE').default('').asString(),
         endpoint: env.get('MODEL_API_ENDPOINT').default('embed').asString(),
-        chunkBatchSize: env.get('MODEL_API_CHUNK_BATCH_SIZE').default(100).asInt(),
+        concurrentSentenceEmbeddingLimit: env.get('MODEL_CONCURRENT_SENTENCE_LIMIT').default(100).asInt(),
         token: env.get('MODEL_API_TOKEN').default('pa-Ij1f9ka-IVcyRfdg9sfLntx36vDiRmvXhTY1Dr_EZxc').asString(),
         modelName: env.get('MODEL_API_MODEL_NAME').default('voyage-2').asString(),
     },
