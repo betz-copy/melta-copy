@@ -74,6 +74,8 @@ const config = {
         vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
         similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
         queryMinScore: env.get('ELASTIC_QUERY_MIN_SCORE').default(0.1).asFloat(),
+        topHitsByGroupSize: env.get('ELASTIC_TOP_HITS_BY_GROUP_SIZE').default(1).asInt(),
+        groupByEntityIdSize: env.get('ELASTIC_GROUP_BY_ENTITY_ID_SIZE').default(100).asInt(),
     },
     modelApi: {
         url: env.get('MODEL_API_URL').default('https://api.voyageai.com/v1/embeddings').asString(),

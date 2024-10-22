@@ -17,6 +17,8 @@ const {
         rrfRankConstant,
         user,
         password,
+        topHitsByGroupSize,
+        groupByEntityIdSize,
     },
 } = config;
 
@@ -116,12 +118,12 @@ class ElasticClient {
                 group_by_entity_id: {
                     terms: {
                         field: 'entityId.keyword',
-                        size: 100,
+                        size: groupByEntityIdSize,
                     },
                     aggs: {
                         top_hits_by_group: {
                             top_hits: {
-                                size: 1,
+                                size: topHitsByGroupSize,
                                 sort: [{ _score: { order: 'desc' } }],
                             },
                         },
