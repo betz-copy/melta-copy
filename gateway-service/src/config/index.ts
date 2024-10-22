@@ -70,7 +70,7 @@ const config = {
     },
     semanticSearchService: {
         url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
-        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/search').asString(),
+        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/sematnic/search').asString(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
