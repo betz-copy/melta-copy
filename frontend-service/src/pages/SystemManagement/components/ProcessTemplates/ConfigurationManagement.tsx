@@ -16,6 +16,7 @@ const ConfigurationManagement: React.FC = () => {
 
     const updateConfig = (path: string, newValue: any) => {
         const keys = path.split('.');
+
         const updated = deepClone(updatedConfigs);
 
         let obj = updated;
@@ -115,7 +116,7 @@ const ConfigurationManagement: React.FC = () => {
 
     return (
         <Grid container spacing={3}>
-            {Object.keys(configs).map((key) => renderField(key, configs[key]))}
+            {Object.entries(workspace.metadata).map(([configKey, configValue]) => renderField(configKey, configValue))}
             <Grid item xs={12}>
                 <Button variant="contained" color="primary" onClick={handleUpdate}>
                     Update
