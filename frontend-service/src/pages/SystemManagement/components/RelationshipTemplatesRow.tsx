@@ -13,7 +13,6 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
-import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -28,8 +27,7 @@ import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
-
-const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface RelationshipTemplateCardProps {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
@@ -117,6 +115,9 @@ const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -323,11 +324,11 @@ const RelationshipTemplatesRow: React.FC = () => {
                                             color={theme.palette.primary.main}
                                         />
                                     ) : (
-                                        <AppRegistrationIcon color="primary" style={{ ...environment.dynamicConfigs.iconSize }} fontSize="small" />
+                                        <AppRegistrationIcon color="primary" style={workspace.metadata.iconSize} fontSize="small" />
                                     )}
                                     <Typography
                                         color={theme.palette.primary.main}
-                                        style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
+                                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
                                     >
                                         {relationshipTemplateWithEntity.entityTemplate.displayName}
                                     </Typography>

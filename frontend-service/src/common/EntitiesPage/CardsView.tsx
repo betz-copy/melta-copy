@@ -10,7 +10,7 @@ import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
 
-const { infiniteScrollPageCount } = environment.staticConfigs.entitiesCardsView;
+const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
 export interface CardsViewRef {
     refetch: () => void;

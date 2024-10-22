@@ -13,7 +13,7 @@ import { filteredMap } from './filteredMap';
 import { getEntitiesWithDirectConnections } from '../services/entitiesService';
 import { environment } from '../globals';
 
-const { groupByEntitiesChunkSize } = environment.staticConfigs.ganttSettings;
+const { groupByEntitiesChunkSize } = environment.ganttSettings;
 
 export const getFormattedDateAccordingToField = (date: Date, dateField: string, entityTemplate: IMongoEntityTemplatePopulated) => {
     switch (entityTemplate.properties.properties[dateField].format) {
@@ -120,7 +120,7 @@ export const getScheduleComponentData = (
         if (startTime === undefined) return;
 
         let endTime = entity.properties[ganttItem.entityTemplate.endDateField];
-        if (endTime === undefined) endTime = environment.staticConfigs.maxDateTimestamp;
+        if (endTime === undefined) endTime = environment.maxDateTimestamp;
 
         return {
             include: true,

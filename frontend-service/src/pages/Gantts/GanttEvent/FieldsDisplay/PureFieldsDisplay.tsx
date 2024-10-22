@@ -6,7 +6,7 @@ import { environment } from '../../../../globals';
 import { formatToString } from '../../../../common/EntityProperties';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 
-const { ganttSettings } = environment.staticConfigs;
+const { ganttSettings } = environment;
 
 export interface IPureFieldsDisplayProps {
     fields: string[];

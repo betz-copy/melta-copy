@@ -8,10 +8,10 @@ import { MeltaTooltip } from './MeltaTooltip';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CustomIcon } from './CustomIcon';
-import { environment } from '../globals';
 import { getEntityTemplateColor } from '../utils/colors';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import { IEntity } from '../interfaces/entities';
+import { useWorkspaceStore } from '../stores/workspace';
 
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;
@@ -20,6 +20,8 @@ interface RelationshipReferenceViewProps {
     style?: CSSProperties;
 }
 const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const queryClient = useQueryClient();
 
     const theme = useTheme();
@@ -40,16 +42,16 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                         relatedEntityTemplate.iconFileId ? (
                             <CustomIcon
                                 iconUrl={relatedEntityTemplate.iconFileId}
-                                height={environment.dynamicConfigs.iconSize.height}
-                                width={environment.dynamicConfigs.iconSize.width}
+                                height={workspace.metadata.iconSize.height}
+                                width={workspace.metadata.iconSize.width}
                                 color={theme.palette.primary.main}
                             />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{
                                     color: theme.palette.primary.main,
-                                    height: environment.dynamicConfigs.iconSize.height,
-                                    width: environment.dynamicConfigs.iconSize.width,
+                                    height: workspace.metadata.iconSize.height,
+                                    width: workspace.metadata.iconSize.width,
                                 }}
                             />
                         )
@@ -103,16 +105,16 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                             relatedEntityTemplate.iconFileId ? (
                                 <CustomIcon
                                     iconUrl={relatedEntityTemplate.iconFileId}
-                                    height={environment.dynamicConfigs.iconSize.height}
-                                    width={environment.dynamicConfigs.iconSize.width}
+                                    height={workspace.metadata.iconSize.height}
+                                    width={workspace.metadata.iconSize.width}
                                     color={theme.palette.primary.main}
                                 />
                             ) : (
                                 <DefaultEntityTemplateIcon
                                     sx={{
                                         color: theme.palette.primary.main,
-                                        height: environment.dynamicConfigs.iconSize.height,
-                                        width: environment.dynamicConfigs.iconSize.width,
+                                        height: workspace.metadata.iconSize.height,
+                                        width: workspace.metadata.iconSize.width,
                                     }}
                                 />
                             )

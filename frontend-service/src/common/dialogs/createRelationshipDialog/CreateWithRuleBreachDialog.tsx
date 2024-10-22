@@ -11,7 +11,7 @@ import { ErrorToast } from '../../ErrorToast';
 import ExecWithRuleBreachDialog from '../execWithRuleBreachDialog';
 import { environment } from '../../../globals';
 
-const { errorCodes } = environment.staticConfigs;
+const { errorCodes } = environment;
 
 const CreateWithRuleBreachDialog: React.FC<{
     handleClose: () => void;

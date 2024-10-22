@@ -21,7 +21,7 @@ import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/rule
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
-const { errorCodes } = environment.staticConfigs;
+const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
     entityTemplate: IMongoEntityTemplatePopulated;

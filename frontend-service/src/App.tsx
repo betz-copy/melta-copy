@@ -28,7 +28,7 @@ const App: React.FC = () => {
     useEffect(() => {
         const browser = Bowser.getParser(window.navigator.userAgent);
         const isValidBrowser = browser.satisfies({
-            chrome: `>=${environment.staticConfigs.minimumSupportedChromeVersion}`,
+            chrome: `>=${environment.minimumSupportedChromeVersion}`,
         });
 
         if (!isValidBrowser) {
@@ -50,7 +50,7 @@ const App: React.FC = () => {
         const initUser = async () => {
             const user = AuthService.getUser();
 
-            const isUserUnauthorized = user?.id === environment.staticConfigs.unauthorizedId;
+            const isUserUnauthorized = user?.id === environment.unauthorizedId;
 
             if (!user || isUserUnauthorized) {
                 if (isUserUnauthorized) setIsErrorMyUser(true);

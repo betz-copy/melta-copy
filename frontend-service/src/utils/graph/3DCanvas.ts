@@ -7,7 +7,7 @@ import { environment } from '../../globals';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { ILabelIcon } from './helperTypes';
 
-const { graphSettings } = environment.staticConfigs;
+const { graphSettings } = environment;
 
 const getNodeRadius = (node: NodeObject) => {
     // formula taken from react-force-graph source code

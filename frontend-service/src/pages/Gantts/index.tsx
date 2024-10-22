@@ -15,7 +15,7 @@ import { CreateGanttDialog } from './CreateGanttDialog';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
 
-const { infiniteScrollPageCount } = environment.staticConfigs.ganttSettings;
+const { infiniteScrollPageCount } = environment.ganttSettings;
 
 interface IGanttsPageProps {
     setTitle: React.Dispatch<React.SetStateAction<string>>;

@@ -16,7 +16,6 @@ import SearchInput from '../../../common/inputs/SearchInput';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
-import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
@@ -37,8 +36,7 @@ import { CardMenu } from './CardMenu';
 import { CodeEditorDialog } from './codeEditor';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
-
-const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -95,6 +93,8 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     setAddActionsDialogState,
     updateEntityTemplateStatusAsync,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
@@ -121,14 +121,14 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                             {entityTemplate.iconFileId ? (
                                 <CustomIcon iconUrl={entityTemplate.iconFileId} height="24px" width="24px" />
                             ) : (
-                                <AppRegistrationIcon style={{ ...environment.dynamicConfigs.iconSize }} fontSize="small" />
+                                <AppRegistrationIcon style={{ ...workspace.metadata.iconSize }} fontSize="small" />
                             )}
                         </Grid>
                         <Grid item>
                             <MeltaTooltip title={entityTemplate.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -329,6 +329,8 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
     updateEntityTemplateStatusAsync,
     loadedEntityTemplateId,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     const [isEditableCategory, setIsEditableCategory] = useState(false);
     const containerWrapperRef = useRef<HTMLDivElement>(null);
@@ -357,7 +359,7 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
                                     ref={containerWrapperRef}
                                     contentEditable={isEditableCategory}
                                     style={{
-                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         fontWeight: '400',
                                         color: isEditableCategory ? theme.palette.primary.main : '#9398C2',
                                         outline: isEditableCategory ? `1px solid ${theme.palette.primary.main}` : '',
@@ -441,6 +443,9 @@ const CategoryEntitiesBox: React.FC<CategoryEntitiesBoxProps> = ({
 };
 
 const EntityTemplatesRow: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;

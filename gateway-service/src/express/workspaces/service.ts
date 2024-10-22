@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../../config';
-import { IWorkspace } from './interface';
+import { IMetadata, IWorkspace } from './interface';
 
 const {
     workspaceService: { url, baseRoute, requestTimeout },
@@ -46,6 +46,12 @@ export class WorkspaceService {
 
     static async deleteOne(id: string) {
         const { data } = await this.api.delete<IWorkspace>(`/${id}`);
+        return data;
+    }
+
+    static async updateMetadata(id: string, metadata: Partial<IMetadata>) {
+        const { data } = await this.api.patch<IWorkspace>(`/${id}/metadata`, { metadata });
+
         return data;
     }
 }

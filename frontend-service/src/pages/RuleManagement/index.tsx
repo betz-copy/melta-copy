@@ -5,15 +5,13 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useLocation, useParams } from 'wouter';
 import { BlueTitle } from '../../common/BlueTitle';
 import '../../css/pages.css';
-import { environment } from '../../globals';
 import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { getBreachAlertById, getBreachRequestById } from '../../services/ruleBreachesService';
 import RuleBreachDialog from './ruleBreachDialog';
 import { RuleBreachTable } from './table';
-
-const { defaultRowHeight } = environment.dynamicConfigs.agGrid;
+import { useWorkspaceStore } from '../../stores/workspace';
 
 interface RuleBreachDialogContainerProps {
     breachType: string;
@@ -79,6 +77,9 @@ export const RuleBreachDialogContainer: React.FC<RuleBreachDialogContainerProps>
 };
 
 const RuleManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight } = workspace.metadata.agGrid;
+
     const { breachType, ruleBreachId } = useParams<{ breachType: string; ruleBreachId: string }>();
     const [_, navigate] = useLocation();
     const [ruleBreach, setRuleBreach] = useState<IRuleBreachAlertPopulated | IRuleBreachRequestPopulated | null>(null);

@@ -1,11 +1,11 @@
 import axios from '../axios';
 import { environment } from '../globals';
-import { IWorkspace } from '../interfaces/workspaces';
+import { IMetadata, IWorkspace } from '../interfaces/workspaces';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {
     api: { workspaces },
-} = environment.staticConfigs;
+} = environment;
 
 export const getDir = async (path: IWorkspace['path']) => {
     const { data } = await axios.post<IWorkspace[]>(`${workspaces}/dir`, { path });
@@ -52,7 +52,7 @@ export const createOne = async (workspaceValues: WorkspaceWizardValues) => {
 };
 
 export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValues & { path: string }) => {
-    const { icon, logo, ...workspace } = workspaceValues;
+    const { icon, logo, metadata, ...workspace } = workspaceValues;
 
     const formData = generateFormData(workspace, (currentFormData) => {
         if (icon) currentFormData.append('iconFileId', icon.file instanceof File ? icon.file : icon.file.name!);
@@ -62,3 +62,14 @@ export const updateOne = async (id: string, workspaceValues: WorkspaceWizardValu
     const { data } = await axios.put<IWorkspace>(`${workspaces}/${id}`, formData);
     return data;
 };
+
+export const updateMetadata = async (id: string, updatedMetadata: Partial<IMetadata>) => {
+    const metadataToSend = updatedMetadata || {};
+    const { data } = await axios.patch<IWorkspace>(`${workspaces}/${id}/metadata`, metadataToSend);
+    return data;
+};
+
+// export const fetchDynamicConfigsFromGateway = async (id: string) => {
+//     const { data } = await axios.get(`${workspaces}/${id}/metadata`);
+//     return data.metadata || {};
+// };

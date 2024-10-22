@@ -11,7 +11,7 @@ import { drawText, getRectangleDimensionsByString, traceRectangle } from '../can
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';
 import { ILabelIcon, rangeAsString } from './helperTypes';
 
-const { graphSettings } = environment.staticConfigs;
+const { graphSettings } = environment;
 
 const searchNodeSizeInsideRangesDict = (connectionsCount: number, connectionsCountRangesToSizeDict: Record<rangeAsString, number>) => {
     const ranges = Object.keys(connectionsCountRangesToSizeDict) as rangeAsString[];
@@ -79,7 +79,7 @@ export const entityToNode = async (entity: IEntity, entityTemplate: IEntityTempl
             const iconLoadPromise = (async () => {
                 const img = new Image();
 
-                img.src = await apiUrlToImageSource(`/api${environment.staticConfigs.api.storage}/${entityTemplate.iconFileId}`);
+                img.src = await apiUrlToImageSource(`/api${environment.api.storage}/${entityTemplate.iconFileId}`);
                 return img;
             })();
 

@@ -30,7 +30,7 @@ import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
 
-const { errorCodes } = environment.staticConfigs;
+const { errorCodes } = environment;
 
 export type ICreateOrUpdateWithRuleBreachDialogState = {
     isOpen: boolean;
@@ -305,7 +305,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             entityTemplate._id ? entityTemplate._id : values.template._id,
                             draftId,
                         ),
-                    environment.staticConfigs.draftAutoSaveDebounce,
+                    environment.draftAutoSaveDebounce,
                 );
             }}
             validate={(values) => {
@@ -364,7 +364,7 @@ const CreateOrEditEntityDetails: React.FC<{
                             { ...newValues, entityId: entityToUpdate?.properties._id },
                             uniqueDraftId,
                         );
-                    }, environment.staticConfigs.draftAutoSaveDebounce),
+                    }, environment.draftAutoSaveDebounce),
                     [],
                 );
 

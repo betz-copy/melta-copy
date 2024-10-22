@@ -11,7 +11,7 @@ import { NotificationColor } from '../../../notificationColor';
 export const ProcessStatusUpdateNotification: React.FC<{
     notificationMetadata: IProcessStatusUpdateNotificationMetadataPopulated;
 }> = ({ notificationMetadata: { process, step, status } }) => {
-    const { notificationsMoreData } = environment.staticConfigs.notifications;
+    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processStatusUpdate)?.color;
 
     return (

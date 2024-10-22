@@ -15,7 +15,6 @@ import OpenSmallPreview from '../../../common/FilePreview/OpenSmallPreview';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { environment } from '../../../globals';
 import { IEntity } from '../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -29,6 +28,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -67,6 +67,8 @@ const EntityCard: React.FC<EntityCardProps> = ({
     variant = 'outlined',
     refetchQuery,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
@@ -180,12 +182,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 <CustomIcon
                                     color={entityTemplateColor}
                                     iconUrl={entityTemplate.iconFileId}
-                                    height={environment.dynamicConfigs.iconSize.height}
-                                    width={environment.dynamicConfigs.iconSize.width}
+                                    height={workspace.metadata.iconSize.height}
+                                    width={workspace.metadata.iconSize.width}
                                 />
                             ) : (
                                 <AppRegistrationIcon
-                                    sx={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }}
+                                    sx={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize, color: entityTemplateColor }}
                                 />
                             )}
                         </Grid>

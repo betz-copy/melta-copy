@@ -38,4 +38,8 @@ export class WorkspaceController extends DefaultController<WorkspaceManager> {
     async deleteOne(req: Request, res: Response) {
         res.json(await this.manager.deleteOne(req.params.id));
     }
+
+    async updateMetadata(req: Request, res: Response) {
+        res.json(await this.manager.updateMetadata(req.params.id, req.body));
+    }
 }

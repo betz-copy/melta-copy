@@ -9,7 +9,7 @@ import { NotificationColor } from '../../../../notificationColor';
 export const ProcessReviewerUpdateNotification: React.FC<{
     notificationMetadata: IProcessReviewerUpdateNotificationMetadataPopulated;
 }> = ({ notificationMetadata }) => {
-    const { notificationsMoreData } = environment.staticConfigs.notifications;
+    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processReviewerUpdate)?.color;
 
     return (

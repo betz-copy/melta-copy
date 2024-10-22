@@ -11,7 +11,7 @@ import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService'
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import RelationshipReferenceView from '../RelationshipReferenceView';
-import { environment } from '../../globals';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const TemplateEntitiesAutocomplete: React.FC<{
     template: IMongoEntityTemplatePopulated;
@@ -43,10 +43,11 @@ const TemplateEntitiesAutocomplete: React.FC<{
     helperText,
     size,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { cacheBlockSize } = workspace.metadata.agGrid;
+
     const [inputValue, setInputValue] = useState<string>(displayValue || '');
     const [allEntities, setAllEntities] = useState<IEntity[]>([]);
-
-    const { cacheBlockSize } = environment.dynamicConfigs.agGrid;
 
     const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery(
         ['searchEntitiesOfTemplate', template._id, inputValue],

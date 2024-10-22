@@ -12,7 +12,6 @@ import fileDownload from 'js-file-download';
 import React, { forwardRef, useImperativeHandle, useRef, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
@@ -32,8 +31,7 @@ import { TableButton } from '../TableButton';
 import { AddEntityButton } from './AddEntityButton';
 import { DraftCard } from './DraftCard';
 import { ResetFilterButton } from './ResetFilterButton';
-
-const { defaultRowHeight, defaultFontSize } = environment.dynamicConfigs.agGrid;
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export type TemplateTableRef = EntitiesTableOfTemplateRef<IEntity>;
 
@@ -46,6 +44,9 @@ const TemplateTable = forwardRef<
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
     }
 >(({ template, quickFilterText, page, setUpdatedEntities }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { defaultRowHeight, defaultFontSize } = workspace.metadata.agGrid;
+
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
@@ -113,16 +114,16 @@ const TemplateTable = forwardRef<
                         {template.iconFileId ? (
                             <CustomIcon
                                 iconUrl={template.iconFileId}
-                                height={environment.dynamicConfigs.iconSize.height}
-                                width={environment.dynamicConfigs.iconSize.width}
+                                height={workspace.metadata.iconSize.height}
+                                width={workspace.metadata.iconSize.width}
                                 color={theme.palette.primary.main}
                             />
                         ) : (
                             <DefaultEntityTemplateIcon
                                 sx={{
                                     color: theme.palette.primary.main,
-                                    height: environment.dynamicConfigs.iconSize.height,
-                                    width: environment.dynamicConfigs.iconSize.width,
+                                    height: workspace.metadata.iconSize.height,
+                                    width: workspace.metadata.iconSize.width,
                                 }}
                             />
                         )}

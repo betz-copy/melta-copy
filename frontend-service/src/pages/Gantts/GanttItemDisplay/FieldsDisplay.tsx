@@ -3,7 +3,7 @@ import { Typography } from '@mui/material';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { environment } from '../../../globals';
 
-const { ganttSettings } = environment.staticConfigs;
+const { ganttSettings } = environment;
 
 interface IFieldsDisplayProps {
     entityTemplate: IMongoEntityTemplatePopulated;

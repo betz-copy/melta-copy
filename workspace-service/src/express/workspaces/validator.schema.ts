@@ -4,28 +4,37 @@ import { Colors, WorkspaceTypes } from './interface';
 
 // Joi schema for IMetadata
 const metadataSchema = Joi.object({
-    shouldDisplayProcesses: Joi.boolean().required(),
     agGrid: Joi.object({
-        rowCount: Joi.number().required(),
-        defaultExpandedRowCount: Joi.number().required(),
-        defaultRowHeight: Joi.number().required(),
-        defaultFontSize: Joi.number().required(),
-        cacheBlockSize: Joi.number().required(),
-        infiniteInitialRowCount: Joi.number().required(),
-    }).required(),
+        rowCount: Joi.number(),
+        defaultExpandedRowCount: Joi.number(),
+        defaultRowHeight: Joi.number(),
+        defaultFontSize: Joi.number(),
+        cacheBlockSize: Joi.number(),
+        maxConcurrentDatasourceRequests: Joi.number(),
+        infiniteInitialRowCount: Joi.number(),
+    }).optional(),
+    activityLog: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
+    processInstances: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
+    permission: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
     mainFontSizes: Joi.object({
-        headlineTitleFontSize: Joi.string().required(),
-        headlineSubTitleFontSize: Joi.string().required(),
-    }).required(),
+        headlineTitleFontSize: Joi.string(),
+        headlineSubTitleFontSize: Joi.string(),
+    }).optional(),
     smallPreviewHeight: Joi.object({
-        number: Joi.string().required(),
-        unit: Joi.string().required(),
-    }).required(),
+        number: Joi.string(),
+        unit: Joi.string(),
+    }).optional(),
     iconSize: Joi.object({
-        width: Joi.string().required(),
-        height: Joi.string().required(),
-    }).required(),
-});
+        width: Joi.string(),
+        height: Joi.string(),
+    }).optional(),
+}).optional();
 
 // Joi schema for Workspace
 const workspaceSchema = Joi.object({
@@ -38,7 +47,6 @@ const workspaceSchema = Joi.object({
     colors: Joi.object(Object.values(Colors).reduce((acc, color) => ({ ...acc, [color]: HexColorSchema.required() }), {})).required(),
     iconFileId: Joi.string(),
     logoFileId: Joi.string(),
-    metadata: metadataSchema.required(),
 });
 
 // POST /api/workspaces/ids
@@ -106,6 +114,16 @@ export const deleteOneSchema = Joi.object({
 export const updateOneSchema = Joi.object({
     query: {},
     body: workspaceSchema,
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// PATCH /api/workspaces/:id/metadata
+export const updateMetadataSchema = Joi.object({
+    query: {},
+    body: metadataSchema,
+
     params: {
         id: MongoIdSchema.required(),
     },

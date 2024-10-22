@@ -6,7 +6,7 @@ import { CustomIcon } from '../../../common/CustomIcon';
 import { MeltaIcon } from '../../../common/MeltaIcon';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
-import { useWorkspaceStore } from '../../../stores/workspace';
+import { defaultMetadata, useWorkspaceStore } from '../../../stores/workspace';
 import { ActionMenu } from './ActionMenu';
 import './actionMenu.css';
 import { useUserStore } from '../../../stores/user';
@@ -19,14 +19,14 @@ interface IWorkspaceProps {
 }
 
 export const Workspace: React.FC<IWorkspaceProps> = ({
-    workspace: { name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id },
+    workspace: { name, displayName, path, type, colors, iconFileId, logoFileId, _id, metadata },
     openWizard,
     setMovedWorkspace,
     isMovedWorkspace,
 }) => {
     const minimalWorkspace = useMemo(
-        () => ({ name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id }),
-        [name, displayName, path, type, colors, metadata, iconFileId, logoFileId, _id],
+        () => ({ name, displayName, path, type, colors, iconFileId, logoFileId, _id, metadata }),
+        [name, displayName, path, type, colors, iconFileId, logoFileId, _id, metadata],
     );
 
     const currentUser = useUserStore((state) => state.user);
@@ -90,7 +90,7 @@ export const Workspace: React.FC<IWorkspaceProps> = ({
                         ...(isMovedWorkspace ? { opacity: 0.5, backgroundColor: 'rgba(0, 0, 0, 0.1)' } : {}),
                     }}
                     className="card"
-                    onClick={() => setWorkspace(minimalWorkspace)}
+                    onClick={() => setWorkspace({ ...minimalWorkspace, metadata: { ...defaultMetadata, ...minimalWorkspace.metadata } })}
                 >
                     {workspaceIcon}
 

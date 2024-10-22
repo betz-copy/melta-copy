@@ -11,8 +11,8 @@ import {
 } from '@mui/icons-material';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
@@ -22,6 +22,8 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
 }> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -38,7 +40,7 @@ export const CardMenu: React.FC<{
     };
     return (
         <>
-            <IconButton onClick={handleClick} style={{ ...environment.dynamicConfigs.iconSize }}>
+            <IconButton onClick={handleClick} style={workspace.metadata.iconSize}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>

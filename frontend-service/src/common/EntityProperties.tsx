@@ -17,7 +17,7 @@ import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
 
-const { maxNumOfCharactersNotInFullWidth } = environment.staticConfigs.entitiesProperties;
+const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
 pdfjs.GlobalWorkerOptions.workerSrc = '/pdf.worker.js';
 

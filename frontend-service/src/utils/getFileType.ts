@@ -14,7 +14,7 @@ export const getFileNameWithoutExtension = (name: string) => {
 };
 
 export const getPreviewContentType = (name: string) => {
-    const { video, audio, image, document } = environment.staticConfigs.fileExtensions;
+    const { video, audio, image, document } = environment.fileExtensions;
     const extension = getFileExtension(name).toLowerCase();
 
     if (extension === 'pdf') return 'pdf';

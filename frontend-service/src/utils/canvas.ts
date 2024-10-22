@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { environment } from '../globals';
 
-const { canvasSettings } = environment.staticConfigs;
+const { canvasSettings } = environment;
 
 export const traceRectangle = (ctx: CanvasRenderingContext2D, x: number, y: number, width: number, height: number, radius: number) => {
     ctx.moveTo(x + radius, y);

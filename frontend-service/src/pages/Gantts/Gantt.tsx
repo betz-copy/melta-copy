@@ -55,7 +55,7 @@ const {
     refetchInterval,
     ganttEntitiesChunkSize,
     searchParams: { selectedViewKey, selectedDateKey, heatmapModeKey },
-} = environment.staticConfigs.ganttSettings;
+} = environment.ganttSettings;
 
 interface IGanttProps {
     gantt: IGantt;

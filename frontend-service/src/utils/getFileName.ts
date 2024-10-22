@@ -1,5 +1,5 @@
 import { environment } from '../globals';
 
 export const getFileName = (fileId: string) => {
-    return fileId.slice(environment.staticConfigs.fileIdLength);
+    return fileId.slice(environment.fileIdLength);
 };

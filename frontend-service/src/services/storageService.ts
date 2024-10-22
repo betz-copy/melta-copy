@@ -8,7 +8,7 @@ export const apiUrlToImageSource = async (url: ApiUrl, workspaceId?: string) => 
     const { data } = await (workspaceId ? axios : axiosInstance).get(url, {
         baseURL: '',
         responseType: 'blob',
-        ...(workspaceId ? { headers: { [environment.staticConfigs.workspaceIdHeaderName]: workspaceId } } : {}),
+        ...(workspaceId ? { headers: { [environment.workspaceIdHeaderName]: workspaceId } } : {}),
     });
     return URL.createObjectURL(data);
 };

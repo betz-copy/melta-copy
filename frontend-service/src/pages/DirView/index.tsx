@@ -7,7 +7,7 @@ import { IWorkspace } from '../../interfaces/workspaces';
 import { MainBox } from '../../Main.styled';
 import { getDir, getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { getWorkspacePermissions } from '../../utils/permissions';
 import ErrorPage from '../ErrorPage';
 import { PermissionsDialog } from './PermissionsDialog';
@@ -38,8 +38,8 @@ const DirView: React.FC<{ params: { '*': string } }> = ({ params }) => {
         const handleWorkspace = async () => {
             if (!currentWorkspace) return;
 
-            setWorkspace(currentWorkspace);
-            document.title = environment.staticConfigs.defaultTitle;
+            setWorkspace({ ...currentWorkspace, metadata: { ...defaultMetadata, ...currentWorkspace.metadata } });
+            document.title = environment.defaultTitle;
 
             const workspacePermissions = await getWorkspacePermissions(currentWorkspace._id, currentUser.permissions);
             if (workspacePermissions) currentUser.permissions[currentWorkspace._id] = workspacePermissions;

@@ -209,10 +209,10 @@ export default {
         '3DViewOff': 'השבת תצוגה בתלת מימד',
         '3DViewOn': 'הפעל תצוגה בתלת מימד',
         labelIconDescriptions: {
-            [environment.staticConfigs.graphSettings.labelIcons.original.icon]: 'ישות מרכזית',
-            [environment.staticConfigs.graphSettings.labelIcons.locked.icon]: 'ישות נעולה',
-            [environment.staticConfigs.graphSettings.labelIcons.mainHighlighted.icon]: 'ישות מסומנת',
-            [environment.staticConfigs.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
+            [environment.graphSettings.labelIcons.original.icon]: 'ישות מרכזית',
+            [environment.graphSettings.labelIcons.locked.icon]: 'ישות נעולה',
+            [environment.graphSettings.labelIcons.mainHighlighted.icon]: 'ישות מסומנת',
+            [environment.graphSettings.labelIcons.highlighted.icon]: 'ישות מחוברת לישות מסומנת',
         },
         filterField: 'סינון שדה',
         additionalTemplates: 'תבניות נוספות',
@@ -253,7 +253,7 @@ export default {
     },
     error: {
         config: 'שגיאה בתקשורת לשרת',
-        unsupportedChromeVersion: `גרסת הדפדפן שלך לא נתמכת. אנא פנה למחשוב היחידתי להתקנת כרום מתאים (${environment.staticConfigs.minimumSupportedChromeVersion}+).`,
+        unsupportedChromeVersion: `גרסת הדפדפן שלך לא נתמכת. אנא פנה למחשוב היחידתי להתקנת כרום מתאים (${environment.minimumSupportedChromeVersion}+).`,
     },
     sideBar: {
         title: 'מלתעות',
@@ -925,15 +925,15 @@ export default {
         heatmapMode: 'מצב מפת חום',
         calendarMode: 'מצב לוח שנה',
         separators: {
-            [environment.staticConfigs.ganttSettings.separators.startEnd]: 'מפריד בין תאריך התחלה לתאריך סיום',
-            [environment.staticConfigs.ganttSettings.separators.field]: 'מפריד בין שדות של ישות',
-            [environment.staticConfigs.ganttSettings.separators.entity]: 'מפריד בין ישויות מאותו סוג',
-            [environment.staticConfigs.ganttSettings.separators.template]: 'מפריד בין תבניות ישות',
-            [environment.staticConfigs.ganttSettings.separators.related]: 'מפריד בין תבנית ישות לתבניות המקושרות אליה',
+            [environment.ganttSettings.separators.startEnd]: 'מפריד בין תאריך התחלה לתאריך סיום',
+            [environment.ganttSettings.separators.field]: 'מפריד בין שדות של ישות',
+            [environment.ganttSettings.separators.entity]: 'מפריד בין ישויות מאותו סוג',
+            [environment.ganttSettings.separators.template]: 'מפריד בין תבניות ישות',
+            [environment.ganttSettings.separators.related]: 'מפריד בין תבנית ישות לתבניות המקושרות אליה',
         },
         heatmapColors: {
-            [environment.staticConfigs.ganttSettings.heatmapColors.now]: 'פועל כרגע',
-            [environment.staticConfigs.ganttSettings.heatmapColors.idle]: 'לא פעיל',
+            [environment.ganttSettings.heatmapColors.now]: 'פועל כרגע',
+            [environment.ganttSettings.heatmapColors.idle]: 'לא פעיל',
         },
         actions: {
             save: 'שמירה',
@@ -1103,5 +1103,37 @@ export default {
         somethingWentWrong: 'משהו השתבש, אנא נסה שנית',
         imgName: 'שם התמונה',
         takePicture: 'צלם תמונה',
+    },
+    DynamicsConfigs: {
+        agGrid: {
+            rowCount: 'כמות שורות בagGrid',
+            defaultExpandedRowCount: 'כמות שורות בagGrid מוגדל',
+            defaultRowHeight: 'גובה שורות בטבלה',
+            defaultFontSize: 'גודל פונט בagGrid',
+            cacheBlockSize: '',
+            maxConcurrentDatasourceRequests: '',
+            infiniteInitialRowCount: '',
+        },
+        activityLog: {
+            infiniteScrollPageCount: '',
+        },
+        processInstances: {
+            infiniteScrollPageCount: '',
+        },
+        permission: {
+            infiniteScrollPageCount: '',
+        },
+        mainFontSizes: {
+            headlineTitleFontSize: '',
+            headlineSubTitleFontSize: '',
+        },
+        smallPreviewHeight: {
+            number: '',
+            unit: '',
+        },
+        iconSize: {
+            width: '',
+            height: '',
+        },
     },
 };

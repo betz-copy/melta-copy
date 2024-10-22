@@ -8,7 +8,7 @@ import { EntityPropertiesInternal } from '../../common/EntityProperties';
 import { NodeLabelIconsDescription } from './NodeLabelIconsDescription';
 import { environment } from '../../globals';
 
-const { graphSettings } = environment.staticConfigs;
+const { graphSettings } = environment;
 
 interface NodeTooltipProps {
     node: NodeObject;

@@ -14,19 +14,14 @@ import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef }
 import ScrollContainer from 'react-indiana-drag-scroll';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { toast } from 'react-toastify';
-import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { useWorkspaceStore, WorkspaceState } from '../../stores/workspace';
 import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { searchUsersRequest } from '../../services/userService';
 import { trycatch } from '../../utils/trycatch';
-import { IWorkspace } from '../../interfaces/workspaces';
-
-const { defaultRowHeight } = environment.dynamicConfigs.agGrid;
-const { infiniteScrollPageCount } = environment.dynamicConfigs.permission;
 
 ModuleRegistry.registerModules([ServerSideRowModelModule]);
 
@@ -169,7 +164,12 @@ const columnDefs = <Data extends IUser>(
 ];
 
 const getDatasource = <Data extends any = IUser>(
-    { _id }: IWorkspace,
+    {
+        _id,
+        metadata: {
+            permission: { infiniteScrollPageCount },
+        },
+    }: WorkspaceState['workspace'],
     quickFilter: string | undefined,
     onFail: (err: unknown) => void | undefined,
 ): IServerSideDatasource => {
@@ -198,18 +198,17 @@ const getDatasource = <Data extends any = IUser>(
 };
 
 const getRowModelProps = <Data extends any = IUser>(
-    workspace: IWorkspace,
-    paginationPageSize: number,
+    workspace: WorkspaceState['workspace'],
     quickFilterText: string | undefined,
     datasourceOnFail: (err: unknown) => void,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     return {
         rowModelType: 'serverSide',
         serverSideDatasource: getDatasource<IUser>(workspace, quickFilterText, datasourceOnFail),
-        cacheBlockSize: infiniteScrollPageCount,
-        maxBlocksInCache: infiniteScrollPageCount,
+        cacheBlockSize: workspace.metadata.permission.infiniteScrollPageCount,
+        maxBlocksInCache: workspace.metadata.permission.infiniteScrollPageCount,
         pagination: true,
-        paginationPageSize,
+        paginationPageSize: workspace.metadata.permission.infiniteScrollPageCount,
     };
 };
 
@@ -228,6 +227,8 @@ export type PermissionsTableRef<Data> = {
 const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
     ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }, ref: ForwardedRef<PermissionsTableRef<IUser>>) => {
         const workspace = useWorkspaceStore((state) => state.workspace);
+        const { defaultRowHeight } = workspace.metadata.agGrid;
+
         const gridRef = useRef<AgGridReact<IUser>>(null);
 
         const getRowId = ({ _id }) => _id;
@@ -250,10 +251,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
             toast.error(i18next.t('permissions.failedToLoadAllPermissions'));
         };
 
-        const rowModelProps = useMemo(
-            () => getRowModelProps(workspace, infiniteScrollPageCount, quickFilterText, datasourceOnFail),
-            [quickFilterText, workspace],
-        );
+        const rowModelProps = useMemo(() => getRowModelProps(workspace, quickFilterText, datasourceOnFail), [quickFilterText, workspace]);
 
         return (
             <AgGridReact<IUser>

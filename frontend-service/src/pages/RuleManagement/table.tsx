@@ -25,7 +25,7 @@ import { ActionTypes } from '../../interfaces/ruleBreaches/actionMetadata';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { environment } from '../../globals';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -54,6 +54,7 @@ const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) 
 };
 
 const getColumnDefs = (
+    defaultRowHeight: number,
     breachType: BreachType,
     onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void,
 ) => {
@@ -108,7 +109,7 @@ const getColumnDefs = (
             { title: i18next.t('ruleManagement.actionType') },
             Object.values(actionTypeTranslations),
             400,
-            environment.dynamicConfigs.agGrid.defaultRowHeight,
+            defaultRowHeight,
         ),
         dateColDef('createdAt', ({ data }) => data?.createdAt, {
             title: i18next.t('ruleManagement.createdAt'),
@@ -160,8 +161,10 @@ const RuleBreachTable = forwardRef<
         onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void;
     }
 >(({ rowHeight, pageRowCount = 5, fontSize, minColumnWidth, breachType, onReviewBreachClick }, ref) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const gridRef = useRef<AgGridReact>(null);
-    const columnDefs: ColDef[] = getColumnDefs(breachType, onReviewBreachClick);
+    const columnDefs: ColDef[] = getColumnDefs(workspace.metadata.agGrid.defaultRowHeight, breachType, onReviewBreachClick);
 
     const datasourceOnFail = (err: unknown) => {
         toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));

@@ -9,7 +9,7 @@ import { NotificationColor } from '../../../notificationColor';
 export const ArchiveProcessNotification: React.FC<{ notificationMetadata: IArchiveProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { process, isArchived },
 }) => {
-    const { notificationsMoreData } = environment.staticConfigs.notifications;
+    const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.archivedProcess)?.color;
 
     return (

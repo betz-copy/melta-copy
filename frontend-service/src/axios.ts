@@ -15,7 +15,7 @@ axios.interceptors.request.use((config) => {
     const { workspace } = useWorkspaceStore.getState();
 
     if (!config.headers) config.headers = {};
-    config.headers[environment.staticConfigs.workspaceIdHeaderName] = workspace._id;
+    config.headers[environment.workspaceIdHeaderName] = workspace._id;
 
     return config;
 });

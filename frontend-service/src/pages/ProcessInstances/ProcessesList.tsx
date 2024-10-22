@@ -8,15 +8,13 @@ import { useQueryClient } from 'react-query';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
-import { environment } from '../../globals';
 import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
-
-const { infiniteScrollPageCount } = environment.dynamicConfigs.processInstances;
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const ProcessesList: React.FC<{
     onSetStartDate: (newStartDateInput: Date) => void;
@@ -26,6 +24,10 @@ const ProcessesList: React.FC<{
     endDateInput: Date | null;
     templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const { infiniteScrollPageCount } = workspace.metadata.processInstances;
+
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
 
     const queryClient = useQueryClient();

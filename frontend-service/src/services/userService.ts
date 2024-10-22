@@ -4,7 +4,7 @@ import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubComp
 import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
-const { users } = environment.staticConfigs.api;
+const { users } = environment.api;
 
 export const getMyUserRequest = async () => {
     const { data } = await axios.get<IUser>(`${users}/my`);

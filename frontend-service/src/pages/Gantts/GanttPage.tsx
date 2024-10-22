@@ -16,7 +16,7 @@ import { Gantt } from './Gantt';
 import { GanttSideBar } from './SideBar';
 import { GanttsTopBar } from './TopBar';
 
-const { ganttSettings } = environment.staticConfigs;
+const { ganttSettings } = environment;
 
 const GanttPage: React.FC = () => {
     const { ganttId } = useParams<{ ganttId: string }>();

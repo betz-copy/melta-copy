@@ -14,7 +14,7 @@ import { createRuleBreachRequestRequest } from '../../services/ruleBreachesServi
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';
 
-const { errorCodes } = environment.staticConfigs;
+const { errorCodes } = environment;
 
 const DeleteRelationshipDialog: React.FC<{
     isOpen: boolean;
@@ -80,7 +80,7 @@ const DeleteRelationshipDialog: React.FC<{
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === environment.staticConfigs.errorCodes) {
+                if (errorMetadata?.errorCode === environment.errorCodes) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,

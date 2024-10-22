@@ -6,18 +6,20 @@ import { toast } from 'react-toastify';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
-import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
-
-const { infiniteScrollPageCount } = environment.dynamicConfigs.activityLog;
+import { useWorkspaceStore } from '../../../../stores/workspace';
 
 const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: IMongoEntityTemplatePopulated }> = ({
     expandedEntity,
     entityTemplate,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    const { infiniteScrollPageCount } = workspace.metadata.activityLog;
+
     const [openPopper, setOpenPopper] = React.useState(false);
     const entityId = expandedEntity.entity.properties._id;
     useEffect(() => {

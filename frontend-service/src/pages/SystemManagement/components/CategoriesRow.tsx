@@ -12,13 +12,13 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { CategoryWizard } from '../../../common/wizards/category';
-import { environment } from '../../../globals';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
 import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -37,6 +37,8 @@ interface CategoryCardProps {
 }
 
 const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategoryDialogState, setCategoryWizardDialogState }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
     const theme = useTheme();
 
@@ -61,7 +63,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                             <MeltaTooltip title={category.displayName}>
                                 <Typography
                                     style={{
-                                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                        fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                         color: theme.palette.primary.main,
                                         fontWeight: '400',
                                         textOverflow: 'ellipsis',
@@ -91,6 +93,8 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
 };
 
 const CategoriesRow: React.FC = () => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -137,7 +141,7 @@ const CategoriesRow: React.FC = () => {
                     <Grid item container justifyContent="space-between" alignItems="center" height="40px">
                         <Typography
                             style={{
-                                fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
+                                fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
                                 fontWeight: '400',
                                 color: '#9398C2',
                             }}

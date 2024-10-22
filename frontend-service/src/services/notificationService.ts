@@ -2,7 +2,7 @@ import axios from '../axios';
 import { environment } from '../globals';
 import { INotificationCountGroups, INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../interfaces/notifications';
 
-const { notifications } = environment.staticConfigs.api;
+const { notifications } = environment.api;
 
 export const getMyNotificationsRequest = async (query: {
     limit: number;

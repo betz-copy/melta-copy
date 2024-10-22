@@ -12,7 +12,7 @@ import { GanttItemEdit } from './GanttItemEdit';
 import { ConnectionIcon } from './ConnectionIcon.styled';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 
-const { separators } = environment.staticConfigs.ganttSettings;
+const { separators } = environment.ganttSettings;
 
 interface IGanttItemDisplayProps {
     item: IGanttItem;

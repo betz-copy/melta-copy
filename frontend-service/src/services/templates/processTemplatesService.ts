@@ -12,7 +12,7 @@ import {
     ISearchProcessTemplatesBody,
 } from '../../interfaces/processes/processTemplate';
 
-const { processTemplates } = environment.staticConfigs.api;
+const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
 export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area'];
 

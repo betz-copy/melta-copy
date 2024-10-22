@@ -6,7 +6,7 @@ import { environment } from '../../../globals';
 import { NavButton } from '../../../common/NavButton';
 import { IGanttHeatmapBox } from '../../../interfaces/gantts';
 
-const { heatmapColors } = environment.staticConfigs.ganttSettings;
+const { heatmapColors } = environment.ganttSettings;
 
 interface IHeatmapBoxProps {
     heatmapBox: IGanttHeatmapBox;

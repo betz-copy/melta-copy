@@ -42,7 +42,7 @@ interface genericMenuState {
     };
 }
 
-const { graphSettings } = environment.staticConfigs;
+const { graphSettings } = environment;
 const { BatchSize, limit3DConnections } = graphSettings;
 
 const Graph: React.FC = () => {

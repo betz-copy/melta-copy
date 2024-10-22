@@ -2,6 +2,39 @@ import Joi from 'joi';
 import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
 import { WorkspaceTypes } from './interface';
 
+const metadataSchema = Joi.object({
+    agGrid: Joi.object({
+        rowCount: Joi.number(),
+        defaultExpandedRowCount: Joi.number(),
+        defaultRowHeight: Joi.number(),
+        defaultFontSize: Joi.number(),
+        cacheBlockSize: Joi.number(),
+        maxConcurrentDatasourceRequests: Joi.number(),
+        infiniteInitialRowCount: Joi.number(),
+    }).optional(),
+    activityLog: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
+    processInstances: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
+    permission: Joi.object({
+        infiniteScrollPageCount: Joi.number(),
+    }).optional(),
+    mainFontSizes: Joi.object({
+        headlineTitleFontSize: Joi.string(),
+        headlineSubTitleFontSize: Joi.string(),
+    }).optional(),
+    smallPreviewHeight: Joi.object({
+        number: Joi.string(),
+        unit: Joi.string(),
+    }).optional(),
+    iconSize: Joi.object({
+        width: Joi.string(),
+        height: Joi.string(),
+    }).optional(),
+}).optional();
+
 const workspaceSchema = Joi.object({
     name: WorkspaceNameSchema,
     displayName: Joi.string().required(),
@@ -84,4 +117,13 @@ export const updateOneSchema = Joi.object({
         id: MongoIdSchema.required(),
     },
     files: Joi.array().items(iconFileSchema),
+});
+
+// PATCH /api/workspaces/:id/metadata
+export const updateMetadataSchema = Joi.object({
+    query: {},
+    body: metadataSchema,
+    params: {
+        id: MongoIdSchema.required(),
+    },
 });

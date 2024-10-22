@@ -12,7 +12,7 @@ import { IRuleMap } from '../../interfaces/rules';
 import { getAllTemplates, GetAllTemplatesType } from '../../services/templates/getAllTemplates';
 import { getFile } from '../../services/workspacesService';
 import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
+import { defaultMetadata, useWorkspaceStore } from '../../stores/workspace';
 import { getWorkspacePermissions } from '../../utils/permissions';
 import { mapTemplates } from '../../utils/templates';
 import ErrorPage from '../ErrorPage';
@@ -65,7 +65,7 @@ export const MeltaRoutes: React.FC<IMeltaRoutesProps> = ({ path }) => {
         const handleWorkspace = async () => {
             if (!workspace) return;
 
-            setWorkspace(workspace);
+            setWorkspace({ ...workspace, metadata: { ...defaultMetadata, ...workspace.metadata } });
             document.title = workspace.displayName;
 
             const workspacePermissions = await getWorkspacePermissions(workspace._id, currentUser.permissions);

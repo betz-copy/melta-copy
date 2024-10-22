@@ -2,7 +2,7 @@ import { StorageService } from '../../externalServices/storageService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';
 import { UsersManager } from '../users/manager';
-import { IWorkspace } from './interface';
+import { IMetadata, IWorkspace } from './interface';
 import { WorkspaceService } from './service';
 
 export class WorkspaceManager extends DefaultManagerProxy {
@@ -101,5 +101,16 @@ export class WorkspaceManager extends DefaultManagerProxy {
         await this.deleteFilesWrapper(id, () => this.storageService.deleteFiles([iconFileId, logoFileId].filter(Boolean) as string[]));
 
         return WorkspaceService.deleteOne(id);
+    }
+
+    async updateMetadata(id: string, metadata: Partial<IMetadata>) {
+        const currentWorkspace = await WorkspaceService.getById(id);
+
+        const updatedMetadata = {
+            ...currentWorkspace.metadata,
+            ...metadata,
+        };
+
+        return WorkspaceService.updateMetadata(id, updatedMetadata);
     }
 }

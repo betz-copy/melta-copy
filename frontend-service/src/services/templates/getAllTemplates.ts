@@ -6,7 +6,7 @@ import { IMongoCategory } from '../../interfaces/categories';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
-const { getAllTemplates: getAllTemplatesRoute } = environment.staticConfigs.api;
+const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 
 export type GetAllTemplatesType = {
     categories: IMongoCategory[];

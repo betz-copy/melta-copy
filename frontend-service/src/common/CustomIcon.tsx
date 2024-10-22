@@ -50,7 +50,7 @@ interface CustomIconProps extends Omit<CustomImageProps, 'imageUrl'> {
 export const CustomIcon: React.FC<CustomIconProps> = ({ iconUrl, width, height, color, preserveColor = false, style, workspaceId }) => {
     return (
         <CustomImage
-            imageUrl={`/api${environment.staticConfigs.api.storage}/${iconUrl}`}
+            imageUrl={`/api${environment.api.storage}/${iconUrl}`}
             width={width}
             height={height}
             color={color}

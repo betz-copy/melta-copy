@@ -2,7 +2,7 @@ import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
-import { IWorkspace, WorkspaceTypes } from './interface';
+import { IMetadata, IWorkspace, WorkspaceTypes } from './interface';
 import { WorkspacesModel } from './model';
 
 export class WorkspacesManager {
@@ -87,7 +87,6 @@ export class WorkspacesManager {
                 const currentWorkspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
                 const oldPath = `${currentWorkspace.path}/${currentWorkspace.name}`;
 
-                // Update all related paths if it's a directory
                 await WorkspacesModel.updateMany(
                     { path: { $regex: `^${oldPath}` } },
                     [
@@ -107,33 +106,9 @@ export class WorkspacesManager {
                 );
             }
 
-            // Fetch the existing workspace for metadata comparison
-            const existingWorkspace = await WorkspacesModel.findById(id, {}, { session }).lean().exec();
-            if (!existingWorkspace) {
-                throw new DocumentNotFoundError(id);
-            }
-
-            // Merge existing metadata with the updated metadata, keeping only the changes
-            const updatedMetadata = {
-                ...existingWorkspace.metadata, // Existing metadata
-                ...workspace.metadata, // Updated metadata (from frontend)
-            };
-
-            // Only update the workspace with changed metadata and properties
-            return WorkspacesModel.findOneAndUpdate(
-                { _id: id },
-                {
-                    $set: {
-                        path: workspace.path,
-                        name: workspace.name,
-                        displayName: workspace.displayName,
-                        colors: workspace.colors,
-                        metadata: updatedMetadata, // Update with only the changed metadata
-                    },
-                },
-                { new: true, session, lean: true },
-            )
+            return WorkspacesModel.findOneAndReplace({ _id: id }, workspace, { new: true, session })
                 .orFail(new DocumentNotFoundError(id))
+                .lean()
                 .exec();
         });
     }
@@ -147,6 +122,29 @@ export class WorkspacesManager {
             }
 
             return WorkspacesModel.findByIdAndDelete(id, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+        });
+    }
+
+    static async updateMetadata(id: string, metadata: Partial<IMetadata>) {
+        return transaction(async (session) => {
+            const existingWorkspace = await WorkspacesModel.findById(id, {}, { session }).orFail(new DocumentNotFoundError(id)).lean().exec();
+
+            const updatedMetadata = {
+                ...existingWorkspace.metadata,
+                ...metadata,
+            };
+
+            return WorkspacesModel.findOneAndUpdate(
+                { _id: id },
+                {
+                    $set: {
+                        metadata: updatedMetadata,
+                    },
+                },
+                { new: true, session, lean: true },
+            )
+                .orFail(new DocumentNotFoundError(id))
+                .exec();
         });
     }
 }

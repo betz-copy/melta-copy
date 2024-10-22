@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
 import { AgGridReact } from '@ag-grid-community/react';
@@ -32,7 +33,6 @@ import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
@@ -46,8 +46,7 @@ import { trycatch } from '../../utils/trycatch';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-
-const { rowCount, defaultExpandedRowCount } = environment.dynamicConfigs.agGrid;
+import { useWorkspaceStore, WorkspaceState } from '../../stores/workspace';
 
 export const defaultFilterModel = {
     disabled: {
@@ -107,6 +106,7 @@ export type IConnection = {
 };
 
 export const getRowModelProps = <Data extends any = IEntity>(
+    workspace: WorkspaceState['workspace'],
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
@@ -118,7 +118,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
         return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.dynamicConfigs.agGrid;
+    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = workspace.metadata.agGrid;
 
     return {
         rowModelType: 'serverSide',
@@ -186,16 +186,21 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowData,
             quickFilterText,
             rowHeight,
-            pageRowCount = rowCount,
+            pageRowCount,
             fontSize,
             hideNonPreview,
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
-            mainEntity,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const workspace = useWorkspaceStore((state) => state.workspace);
+        const { rowCount, defaultExpandedRowCount } = workspace.metadata.agGrid;
+
+        // eslint-disable-next-line no-param-reassign
+        if (!pageRowCount) pageRowCount = rowCount;
+
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
@@ -286,8 +291,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity],
+            () => getRowModelProps(workspace, rowModelType, template, rowData, pageRowCount!, quickFilterText, datasourceOnFail),
+            [workspace, rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 
         const gridStyles = {
@@ -415,6 +420,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     animateRows
+                    // eslint-disable-next-line react/no-unstable-nested-components
                     loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
                     suppressCsvExport
                     suppressContextMenu

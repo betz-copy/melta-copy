@@ -5,7 +5,6 @@ import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useRef } from 'react';
-import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -15,6 +14,7 @@ import SearchInput from '../inputs/SearchInput';
 import { MeltaTooltip } from '../MeltaTooltip';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
 import { AddEntityButton } from './AddEntityButton';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -98,6 +98,7 @@ const EntitiesPageHeadline: React.FC<{
     refreshServerSide,
     setUpdatedEntities,
 }) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 
@@ -120,6 +121,7 @@ const EntitiesPageHeadline: React.FC<{
             onAddEntity(entity.properties._id);
         }
     };
+
     return (
         <Grid
             container
@@ -138,7 +140,7 @@ const EntitiesPageHeadline: React.FC<{
                         title={pageTitle}
                         component="h4"
                         variant="h4"
-                        style={{ fontSize: environment.dynamicConfigs.mainFontSizes.headlineTitleFontSize }}
+                        style={{ fontSize: workspace.metadata.mainFontSizes.headlineTitleFontSize }}
                     />
                     <Grid item paddingLeft="3rem" paddingTop="5px">
                         <Grid item container wrap="nowrap" gap="15px">

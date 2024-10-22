@@ -1,7 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 
-const { activityLog } = environment.staticConfigs.api;
+const { activityLog } = environment.api;
 
 interface IBaseActivityLog {
     _id: string;

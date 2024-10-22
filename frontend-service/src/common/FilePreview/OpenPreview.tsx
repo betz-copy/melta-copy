@@ -5,33 +5,38 @@ import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<void>; img?: ReactNode; showText?: boolean }> = ({
     fileName,
     onClick,
     img,
     showText,
-}) => (
-    <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-        <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
-            {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
-            {showText && (
-                <Typography
-                    sx={{
-                        marginRight: '5px',
-                        fontSize: environment.dynamicConfigs.mainFontSizes.headlineSubTitleFontSize,
-                        textOverflow: 'ellipsis',
-                        overflow: 'hidden',
-                        whiteSpace: 'nowrap',
-                        maxWidth: '100%',
-                    }}
-                >
-                    {getFileNameWithoutExtension(fileName)}
-                </Typography>
-            )}
-        </IconButton>
-    </Grid>
-);
+}) => {
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    return (
+        <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
+            <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
+                {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
+                {showText && (
+                    <Typography
+                        sx={{
+                            marginRight: '5px',
+                            fontSize: workspace.metadata.mainFontSizes.headlineSubTitleFontSize,
+                            textOverflow: 'ellipsis',
+                            overflow: 'hidden',
+                            whiteSpace: 'nowrap',
+                            maxWidth: '100%',
+                        }}
+                    >
+                        {getFileNameWithoutExtension(fileName)}
+                    </Typography>
+                )}
+            </IconButton>
+        </Grid>
+    );
+};
 
 const OpenPreview: React.FC<{
     fileId: string | File;
@@ -50,7 +55,7 @@ const OpenPreview: React.FC<{
     return (
         <Grid>
             {download ? (
-                <Link href={`/api${environment.staticConfigs.api.storage}/${fileId}`} target="_blank" download>
+                <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
                     <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
                 </Link>
             ) : (

@@ -10,14 +10,24 @@ export enum WorkspaceTypes {
 }
 
 export interface IMetadata {
-    shouldDisplayProcesses: boolean;
+    shouldDisplayProcesses?: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;
         defaultRowHeight: number;
         defaultFontSize: number;
         cacheBlockSize: number;
+        maxConcurrentDatasourceRequests: number;
         infiniteInitialRowCount: number;
+    };
+    activityLog: {
+        infiniteScrollPageCount: number;
+    };
+    processInstances: {
+        infiniteScrollPageCount: number;
+    };
+    permission: {
+        infiniteScrollPageCount: number;
     };
     mainFontSizes: {
         headlineTitleFontSize: string;
@@ -42,5 +52,5 @@ export interface IWorkspace {
     colors: Record<Colors, HexColor>;
     iconFileId?: string;
     logoFileId?: string;
-    metadata: Partial<IMetadata>;
+    metadata?: Partial<IMetadata>;
 }
