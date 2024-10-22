@@ -22,11 +22,11 @@ const cleanText = (text: string) => text.replaceAll(new RegExp(`[${charsToRemove
 /**
  * Example: chunks: ['Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing']
  * concurrentSentenceEmbeddingLimit = 2, maxSentenceLength = 3, sentenceSplitter = ' '
- * returns: [['Lorem ipsum sit', 'sit amet consectetur'], [adipiscing]]
+ * returns: [['Lorem ipsum dolor', 'sit amet consectetur'], [adipiscing]]
  * Each sentence is 3 words long. And each sub array has at most 2 elements
 
  * @param splittedText The text after it has been splitted.
- * @returns A 2 dimensional string array. Each of the array's size is detemined by concurrentSentenceEmbeddingLimit
+ * @returns A 2 dimensional string array. Each sub-array size is detemined by concurrentSentenceEmbeddingLimit
  * (meaning how many sentences the model can embbed at once). Each element of the inner array is detemined by
  * maxSentenceLength (meaning how long of a sentence can the model embbed).
  */
