@@ -236,3 +236,9 @@ services:
       MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
       MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
       MAX_REQUEST_BYTE_SIZE: ${MAX_REQUEST_BYTE_SIZE}
+      MODEL_API_URL: ${MODEL_API_URL}
+
+  mock-model-api:
+    build:
+      context: ./scripts/mock-model-api
+      dockerfile: Dockerfile

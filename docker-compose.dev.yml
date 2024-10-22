@@ -320,7 +320,13 @@ services:
     volumes:
       - logs:/usr/src/app/logs
       - ../neo4j-graph-rag/src:/app/src
+    networks:
+      - network
 
+  mock-model-api:
+    ports:
+      - 8015:8000
+    restart: always
     networks:
       - network
 
