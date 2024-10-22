@@ -38,7 +38,7 @@ class SemanticConsumer {
 
             console.log('Deleting files: ', value);
 
-            await manager.deleteFiles(value.minio_file_ids);
+            await manager.deleteFiles(value.minioFileIds);
 
             msg.ack();
         } catch (err: any) {

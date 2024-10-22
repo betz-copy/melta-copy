@@ -9,10 +9,10 @@ const {
 interface SingleResult {
     text: string;
     title: string;
-    workspace_id: string;
-    template_id: string;
-    entity_id: string;
-    minio_file_id: string;
+    workspaceId: string;
+    templateId: string;
+    entityId: string;
+    minioFileId: string;
 }
 
 export interface SemanticSearchResult {
@@ -30,7 +30,7 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
 
         Object.values(elasticResults).forEach((resultKind) => {
             resultKind.forEach((document, index) => {
-                const docId = (document as SingleResult)?.entity_id ?? (document as IEntityWithDirectRelationships)!.entity!.properties!._id;
+                const docId = (document as SingleResult)?.entityId ?? (document as IEntityWithDirectRelationships)!.entity!.properties!._id;
 
                 if (!results[docId]) {
                     results[docId] = { rrf_score: 0, ...document };
@@ -43,7 +43,7 @@ export class SemanticSearchService extends DefaultExternalServiceApi {
         return Object.values(results).sort((a: any, b: any) => b.rrf_score! - a.rrf_score!);
     }
 
-    async search(searchBody: Omit<ISearchBatchBody, 'templates' | 'textSearch'> & { templates: string[]; search_text?: string }) {
+    async search(searchBody: Omit<ISearchBatchBody, 'templates' | 'textSearch'> & { templates: string[]; textSearch?: string }) {
         try {
             const { data } = await this.api.post<SemanticSearchResult>(searchRoute, searchBody);
 

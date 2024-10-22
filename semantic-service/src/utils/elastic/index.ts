@@ -55,10 +55,10 @@ class ElasticClient {
                     },
                     text: { type: 'text' },
                     title: { type: 'text' },
-                    workspace_id: { type: 'text' },
-                    template_id: { type: 'text' },
-                    entity_id: { type: 'text' },
-                    minio_file_id: { type: 'text' },
+                    workspaceId: { type: 'text' },
+                    templateId: { type: 'text' },
+                    entityId: { type: 'text' },
+                    minioFileId: { type: 'text' },
                 },
             },
         });
@@ -72,15 +72,15 @@ class ElasticClient {
         return hits.map((hit) => ({
             text: hit._source.text,
             title: hit._source.title,
-            template_id: hit._source.template_id,
-            entity_id: hit._source.entity_id,
-            minio_file_id: hit._source.minio_file_id,
-            workspace_id: hit._source.workspace_id,
+            templateId: hit._source.templateId,
+            entityId: hit._source.entityId,
+            minioFileId: hit._source.minioFileId,
+            workspaceId: hit._source.workspaceId,
         }));
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
-        const filters = templates && templates.length > 0 ? { terms: { template_id: templates } } : {};
+        const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
 
         const indexName = `${index}-${this.workspaceId}`;
         const searchBody = {
@@ -115,7 +115,7 @@ class ElasticClient {
             aggs: {
                 group_by_entity_id: {
                     terms: {
-                        field: 'entity_id.keyword',
+                        field: 'entityId.keyword',
                         size: 100,
                     },
                     aggs: {
@@ -143,7 +143,7 @@ class ElasticClient {
 
     async deleteFiles(minioFileIds: string[]) {
         const indexName = `${index}-${this.workspaceId}`;
-        return ElasticClient.client!.deleteByQuery({ index: indexName, query: { terms: { minio_file_id: minioFileIds } } });
+        return ElasticClient.client!.deleteByQuery({ index: indexName, query: { terms: { minioFileId: minioFileIds } } });
     }
 }
 

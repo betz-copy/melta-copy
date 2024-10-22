@@ -37,10 +37,10 @@ export const splitTextIntoChunks = async (
                 text: cleanedText,
                 embedding,
                 title,
-                template_id: templateId,
-                entity_id: entityId,
-                minio_file_id: minioFileId,
-                workspace_id: workspaceId,
+                templateId,
+                entityId,
+                minioFileId,
+                workspaceId,
             },
         ];
     }
@@ -74,10 +74,10 @@ export const splitTextIntoChunks = async (
                     text: textChunk,
                     embedding: embeddings[index],
                     title,
-                    template_id: templateId,
-                    entity_id: entityId,
-                    minio_file_id: minioFileId,
-                    workspace_id: workspaceId,
+                    templateId,
+                    entityId,
+                    minioFileId,
+                    workspaceId,
                 });
             });
         }),

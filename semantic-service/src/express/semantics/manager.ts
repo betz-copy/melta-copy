@@ -24,9 +24,9 @@ export class SemanticManager {
     }
 
     public async search(searchBody: ISearchRequest) {
-        const embeddedQuery = await ModelApiService.embed([searchBody.search_text]);
+        const embeddedQuery = await ModelApiService.embed([searchBody.textSearch]);
 
-        return this.elasticClient.hybridSearch(searchBody.search_text, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
+        return this.elasticClient.hybridSearch(searchBody.textSearch, embeddedQuery[0], searchBody.limit, searchBody.skip, searchBody.templates);
     }
 
     public createIndex() {
@@ -39,13 +39,13 @@ export class SemanticManager {
 
     private async indexFile({
         minioFileId,
-        template_id: templateId,
-        entity_id: entityId,
+        templateId,
+        entityId,
     }: Omit<IIndexFilesRequest, 'minioFileIds'> & { minioFileId: string }) {
         const content = await this.minioClient.readFile(minioFileId);
 
         if (!content) {
-            logger.error(`Content is None for minio_file_id: ${minioFileId}`);
+            logger.error(`Content is None for minioFileId: ${minioFileId}`);
             return;
         }
 
@@ -57,7 +57,7 @@ export class SemanticManager {
     }
 
     public async indexFiles(fileData: IIndexFilesRequest) {
-        await Promise.allSettled(fileData.minio_file_ids.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
+        await Promise.allSettled(fileData.minioFileIds.map((minioFileId: string) => this.indexFile({ ...fileData, minioFileId })));
     }
 
     public deleteFiles(minioFileIds: string[]) {

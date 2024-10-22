@@ -301,7 +301,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         const semanticSearchBody = {
-            search_text: searchBody.textSearch,
+            textSearch: searchBody.textSearch,
             limit: searchBody.limit,
             skip: searchBody.skip,
             templates: Object.keys(searchBody.templates),
@@ -311,7 +311,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         let combinedResults = this.semanticSearchSearch.combineResults({ results, entities }).slice(searchBody.skip, searchBody.limit);
         combinedResults = await Promise.all(
             combinedResults.map(async (entity) =>
-                entity?.entity_id ? { entity: await this.service.getEntityInstanceById(entity.entity_id) } : entity,
+                entity?.entityId ? { entity: await this.service.getEntityInstanceById(entity.entityId) } : entity,
             ),
         );
 
@@ -323,7 +323,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, templateId: string) {
         // const semanticSearchBody = {
-        //     search_text: searchBody.textSearch,
+        //     textSearch: searchBody.textSearch,
         //     limit: searchBody.limit,
         //     skip: searchBody.skip,
         //     templates: [templateId],
@@ -345,7 +345,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async countEntitiesByTemplates(templateIds: string[], textSearch: string = '') {
         const semanticSearchBody = {
-            search_text: textSearch,
+            textSearch: textSearch,
             limit: 10,
             skip: 0,
             templates: templateIds,
@@ -357,7 +357,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const result = templateIds
             .map((templateId) => {
                 const fullTextCount = entitiesCountByTemplates.find((templateCount) => templateCount.templateId === templateId)?.count ?? 0;
-                const semanticCount = semanticResults.filter((semanticResult) => templateId === semanticResult.template_id).length;
+                const semanticCount = semanticResults.filter((semanticResult) => templateId === semanticResult.templateId).length;
                 return { templateId, count: fullTextCount + semanticCount };
             })
             .filter((template) => template.count > 0);
