@@ -18,6 +18,7 @@ export class IFramesValidator extends DefaultController {
 
     private async validateHasPermissionsToIFrame(iFrame: IFrame, allowedCategoriesIds: string[]) {
         const unauthorizedCategories = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
+        console.log({ unauthorizedCategories });
 
         if (unauthorizedCategories.length > 0) {
             throw new ServiceError(403, 'user not authorized ', {
@@ -33,16 +34,20 @@ export class IFramesValidator extends DefaultController {
             this.authorizer.getWorkspacePermissions(req.user!.id),
             this.authorizer.userCanWriteTemplates(req),
         ]);
+        console.log({ userPermissions });
 
         if (userPermissions.admin) return;
 
         const allowedCategoriesIds = Object.keys(userPermissions.instances?.categories ?? {});
+        console.log({ allowedCategoriesIds, existingIFrameId });
 
         if (newIFrame) {
             await this.validateHasPermissionsToIFrame(newIFrame, allowedCategoriesIds);
         }
         if (existingIFrameId) {
             const iFrame = await this.iFramesManager.getIFrameById(existingIFrameId);
+            console.log({ iFrame });
+
             await this.validateHasPermissionsToIFrame(iFrame, allowedCategoriesIds);
         }
     }
