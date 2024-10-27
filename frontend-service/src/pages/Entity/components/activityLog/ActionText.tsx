@@ -10,6 +10,7 @@ import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTem
 import { IActivityLog } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../../../../utils/HtmlTagsStringValue';
 import { getFileName, getFilesName } from '../../../../utils/getFileName';
+import { P } from '../../../../utils/icons/fa6Icons';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -153,26 +154,25 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
     }
 
     const contentDisplayNameByTemplate = (content: string) => {
-        const fieldFormat = checkIfFormatIsFileId();
-
-        if (fieldFormat === 'fileId') {
-            return typeof content === 'string' && content.slice(32, -1);
-        } else if (fieldFormat === 'arrayOfIds') {
-            return typeof content === 'string' && getFilesName(content);
+        if (isFileIdFormat()) {
+            return getFilesName(content);
+        } else if (isArrayOfFileIds()) {
+            return getFilesName(content);
         }
 
         return content;
     };
 
-    const checkIfFormatIsFileId = (): string => {
-        return entityTemplate.properties.properties[fieldName].type === 'array' &&
-            entityTemplate.properties.properties[fieldName].items &&
-            entityTemplate.properties.properties[fieldName].items.type === 'string' &&
-            entityTemplate.properties.properties[fieldName].items.format === 'fileId'
-            ? 'arrayOfIds'
-            : entityTemplate.properties.properties[fieldName].type === 'string' && entityTemplate.properties.properties[fieldName].format === 'fileId'
-            ? 'fileId'
-            : 'other';
+    const isFileIdFormat = (): boolean => {
+        const { type, format } = entityTemplate.properties.properties[fieldName];
+
+        return type === 'string' && format === 'fileId';
+    };
+
+    const isArrayOfFileIds = (): boolean => {
+        const { type, items } = entityTemplate.properties.properties[fieldName];
+
+        return type === 'array' && items?.type === 'string' && items.format === 'fileId';
     };
 
     return (

@@ -5,7 +5,12 @@ export const getFileName = (fileId: string) => {
 };
 
 export const getFilesName = (files: string): string => {
-    const filesArr: string[] = files.split(',');
+    if (!files) return ' ';
 
-    return filesArr.map((file) => file.slice(environment.fileIdLength + 1, -1)).join(', ');
+    const fileNames: string[] = files
+        .split(',')
+        .map((file) => file.trim().slice(environment.fileIdLength + 1, -1))
+        .filter(Boolean);
+
+    return fileNames.join(', ');
 };
