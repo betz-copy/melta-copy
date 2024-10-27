@@ -318,9 +318,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                                 onClick={(event) => {
                                                     handleMenuItemClick(event, iFrame._id);
                                                 }}
-                                                onMouseUp={(event) => {
-                                                    handleMenuItemClick(event, iFrame._id);
-                                                }}
+                                                // onMouseUp={(event) => {
+                                                //     handleMenuItemClick(event, iFrame._id);
+                                                // }}
                                                 sx={{
                                                     '&:hover': {
                                                         backgroundColor: '#B8B8B8',
