@@ -27,6 +27,8 @@ export class IFramesValidator extends DefaultController {
     }
 
     async validateUserHasPermissionsToIFrame(req: Request, newIFrame: IFrame | undefined, existingIFrameId: string | undefined) {
+        console.log('ghghghhghghghghggh');
+
         const [userPermissions] = await Promise.all([
             this.authorizer.getWorkspacePermissions(req.user!.id),
             this.authorizer.userCanWriteTemplates(req),
