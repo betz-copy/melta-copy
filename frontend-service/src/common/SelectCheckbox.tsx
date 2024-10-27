@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -16,7 +16,6 @@ import {
     Typography,
     useTheme,
 } from '@mui/material';
-import { Hive as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import lodashGroupBy from 'lodash.groupby';
 import lodashUniqby from 'lodash.uniqby';
@@ -121,6 +120,9 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     handleCheckboxClick?: (value: boolean) => void;
     onDragEnd?: (result: DropResult) => void;
     isSelectDisabled?: boolean;
+    hideSearchBar?: boolean;
+    hideChooseAll?: boolean;
+    dynamicWidth?: number;
 }>;
 
 export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -514,6 +516,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     handleCheckboxClick = () => {},
     onDragEnd,
     isSelectDisabled = false,
+    hideSearchBar,
+    hideChooseAll,
+    dynamicWidth,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -532,9 +537,9 @@ const SelectCheckbox = <Option extends any, Group extends any>({
         });
 
     // eslint-disable-next-line no-nested-ternary
+
     const borderRadiusStyle = overrideSx ? (isOpen ? '12px 12px 12px 0' : '12px') : isOpen ? '7px 7px 0 0' : '7px';
     const [openMap, setOpenMap] = useState<{ [groupId: string]: boolean }>({});
-
     return (
         <FormControl style={{ borderRadius: isOpen ? '7px 7px 0 0' : '7px' }}>
             <Select
@@ -545,13 +550,15 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         style: {
                             height: toTopBar ? '180px' : '333px',
                             minWidth: '219px',
-                            width: horizontalOrigin === 154 ? '219px' : undefined,
+                            width: horizontalOrigin === 154 ? '219px' : dynamicWidth ? `${dynamicWidth}px` : undefined,
                             ...(darkMode ? {} : { backgroundColor: toTopBar ? '#EBEFFA' : '#FFFFFF' }),
-                            borderRadius: overrideSx ? '0px 0px 20px 20px' : '20px 0px 20px 20px',
+                            borderRadius: overrideSx ? '10px' : '20px 0px 20px 20px',
                             padding: toTopBar ? '5px, 10px' : '10px, 10px, 5px, 10px',
-                            boxShadow: '-2px 2px 4px 0px #1E27754D',
+                            boxShadow: '-2px 2px 6px 0px #1E27754D',
                             top: '39px',
                             gap: '15px',
+                            marginTop: '5px',
+                            border: darkMode ? `solid 2px ${theme.palette.primary.main}` : 'none',
                         },
                         sx: {
                             overflowY: 'overlay',
@@ -564,14 +571,19 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         },
                     },
                     transformOrigin: {
-                        vertical: 'top',
-                        horizontal: horizontalOrigin,
+                        vertical: overrideSx ? 'top' : 'top',
+                        horizontal: overrideSx ? 'center' : horizontalOrigin,
                     },
                 }}
                 // eslint-disable-next-line react/no-unstable-nested-components
                 IconComponent={() => (
                     <Box display="flex" alignContent="center" alignItems="center" sx={{ gap: '10px', marginRight: '14px' }}>
-                        {img || (isOpen ? <IoIosArrowUp /> : <IoIosArrowDown />)}
+                        {img ||
+                            (isOpen ? (
+                                <IoIosArrowUp style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
+                            ) : (
+                                <IoIosArrowDown style={{ color: theme.palette.primary.main, height: '16px', width: '16px' }} />
+                            ))}
                     </Box>
                 )}
                 size={size}
@@ -592,7 +604,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: 'none',
+                    boxShadow: '-2px 2px 6px 0px #1E277540',
+                    borderRadius: '8px',
                     ...(darkMode
                         ? { color: theme.palette.primary.main, '& .MuiOutlinedInput-notchedOutline': { borderColor: '#d2d3e3' } }
                         : {
@@ -605,12 +618,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
             >
-                {!isSelectDisabled && (
+                {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {!isSelectDisabled && !hideChooseAll ? (
                     <>
-                        <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />
                         <ChooseAllMenuItem
                             options={options}
-                            selectedOptionsFiltered={selectedOptionsFiltered!}
+                            selectedOptionsFiltered={selectedOptionsFiltered}
                             setSelectedOptions={setSelectedOptions}
                             optionsFiltered={optionsFiltered}
                         />
@@ -618,7 +631,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                             <Divider style={{ width: '199px' }} />
                         </Box>
                     </>
+                ) : (
+                    <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
+                        {title}
+                    </Typography>
                 )}
+
                 {groupsProps.useGroups ? (
                     <SelectOptionsMenuItemsGrouped
                         options={options}

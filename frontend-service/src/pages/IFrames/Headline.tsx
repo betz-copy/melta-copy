@@ -7,10 +7,12 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Iframe from 'react-iframe';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
@@ -66,6 +68,22 @@ const IFrameHeadline: React.FC<{
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });
+    const initialHistoryLength = useRef(window.history.length);
+    const [countClickInIframe, setCountClickInIframe] = useState(0);
+
+    const goBack = () => {
+        setCountClickInIframe(countClickInIframe + 1);
+        window.history.back();
+        // console.log({ countClickInIframe }, 'start: ', initialHistoryLength.current);
+        // console.log('current', window.history.length);
+    };
+
+    const goForward = () => {
+        setCountClickInIframe(countClickInIframe - 1);
+        window.history.forward();
+        // console.log({ countClickInIframe }, 'start: ', initialHistoryLength.current);
+        // console.log('current', window.history.length);
+    };
 
     return (
         <Grid
@@ -79,34 +97,33 @@ const IFrameHeadline: React.FC<{
             dir="rtl"
         >
             <Grid container direction="row" display="flex" wrap="nowrap" alignItems="center">
-                <Grid container wrap="nowrap" alignItems="start">
-                    <Grid container item sx={{ display: 'flex', alignItems: 'center' }}>
-                        <Grid item sx={{ paddingLeft: '20px', display: 'flex' }}>
-                            {iFrame.iconFileId ? (
-                                <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
-                            ) : (
-                                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
-                            )}
-                        </Grid>
-                        <MeltaTooltip title={iFrame.name} placement="bottom-end">
-                            <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
-                                <Typography
-                                    style={{
-                                        textOverflow: 'ellipsis',
-                                        whiteSpace: 'nowrap',
-                                        overflow: 'hidden',
-                                        textAlign: 'right',
-                                        padding: 15,
-                                        fontWeight: 'bold',
-                                        maxWidth: '240px',
-                                    }}
-                                    fontSize="20px"
-                                >
-                                    {iFrame.name}
-                                </Typography>
-                            </Grid>
-                        </MeltaTooltip>
+                <Grid container wrap="nowrap" alignItems="start" sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Grid item sx={{ paddingLeft: '20px', display: 'flex' }}>
+                        {iFrame.iconFileId ? (
+                            <CustomIcon color={theme.palette.primary.main} iconUrl={iFrame.iconFileId} height="24px" width="24px" />
+                        ) : (
+                            <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="medium" />
+                        )}
                     </Grid>
+                    <MeltaTooltip title={iFrame.url} placement="bottom-end">
+                        <Grid item sx={{ display: 'flex', alignItems: 'center' }}>
+                            <Typography
+                                style={{
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'normal',
+                                    overflow: 'hidden',
+                                    textAlign: 'right',
+                                    padding: 15,
+                                    fontWeight: 'bold',
+                                    maxWidth: '240px',
+                                    width: '200px',
+                                }}
+                                fontSize="20px"
+                            >
+                                {iFrame.name}
+                            </Typography>
+                        </Grid>
+                    </MeltaTooltip>
                 </Grid>
                 {!isIFramePage && (
                     <Grid container wrap="nowrap" justifyContent="flex-end">
@@ -196,9 +213,16 @@ const IFrameHeadline: React.FC<{
                     },
                 }}
             >
-                <Iframe url={iFrame!.url} title={iFrame!.name} width="100%" height="100%" frameBorder={0} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px' }}>
+                    <IconButton onClick={goBack} disabled={window.history.length - countClickInIframe < initialHistoryLength.current}>
+                        <ArrowBackIcon />
+                    </IconButton>
+                    <IconButton onClick={goForward} disabled={countClickInIframe === 0}>
+                        <ArrowForwardIcon />
+                    </IconButton>
+                </div>
+                <Iframe url={iFrame?.url} title={iFrame?.name} width="100%" height="100%" frameBorder={0} name="iframe" />
             </Dialog>
-
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}
                 handleClose={() => setIFrameWizardDialogState({ isWizardOpen: false, iFrame: null })}
