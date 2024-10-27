@@ -1106,34 +1106,34 @@ export default {
     },
     DynamicsConfigs: {
         agGrid: {
-            rowCount: 'כמות שורות בagGrid',
-            defaultExpandedRowCount: 'כמות שורות בagGrid מוגדל',
-            defaultRowHeight: 'גובה שורות בטבלה',
-            defaultFontSize: 'גודל פונט בagGrid',
-            cacheBlockSize: '',
-            maxConcurrentDatasourceRequests: '',
-            infiniteInitialRowCount: '',
+            rowCount: 'מספר שורות ב-agGrid',
+            defaultExpandedRowCount: 'מספר שורות מורחבות ברירת מחדל ב-agGrid',
+            defaultRowHeight: 'גובה שורה ברירת מחדל ב-agGrid',
+            defaultFontSize: 'גודל גופן ברירת מחדל ב-agGrid',
+            cacheBlockSize: 'גודל בלוק זיכרון מטמון ב-agGrid',
+            maxConcurrentDatasourceRequests: 'מספר בקשות בו זמנית למקור נתונים ב-agGrid',
+            infiniteInitialRowCount: 'מספר שורות התחלתי במצב אינסופי ב-agGrid',
         },
         activityLog: {
-            infiniteScrollPageCount: '',
+            infiniteScrollPageCount: 'מספר עמודים בגלילה אינסופית ביומן פעילות',
         },
         processInstances: {
-            infiniteScrollPageCount: '',
+            infiniteScrollPageCount: 'מספר עמודים בגלילה אינסופית במופעי תהליכים',
         },
         permission: {
-            infiniteScrollPageCount: '',
+            infiniteScrollPageCount: 'מספר עמודים בגלילה אינסופית בהרשאות',
         },
         mainFontSizes: {
-            headlineTitleFontSize: '',
-            headlineSubTitleFontSize: '',
+            headlineTitleFontSize: 'גודל גופן כותרת ראשית',
+            headlineSubTitleFontSize: 'גודל גופן כותרת משנה',
         },
         smallPreviewHeight: {
-            number: '',
-            unit: '',
+            number: 'מספר גובה תצוגה מקדימה קטנה',
+            unit: 'יחידת גובה תצוגה מקדימה קטנה',
         },
         iconSize: {
-            width: '',
-            height: '',
+            width: 'רוחב אייקון',
+            height: 'גובה אייקון',
         },
     },
 };
