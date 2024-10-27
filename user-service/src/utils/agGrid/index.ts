@@ -3,6 +3,7 @@
 import { ServiceError } from '../../express/error';
 import {
     basicFilterOperationTypes,
+    FilterQuery,
     filterTypes,
     IAgGridRequest,
     IAgGridSort,
@@ -51,34 +52,28 @@ const translateAgGridFilter = (
 };
 
 export const translateAgGridFilterModel = (filterModel: IAgGridRequest['filterModel']) => {
-    const query: any = {};
-
-    Object.entries(filterModel).forEach(([field, filter]) => {
+    return Object.entries(filterModel).reduce((acc, [field, filter]) => {
         switch (filter.filterType) {
             case filterTypes.text:
-                query[field] = translateAgGridFilter(filter.type, filter.filter);
+                acc[field] = translateAgGridFilter(filter.type, filter.filter);
                 break;
             case filterTypes.number:
-                query[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
+                acc[field] = translateAgGridFilter(filter.type, filter.filter, filter.filterTo);
                 break;
             case filterTypes.date:
-                query[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
+                acc[field] = translateAgGridFilter(filter.type, filter.dateFrom, filter.dateTo);
                 break;
             case filterTypes.set:
-                query[field] = { $in: filter.values };
+                acc[field] = { $in: filter.values };
                 break;
         }
-    });
-
-    return query;
+        return acc;
+    }, {} as Record<string, FilterQuery>);
 };
 
 export const translateAgGridSortModel = (sortModel: IAgGridSort[]) => {
-    const sort: any = {};
-
-    sortModel.forEach(({ colId, sort: sortType }) => {
-        sort[colId] = sortType === 'asc' ? 1 : -1;
-    });
-
-    return sort;
+    return sortModel.reduce((acc, { colId, sort: sortType }) => {
+        acc[colId] = sortType === 'asc' ? 1 : -1;
+        return acc;
+    }, {} as Record<string, number>);
 };

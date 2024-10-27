@@ -1,4 +1,12 @@
-import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
+import {
+    ColDef,
+    ICellRendererParams,
+    IDateFilterParams,
+    ISetFilterParams,
+    ValueFormatterParams,
+    ValueGetterFunc,
+    ValueGetterParams,
+} from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
@@ -312,16 +320,20 @@ export const dateColDef = <Data extends any = IEntity>(
     };
 };
 
-export const translatedEnumColDef = <Data extends any = IEntity>(
-    field: string,
-    valueGetter: ValueGetterFunc<Data>,
-    value: { title: string },
-    valuesMap: Record<string, string>,
-    hardcodedWidth?: number,
-    hideColumn = false,
-    hideValue = false,
-    disableFilterAndSort = false,
-): ColDef<Data> => {
+interface TranslatedEnumColDefOptions<Data> {
+    field: string;
+    valueGetter: (params: ValueGetterParams<Data>) => string | undefined;
+    title: string;
+    valuesMap: Record<string, string>;
+    hardcodedWidth?: number;
+    hideColumn?: boolean;
+    hideValue?: boolean;
+    disableFilterAndSort?: boolean;
+}
+
+export const translatedEnumColDef = <Data extends any = IEntity>(options: TranslatedEnumColDefOptions<Data>): ColDef<Data> => {
+    const { field, valueGetter, title, valuesMap, hardcodedWidth, hideColumn = false, hideValue = false, disableFilterAndSort = false } = options;
+
     const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
     const filterParams: ISetFilterParams<Data, string | undefined> = {
@@ -336,7 +348,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
 
     return {
         field,
-        headerName: value.title,
+        headerName: title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
         filter: 'agSetColumnFilter',

@@ -68,3 +68,16 @@ export interface IAgGridRequest {
     filterModel: Record<string, IAgGridFilterModel>;
     sortModel: IAgGridSort[];
 }
+
+export type FilterQuery =
+    | string
+    | { $ne: string }
+    | { $exists: boolean }
+    | { $lt: number }
+    | { $lte: number }
+    | { $gt: number }
+    | { $gte: number }
+    | { $regex: RegExp }
+    | { $not: { $regex: RegExp } }
+    | { $in: (string | null)[] }
+    | { $gte: number; $lte: number };
