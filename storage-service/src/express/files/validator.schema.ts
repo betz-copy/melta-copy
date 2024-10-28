@@ -46,7 +46,5 @@ export const workspaceSchema = Joi.object({
     },
     headers: Joi.object({
         workspaceId: Joi.string().optional(),
-    })
-        .optional()
-        .unknown(true),
+    }).optional(),
 });

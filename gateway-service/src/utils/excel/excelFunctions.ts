@@ -10,7 +10,6 @@ import {
 } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
-import { StorageService } from '../../externalServices/storageService';
 
 interface IExcelStyle {
     columnHeader: {
@@ -65,15 +64,13 @@ const createWorksheet = async (workbook: Excel.Workbook, template: IMongoEntityT
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
 
-    const allProperties = properties;
-    Object.keys(allProperties).forEach((key) => {
-        if (!displayColumns.includes(key)) delete allProperties[key];
-    });
-
-    const sheetColumns: Partial<Excel.Column>[] = [];
-    Object.entries(allProperties).forEach(([propertyKey, propertyTemplate]) => {
-        sheetColumns.push({ key: propertyKey, header: propertyTemplate.title, width: 20 });
-    });
+    const sheetColumns: Partial<Excel.Column>[] = displayColumns
+        .filter((key) => properties[key])
+        .map((key) => ({
+            key,
+            header: properties[key].title,
+            width: 20,
+        }));
 
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns.includes(externalColumn.key));
     worksheet.columns = sheetColumns.concat(externalColumns);
@@ -84,6 +81,34 @@ export const getFileName = (fileId: string) => {
     return fileId.slice(config.storageService.fileIdLength);
 };
 
+const relationshipRefCell = (cell: Excel.Cell, [key, value]: [string, IEntitySingleProperty], row: Record<string, any>, workspacePath: string) => {
+    cell.value = {
+        text: row[key].properties[value.relationshipReference!.relatedTemplateField],
+        hyperlink: `${config.service.meltaBaseUrl}${workspacePath}/entity/${row[key].properties._id}`,
+    };
+};
+
+const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, value: string, workspaceId: string) => {
+    cell.value = {
+        text: isFileArray ? `${config.excel.multipleFilesName}${rowIndex}` : getFileName(value),
+        hyperlink: `${config.service.meltaBaseUrl}${config.storageService.baseRoute}/${isFileArray ? 'zip/' : ''}${encodeURIComponent(value)}/${workspaceId}`,
+    };
+};
+
+const listCell = (cell: Excel.Cell, row: Record<string, any>, key: string, template: IEntityTemplatePopulated) => {
+    const list = row[key].flatMap((text: string, index: number) => (index < row[key].length - 1 ? [text, ', '] : [text]));
+
+    cell.value = {
+        richText: list.map((text: string) => ({
+            text,
+            font: {
+                ...excelStyle.cell,
+                color: { argb: text === ', ' ? 'FF000000' : hexToARGB(template.enumPropertiesColors![key][text]) },
+            },
+        })),
+    };
+};
+
 const fixComplexProperties = (
     cell: Excel.Cell,
     template: IEntityTemplatePopulated,
@@ -91,36 +116,19 @@ const fixComplexProperties = (
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
     workspace: { path: string; id: string },
-    _storageService: StorageService,
 ) => {
-    const isFiles = value?.items?.format === 'fileId';
-
+    const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
+    const isSingleFile = value.format === 'fileId';
     if (value.format === 'relationshipReference') {
-        cell.value = {
-            text: row[key].properties[value.relationshipReference!.relatedTemplateField],
-            hyperlink: `${config.service.meltaBaseUrl}${workspace.path}/entity/${row[key].properties._id}`,
-        };
+        relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
-    if (value.format === 'fileId' || isFiles) {
-        cell.value = {
-            text: isFiles ? `attachmentZip${rowIndex}` : getFileName(row[key]),
-            hyperlink: `${config.service.meltaBaseUrl}/api/files/${isFiles ? 'zip/' : ''}${encodeURIComponent(row[key])}/${workspace.id}`,
-        };
+    if (isSingleFile || isFileArray) {
+        filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
         return true;
     }
     if (value.type === 'array') {
-        const list = row[key].flatMap((text: string, index: number) => (index < row[key].length - 1 ? [text, ', '] : [text]));
-
-        cell.value = {
-            richText: list.map((text: string) => ({
-                text,
-                font: {
-                    ...excelStyle.cell,
-                    color: { argb: text === ', ' ? 'FF000000' : hexToARGB(template.enumPropertiesColors![key][text]) },
-                },
-            })),
-        };
+        listCell(cell, row, key, template);
         return true;
     }
     return false;
@@ -132,7 +140,6 @@ const styleAWorksheet = (
     template: IMongoEntityTemplatePopulated,
     displayColumns: string[],
     workspace: { path: string; id: string },
-    storageService: StorageService,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -154,7 +161,7 @@ const styleAWorksheet = (
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspace, storageService);
+                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspace);
 
                 if (!isComplex) {
                     cell.value = row[key];

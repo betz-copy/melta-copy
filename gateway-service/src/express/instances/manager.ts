@@ -155,7 +155,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 template,
                 displayColumns,
                 workspace,
-                this.storageService,
             );
         }
     }
