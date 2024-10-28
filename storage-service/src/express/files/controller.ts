@@ -25,7 +25,7 @@ export default class FilesController extends DefaultController<FilesManager> {
     async downloadZip(req: express.Request, res: express.Response) {
         try {
             const { path } = req.params;
-            const fileIds = path.split('?');
+            const fileIds = path.split(',');
             const filesData = await this.manager.getFilesData(fileIds);
 
             const archive = archiver('zip', {

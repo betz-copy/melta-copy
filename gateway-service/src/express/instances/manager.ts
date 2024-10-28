@@ -46,8 +46,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private ruleBreachesManager: RuleBreachesManager;
 
+    private workspaceId: string;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
+        this.workspaceId = workspaceId;
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
@@ -96,14 +99,15 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return { props, files: filesToUpload };
     }
 
-    async exportEntities(exportEntitiesBody: IExportEntitiesBody, workspaceId: string) {
+    async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
 
-        const workspace = await WorkspaceService.getById(workspaceId);
+        const workspace = await WorkspaceService.getById(this.workspaceId);
         const { path, name, type } = workspace;
         const workspacePath = `${path}/${name}${type}`;
+
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: workspaceId });
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId });
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
