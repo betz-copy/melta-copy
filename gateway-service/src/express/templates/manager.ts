@@ -1,4 +1,5 @@
 /* eslint-disable no-param-reassign */
+import _ from 'lodash';
 import { AxiosError, AxiosResponse } from 'axios';
 import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
@@ -624,15 +625,18 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         if (!removedProperties.length) return;
 
-        const removedFilesProperties = removedProperties.reduce((acc, propertyToRemove) => {
-            const { format, items } = currentTemplate.properties.properties[propertyToRemove];
+        const removedFilesProperties = removedProperties.reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = currentTemplate.properties.properties[propertyToRemove];
 
-            if (format === 'fileId' || items?.format === 'fileId') {
-                acc[propertyToRemove] = items?.format === 'fileId';
-            }
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
 
-            return acc;
-        }, {} as Record<string, boolean>);
+                return acc;
+            },
+            {} as Record<string, boolean>,
+        );
 
         if (Object.keys(removedFilesProperties).length) {
             await this.deleteFilesOfDeletedProperty(id, removedFilesProperties, count);
@@ -668,7 +672,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         { file, files }: { file?: [Express.Multer.File]; files?: Express.Multer.File[] },
     ) {
         let iconFileId: string | null;
-        let newDocumentTemplatesIds: string[] | undefined;
 
         if (file) {
             if (currTemplate.iconFileId) await this.storageService.deleteFile(currTemplate.iconFileId);
@@ -679,13 +682,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             iconFileId = null;
         } else iconFileId = currTemplate.iconFileId;
 
-        if (files) {
-            if (currTemplate?.documentTemplatesIds) await this.storageService.deleteFiles(currTemplate.documentTemplatesIds);
+        const { documentTemplatesIdsToKeep = [], documentTemplatesIdsToDelete = [] } = _.groupBy(
+            currTemplate.documentTemplatesIds,
+            (documentTemplateId) => {
+                return updatedTemplateData.documentTemplatesIds?.includes(documentTemplateId)
+                    ? 'documentTemplatesIdsToKeep'
+                    : 'documentTemplatesIdsToDelete';
+            },
+        );
 
-            newDocumentTemplatesIds = await this.storageService.uploadFiles(files);
-        } else newDocumentTemplatesIds = currTemplate?.documentTemplatesIds;
+        if (documentTemplatesIdsToDelete.length) await this.storageService.deleteFiles(documentTemplatesIdsToDelete);
 
-        return { iconFileId, newDocumentTemplatesIds };
+        return {
+            iconFileId,
+            documentTemplatesIds: [...documentTemplatesIdsToKeep, ...(files ? await this.storageService.uploadFiles(files) : [])],
+        };
     }
 
     async updateEntityTemplate(
@@ -731,7 +742,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
         await this.checkIfPropertyInUsedBeforeDelete(id, removedProperties);
 
-        const { iconFileId, newDocumentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
+        const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 
         const { uniqueConstraints, properties, ...restOfTemplateData } = await this.updateNewSerialNumberFields(
             id,
@@ -751,7 +762,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfTemplateData,
             properties: restOfTemplatePropertiesObject,
             iconFileId,
-            documentTemplatesIds: newDocumentTemplatesIds,
+            documentTemplatesIds,
         });
 
         await this.deletePropertyOfEntityTemplate(id, count, removedProperties, currTemplate);

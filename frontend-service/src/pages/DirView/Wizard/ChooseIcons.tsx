@@ -12,7 +12,7 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
                 fileFieldName="icon"
                 onDropFile={(acceptedFile) => setFieldValue('icon', { file: acceptedFile, name: acceptedFile.name })}
                 onDeleteFile={() => setFieldValue('icon', undefined)}
-                fileName={values.icon?.name}
+                file={values.icon?.file}
                 inputText={i18next.t('wizard.workspace.icon')}
                 acceptedFilesTypes={{ 'image/svg': ['.svg'] }}
                 disableCamera
@@ -24,7 +24,7 @@ export const ChooseIcons: React.FC<StepComponentProps<WorkspaceWizardValues>> = 
                 fileFieldName="logo"
                 onDropFile={(acceptedFile) => setFieldValue('logo', { file: acceptedFile, name: acceptedFile.name })}
                 onDeleteFile={() => setFieldValue('logo', undefined)}
-                fileName={values.logo?.name}
+                file={values.logo?.file}
                 inputText={i18next.t('wizard.workspace.logo')}
                 acceptedFilesTypes={{ 'image/svg': ['.svg'] }}
                 disableCamera
