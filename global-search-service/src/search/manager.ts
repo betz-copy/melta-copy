@@ -10,6 +10,22 @@ const {
     neo4j: { globalSearchIndexPrefix, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
 } = config;
 
+export const usersFieldsSuffix = {
+    ids: '.ids',
+    fullNames: '.fullNames',
+    jobTitles: '.jobTitles',
+    hierarchies: '.hierarchies',
+    mails: '.mails',
+};
+
+export const userFieldSuffix = {
+    id: '.id',
+    fullName: '.fullName',
+    jobTitle: '.jobTitle',
+    hierarchy: '.hierarchy',
+    mail: '.mail',
+};
+
 export default class Manager extends DefaultManagerNeo4j {
     private templateManagerService: TemplateManagerService;
 
@@ -100,11 +116,18 @@ export default class Manager extends DefaultManagerNeo4j {
 
         Object.entries(template.properties.properties).map(async ([key, value]) => {
             if (value.format === 'user') {
-                userProperties.push(`${key}.ids`);
-                userProperties.push(`${key}.fullNames`);
-                userProperties.push(`${key}.jobTitles`);
-                userProperties.push(`${key}.hierarchies`);
-                userProperties.push(`${key}.mails`);
+                userProperties.push(`${key}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`);
+                userProperties.push(`${key}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`);
+                userProperties.push(`${key}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`);
+                userProperties.push(`${key}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`);
+                userProperties.push(`${key}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`);
+            }
+            if (value.items?.format === 'user') {
+                userProperties.push(`${key}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`);
+                userProperties.push(`${key}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`);
+                userProperties.push(`${key}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`);
+                userProperties.push(`${key}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`);
+                userProperties.push(`${key}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`);
             }
         });
 

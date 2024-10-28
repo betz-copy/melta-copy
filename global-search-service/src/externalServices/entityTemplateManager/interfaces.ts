@@ -3,6 +3,11 @@ interface IEntitySingleProperty {
     title: string;
     format?: string;
     enum?: string[];
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId' | 'user';
+    };
     pattern?: string;
     patternCustomErrorMessage?: string;
     dateNotification?: number;

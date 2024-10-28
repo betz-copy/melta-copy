@@ -23,15 +23,7 @@ export interface IEntitySingleProperty {
     items?: {
         type: 'string';
         enum?: string[];
-        // format?: 'fileId' | 'user'; // TODO
-        format?: 'fileId';
-        // user?:{
-        //     id: string;
-        //     fullName: string;
-        //     jobTitle: string;
-        //     hierarchy: string;
-        //     mail: string;
-        // }[];
+        format?: 'fileId' | 'user';
     };
     minItems?: 1;
     uniqueItems?: true;

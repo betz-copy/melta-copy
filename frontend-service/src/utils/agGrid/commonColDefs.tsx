@@ -1,7 +1,8 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
-import { Avatar, AvatarGroup, Grid } from '@mui/material';
+import Chip from '@mui/material/Chip';
+import { Grid } from '@mui/material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -245,17 +246,19 @@ export const userColDef = <Data extends any = IUser>(
         headerName: value.title,
         valueGetter,
 
-        cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
-            console.log({ propsValue: props.value });
+        cellRenderer: (props: ICellRendererParams<Data, any | undefined>) => {
             if (!props.value) return '';
             return (
-                <AvatarGroup max={1}>
-                    <MeltaTooltip title={props.value[0].fullName}>
-                        <Grid>
-                            <UserAvatar user={props.value[0]} size={25} bgColor="1E2775" />
+                <Grid container gap={1}>
+                    <MeltaTooltip title={JSON.parse(props.value).fullName}>
+                        <Grid item>
+                            <Chip
+                                avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}
+                                label={JSON.parse(props.value).fullName}
+                            />
                         </Grid>
                     </MeltaTooltip>
-                </AvatarGroup>
+                </Grid>
             );
         },
 
@@ -267,7 +270,6 @@ export const userColDef = <Data extends any = IUser>(
     };
 };
 
-// TODO
 export const userArrayColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -284,23 +286,27 @@ export const userArrayColDef = <Data extends any = IEntity>(
         values: [...values, undefined],
     };
 
-    console.log({ value });
-
     return {
         field,
         headerName: value.title,
         valueGetter,
 
-        cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
-            console.log({ props });
+        cellRenderer: (props: ICellRendererParams<Data, any[] | undefined>) => {
             if (!props.value) return '';
-            console.log({ propsValue: props.value });
             return (
-                <AvatarGroup max={5}>
-                    {props.value.map((val) => (
-                        <Avatar key={val}>{val}</Avatar>
-                    ))}
-                </AvatarGroup>
+                <OverflowWrapper
+                    items={props.value.map((val) => JSON.parse(val))}
+                    getItemKey={(item) => item._id}
+                    renderItem={(item) => (
+                        <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
+                            <Grid item>
+                                <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                            </Grid>
+                        </MeltaTooltip>
+                    )}
+                    propertyToDisplayInTooltip="fullName"
+                    containerStyle={{ height: `${rowHeight}px` }}
+                />
             );
         },
 

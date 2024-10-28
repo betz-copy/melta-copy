@@ -28,12 +28,20 @@ import {
 
 const { neo4j } = config;
 
-export const userPropertySuffix = {
+export const usersFieldsSuffix = {
     ids: '.ids',
     fullNames: '.fullNames',
     jobTitles: '.jobTitles',
     hierarchies: '.hierarchies',
     mails: '.mails',
+};
+
+export const userFieldSuffix = {
+    id: '.id',
+    fullName: '.fullName',
+    jobTitle: '.jobTitle',
+    hierarchy: '.hierarchy',
+    mail: '.mail',
 };
 
 const ajv = new Ajv();
@@ -433,13 +441,33 @@ export const addStringFieldsAndNormalizeDateValues = (
         }
 
         const propertyValue = entityProperties[key];
-        const { type, format } = value;
+        const { type, format, items } = value;
         if (format === 'user') {
-            normalizedEntity[`${key}${userPropertySuffix.ids}`] = [JSON.parse(propertyValue)._id];
-            normalizedEntity[`${key}${userPropertySuffix.fullNames}`] = [JSON.parse(propertyValue).fullName];
-            normalizedEntity[`${key}${userPropertySuffix.jobTitles}`] = [JSON.parse(propertyValue).jobTitle];
-            normalizedEntity[`${key}${userPropertySuffix.hierarchies}`] = [JSON.parse(propertyValue).hierarchy];
-            normalizedEntity[`${key}${userPropertySuffix.mails}`] = [JSON.parse(propertyValue).mail];
+            normalizedEntity[`${key}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue)._id;
+            normalizedEntity[`${key}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).fullName;
+            normalizedEntity[`${key}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).jobTitle;
+            normalizedEntity[`${key}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).hierarchy;
+            normalizedEntity[`${key}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`] = JSON.parse(propertyValue).mail;
+
+            return;
+        }
+
+        if (type === 'array' && items?.format === 'user') {
+            normalizedEntity[`${key}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                (user) => JSON.parse(user)._id,
+            );
+            normalizedEntity[`${key}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                (user) => JSON.parse(user).fullName,
+            );
+            normalizedEntity[`${key}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                (user) => JSON.parse(user).jobTitle,
+            );
+            normalizedEntity[`${key}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                (user) => JSON.parse(user).hierarchy,
+            );
+            normalizedEntity[`${key}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`] = propertyValue.map(
+                (user) => JSON.parse(user).mail,
+            );
 
             return;
         }

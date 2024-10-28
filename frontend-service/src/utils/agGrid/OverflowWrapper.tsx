@@ -9,9 +9,17 @@ interface IOverflowWrapperProps<T> {
     renderItem: (item: T) => React.JSX.Element;
     files?: T[];
     containerStyle?: React.CSSProperties;
+    propertyToDisplayInTooltip?: string;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle, files }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T extends any>({
+    items,
+    renderItem,
+    getItemKey,
+    containerStyle,
+    files,
+    propertyToDisplayInTooltip,
+}: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
@@ -73,7 +81,7 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
                         title={overflowItems.map((item, index) => (
                             // eslint-disable-next-line react/no-array-index-key
                             <Typography key={`${getItemKey(item)}/${index}`} style={{ margin: '5px' }}>
-                                {item}
+                                {propertyToDisplayInTooltip ? item[propertyToDisplayInTooltip] : item}
                             </Typography>
                         ))}
                         arrow

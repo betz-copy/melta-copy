@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { v4 as uuid } from 'uuid';
 import axios from '../../axios';
 import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
@@ -15,8 +16,7 @@ import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/c
 const { entityTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean'];
 export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'user'];
-// export const arrayTypes = ['multipleFiles', 'enumArray', 'users']; TODO
-export const arrayTypes = ['multipleFiles', 'enumArray'];
+export const arrayTypes = ['multipleFiles', 'enumArray', 'users'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
@@ -45,9 +45,8 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         else if (value.pattern) type = 'pattern';
         else if (value.items?.enum) type = 'enumArray';
         else if (value.items?.format === 'fileId') type = 'multipleFiles';
+        else if (value.items?.format === 'user') type = 'users';
         else if (value.items?.format === 'text-area') type = 'text-area';
-
-        console.log({ type });
 
         const property: EntityTemplateFormInputProperties = {
             id: uuid(),
@@ -131,7 +130,6 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
             relationshipReference,
         }) => {
             let propertyType: IEntitySingleProperty['type'];
-            console.log({ propertyType: type }); // TODO
             switch (type) {
                 case 'string':
                 case 'number':
@@ -144,6 +142,9 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 case 'enumArray':
                     propertyType = 'array';
                     break;
+                case 'users':
+                    propertyType = 'array';
+                    break;
                 default:
                     propertyType = 'string';
             }
@@ -153,10 +154,10 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues): IEntityTem
                 type: propertyType,
                 format: stringFormats.includes(type) ? type : undefined,
                 enum: type === 'enum' ? options : undefined,
-                items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
-                minItems: type === 'enumArray' ? 1 : undefined,
+                items: type === 'enumArray' ? { type: 'string', enum: options } : type === 'users' ? { type: 'string', format: 'user' } : undefined,
+                minItems: type === 'enumArray' || type === 'users' ? 1 : undefined,
                 readOnly,
-                uniqueItems: type === 'enumArray' ? true : undefined,
+                uniqueItems: type === 'enumArray' || type === 'users' ? true : undefined,
                 pattern: type === 'pattern' ? pattern : undefined,
                 patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
                 dateNotification: dateNotification as number | undefined,

@@ -14,13 +14,6 @@ import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadat
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
-export const userPropertySuffix = {
-    ids: '.ids',
-    fullNames: '.fullNames',
-    jobTitles: '.jobTitles',
-    hierarchies: '.hierarchies',
-    mails: '.mails',
-};
 
 const ajv = new Ajv();
 

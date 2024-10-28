@@ -17,6 +17,7 @@ import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
 import RjfsUserWidget from './RjfsUserWidget';
+import RjfsUserArrayWidget from './RjfsUserArrayWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -166,8 +167,11 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                         'ui:options': { enumOptions: propertySchema.items!.enum.map((option) => ({ label: option, value: option })) },
                     };
                 }
-                // TODO
-                // if ((propertySchema.type === 'array' && propertySchema.items?.format === 'user') || propertySchema.format === 'user') {
+                if (propertySchema.type === 'array' && propertySchema.items?.format === 'user') {
+                    return {
+                        'ui:widget': 'UserArrayWidget',
+                    };
+                }
                 if (propertySchema.format === 'user') {
                     return {
                         'ui:widget': 'UserWidget',
@@ -211,6 +215,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 TextAreaWidget: RjfsTextAreaWidget,
                 TemplateReferenceWidget: RjfsTemplateReferenceWidget,
                 UserWidget: RjfsUserWidget,
+                UserArrayWidget: RjfsUserArrayWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

@@ -6,7 +6,7 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
-import { userPropertySuffix } from '../../express/entities/validator.template';
+import { userFieldSuffix, usersFieldsSuffix } from '../../express/entities/validator.template';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -23,6 +23,7 @@ export const formatDate = (date: string) => {
 const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
     const props = {};
 
+    const usersArrayKeys: Set<string> = new Set<string>();
     const userKeys: Set<string> = new Set<string>();
 
     Object.entries(properties).forEach(([key, value]) => {
@@ -30,7 +31,12 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             return;
         }
 
-        if (Object.values(userPropertySuffix).some((propertySuff) => key.endsWith(propertySuff))) {
+        if (key.includes('.') && key.endsWith(`${config.neo4j.usersFieldsPropertySuffix}`)) {
+            usersArrayKeys.add(key.split('.')[0]);
+            return;
+        }
+
+        if (key.includes('.') && key.endsWith(`${config.neo4j.userFieldPropertySuffix}`)) {
             userKeys.add(key.split('.')[0]);
             return;
         }
@@ -50,21 +56,31 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
         props[key] = value;
     });
 
-    if (userKeys.size) {
-        userKeys.forEach((userKey) => {
-            props[userKey] = properties[`${userKey}.ids`].map((id, index) => {
-                return {
+    if (usersArrayKeys.size) {
+        usersArrayKeys.forEach((userKey) => {
+            props[userKey] = properties[`${userKey}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`].map((id, index) => {
+                return JSON.stringify({
                     _id: id,
-                    fullName: properties[`${userKey}.fullNames`][index],
-                    jobTitle: properties[`${userKey}.jobTitles`][index],
-                    hierarchy: properties[`${userKey}.hierarchies`][index],
-                    mail: properties[`${userKey}.mails`][index],
-                };
+                    fullName: properties[`${userKey}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`][index],
+                    jobTitle: properties[`${userKey}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`][index],
+                    hierarchy: properties[`${userKey}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`][index],
+                    mail: properties[`${userKey}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`][index],
+                });
             });
         });
     }
 
-    console.log({ props });
+    if (userKeys.size) {
+        userKeys.forEach((userKey) => {
+            props[userKey] = JSON.stringify({
+                _id: properties[`${userKey}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`],
+                fullName: properties[`${userKey}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`],
+                jobTitle: properties[`${userKey}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`],
+                hierarchy: properties[`${userKey}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`],
+                mail: properties[`${userKey}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`],
+            });
+        });
+    }
 
     return props;
 };

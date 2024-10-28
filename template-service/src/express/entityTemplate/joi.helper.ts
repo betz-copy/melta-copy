@@ -61,11 +61,9 @@ const propertiesArraySchema = Joi.array()
             patternCustomErrorMessage: Joi.string().when('pattern', { is: Joi.exist(), then: Joi.required(), otherwise: Joi.forbidden() }),
             items: Joi.object({
                 type: Joi.string().valid('string').required(),
-                format: Joi.string().valid('fileId'),
-                // format: Joi.string().valid('fileId', 'user'), // TODO
+                format: Joi.string().valid('fileId', 'user'),
                 enum: Joi.when('format', {
                     is: 'fileId',
-                    // is: Joi.string().valid('fileId', 'user'), // TODO
                     then: Joi.forbidden(), // If format is fileId, enum is not allowed
                     otherwise: Joi.array().items(Joi.string()).min(1), // If format is not fileId, enum must have minimum length of 1
                 }),
@@ -76,7 +74,6 @@ const propertiesArraySchema = Joi.array()
                 otherwise: Joi.forbidden(),
             }),
             uniqueItems: Joi.when(Joi.ref('items.format'), {
-                // is: Joi.string().valid('fileId', 'user'), // TODO
                 is: 'fileId',
                 then: Joi.forbidden(),
                 otherwise: Joi.valid(true).when('type', {

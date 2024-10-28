@@ -17,7 +17,7 @@ import {
     regexColDef,
     relatedTemplateColDef,
     stringColDef,
-    // userArrayColDef, // TODO
+    userArrayColDef,
     userColDef,
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
@@ -120,20 +120,20 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 hideColumn,
                 hideField,
             );
-        } // TODO
-        // if (propertyTemplate.items?.format === 'user') {
-        //     return userArrayColDef(
-        //         property,
-        //         valueGetter,
-        //         { title: propertyTemplate.title },
-        //         [],
-        //         defaultColumnWidths[property],
-        //         rowHeight,
-        //         template.enumPropertiesColors?.[property],
-        //         hideColumn,
-        //         hideField,
-        //     );
-        // }
+        }
+        if (propertyTemplate.items?.format === 'user') {
+            return userArrayColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                [],
+                defaultColumnWidths[property],
+                rowHeight,
+                template.enumPropertiesColors?.[property],
+                hideColumn,
+                hideField,
+            );
+        }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
     columnDefs.push(
