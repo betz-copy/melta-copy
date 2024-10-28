@@ -78,7 +78,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel, ...defaultFilterModel } };
+            const agGridRequest = { ...params.request, filterModel: { ...defaultFilterModel, ...params.request.filterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
