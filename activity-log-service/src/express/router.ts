@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import activityLogRouter from './activityLog/router';
 import { StatusCodes } from 'http-status-codes';
+import activityLogRouter from './activityLog/router';
 
 const appRouter = Router();
 

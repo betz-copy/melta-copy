@@ -1,10 +1,8 @@
 import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import { StatusCodes } from 'http-status-codes';
 import { config } from './config';
 import { Server } from './express/server';
 import logger from './utils/logger/logsLogger';
-import { ServiceError } from './express/error';
 import { declareTopology } from './utils/rabbit';
 
 const { rabbit } = config;
@@ -36,7 +34,4 @@ const main = async () => {
     logger.info(`Server started on port: ${serverPort}`);
 };
 
-main().catch((error) => {
-    process.exit(1);
-    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Main error', { error });
-});
+main().catch((error) => logger.error('Main error: ', { error }));

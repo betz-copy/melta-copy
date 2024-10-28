@@ -22,7 +22,9 @@ morgan.format('jsonFormat', (tokens: any, req: any, res: any) => {
         workspaceId: req.workspaceId,
         host: req.host,
     };
+
     if (status >= StatusCodes.OK && status < StatusCodes.BAD_REQUEST) return undefined;
+
     return JSON.stringify(logObject);
 });
 const morganMiddleware = morgan('jsonFormat', { stream });

@@ -6,8 +6,6 @@ import { Server } from './express/server';
 import { WorkspaceTypes } from './express/workspaces/interface';
 import { WorkspacesModel } from './express/workspaces/model';
 import logger from './utils/logger/logsLogger';
-import { ServiceError } from './express/error';
-import { StatusCodes } from 'http-status-codes';
 
 const { mongo, service } = config;
 
@@ -44,6 +42,4 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((error) => {
-    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'main error: ', { error });
-});
+main().catch((error) => logger.error('Main error: ', { error }));

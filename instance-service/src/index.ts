@@ -1,13 +1,11 @@
 import axios from 'axios';
 import 'elastic-apm-node/start';
 
-import { StatusCodes } from 'http-status-codes';
 import config from './config';
 import Server from './express/server';
 import logger from './utils/logger/logsLogger';
 import Neo4jClient from './utils/neo4j';
 import initializeRabbit from './utils/rabbit';
-import { ServiceError } from './express/error';
 import RedisClient from './utils/redis';
 
 const { service } = config;
@@ -36,16 +34,16 @@ const main = async () => {
 };
 
 main().catch((error) => {
+    logger.error('Main error: ', { error });
     process.exit(1);
-    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Main error', { error });
 });
 
 process
     .on('unhandledRejection', (reason, p) => {
+        logger.error('Unhandled Rejection at Promise', { error: { p, reason } });
         process.exit(1);
-        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Unhandled Rejection at Promise', { error: { p, reason } });
     })
     .on('uncaughtException', (error) => {
+        logger.error('Uncaught Exception thrown', { error });
         process.exit(1);
-        throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Uncaught Exception thrown', { error });
     });

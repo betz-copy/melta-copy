@@ -1,3 +1,4 @@
+/* eslint-disable max-classes-per-file */
 import axios from 'axios';
 import * as express from 'express';
 import { StatusCodes } from 'http-status-codes';
@@ -17,6 +18,50 @@ export class ServiceError extends Error {
     }
 }
 
+export class NotFoundError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.NOT_FOUND, message);
+        this.name = 'NotFound';
+        this.metadata = metadata;
+    }
+}
+
+export class ForbiddenError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.FORBIDDEN, message);
+        this.name = 'Forbidden';
+        this.metadata = metadata;
+    }
+}
+
+export class BadRequestError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.BAD_REQUEST, message);
+        this.name = 'badRequest';
+        this.metadata = metadata;
+    }
+}
+
+export class UnauthorizedError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(StatusCodes.UNAUTHORIZED, message);
+        this.name = 'unauthorized';
+        this.metadata = metadata;
+    }
+}
+
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
         return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR', code: StatusCodes.CONFLICT };
@@ -32,9 +77,42 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
     return axiosErrorData;
 };
 
+// const errorResponseBuilder = (error: ServiceError) => {
+//     return {
+//         type: error.name,
+//         message: error.message,
+//         StatusCodes: error.code,
+//         ...(error.metadata && { metadata: error.metadata }),
+//     };
+// };
+
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     let statusCode: number;
     let errorResponse: any;
+
+    // switch (error.constructor) {
+    //     case BadRequestError:
+    //         errorResponse = errorResponseBuilder(error as BadRequestError);
+    //         break;
+
+    //     case ServiceError:
+    //         errorResponse = errorResponseBuilder(error as ServiceError);
+    //         break;
+
+    //     case UnauthorizedError:
+    //         errorResponse = errorResponseBuilder(error as UnauthorizedError);
+    //         break;
+
+    //     default:
+    //         if (axios.isAxiosError(error) && error.response?.status) {
+    //             statusCode = error.response.status;
+    //             errorResponse = errorResponseBuilder({ ...error, code: error.response.status, metadata: formatAxiosErrorData(error.response.data) });
+    //         } else {
+    //             errorResponse = errorResponseBuilder(error as ServiceError);
+    //         }
+    //         break;
+    // }
+
     if (error.name === 'ValidationError') {
         statusCode = StatusCodes.BAD_REQUEST;
         errorResponse = {
@@ -69,6 +147,7 @@ export const errorMiddleware = (error: Error, req: express.Request, res: express
             message: error.message || 'Internal server error',
         };
     }
+
     const logData = {
         error: {
             message: error.message,
