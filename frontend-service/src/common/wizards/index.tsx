@@ -4,7 +4,6 @@ import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
-
 import { Stepper } from './stepper';
 import { useDarkModeStore } from '../../stores/darkMode';
 

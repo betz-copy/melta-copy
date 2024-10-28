@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search } from '@mui/icons-material';
+import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -22,19 +22,25 @@ import lodashUniqby from 'lodash.uniqby';
 import React, { Dispatch, Fragment, Key, PropsWithChildren, ReactElement, SetStateAction, useState } from 'react';
 import { DragDropContext, Draggable, Droppable, DropResult } from 'react-beautiful-dnd';
 import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
-import { useDarkModeStore } from '../stores/darkMode';
-import { MeltaCheckbox } from './MeltaCheckbox';
 import { MeltaTooltip } from './MeltaTooltip';
+import { MeltaCheckbox } from './MeltaCheckbox';
+import { useDarkModeStore } from '../stores/darkMode';
+import { CustomIcon } from './CustomIcon';
 
-export const MenuItemContent: React.FC<{
-    checked: boolean;
+export type MenuItemContentProps<Option = any> = {
+    checked?: boolean;
     indeterminate?: boolean;
     label: string;
     order: number;
     isDraggable?: boolean;
     group?: boolean;
     insideGroup?: boolean;
-}> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
+    option?: Option;
+};
+
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
+    const theme = useTheme();
+
     return (
         <>
             {!group && (
@@ -47,13 +53,20 @@ export const MenuItemContent: React.FC<{
                         flexDirection: 'column',
                         alignContent: 'center',
                         justifyContent: 'center',
-                        marginRight: insideGroup ? '30px' : '10px',
+                        marginRight: insideGroup ? '30px' : '7px',
                     }}
                 >
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            {checked ? (
+                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+            ) : option.iconFileId?.length > 0 ? (
+                <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
+            ) : (
+                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
+            )}
+
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>
@@ -65,7 +78,8 @@ export const MenuItemContent: React.FC<{
                                 lineHeight: '17px',
                                 letterSpacing: '0em',
                                 textAlign: 'right',
-                                width: '125px',
+                                color: '#101440',
+                                width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
                                 textOverflow: 'ellipsis',
@@ -105,6 +119,8 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     toTopBar?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
+    onDragEnd?: (result: DropResult) => void;
+    isSelectDisabled?: boolean;
     hideSearchBar?: boolean;
     hideChooseAll?: boolean;
     dynamicWidth?: number;
@@ -127,9 +143,10 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     isDraggableDisabled,
     menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
     insideGroup,
+    handleOnDragEnd,
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
-    selectedOptions: SelectCheckboxProps<Option, Group>['selectedOptions'];
+    selectedOptions?: SelectCheckboxProps<Option, Group>['selectedOptions'];
     setSelectedOptions: SelectCheckboxProps<Option, Group>['setSelectedOptions'];
     getOptionId: SelectCheckboxProps<Option, Group>['getOptionId'];
     getOptionLabel: SelectCheckboxProps<Option, Group>['getOptionLabel'];
@@ -137,8 +154,9 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     setOptions?: Dispatch<SetStateAction<Option[]>>;
     menuItemSx?: SxProps<Theme>;
     insideGroup?: boolean;
+    handleOnDragEnd?: (result: DropResult) => void;
 }) => {
-    const isOptionChecked = (option: Option) => selectedOptions.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
+    const isOptionChecked = (option: Option) => selectedOptions?.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 
     const onDragEnd = (result: DropResult) => {
         const { destination, source } = result;
@@ -160,7 +178,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     };
 
     return (
-        <DragDropContext onDragEnd={onDragEnd}>
+        <DragDropContext onDragEnd={handleOnDragEnd ?? onDragEnd}>
             <Droppable droppableId="selectCheckboxDroppable">
                 {(provided) => (
                     <Grid ref={provided.innerRef} {...provided.droppableProps}>
@@ -196,6 +214,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                             order={index + 1}
                                             isDraggable={!isDraggableDisabled}
                                             insideGroup={insideGroup}
+                                            option={option}
                                         />
                                     </MenuItem>
                                 )}
@@ -496,6 +515,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     toTopBar,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
+    onDragEnd,
+    isSelectDisabled = false,
     hideSearchBar,
     hideChooseAll,
     dynamicWidth,
@@ -509,10 +530,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
 
     const { optionsFiltered, groupsFiltered } = getOptionsAndGroupsMiniFiltered(miniFilterValue, options, getOptionId, getOptionLabel, groupsProps);
 
-    const selectedOptionsFiltered = selectedOptions.filter((selectedOption) => {
-        const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
-        return isSelectedOptionInOptionsFiltered;
-    });
+    let selectedOptionsFiltered;
+    if (!isSelectDisabled)
+        selectedOptionsFiltered = selectedOptions!.filter((selectedOption) => {
+            const isSelectedOptionInOptionsFiltered = optionsFiltered.some((option) => getOptionId(option) === getOptionId(selectedOption));
+            return isSelectedOptionInOptionsFiltered;
+        });
 
     // eslint-disable-next-line no-nested-ternary
 
@@ -596,8 +619,8 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     padding: toTopBar ? '6.99px, 13.98px' : '0px, 8px',
                 }}
             >
-                {!hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
-                {!hideChooseAll ? (
+                {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
+                {!isSelectDisabled && !hideChooseAll ? (
                     <>
                         <ChooseAllMenuItem
                             options={options}
@@ -614,11 +637,12 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         {title}
                     </Typography>
                 )}
+
                 {groupsProps.useGroups ? (
                     <SelectOptionsMenuItemsGrouped
                         options={options}
                         optionsFiltered={optionsFiltered}
-                        selectedOptions={selectedOptionsFiltered}
+                        selectedOptions={selectedOptionsFiltered!}
                         setSelectedOptions={setSelectedOptions}
                         getOptionId={getOptionId}
                         getOptionLabel={getOptionLabel}
@@ -637,6 +661,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         getOptionLabel={getOptionLabel}
                         isDraggableDisabled={isDraggableDisabled}
                         setOptions={setOptions}
+                        handleOnDragEnd={onDragEnd}
                     />
                 )}
             </Select>
