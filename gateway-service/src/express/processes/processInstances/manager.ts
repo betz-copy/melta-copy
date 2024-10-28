@@ -175,7 +175,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process unused files`, {
+                throw new ServiceError(undefined, `failed to delete process unused files`, {
                     error,
                 });
             });
@@ -201,7 +201,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
             await this.storageService.deleteFiles(idsToDelete).catch((error) => {
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete unused files: ${idsToDelete}`, { error });
+                throw new ServiceError(undefined, `failed to delete unused files: ${idsToDelete}`, { error });
             });
     }
 
@@ -239,7 +239,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process unused files`, { error });
+                throw new ServiceError(undefined, `failed to delete process unused files`, { error });
             });
             throw error;
         });
@@ -304,7 +304,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await this.deleteAllProcessFiles(process).catch((error) => {
-            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete process files`, { error });
+            throw new ServiceError(undefined, `failed to delete process files`, { error });
         });
         await this.service.deleteProcessInstance(processId);
 

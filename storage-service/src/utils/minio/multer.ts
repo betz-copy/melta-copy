@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import * as Multer from 'multer';
 import { callbackify } from 'util';
-import { StatusCodes } from 'http-status-codes';
 import { config } from '../../config';
-import { ServiceError } from '../../express/error';
+import { BadRequestError } from '../../express/error';
 import { generatePath } from '../generatePath';
 import DefaultManagerMinio from './manager';
 
@@ -41,7 +40,7 @@ export class MinioMulter {
     static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
-        if (!storage) return next(new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid workspace id in header'));
+        if (!storage) return next(new BadRequestError('Invalid workspace id in header'));
 
         Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).array(filesKeyName)(req, res, next);
     }
@@ -49,7 +48,7 @@ export class MinioMulter {
     static async uploadBulkToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
 
-        if (!storage) return next(new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid workspace id in header'));
+        if (!storage) return next(new BadRequestError('Invalid workspace id in header'));
 
         Multer({ storage, limits: { fileSize: config.service.maxFileSize } }).single(fileKeyName)(req, res, next);
     }

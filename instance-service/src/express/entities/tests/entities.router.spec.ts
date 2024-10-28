@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import request from 'supertest';
 
+import { StatusCodes } from 'http-status-codes';
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import { formatDate } from '../../../utils/neo4j/lib';
@@ -8,7 +9,6 @@ import config from '../../../config';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
 import { mockEntityTemplatesRoutes, mockRelationshipTemplatesRoutes, mockRulesRoutes } from '../../../externalServices/tests/externalServices.mock';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
-import { StatusCodes } from 'http-status-codes';
 
 const mockDate = new Date();
 const mockDateStr = mockDate.toISOString();
@@ -86,7 +86,7 @@ describe('Entity router', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(StatusCodes.OK);
+            const response = await request(app).get('/isAlive').expect(okStatus);
 
             expect(response.text).toBe('alive');
         });
@@ -94,7 +94,7 @@ describe('Entity router', () => {
 
     describe('/badRoute', () => {
         it('should return invalid route', async () => {
-            const response = await request(app).get('/badRoute').expect(StatusCodes.NOT_FOUND);
+            const response = await request(app).get('/badRoute').expect(notFoundStatus);
 
             expect(response.text).toBe('Invalid Route');
         });

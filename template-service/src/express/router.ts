@@ -1,9 +1,9 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import relationshipTemplateRouter from './relationshipTemplate/router';
 import ruleRouter from './rule/router';
 import entityTemplateRouter from './entityTemplate/router';
 import categoryRouter from './category/router';
-import { StatusCodes } from 'http-status-codes';
 
 const appRouter = Router();
 

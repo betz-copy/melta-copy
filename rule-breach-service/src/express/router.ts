@@ -1,7 +1,7 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import RuleBreachAlertsRouter from './ruleBreachAlerts/router';
 import RuleBreachRequestsRouter from './ruleBreachRequests/router';
-import { StatusCodes } from 'http-status-codes';
 
 const appRouter = Router();
 

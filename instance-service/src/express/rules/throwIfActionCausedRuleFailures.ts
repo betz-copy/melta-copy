@@ -3,11 +3,10 @@ import _groupBy from 'lodash.groupby';
 import _isEqual from 'lodash.isequal';
 import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { filteredMap } from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import { getCausesOfRuleFailure } from './calcNewCausesOfRuleFailure';
 import { IBrokenRule, ICausesOfInstance, IRuleFailure } from './interfaces';
 import { ICause } from './interfaces/formulaWithCauses/cause';
@@ -136,7 +135,7 @@ export const throwIfActionCausedRuleFailures = (
         .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionsResults));
 
     if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-        throw new ServiceError(StatusCodes.BAD_REQUEST, `[NEO4J] action is blocked by rules.`, {
+        throw new BadRequestError(`[NEO4J] action is blocked by rules.`, {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules,
             actions,

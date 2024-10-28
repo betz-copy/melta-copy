@@ -1,9 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { NoMatchingStepsError, ServiceError, TemplateNotFoundError, ValidationError } from '../../error';
+import { NoMatchingStepsError, NotFoundError, TemplateNotFoundError, ValidationError } from '../../error';
 import { IMongoStepTemplate, IStepTemplate } from './interface';
 import { StepTemplateSchema } from './model';
 
@@ -54,7 +53,7 @@ export default class StepTemplateManager extends DefaultManagerMongo<IStepTempla
         const result = await this.model.bulkWrite(bulkWriteOperations, { session });
 
         if ((result?.matchedCount ?? 0) < stepsToUpdate.length) {
-            throw new ServiceError(StatusCodes.NOT_FOUND, `One or more of the steps to update doesn't exist`);
+            throw new NotFoundError(`One or more of the steps to update doesn't exist`);
         }
 
         let newStepsIds: string[] = [];

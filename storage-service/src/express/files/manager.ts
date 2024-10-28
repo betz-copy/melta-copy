@@ -1,6 +1,5 @@
 import { menash } from 'menashmq';
 import { Stream } from 'stream';
-import { StatusCodes } from 'http-status-codes';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
 import { ServiceError } from '../error';
@@ -46,7 +45,7 @@ export class FilesManager extends DefaultManagerMinio {
         try {
             await this.minioClient.removeFile(pdfFileName);
         } catch (error) {
-            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing preview file', { error });
+            throw new ServiceError(undefined, 'Error removing preview file', { error });
         }
         return this.minioClient.removeFile(filePath);
     }
@@ -72,7 +71,7 @@ export class FilesManager extends DefaultManagerMinio {
                 try {
                     await this.minioClient.removeFile(pdfFileName);
                 } catch (error) {
-                    throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing preview file', { error });
+                    throw new ServiceError(undefined, 'Error removing preview file', { error });
                 }
             }
         });
@@ -80,7 +79,7 @@ export class FilesManager extends DefaultManagerMinio {
         return Promise.all(removalPromises)
             .then(() => this.minioClient.removeFiles(filePaths))
             .catch((error) => {
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Error removing files', { error });
+                throw new ServiceError(undefined, 'Error removing files', { error });
             });
     }
 

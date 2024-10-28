@@ -1,5 +1,4 @@
 import { ConsumerMessage } from 'menashmq';
-import { StatusCodes } from 'http-status-codes';
 import { FilesManager } from '../express/files/manager';
 import { ServiceError } from '../express/error';
 import { config } from '../config';
@@ -19,7 +18,7 @@ class PreviewConsumer {
             msg.ack();
         } catch (err: any) {
             msg.nack(false);
-            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Rabbit consumer error', { error: err });
+            throw new ServiceError(undefined, 'Rabbit consumer error', { error: err });
         }
     }
 }

@@ -32,4 +32,4 @@ const main = async () => {
     await initializeRabbit();
 };
 
-main();
+main().catch((error) => logger.error('Main error: ', { error }));

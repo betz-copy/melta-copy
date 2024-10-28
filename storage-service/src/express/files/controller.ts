@@ -1,6 +1,5 @@
 import * as archiver from 'archiver';
 import * as express from 'express';
-import { StatusCodes } from 'http-status-codes';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import { ServiceError } from '../error';
@@ -46,7 +45,7 @@ export default class FilesController extends DefaultController<FilesManager> {
 
             archive.finalize();
         } catch (error) {
-            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'Internal Server Error', { error });
+            throw new ServiceError(undefined, 'Internal Server Error', { error });
         }
     }
 

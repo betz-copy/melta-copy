@@ -6,11 +6,11 @@ import mongoose from 'mongoose';
 import * as request from 'supertest';
 import { Express } from 'express';
 
+import { StatusCodes } from 'http-status-codes';
 import config from '../src/config';
 import Server from '../src/express/server';
 import { ActionTypes } from '../src/utils/interfaces/actionMetadata';
 import { RuleBreachRequestStatus } from '../src/express/ruleBreachRequests/interface';
-import { StatusCodes } from 'http-status-codes';
 
 const { mongo } = config;
 const { OK: okStatus, BAD_REQUEST: badRequest, NOT_FOUND: notFoundStatus } = StatusCodes;

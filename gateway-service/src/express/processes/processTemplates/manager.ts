@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { ProcessService } from '../../../externalServices/processService';
 import {
@@ -70,7 +69,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
             await this.storageService.deleteFiles(idsToDelete).catch((error) => {
-                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, `failed to delete unused icons: ${idsToDelete}`, { error });
+                throw new ServiceError(undefined, `failed to delete unused icons: ${idsToDelete}`, { error });
             });
     }
 
@@ -121,7 +120,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             return step.iconFileId;
         });
         await this.storageService.deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
-            throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'failed to delete icons images', { error });
+            throw new ServiceError(undefined, 'failed to delete icons images', { error });
         });
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

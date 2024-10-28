@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import ganttsRouter from './gantts/router';
 import { StatusCodes } from 'http-status-codes';
+import ganttsRouter from './gantts/router';
 
 const appRouter = Router();
 

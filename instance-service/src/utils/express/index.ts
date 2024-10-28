@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import config from '../../config';
-import { ServiceError } from '../../express/error';
+import { BadRequestError } from '../../express/error';
 import { FunctionKey } from '../types';
 import DefaultController from './controller';
-import { StatusCodes } from 'http-status-codes';
 
 export const wrapMiddleware = (func: (req: Request, res?: Response) => Promise<void>) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -41,7 +40,7 @@ export const createController = <T extends InstanceType<typeof DefaultController
                 return (req: Request, res: Response, next: NextFunction) => {
                     const workspaceId = req.headers[config.service.workspaceIdHeaderName];
 
-                    if (typeof workspaceId !== 'string') return next(new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid workspace id in header'));
+                    if (typeof workspaceId !== 'string') return next(new BadRequestError('Invalid workspace id in header'));
 
                     if (isMiddleware) return (new Controller(workspaceId)[funcName] as Function)(req, res, next).then(next).catch(next);
 

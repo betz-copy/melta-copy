@@ -5,15 +5,15 @@ import { StatusCodes } from 'http-status-codes';
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
-    public code;
+    public code: number;
 
     constructor(
-        code: number,
+        code: number | undefined,
         message: string,
         public metadata: object = {},
     ) {
         super(message);
-        this.code = code;
+        this.code = code || StatusCodes.INTERNAL_SERVER_ERROR;
         this.metadata = metadata;
     }
 }
@@ -77,75 +77,44 @@ const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metad
     return axiosErrorData;
 };
 
-// const errorResponseBuilder = (error: ServiceError) => {
-//     return {
-//         type: error.name,
-//         message: error.message,
-//         StatusCodes: error.code,
-//         ...(error.metadata && { metadata: error.metadata }),
-//     };
-// };
+const errorResponseBuilder = (error: ServiceError) => {
+    return {
+        type: error.name,
+        message: error.message,
+        StatusCodes: error.code,
+        ...(error.metadata && { metadata: error.metadata }),
+    };
+};
 
 export const errorMiddleware = (error: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
     let statusCode: number;
     let errorResponse: any;
 
-    // switch (error.constructor) {
-    //     case BadRequestError:
-    //         errorResponse = errorResponseBuilder(error as BadRequestError);
-    //         break;
+    switch (error.constructor) {
+        case BadRequestError:
+            statusCode = (error as BadRequestError).code;
+            errorResponse = errorResponseBuilder(error as BadRequestError);
+            break;
 
-    //     case ServiceError:
-    //         errorResponse = errorResponseBuilder(error as ServiceError);
-    //         break;
+        case ServiceError:
+            statusCode = (error as ServiceError).code;
+            errorResponse = errorResponseBuilder(error as ServiceError);
+            break;
 
-    //     case UnauthorizedError:
-    //         errorResponse = errorResponseBuilder(error as UnauthorizedError);
-    //         break;
+        case UnauthorizedError:
+            statusCode = (error as UnauthorizedError).code;
+            errorResponse = errorResponseBuilder(error as UnauthorizedError);
+            break;
 
-    //     default:
-    //         if (axios.isAxiosError(error) && error.response?.status) {
-    //             statusCode = error.response.status;
-    //             errorResponse = errorResponseBuilder({ ...error, code: error.response.status, metadata: formatAxiosErrorData(error.response.data) });
-    //         } else {
-    //             errorResponse = errorResponseBuilder(error as ServiceError);
-    //         }
-    //         break;
-    // }
-
-    if (error.name === 'ValidationError') {
-        statusCode = StatusCodes.BAD_REQUEST;
-        errorResponse = {
-            type: error.name,
-            message: error.message,
-        };
-    } else if (error instanceof ServiceError) {
-        statusCode = error.code;
-        errorResponse = {
-            type: error.name,
-            message: error.message,
-            metadata: error.metadata,
-        };
-    } else if (['TokenExpiredError', 'JsonWebTokenError'].includes(error.name)) {
-        statusCode = StatusCodes.UNAUTHORIZED;
-        errorResponse = {
-            type: error.name,
-            message: error.message,
-        };
-    } else if (axios.isAxiosError(error) && error.response?.status) {
-        statusCode = error.response.status;
-        errorResponse = {
-            type: error.name,
-            message: error.response.data?.message || error.message,
-            responseMessage: error.response.statusText,
-            metadata: formatAxiosErrorData(error.response.data),
-        };
-    } else {
-        statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
-        errorResponse = {
-            type: 'InternalServerError',
-            message: error.message || 'Internal server error',
-        };
+        default:
+            if (axios.isAxiosError(error) && error.response?.status) {
+                statusCode = error.response.status;
+                errorResponse = errorResponseBuilder({ ...error, code: error.response.status, metadata: formatAxiosErrorData(error.response.data) });
+            } else {
+                statusCode = StatusCodes.INTERNAL_SERVER_ERROR;
+                errorResponse = errorResponseBuilder(error as ServiceError);
+            }
+            break;
     }
 
     const logData = {

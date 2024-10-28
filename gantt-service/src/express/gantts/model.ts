@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
 
-import { ServiceError } from '../error';
-import { StatusCodes } from 'http-status-codes';
+import { BadRequestError } from '../error';
 
 const GroupBySchema = new mongoose.Schema(
     {
@@ -93,7 +92,7 @@ export const GanttSchema = new mongoose.Schema(
 
 const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: (err?: any) => void) => {
     if (error.name === 'MongoError' && error.code === 11000) {
-        next(new ServiceError(StatusCodes.BAD_REQUEST, 'gantt with the same name already exists'));
+        next(new BadRequestError('gantt with the same name already exists'));
     } else {
         next(error);
     }

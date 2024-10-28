@@ -1,4 +1,3 @@
-import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '../../express/error';
 import { WorkspaceTypes } from '../../express/workspaces/interface';
 import { WorkspaceManager } from '../../express/workspaces/manager';
@@ -64,7 +63,7 @@ const checkDateNotification = async (entityTemplateService: EntityTemplateServic
         );
     } catch (error) {
         throw new ServiceError(
-            StatusCodes.INTERNAL_SERVER_ERROR,
+            undefined,
             `Failed to update fields that have a date notification in entityTemplate: ${entityTemplate._id} - ${entityTemplate.name} in properties: ${updatedProperties}`,
             { error },
         );
@@ -84,4 +83,4 @@ const main = async () => {
     );
 };
 
-main();
+main().catch((error) => logger.error('Main error: ', { error }));

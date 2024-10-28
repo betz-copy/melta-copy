@@ -10,13 +10,12 @@ import {
 import { IEntity } from '../../entities/interface';
 import RelationshipManager from '../../relationships/manager';
 import { trycatch } from '../../../utils/lib';
-import { ServiceError } from '../../error';
+import { BadRequestError } from '../../error';
 import { IBrokenRule } from '../interfaces';
 import { addStringFieldsAndNormalizeDateValues } from '../../entities/validator.template';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import { sortBrokenRules } from '../throwIfActionCausedRuleFailures';
 import { getMockAdapterTemplateManager } from '../../../externalServices/tests/axios.mock';
-import { StatusCodes } from 'http-status-codes';
 
 const { neo4j } = config;
 
@@ -55,7 +54,7 @@ const updateEntityAndExpectRuleBlock = async (
     );
 
     expect(err).toStrictEqual(
-        new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
+        new BadRequestError('[NEO4J] action is blocked by rules.', {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules: expect.any(Array),
         }),
@@ -948,7 +947,7 @@ describe('Entity manager test rules', () => {
                 );
 
                 expect(err).toStrictEqual(
-                    new ServiceError(StatusCodes.BAD_REQUEST, '[NEO4J] action is blocked by rules.', {
+                    new BadRequestError('[NEO4J] action is blocked by rules.', {
                         errorCode: config.errorCodes.ruleBlock,
                         brokenRules: {
                             ruleId: startDateSmallerThenEndDateInTrip._id,

@@ -1,6 +1,5 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { StatusCodes } from 'http-status-codes';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IAction } from '../../externalServices/ruleBreachService/interfaces';
@@ -229,7 +228,7 @@ export class InstancesValidator extends DefaultController {
         const { ignoredRules } = req.body;
         const { user } = req;
 
-        if (!user) throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'req.user is undefined');
+        if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 

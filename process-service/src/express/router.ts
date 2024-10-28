@@ -1,8 +1,8 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import ProcessInstanceRouter from './instances/processes/router';
 import StepInstanceRouter from './instances/steps/router';
 import ProcessTemplateRouter from './templates/processes/router';
-import { StatusCodes } from 'http-status-codes';
 
 const appRouter = Router();
 

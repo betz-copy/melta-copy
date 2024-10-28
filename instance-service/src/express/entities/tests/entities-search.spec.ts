@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
+import { StatusCodes } from 'http-status-codes';
 import Neo4jClient from '../../../utils/neo4j';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../../config';
@@ -16,7 +17,6 @@ import {
 } from '../../../externalServices/tests/externalServices.mock';
 import RelationshipManager from '../../relationships/manager';
 import { IRelationship } from '../../relationships/interfaces';
-import { StatusCodes } from 'http-status-codes';
 
 const { neo4j } = config;
 

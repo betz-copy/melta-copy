@@ -1,8 +1,8 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import entitiesRouter from './entities/router';
 import relationshipsRouter from './relationships/router';
 import bulkActionRouter from './bulkActions/router';
-import { StatusCodes } from 'http-status-codes';
 
 const appRouter = Router();
 

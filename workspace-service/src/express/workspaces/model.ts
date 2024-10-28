@@ -1,7 +1,6 @@
 import mongoose from 'mongoose';
-import { StatusCodes } from 'http-status-codes';
 import { config } from '../../config';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import { Colors, IWorkspace } from './interface';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
@@ -44,7 +43,7 @@ const WorkspacesSchema = new mongoose.Schema<IWorkspace>(
 
 const handleMongooseDuplicateKeyError = (error: any, _doc: mongoose.Document, next: any) => {
     if (error.name === 'MongoServerError' && error.code === 11000) {
-        next(new ServiceError(StatusCodes.BAD_REQUEST, 'workspace with the same name already exists in this path'));
+        next(new BadRequestError('workspace with the same name already exists in this path'));
     } else {
         next(error);
     }

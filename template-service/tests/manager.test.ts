@@ -11,9 +11,7 @@ import { StatusCodes } from 'http-status-codes';
 jest.mock('../src/entityTemplateManager');
 const entityTemplateManagerMocked = jest.mocked(entityTemplateManager, true);
 
-const { OK: okStatus } = StatusCodes;
-
-const { INTERNAL_SERVER_ERROR: internalServerErrorStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
+const { OK: okStatus, NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
 
 jest.mock('../src/express/relationshipTemplate/model', () => ({
     // mocking model.ts accidently mock Map. see here: https://github.com/sideway/joi/issues/2350#issuecomment-739639198
@@ -48,7 +46,7 @@ const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    } as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>);
+    }) as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
 const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
     ({
@@ -56,7 +54,7 @@ const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    } as unknown as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>);
+    }) as unknown as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>;
 
 // const mockMongooseFindWithChainingRejectValue = (rejectValue: any) =>
 //     ({
@@ -137,7 +135,7 @@ describe('manager logic', () => {
         it.each(['source', 'dest'] as ['source', 'dest'])(
             'throw 403 when only %s updated and doesnt exist',
             async (sourceOrDest: 'source' | 'dest') => {
-                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: StatusCodes.NOT_FOUND } });
+                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: notFoundStatus } });
 
                 const updatedFields: Partial<IRelationshipTemplate> = {};
                 if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
@@ -187,10 +185,9 @@ describe('manager logic', () => {
         it.each(['source', 'dest'] as ['source', 'dest'])('throw 403 when %s doesnt exist', async (sourceOrDest: 'source' | 'dest') => {
             entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
                 // eslint-disable-next-line no-throw-literal
-                if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw { response: { status: StatusCodes.NOT_FOUND } };
+                if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw { response: { status: notFoundStatus } };
                 // eslint-disable-next-line no-throw-literal
-                if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId)
-                    throw { response: { status: StatusCodes.NOT_FOUND } };
+                if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw { response: { status: notFoundStatus } };
 
                 return exampleEntity;
             });

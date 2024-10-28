@@ -1,6 +1,6 @@
 import { Router } from 'express';
-import notificationsRouter from './notifications/router';
 import { StatusCodes } from 'http-status-codes';
+import notificationsRouter from './notifications/router';
 
 const appRouter = Router();
 

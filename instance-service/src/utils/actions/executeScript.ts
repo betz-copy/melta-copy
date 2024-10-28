@@ -3,14 +3,13 @@ import * as vm from 'vm';
 import { Transaction } from 'neo4j-driver';
 import { formatDate } from 'date-fns/format';
 import { isDate } from 'date-fns';
-import { StatusCodes } from 'http-status-codes';
 import { IEntity, IEntityCrudAction, IExecutionOutput, isRelationshipReference } from '../../express/entities/interface';
 import { EntityValidator } from '../../express/entities/validator.template';
 import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../config';
 import { generateInterfaceWithRelationships } from './interfaceGenerator';
 import { EntityManager } from '../../express/entities/manager';
-import { ServiceError, ValidationError } from '../../express/error';
+import { BadRequestError, ValidationError } from '../../express/error';
 
 const { brokenRulesFakeEntityIdPrefix, errorCodes } = config;
 
@@ -60,7 +59,7 @@ const executeActionCodeInVM = (entity: IEntity, jsCode: string) => {
         return vm.runInContext('getActions(entity)', context);
     } catch (error) {
         if ((error as Error).name === errorCodes.actionsCustomError)
-            throw new ServiceError(StatusCodes.BAD_REQUEST, `Error executing VM code of actions`, {
+            throw new BadRequestError(`Error executing VM code of actions`, {
                 errorCode: errorCodes.actionsCustomError,
                 message: (error as Error).message,
             });

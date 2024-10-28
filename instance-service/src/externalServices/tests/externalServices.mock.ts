@@ -1,12 +1,13 @@
 import MockAdapter from 'axios-mock-adapter';
 import { v4 as uuidv4 } from 'uuid';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '../templates/interfaces/entityTemplates';
 import { IMongoRule } from '../templates/interfaces/rules';
 import config from '../../config';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../templates/interfaces/relationshipTemplates';
-import { StatusCodes } from 'http-status-codes';
 
 const { url, relationships, entities } = config.templateService;
+const { OK: okStatus } = StatusCodes;
 
 const generateMongoId = () => uuidv4(); // not really ObjectId of mongo, but good enough
 export const generateTemplates = () => {
@@ -549,12 +550,12 @@ export const generateTemplates = () => {
 
 export const mockEntityTemplatesRoutes = (mockTemplateManager: MockAdapter, entityTemplates: IMongoEntityTemplate[]) => {
     entityTemplates.forEach((entityTemplate) => {
-        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(StatusCodes.OK, entityTemplate);
+        mockTemplateManager.onGet(`${url}${entities.getByIdRoute}/${entityTemplate._id}`).reply(okStatus, entityTemplate);
     });
 
     mockTemplateManager.onPost(`${url}${entities.searchRoute}`).reply(({ data }) => {
         const { ids } = JSON.parse(data) as Required<Pick<ISearchEntityTemplatesBody, 'ids'>>; // assuming only search by ids
-        return [StatusCodes.OK, entityTemplates.filter(({ _id }) => ids.includes(_id))];
+        return [okStatus, entityTemplates.filter(({ _id }) => ids.includes(_id))];
     });
 };
 
@@ -562,7 +563,7 @@ export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter
     relationshipTemplates.forEach((relationshipTemplate) => {
         mockTemplateManager
             .onGet(`${url}${relationships.getRelationshipByIdRoute}/${relationshipTemplate._id}`)
-            .reply(StatusCodes.OK, relationshipTemplate);
+            .reply(okStatus, relationshipTemplate);
     });
 
     mockTemplateManager.onPost(`${url}${relationships.searchTemplatesRoute}`).reply(({ data }) => {
@@ -572,7 +573,7 @@ export const mockRelationshipTemplatesRoutes = (mockTemplateManager: MockAdapter
         >;
 
         return [
-            StatusCodes.OK,
+            okStatus,
             relationshipTemplates.filter(
                 ({ sourceEntityId, destinationEntityId }) =>
                     sourceEntityIds?.includes(sourceEntityId) || destinationEntityIds?.includes(destinationEntityId),
@@ -590,6 +591,6 @@ export const mockRulesRoutes = (mockTemplateManager: MockAdapter, rules: IMongoR
                 disabled: false,
                 entityTemplateIds: [entityTemplateId],
             })
-            .reply(StatusCodes.OK, rulesByEntityTemplate);
+            .reply(okStatus, rulesByEntityTemplate);
     });
 };

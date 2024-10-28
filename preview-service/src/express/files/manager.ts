@@ -2,10 +2,9 @@ import * as libreoffice from 'libreoffice-convert';
 import { Readable } from 'stream';
 import { promisify } from 'util';
 import { menash } from 'menashmq';
-import { StatusCodes } from 'http-status-codes';
 import { streamToBuffer } from '../../utils/fs';
 import { config } from '../../config';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {
@@ -26,7 +25,7 @@ export class FilesManager extends DefaultManagerMinio {
         } catch (error: any) {
             if (error.code === 'NoSuchKey') {
                 await menash.send(rabbit.previewQueue, filePath, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
-                throw new ServiceError(StatusCodes.NOT_FOUND, 'File Not Found');
+                throw new NotFoundError('File Not Found');
             }
             throw error;
         }
