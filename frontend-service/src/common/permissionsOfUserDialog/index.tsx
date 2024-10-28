@@ -48,7 +48,8 @@ const PermissionsOfUserDialog: React.FC<{
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
-}> = ({ isOpen, handleClose, mode, existingUser }) => {
+    onSuccess?: (user?: IUser) => void;
+}> = ({ isOpen, handleClose, mode, existingUser, onSuccess }) => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -59,7 +60,6 @@ const PermissionsOfUserDialog: React.FC<{
 
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const allUsers = queryClient.getQueryData<IUser[]>('getAllUsers');
 
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
@@ -70,12 +70,8 @@ const PermissionsOfUserDialog: React.FC<{
                 console.log('failed to upsert permission. error:', error);
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
-            onSuccess: (newUser) => {
-                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
-                    if (!oldUsers) throw new Error('should contain existing users when creating user');
-                    return [newUser, ...oldUsers];
-                });
-
+            onSuccess: () => {
+                onSuccess?.();
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
                 handleClose();
             },
@@ -115,17 +111,6 @@ const PermissionsOfUserDialog: React.FC<{
             onSuccess: (newPermissions) => {
                 if (!existingUser) return;
 
-                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
-                    if (!oldUsers) throw new Error('should contain existing users when updating permissions of user');
-                    const newUsers = [...oldUsers];
-                    const existingUserIndex = newUsers.findIndex(({ _id }) => _id === existingUser._id);
-
-                    if (userHasNoPermissions(newPermissions[workspace._id] ?? {})) newUsers.splice(existingUserIndex, 1);
-                    else newUsers[existingUserIndex] = { ...existingUser, permissions: newPermissions };
-
-                    return newUsers;
-                });
-
                 if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
@@ -156,13 +141,6 @@ const PermissionsOfUserDialog: React.FC<{
                 validationSchema={Yup.object({
                     fullName: Yup.string().nullable().required(i18next.t('validation.required')),
                 }).unknown(true)}
-                validate={(formUser: IUser) => {
-                    if (mode === 'create' && allUsers?.some(({ _id }) => _id === formUser._id)) {
-                        return { fullName: i18next.t('permissions.permissionsOfUserDialog.userAlreadyExistOnCreateMessage') };
-                    }
-
-                    return {};
-                }}
                 onSubmit={(formUser) => {
                     if (mode === 'create') createUser(formUser);
                     else syncUserPermissions(formUser);
@@ -398,6 +376,7 @@ const PermissionsOfUserDialog: React.FC<{
                                                     userHasNoPermissions(formikProps.values.permissions[workspace._id])
                                                 }
                                                 variant="contained"
+                                                onClick={() => mode === 'edit' && onSuccess?.(formikProps.values)}
                                             >
                                                 {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                                                 {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}

@@ -6,9 +6,8 @@ import { ProcessName } from './ProcessName';
 import { environment } from '../../../../globals';
 import { NotificationColor } from '../../../notificationColor';
 
-export const NewProcessNotification: React.FC<{ notificationMetadata: INewProcessNotificationMetadataPopulated; titleColor: string }> = ({
+export const NewProcessNotification: React.FC<{ notificationMetadata: INewProcessNotificationMetadataPopulated }> = ({
     notificationMetadata: { process },
-    titleColor,
 }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find(({ type }) => type === NotificationType.newProcess)?.color;
@@ -17,7 +16,7 @@ export const NewProcessNotification: React.FC<{ notificationMetadata: INewProces
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography color={titleColor} sx={{ paddingLeft: '10px' }}>
+                <Typography color="primary" fontWeight="bold" sx={{ paddingLeft: '10px' }}>
                     {i18next.t('newProcessNotification.newProcess')}
                 </Typography>
             </Grid>

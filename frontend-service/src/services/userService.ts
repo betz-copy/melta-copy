@@ -17,7 +17,7 @@ export const getUserByIdRequest = async (userId: string) => {
 };
 
 export const searchUsersRequest = async (searchBody: IUserSearchBody) => {
-    const { data } = await axios.post<IUser[]>(`${users}/search`, searchBody);
+    const { data } = await axios.post<{ users: IUser[]; count: number }>(`${users}/search`, searchBody);
     return data;
 };
 

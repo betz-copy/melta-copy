@@ -1,3 +1,4 @@
+import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
@@ -46,8 +47,10 @@ const EntityTopBar: React.FC<{
                     <EntityTemplateColor entityTemplateColor={entityTemplateColor} />
                 </Grid>
                 <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
-                    {entityTemplate.iconFileId && (
-                        <CustomIcon iconUrl={entityTemplate.iconFileId || ''} height="30px" width="30px" color={theme.palette.primary.main} />
+                    {entityTemplate.iconFileId ? (
+                        <CustomIcon iconUrl={entityTemplate.iconFileId} height="30px" width="30px" color={theme.palette.primary.main} />
+                    ) : (
+                        <AppRegistration sx={{ color: theme.palette.primary.main }} />
                     )}
                 </Grid>
                 <Grid item>

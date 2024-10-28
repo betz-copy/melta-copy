@@ -1,5 +1,10 @@
+/* eslint-disable no-param-reassign */
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
+
+import { AgGridReact } from '@ag-grid-community/react';
 import {
+    BodyScrollEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
@@ -8,26 +13,27 @@ import {
     IServerSideGetRowsParams,
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
+    RowStyle,
 } from '@ag-grid-community/core';
-import { AgGridReact } from '@ag-grid-community/react';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { Box } from '@mui/material';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import '@noam7700/ag-grid-enterprise-core';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
+
+import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import sortBy from 'lodash.sortby';
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+
 import '../../css/resizeTable.css';
 import '../../css/table.css';
+
+import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
+import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
+import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
+import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
+import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -42,7 +48,6 @@ import { trycatch } from '../../utils/trycatch';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { getEntityTemplateColor } from '../../utils/colors';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -58,17 +63,16 @@ export interface IButtonProps<Data> {
     popoverText: string;
     disabledButton: boolean;
 }
+
 export const getDatasource = <Data extends any = IEntity>(
     template: IMongoEntityTemplatePopulated,
-    quickFilterText: string | undefined,
-    onFail: ((err: unknown) => void) | undefined,
+    quickFilterText?: string,
+    onFail?: (err: unknown) => void,
     rowData?: IConnection[],
-    mainEntity?: IEntityExpanded,
 ): IServerSideDatasource => {
     return {
-        // TODO: Refactor the code to be more generic and avoid using a specific type like IConnection.
         async getRows(params: IServerSideGetRowsParams<Data>) {
-            if (rowData && mainEntity) {
+            if (rowData) {
                 params.success({
                     rowData,
                     rowCount: rowData.length,
@@ -76,7 +80,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            const agGridRequest = params.request;
+            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel, ...defaultFilterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
@@ -89,8 +93,9 @@ export const getDatasource = <Data extends any = IEntity>(
                 params.fail();
                 return;
             }
+
             params.success({
-                rowData: data.entities.map(({ entity }) => entity),
+                rowData: data.entities.map(({ entity }) => entity as Data),
                 rowCount: data.count,
             });
         },
@@ -103,35 +108,33 @@ export type IConnection = {
     destinationEntity: IEntity;
 };
 
-const getRowModelProps = <Data extends any = IEntity>(
+export const getRowModelProps = <Data extends any = IEntity>(
     rowModelType: 'serverSide' | 'clientSide' | 'infinite',
     template: IMongoEntityTemplatePopulated,
     rowData: Data[] | undefined,
     paginationPageSize: number,
-    quickFilterText: string | undefined,
-    datasourceOnFail: ((err: unknown) => void) | undefined,
-    mainEntity?: IEntityExpanded,
+    quickFilterText?: string,
+    datasourceOnFail?: (err: unknown) => void,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
+        return { rowModelType, rowData, pagination: false, paginationPageSize };
     }
 
-    const { cacheBlockSize, maxBlocksInCache, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
+    const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
+
     return {
         rowModelType: 'serverSide',
-        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[], mainEntity),
-        cacheBlockSize,
-        maxBlocksInCache,
+        serverSideDatasource: getDatasource<IConnection>(template, quickFilterText, datasourceOnFail, rowData as IConnection[]),
+        cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
-        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
+        maxConcurrentDatasourceRequests,
     };
 };
 
-export { getRowModelProps };
-
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated;
+    entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -153,6 +156,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveSorting: boolean;
         shouldSaveColumnOrder: boolean;
         shouldSavePagination: boolean;
+        shouldSaveScrollPosition: boolean;
         pageType?: string;
     };
     onFilter?: () => void;
@@ -192,25 +196,23 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
-            mainEntity,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
-        const saveColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
-        const defaultColumnsOrder = saveColumnsOrder ? JSON.parse(saveColumnsOrder) : {};
+        const savedColumnsOrder = localStorage.getItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`);
+        const defaultColumnsOrder = savedColumnsOrder ? JSON.parse(savedColumnsOrder) : {};
 
         const savedColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
         const defaultColumnWidths = savedColumnWidths ? JSON.parse(savedColumnWidths) : {};
 
         const [_, navigate] = useLocation();
 
-        const gridRef = useRef<AgGridReact<Data> & HTMLDivElement>(null);
+        const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
 
-        // height of table includes statusbar and titles
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
@@ -222,53 +224,54 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
         };
 
-        useImperativeHandle(ref, () => {
-            return {
-                getExcelData() {
-                    return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
-                },
-                resetFilter() {
-                    gridRef.current?.api.setFilterModel(defaultFilterModel);
-                },
-                refreshServerSide() {
-                    gridRef.current?.api.refreshServerSide({ purge: true });
-                },
-                updateRowDataClientSide(data: Data) {
-                    gridRef.current?.api.forEachNode((rowNode) => {
-                        if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
-                            rowNode.updateData(data);
-                        }
-                    });
-                },
-                isFiltered() {
-                    const filters = gridRef.current?.api.getFilterModel();
-                    return !filters || !isEqual(filters, defaultFilterModel);
-                },
-                getFilterModel() {
-                    return gridRef.current!.api.getFilterModel();
-                },
-                getSortModel() {
-                    return getSortModel();
-                },
-                scrollIntoView: () => {
-                    tableRef.current?.scrollIntoView({ behavior: 'smooth' });
-                },
-                showSideBar() {
-                    const gridApi = gridRef.current?.api;
-                    if (!gridApi) return;
-                    const isSideBarOpen = gridApi.isToolPanelShowing();
-                    gridApi.setSideBarVisible(!isSideBarOpen);
-                    // eslint-disable-next-line no-unused-expressions
-                    isSideBarOpen ? gridApi.closeToolPanel() : gridApi.openToolPanel('columns');
-                },
-                getDisplayColumns: () => gridRef.current?.columnApi.getAllDisplayedColumns().map((column) => column.getColId()) || [],
-            };
-        });
+        useImperativeHandle(ref, () => ({
+            getExcelData() {
+                return gridRef.current?.api.getSheetDataForExcel({ sheetName: template.displayName });
+            },
+            resetFilter() {
+                gridRef.current?.api.setFilterModel(defaultFilterModel);
+            },
+            refreshServerSide() {
+                gridRef.current?.api.refreshServerSide({ purge: true });
+            },
+            updateRowDataClientSide(data: Data) {
+                gridRef.current?.api.forEachNode((rowNode) => {
+                    if (rowNode.data && getRowId(data) === getRowId(rowNode.data)) {
+                        rowNode.updateData(data);
+                    }
+                });
+            },
+            isFiltered() {
+                const filters = gridRef.current?.api.getFilterModel();
+                return !filters || !isEqual(filters, defaultFilterModel);
+            },
+            getFilterModel() {
+                return gridRef.current!.api.getFilterModel();
+            },
+            getSortModel() {
+                return getSortModel();
+            },
+            scrollIntoView() {
+                tableRef.current?.scrollIntoView({ behavior: 'smooth' });
+            },
+            showSideBar() {
+                const gridApi = gridRef.current?.api;
+                if (!gridApi) return;
+                const isSideBarOpen = gridApi.isToolPanelShowing();
+                gridApi.setSideBarVisible(!isSideBarOpen);
+                if (isSideBarOpen) {
+                    gridApi.closeToolPanel();
+                } else {
+                    gridApi.openToolPanel('columns');
+                }
+            },
+            getDisplayColumns: () => gridRef.current?.columnApi.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+        }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
             template,
             getEntityPropertiesData,
-            onNavigateToRow: !showNavigateToRowButton ? undefined : (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`),
+            onNavigateToRow: showNavigateToRowButton ? (data) => navigate(`/entity/${getEntityPropertiesData(data)._id}`) : undefined,
             deleteRowButtonProps,
             hideNonPreview,
             editRowButtonProps,
@@ -283,90 +286,81 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const datasourceOnFail = (err: unknown) => {
             toast.error(i18next.t('entitiesTableOfTemplate.failedToLoadData'));
-            // eslint-disable-next-line no-console
-            console.log('failed to load data from datasource. err:', err);
+            console.error('Failed to load data from datasource. Error:', err);
         };
 
-        // useMemo because on SSRM if datasource prop changes it reloads rows (because maybe getRows is changed)
-        // because we recreate datasource object on every irrelevant render, we recreate only on dependencies
-        // usually only quickFilterText changes on deps
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, mainEntity),
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
             [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 
-        const getStyles = () => ({
+        const gridStyles = {
             '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
             '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
             '.ag-paging-panel': {
                 height: '45px',
             },
             '.ag-paging-panel > *': { fontSize: '15px' },
-        });
+        };
 
-        // function save to localStorage:
-
-        // visibility of columns
-        const onColumnVisible = (params: ColumnVisibleEvent<Data>) => {
+        const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
             const columnState = params.columnApi.getColumnState();
-            const updatedVisibleColumns = columnState.reduce((acc, col) => {
-                // eslint-disable-next-line no-param-reassign
-                acc[col.colId] = col.hide === false;
+            const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
+                acc[col.colId] = !col.hide;
                 return acc;
             }, {});
             localStorage.setItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(updatedVisibleColumns));
         };
 
-        // order of columns
-        const onColumnMoved = (params: ColumnMovedEvent<Data>) => {
+        const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
             const columnState = params.columnApi.getColumnState();
-            const newcolumnsOrder = columnState.reduce((acc, column, index) => {
-                // eslint-disable-next-line no-param-reassign
+            const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
             }, {});
-            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newcolumnsOrder));
+            localStorage.setItem(`columnsOrder-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(newColumnsOrder));
         };
 
-        // width of columns
-        const onColumnResized = (params: ColumnResizedEvent<Data>) => {
-            if (
-                params.finished &&
-                // only when change was done on single column, and the cause is user resizing deliberately (mouse clicking)
-                params.column &&
-                (params.source === 'autosizeColumns' || params.source === 'uiColumnDragged' || params.source === 'uiColumnResized')
-            ) {
+        const handleColumnResized = (params: ColumnResizedEvent<Data>) => {
+            if (params.finished && params.column && ['autosizeColumns', 'uiColumnDragged', 'uiColumnResized'].includes(params.source)) {
                 const currColumnWidths = localStorage.getItem(`columnWidths-${saveStorageProps.pageType}-${template._id}`);
                 const currColumnWidthsParsed = currColumnWidths ? JSON.parse(currColumnWidths) : {};
                 localStorage.setItem(
                     `columnWidths-${saveStorageProps.pageType}-${template._id}`,
-                    JSON.stringify({ ...currColumnWidthsParsed, [params.column.getColId()]: params.column.getActualWidth() }),
+                    JSON.stringify({
+                        ...currColumnWidthsParsed,
+                        [params.column.getColId()]: params.column.getActualWidth(),
+                    }),
                 );
             }
         };
 
-        // sorting Column
-        const onSortChanged = () => {
+        const handleSortChanged = () => {
             if (!saveStorageProps.shouldSaveSorting) return;
             const sortModel = getSortModel();
             localStorage.setItem(`sortModel-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(sortModel));
         };
 
-        // page in table - sessionStorage
-        const onPaginationChanged = (params: PaginationChangedEvent<Data>) => {
+        const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
             if (!saveStorageProps.shouldSavePagination) return;
-
             if (params.api && params.newPage) {
                 const currentPage = params.api.paginationGetCurrentPage();
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
         };
 
+        const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveScrollPosition) return;
+            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
+                sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
+            }
+        }, 300);
+
         const gridContent = (
             <Box
-                sx={getStyles()}
+                sx={gridStyles}
                 style={{
                     borderRadius: '10px',
                     boxShadow: '-2px 2px 6px 0px rgba(30, 39, 117, 0.30)',
@@ -375,11 +369,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             >
                 <AgGridReact<Data>
                     ref={gridRef}
-                    getRowStyle={(params) => {
+                    getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
                             return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
                         }
-                        return { background: 'default', color: 'default' };
+                        return undefined;
                     }}
                     className="ag-theme-material"
                     containerStyle={{
@@ -405,16 +399,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     components={{
                         agDateInput: DateFilterComponent,
                     }}
-                    onColumnVisible={onColumnVisible}
-                    onColumnMoved={onColumnMoved}
-                    onColumnResized={onColumnResized}
-                    onPaginationChanged={onPaginationChanged}
-                    onSortChanged={onSortChanged}
+                    onColumnVisible={handleColumnVisible}
+                    onColumnMoved={handleColumnMoved}
+                    onColumnResized={handleColumnResized}
+                    onPaginationChanged={handlePaginationChanged}
+                    onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
+                    onSortChanged={handleSortChanged}
                     enableRtl
                     enableCellTextSelection
                     maintainColumnOrder
                     rowSelection={onRowSelected ? 'single' : undefined}
-                    onRowSelected={!onRowSelected ? undefined : ({ data }) => onRowSelected(data!)}
+                    onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {
@@ -431,6 +426,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             }
                         }
                     }}
+                    animateRows
+                    // eslint-disable-next-line react/no-unstable-nested-components
+                    loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {
@@ -440,10 +438,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         gridApi.setSideBarVisible(isSideBarOpen);
                     }}
                     onGridReady={(params) => {
-                        params.api.setFilterModel({
-                            ...defaultFilterModel,
-                            ...LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`),
-                        });
                         const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                         if (savedSortModel) {
                             const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
@@ -452,12 +446,39 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                 defaultState: { sort: null },
                             });
                         }
+
+                        const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
+                        if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                     }}
                     onFirstDataRendered={(params) => {
-                        const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
+                        const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
+
                         if (savedPage !== null) {
                             const pageToNavigate = JSON.parse(savedPage);
                             params.api.paginationGoToPage(pageToNavigate);
+                        }
+
+                        if (rowModelType === 'infinite') {
+                            const savedRowIndex = sessionStorage.getItem(`scrollPosition-${template._id}`);
+
+                            if (savedRowIndex != null) {
+                                const lastScrollPosition = JSON.parse(savedRowIndex);
+
+                                const rowIndex = Math.floor(lastScrollPosition / rowHeight);
+                                setTimeout(() => {
+                                    params.api.ensureIndexVisible(rowIndex, 'top');
+                                    const displayedRow = params.api.getDisplayedRowAtIndex(rowIndex);
+                                    if (displayedRow?.rowTop != null) {
+                                        const gridBody = document.querySelector('.ag-body-viewport');
+                                        if (gridBody) {
+                                            gridBody.scrollTo({
+                                                top: lastScrollPosition,
+                                                behavior: 'smooth',
+                                            });
+                                        }
+                                    }
+                                }, 150);
+                            }
                         }
                     }}
                     defaultColDef={{
@@ -508,7 +529,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         );
 
         return rowModelType === 'infinite' ? (
-            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable}>
+            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>
         ) : (
@@ -517,7 +538,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
     },
 );
 
-// forwardRef loses generic type of component. see https://stackoverflow.com/questions/58469229/react-with-typescript-generics-while-using-react-forwardref
 export default EntitiesTableOfTemplate as <Data = IEntity>(
     props: EntitiesTableOfTemplateProps<Data> & { ref?: React.ForwardedRef<EntitiesTableOfTemplateRef<Data>> },
 ) => ReturnType<typeof EntitiesTableOfTemplate>;

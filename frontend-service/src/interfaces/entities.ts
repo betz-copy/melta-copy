@@ -92,6 +92,12 @@ export interface ISearchEntitiesOfTemplateBody {
     sort?: ISearchSort;
 }
 
+export interface ISearchEntitiesByTemplatesBody {
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
+}
+
 export interface ISearchBatchBody {
     skip?: number;
     limit: number;
@@ -108,6 +114,10 @@ export interface ISearchBatchBody {
 export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectConnections[];
+}
+
+export interface ISearchResultByTemplates {
+    [templateId: string]: ISearchResult;
 }
 
 export interface IExportEntitiesBody {

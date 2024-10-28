@@ -16,6 +16,7 @@ import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
+import { IMongoCategory } from '../../../../interfaces/categories';
 
 const {
     systemManagement: {
@@ -27,7 +28,9 @@ const CodeEditorDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
     entityTemplate: IMongoEntityTemplatePopulated | null;
-}> = ({ open, handleClose, entityTemplate }) => {
+    searchText: string;
+    categoriesToShow: IMongoCategory[];
+}> = ({ open, handleClose, entityTemplate, searchText, categoriesToShow }) => {
     if (!entityTemplate) return null;
 
     const queryClient = useQueryClient();
@@ -62,6 +65,8 @@ const CodeEditorDialog: React.FC<{
                 queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
                     entityTemplateMap!.set(entityTemplate._id, { ...entityTemplate, actions }),
                 );
+
+                queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 toast.success(i18next.t('systemManagement.entityAction.successUpdateAction'));
                 handleClose();
             },
@@ -100,14 +105,12 @@ const CodeEditorDialog: React.FC<{
         await mutateAsync();
     };
 
-    const mainColor = (theme) => theme.palette.primary.main;
-
     return (
         <Box>
-            <Dialog open={open} maxWidth="md" fullWidth PaperProps={{ sx: { bgcolor: 'white' } }} disableEnforceFocus>
+            <Dialog open={open} maxWidth="md" fullWidth disableEnforceFocus>
                 <DialogTitle>
                     <Grid display="flex" flexDirection="row" alignItems="center" gap=".25rem">
-                        <Typography color={mainColor} fontSize="20px" fontWeight="600" fontFamily="Rubik">
+                        <Typography color="primary" fontSize="20px" fontWeight="600" fontFamily="Rubik">
                             {i18next.t('actions.addActions')}
                         </Typography>
                         <IconButtonWithPopover
@@ -119,7 +122,7 @@ const CodeEditorDialog: React.FC<{
                                 },
                             }}
                         >
-                            <ContentCopy sx={{ color: mainColor }} />
+                            <ContentCopy color="primary" />
                         </IconButtonWithPopover>
                     </Grid>
                     <IconButton
@@ -127,14 +130,9 @@ const CodeEditorDialog: React.FC<{
                         onClick={() => {
                             setCloseActionDialog(true);
                         }}
-                        sx={{
-                            position: 'absolute',
-                            right: 12,
-                            top: 12,
-                            color: mainColor,
-                        }}
+                        sx={{ position: 'absolute', right: 12, top: 12 }}
                     >
-                        <CloseOutlined />
+                        <CloseOutlined color="primary" />
                     </IconButton>
                 </DialogTitle>
                 <DialogContent>

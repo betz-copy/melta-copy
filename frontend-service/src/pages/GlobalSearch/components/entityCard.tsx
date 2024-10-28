@@ -28,6 +28,7 @@ import { checkUserCategoryPermission } from '../../../utils/permissions/instance
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { NoFile } from './NoFile';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -371,13 +372,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
                     {hasSomeFileIdPropertyTemplate && files.length === 0 && (
                         <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <img
-                                src="/icons/no-file.svg"
-                                style={{
-                                    height: '167px',
-                                    zIndex: 2,
-                                }}
-                            />
+                            <NoFile />
                         </Grid>
                     )}
                 </Grid>
@@ -469,7 +464,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 </Grid>
                             </Box>
                         ) : (
-                            hasSomeFileIdPropertyTemplate && files.length === 0 && <img src="/icons/no-file.svg" />
+                            hasSomeFileIdPropertyTemplate && files.length === 0 && <NoFile />
                         ))}
                 </Grid>
             </Grid>
