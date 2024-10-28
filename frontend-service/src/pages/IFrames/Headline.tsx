@@ -7,12 +7,10 @@ import OpenInFullIcon from '@mui/icons-material/OpenInFull';
 import { Dialog, Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useState, useRef, useEffect } from 'react';
-import Iframe from 'react-iframe';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import Iframe from 'react-iframe';
 import { CustomIcon } from '../../common/CustomIcon';
 import { ErrorToast } from '../../common/ErrorToast';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
@@ -68,22 +66,6 @@ const IFrameHeadline: React.FC<{
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });
-    const initialHistoryLength = useRef(window.history.length);
-    const [countClickInIframe, setCountClickInIframe] = useState(0);
-
-    const goBack = () => {
-        setCountClickInIframe(countClickInIframe + 1);
-        window.history.back();
-        // console.log({ countClickInIframe }, 'start: ', initialHistoryLength.current);
-        // console.log('current', window.history.length);
-    };
-
-    const goForward = () => {
-        setCountClickInIframe(countClickInIframe - 1);
-        window.history.forward();
-        // console.log({ countClickInIframe }, 'start: ', initialHistoryLength.current);
-        // console.log('current', window.history.length);
-    };
 
     return (
         <Grid
@@ -189,7 +171,11 @@ const IFrameHeadline: React.FC<{
                                     )}
                                     <Grid>
                                         <MeltaTooltip title={i18next.t('actions.expansion')}>
-                                            <IconButton onClick={() => setOpenFullSize(true)}>
+                                            <IconButton
+                                                onClick={() => {
+                                                    setOpenFullSize(true);
+                                                }}
+                                            >
                                                 <OpenInFullIcon color="primary" fontSize="small" />
                                             </IconButton>
                                         </MeltaTooltip>
@@ -213,15 +199,7 @@ const IFrameHeadline: React.FC<{
                     },
                 }}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px' }}>
-                    <IconButton onClick={goBack} disabled={window.history.length - countClickInIframe < initialHistoryLength.current}>
-                        <ArrowBackIcon />
-                    </IconButton>
-                    <IconButton onClick={goForward} disabled={countClickInIframe === 0}>
-                        <ArrowForwardIcon />
-                    </IconButton>
-                </div>
-                <Iframe url={iFrame?.url} title={iFrame?.name} width="100%" height="100%" frameBorder={0} name="iframe" />
+                <Iframe key={`${iFrame?.name}-${iFrame?.url}`} url={iFrame?.url} title={iFrame?.name} width="100%" height="100%" frameBorder={0} />
             </Dialog>
             <IFrameWizard
                 open={iFrameWizardDialogState.isWizardOpen}

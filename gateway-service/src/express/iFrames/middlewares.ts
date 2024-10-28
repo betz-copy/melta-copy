@@ -18,7 +18,6 @@ export class IFramesValidator extends DefaultController {
 
     private async validateHasPermissionsToIFrame(iFrame: IFrame, allowedCategoriesIds: string[]) {
         const unauthorizedCategories = iFrame.categoryIds.filter((id) => !allowedCategoriesIds.includes(id));
-        console.log({ unauthorizedCategories });
 
         if (unauthorizedCategories.length > 0) {
             throw new ServiceError(403, 'user not authorized ', {
@@ -27,27 +26,21 @@ export class IFramesValidator extends DefaultController {
         }
     }
 
-    async validateUserHasPermissionsToIFrame(req: Request, newIFrame: IFrame | undefined, existingIFrameId: string | undefined) {
-        console.log('ghghghhghghghghggh');
-
+    async validateUserHasPermissionsToIFrame(req: Request, newIFrame: IFrame | undefined, existingIFrameId: string | undefined, adminAction = false) {
         const [userPermissions] = await Promise.all([
             this.authorizer.getWorkspacePermissions(req.user!.id),
-            this.authorizer.userCanWriteTemplates(req),
+            adminAction && this.authorizer.userCanWriteTemplates(req),
         ]);
-        console.log({ userPermissions });
 
         if (userPermissions.admin) return;
 
         const allowedCategoriesIds = Object.keys(userPermissions.instances?.categories ?? {});
-        console.log({ allowedCategoriesIds, existingIFrameId });
 
         if (newIFrame) {
             await this.validateHasPermissionsToIFrame(newIFrame, allowedCategoriesIds);
         }
         if (existingIFrameId) {
             const iFrame = await this.iFramesManager.getIFrameById(existingIFrameId);
-            console.log({ iFrame });
-
             await this.validateHasPermissionsToIFrame(iFrame, allowedCategoriesIds);
         }
     }
@@ -57,14 +50,14 @@ export class IFramesValidator extends DefaultController {
     }
 
     async validateUserCanCreateIFrame(req: Request) {
-        await this.validateUserHasPermissionsToIFrame(req, req.body, undefined);
+        await this.validateUserHasPermissionsToIFrame(req, req.body, undefined, true);
     }
 
     async validateUserCanUpdateIFrame(req: Request) {
-        await this.validateUserHasPermissionsToIFrame(req, req.body, req.params.iFrameId);
+        await this.validateUserHasPermissionsToIFrame(req, req.body, req.params.iFrameId, true);
     }
 
     async validateUserCanDeleteIFrame(req: Request) {
-        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId);
+        await this.validateUserHasPermissionsToIFrame(req, undefined, req.params.iFrameId, true);
     }
 }

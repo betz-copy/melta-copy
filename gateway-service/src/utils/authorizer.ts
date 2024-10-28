@@ -25,7 +25,6 @@ export class Authorizer extends DefaultController {
         const hierarcyId = workspaceHierarchyIds.find((id) => Boolean(userPermissions[id]));
 
         if (!Object.keys(userPermissions) || !hierarcyId) throw new UserNotAuthorizedError();
-        console.log('1');
 
         return userPermissions[hierarcyId];
     }
@@ -54,8 +53,6 @@ export class Authorizer extends DefaultController {
     }
 
     private async wrapAuthMiddleware(req: Request, authPermissions: ISubCompactPermissions) {
-        console.log('2');
-
         return this.authorizeUser(req, req.user!.id, authPermissions);
     }
 

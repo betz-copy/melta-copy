@@ -37,6 +37,7 @@ export type MenuItemContentProps<Option = any> = {
     insideGroup?: boolean;
     option?: Option;
 };
+
 export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
     const theme = useTheme();
 

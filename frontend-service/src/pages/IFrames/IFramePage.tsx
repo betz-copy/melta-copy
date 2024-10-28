@@ -53,7 +53,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
                     overflow: 'hidden',
                 }}
             >
-                <Iframe id="myIframe" url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
+                <Iframe url={iFrameData!.url} title={iFrameData!.name} width="100%" height="100%" frameBorder={0} />
             </Grid>
         </Grid>
     );
