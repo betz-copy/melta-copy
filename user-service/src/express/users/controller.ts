@@ -33,4 +33,8 @@ export class UsersController {
     static async updateUsersBulk(req: Request, res: Response) {
         res.json(await UsersManager.updateUsersBulk(req.body));
     }
+
+    static async searchUsersByPermissions(req: Request, res: Response) {
+        res.json(await UsersManager.searchUsersByPermissions(req.body.workspaceId));
+    }
 }

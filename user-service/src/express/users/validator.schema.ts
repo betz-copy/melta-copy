@@ -63,3 +63,12 @@ export const updateUsersBulkRequestSchema = joi.object({
     body: joi.object().pattern(mongoIdSchema, partialBaseUserSchema.required()),
     params: {},
 });
+
+// // GET /api/users/search/workspace-id
+// export const searchUsersByPermissionsSchema = joi.object({
+//     query: {},
+//     body: joi.object({
+//         workspaceId: joi.string().required(),
+//     }),
+//     params: {},
+// });

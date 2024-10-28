@@ -97,4 +97,10 @@ export class PermissionsManager {
 
         return PermissionsModel.find(query).lean().exec();
     }
+
+    static async getPermissionsByWorkspaceId(workspaceId: string): Promise<IPermission[]> {
+        const permissions: IPermission[] = await PermissionsModel.find({workspaceId: workspaceId});
+
+        return permissions;
+    }
 }

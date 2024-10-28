@@ -4,7 +4,7 @@ import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { ISubCompactPermissions } from '../permissions/interface/permissions';
+import { IPermission, ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -101,5 +101,14 @@ export class UsersManager {
 
     private static async appendPermissionsToUsers(users: IBaseUser[]): Promise<IUser[]> {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
+    }
+
+    static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
+        const permissions: IPermission[] = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId);
+
+        const userPromises = permissions.map((permission) => this.getUserById(permission.userId));
+        const users: IUser[] = await Promise.all(userPromises);
+
+        return users;
     }
 }
