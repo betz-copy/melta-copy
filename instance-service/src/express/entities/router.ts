@@ -3,6 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import EntityController from './controller';
 import {
+    countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     deleteEntityByIdRequestSchema,
@@ -14,11 +15,13 @@ import {
     getExpandedGraphByIdRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
     updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
+    deletePropertiesOfTemplateRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -46,6 +49,13 @@ entityRouter.post(
     ValidateRequest(searchEntitiesOfTemplateRequestSchema),
     entityValidatorController.validateSearchEntitiesOfTemplateBody,
     entityController.searchEntitiesOfTemplate,
+);
+entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
+entityRouter.post(
+    '/search/templates',
+    ValidateRequest(searchEntitiesByTemplatesSchema),
+    entityValidatorController.validateSearchByTemplatesBody,
+    entityController.searchEntitiesByTemplates,
 );
 entityRouter.post(
     '/search/batch',
@@ -76,5 +86,10 @@ entityRouter.put(
     entityController.updateEntityById,
 );
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
+entityRouter.patch(
+    '/deletePropertiesOfTemplate/:templateId',
+    ValidateRequest(deletePropertiesOfTemplateRequestSchema),
+    entityController.deletePropertiesOfTemplate,
+);
 
 export default entityRouter;

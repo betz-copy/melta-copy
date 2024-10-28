@@ -12,10 +12,10 @@ import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
+import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -111,6 +111,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     removeFiles = false,
     style,
     innerStyle,
+    darkMode,
     textWrap = false,
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
@@ -143,7 +144,13 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     pureString,
                 });
 
-                const propertyValueColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#53566E');
+                const propertyValueColor = getPropertyColor(
+                    propertyKey,
+                    propertiesToHighlight,
+                    propertiesToHighlightColor,
+                    mode,
+                    darkMode ? '#dcdde2' : '#53566E',
+                );
                 const propertyTitleColor = getPropertyColor(propertyKey, propertiesToHighlight, propertiesToHighlightColor, mode, '#9398C2');
 
                 let innerContent;
@@ -153,6 +160,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
                 else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
                 else innerContent = stringFormatValue;
 
                 let titleContent;
@@ -166,6 +174,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue &&
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+
                 const textDirection =
                     // todo: make getTextDirection handle all possible value and reuse everywhere
                     propertySchema.format !== 'text-area' && propertySchema.format !== 'fileId' && propertySchema.format !== 'relationshipReference'

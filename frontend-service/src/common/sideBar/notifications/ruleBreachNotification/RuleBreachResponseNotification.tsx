@@ -9,8 +9,7 @@ import { NotificationColor } from '../../../notificationColor';
 
 export const RuleBreachResponseNotification: React.FC<{
     notificationMetadata: IRuleBreachResponseNotificationMetadataPopulated;
-    titleColor: string;
-}> = ({ notificationMetadata: { request }, titleColor }) => {
+}> = ({ notificationMetadata: { request } }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.ruleBreachResponse)?.color;
 
@@ -18,7 +17,7 @@ export const RuleBreachResponseNotification: React.FC<{
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography component="p" variant="body1" color={titleColor} paddingLeft="10px">
+                <Typography component="p" variant="body1" color="primary" fontWeight="bold" paddingLeft="10px">
                     {i18next.t('ruleBreachResponseNotification.theRequestOfExecutingTheAction')}
                 </Typography>
             </Grid>

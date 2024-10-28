@@ -5,47 +5,7 @@ const basicTheme: ThemeOptions = {
     typography: {
         fontFamily: 'Rubik',
     },
-};
-
-export const sideBarTransition = 'all 0.3s linear';
-
-// // TODO - move to globals file
-// export const mainFontSizes = {
-//     headlineTitleFontSize: '24px',
-//     headlineSubTitleFontSize: '14px',
-// };
-
-// export const iconSize = {
-//     width: '24px',
-//     height: '24px',
-// };
-
-export const lightTheme = createTheme({
-    ...basicTheme,
-    palette: {
-        primary: { main: '#1E2775' },
-    },
     components: {
-        MuiCssBaseline: {
-            styleOverrides: {
-                fontFamily: 'Rubik',
-                '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
-                '::-webkit-scrollbar-thumb': { background: '#787C9E', borderRadius: 20 },
-                '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
-
-                '.ag-theme-material': {
-                    '--ag-background-color': '#FFF !important',
-                    '--ag-row-hover-color': '#EBEFFA !important',
-                    '--ag-foreground-color': '#53566E !important',
-                    '--ag-row-border-style': 'none',
-                    '--ag-border-style': 'none',
-
-                    '--ag-header-foreground-color': '#101440 !important',
-                    '--ag-header-cell-hover-background-color': '#EBEFFA !important',
-                    '--ag-header-cell-moving-background-color': '#EBEFFA !important',
-                },
-            },
-        },
         MuiTextField: {
             defaultProps: {
                 size: 'small',
@@ -73,15 +33,69 @@ export const lightTheme = createTheme({
             },
         },
     },
+};
+
+export const sideBarTransition = 'all 0.3s linear';
+
+// // TODO - move to globals file
+// export const mainFontSizes = {
+//     headlineTitleFontSize: '24px',
+//     headlineSubTitleFontSize: '14px',
+// };
+
+// export const iconSize = {
+//     width: '24px',
+//     height: '24px',
+// };
+
+const colors = {
+    main: {
+        light: '#1E2775',
+        dark: '#9398c2',
+    },
+} as const;
+
+export const lightTheme = createTheme({
+    ...basicTheme,
+    palette: {
+        primary: { main: colors.main.light },
+    },
+    components: {
+        ...basicTheme.components,
+        MuiCssBaseline: {
+            styleOverrides: {
+                fontFamily: 'Rubik',
+                '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
+                '::-webkit-scrollbar-thumb': { background: '#787C9E', borderRadius: 20 },
+                '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
+
+                '.ag-theme-material': {
+                    '--ag-background-color': '#FFF !important',
+                    '--ag-row-hover-color': '#EBEFFA !important',
+                    '--ag-foreground-color': '#53566E !important',
+                    '--ag-row-border-style': 'none',
+                    '--ag-border-style': 'none',
+
+                    '--ag-header-foreground-color': '#101440 !important',
+                    '--ag-header-cell-hover-background-color': '#EBEFFA !important',
+                    '--ag-header-cell-moving-background-color': '#EBEFFA !important',
+
+                    '--ag-material-primary-color': `${colors.main.light} !important`,
+                    '--ag-material-accent-color': `${colors.main.light} !important`,
+                },
+            },
+        },
+    },
 });
 
 export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'dark',
-        primary: { main: '#1E2775' },
+        primary: { main: colors.main.dark },
     },
     components: {
+        ...basicTheme.components,
         MuiCssBaseline: {
             styleOverrides: {
                 '::-webkit-scrollbar': { background: 'transparent', width: 6, height: 6 },
@@ -103,6 +117,9 @@ export const darkTheme = createTheme({
 
                     '--ag-header-cell-hover-background-color': 'rgba(255, 255, 255, 0.12) !important',
                     '--ag-header-cell-moving-background-color': 'rgba(255, 255, 255, 0.12) !important',
+
+                    '--ag-material-primary-color': `${colors.main.dark} !important`,
+                    '--ag-material-accent-color': `${colors.main.dark} !important`,
                 },
 
                 '.ag-row': {

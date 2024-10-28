@@ -53,7 +53,7 @@ const ComponentToPrint = React.forwardRef<
         const currentUser = useUserStore((state) => state.user);
 
         return (
-            <Box ref={ref} margin="20px" width="750px" style={{ direction: 'rtl' }}>
+            <Box ref={ref} margin="20px" width="750px" style={{ direction: 'rtl', color: '#000' }}>
                 {options.showSummary && (
                     <>
                         <Box sx={{ minHeight: '1000px' }}>

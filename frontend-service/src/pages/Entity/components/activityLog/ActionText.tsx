@@ -184,12 +184,17 @@ const UpdateEntityMetadataActionText: React.FC<{
             </StyledTypography>
 
             {actionMetadata.updatedFields.map((field) => {
-                const { oldValue, newValue } = field;
+                const { oldValue, newValue, fieldName } = field;
+
+                const deleted = entityTemplate.properties.properties[fieldName];
+                const isDeleted = deleted === undefined;
 
                 return (
-                    <Grid key={field.fieldName} style={{ marginBottom: '10px' }}>
-                        <StyledTypography variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
-                            {entityTemplate.properties.properties[field.fieldName].title}
+                    <Grid key={fieldName} style={{ marginBottom: '10px' }}>
+                        <StyledTypography key={fieldName} variant="body2" style={{ ...ellipsisStyle, color: theme.palette.primary.main }}>
+                            {isDeleted
+                                ? `${fieldName} (${i18next.t('entityPage.activityLog.wasDeleted')})`
+                                : entityTemplate.properties.properties[fieldName].title}
                         </StyledTypography>
                         {[oldValue, newValue].map((value, index) => (
                             <UpdateTextValue

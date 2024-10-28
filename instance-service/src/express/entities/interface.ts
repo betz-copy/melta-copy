@@ -87,6 +87,12 @@ export interface ISearchEntitiesOfTemplateBody {
     sort: ISearchSort;
 }
 
+export interface ISearchEntitiesByTemplatesBody {
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
+}
+
 export interface ISearchBatchBody {
     skip: number;
     limit: number;
