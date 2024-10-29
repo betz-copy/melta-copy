@@ -9,6 +9,8 @@ import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../i
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog } from '../../../../services/activityLogService';
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../../../../utils/HtmlTagsStringValue';
+import { getFileName, getFilesName } from '../../../../utils/getFileName';
+import { P } from '../../../../utils/icons/fa6Icons';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -151,19 +153,51 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
         titleContent = '';
     }
 
+    const contentDisplayNameByTemplate = (content: string) => {
+        if (isFileIdFormat()) {
+            return getFilesName(content);
+        } else if (isArrayOfFileIds()) {
+            return getFilesName(content);
+        }
+
+        return content;
+    };
+
+    const isFileIdFormat = (): boolean => {
+        const { type, format } = entityTemplate.properties.properties[fieldName];
+
+        return type === 'string' && format === 'fileId';
+    };
+
+    const isArrayOfFileIds = (): boolean => {
+        const { type, items } = entityTemplate.properties.properties[fieldName];
+
+        return type === 'array' && items?.type === 'string' && items.format === 'fileId';
+    };
+
     return (
         <MeltaTooltip
             PopperProps={popperProps}
-            disableHoverListener={!titleContent}
+            disableHoverListener={!innerContent}
             title={
-                <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>{value ? titleContent : i18next.t('entityPage.activityLog.emptyField')}</Grid>
+                <Grid style={{ maxHeight: '500px', overflowY: 'auto' }}>
+                    {value
+                        ? typeof innerContent === 'string'
+                            ? contentDisplayNameByTemplate(innerContent)
+                            : innerContent
+                        : i18next.t('entityPage.activityLog.emptyField')}
+                </Grid>
             }
             placement="top-start"
         >
             <Grid>
                 <StyledTypography variant="body2" style={ellipsisStyle}>
                     {old ? i18next.t('entityPage.activityLog.from') : i18next.t('entityPage.activityLog.to')}{' '}
-                    {value ? innerContent : i18next.t('entityPage.activityLog.emptyField')}
+                    {value
+                        ? typeof innerContent === 'string'
+                            ? contentDisplayNameByTemplate(innerContent)
+                            : innerContent
+                        : i18next.t('entityPage.activityLog.emptyField')}
                 </StyledTypography>
             </Grid>
         </MeltaTooltip>

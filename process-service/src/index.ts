@@ -10,7 +10,7 @@ const { mongo, service } = config;
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url);
+    await mongoose.connect(mongo.url, mongo.connectionOptions);
 
     logger.info('Mongo connection established');
 };
