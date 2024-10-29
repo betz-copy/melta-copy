@@ -63,11 +63,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         await Promise.all(
             Object.entries(fixedEntityTemplate.properties.properties).map(async ([propertyName, propertyTemplate]) => {
                 if (propertyTemplate.format === 'relationshipReference' && propertyTemplate.relationshipReference) {
-                    const {
-                        relationshipTemplateDirection: relationshipDirection,
-                        relatedTemplateId,
-                        relationshipTemplateId,
-                    } = propertyTemplate.relationshipReference;
+                    const { relationshipTemplateDirection: relationshipDirection, relatedTemplateId } = propertyTemplate.relationshipReference;
 
                     const relationshipTemplateToUpsert: IRelationshipTemplate = {
                         sourceEntityId: relationshipDirection === 'outgoing' ? fixedEntityTemplate._id : relatedTemplateId,
@@ -77,18 +73,11 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                         isProperty: true,
                     };
 
-                    if (relationshipTemplateId) {
-                        await this.relationshipTemplateManager.updateTemplateById(relationshipTemplateId, relationshipTemplateToUpsert, session);
-                    } else {
-                        const upsertedRelationshipTemplate = await this.relationshipTemplateManager.createTemplate(
-                            relationshipTemplateToUpsert,
-                            session,
-                        );
+                    const upsertedRelationshipTemplate = await this.relationshipTemplateManager.createTemplate(relationshipTemplateToUpsert, session);
 
-                        // eslint-disable-next-line no-param-reassign
-                        fixedEntityTemplate.properties.properties[propertyName].relationshipReference!.relationshipTemplateId =
-                            upsertedRelationshipTemplate._id.toString();
-                    }
+                    // eslint-disable-next-line no-param-reassign
+                    fixedEntityTemplate.properties.properties[propertyName].relationshipReference!.relationshipTemplateId =
+                        upsertedRelationshipTemplate._id.toString();
                 }
             }),
         );
