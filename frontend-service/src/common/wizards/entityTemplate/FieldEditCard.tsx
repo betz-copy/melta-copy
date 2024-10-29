@@ -36,7 +36,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
@@ -322,6 +322,23 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [editIndex, setEditIndex] = useState<number | null>(null);
 
     const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
+
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
+            return refAcc;
+        }, []);
+
+        return acc.concat(references);
+    }, []);
+
+    const disableRemoveRequire = Boolean(
+        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
+    );
 
     const [localOption, setLocalOption] = useState<string>('');
     const [duplicate, setDuplicate] = useState<boolean>(false);
@@ -938,7 +955,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     : isEditMode &&
                                                                       areThereAnyInstances &&
                                                                       (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
-                                                                value.deleted
+                                                                value.deleted ||
+                                                                disableRemoveRequire
                                                             }
                                                             checked={value.required}
                                                         />

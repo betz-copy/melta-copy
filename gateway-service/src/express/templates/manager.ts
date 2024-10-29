@@ -596,7 +596,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(promises);
     }
 
-    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, propertiesToRemove: string[]) {
+    private async isPropertyInUsedAsRelatedFieldInRelationshipReference(templateId: string, properties: string[]) {
         const allEntityTemplates = await this.entityTemplateService.searchEntityTemplates();
 
         allEntityTemplates.forEach((entityTemplate) => {
@@ -604,7 +604,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 if (
                     format === 'relationshipReference' &&
                     relationshipReference?.relatedTemplateId === templateId &&
-                    propertiesToRemove.includes(relationshipReference?.relatedTemplateField)
+                    properties.includes(relationshipReference?.relatedTemplateField)
                 ) {
                     throw new ServiceError(400, 'that field is used as relationship reference field', {
                         errorCode: config.errorCodes.failedToDeleteField,
@@ -709,7 +709,17 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
 
+        const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);
+        const [populatedCurrTemplate] = populatedTemplates;
+
         if (currTemplate.disabled === true) throw new ServiceError(400, 'can not update disabled template');
+
+        const removeRequiredProperties = populatedCurrTemplate.properties.required.filter(
+            (property) => !updatedTemplateData.properties.required.includes(property),
+        );
+
+        if (removeRequiredProperties.length > 0)
+            this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties);
 
         const removedProperties: string[] = [];
 
