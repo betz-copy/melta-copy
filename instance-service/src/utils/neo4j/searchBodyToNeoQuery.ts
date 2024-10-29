@@ -377,16 +377,6 @@ const buildFulltextSearchQuery = (
     const defaultSortQuery = 'node.createdAt DESC';
     const sortQuery = `ORDER BY ${sortQueryOfUser ? `${sortQueryOfUser}, ` : ''}${defaultSortQuery}`;
 
-    const baseQuery = `
-            ${indexHandling}
-            YIELD node, score
-            WHERE ${filterQuery.cypherQuery}
-            RETURN node
-            ${sortQuery}
-            SKIP toInteger($skip)
-            LIMIT toInteger($limit)
-        `;
-
     return {
         cypherQuery: `
             ${indexHandling}

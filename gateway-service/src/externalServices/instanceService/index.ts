@@ -101,12 +101,6 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async countEntitiesByTemplates(templateIds: string[], textSearch: string) {
-        const { data } = await this.api.post<{ templateId: string; count: number }[]>(`${baseEntitiesRoute}/count`, { templateIds, textSearch });
-
-        return data;
-    }
-
     // relationships instances
     async getRelationshipInstanceById(id: string) {
         const { data } = await this.api.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);

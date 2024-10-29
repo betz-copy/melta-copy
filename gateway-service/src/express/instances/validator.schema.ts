@@ -9,50 +9,6 @@ const {
 
 export const variableNameValidation = Joi.string().regex(/^[a-zA-Z][a-zA-Z_$0-9]*$/);
 
-const nativeDataTypeSchema = Joi.alternatives(Joi.boolean(), Joi.string(), Joi.number());
-
-const filterOfFieldSchema = Joi.object({
-    $eq: nativeDataTypeSchema.allow(null),
-    $ne: nativeDataTypeSchema.allow(null),
-    $eqi: Joi.string(),
-    $rgx: Joi.string(), // regex syntax of Neo4j (Java Regular Expression). validated by neo itself
-    $gt: nativeDataTypeSchema,
-    $gte: nativeDataTypeSchema,
-    $lt: nativeDataTypeSchema,
-    $lte: nativeDataTypeSchema,
-    $in: Joi.alternatives(
-        Joi.array().items(Joi.boolean().allow(null)),
-        Joi.array().items(Joi.string().allow(null)),
-        Joi.array().items(Joi.number().allow(null)),
-    ),
-    $not: Joi.link('#filterOfField'),
-})
-    .min(1)
-    .id('filterOfField');
-
-const filterOfTemplateSchema = Joi.object().pattern(Joi.string(), filterOfFieldSchema).min(1);
-const searchFilterSchema = Joi.object({
-    $and: Joi.alternatives(filterOfTemplateSchema, Joi.array().items(filterOfTemplateSchema).min(1)),
-    $or: Joi.array().items(filterOfTemplateSchema).min(1),
-}).min(1);
-
-const searchByTemplateSchema = {
-    skip: Joi.number().integer().min(0).default(0),
-    limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
-    textSearch: Joi.string().allow(''),
-    filter: searchFilterSchema,
-    showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
-    sort: Joi.array()
-        .items(
-            Joi.object({
-                field: variableNameValidation, // important when translating to neo4j query (prevent injection)
-                sort: Joi.string().valid('asc', 'desc'),
-            }),
-        )
-        .unique('field')
-        .default([]),
-};
-
 // POST /api/instances/entities
 export const createEntityInstanceSchema = Joi.object({
     body: Joi.object({
@@ -141,31 +97,6 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
         }),
         sort: Joi.any(),
-    },
-    query: {},
-    params: {},
-});
-
-/*
- * POST /api/instances/entities/search/template/:templateId
- */
-export const searchEntitiesOfTemplateRequestSchema = Joi.object({
-    body: {
-        ...searchByTemplateSchema,
-    },
-    query: {},
-    params: {
-        templateId: Joi.string().required(),
-    },
-});
-
-/*
- * POST /api/instances/entities/count
- */
-export const countEntitiesOfTemplatesRequestSchema = Joi.object({
-    body: {
-        templateIds: Joi.array().items(Joi.string()).required(),
-        textSearch: Joi.string().allow(''),
     },
     query: {},
     params: {},

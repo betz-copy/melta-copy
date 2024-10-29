@@ -8,7 +8,6 @@ import ValidateRequest from '../../utils/joi';
 import { InstancesController } from './controller';
 import { InstancesValidator } from './middlewares';
 import {
-    countEntitiesOfTemplatesRequestSchema,
     createEntityInstanceSchema,
     createRelationshipSchema,
     deleteEntityInstanceSchema,
@@ -18,7 +17,6 @@ import {
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
     searchEntitiesByTemplatesSchema,
-    searchEntitiesOfTemplateRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
@@ -48,18 +46,11 @@ InstancesRouter.post(
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
-    ValidateRequest(searchEntitiesOfTemplateRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,
-    // InstanceManagerProxy,
-    InstancesControllerMiddleware.searchEntitiesOfTemplate,
+    InstanceManagerProxy,
 );
 
-InstancesRouter.post(
-    '/entities/count',
-    ValidateRequest(countEntitiesOfTemplatesRequestSchema),
-    InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
-    InstancesControllerMiddleware.countEntitiesByTemplates,
-);
+InstancesRouter.post('/entities/count', InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates, InstanceManagerProxy);
 
 InstancesRouter.post(
     '/entities/search/templates',

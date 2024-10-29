@@ -323,32 +323,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         };
     }
 
-    async searchEntitiesOfTemplate(searchBody: ISearchEntitiesOfTemplateBody, templateId: string) {
-        return this.service.searchEntitiesOfTemplateRequest(templateId, searchBody);
-    }
-
-    async countEntitiesByTemplates(templateIds: string[], textSearch: string = '') {
-        const semanticSearchBody = {
-            textSearch,
-            limit: 10,
-            skip: 0,
-            templates: templateIds,
-        };
-        const { results: semanticResults } = await this.semanticSearchSearch.search(semanticSearchBody);
-
-        const entitiesCountByTemplates = await this.service.countEntitiesByTemplates(templateIds, textSearch);
-
-        const result = templateIds
-            .map((templateId) => {
-                const fullTextCount = entitiesCountByTemplates.find((templateCount) => templateCount.templateId === templateId)?.count ?? 0;
-                const semanticCount = semanticResults.filter((semanticResult) => templateId === semanticResult.templateId).length;
-                return { templateId, count: fullTextCount + semanticCount };
-            })
-            .filter((template) => template.count > 0);
-
-        return result;
-    }
-
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
         const entity = await this.service
             .updateEntityStatus(id, disabledStatus, ignoredRules, userId)
