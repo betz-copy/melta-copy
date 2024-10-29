@@ -3,6 +3,8 @@ import passport from 'passport';
 import authenticationRouter from './authentication/router';
 import config from '../config';
 import apiRouter from './apiRouter';
+import { wrapMiddleware } from '../utils/express';
+import { UserService } from '../externalServices/userService';
 
 const appRouter = Router();
 
@@ -11,11 +13,13 @@ appRouter.use('/api/auth', authenticationRouter);
 if (config.authentication.isRequired) {
     appRouter.use(passport.authenticate(['basic', 'jwt'], { session: false }));
 } else {
-    appRouter.use((req, _res, next) => {
-        if (!req.user) req.user = {} as any;
-        req.user!.id = config.authentication.mockAuthenticatedUserId;
-        next();
-    });
+    appRouter.use(
+        wrapMiddleware(async (req, _res) => {
+            if (!req.user) req.user = {} as any;
+            const user = await UserService.getUserByExternalId(config.authentication.mockAuthenticatedUserId);
+            req.user!.id = user._id;
+        }),
+    );
 }
 
 appRouter.use('/api', apiRouter);

@@ -27,6 +27,8 @@ const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
+const IFrames = lazy(() => import('../IFrames'));
+const IFramePage = lazy(() => import('../IFrames/IFramePage'));
 const ProcessInstancesPage = lazy(() => import('../ProcessInstances'));
 const Unavailable = lazy(() => import('../Unavailable'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
@@ -151,6 +153,12 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/gantts/:ganttId">
                                 <GanttPage />
+                            </Route>
+                            <Route path="/iframes">
+                                <IFrames isSideBarOpen={open} />
+                            </Route>
+                            <Route path="/iframes/:iFrameId">
+                                <IFramePage />
                             </Route>
 
                             <Route path="/processes">

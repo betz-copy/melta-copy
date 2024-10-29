@@ -1,15 +1,17 @@
-import React, { MouseEventHandler, useEffect, useRef, useState } from 'react';
+import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import Camera from '../dialogs/Camera';
 import { getFileExtension } from '../../utils/getFileType';
 import FileIcon from '../FilePreview/FileIcon';
+import OpenPreview from '../FilePreview/OpenPreview';
+import { getFileName } from '../../utils/getFileName';
 
 interface FileInputProps {
-    fileName: string | undefined;
+    file: Partial<File> | { name: string } | undefined;
     onDeleteFile: MouseEventHandler;
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
@@ -19,15 +21,7 @@ interface FileInputProps {
     disableCamera?: boolean;
 }
 
-const FileInput: React.FC<FileInputProps> = ({
-    fileName,
-    onDeleteFile,
-    onDropFile,
-    inputText,
-    acceptedFilesTypes,
-    errorText,
-    disableCamera = false,
-}) => {
+const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText, disableCamera = false }) => {
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -40,8 +34,7 @@ const FileInput: React.FC<FileInputProps> = ({
     };
 
     const onDrop = (acceptedFiles: File[]) => {
-        const file = acceptedFiles[0];
-        onDropFile(file);
+        onDropFile(acceptedFiles[0]);
     };
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -91,6 +84,8 @@ const FileInput: React.FC<FileInputProps> = ({
         cursor: 'pointer',
     };
 
+    const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
     return (
         <>
             <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
@@ -99,13 +94,13 @@ const FileInput: React.FC<FileInputProps> = ({
                 </Grid>
 
                 <Grid item container>
-                    {fileName ? (
+                    {file ? (
                         <Grid item container style={inputStyle} {...getRootProps()}>
                             <input {...getInputProps()} />
                             <Grid container item flexDirection="row" alignItems="center" flexWrap="nowrap">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
-                                        <FileIcon extension={getFileExtension(fileName)} style={{ height: '20px' }} />
+                                        <FileIcon extension={getFileExtension(file.name!)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
                                 <Grid item xs={10}>
@@ -117,11 +112,15 @@ const FileInput: React.FC<FileInputProps> = ({
                                             maxWidth: inputWidth * 0.7,
                                         }}
                                     >
-                                        {fileName}
+                                        {isFileFromInput ? file.name : getFileName(file.name!)}
                                     </Typography>
                                 </Grid>
                                 <Grid item container xs={1} justifyContent="flex-end">
-                                    <Grid item justifySelf="flex-end">
+                                    <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                        {!isFileFromInput && (
+                                            <OpenPreview fileId={file.name!} img={<Visibility fontSize="small" />} showText={false} />
+                                        )}
+
                                         <IconButton
                                             onClick={(e) => {
                                                 e.preventDefault();
