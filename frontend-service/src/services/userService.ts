@@ -50,6 +50,6 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-// export const searchUsersByPermissions = async (workspaceId: string) => {
-    
-// }
+export const searchUsersByPermissions = async (workspaceId: string): Promise<IUser[]> => {
+    return (await axios.get<IUser[]>(`${users}/search/${workspaceId}`)).data;
+};

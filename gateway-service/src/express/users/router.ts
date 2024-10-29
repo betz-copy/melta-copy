@@ -1,17 +1,28 @@
 import { Router } from 'express';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { wrapController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import { UsersController } from './controller';
+import config from '../../config';
 import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
+    searchUsersByPermissionsSchema,
     searchUsersRequestSchema,
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
 } from './validator.schema';
+
+const { userService } = config;
+
+const UserManagerProxy = createProxyMiddleware({
+    target: `${userService.url}${userService.usersRoute}`,
+    changeOrigin: true,
+    proxyTimeout: userService.requestTimeout,
+})
 
 export const usersRouter: Router = Router();
 
@@ -39,3 +50,5 @@ usersRouter.patch(
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
+
+usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy)

@@ -108,7 +108,8 @@ export class UsersManager {
 
         const userPromises = permissions.map((permission) => this.getUserById(permission.userId));
         const users: IUser[] = await Promise.all(userPromises);
-
+        console.log(users);
+        
         return users;
     }
 }
