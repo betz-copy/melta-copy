@@ -85,7 +85,6 @@ export interface ISearchEntitiesOfTemplateBody {
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort: ISearchSort;
-    includedEntityIds?: string[];
 }
 
 export interface ISearchEntitiesByTemplatesBody {
@@ -102,7 +101,6 @@ export interface ISearchBatchBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-            includedEntityIds?: string[];
         };
     };
     sort: ISearchSort;

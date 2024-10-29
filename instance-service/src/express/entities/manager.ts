@@ -644,7 +644,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 [entityTemplate._id]: {
                     filter: searchBody.filter,
                     showRelationships: searchBody.showRelationships,
-                    includedEntityIds: searchBody.includedEntityIds,
                 },
             },
             sort: searchBody.sort,

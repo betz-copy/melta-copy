@@ -167,7 +167,6 @@ const searchByTemplateSchema = {
         )
         .unique('field')
         .default([]),
-    includedEntityIds: Joi.array().items(Joi.string()),
 };
 
 /*

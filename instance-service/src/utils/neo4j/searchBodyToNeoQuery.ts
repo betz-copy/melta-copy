@@ -317,26 +317,22 @@ export const templatesFilterToNeoQuery = (
 ): CypherQueryWithParameters => {
     const filterParamsVariableName = 'filterParams';
 
-    const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(
-        ([templateId, { filter, includedEntityIds = [] }]) => {
-            if (!filter) {
-                return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
-            }
+    const templatesFiltersQueries: CypherQueryWithParameters[] = Object.entries(templatesFilter).map(([templateId, { filter }]) => {
+        if (!filter) {
+            return { cypherQuery: `node:\`${templateId}\``, parameters: {} };
+        }
 
-            const filterOfTemplateQuery = filterToNeoQuery(
-                filter,
-                `${filterParamsVariableName}["${templateId}"]`,
-                addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
-            );
+        const filterOfTemplateQuery = filterToNeoQuery(
+            filter,
+            `${filterParamsVariableName}["${templateId}"]`,
+            addDefaultFieldsToTemplate(entityTemplatesMap.get(templateId)!),
+        );
 
-            const includedEntityIdsQuery = `[${includedEntityIds.map((id) => `'${id}'`).join(', ')}]`;
-
-            return {
-                cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery}) OR (node._id IN ${includedEntityIdsQuery})`,
-                parameters: { [templateId]: filterOfTemplateQuery.parameters },
-            };
-        },
-    );
+        return {
+            cypherQuery: `node:\`${templateId}\` AND (${filterOfTemplateQuery.cypherQuery})`,
+            parameters: { [templateId]: filterOfTemplateQuery.parameters },
+        };
+    });
 
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
@@ -392,13 +388,15 @@ const buildFulltextSearchQuery = (
         `;
 
     return {
-        cypherQuery: `(
-            ${baseQuery}
-        )
-        UNION
-        (
+        cypherQuery: `
             ${indexHandling}
-            `,
+            YIELD node, score
+            WHERE ${filterQuery.cypherQuery}
+            RETURN node
+            ${sortQuery}
+            SKIP toInteger($skip)
+            LIMIT toInteger($limit)
+        `,
         parameters: {
             query,
             skip: searchBody.skip,
@@ -475,8 +473,6 @@ export const searchWithRelationshipsToNeoQuery = (
     }
 
     const searchNeoQuery = searchToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
-
-    console.log('searchNeoQuery', JSON.stringify(searchNeoQuery));
 
     const showRelationshipsPerTemplate = mapValues(searchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
