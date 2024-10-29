@@ -1,5 +1,7 @@
 import { Dialog } from '@mui/material';
 import React from 'react';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -7,10 +9,15 @@ interface IPermissionsDialogProps {
 }
 
 export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, handleClose }) => {
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
+    
+
     return (
-        <Dialog open={open} onClose={handleClose}>
-            <h1>foo</h1>
-            <h2>bar</h2>
+        <Dialog open={open} onClose={handleClose} fullWidth>
+            <h1>Hello</h1>
+            <h2>World</h2>
         </Dialog>
     );
 };

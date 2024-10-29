@@ -64,11 +64,11 @@ export const updateUsersBulkRequestSchema = joi.object({
     params: {},
 });
 
-// // GET /api/users/search/workspace-id
-// export const searchUsersByPermissionsSchema = joi.object({
-//     query: {},
-//     body: joi.object({
-//         workspaceId: joi.string().required(),
-//     }),
-//     params: {},
-// });
+// GET /api/users/search/:workspaceId
+export const searchUsersByPermissionsSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        workspaceId: joi.string().required(),
+    },
+});

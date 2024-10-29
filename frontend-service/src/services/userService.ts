@@ -49,3 +49,7 @@ export const deletePermissionsFromMetadata = async (
     const { data } = await axios.patch<void>(`${users}/metadata`, { query, metadata });
     return data;
 };
+
+// export const searchUsersByPermissions = async (workspaceId: string) => {
+    
+// }
