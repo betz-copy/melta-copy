@@ -1,12 +1,39 @@
-import React, { useState, useMemo } from 'react';
-import { Grid, TextField, Switch, Button, Typography, InputAdornment, Card } from '@mui/material';
+/* eslint-disable react-hooks/rules-of-hooks */
+import React, { useState, useMemo, useEffect } from 'react';
+import { Grid, TextField, Switch, Button, Typography, InputAdornment } from '@mui/material';
 import i18next from 'i18next';
-import { useWorkspaceStore } from '../../../../stores/workspace';
+import { useWorkspaceStore, defaultMetadata } from '../../../../stores/workspace';
 import { updateMetadata } from '../../../../services/workspacesService';
 import { ViewingCard } from '../Card';
 
 const deepClone = (obj: any) => {
     return JSON.parse(JSON.stringify(obj));
+};
+
+const getDefaultValue = (path: string, defaultObj: any) => {
+    const keys = path.split('.');
+    let obj = defaultObj;
+
+    for (const key of keys) {
+        if (obj[key] !== undefined) {
+            obj = obj[key];
+        } else {
+            return undefined;
+        }
+    }
+    return obj;
+};
+
+const setNestedValue = (obj: Object, path: string, value: any) => {
+    const keys = path.split('.');
+    let current = obj;
+    for (let i = 0; i < keys.length - 1; i++) {
+        if (!current[keys[i]]) {
+            current[keys[i]] = {};
+        }
+        current = current[keys[i]];
+    }
+    current[keys[keys.length - 1]] = value;
 };
 
 const ConfigurationManagement: React.FC = () => {
@@ -16,38 +43,13 @@ const ConfigurationManagement: React.FC = () => {
     const configs = useMemo(() => ({ ...workspace.metadata, ...workspace.metadata }), [workspace]);
     const [updatedConfigs, setUpdatedConfigs] = useState<any>({});
 
+    useEffect(() => {
+        setUpdatedConfigs(deepClone(configs));
+    }, [configs]);
+
     const updateConfig = (path: string, newValue: any) => {
-        const keys = path.split('.');
         const updated = deepClone(updatedConfigs);
-
-        let obj = updated;
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (!obj[keys[i]]) {
-                obj[keys[i]] = deepClone(configs[keys[i]]) || {};
-            }
-            obj = obj[keys[i]];
-        }
-        obj[keys[keys.length - 1]] = newValue;
-
-        setUpdatedConfigs(updated);
-    };
-
-    const resetToDefault = (path: string) => {
-        const keys = path.split('.');
-        const updated = deepClone(updatedConfigs);
-
-        let obj = updated;
-        let defaultObj = workspace.metadata;
-
-        for (let i = 0; i < keys.length - 1; i++) {
-            if (!obj[keys[i]]) {
-                obj[keys[i]] = deepClone(configs[keys[i]]) || {};
-            }
-            obj = obj[keys[i]];
-            defaultObj = defaultObj[keys[i]];
-        }
-
-        obj[keys[keys.length - 1]] = defaultObj[keys[keys.length - 1]];
+        setNestedValue(updated, path, newValue);
         setUpdatedConfigs(updated);
     };
 
@@ -56,7 +58,8 @@ const ConfigurationManagement: React.FC = () => {
 
         Object.keys(original).forEach((key) => {
             if (typeof original[key] === 'object' && original[key] !== null && !Array.isArray(original[key])) {
-                const nestedChanges = detectChanges(original[key], updated?.[key] || {});
+                const nestedChanges = detectChanges(original[key], updated?.[key] || defaultMetadata[key]);
+
                 if (Object.keys(nestedChanges).length > 0) {
                     changes[key] = { ...original[key], ...nestedChanges };
                 }
@@ -68,63 +71,115 @@ const ConfigurationManagement: React.FC = () => {
         return changes;
     };
 
-    const handleUpdate = async () => {
-        const changes = detectChanges(configs, updatedConfigs);
-
-        if (Object.keys(changes).length === 0) {
-            return;
-        }
-        const updatedMetadata = await updateMetadata(workspace._id, changes);
-        updateWorkspaceMetadata(changes);
-        setUpdatedConfigs(updatedMetadata);
-    };
-
     const renderField = (key: string, value: any) => {
         const translateConfigProp = i18next.t(`DynamicsConfigs.${key}`);
+
+        const [inputValue, setInputValue] = useState(value);
+        const [isModified, setIsModified] = useState(false);
+
+        const defaultValue = getDefaultValue(key, defaultMetadata);
+
+        const isValueDifferentFromDefault = inputValue !== defaultValue;
+
+        const handleUpdate = async () => {
+            const changes = detectChanges(configs, updatedConfigs);
+            console.log({ changes });
+            if (Object.keys(changes).length === 0 || Object.keys(changes).length > 1) return;
+            const updatedMetadata = await updateMetadata(workspace._id, changes);
+            updateWorkspaceMetadata(changes);
+            setUpdatedConfigs(updatedMetadata);
+            setIsModified(false);
+        };
+
+        const handleReset = async () => {
+            if (defaultValue === undefined) return;
+            setInputValue(defaultValue);
+            const resetConfigs = deepClone(defaultMetadata);
+            setUpdatedConfigs(resetConfigs);
+            await updateMetadata(workspace._id, resetConfigs);
+            updateWorkspaceMetadata(resetConfigs);
+            setIsModified(false);
+        };
+
+        const handleInputChange = (newValue: any) => {
+            setInputValue(newValue);
+            updateConfig(key, newValue);
+            setIsModified(newValue !== value);
+        };
 
         switch (typeof value) {
             case 'string':
                 return (
-                    <Grid item key={key} xs={12}>
+                    <Grid item key={key} xs={12} sm={6} md={4} lg={3}>
                         <ViewingCard
-                            width={300}
+                            width={400}
                             title={
-                                <TextField
-                                    label={translateConfigProp}
-                                    value={updatedConfigs[key]}
-                                    defaultValue={value.endsWith('px') ? value.replace('px', '') : value}
-                                    variant="standard"
-                                    type="number"
-                                    sx={{ width: '290px' }}
-                                    InputProps={{
-                                        startAdornment: value.endsWith('px') ? <InputAdornment position="start">px</InputAdornment> : null,
-                                        disableUnderline: true,
-                                    }}
-                                    onChange={(e) => {
-                                        const inputValue = e.target.value;
-                                        if (/^\d*$/.test(inputValue)) {
-                                            updateConfig(key, `${inputValue}px`);
-                                        }
-                                    }}
-                                    onKeyDown={(e) => {
-                                        if (['e', 'E', '+', '-'].includes(e.key)) {
-                                            e.preventDefault();
-                                        }
-                                    }}
-                                />
+                                <Grid direction="column" container gap="10px">
+                                    <Grid
+                                        item
+                                        container
+                                        direction="row"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        paddingLeft="20px"
+                                        flexWrap="nowrap"
+                                    >
+                                        <Grid alignItems="center">
+                                            <Typography sx={{ fontSize: '14px', fontWeight: '400', color: 'rgb(30, 39, 117)' }}>
+                                                {translateConfigProp}
+                                            </Typography>
+                                            <TextField
+                                                value={inputValue.endsWith('px') ? inputValue.replace('px', '') : inputValue}
+                                                variant="standard"
+                                                type="number"
+                                                InputProps={{
+                                                    startAdornment: value.endsWith('px') ? (
+                                                        <InputAdornment position="start">px</InputAdornment>
+                                                    ) : null,
+                                                    disableUnderline: true,
+                                                }}
+                                                onChange={(e) => {
+                                                    const newValue = e.target.value;
+                                                    if (/^\d*$/.test(newValue)) {
+                                                        handleInputChange(`${newValue}px`);
+                                                    }
+                                                }}
+                                                onKeyDown={(e) => {
+                                                    if (['e', 'E', '+', '-'].includes(e.key)) {
+                                                        e.preventDefault();
+                                                    }
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item container direction="row" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleUpdate}
+                                            sx={{ fontSize: '12px' }}
+                                            disabled={!isModified}
+                                        >
+                                            {i18next.t('schedule.schedule.updateButton')}
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleReset}
+                                            sx={{ fontSize: '12px' }}
+                                            disabled={!isValueDifferentFromDefault}
+                                        >
+                                            {i18next.t('schedule.schedule.resetButton')}
+                                        </Button>
+                                    </Grid>
+                                </Grid>
                             }
                         />
-                        <Button variant="contained" color="primary" onClick={handleUpdate}>
-                            Update
-                        </Button>
-                        <Button variant="contained" color="primary" onClick={() => resetToDefault(key)}>
-                            Reset
-                        </Button>
                     </Grid>
                 );
             case 'boolean':
                 return (
-                    <Grid item key={key} xs={12}>
+                    <Grid item key={key} xs={12} sm={6} md={4} lg={3}>
                         <Typography>{key}</Typography>
                         <Switch checked={updatedConfigs[key]} onChange={(e) => updateConfig(key, e.target.checked)} />
                     </Grid>
@@ -134,38 +189,67 @@ const ConfigurationManagement: React.FC = () => {
             case 'number':
             default:
                 return (
-                    <Grid item key={key} xs={12}>
+                    <Grid item key={key} xs={12} sm={6} md={4} lg={3}>
                         <ViewingCard
-                            width={300}
+                            width={400}
                             title={
-                                <TextField
-                                    label={translateConfigProp}
-                                    type="number"
-                                    value={updatedConfigs[key]}
-                                    variant="standard"
-                                    defaultValue={value}
-                                    InputProps={{ disableUnderline: true }}
-                                    onChange={(e) => updateConfig(key, parseInt(e.target.value, 10))}
-                                    sx={{ width: '290px' }}
-                                />
+                                <Grid direction="column" container gap="10px">
+                                    <Grid
+                                        item
+                                        container
+                                        direction="row"
+                                        justifyContent="space-between"
+                                        alignItems="center"
+                                        paddingLeft="20px"
+                                        flexWrap="nowrap"
+                                    >
+                                        <Grid alignItems="center">
+                                            <Typography sx={{ fontSize: '14px', fontWeight: '400', color: 'rgb(30, 39, 117)' }}>
+                                                {translateConfigProp}
+                                            </Typography>
+                                            <TextField
+                                                type="number"
+                                                value={inputValue}
+                                                variant="standard"
+                                                InputProps={{ disableUnderline: true }}
+                                                onChange={(e) => {
+                                                    const newValue = parseInt(e.target.value, 10);
+                                                    handleInputChange(newValue);
+                                                }}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                    <Grid item container direction="row" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleUpdate}
+                                            sx={{ fontSize: '12px' }}
+                                            disabled={!isModified}
+                                        >
+                                            {i18next.t('schedule.schedule.updateButton')}
+                                        </Button>
+                                        <Button
+                                            variant="contained"
+                                            color="primary"
+                                            onClick={handleReset}
+                                            sx={{ fontSize: '12px' }}
+                                            disabled={!isValueDifferentFromDefault}
+                                        >
+                                            {i18next.t('schedule.schedule.resetButton')}
+                                        </Button>
+                                    </Grid>
+                                </Grid>
                             }
                         />
-                        <Button variant="contained" color="primary" onClick={handleUpdate}>
-                            Update
-                        </Button>
                     </Grid>
                 );
         }
     };
 
     return (
-        <Grid container spacing={3}>
+        <Grid container spacing={3} sx={{ marginTop: '20px' }}>
             {Object.entries(workspace.metadata).map(([configKey, configValue]) => renderField(configKey, configValue))}
-            <Grid item xs={12}>
-                {/* <Button variant="contained" color="primary" onClick={handleUpdate}>
-                    Update
-                </Button> */}
-            </Grid>
         </Grid>
     );
 };

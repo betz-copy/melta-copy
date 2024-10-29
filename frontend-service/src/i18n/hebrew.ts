@@ -1025,6 +1025,8 @@ export default {
             repeat: 'חזור',
             saveButton: 'שמירה',
             cancelButton: 'ביטול',
+            updateButton: 'עדכן',
+            resetButton: 'אפס לערך מקור',
             deleteButton: 'מחק',
             recurrence: 'חזרתיות',
             wrongPattern: 'תבנית החזרתיות אינה חוקית',
