@@ -72,7 +72,7 @@ export const ajvValidate = (schema: IMongoEntityTemplatePopulated['properties'],
 
     const schemaToValidate = {
         ...schema,
-        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference' && value.format !== 'user'),
+        properties: pickBy(schema.properties, (value) => value.format !== 'relationshipReference'),
     };
 
     const validateFunction = ajv.compile(schemaToValidate);

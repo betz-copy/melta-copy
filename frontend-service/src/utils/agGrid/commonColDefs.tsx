@@ -250,7 +250,7 @@ export const userColDef = <Data extends any = IUser>(
             if (!props.value) return '';
             return (
                 <Grid container gap={1}>
-                    <MeltaTooltip title={JSON.parse(props.value).fullName}>
+                    <MeltaTooltip title={`${JSON.parse(props.value).fullName} - ${JSON.parse(props.value).hierarchy}`}>
                         <Grid item>
                             <Chip
                                 avatar={<UserAvatar user={JSON.parse(props.value)} size={25} bgColor="1E2775" />}

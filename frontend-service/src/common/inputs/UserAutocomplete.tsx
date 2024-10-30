@@ -11,11 +11,12 @@ import { MeltaTooltip } from '../MeltaTooltip';
 
 interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     mode: TMode;
-    value?: IUser | null;
+    value?: IUser | undefined;
     displayValue?: string;
     onChange: AutocompleteProps<IUser, undefined, undefined, undefined>['onChange'];
     onDisplayValueChange?: AutocompleteProps<IUser, undefined, undefined, undefined>['onInputChange'];
-    onBlur?: AutocompleteProps<IUser, undefined, undefined, undefined>['onBlur'];
+    onBlur?: any;
+    onFocus?: any;
     isOptionDisabled?: AutocompleteProps<IUser, undefined, undefined, undefined>['getOptionDisabled'];
     disabled?: boolean;
     readOnly?: boolean;
@@ -24,6 +25,10 @@ interface IUserAutocomplete<TMode = 'internal' | 'external'> {
     helperText?: string;
     minInputLengthToSearch?: number;
     size?: 'small' | 'medium';
+    enableClear?: boolean;
+    required?: boolean;
+    autoFocus?: any;
+    textFieldProps?: any;
 }
 
 const UserAutocomplete: React.FC<IUserAutocomplete> = ({
@@ -33,6 +38,7 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     onChange,
     onDisplayValueChange,
     onBlur,
+    onFocus,
     isOptionDisabled,
     disabled = false,
     readOnly = false,
@@ -41,6 +47,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
     helperText,
     minInputLengthToSearch = 2,
     size,
+    enableClear = false,
+    required,
+    autoFocus,
+    textFieldProps,
 }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
     const [internalDisplayValue, setInputValue] = useState<string>(value?.displayName ?? '');
@@ -88,11 +98,10 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                     }
                 }}
                 disabled={disabled}
-                onBlur={onBlur}
                 filterOptions={(o) => o} // the "autoComplete" is done at server side
                 getOptionLabel={({ displayName }) => displayName}
                 getOptionDisabled={isOptionDisabled}
-                isOptionEqualToValue={(option, currValue) => option._id === currValue._id}
+                isOptionEqualToValue={(option, currValue) => option._id === currValue?._id}
                 options={
                     (usersOptions?.sort((a, b) => {
                         if (!a.fullName || !a.jobTitle || !a.hierarchy || !a.mail) return 1;
@@ -106,11 +115,20 @@ const UserAutocomplete: React.FC<IUserAutocomplete> = ({
                 renderInput={(params) => (
                     <TextField
                         {...params}
+                        {...textFieldProps}
+                        autoFocus={autoFocus}
+                        onBlur={onBlur}
+                        onFocus={onFocus}
                         error={isError}
                         fullWidth
                         helperText={helperText}
                         label={label}
-                        InputProps={{ ...params.InputProps, readOnly, endAdornment: (readOnly || disabled) && undefined }}
+                        InputProps={{
+                            ...params.InputProps,
+                            required,
+                            readOnly,
+                            endAdornment: enableClear ? params.InputProps.endAdornment : (readOnly || disabled) && undefined,
+                        }}
                         InputLabelProps={{
                             ...(params.InputLabelProps,
                             readOnly && {

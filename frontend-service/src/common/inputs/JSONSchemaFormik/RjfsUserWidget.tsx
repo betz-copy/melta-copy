@@ -4,11 +4,17 @@ import { Grid } from '@mui/material';
 import UserAutocomplete from '../UserAutocomplete';
 import { IUser } from '../../../interfaces/users';
 
-const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [] }: WidgetProps) => {
-    const [_inputValue, setInputValue] = React.useState('');
+const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [], onBlur, onFocus, id, autoFocus, ...textFieldProps }: WidgetProps) => {
     const [currentUser, setCurrentUser] = React.useState(value ? JSON.parse(value) : undefined);
+    if (!currentUser) {
+        onChange(undefined);
+    }
 
-    const handleUserChange = (_event: React.SyntheticEvent, chosenUser: IUser | null) => {
+    function handleUserChange(_event: React.SyntheticEvent, chosenUser: IUser | null) {
+        if (!chosenUser) {
+            setCurrentUser(undefined);
+            return;
+        }
         onChange(
             JSON.stringify({
                 _id: chosenUser?._id,
@@ -19,19 +25,33 @@ const RjfsUserWidget = ({ disabled, label, value, onChange, rawErrors = [] }: Wi
             }),
         );
 
-        setInputValue('');
         setCurrentUser(chosenUser);
-    };
+    }
 
     return (
         <Grid>
             <UserAutocomplete
                 mode="external"
-                value={currentUser ? { displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser } : null}
+                value={
+                    currentUser
+                        ? { _id: currentUser._id, displayName: `${currentUser.fullName} - ${currentUser.hierarchy}`, ...currentUser }
+                        : undefined
+                }
                 label={label}
-                onChange={handleUserChange}
+                onChange={(_event: React.SyntheticEvent, chosenUser: IUser | null) => handleUserChange(_event, chosenUser)}
+                onBlur={({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onBlur(id, newValue)}
+                onFocus={({ target: { value: newValue } }: React.FocusEvent<HTMLInputElement>) => onFocus(id, newValue)}
+                autoFocus={autoFocus}
                 isError={rawErrors.length > 0}
                 disabled={disabled}
+                enableClear
+                onDisplayValueChange={(_, newDisplayValue) => {
+                    if (newDisplayValue === '') {
+                        onChange(undefined);
+                        setCurrentUser(undefined);
+                    }
+                }}
+                textFieldProps={textFieldProps}
             />
         </Grid>
     );

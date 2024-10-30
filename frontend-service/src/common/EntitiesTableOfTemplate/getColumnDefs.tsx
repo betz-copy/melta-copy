@@ -63,8 +63,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        console.log({ type, property, format }); // TODO
-
         if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')

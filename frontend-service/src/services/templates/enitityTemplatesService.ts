@@ -36,7 +36,6 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
 
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
-        console.log({ key, properties, value }); // TODO
 
         let type = value.format || value.type;
         if (value.serialStarter !== undefined) type = 'serialNumber';
