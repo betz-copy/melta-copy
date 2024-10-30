@@ -53,7 +53,7 @@ import {
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
-import { addStringFieldsAndNormalizeDateValues } from './validator.template';
+import { addStringFieldsAndNormalizeDateValues, userFieldSuffix, usersFieldsSuffix } from './validator.template';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
@@ -1651,13 +1651,45 @@ export class EntityManager extends DefaultManagerNeo4j {
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
     }
 
+    getUserProperties(userProperty: string) {
+        return [
+            `${userProperty}${userFieldSuffix.id}${config.neo4j.userFieldPropertySuffix}`,
+            `${userProperty}${userFieldSuffix.fullName}${config.neo4j.userFieldPropertySuffix}`,
+            `${userProperty}${userFieldSuffix.jobTitle}${config.neo4j.userFieldPropertySuffix}`,
+            `${userProperty}${userFieldSuffix.hierarchy}${config.neo4j.userFieldPropertySuffix}`,
+            `${userProperty}${userFieldSuffix.mail}${config.neo4j.userFieldPropertySuffix}`,
+        ];
+    }
+
+    getUsersArrayProperties(userProperty: string) {
+        return [
+            `${userProperty}${usersFieldsSuffix.ids}${config.neo4j.usersFieldsPropertySuffix}`,
+            `${userProperty}${usersFieldsSuffix.fullNames}${config.neo4j.usersFieldsPropertySuffix}`,
+            `${userProperty}${usersFieldsSuffix.jobTitles}${config.neo4j.usersFieldsPropertySuffix}`,
+            `${userProperty}${usersFieldsSuffix.hierarchies}${config.neo4j.usersFieldsPropertySuffix}`,
+            `${userProperty}${usersFieldsSuffix.mails}${config.neo4j.usersFieldsPropertySuffix}`,
+        ];
+    }
+
     async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
         const propertiesToRemove: string[] = [];
         const relationshipTemplatesToRemove: string[] = [];
 
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
+
+            if (propertyTemplate.format === 'user') {
+                propertiesToRemove.push(...this.getUserProperties(property));
+                continue;
+            }
+
+            if (propertyTemplate.items?.format === 'user') {
+                propertiesToRemove.push(...this.getUsersArrayProperties(property));
+                continue;
+            }
+
             const isStringType = propertyTemplate.type === 'string';
+
             propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
 
             if (propertyTemplate.format !== 'relationshipReference') continue;
