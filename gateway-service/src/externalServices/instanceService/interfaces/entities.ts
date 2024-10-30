@@ -90,6 +90,7 @@ export interface ISearchBatchBody {
     skip?: number;
     limit: number;
     textSearch?: string;
+    entityIdsToInclude?: string[]
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;

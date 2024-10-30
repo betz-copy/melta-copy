@@ -13,7 +13,6 @@ import { InstancesService } from '../../externalServices/instanceService';
 import {
     IEntity,
     ISearchBatchBody,
-    ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     ISearchSort,
 } from '../../externalServices/instanceService/interfaces/entities';
