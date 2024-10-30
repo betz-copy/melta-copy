@@ -12,12 +12,12 @@ import { CalculateDateDifference } from '../utils/agGrid/CalculateDateDifference
 import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../utils/HtmlTagsStringValue';
 import { ColoredEnumChip } from './ColoredEnumChip';
 import OpenPreview from './FilePreview/OpenPreview';
-import { getTextDirection } from './inputs/JSONSchemaFormik/RjsfStringWidget';
 import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
+import { getFixedNumber, getTextDirection } from '../utils/stringValues';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -194,6 +194,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
                 else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
                 else innerContent = stringFormatValue;
 
                 let titleContent;
@@ -207,6 +208,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     propertyValue &&
                     getNumLines(stringFormatValue) > 1 &&
                     stringFormatValue.length >= maxNumOfCharactersNotInFullWidth;
+
                 const textDirection =
                     // todo: make getTextDirection handle all possible value and reuse everywhere
                     propertySchema.format !== 'text-area' &&

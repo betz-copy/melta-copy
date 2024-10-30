@@ -42,6 +42,7 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                         shouldSaveSorting: false,
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
+                        shouldSaveScrollPosition: false,
                     }}
                 />
             </div>

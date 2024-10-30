@@ -1,3 +1,5 @@
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import {
     Add as PlusIcon,
     Air as FluidSimulationIcon,
@@ -8,12 +10,10 @@ import {
     MeetingRoom as ExitIcon,
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
+import LinkIcon from '@mui/icons-material/Link';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
@@ -27,6 +27,7 @@ import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { searchIFrames } from '../../services/iFramesService';
 import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
@@ -57,6 +58,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
+    const iFramesStored = localStorage.getItem('iFramesOrder');
+    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
+
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
 
@@ -69,6 +75,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const [_, navigate] = useLocation();
 
+    const handleMenuItemClick = (event, id: string) => {
+        event.stopPropagation();
+        event.preventDefault();
+        navigate(`/iframes/${id}`);
+    };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
         () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {}),
@@ -196,6 +207,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 size="small"
                                 borderRadius="30px"
                                 width="199px"
+                                autoSearch
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>
@@ -289,6 +301,70 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             />
                         </NavButton>
                     )}
+
+                    <NavButton
+                        to="/iframes"
+                        text={i18next.t('pages.iFrames')}
+                        extension={
+                            iFramesInSidebar?.length! > 0 ? (
+                                <Grid container display="flex" flexDirection="column">
+                                    <Grid item padding={1}>
+                                        {i18next.t('iFrames.favoritesIFrames')}
+                                    </Grid>
+                                    <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                        {iFramesInSidebar?.map((iFrame) => (
+                                            <Grid
+                                                key={iFrame._id}
+                                                onClick={(event) => {
+                                                    handleMenuItemClick(event, iFrame._id);
+                                                }}
+                                                sx={{
+                                                    '&:hover': {
+                                                        backgroundColor: '#B8B8B8',
+                                                        borderRadius: '5px',
+                                                    },
+                                                    padding: '9px 9px 9px 18px',
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                }}
+                                            >
+                                                {iFrame.iconFileId ? (
+                                                    <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
+                                                ) : (
+                                                    <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
+                                                )}
+                                                <Typography
+                                                    style={{
+                                                        fontFamily: 'Rubik',
+                                                        fontSize: '14px',
+                                                        fontWeight: '400',
+                                                        lineHeight: '17px',
+                                                        letterSpacing: '0em',
+                                                        textAlign: 'right',
+                                                        width: '125px',
+                                                        height: '17px',
+                                                        marginRight: '10px',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    {iFrame.name}
+                                                </Typography>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Grid>
+                            ) : (
+                                i18next.t('pages.iFrames')
+                            )
+                        }
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                        isActiveButton={activeButton === 'iFrames'}
+                    >
+                        <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
 
                     <NavButton
                         to="/rule-management"

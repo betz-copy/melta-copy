@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { createProxyMiddleware, fixRequestBody } from 'http-proxy-middleware';
+import iFramesRouter from './iFrames/router';
 import config from '../config';
 import { AuthorizerControllerMiddleware } from '../utils/authorizer';
 import ActivityLogRouter from './activityLog/router';
@@ -61,6 +62,8 @@ apiRouter.use('/notifications', notificationsRouter);
 apiRouter.use('/rule-breaches', RulesBreachesRouter);
 
 apiRouter.use('/gantts', GanttsRouter);
+
+apiRouter.use('/iframes', iFramesRouter);
 
 apiRouter.use('/workspaces', workspaceRouter);
 

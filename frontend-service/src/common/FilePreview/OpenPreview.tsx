@@ -13,7 +13,13 @@ const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<v
     showText,
 }) => (
     <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
-        <IconButton sx={{ borderRadius: 10, maxWidth: '100%' }} onClick={onClick}>
+        <IconButton
+            sx={{ borderRadius: 10, maxWidth: '100%' }}
+            onClick={(e) => {
+                e.stopPropagation();
+                onClick?.();
+            }}
+        >
             {img ?? <FileIcon extension={getFileExtension(fileName)} style={{ height: '18px' }} />}
             {showText && (
                 <Typography

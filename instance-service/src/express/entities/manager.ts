@@ -1615,4 +1615,67 @@ export class EntityManager extends DefaultManagerNeo4j {
             return runInTransactionAndNormalize(transaction, numOfEntitiesUpdated, normalizeResponseCount);
         });
     }
+
+    deletePropertiesOfTemplateInTransaction(transaction: Transaction, templateId: string, properties: string[]) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e: \`${templateId}\`)
+            WITH collect(e) AS nodes
+            CALL apoc.create.removeProperties(nodes, $properties) YIELD node
+            RETURN node`,
+            normalizeReturnedEntity('multipleResponses'),
+            {
+                properties,
+            },
+        );
+    }
+
+    removeRelationshipReferences(relatedEntityTemplate: IMongoEntityTemplate, property: string, propertiesToRemove: string[]) {
+        const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
+            ...relatedEntityTemplate.properties.properties,
+            disabled: { title: 'doesntMatter', type: 'string' },
+            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
+            _id: { title: 'doesntMatter', type: 'string' },
+        };
+
+        Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
+            propertiesToRemove.push(
+                `${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`,
+                ...(value.type === 'string'
+                    ? []
+                    : [`${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`]),
+            );
+        });
+
+        propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const propertiesToRemove: string[] = [];
+        const relationshipTemplatesToRemove: string[] = [];
+
+        for (const property of properties) {
+            const propertyTemplate = currentTemplateProperties[property];
+            const isStringType = propertyTemplate.type === 'string';
+            propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
+
+            if (propertyTemplate.format !== 'relationshipReference') continue;
+
+            relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
+
+            const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(
+                propertyTemplate.relationshipReference?.relatedTemplateId as string,
+            );
+
+            this.removeRelationshipReferences(relatedEntityTemplate, property, propertiesToRemove);
+        }
+
+        this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+            await Promise.all([
+                this.deletePropertiesOfTemplateInTransaction(transaction, templateId, propertiesToRemove),
+                this.relationshipManager.deleteRelationshipByTemplateIds(transaction, relationshipTemplatesToRemove),
+            ]);
+        });
+    }
 }

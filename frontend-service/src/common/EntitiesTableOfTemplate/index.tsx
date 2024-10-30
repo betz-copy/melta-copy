@@ -1,7 +1,10 @@
+/* eslint-disable no-param-reassign */
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 import { AgGridReact } from '@ag-grid-community/react';
 import {
+    BodyScrollEvent,
     ColumnMovedEvent,
     ColumnResizedEvent,
     ColumnVisibleEvent,
@@ -12,11 +15,10 @@ import {
     PaginationChangedEvent,
     RowStyle,
 } from '@ag-grid-community/core';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
 
-import { Box, CircularProgress } from '@mui/material';
+import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
@@ -115,10 +117,10 @@ export const getRowModelProps = <Data extends any = IEntity>(
     datasourceOnFail?: (err: unknown) => void,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
+        return { rowModelType, rowData, pagination: false, paginationPageSize };
     }
 
-    const { cacheBlockSize, maxConcurrentDatasourceRequests, infiniteInitialRowCount } = environment.agGrid;
+    const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
 
     return {
         rowModelType: 'serverSide',
@@ -126,7 +128,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
         cacheBlockSize: rowModelType === 'serverSide' ? cacheBlockSize : undefined,
         pagination: rowModelType === 'serverSide',
         paginationPageSize,
-        ...(rowModelType === 'infinite' ? { maxConcurrentDatasourceRequests, infiniteInitialRowCount } : {}),
+        maxConcurrentDatasourceRequests,
     };
 };
 
@@ -154,6 +156,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
         shouldSaveSorting: boolean;
         shouldSaveColumnOrder: boolean;
         shouldSavePagination: boolean;
+        shouldSaveScrollPosition: boolean;
         pageType?: string;
     };
     onFilter?: () => void;
@@ -192,7 +195,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
-            mainEntity,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -287,7 +289,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const rowModelProps = useMemo(
             () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity],
+            [rowModelType, template, rowData, pageRowCount, quickFilterText],
         );
 
         const gridStyles = {
@@ -347,6 +349,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             }
         };
 
+        const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
+            if (!saveStorageProps.shouldSaveScrollPosition) return;
+            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
+                sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
+            }
+        }, 300);
+
         const gridContent = (
             <Box
                 sx={gridStyles}
@@ -392,6 +401,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     onColumnMoved={handleColumnMoved}
                     onColumnResized={handleColumnResized}
                     onPaginationChanged={handlePaginationChanged}
+                    onBodyScroll={rowModelType === 'infinite' ? handleBodyScroll : undefined}
                     onSortChanged={handleSortChanged}
                     enableRtl
                     enableCellTextSelection
@@ -415,6 +425,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     animateRows
+                    // eslint-disable-next-line react/no-unstable-nested-components
                     loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
                     suppressCsvExport
                     suppressContextMenu
@@ -438,10 +449,34 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                     }}
                     onFirstDataRendered={(params) => {
-                        const savedPage = sessionStorage.getItem(`currentPage-${template._id}`);
+                        const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
+
                         if (savedPage !== null) {
                             const pageToNavigate = JSON.parse(savedPage);
                             params.api.paginationGoToPage(pageToNavigate);
+                        }
+
+                        if (rowModelType === 'infinite') {
+                            const savedRowIndex = sessionStorage.getItem(`scrollPosition-${template._id}`);
+
+                            if (savedRowIndex != null) {
+                                const lastScrollPosition = JSON.parse(savedRowIndex);
+
+                                const rowIndex = Math.floor(lastScrollPosition / rowHeight);
+                                setTimeout(() => {
+                                    params.api.ensureIndexVisible(rowIndex, 'top');
+                                    const displayedRow = params.api.getDisplayedRowAtIndex(rowIndex);
+                                    if (displayedRow?.rowTop != null) {
+                                        const gridBody = document.querySelector('.ag-body-viewport');
+                                        if (gridBody) {
+                                            gridBody.scrollTo({
+                                                top: lastScrollPosition,
+                                                behavior: 'smooth',
+                                            });
+                                        }
+                                    }
+                                }, 150);
+                            }
                         }
                     }}
                     defaultColDef={{
@@ -492,7 +527,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         );
 
         return rowModelType === 'infinite' ? (
-            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable}>
+            <ResizeBox initialHeight={gridHeight} setHeight={setGridHeight} minHeight={minHeightTable} templateId={template._id}>
                 {gridContent}
             </ResizeBox>
         ) : (

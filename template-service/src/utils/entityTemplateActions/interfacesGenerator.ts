@@ -4,7 +4,7 @@ const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,
     entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>,
 ) => {
-    if (typeEnum) return typeEnum?.map((option) => `'${option}'`).join(' | ');
+    if (typeEnum) return typeEnum?.map((option) => `\`${option}\``).join(' | ');
 
     if (format === 'date' || format === 'date-time') return 'Date';
 
@@ -16,7 +16,7 @@ const generateFromString = (
 const generateFromArray = ({ items }: IEntitySingleProperty) => {
     if (items?.format === 'fileId') return 'string[]';
 
-    const arrayOptions = items?.enum?.map((option) => `'${option}'`).join(' | ');
+    const arrayOptions = items?.enum?.map((option) => `\`${option}\``).join(' | ');
 
     return `(${arrayOptions})[]` || 'string[]';
 };

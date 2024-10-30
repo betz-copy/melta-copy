@@ -66,7 +66,10 @@ const addFieldsSchema = Yup.object({
                 }),
             }),
         )
-        .min(1, i18next.t('validation.oneField')),
+        .min(1, i18next.t('validation.oneField'))
+        .test(i18next.t('validation.oneField'), i18next.t('validation.oneField'), (value) =>
+            value ? value.some((obj) => !('deleted' in obj) || obj.deleted === false) : false,
+        ),
     attachmentProperties: Yup.array().of(
         attachmentPropertiesBaseSchema.shape({
             required: Yup.boolean().required(i18next.t('validation.required')),
@@ -84,6 +87,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
     isEditMode,
     setBlock,
 }) => {
+    const hasActions = Boolean(initialValues?.actions);
+
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', (values as EntityTemplateWizardValues & { _id: string })._id],
         () =>
@@ -171,8 +176,10 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportChangeToRequiredWithInstances
                                             supportRelationshipReference
                                             supportArrayFields
+                                            supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />
                                     </Grid>

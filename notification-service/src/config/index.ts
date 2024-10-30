@@ -11,6 +11,10 @@ const config = {
         url: env.get('MONGO_URL').required().asString(),
         notificationsCollectionName: env.get('MONGO_NOTIFICATIONS_COLLECTION_NAME').default('notifications').asString(),
         maxFindLimit: env.get('MONGO_MAX_FIND_LIMIT').default(500).asIntPositive(),
+        connectionOptions: {
+            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed
+            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection
+        },
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
