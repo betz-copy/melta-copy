@@ -1,7 +1,7 @@
 import axios from '../axios';
 import { environment } from '../globals';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
+import { IExternalUser, IMongoUser, IUser, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const { users } = environment.api;
@@ -50,6 +50,6 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const searchUsersByPermissions = async (workspaceId: string): Promise<IUser[]> => {
-    return (await axios.get<IUser[]>(`${users}/search/${workspaceId}`)).data;
+export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
+    return (await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`)).data;
 };
