@@ -295,12 +295,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesBatch(searchBody: ISearchBatchBody) {
-        const { count, entities } = await this.service.searchEntitiesBatch(searchBody);
-
-        if (!searchBody.textSearch) {
-            return { count, entities };
-        }
-
         const semanticSearchBody = {
             textSearch: searchBody.textSearch,
             limit: searchBody.limit,
@@ -308,19 +302,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             templates: Object.keys(searchBody.templates),
         };
 
-        const { count: semanticCount, results } = await this.semanticSearchSearch.search(semanticSearchBody);
+        const { results } = await this.semanticSearchSearch.search(semanticSearchBody);
 
-        let combinedResults = this.semanticSearchSearch.combineResults({ results, entities }).slice(searchBody.skip, searchBody.limit);
-        combinedResults = await Promise.all(
-            combinedResults.map(async (entity) =>
-                entity?.entityId ? { entity: await this.service.getEntityInstanceById(entity.entityId) } : entity,
-            ),
-        );
-
-        return {
-            count: +count + +semanticCount,
-            entities: combinedResults,
-        };
+        return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude: results.map(({ entityId }) => entityId) });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
