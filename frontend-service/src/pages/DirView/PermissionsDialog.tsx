@@ -57,14 +57,13 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                 </Grid>
                 <Grid container direction="column" sx={{ alignItems: 'stretch' }}>
                     {users?.map((user) => (
-                        <Paper className="user-info-card" variant="outlined" sx={{ borderRadius: '12px', margin: '5px 0' }}>
+                        <Paper
+                            className="user-info-card"
+                            variant="outlined"
+                            sx={{ borderRadius: '12px', margin: '5px 0',  transition: 'ease-out 0.2s', '&:hover': { backgroundColor: '#ebebeb' } }}
+                        >
                             <Box display="flex" flexDirection="row" alignItems="center" gap="10px">
-                                <Box
-                                    className="user-info"
-                                    display="flex"
-                                    alignItems="center"
-                                    // sx={{ backgroundColor: '#ebebeb', borderRadius: '12px' }}
-                                >
+                                <Box className="user-info" display="flex" alignItems="center">
                                     <Box padding="10px" className="profile-photo">
                                         <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
                                     </Box>
