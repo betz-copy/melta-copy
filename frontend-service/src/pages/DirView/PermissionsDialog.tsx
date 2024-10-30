@@ -1,5 +1,5 @@
-import { Box, Dialog, Divider, Grid, Paper, Typography, useTheme } from '@mui/material';
-import React from 'react';
+import { Box, Button, Dialog, Divider, Grid, IconButton, Paper, Typography, useTheme } from '@mui/material';
+import React, { useState } from 'react';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { IMongoUser, IUser } from '../../interfaces/users';
@@ -13,6 +13,8 @@ import { useDarkModeStore } from '../../stores/darkMode';
 import { getDateWithoutTime } from '../../utils/date';
 import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import i18next from 'i18next';
+import { AddCircle, RemoveCircle } from '@mui/icons-material';
+import UserAutocomplete from '../../common/inputs/UserAutocomplete';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -23,11 +25,11 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
     const currentUser = useUserStore((state) => state.user);
     const workspace: IWorkspace = useWorkspaceStore((state) => state.workspace);
 
+    const [displaySearchBar, setDisplaySearchBar] = useState<boolean>(false);
+    const [searchedUser, setSearchedUser] = useState<IUser | null>(null);
+
     const theme = useTheme();
     const darkMode = useDarkModeStore((state) => state.darkMode);
-
-    console.log('Workspace:', !!workspace);
-    console.log('Workspace ID:', !!workspace?._id);
 
     const { data: users, isLoading } = useQuery<IMongoUser[]>(['usersByWorkspaceId', workspace._id], () => searchUsersByPermissions(workspace._id), {
         enabled: !!workspace._id,
@@ -47,15 +49,19 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
         return type;
     };
 
+    const giveUserPermissionsToWorkspace = (userId: string, workspaceId: string) => {
+        // send the request to the server to give permissions
+    };
+
     console.log(users);
 
     return (
         <Dialog open={open} onClose={handleClose} fullWidth>
             <Grid container padding="16px">
-                <Grid container>
+                <Box display="flex" flexDirection="row" alignItems="center" justifyContent="space-between" width="100%">
                     <BlueTitle title={`הרשאות בסביבה ${workspace.displayName ? workspace.displayName : 'ראשית'}`} component="h4" variant="h4" />
-                </Grid>
-                <Grid container direction="column" sx={{ alignItems: 'stretch' }}>
+                </Box>
+                <Box display="flex" flexDirection="column" width="100%" marginTop="5px">
                     {users?.length ? (
                         users?.map((user) => (
                             <Paper
@@ -99,7 +105,38 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     ) : (
                         <BlueTitle title="אין תוצאות" component="h6" variant="h6" />
                     )}
-                </Grid>
+                </Box>
+                <Box display="flex" flexDirection="row-reverse" width="100%" justifyContent="end" alignItems="center">
+                    {!displaySearchBar && (
+                        <IconButton>
+                            <AddCircle color="primary" fontSize="large" onClick={() => setDisplaySearchBar(!displaySearchBar)} />
+                        </IconButton>
+                    )}
+                    {displaySearchBar && (
+                        <>
+                            <IconButton>
+                                <RemoveCircle color="primary" fontSize="large" onClick={() => setDisplaySearchBar(!displaySearchBar)} />
+                            </IconButton>
+                            <Box display="flex" flexDirection="row" width="100%" sx={{ bgcolor: darkMode ? '#242424' : 'white' }}>
+                                <Box width="100%">
+                                    <UserAutocomplete
+                                        mode={'external'}
+                                        value={searchedUser}
+                                        onChange={(_e, chosenUser) => setSearchedUser(chosenUser)}
+                                        isError={false}
+                                    />
+                                </Box>
+                                <Button
+                                    color="primary"
+                                    variant="text"
+                                    onClick={() => searchedUser && giveUserPermissionsToWorkspace(searchedUser?._id, workspace._id)}
+                                >
+                                    {i18next.t(`permissions.permissionsOfUserDialog.createBtn`)}
+                                </Button>
+                            </Box>
+                        </>
+                    )}
+                </Box>
             </Grid>
         </Dialog>
     );
