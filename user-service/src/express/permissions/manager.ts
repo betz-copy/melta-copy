@@ -99,8 +99,19 @@ export class PermissionsManager {
     }
 
     static async getPermissionsByWorkspaceId(workspaceId: string): Promise<IPermission[]> {
-        const permissions: IPermission[] = await PermissionsModel.find({workspaceId: workspaceId});
+        const permissions: IPermission[] = await PermissionsModel.find({ workspaceId: workspaceId });
 
         return permissions;
+    }
+
+    static async getPermissionsByWorkspaceIdWithCount(
+        workspaceId: string,
+        limit: number,
+        step: number,
+    ): Promise<{ permissions: IPermission[]; count: number }> {
+        const permissions: IPermission[] = await PermissionsModel.find({ workspaceId: workspaceId }, { limit, skip: step * limit });
+        const count: number = await PermissionsModel.countDocuments({ workspaceId: workspaceId });
+
+        return { permissions, count };
     }
 }

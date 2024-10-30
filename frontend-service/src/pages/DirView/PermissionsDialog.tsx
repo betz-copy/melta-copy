@@ -56,45 +56,49 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     <BlueTitle title={`הרשאות בסביבה ${workspace.displayName ? workspace.displayName : 'ראשית'}`} component="h4" variant="h4" />
                 </Grid>
                 <Grid container direction="column" sx={{ alignItems: 'stretch' }}>
-                    {users?.map((user) => (
-                        <Paper
-                            className="user-info-card"
-                            variant="outlined"
-                            sx={{ borderRadius: '12px', margin: '5px 0',  transition: 'ease-out 0.2s', '&:hover': { backgroundColor: '#ebebeb' } }}
-                        >
-                            <Box display="flex" flexDirection="row" alignItems="center" gap="10px">
-                                <Box className="user-info" display="flex" alignItems="center">
-                                    <Box padding="10px" className="profile-photo">
-                                        <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
-                                    </Box>
-                                    <Box className="display-name" padding="0px">
-                                        <Box display="flex" flexDirection="column">
-                                            <Typography color={darkMode ? 'white' : 'black'} fontSize="16px" fontWeight="500">
-                                                {user.fullName}
-                                            </Typography>
-                                            <Typography color={darkMode ? 'white' : 'black'} fontFamily="Rubik" fontSize="14px" fontWeight="400">
-                                                {user.hierarchy}
-                                            </Typography>
+                    {users?.length ? (
+                        users?.map((user) => (
+                            <Paper
+                                className="user-info-card"
+                                variant="outlined"
+                                sx={{ borderRadius: '12px', margin: '5px 0', transition: 'ease-out 0.2s', '&:hover': { backgroundColor: '#ebebeb' } }}
+                            >
+                                <Box display="flex" flexDirection="row" alignItems="center" gap="10px">
+                                    <Box className="user-info" display="flex" alignItems="center">
+                                        <Box padding="10px" className="profile-photo">
+                                            <UserAvatar user={user} size={50} bgColor={randomColor({ luminosity: 'dark', seed: user!._id })} />
+                                        </Box>
+                                        <Box className="display-name" padding="0px">
+                                            <Box display="flex" flexDirection="column">
+                                                <Typography color={darkMode ? 'white' : 'black'} fontSize="16px" fontWeight="500">
+                                                    {user.fullName}
+                                                </Typography>
+                                                <Typography color={darkMode ? 'white' : 'black'} fontFamily="Rubik" fontSize="14px" fontWeight="400">
+                                                    {user.hierarchy}
+                                                </Typography>
+                                            </Box>
                                         </Box>
                                     </Box>
-                                </Box>
-                                <Divider orientation="vertical" variant="middle" flexItem />
-                                <Box className="permission-scope-updated-date">
-                                    <Box>
-                                        <Typography fontSize="16px" fontWeight="500">
-                                            {`סוג הרשאה: ${getPermissionType(user.permissions, workspace._id)} ${getPermissionScope(
-                                                user.permissions,
-                                                workspace._id,
-                                            )}`}
+                                    <Divider orientation="vertical" variant="middle" flexItem />
+                                    <Box className="permission-scope-updated-date">
+                                        <Box>
+                                            <Typography fontSize="16px" fontWeight="500">
+                                                {`סוג הרשאה: ${getPermissionType(user.permissions, workspace._id)} ${getPermissionScope(
+                                                    user.permissions,
+                                                    workspace._id,
+                                                )}`}
+                                            </Typography>
+                                        </Box>
+                                        <Typography fontSize="14px" fontWeight="400">
+                                            עודכן ב: {getDateFormatted(user.updatedAt)}
                                         </Typography>
                                     </Box>
-                                    <Typography fontSize="14px" fontWeight="400">
-                                        עודכן ב: {getDateFormatted(user.updatedAt)}
-                                    </Typography>
                                 </Box>
-                            </Box>
-                        </Paper>
-                    ))}
+                            </Paper>
+                        ))
+                    ) : (
+                        <BlueTitle title="אין תוצאות" component="h6" variant="h6" />
+                    )}
                 </Grid>
             </Grid>
         </Dialog>
