@@ -1,5 +1,5 @@
 import { Visibility as VisibilityIcon, VisibilityOff as VisibilityOffIcon } from '@mui/icons-material';
-import { AvatarGroup, Grid, IconButton, Typography } from '@mui/material';
+import { Chip, Grid, IconButton, Typography } from '@mui/material';
 import type { Property } from 'csstype';
 import i18next from 'i18next';
 import React, { CSSProperties } from 'react';
@@ -17,6 +17,7 @@ import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
 import UserAvatar from './UserAvatar';
+import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -55,13 +56,13 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
         }
         if (format === 'user') {
             return (
-                <AvatarGroup max={1}>
-                    <MeltaTooltip title={value[0].fullName}>
-                        <Grid>
-                            <UserAvatar user={value[0]} size={25} bgColor="1E2775" />
+                <Grid container gap={1}>
+                    <MeltaTooltip title={JSON.parse(value).fullName}>
+                        <Grid item>
+                            <Chip avatar={<UserAvatar user={JSON.parse(value)} size={25} bgColor="1E2775" />} label={JSON.parse(value).fullName} />
                         </Grid>
                     </MeltaTooltip>
-                </AvatarGroup>
+                </Grid>
             );
         }
     }
@@ -70,11 +71,27 @@ export const formatToString = (value: any, property: IEntitySingleProperty, opti
         if (property.items?.format === 'fileId') {
             return value.map((val: string) => <OpenPreview fileId={val} key={val} />);
         }
-        // TODO
-        // if (property.items?.format === 'user') {
-        //     console.log('entity properties: ', value);
-        //     return value.join(', ');
-        // }
+        if (property.items?.format === 'user') {
+            return (
+                <Grid container item>
+                    <OverflowWrapper
+                        items={value.map((val) => JSON.parse(val))}
+                        getItemKey={(item: any) => item._id}
+                        renderItem={(item) => (
+                            <Grid item>
+                                <MeltaTooltip title={`${item.fullName} - ${item.hierarchy}`} key={item._id}>
+                                    <Grid item>
+                                        <Chip avatar={<UserAvatar user={item} size={25} bgColor="1E2775" />} label={item.fullName} />
+                                    </Grid>
+                                </MeltaTooltip>
+                            </Grid>
+                        )}
+                        propertyToDisplayInTooltip="fullName"
+                        minVisibleItems={1}
+                    />
+                </Grid>
+            );
+        }
         return pureString
             ? value.join(', ')
             : value.map((val: string) => (

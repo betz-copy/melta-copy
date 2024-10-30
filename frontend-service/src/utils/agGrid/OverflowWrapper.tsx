@@ -10,6 +10,7 @@ interface IOverflowWrapperProps<T> {
     files?: T[];
     containerStyle?: React.CSSProperties;
     propertyToDisplayInTooltip?: string;
+    minVisibleItems?: number;
 }
 
 const OverflowWrapper = <T extends any>({
@@ -19,6 +20,7 @@ const OverflowWrapper = <T extends any>({
     containerStyle,
     files,
     propertyToDisplayInTooltip,
+    minVisibleItems = 0,
 }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
@@ -66,6 +68,12 @@ const OverflowWrapper = <T extends any>({
     let overflowItems = items.length > visibleItems.length ? items.slice(visibleItems.length) : [];
     if (files && files.length > 0) {
         overflowItems = items.length > visibleItems.length ? files.slice(visibleItems.length) : [];
+    }
+
+    if (visibleItems.length < minVisibleItems) {
+        const itemsAmountToAdd = minVisibleItems - visibleItems.length;
+        visibleItems.push(...overflowItems.slice(0, itemsAmountToAdd));
+        overflowItems = overflowItems.slice(itemsAmountToAdd);
     }
     return (
         <Grid ref={containerRef} container wrap="wrap" alignItems="center" justifyItems="center" gap={`${itemsGap}px`} style={containerStyle}>
