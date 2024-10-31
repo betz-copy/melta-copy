@@ -15,6 +15,7 @@ import {
     ISearchBatchBody,
     ISearchFilter,
     ISearchSort,
+    ITemplateSearchBody,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
@@ -304,6 +305,17 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
 
         return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
+    }
+
+    async searchEntitiesByTemplates(searchBody: ITemplateSearchBody) {
+        const semanticSearchBody = {
+            textSearch: searchBody.textSearch,
+            templates: searchBody.templateIds,
+        };
+
+        const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+
+        return this.service.searchEntitiesByTemplates({ ...searchBody, entityIdsToInclude });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

@@ -34,6 +34,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.searchEntitiesBatch(req.body));
     }
 
+    async searchEntitiesByTemplates(req: Request, res: Response) {
+        res.json(await this.manager.searchEntitiesByTemplates(req.body));
+    }
+
     async duplicateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(

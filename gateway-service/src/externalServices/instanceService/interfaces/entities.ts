@@ -88,9 +88,8 @@ export interface ISearchEntitiesOfTemplateBody {
 
 export interface ISearchBatchBody {
     skip?: number;
-    limit: number;
+    limit?: number;
     textSearch?: string;
-    entityIdsToInclude?: string[]
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
@@ -98,6 +97,11 @@ export interface ISearchBatchBody {
         };
     };
     sort?: ISearchSort;
+}
+
+export interface ITemplateSearchBody {
+    textSearch?: string;
+    templateIds: string[];
 }
 
 export interface ISearchResult {

@@ -7,6 +7,7 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
+    ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
 } from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
@@ -95,8 +96,14 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesBatch(searchBody: ISearchBatchBody) {
+    async searchEntitiesBatch(searchBody: ISearchBatchBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/search/batch`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesByTemplates(searchBody: ITemplateSearchBody & { entityIdsToInclude?: string[] }) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/count`, searchBody);
 
         return data;
     }

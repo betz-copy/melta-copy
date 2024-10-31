@@ -83,6 +83,7 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
     return result.records.map((record) => ({
         templateId: record.get('templateId'),
         count: +record.get('count'),
+        entityIdsToInclude: record.get('entityIdsToInclude'),
     }));
 };
 

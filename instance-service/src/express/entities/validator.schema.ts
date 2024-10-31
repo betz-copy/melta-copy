@@ -175,6 +175,7 @@ const searchByTemplateSchema = {
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
         ...searchByTemplateSchema,
+        entityIdsToInclude: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {
@@ -202,6 +203,7 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
+        entityIdsToInclude: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {},
