@@ -301,9 +301,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             templates: Object.keys(searchBody.templates),
         };
 
-        const { results } = await this.semanticSearchSearch.search(semanticSearchBody);
+        const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
 
-        return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude: results.map(({ entityId }) => entityId) });
+        return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

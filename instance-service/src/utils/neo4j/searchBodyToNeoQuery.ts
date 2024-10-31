@@ -357,19 +357,31 @@ const buildFulltextSearchQuery = (
     entityIdsToInclude?: string[],
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
+    const entityIdMatch = entityIdsToInclude?.length ? `
+        UNION
+        MATCH (node)
+        WHERE node._id IN $entityIdsToInclude
+        RETURN node
+    `
+   : '';
 
     if (calculateOverallCount) {
         return {
             cypherQuery: `
-                ${indexHandling}
-                YIELD node, score
-                WHERE ${filterQuery.cypherQuery}
+                CALL() {
+                    ${indexHandling}
+                    YIELD node, score
+                    WHERE ${filterQuery.cypherQuery}
+                    RETURN node
+                    ${entityIdMatch}
+                }
                 RETURN count(node)
             `,
             parameters: {
                 query,
                 ...parameters,
                 ...filterQuery.parameters,
+                ...(entityIdsToInclude?.length && { entityIdsToInclude })
             },
         };
     }
@@ -382,8 +394,9 @@ const buildFulltextSearchQuery = (
         cypherQuery: `
             ${indexHandling}
             YIELD node, score
-            WHERE ${filterQuery.cypherQuery} OR _id IN ${entityIdsToInclude}
+            WHERE ${filterQuery.cypherQuery}
             RETURN node
+            ${entityIdMatch}
             ${sortQuery}
             SKIP toInteger($skip)
             LIMIT toInteger($limit)
@@ -394,6 +407,7 @@ const buildFulltextSearchQuery = (
             limit: searchBody.limit,
             ...parameters,
             ...filterQuery.parameters,
+            ...(entityIdsToInclude?.length && { entityIdsToInclude })
         },
     };
 };

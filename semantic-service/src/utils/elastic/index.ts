@@ -78,19 +78,12 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>) {
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): string[] {
         const { buckets } = response.aggregations!.group_by_entity_id;
 
         if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return [];
 
-        return buckets[0].top_hits_by_group.hits.hits.map((hit) => ({
-            text: hit._source.text,
-            title: hit._source.title,
-            templateId: hit._source.templateId,
-            entityId: hit._source.entityId,
-            minioFileId: hit._source.minioFileId,
-            workspaceId: hit._source.workspaceId,
-        }));
+        return buckets[0].top_hits_by_group.hits.hits.map(({ hit }) => hit._source.entityId);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
@@ -144,9 +137,7 @@ class ElasticClient {
         };
 
         const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
-        const a = this.formatElasticResponse(response);
-
-        return { results: a, count: a.length };
+        return this.formatElasticResponse(response);
     }
 
     async bulkIndexDocuments(documents: IElasticDoc[]) {
