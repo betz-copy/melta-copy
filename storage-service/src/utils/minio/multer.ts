@@ -30,10 +30,9 @@ export class MinioMulter {
         if (typeof bucketName !== 'string') return null;
 
         const storage = new MinioStorage(bucketName);
+        console.log('kkkkkkkkk', { storage }, await storage.minioClient.bucketExists());
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
-
-        // if (!(await storage.usersGlobalBucketClient.bucketExists())) await storage.usersGlobalBucketClient.makeBucket();
 
         return storage;
     }

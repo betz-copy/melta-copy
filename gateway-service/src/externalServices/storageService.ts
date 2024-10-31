@@ -11,11 +11,16 @@ const {
 export class StorageService extends DefaultExternalServiceApi {
     constructor(bucketName: string) {
         super(bucketName, { baseURL: url });
+        console.log('6666666');
     }
 
     async uploadFile(file: Express.Multer.File) {
         const formData = new FormData();
+        console.log('before');
+
         const fileStream = await fsCreateReadStream(file.path);
+        console.log({ file });
+
         console.log('here 2.0');
         formData.append('file', fileStream, file.originalname);
         // formData.append('isUserProfileUpload', isUserProfileUpload);

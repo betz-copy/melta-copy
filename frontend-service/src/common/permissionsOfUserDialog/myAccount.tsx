@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
 import i18next from 'i18next';
+import isEqual from 'lodash/isEqual';
 import { IUser } from '../../interfaces/users';
 import { NotificationType } from '../../interfaces/notifications';
 import { environment } from '../../globals';
@@ -12,9 +13,20 @@ import { IKartoffelUser } from '../../interfaces/kartoffel';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { SelectCheckbox } from '../SelectCheckbox';
 import UserAvatar, { getNameInitials } from '../UserAvatar';
+import { getFileName } from '../../utils/getFileName';
 
 const { notificationsMoreData } = environment.notifications;
-const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view' }> = ({ existingUser, mode }) => {
+export const isProfileFileType = (profilePath?: string): boolean => {
+    console.log('trtrtrttrtrtrtrttrtr', { profilePath });
+    return !!profilePath && profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && !profilePath.startsWith('http://');
+};
+export const defaultInputType = (profilePath?: string) => {
+    console.log(' im hereeeeeeeeeeeeeee', { profilePath });
+    if (!profilePath || profilePath.startsWith('http://')) return 'kartoffelProfile';
+    if (profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
+    return 'chooseFile';
+};
+const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({ existingUser, handleClose }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
@@ -24,7 +36,10 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
     // const [profile, setProfile] = useState<any>();
     const [editProfile, setEditProfile] = useState(false);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
-    console.log({ notificationsToShowCheckbox });
+    const [imageName, setImageName] = useState('');
+    const [isDataUpdated, setIsDataUpdated] = useState(false);
+
+    console.log({ notificationsToShowCheckbox, preferences });
 
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {
         fullName: existingUser.fullName,
@@ -32,7 +47,6 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
         jobTitle: existingUser.jobTitle,
         hierarchy: existingUser.hierarchy,
     };
-    // console.log({ allNotifications });
 
     useEffect(() => {
         const getKartoffelUser = async () => {
@@ -44,27 +58,27 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
             }
         };
 
-        // const getUserProfile = async () => {
-        //     if (existingUser.preferences.profilePath) {
-        //         if (
-        //             existingUser.preferences.profilePath.startsWith('/icons/profileAvatar') ||
-        //             existingUser.preferences.profilePath.startsWith('http://')
-        //         ) {
-        //             setProfile(existingUser.preferences.profilePath);
-        //         } else {
-        //             const icon = new Image();
-        //             icon.src = await apiUrlToImageSource(
-        //                 `/api${environment.api.storage}/${existingUser.preferences.profilePath}`,
-        //                 'users-global-bucket',
-        //             );
-        //             setProfile(icon.src);
-        //         }
-        //     }
-        // };
-
         getKartoffelUser();
-        // getUserProfile();
     }, [existingUser]);
+
+    useEffect(() => {
+        const fileName = existingUser.preferences.profilePath ? getFileName(existingUser.preferences.profilePath) : '';
+        console.log({ fileName }, existingUser.preferences.profilePath);
+
+        setImageName(isProfileFileType(preferences.profilePath) ? fileName : '');
+        console.log({ imageName });
+    }, []);
+
+    useEffect(() => {
+        // Check if there are any changes between original and updated data
+        const arePreferencesChange = !isEqual(preferences, existingUser.preferences);
+        // JSON.stringify(existingUser.preferences) !== JSON.stringify(preferences);
+        const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
+        const areNotificationsUpdated = !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
+        console.log({ arePreferencesChange, areNotificationsUpdated }, { updatedNotificationsTypes }, existingUser.preferences, preferences);
+
+        setIsDataUpdated(arePreferencesChange || areNotificationsUpdated);
+    }, [preferences, notificationsToShowCheckbox]);
 
     const { isLoading, mutateAsync } = useMutation(
         (id: string) => updateUserPreferencesMetadataRequest(id, preferences, notificationsToShowCheckbox),
@@ -90,39 +104,70 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
 
     return (
         <>
-            <Grid container spacing={2} style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
+            <Grid container spacing={2} style={{ padding: '15px', marginTop: '0.2px', border: '1px solid #ccc', borderRadius: '8px' }}>
                 <Grid container item display="flex" flexDirection="row" width="100%" xs={12} padding={2}>
                     <Grid item xs={6}>
                         <UserAvatar user={existingUser} size={65} />
                     </Grid>
+
                     <Grid item xs={6}>
                         <Button
                             onClick={() => {
                                 setEditProfile(!editProfile);
                             }}
-                            sx={{ justifyContent: 'center' }}
+                            sx={{ justifyContent: 'end' }}
                         >
                             {editProfile ? 'סגור' : 'עריכת פרופיל'}
                         </Button>
+
+                        {editProfile && (
+                            <Button
+                                onClick={() => {
+                                    const updatedPreferences = { ...preferences };
+                                    delete updatedPreferences.icon;
+
+                                    if (existingUser.preferences.profilePath) {
+                                        updatedPreferences.profilePath = existingUser.preferences.profilePath;
+                                    } else {
+                                        delete updatedPreferences.profilePath;
+                                    }
+
+                                    setPreferences(updatedPreferences);
+                                    setEditProfile(!editProfile);
+                                }}
+                                sx={{ justifyContent: 'center' }}
+                            >
+                                ביטול שינויים
+                            </Button>
+                        )}
                     </Grid>
 
                     {editProfile && (
                         <Grid item paddingTop={3}>
                             <UserProfilePicker
                                 user={existingUser}
-                                onPick={(value) => {
+                                onPick={(value: any) => {
+                                    console.log('3', { value });
+
                                     if (!existingUser) return;
                                     if (!value) {
-                                        setPreferences({ ...preferences, icon: undefined, profilePath: 'undefined' });
-                                    } else if (value.file) setPreferences({ ...preferences, icon: value, profilePath: undefined });
-                                    else {
-                                        setPreferences({ ...preferences, profilePath: value, icon: undefined });
+                                        setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
+                                    } else if (value.file) {
+                                        setPreferences({ ...preferences, icon: value, profilePath: undefined });
+                                        setImageName(value.name);
+                                    } else {
+                                        setPreferences({ ...preferences, icon: undefined, profilePath: value });
                                     }
+                                    console.log('4');
                                 }}
                                 onDelete={() => {
-                                    setPreferences({ ...preferences, icon: undefined });
+                                    console.log('lllllllllllllllllllllllllllllllllllllllllllll');
+                                    setImageName('');
+                                    setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
                                 }}
-                                kartoffelProfile={kartoffelUser?.pictures?.profile?.meta?.path}
+                                kartoffelProfile={kartoffelUser?.pictures?.profile?.url}
+                                image={imageName}
+                                defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                             />
                         </Grid>
                     )}
@@ -157,15 +202,24 @@ const MyAccount: React.FC<{ existingUser: IUser; mode: 'create' | 'edit' | 'view
                         size="small"
                         isDraggableDisabled
                         horizontalOrigin={156}
+                        overrideSx={{ bgcolor: 'red' }}
                     />
                 </Grid>
             </Grid>
-            <Grid>
+            <Grid padding={2}>
                 <Button
                     onClick={() => {
                         mutateAsync(existingUser!._id);
+                        handleClose();
                     }}
+                    disabled={!isDataUpdated}
                     variant="contained"
+                    sx={{
+                        position: 'absolute',
+                        margin: '7px',
+                        right: editProfile ? 10 : 20,
+                        bottom: 3,
+                    }}
                 >
                     סיים
                 </Button>

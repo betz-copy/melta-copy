@@ -41,6 +41,8 @@ export class FilesManager extends DefaultManagerMinio {
     }
 
     async deleteFile(filePath: string) {
+        console.log({ filePath });
+
         const pdfFileName = `${document.previewPrefix}${filePath.replace(/\.[^/.]+$/, '')}${document.previewFileType}`;
         try {
             await this.minioClient.removeFile(pdfFileName);

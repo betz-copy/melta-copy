@@ -78,29 +78,36 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
+    static isProfileFileType(profilePath: string) {
+        return profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && !profilePath.startsWith('http://');
+    }
+
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
         const {
             preferences: { profilePath },
         } = await UserService.getUserById(userId);
+        console.log({ preferences });
 
+        console.log({ file, profilePath, preferences });
         if (file) {
-            console.log('have file!');
+            if (profilePath && this.isProfileFileType(profilePath)) {
+                console.log('its ok');
 
-            if (profilePath) {
                 await UsersManager.storageService.deleteFile(profilePath);
             }
             const newProfilePath = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
-            preferences.profilePath = newProfilePath;
-            return UserService.updateUser(userId, { preferences });
+            // preferences.profilePath = newProfilePath;
+            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: newProfilePath } });
         }
 
-        if (profilePath) {
+        if (profilePath && (!preferences.profilePath || preferences.profilePath !== profilePath)) {
+            console.log(preferences.profilePath ? 'Updating to a new profilePath' : 'Resetting to default profile path');
+
             await this.storageService.deleteFile(profilePath);
-            console.log('cencel the file');
-            if (!preferences.profilePath) return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: undefined } });
+            return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: preferences.profilePath || undefined } });
         }
-        // kartoffel profile path and first time of profile
+        console.log('Final update without changes');
         return UserService.updateUser(userId, { preferences });
     }
 

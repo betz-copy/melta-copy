@@ -33,7 +33,7 @@ export const updateUserPreferencesMetadataRequest = async (
     notificationsToShowCheckbox: any,
 ) => {
     const formData = new FormData();
-    console.log({ updatedPreferences });
+    console.log({ updatedPreferences, notificationsToShowCheckbox });
 
     if (updatedPreferences.icon) {
         console.log('have icon!!');
@@ -44,9 +44,14 @@ export const updateUserPreferencesMetadataRequest = async (
             console.log('noooooow its else');
             formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
-    } else formData.append('profilePath', updatedPreferences.profilePath ?? 'bla bla ');
+    } else if (updatedPreferences.profilePath) {
+        console.log(' i think we here');
+        formData.append('profilePath', updatedPreferences.profilePath);
+        console.log(...formData);
+    }
 
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
+    console.log(...formData);
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;

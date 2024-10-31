@@ -56,6 +56,7 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
                             const detailedFile = { file: icon, name: icon.name };
+                            console.log({ icon });
 
                             setIconPickerValue(detailedFile);
                             onPick(detailedFile);

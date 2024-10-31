@@ -9,7 +9,7 @@ import { IUser } from '../../interfaces/users';
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
 export interface UserProfilePickerProps {
-    image?: fileDetails;
+    image?: string;
     onPick: (profileImage: fileDetails | string | undefined) => void;
     onDelete: () => void;
     defaultInputType?: InputSelectType;
@@ -19,9 +19,8 @@ export interface UserProfilePickerProps {
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
 
-    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>(image);
+    const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
     const [iconPickerValue, setIconPickerValue] = useState<string>();
-    const [profileSelectedValue, setProfileSelectedValue] = useState<fileDetails | string>();
 
     const iconPaths = [
         '/icons/profileAvatar/c.png',
@@ -40,24 +39,29 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
         if (!selected) return;
         setInputType(selected);
 
-        // let selectedValue;
-        // if (selected === 'chooseFile') selectedValue = fileInputValue;
-        // if (selected === 'chooseAvatar') selectedValue = iconPickerValue;
+        const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
+        // if (selected === 'chooseFile') selectedValue = ;
+        // if (selected === 'chooseAvatar') selectedValue = ;
         // if (selected === 'kartoffelProfile') {
-        //     selectedValue = kartoffelProfile;
+        //     selectedValue = kartoffelProfile ?? undefined;
         // }
-        // if (!selectedValue) {
-        //     onDelete();
-        //     return;
-        // }
+        console.log({ selectedValue });
 
-        // onPick(selectedValue);
+        if (!selectedValue) {
+            onDelete();
+            return;
+        }
+
+        onPick(selectedValue);
     };
-    console.log({ inputType, fileInputValue });
+    console.log({ inputType, fileInputValue, image });
     const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
 
     const handleAvatarClick = (iconPath?: string) => {
-        setProfileSelectedValue(iconPath);
+        console.log('noticeeeeeee', { iconPath });
+
+        setIconPickerValue(iconPath);
+        setSelectedIcon(iconPath ?? '');
         onPick(iconPath);
     };
 
@@ -90,9 +94,10 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                                             width: 50,
                                             height: 50,
                                             cursor: 'pointer',
-                                            boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                                            boxShadow:
+                                                selectedIcon === iconPath ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 5px rgba(0, 0, 0, 0.5)',
 
-                                            border: selectedIcon === iconPath ? '1px solid black' : '',
+                                            border: selectedIcon === iconPath ? '1.5px solid green' : '',
                                         }}
                                         onClick={() => handleAvatarClick(iconPath)}
                                     />
@@ -108,16 +113,17 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                         fileFieldName="icon"
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
-                            // setFileInputValue(detailedFile);
-                            setProfileSelectedValue(detailedFile);
+                            setFileInputValue(detailedFile);
+                            console.log('1');
+
                             onPick(detailedFile);
+                            console.log('2');
                         }}
                         onDeleteFile={() => {
-                            setProfileSelectedValue(undefined);
-                            // setFileInputValue(undefined);
+                            setFileInputValue(undefined);
                             onDelete();
                         }}
-                        fileName={fileInputValue?.name}
+                        fileName={image}
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
                     />
@@ -130,13 +136,16 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                             setSelectedIcon('default');
                             handleAvatarClick(undefined);
                         }}
-                        // sx={{ border: selectedIcon === 'default' ? '1px solid black' : '' }}
+                        sx={{
+                            // boxShadow: selectedIcon === 'default' ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                            border: selectedIcon === 'default' ? '1px solid black' : '',
+                        }}
                     >
-                        <UserAvatar user={user} defualtProfile />
+                        <UserAvatar user={user} defaultProfile />
                     </IconButton>
                     <Tooltip title={!kartoffelProfile ? 'תמונת חוגר אינה קיימת' : ''}>
                         <IconButton
-                            disabled={!kartoffelProfile}
+                            // disabled={!kartoffelProfile}
                             onClick={() => {
                                 if (kartoffelProfile) {
                                     setSelectedIcon('kartoffelProfile');
@@ -149,7 +158,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                                     width: 50,
                                     height: 50,
                                     cursor: 'pointer',
-                                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                                    boxShadow:
+                                        selectedIcon === 'kartoffelProfile' ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
                                     border: selectedIcon === 'kartoffelProfile' ? '1px solid black' : '',
                                 }}
                                 src={kartoffelProfile}

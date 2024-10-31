@@ -1,6 +1,6 @@
 import joi from 'joi';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
-import { ExtendedJoi, MongoIdSchema } from '../../utils/joi';
+import { ExtendedJoi, iconFileSchema, MongoIdSchema } from '../../utils/joi';
 
 export const partialSchema = (schema: joi.ObjectSchema) => {
     const keys = Object.keys(schema.describe().keys);
@@ -18,7 +18,7 @@ const UserPreferencesMetadataSchema = joi.object({
     // darkMode: joi.boolean(),
     // mailsNotificationsTypes: joi.array().items(NotificationType),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
-    profilePath: joi.string(),
+    profilePath: joi.string().allow(null),
 });
 
 export const baseUserSchema = joi.object({
@@ -95,8 +95,9 @@ export const updateUserPreferencesMetadataRequestSchema = joi.object({
     query: {},
     body: UserPreferencesMetadataSchema.required(),
     params: {
-        userId: joi.string().required(),
+        userId: MongoIdSchema.required(),
     },
+    file: iconFileSchema,
 });
 
 // PATCH /api/users/:userId/external

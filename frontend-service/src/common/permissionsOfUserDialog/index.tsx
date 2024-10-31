@@ -1,10 +1,11 @@
-import { Box, Dialog, Grid, Tab, useTheme } from '@mui/material';
+import { Box, Button, Dialog, Grid, IconButton, Tab, useTheme } from '@mui/material';
 import _isEqual from 'lodash.isequal';
 import React, { ReactElement } from 'react';
 import i18next from 'i18next';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-// import { useTour } from '@reactour/tour';
-// import { useLocation } from 'wouter';
+import { useTour } from '@reactour/tour';
+import { useLocation } from 'wouter';
+import CloseIcon from '@mui/icons-material/Close';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MyPermissions from './myPermissions';
@@ -18,14 +19,14 @@ const PermissionsOfUserDialog: React.FC<{
 }> = ({ isOpen, handleClose, mode, existingUser }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
-    // const { setIsOpen, setCurrentStep } = useTour();
-    // const [_, navigate] = useLocation();
+    const { setIsOpen, setCurrentStep } = useTour();
+    const [_, navigate] = useLocation();
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = React.useState(initialTab);
 
     const tabsComponentsMapping: Record<string, ReactElement> = {
-        ...(mode === 'view' && { myAccount: <MyAccount existingUser={existingUser!} mode={mode} /> }),
+        ...(mode === 'view' && { myAccount: <MyAccount handleClose={handleClose} existingUser={existingUser!} /> }),
         myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
     };
     return (
@@ -41,10 +42,20 @@ const PermissionsOfUserDialog: React.FC<{
                 sx={{
                     width: '100%',
                     height: '100%',
-                    paddingRight: '30px',
-                    paddingLeft: '30px',
+                    padding: ' 0 20px 0px 20px',
                 }}
             >
+                <IconButton
+                    aria-label="close"
+                    onClick={handleClose}
+                    sx={{
+                        position: 'absolute',
+                        right: 7,
+                        top: 3,
+                    }}
+                >
+                    <CloseIcon fontSize="medium" />
+                </IconButton>
                 <TabContext value={tabValue}>
                     <Grid container direction="column">
                         <Grid item>
@@ -79,47 +90,21 @@ const PermissionsOfUserDialog: React.FC<{
                         </Grid>
                     </Grid>
                 </TabContext>
-            </Box>
-
-            {/* <DialogActions>
-                <Grid container justifyContent="space-between">
-                    <Grid>
-                        {mode === 'view' && (
-                            <Button
-                                onClick={() => {
-                                    handleClose();
-                                    setIsOpen(true);
-                                    setCurrentStep(0);
-                                    navigate('?search=&viewMode=templates-tables-view');
-                                }}
-                            >
-                                {i18next.t('showTour')}
-                            </Button>
-                        )}
-                    </Grid>
-                   <Grid>
-                        <Button onClick={handleClose} autoFocus>
-                            {/* // disabled={formikProps.isSubmitting}>
-                            {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
+                <Grid display="flex" sx={{ position: 'absolute', bottom: 9, left: 10 }}>
+                    {mode === 'view' && (
+                        <Button
+                            onClick={() => {
+                                handleClose();
+                                setIsOpen(true);
+                                setCurrentStep(0);
+                                navigate('?search=&viewMode=templates-tables-view');
+                            }}
+                        >
+                            {i18next.t('showTour')}
                         </Button>
-                         {mode !== 'view' && (
-                            <Button
-                                type="submit"
-                                disabled={
-                                    formikProps.isSubmitting ||
-                                    didPermissionsChange(formikProps.initialValues.permissions, formikProps.values.permissions) ||
-                                    userHasNoPermissions(formikProps.values.permissions[workspace._id])
-                                }
-                                variant="contained"
-                            >
-                                {mode === 'create' && i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                                {mode === 'edit' && i18next.t('permissions.permissionsOfUserDialog.saveBtn')}
-                                {formikProps.isSubmitting && <CircularProgress size={20} />}
-                            </Button>
-                        )}
-                    </Grid>
-                </Grid> 
-            </DialogActions>*/}
+                    )}
+                </Grid>
+            </Box>
         </Dialog>
     );
 };

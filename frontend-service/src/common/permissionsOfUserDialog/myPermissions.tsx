@@ -25,7 +25,7 @@ import ManagementPermissionsCard from './managementPermissionsCard';
 import { didPermissionsChange, userHasNoPermissions } from '../../utils/permissions/permissionOfUserDialog';
 
 const MyPermissions: React.FC<{
-    handleClose: () => any;
+    handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
 }> = ({ handleClose, mode, existingUser }) => {
@@ -358,24 +358,6 @@ const MyPermissions: React.FC<{
                         <DialogActions>
                             <Grid container justifyContent="space-between">
                                 <Grid>
-                                    {mode === 'view' && (
-                                        <Button
-                                            onClick={() => {
-                                                handleClose();
-                                                // setIsOpen(true);
-                                                // setCurrentStep(0);
-                                                // navigate('?search=&viewMode=templates-tables-view');
-                                            }}
-                                        >
-                                            {i18next.t('showTour')}
-                                        </Button>
-                                    )}
-                                </Grid>
-                                <Grid>
-                                    {/* <Button onClick={handleClose} autoFocus>
-                                        {/* // disabled={formikProps.isSubmitting}>
-                                        {i18next.t('permissions.permissionsOfUserDialog.closeBtn')}
-                                    </Button> */}
                                     {mode !== 'view' && (
                                         <Button
                                             type="submit"

@@ -17,16 +17,21 @@ export class MinIOClient {
             secretKey,
             transportAgent: new http.Agent(transportAgent),
         });
+        console.log('eeeee', this.bucketName);
     }
 
     private async wrapDBNotExistsError<T>(func: () => Promise<T>) {
         try {
             return func();
         } catch (err: any) {
-            if (err.code !== 'NoSuchBucket') throw err;
-
             if (!(await this.bucketExists())) {
-                await this.makeBucket();
+                console.log('1');
+
+                await this.makeBucket().catch((error) => {
+                    throw error;
+                });
+                console.log('2');
+
                 logger.info(`Bucket with name "${this.bucketName}" created successfully`);
             }
 
@@ -35,10 +40,14 @@ export class MinIOClient {
     }
 
     bucketExists() {
+        console.log('checkkkkk');
+
         return this.minioClient.bucketExists(this.bucketName);
     }
 
     makeBucket() {
+        console.log('createeee');
+
         return this.minioClient.makeBucket(this.bucketName, '');
     }
 
@@ -82,10 +91,14 @@ export class MinIOClient {
     }
 
     uploadFile(sourceFilePath: string, destinationFilePath: string, metaData = {}) {
+        console.log('hereeee????');
+
         return this.wrapDBNotExistsError(() => this.minioClient.fPutObject(this.bucketName, destinationFilePath, sourceFilePath, metaData));
     }
 
     uploadFileStream(fileStream: string | Readable | Buffer, destinationFilePath: string, size: number, metaData = {}) {
+        console.log('or herrrerererere');
+
         return this.wrapDBNotExistsError(() => this.minioClient.putObject(this.bucketName, destinationFilePath, fileStream, size, metaData));
     }
 }
