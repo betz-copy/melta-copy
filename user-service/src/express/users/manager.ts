@@ -4,7 +4,7 @@ import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { IPermission, ISubCompactPermissions } from '../permissions/interface/permissions';
+import { ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {
@@ -103,13 +103,14 @@ export class UsersManager {
         return Promise.all(users.map((user) => this.baseUserToUser(user)));
     }
 
-    static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
-        const permissions: IPermission[] = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId);
+    static async searchUsersByPermissions(workspaceId: string, pagination?: { step: number; limit: number }): Promise<IUser[]> {
+        const permissions = await PermissionsManager.getPermissionsByWorkspaceId(workspaceId, pagination);
 
-        const userPromises: Promise<IUser>[] = permissions.map((permission) => this.getUserById(permission.userId));
-        const users: IUser[] = await Promise.all(userPromises);
+        const users = await UsersModel.find({ _id: { $in: permissions.map(({ userId }) => userId) } })
+            .lean()
+            .exec();
 
-        return users;
+        return this.appendPermissionsToUsers(users);
     }
 
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {

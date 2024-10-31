@@ -156,6 +156,6 @@ export class UsersManager {
     }
 
     static async searchUsersByPermissions(workspaceId: string): Promise<IUser[]> {
-        return await UserService.searchUsersByPermissions(workspaceId)
+        return UserService.searchUsersByPermissions(workspaceId);
     }
 }

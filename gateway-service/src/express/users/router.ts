@@ -22,7 +22,7 @@ const UserManagerProxy = createProxyMiddleware({
     target: `${userService.url}${userService.usersRoute}`,
     changeOrigin: true,
     proxyTimeout: userService.requestTimeout,
-})
+});
 
 export const usersRouter: Router = Router();
 
@@ -51,4 +51,4 @@ usersRouter.patch(
     wrapController(UsersController.deletePermissionsFromMetadata),
 );
 
-usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy)
+usersRouter.get('/search/:workspaceId', ValidateRequest(searchUsersByPermissionsSchema), UserManagerProxy);

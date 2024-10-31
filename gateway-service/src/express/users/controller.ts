@@ -41,7 +41,6 @@ export class UsersController {
     }
 
     static async searchUsersByPermissions(req: Request, res: Response) {
-        
         res.json(await UsersManager.searchUsersByPermissions(req.params.workspaceId as string));
     }
 }
