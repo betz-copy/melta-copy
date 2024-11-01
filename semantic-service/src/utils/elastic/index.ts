@@ -83,7 +83,7 @@ class ElasticClient {
 
         if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return [];
 
-        return buckets[0].top_hits_by_group.hits.hits.map(({ hit }) => hit._source.entityId);
+        return buckets[0].top_hits_by_group.hits.hits.flatMap((hit) => hit?._source?.entityId ?? []);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
