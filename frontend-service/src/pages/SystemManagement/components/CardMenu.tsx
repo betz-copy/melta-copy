@@ -15,7 +15,7 @@ import { environment } from '../../../globals';
 import { useUserStore } from '../../../stores/user';
 
 export const CardMenu: React.FC<{
-    onEditClick: MouseEventHandler;
+    onEditClick?: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
     disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
@@ -42,23 +42,25 @@ export const CardMenu: React.FC<{
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <MeltaTooltip
-                    placement="right"
-                    title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
-                    disableHoverListener={!disabledProps?.canEdit}
-                >
-                    <Grid>
-                        <MenuButton
-                            onClick={(e) => {
-                                onEditClick(e);
-                                handleClose(e);
-                            }}
-                            text={i18next.t('actions.edit')}
-                            disabled={disabledProps?.canEdit}
-                            icon={<EditIcon color="action" />}
-                        />
-                    </Grid>
-                </MeltaTooltip>
+                {onEditClick && (
+                    <MeltaTooltip
+                        placement="top"
+                        title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
+                        disableHoverListener={!disabledProps?.canEdit}
+                    >
+                        <Grid>
+                            <MenuButton
+                                onClick={(e) => {
+                                    onEditClick(e);
+                                    handleClose(e);
+                                }}
+                                text={i18next.t('actions.edit')}
+                                disabled={disabledProps?.canEdit}
+                                icon={<EditIcon color="action" />}
+                            />
+                        </Grid>
+                    </MeltaTooltip>
+                )}
 
                 {onDuplicateClick && (
                     <MenuButton

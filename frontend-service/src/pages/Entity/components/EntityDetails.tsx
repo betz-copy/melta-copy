@@ -1,9 +1,7 @@
 import {
-    AccountTreeOutlined as GraphIcon,
     ContentCopy as DuplicateIcon,
     Delete as DeleteIcon,
     DoDisturbAlt,
-    Edit as EditIcon,
     MoreVertOutlined,
 } from '@mui/icons-material';
 import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
@@ -19,7 +17,6 @@ import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
-import { MenuButton } from '../../../common/MenuButton';
 import { IEntity, IEntityExpanded } from '../../../interfaces/entities';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { PermissionScope } from '../../../interfaces/permissions';
@@ -65,6 +62,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
+
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -184,36 +182,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     <MoreVertOutlined />
                                 </IconButton>
                                 <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <Grid>
-                                        <MenuButton
-                                            onClick={() => {
-                                                navigate(`/entity/${entity.properties._id}/graph`);
-                                                handleClose();
-                                            }}
-                                            text={i18next.t('actions.graph')}
-                                            icon={<GraphIcon color="action" />}
-                                        />
-                                    </Grid>
-
-                                    <TooltipMenuButton
-                                        tooltipTitle={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            !canWriteInstance
-                                                ? i18next.t('permissions.dontHaveWritePermissionsToCategory')
-                                                : isEntityDisabled
-                                                ? i18next.t('entityPage.disabledEntity')
-                                                : ''
-                                        }
-                                        onClick={() => {
-                                            if (!canWriteInstance || isEntityDisabled) return;
-                                            setIsEditMode(true);
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance || isEntityDisabled}
-                                        icon={EditIcon}
-                                        text={i18next.t('actions.edit')}
-                                    />
-
                                     <TooltipMenuButton
                                         tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
                                         onClick={() => {
