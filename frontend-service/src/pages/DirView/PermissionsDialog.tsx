@@ -53,7 +53,13 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
             scroll="paper"
         >
             <DialogTitle>
-                <BlueTitle title={`הרשאות בסביבה ${workspace.displayName ? workspace.displayName : 'ראשית'}`} component="h4" variant="h4" />
+                <BlueTitle
+                    title={`${i18next.t('permissions.dialog.title')} ${
+                        workspace.displayName ? workspace.displayName : i18next.t('permissions.dialog.mainWorkspaceTitle')
+                    }`}
+                    component="h4"
+                    variant="h4"
+                />
             </DialogTitle>
             <DialogContent
                 sx={{

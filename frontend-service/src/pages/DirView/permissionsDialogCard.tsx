@@ -87,11 +87,11 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
 
                 <Box id="permission-scope-updated-date" marginRight="1.8rem">
                     <Typography fontSize="16px" fontWeight="500" whiteSpace="nowrap">
-                        {`סוג הרשאה: ${getPermissionType(user.permissions)} ${getPermissionScope(user.permissions)}`}
+                        {i18next.t('permissions.dialog.permissionType')}: {getPermissionType(user.permissions)} {getPermissionScope(user.permissions)}
                     </Typography>
 
                     <Typography fontSize="14px" fontWeight="400">
-                        עודכן ב: {getDateWithoutTime(user.updatedAt)}
+                        {i18next.t('permissions.dialog.updatedAt')}: {getDateWithoutTime(user.updatedAt)}
                     </Typography>
                 </Box>
 

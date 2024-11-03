@@ -377,6 +377,12 @@ export default {
             read: 'קריאה',
             write: 'עריכה',
         },
+        dialog: {
+            title: 'הרשאות בסביבה',
+            mainWorkspaceTitle: 'ראשית',
+            permissionType: 'סוג הרשאה',
+            updatedAt: 'עודכן ב',
+        },
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',
