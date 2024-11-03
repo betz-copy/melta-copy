@@ -1,5 +1,5 @@
 import { Clear as ClearIcon, Done as DoneIcon } from '@mui/icons-material';
-import { Button, Card, CardContent, CircularProgress, Divider, Grid } from '@mui/material';
+import { Button, Card, CardContent, CircularProgress, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
 import pickBy from 'lodash.pickby';
 import i18next from 'i18next';
@@ -17,7 +17,7 @@ import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfa
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { ActionTypes } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 
@@ -34,11 +34,13 @@ const EditEntityDetails: React.FC<{
         brokenRules?: IRuleBreachPopulated['brokenRules'];
         rawBrokenRules?: IBrokenRule[];
         updateEntityFormData?: EntityWizardValues;
+        actions?: IActionPopulated[];
+        rawActions?: IAction[];
     }>({ isOpen: false });
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const handleClose = () => {
         onCancelUpdate();
-        setExternalErrors({ files: false, unique: {} });
+        setExternalErrors({ files: false, unique: {}, action: '' });
     };
 
     const templateFilesProperties = pickBy(
@@ -67,7 +69,7 @@ const EditEntityDetails: React.FC<{
             onSuccess: (data) => {
                 toast.success(i18next.t('wizard.entity.editedSuccessfully'));
                 onSuccessUpdate(data);
-                setExternalErrors({ files: false, unique: {} });
+                setExternalErrors({ files: false, unique: {}, action: '' });
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
                 if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
@@ -90,12 +92,19 @@ const EditEntityDetails: React.FC<{
                     return;
                 }
 
+                if (errorMetadata?.errorCode === errorCodes.actionsCustomError)
+                    setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
+
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
+                    const { brokenRules, rawBrokenRules, actions, rawActions } = errorMetadata;
+
                     setUpdateWithRuleBreachDialogState({
                         isOpen: true,
-                        brokenRules: errorMetadata.brokenRules,
-                        rawBrokenRules: errorMetadata.rawBrokenRules,
+                        brokenRules,
+                        rawBrokenRules,
                         updateEntityFormData: newEntityDate,
+                        actions,
+                        rawActions,
                     });
                 }
                 toast.error(i18next.t('wizard.entity.failedToEdit'));
@@ -144,6 +153,11 @@ const EditEntityDetails: React.FC<{
                                                     setFieldTouched={(field) => setFieldTouched(`properties.${field}`)}
                                                     isEditMode
                                                 />
+                                                {externalErrors.action && (
+                                                    <Typography color="error" variant="caption" fontSize="14px">
+                                                        {externalErrors.action}
+                                                    </Typography>
+                                                )}
                                             </Grid>
                                             {templateFileKeys.length > 0 && (
                                                 <Grid item xs={12} sm={4}>
@@ -263,6 +277,8 @@ const EditEntityDetails: React.FC<{
                                     }))
                                 }
                                 onCreateRuleBreachRequest={() => handleClose()}
+                                actions={updateWithRuleBreachDialogState.actions}
+                                rawActions={updateWithRuleBreachDialogState.rawActions}
                             />
                         )}
                     </>

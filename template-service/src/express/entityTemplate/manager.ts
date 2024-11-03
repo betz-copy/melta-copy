@@ -1,4 +1,4 @@
-import { ClientSession, Document, FilterQuery } from 'mongoose';
+import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
@@ -23,7 +23,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     getTemplates(searchQuery: { search?: string; ids?: string[]; categoryIds?: string[]; limit: number; skip: number }) {
         const { search: displayName, ids, categoryIds, limit, skip } = searchQuery;
-        const query: FilterQuery<IEntityTemplate & Document<any, any, any>> = {};
+        const query: FilterQuery<IEntityTemplate> = {};
 
         if (displayName) {
             query.displayName = { $regex: escapeRegExp(displayName) };
@@ -128,7 +128,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate = await this.model
+            const deletedEntityTemplate: IMongoEntityTemplate = await this.model
                 .findByIdAndDelete(id, { session })
                 .orFail(new ServiceError(404, 'Entity Template not found'))
                 .lean()
@@ -247,6 +247,15 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
     async updateEntityTemplateStatus(id: string, disabledStatus: boolean) {
         return this.model
             .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
+            .populate('category')
+            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .lean()
+            .exec();
+    }
+
+    async updateEntityTemplateAction(id: string, actions: string) {
+        return this.model
+            .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
             .orFail(new ServiceError(404, 'Entity Template not found'))
             .lean()

@@ -28,6 +28,7 @@ import { checkUserCategoryPermission } from '../../../utils/permissions/instance
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
+import { NoFile } from './NoFile';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -67,7 +68,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     refetchQuery,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
-    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {} });
+    const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
     const [previewImageIndex, setPreviewImageIndex] = useState(0);
     const cardRef = useRef<HTMLDivElement>(null);
     const currentUser = useUserStore((state) => state.user);
@@ -205,7 +206,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     if (!userHasWritePermissions) return;
                                     setEditDialog({ isOpen: true, entity });
                                     setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                                    setExternalErrors({ files: false, unique: {} });
+                                    setExternalErrors({ files: false, unique: {}, action: '' });
                                     toast.dismiss();
                                 },
                                 popoverText: i18next.t(
@@ -371,13 +372,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
                     {hasSomeFileIdPropertyTemplate && files.length === 0 && (
                         <Grid item sx={{ display: 'flex', flexDirection: 'row' }}>
-                            <img
-                                src="/icons/no-file.svg"
-                                style={{
-                                    height: '167px',
-                                    zIndex: 2,
-                                }}
-                            />
+                            <NoFile />
                         </Grid>
                     )}
                 </Grid>
@@ -469,7 +464,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 </Grid>
                             </Box>
                         ) : (
-                            hasSomeFileIdPropertyTemplate && files.length === 0 && <img src="/icons/no-file.svg" />
+                            hasSomeFileIdPropertyTemplate && files.length === 0 && <NoFile />
                         ))}
                 </Grid>
             </Grid>
@@ -481,7 +476,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                     initialCurrValues={editDialog.wizardValues}
                     onSuccessUpdate={() => {
                         setEditDialog((prev) => ({ ...prev, isOpen: false }));
-                        setExternalErrors({ files: false, unique: {} });
+                        setExternalErrors({ files: false, unique: {}, action: '' });
                         refetchQuery?.();
                     }}
                     handleClose={() => {

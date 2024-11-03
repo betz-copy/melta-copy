@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
-import { useTheme } from '@mui/material';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { apiUrlToImageSource } from '../services/storageService';
@@ -24,10 +23,9 @@ export const getNameInitials = (user: IUser): string => {
 
 const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defaultProfile = false }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const theme = useTheme();
 
     // eslint-disable-next-line no-nested-ternary
-    const fontColor = !bgColor ? theme.palette.primary.main : darkMode ? 'black' : 'white';
+    const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
     const [profile, setProfile] = useState<string>();
 
     useEffect(() => {

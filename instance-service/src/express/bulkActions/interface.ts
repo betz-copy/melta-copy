@@ -24,14 +24,15 @@ export interface IDuplicateEntityMetadata {
 
 export interface IUpdateEntityMetadata {
     entityId: string;
-    before?: Record<string, any>;
     updatedFields: Record<string, any>;
+    before?: Record<string, any>;
 }
 
 export interface IUpdateEntityStatusMetadata {
     entityId: string;
     disabled: boolean;
 }
+
 export type IActionMetadata =
     | ICreateRelationshipMetadata
     | IDeleteRelationshipMetadata

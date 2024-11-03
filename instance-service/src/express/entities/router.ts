@@ -3,6 +3,7 @@ import { createController } from '../../utils/express';
 import ValidateRequest from '../../utils/joi';
 import EntityController from './controller';
 import {
+    countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
     deleteEntityByIdRequestSchema,
@@ -14,11 +15,13 @@ import {
     getExpandedGraphByIdRequestSchema,
     getIfValuefieldIsUsedRequestSchema,
     searchEntitiesBatchRequestSchema,
+    searchEntitiesByTemplatesSchema,
     searchEntitiesOfTemplateRequestSchema,
     updateConstraintsOfTemplateRequestSchema,
     updateEntityByIdRequestSchema,
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
+    deletePropertiesOfTemplateRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -47,6 +50,13 @@ entityRouter.post(
     entityValidatorController.validateSearchEntitiesOfTemplateBody,
     entityController.searchEntitiesOfTemplate,
 );
+entityRouter.post('/count', ValidateRequest(countEntitiesOfTemplatesRequestSchema), entityController.getEntitiesCountByTemplates);
+entityRouter.post(
+    '/search/templates',
+    ValidateRequest(searchEntitiesByTemplatesSchema),
+    entityValidatorController.validateSearchByTemplatesBody,
+    entityController.searchEntitiesByTemplates,
+);
 entityRouter.post(
     '/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
@@ -64,12 +74,22 @@ entityRouter.post(
     entityController.getExpandedGraphById,
 );
 
-entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntity, entityController.createEntity);
+entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
 entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
-entityRouter.put('/:id', ValidateRequest(updateEntityByIdRequestSchema), entityValidatorController.validateEntity, entityController.updateEntityById);
+entityRouter.put(
+    '/:id',
+    ValidateRequest(updateEntityByIdRequestSchema),
+    entityValidatorController.validateEntityRequest,
+    entityController.updateEntityById,
+);
 entityRouter.patch('/:id/status', ValidateRequest(updateEntityStatusByIdRequestSchema), entityController.updateStatusById);
+entityRouter.patch(
+    '/deletePropertiesOfTemplate/:templateId',
+    ValidateRequest(deletePropertiesOfTemplateRequestSchema),
+    entityController.deletePropertiesOfTemplate,
+);
 
 export default entityRouter;

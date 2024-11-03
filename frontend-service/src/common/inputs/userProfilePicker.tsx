@@ -135,7 +135,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                             setFileInputValue(undefined);
                             onDelete();
                         }}
-                        fileName={image}
+                        file={{ name: image }}
                         inputText={i18next.t('wizard.file')}
                         acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
                     />

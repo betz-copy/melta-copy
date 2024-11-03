@@ -1,9 +1,12 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
-import i18next from 'i18next';
-import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
-import CardsViewIcon from '@mui/icons-material/RecentActors';
+import { Search, TableChartOutlined } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
+import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import { GridApi } from '@ag-grid-community/core';
+import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -19,25 +22,50 @@ export const GlobalSearchBar: React.FC<{
     inputValue?: string;
     setInputValue?: (newInputValue: string) => void;
     onSearch: (searchValue: string) => void;
+    gridApi?: GridApi;
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+    autoSearch?: boolean;
+}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
+
+    // eslint-disable-next-line consistent-return
+    useEffect(() => {
+        if (autoSearch) {
+            const debouncedSearch = debounce((value: string) => {
+                if (value !== valueForSearchButtonRef.current) {
+                    valueForSearchButtonRef.current = value;
+                    onSearch(value);
+                    if (gridApi) {
+                        gridApi.setQuickFilter(value);
+                    }
+                }
+            }, 300);
+
+            debouncedSearch(debouncedSearchValue);
+
+            return () => {
+                debouncedSearch.cancel();
+            };
+        }
+    }, [debouncedSearchValue, gridApi, onSearch, autoSearch]);
+
     return (
         <SearchInput
-            value={inputValue}
+            value={debouncedSearchValue}
             onChange={(newSearchValue) => {
-                valueForSearchButtonRef.current = newSearchValue;
+                setDebouncedSearchValue(newSearchValue);
                 setInputValue?.(newSearchValue);
             }}
             onKeyDown={(event) => {
-                if (event.key === 'Enter') {
+                if (!autoSearch && event.key === 'Enter') {
                     onSearch(valueForSearchButtonRef.current);
                 }
             }}
@@ -48,16 +76,7 @@ export const GlobalSearchBar: React.FC<{
                     sx={{ padding: 0 }}
                     disableRipple
                 >
-                    <img
-                        color="#1E2775"
-                        width="14px"
-                        height="14px"
-                        style={{
-                            top: '7px',
-                            left: '8px',
-                        }}
-                        src="/icons/search-blue.svg"
-                    />
+                    <Search sx={{ fontSize: '1.25rem' }} />
                 </IconButton>
             }
             placeholder={placeholder}
@@ -69,7 +88,6 @@ export const GlobalSearchBar: React.FC<{
         />
     );
 };
-
 const EntitiesPageHeadline: React.FC<{
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
@@ -93,6 +111,7 @@ const EntitiesPageHeadline: React.FC<{
     pageTitle: string;
     onAddEntity: (id: string) => void;
     refreshServerSide: (templateId: string) => void;
+    setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }> = ({
     searchInput,
     setSearchInput,
@@ -103,6 +122,7 @@ const EntitiesPageHeadline: React.FC<{
     pageTitle,
     onAddEntity,
     refreshServerSide,
+    setUpdatedEntities,
 }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
@@ -164,6 +184,7 @@ const EntitiesPageHeadline: React.FC<{
                                     borderRadius="7px"
                                     placeholder={i18next.t('globalSearch.searchInPage')}
                                     toTopBar
+                                    autoSearch
                                 />
                             </Grid>
                         </Grid>
@@ -192,9 +213,7 @@ const EntitiesPageHeadline: React.FC<{
                             </ToggleButton>
                             <ToggleButton value="templates-tables-view">
                                 <MeltaTooltip title={i18next.t('templateTablesView')!}>
-                                    <Icon>
-                                        <img src="/icons/Tables-View.svg" height="15px" style={{ marginBottom: '10px' }} />
-                                    </Icon>
+                                    <TableChartOutlined />
                                 </MeltaTooltip>
                             </ToggleButton>
                         </ToggleButtonGroup>
@@ -220,8 +239,14 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <AddEntityButton
                             disabledToolTip
-                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            style={{
+                                background: theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '135px',
+                                height: '35px',
+                            }}
                             onSuccessCreate={onSuccessCreate}
+                            setUpdatedEntities={setUpdatedEntities}
                         >
                             <AddIcon htmlColor="white" />
                             <Typography fontSize={14} style={{ fontWeight: '400', padding: '0 5px', color: 'white' }}>

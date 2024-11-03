@@ -7,7 +7,7 @@ interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     direction?: GridProps['direction'];
     wrap?: GridProps['wrap'];
     spacing?: GridProps['spacing'];
-    style?: CSSProperties;
+    style?: object;
 }
 
 export const InfiniteScroll = <T extends any>({

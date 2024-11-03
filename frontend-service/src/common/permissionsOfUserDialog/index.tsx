@@ -16,18 +16,20 @@ const PermissionsOfUserDialog: React.FC<{
     handleClose: () => any;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
-}> = ({ isOpen, handleClose, mode, existingUser }) => {
+    onSuccess?: (user?: IUser) => void;
+}> = ({ isOpen, handleClose, mode, existingUser, onSuccess }) => {
+    const [_, navigate] = useLocation();
+    const { setIsOpen, setCurrentStep } = useTour();
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
-    const { setIsOpen, setCurrentStep } = useTour();
-    const [_, navigate] = useLocation();
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = React.useState(initialTab);
 
     const tabsComponentsMapping: Record<string, ReactElement> = {
         ...(mode === 'view' && { myAccount: <MyAccount handleClose={handleClose} existingUser={existingUser!} /> }),
-        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} />,
+        myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />,
     };
     return (
         <Dialog

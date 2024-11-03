@@ -16,7 +16,7 @@ export class EntityTemplateManagerService extends TemplatesManagerService {
         return data;
     }
 
-    async getTemplatesUsingRelationshipReferance(relatedTemplateId: string) {
+    async getTemplatesUsingRelationshipReference(relatedTemplateId: string) {
         const { data } = await this.api.get<IMongoEntityTemplate[]>(`${getRelatedByIdRoute}/${relatedTemplateId}`);
 
         return data;

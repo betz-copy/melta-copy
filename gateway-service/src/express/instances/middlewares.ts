@@ -80,6 +80,11 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(req.body.templates));
     }
 
+    async validateUserCanSearchEntitiesByTemplates(req: Request) {
+        const { templateIds } = req.body;
+        await this.validateHasPermissionsToEntitiesInTemplates(req.user!, templateIds);
+    }
+
     async validateUserCanSearchEntitiesOfTemplate(req: Request) {
         const { templateId } = req.params;
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, [templateId]);

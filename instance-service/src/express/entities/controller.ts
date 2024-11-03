@@ -23,6 +23,16 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.searchEntitiesOfTemplate(req.body, entityTemplate));
     }
 
+    async searchEntitiesByTemplates(req: Request, res: Response) {
+        const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
+
+        res.json(await this.manager.searchEntitiesByTemplates(req.body, entityTemplatesMap));
+    }
+
+    async getEntitiesCountByTemplates(req: Request, res: Response) {
+        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.textSearch));
+    }
+
     async searchEntitiesBatch(req: Request, res: Response) {
         const entityTemplatesMap = fetchPropertyFromRequest<Map<string, IMongoEntityTemplate>>(req, 'entityTemplatesMap');
 
@@ -85,6 +95,10 @@ class EntityController extends DefaultController<EntityManager> {
 
     async enumerateNewSerialNumberFields(req: Request, res: Response) {
         res.json(await this.manager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
+    }
+
+    async deletePropertiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties, req.body.currentTemplateProperties));
     }
 }
 

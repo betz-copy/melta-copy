@@ -20,6 +20,7 @@ import {
     IFilterOfTemplate,
     IGetExpandedEntityBody,
     ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
@@ -71,7 +72,7 @@ export class EntityValidator extends DefaultController {
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
             if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
-                throw new ValidationError(`Entity template doesnt exist (id: "${templateId}")`);
+                throw new ValidationError(`Entity template doesn't exist (id: "${templateId}")`);
             }
 
             throw getEntityTemplateByIdErr;
@@ -80,14 +81,21 @@ export class EntityValidator extends DefaultController {
         return entityTemplate;
     }
 
-    async validateEntity(req: Request) {
-        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(req.body.templateId);
+    validateEntity(entityTemplate: IMongoEntityTemplate, properties: Record<string, any>) {
         const validateFunction = ajv.compile(entityTemplate.properties);
-        const valid = validateFunction(req.body.properties);
+        const valid = validateFunction(properties);
 
         if (!valid) {
             throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
         }
+    }
+
+    async validateEntityRequest(req: Request) {
+        const { templateId, properties } = req.body;
+
+        const entityTemplate = await this.getEntityTemplateByIdOrThrowValidationError(templateId);
+
+        this.validateEntity(entityTemplate, properties);
 
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
     }
@@ -306,6 +314,37 @@ export class EntityValidator extends DefaultController {
         });
 
         addPropertyToRequest(req, 'entityTemplate', entityTemplate);
+    }
+
+    async validateSearchByTemplatesBody(req: Request) {
+        const { searchConfigs }: ISearchEntitiesByTemplatesBody = req.body;
+        const templateIds = Object.keys(searchConfigs);
+        const entityTemplates = await this.entityTemplateManagerService.searchEntityTemplates({ ids: templateIds });
+        if (entityTemplates.length < templateIds.length) {
+            throw new ValidationError(`some of the templates in search doesnt exist. found only [${entityTemplates.map(({ _id }) => _id)}]`);
+        }
+        const entityTemplatesMap = new Map(entityTemplates.map((entityTemplate) => [entityTemplate._id, entityTemplate]));
+
+        const entityTemplatesForValidationMap: Map<string, IMongoEntityTemplate> = new Map(
+            entityTemplates.map((entityTemplate) => [entityTemplate._id, addDefaultFieldsToTemplate(entityTemplate)]),
+        );
+
+        const relationshipTemplatesMap = await this.getRelationshipTemplatesRelatedToEntityTemplates(templateIds);
+
+        Object.entries(searchConfigs).forEach(([templateId, { filter, showRelationships, sort }]) => {
+            if (filter) this.validateFilter(filter, entityTemplatesForValidationMap.get(templateId)!, `searchConfigs.${templateId}.filter`);
+
+            this.validateShowRelationships(showRelationships, templateId, relationshipTemplatesMap, `searchConfigs.${templateId}.showRelationships`);
+
+            sort.forEach(({ field }, sortIndex) => {
+                const fieldTemplate = entityTemplatesForValidationMap.get(templateId)!.properties.properties[field];
+                if (!fieldTemplate) {
+                    throw new ValidationError(`sort.${sortIndex}.field "${field}" must exist in template of search`);
+                }
+            });
+        });
+
+        addPropertyToRequest(req, 'entityTemplatesMap', entityTemplatesMap);
     }
 
     async validateSearchBatchBody(req: Request) {

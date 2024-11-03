@@ -125,6 +125,21 @@ export const deleteEntityTemplateSchema = Joi.object({
     params: { id: MongoIdSchema.required() },
 });
 
+// POST /api/entities/templates/search/:userId
+export const searchEntityTemplatesOfUserFromParamsSchema = Joi.object({
+    query: {},
+    body: {
+        search: Joi.string(),
+        ids: Joi.array().items(MongoIdSchema),
+        categoryIds: Joi.array().items(MongoIdSchema),
+        limit: Joi.number().integer().min(0).default(0),
+        skip: Joi.number().integer().min(0).default(0),
+    },
+    params: {
+        userId: Joi.string(),
+    },
+});
+
 // POST /api/entities/templates/search
 export const searchEntityTemplatesSchema = Joi.object({
     query: {},

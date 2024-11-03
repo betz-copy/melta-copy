@@ -141,17 +141,7 @@ export class UsersManager {
     }
 
     static async searchExternalUsers(search: string, workspaceId?: string): Promise<IExternalUser[]> {
-        let kartoffelUsers: IKartoffelUser[];
-
-        if (Kartoffel.isDomainUser(search)) {
-            kartoffelUsers = [await Kartoffel.getUserByDigitalIdentity(search)];
-        } else if (Kartoffel.isIdentifier(search)) {
-            kartoffelUsers = [await Kartoffel.getUserByIdentifier(search)];
-        } else if (Kartoffel.isKartoffelId(search)) {
-            kartoffelUsers = [await Kartoffel.getUserById(search)];
-        } else {
-            kartoffelUsers = await Kartoffel.getUsersByName(search);
-        }
+        const kartoffelUsers: IKartoffelUser[] = await Kartoffel.searchUsers(search);
 
         const normalizedKartoffelUsers = await Promise.all(kartoffelUsers.flatMap((kartoffelUser) => this.kartoffelUserToUser(kartoffelUser)));
 

@@ -87,6 +87,12 @@ export interface ISearchEntitiesOfTemplateBody {
     sort: ISearchSort;
 }
 
+export interface ISearchEntitiesByTemplatesBody {
+    searchConfigs: {
+        [templateId: string]: ISearchEntitiesOfTemplateBody;
+    };
+}
+
 export interface ISearchBatchBody {
     skip: number;
     limit: number;
@@ -107,9 +113,19 @@ export interface IGetExpandedEntityBody {
     filters: { [templateId: string]: { filter?: ISearchFilter<Record<string, any>>; showRelationships: boolean } };
 }
 
+export const isRelationshipReference = (object: any): object is IEntity => {
+    return (
+        typeof object === 'object' &&
+        'properties' in object &&
+        typeof object.properties === 'object' &&
+        'templateId' in object &&
+        typeof object.templateId === 'string'
+    );
+};
+
 export enum RunRuleReason {
     dependentViaAggregation = 'dependentViaAggregation',
-    dependentOnEntity = 'dependentOnEntity'
+    dependentOnEntity = 'dependentOnEntity',
 }
 
 // reasons which rules to run on each entity
@@ -131,3 +147,13 @@ export type EntitiesIdsRulesReasonsMap = Map<
         entityTemplateId: string;
     }
 >;
+
+export enum IEntityCrudAction {
+    onCreateEntity = 'onCreateEntity',
+    onUpdateEntity = 'onUpdateEntity',
+}
+
+export interface IExecutionOutput {
+    entityId: string;
+    properties: Record<string, any>;
+}

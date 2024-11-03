@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { Document, FilterQuery, Types } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
@@ -14,16 +14,13 @@ import {
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-    ProcessTemplateDocument,
 } from './interface';
 import { ProcessTemplateSchema } from './model';
 
-type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated & Document : IMongoProcessTemplate & Document;
+type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated : IMongoProcessTemplate;
 
 export default class ProcessTemplateManager extends DefaultManagerMongo<IProcessTemplate> {
     public stepTemplateManager: StepTemplateManager;
-
-    private processInstanceManager: ProcessInstanceManager;
 
     constructor(workspaceId: string) {
         super(workspaceId, config.mongo.processTemplatesCollectionName, ProcessTemplateSchema);
@@ -32,18 +29,16 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
 
     async getProcessTemplateById<T extends boolean = true>(id: string, shouldPopulate: T = true as T): Promise<ProcessTemplateType<T>> {
         const query = this.model.findById(id).orFail(new TemplateNotFoundError('process', id)).lean();
-        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as Promise<ProcessTemplateType<T>>;
+        return (shouldPopulate ? query.populate(config.processFields.steps) : query).exec() as unknown as Promise<ProcessTemplateType<T>>;
     }
 
     async createProcessTemplate(processTemplate: IProcessTemplatePopulated): Promise<IMongoProcessTemplatePopulated> {
         const templateId: string = await transaction(async (session) => {
             const steps = await this.stepTemplateManager.createStepsTemplates(processTemplate.steps, session);
-
             const stepsIds = steps.map((step) => step._id);
             // mongoose create doesn't work well with sessions,the first argument must be an array
             // so use insertMany instead and pass array of one process.
             const [{ _id }] = await this.model.insertMany([{ ...processTemplate, steps: stepsIds }], { session });
-
             return _id!.toString();
         });
 
@@ -51,7 +46,8 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async throwIfProcessTemplateHasInstances(templateId: string) {
-        const processInstances = await this.processInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
+        const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
+        const processInstances = await processInstanceManager.getProcessesByTemplateId(templateId).catch(() => {});
         if (processInstances) throw new ServiceError(400, 'process template still has instances');
     }
 
@@ -92,7 +88,8 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     private async throwIfCantUpdateProcessTemplate(updatedTemplate: IProcessTemplatePopulated, currTemplate: IMongoProcessTemplatePopulated) {
-        const processInstances = await this.processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
+        const processInstanceManager = new ProcessInstanceManager(this.workspaceId);
+        const processInstances = await processInstanceManager.searchProcesses({ templateIds: [currTemplate._id], limit: 0, skip: 0 });
         if (processInstances.length === 0) {
             return;
         }
@@ -135,7 +132,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
     }
 
     async searchTemplates({ displayName, ids, limit, skip, reviewerId }: IProcessTemplateSearchProperties) {
-        const query: FilterQuery<ProcessTemplateDocument> = {};
+        const query: FilterQuery<IMongoProcessTemplate> = {};
 
         if (displayName) query.displayName = { $regex: escapeRegExp(displayName) };
         if (ids) query._id = { $in: ids.map((id) => new Types.ObjectId(id)) };

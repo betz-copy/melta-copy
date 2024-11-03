@@ -11,10 +11,11 @@ interface GraphFilterBatchProps {
     filters: number[];
     setFilters: React.Dispatch<React.SetStateAction<number[]>>;
     filterRecord: IGraphFilterBodyBatch;
+    onFilter: () => void;
 }
 
 const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
-    ({ templateOptions, setFilterRecord, filters, setFilters, filterRecord, graphEntityTemplateIds }) => {
+    ({ templateOptions, setFilterRecord, filters, setFilters, filterRecord, graphEntityTemplateIds, onFilter }) => {
         // deletes filter box from screen
         const deleteFilter = (value) => {
             setFilters((prevFilters) => prevFilters.filter((item) => item !== value));
@@ -25,6 +26,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                 const { [filterKey]: deletedFilter, ...restFilters } = prev;
                 return restFilters;
             });
+            onFilter();
         };
 
         return (
@@ -41,6 +43,7 @@ const GraphFilterBatch: React.FC<GraphFilterBatchProps> = React.memo(
                                 deleteFilter={deleteFilter}
                                 graphEntityTemplateIds={graphEntityTemplateIds}
                                 removeFilterFromFilterList={removeFilterFromFilterList}
+                                onFilter={onFilter}
                             />
                         );
                     })}

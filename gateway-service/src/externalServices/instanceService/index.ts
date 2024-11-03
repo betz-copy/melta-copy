@@ -1,6 +1,7 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
@@ -49,13 +50,22 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async createEntityInstance(entity: IEntity, ignoredRules: IBrokenRule[], userId: string, duplicatedFromId?: string) {
-        const { data } = await this.api.post<IEntity>(`${baseEntitiesRoute}`, { ...entity, ignoredRules, userId, duplicatedFromId });
+        const { data } = await this.api.post<{ createdEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}`, {
+            ...entity,
+            ignoredRules,
+            userId,
+            duplicatedFromId,
+        });
 
         return data;
     }
 
     async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
-        const { data } = await this.api.put<IEntity>(`${baseEntitiesRoute}/${id}`, { ...entity, ignoredRules, userId });
+        const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
+            ...entity,
+            ignoredRules,
+            userId,
+        });
 
         return data;
     }
@@ -140,6 +150,15 @@ export class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const { data } = await this.api.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
+            properties,
+            currentTemplateProperties,
+        });
+
         return data;
     }
 

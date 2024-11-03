@@ -45,7 +45,7 @@ export interface IMongoProcessInstancePopulated extends Omit<IMongoProcessInstan
 }
 
 export interface ISearchProcessInstancesBody extends IBaseSearchProperties {
-    name?: string;
+    searchText?: string;
     templateIds?: string[];
     status?: Status[];
     startDate?: Date;

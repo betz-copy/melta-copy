@@ -20,6 +20,12 @@ export interface IMongoCategory extends ICategory {
     createdAt: string;
     updatedAt: string;
 }
+export interface ISearchCategoriesBody {
+    search?: string;
+    ids?: string[];
+    limit?: number;
+    skip?: number;
+}
 
 export interface IEntitySingleProperty {
     title: string;
@@ -41,6 +47,7 @@ export interface IEntitySingleProperty {
     calculateTime?: boolean;
     serialStarter?: number;
     serialCurrent?: number;
+    isNewPropNameEqualDeletedPropName?: boolean;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
@@ -64,6 +71,7 @@ export interface IEntityTemplate {
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     disabled: boolean;
     iconFileId: string | null;
+    actions?: string;
     documentTemplatesIds?: string[];
 }
 

@@ -1,6 +1,7 @@
 import { Grid } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
+import debounce from 'lodash/debounce';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
@@ -13,12 +14,16 @@ const ProcessInstancesPage: React.FC = () => {
     const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplatePopulated[]>(processTemplates);
 
     const [searchInput, setSearchInput] = useState('');
-
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);
     const [endDateInput, setEndDateInput] = useState<Date | null>(null);
-    const onSearch = (newSearchInput: string) => {
-        setSearchInput(newSearchInput);
-    };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const onSearch = useCallback(
+        debounce((newSearchInput: string) => {
+            setSearchInput(newSearchInput);
+        }, 150),
+        [searchInput],
+    );
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDateInput(newStartDateInput);
     };
@@ -39,6 +44,7 @@ const ProcessInstancesPage: React.FC = () => {
                 }}
                 startDateInput={startDateInput}
                 endDateInput={endDateInput}
+                searchInput={searchInput}
             />
             <Grid container padding="0 4rem" direction="column" marginBottom="2.5rem">
                 <ProcessesList

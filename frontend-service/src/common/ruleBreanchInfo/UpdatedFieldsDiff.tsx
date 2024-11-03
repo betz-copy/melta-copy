@@ -12,6 +12,7 @@ import { formatToString } from '../EntityProperties';
 
 const getEntityPropertyString = (value: any, propertyTemplate: IEntitySingleProperty, oldValue: any, items?: any) => {
     const { format } = propertyTemplate;
+
     if (value === null || value === undefined) {
         return '-';
     }

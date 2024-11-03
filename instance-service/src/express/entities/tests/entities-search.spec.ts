@@ -2,7 +2,6 @@ import { Express } from 'express';
 import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
 import Neo4jClient from '../../../utils/neo4j';
-import RedisClient from '../../../utils/redis';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../../config';
 import EntityManager from '../manager';
@@ -18,7 +17,7 @@ import {
 import RelationshipManager from '../../relationships/manager';
 import { IRelationship } from '../../relationships/interfaces';
 
-const { neo4j, redis } = config;
+const { neo4j } = config;
 
 const defaultTemplateId = uuidv4(); // supposed to be mongoId, but good enough
 // const defaultProperties = { testProp: 'testProp' };
@@ -136,15 +135,15 @@ describe('e2e search entities batch tests', () => {
         });
 
         beforeEach(async () => {
-            flight1 = await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, [], neo4j.mockUserId);
-            flight2 = await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, [], neo4j.mockUserId);
-            travelAgent1 = await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            travelAgent2 = await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            travelAgent3 = await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, [], neo4j.mockUserId);
-            trip1 = await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, [], neo4j.mockUserId);
-            trip2 = await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, [], neo4j.mockUserId);
-            trip3 = await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, [], neo4j.mockUserId);
-            airport1 = await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, [], neo4j.mockUserId);
+            flight1 = (await EntityManager.createEntity({ flightNumber: '1' }, flightEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            flight2 = (await EntityManager.createEntity({ flightNumber: '2' }, flightEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent1 = (await EntityManager.createEntity({ firstName: 'Name1' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent2 = (await EntityManager.createEntity({ firstName: 'Name2' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            travelAgent3 = (await EntityManager.createEntity({ firstName: 'Name3' }, travelAgentEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip1 = (await EntityManager.createEntity({ name: 'My trip1' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip2 = (await EntityManager.createEntity({ name: 'My trip2' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            trip3 = (await EntityManager.createEntity({ name: 'My trip3' }, tripEntityTemplate, [], neo4j.mockUserId)).createdEntity;
+            airport1 = (await EntityManager.createEntity({ airportName: 'My Airport1' }, airportEntityTemplate, [], neo4j.mockUserId)).createdEntity;
 
             travelAgent1Toflight1 = await RelationshipManager.createRelationshipByEntityIds(
                 {
@@ -810,25 +809,11 @@ describe('e2e search entities batch tests', () => {
                 )`,
                 () => {},
             );
-
-            // Configure redis and set latest index
-            await RedisClient.initialize(redis.url);
-
-            const redisClient = RedisClient.getClient();
-
-            await redisClient.set(redis.globalSearchKeyName, 'globalSearchTest');
         });
 
         afterAll(async () => {
             // Delete global search index in neo4j
             await Neo4jClient.writeTransaction(`CALL db.index.fulltext.drop('globalSearchTest')`, () => {});
-
-            // Delete latest index in redis
-            const redisClient = RedisClient.getClient();
-
-            await redisClient.del(redis.globalSearchKeyName);
-
-            redisClient.disconnect();
         });
 
         beforeEach(async () => {

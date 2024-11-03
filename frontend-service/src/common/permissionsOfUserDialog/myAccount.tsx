@@ -14,6 +14,8 @@ import { apiUrlToImageSource } from '../../services/storageService';
 import { SelectCheckbox } from '../SelectCheckbox';
 import UserAvatar, { getNameInitials } from '../UserAvatar';
 import { getFileName } from '../../utils/getFileName';
+import { DayNightSwitch } from '../inputs/DayNightSwitch';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { notificationsMoreData } = environment.notifications;
 
@@ -37,8 +39,10 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
     const [imageName, setImageName] = useState('');
     const [isDataUpdated, setIsDataUpdated] = useState(false);
-
-    console.log({ notificationsToShowCheckbox, preferences });
+    const [isDarkMode, setIsDarkMode] = useState(preferences.darkMode ?? false);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
+    console.log({ darkMode });
 
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {
         fullName: existingUser.fullName,
@@ -188,7 +192,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                     </>
                 ))}
 
-                <Grid item display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={2}>
+                <Grid item display="flex" justifyContent="space-around" alignItems="center" width="100%" margin={0}>
                     <SelectCheckbox
                         title={i18next.t('notifications.notificationType')}
                         options={allNotifications}
@@ -200,20 +204,15 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                         toUserProfile
                         isDraggableDisabled
                         horizontalOrigin={148}
-                        overrideSx={{ bgcolor: 'red' }}
                     />
-                    <FormControlLabel
-                        control={
-                            <Switch
-                                sx={{ m: 1 }}
-                                defaultChecked={preferences.darkMode}
-                                onChange={(_e, checked) => {
-                                    console.log({ checked });
-                                    setPreferences({ ...preferences, darkMode: checked });
-                                }}
-                            />
-                        }
-                        label=""
+
+                    <DayNightSwitch
+                        checked={darkMode}
+                        onClick={() => {
+                            setIsDarkMode(!isDarkMode);
+                            setPreferences({ ...preferences, darkMode: !isDarkMode });
+                            toggleDarkMode();
+                        }}
                     />
                 </Grid>
             </Grid>

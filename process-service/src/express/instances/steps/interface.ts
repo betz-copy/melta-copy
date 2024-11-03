@@ -1,4 +1,3 @@
-import { Document } from 'mongoose';
 import { InstanceProperties, Status } from '../processes/interface';
 
 export interface IStepInstance {
@@ -26,5 +25,3 @@ export interface UpdateStepReqBody {
         reviewerId: string;
     };
 }
-
-export type StepInstanceDocument = IStepInstance & Document;

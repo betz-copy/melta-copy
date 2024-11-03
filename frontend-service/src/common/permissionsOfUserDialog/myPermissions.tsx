@@ -28,6 +28,7 @@ const MyPermissions: React.FC<{
     handleClose: () => void;
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
+    onSuccess?: (user?: IUser) => void;
 }> = ({ handleClose, mode, existingUser }) => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
@@ -66,12 +67,9 @@ const MyPermissions: React.FC<{
                 console.log('failed to upsert permission. error:', error);
                 toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
             },
-            onSuccess: (newUser) => {
-                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
-                    if (!oldUsers) throw new Error('should contain existing users when creating user');
-                    return [newUser, ...oldUsers];
-                });
-
+            onSuccess: () => {
+                onSuccess?.();
+                queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
                 handleClose();
             },
@@ -111,17 +109,6 @@ const MyPermissions: React.FC<{
             onSuccess: (newPermissions) => {
                 if (!existingUser) return;
 
-                queryClient.setQueryData<IUser[]>('getAllUsers', (oldUsers) => {
-                    if (!oldUsers) throw new Error('should contain existing users when updating permissions of user');
-                    const newUsers = [...oldUsers];
-                    const existingUserIndex = newUsers.findIndex(({ _id }) => _id === existingUser._id);
-
-                    if (userHasNoPermissions(newPermissions[workspace._id] ?? {})) newUsers.splice(existingUserIndex, 1);
-                    else newUsers[existingUserIndex] = { ...existingUser, permissions: newPermissions };
-
-                    return newUsers;
-                });
-
                 if (existingUser?._id === currentUser._id && !_isEqual(currentUser.currentWorkspacePermissions, newPermissions[workspace._id])) {
                     setUser({
                         ...currentUser,
@@ -130,6 +117,7 @@ const MyPermissions: React.FC<{
                     });
                 }
 
+                queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
                 handleClose();
             },

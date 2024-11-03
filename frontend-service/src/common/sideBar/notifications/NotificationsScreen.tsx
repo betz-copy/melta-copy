@@ -1,5 +1,6 @@
+import { CalendarToday, FilterList, FilterListOff, MarkChatUnreadOutlined, SmsOutlined } from '@mui/icons-material';
 import { LoadingButton } from '@mui/lab';
-import { CircularProgress, Grid, Tab, Tabs } from '@mui/material';
+import { CircularProgress, Grid, IconButton, Tab, Tabs, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { useMutation } from 'react-query';
@@ -7,6 +8,7 @@ import { toast } from 'react-toastify';
 import { environment } from '../../../globals';
 import { INotificationGroupCountDetails, INotificationPopulated, NotificationType } from '../../../interfaces/notifications';
 import { getMyNotificationsRequest, manyNotificationSeenRequest } from '../../../services/notificationService';
+import { useDarkModeStore } from '../../../stores/darkMode';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { InfiniteScroll } from '../../InfiniteScroll';
 import DateRange from '../../inputs/DateRange';
@@ -58,6 +60,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     );
     const [isCheckBoxClicked, setIsCheckBoxClicked] = useState(false);
 
+    const theme = useTheme();
+
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const onSetStartDate = (newStartDateInput: Date | null) => {
         setStartDate(newStartDateInput);
     };
@@ -69,7 +75,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
     const filterCleaning = () => {
         onSetStartDate(null);
         onSetEndDate(null);
-        setOpenCalendars(false);
+        setOpenCalendars(!openCalenders);
     };
 
     const { mutate, isLoading } = useMutation(
@@ -97,6 +103,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
         setSelectedGroup(newGroup);
     };
 
+    const width = openCalenders ? 310 : 255;
+
     return (
         <PopperSidebar
             open={open}
@@ -107,7 +115,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
             isCheckBoxClicked={isCheckBoxClicked}
         >
             <Grid>
-                <Tabs value={selectedGroup} onChange={handleGroupChange}>
+                <Tabs value={selectedGroup} onChange={handleGroupChange} sx={{ width: '90%', margin: 'auto' }}>
                     {groupNames.map((groupName) => (
                         <Tab
                             value={groupName}
@@ -115,23 +123,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             iconPosition="start"
                             label={
                                 <Grid container gap="10px" display="flex" alignItems="center" justifyContent="space-around">
-                                    <img
-                                        src={
-                                            // eslint-disable-next-line no-nested-ternary
-                                            groupName === 'general'
-                                                ? selectedGroup === groupName
-                                                    ? '/icons/general-notification-clicked.svg'
-                                                    : '/icons/general-notification.svg'
-                                                : selectedGroup === groupName
-                                                ? '/icons/requests-notification-clicked.svg'
-                                                : '/icons/requests-notification.svg'
-                                        }
-                                    />
-                                    <Grid
-                                        item
-                                        color={selectedGroup !== groupName ? '#787C9E' : ''}
-                                        fontWeight={selectedGroup !== groupName ? 400 : undefined}
-                                    >
+                                    {groupName === 'general' ? <MarkChatUnreadOutlined /> : <SmsOutlined />}
+                                    <Grid item fontWeight={selectedGroup !== groupName ? 400 : undefined}>
                                         {i18next.t(`notifications.groups.${groupName}`)}
                                     </Grid>
                                     <Grid item>
@@ -147,7 +140,6 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             sx={{
                                 width: '50%',
                                 '&:focus': {
-                                    color: '#1E2775',
                                     fontWeight: '700',
                                 },
                             }}
@@ -160,8 +152,8 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                 <CircularProgress sx={{ marginX: 'auto', marginTop: '1rem' }} />
             ) : (
                 <>
-                    <Grid sx={{ display: 'flex', justifyContent: 'space-around', padding: '18px' }}>
-                        <Grid item sx={{ width: openCalenders ? '100%' : '80%' }}>
+                    <Grid sx={{ display: 'flex', justifyContent: 'space-between', padding: '18px' }}>
+                        <Grid item>
                             <SelectCheckbox
                                 title={i18next.t('notifications.notificationType')}
                                 options={(notificationsMoreData as unknown as IExpandedGroups)[selectedGroup]}
@@ -170,83 +162,83 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                                 getOptionId={({ type }) => type}
                                 getOptionLabel={(option) => option.displayName()}
                                 size="small"
-                                horizontalOrigin={openCalenders ? 61 : 89}
+                                horizontalOrigin={openCalenders ? 61 : 128}
                                 overrideSx={{
                                     '& .MuiSelect-select': {
-                                        backgroundColor: '#FFFF',
-                                        color: '#9398C2',
-                                        boxShadow: '-2px 2px 6px 0px #1E277540',
+                                        color: '#       ',
                                         border: 0,
                                         width: openCalenders ? '15rem' : '11.5rem',
-                                    },
-                                    '& .MuiOutlinedInput-notchedOutline': { border: 0 },
-                                    '&.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-                                        border: 0,
-                                    },
-                                    '&.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                                        border: 0,
                                     },
                                 }}
                                 handleCheckboxClick={(value) => setIsCheckBoxClicked(value)}
                                 isDraggableDisabled
+                                hideSearchBar
+                                hideChooseAll
+                                dynamicWidth={width}
                             />
                         </Grid>
                         {!openCalenders && (
                             <Grid
                                 item
                                 sx={{
-                                    backgroundColor: 'white',
                                     borderRadius: '10px',
                                     display: 'flex',
-                                    padding: '8px',
                                     boxShadow: '-2px 2px 6px 0px #1E277540',
                                 }}
-                                onClick={() => setOpenCalendars(!openCalenders)}
                             >
-                                <img src="/icons/calendar.svg" style={{ height: '20px' }} />
+                                <IconButton onClick={() => setOpenCalendars(!openCalenders)}>
+                                    <CalendarToday color="primary" fontSize="small" />
+                                </IconButton>
                             </Grid>
                         )}
                     </Grid>
                     {openCalenders && (
-                        <Grid sx={{ padding: '17px' }}>
+                        <Grid sx={{ padding: '17px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                             <DateRange
                                 onStartDateChange={onSetStartDate}
                                 onEndDateChange={onSetEndDate}
                                 startDateInput={startDate}
                                 endDateInput={endDate}
-                                overrideSx={{
-                                    '& input': {
-                                        backgroundColor: '#FFFF',
-                                        fontSize: '15px',
-                                    },
-
-                                    '.MuiOutlinedInput-notchedOutline': {
-                                        border: 0,
-                                        boxShadow: '-2px 2px 6px 0px #1E277540',
-                                        borderRadius: '12px',
-                                    },
-                                    '& .MuiOutlinedInput-root': {
-                                        '&.Mui-focused fieldset': {
-                                            borderRadius: '15px',
-                                            boxShadow: '-2px 2px 6px 0px #1E277540',
-                                            border: 0,
-                                        },
-                                    },
-                                }}
                                 directionIsRow
+                                {...(darkMode
+                                    ? {}
+                                    : {
+                                          overrideSx: {
+                                              '& input': {
+                                                  backgroundColor: '#FFFF',
+                                                  fontSize: '15px',
+                                              },
+
+                                              '.MuiOutlinedInput-notchedOutline': {
+                                                  border: 0,
+                                                  boxShadow: '-2px 2px 6px 0px #1E277540',
+                                                  borderRadius: '12px',
+                                              },
+                                              '& .MuiOutlinedInput-root': {
+                                                  '&.Mui-focused fieldset': {
+                                                      borderRadius: '15px',
+                                                      boxShadow: '-2px 2px 6px 0px #1E277540',
+                                                      border: 0,
+                                                  },
+                                              },
+                                          },
+                                      })}
                             />
 
                             <IconButtonWithPopover
                                 iconButtonProps={{ onClick: () => filterCleaning() }}
                                 popoverText=""
-                                disabled={!(startDate || endDate)}
+                                // disabled={!(startDate || endDate)}
                                 style={{
                                     borderRadius: '5px',
-                                    padding: '6px, 4px, 6px, 4px',
                                     marginRight: '208px',
                                 }}
                             >
-                                {startDate || endDate ? <img src="/icons/delete-filters-enable.svg" /> : <img src="/icons/delete-filters.svg" />}
+                                {startDate || endDate ? <FilterList /> : <FilterListOff />}
+
+                                <Typography fontSize="0.9rem" noWrap color={theme.palette.primary.main}>
+                                    {i18next.t('entitiesTableOfTemplate.resetFilters')}
+                                </Typography>
                             </IconButtonWithPopover>
                         </Grid>
                     )}
@@ -266,6 +258,10 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             toast.error(i18next.t('notifications.failedToGetNotifications'));
                         }}
                         endText={i18next.t('notifications.noNotificationsLeft')}
+                        style={{
+                            '::-webkit-scrollbar-thumb': { backgroundColor: theme.palette.primary.main },
+                            '::-webkit-scrollbar-track': { backgroundColor: 'transparent' },
+                        }}
                     >
                         {(notification) => (
                             <Grid item style={{ padding: '8px' }}>
@@ -281,7 +277,7 @@ export const NotificationsScreen: React.FC<NotificationsScreenProps> = ({
                             bottom: 0,
                             justifyContent: 'flex-end',
                             padding: '8px',
-                            backgroundColor: 'white',
+                            backgroundColor: 'inherit',
                             borderRadius: '0px 0px 15px 15px',
                         }}
                     >
