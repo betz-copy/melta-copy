@@ -226,7 +226,6 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         hide: hideColumn,
     };
 };
-// TODO -use the same component using 'multiple' parameter....
 export const userColDef = <Data extends any = IUser>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
