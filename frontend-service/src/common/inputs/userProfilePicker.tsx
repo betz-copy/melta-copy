@@ -40,12 +40,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
         setInputType(selected);
 
         const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
-        // if (selected === 'chooseFile') selectedValue = ;
-        // if (selected === 'chooseAvatar') selectedValue = ;
-        // if (selected === 'kartoffelProfile') {
-        //     selectedValue = kartoffelProfile ?? undefined;
-        // }
-        console.log({ selectedValue });
 
         if (!selectedValue) {
             onDelete();
@@ -54,14 +48,11 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
 
         onPick(selectedValue);
     };
-    console.log({ inputType, fileInputValue, image });
-    const [selectedIcon, setSelectedIcon] = useState<string | null>(null);
+    const [selectedIcon, setSelectedIcon] = useState<string | null>(user.preferences.profilePath ?? null);
 
     const handleAvatarClick = (iconPath?: string) => {
-        console.log('noticeeeeeee', { iconPath });
-
         setIconPickerValue(iconPath);
-        setSelectedIcon(iconPath ?? '');
+        setSelectedIcon(iconPath ?? null);
         onPick(iconPath);
     };
 
@@ -75,9 +66,11 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
-                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }}>
-                        {i18next.t('input.imagePicker.kartoffelProfile')}
-                    </ToggleButton>
+                    <Tooltip title={!kartoffelProfile ? 'תמונת חוגר אינה קיימת' : ''}>
+                        <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }} disabled={!kartoffelProfile}>
+                            {i18next.t('input.imagePicker.kartoffelProfile')}
+                        </ToggleButton>
+                    </Tooltip>
                 </ToggleButtonGroup>
             </Grid>
 
@@ -103,6 +96,25 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                                     />
                                 </Grid>
                             ))}
+                            <Grid item padding={2}>
+                                <Avatar
+                                    src="/icons/profileAvatar/noneAvatar.png"
+                                    style={{
+                                        width: 50,
+                                        height: 50,
+                                        cursor: 'pointer',
+                                        boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                                        border: !selectedIcon ? '1px solid green' : '',
+                                    }}
+                                    onClick={() => {
+                                        console.log('egegegegeegrerf', { selectedIcon });
+
+                                        console.log('11', selectedIcon);
+
+                                        handleAvatarClick(undefined);
+                                    }}
+                                />
+                            </Grid>
                         </Grid>
                     </Box>
                 </Grid>
@@ -131,21 +143,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
             )}
             {inputType === 'kartoffelProfile' && (
                 <Grid padding="20px">
-                    <IconButton
-                        onClick={() => {
-                            setSelectedIcon('default');
-                            handleAvatarClick(undefined);
-                        }}
-                        sx={{
-                            // boxShadow: selectedIcon === 'default' ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
-                            border: selectedIcon === 'default' ? '1px solid black' : '',
-                        }}
-                    >
-                        <UserAvatar user={user} defaultProfile />
-                    </IconButton>
                     <Tooltip title={!kartoffelProfile ? 'תמונת חוגר אינה קיימת' : ''}>
                         <IconButton
-                            // disabled={!kartoffelProfile}
                             onClick={() => {
                                 if (kartoffelProfile) {
                                     setSelectedIcon('kartoffelProfile');

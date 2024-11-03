@@ -107,7 +107,7 @@ export class UsersManager {
             await this.storageService.deleteFile(profilePath);
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: preferences.profilePath || undefined } });
         }
-        console.log('Final update without changes');
+        console.log('Final update without changes', { preferences });
         return UserService.updateUser(userId, { preferences });
     }
 

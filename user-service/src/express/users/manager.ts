@@ -14,7 +14,6 @@ export class UsersManager {
 
     static async getUserByExternalId(id: string, workspaceIds?: string[]): Promise<IUser> {
         const baseUser = await UsersModel.findOne({ 'externalMetadata.kartoffelId': id }).orFail(new UserDoesNotExistError(id)).lean().exec();
-        console.log({ baseUser });
         return this.baseUserToUser(baseUser, workspaceIds);
     }
 

@@ -103,6 +103,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     size?: 'small' | 'medium';
     overrideSx?: object;
     toTopBar?: boolean;
+    toUserProfile?: boolean;
     horizontalOrigin?: number;
     handleCheckboxClick?: (value: boolean) => void;
 }>;
@@ -177,7 +178,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                                     );
                                                 }
                                                 return [...prevSelectedOptions, option];
-                                             });
+                                            });
                                         }}
                                         sx={{
                                             ...menuItemSx,
@@ -482,6 +483,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     size = 'medium',
     overrideSx,
     toTopBar,
+    toUserProfile = false,
     horizontalOrigin = 154,
     handleCheckboxClick = () => {},
 }: SelectCheckboxProps<Option, Group>) => {
@@ -562,7 +564,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: 'none',
+                    boxShadow: toUserProfile ? '0px 4px 15px rgba(0,0,0,0.2)' : 'none',
                     // eslint-disable-next-line no-nested-ternary
                     '& .MuiOutlinedInput-notchedOutline': {
                         display: 'none',

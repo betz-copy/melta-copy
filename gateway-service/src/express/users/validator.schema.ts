@@ -15,8 +15,7 @@ const UserExternalMetadataSchema = joi.object({
 });
 
 const UserPreferencesMetadataSchema = joi.object({
-    // darkMode: joi.boolean(),
-    // mailsNotificationsTypes: joi.array().items(NotificationType),
+    darkMode: ExtendedJoi.boolean(),
     mailsNotificationsTypes: ExtendedJoi.stringToArray(),
     profilePath: joi.string().allow(null),
 });

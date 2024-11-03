@@ -1,3 +1,4 @@
+import { preReleaseLabel } from '@mui/material';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IKartoffelUser } from '../interfaces/kartoffel';
@@ -36,22 +37,24 @@ export const updateUserPreferencesMetadataRequest = async (
     console.log({ updatedPreferences, notificationsToShowCheckbox });
 
     if (updatedPreferences.icon) {
-        console.log('have icon!!');
+        // console.log('have icon!!');
 
         if (updatedPreferences.icon.file instanceof File) {
             formData.append('file', updatedPreferences.icon.file);
         } else {
-            console.log('noooooow its else');
+            // console.log('noooooow its else');
             formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
     } else if (updatedPreferences.profilePath) {
-        console.log(' i think we here');
+        // console.log(' i think we here');
         formData.append('profilePath', updatedPreferences.profilePath);
-        console.log(...formData);
+        // console.log(...formData);
     }
 
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
-    console.log(...formData);
+    formData.append('darkMode', JSON.stringify(updatedPreferences.darkMode));
+
+    console.log('formData', ...formData);
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;

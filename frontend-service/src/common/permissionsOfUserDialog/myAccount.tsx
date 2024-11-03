@@ -1,4 +1,4 @@
-import { Avatar, Button, Checkbox, Divider, FormControlLabel, Grid, Typography } from '@mui/material';
+import { Avatar, Button, Checkbox, Divider, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
 import React, { useCallback, useEffect, useState } from 'react';
 import { AxiosError } from 'axios';
 import { useMutation } from 'react-query';
@@ -16,24 +16,23 @@ import UserAvatar, { getNameInitials } from '../UserAvatar';
 import { getFileName } from '../../utils/getFileName';
 
 const { notificationsMoreData } = environment.notifications;
+
 export const isProfileFileType = (profilePath?: string): boolean => {
-    console.log('trtrtrttrtrtrtrttrtr', { profilePath });
     return !!profilePath && profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && !profilePath.startsWith('http://');
 };
+
 export const defaultInputType = (profilePath?: string) => {
-    console.log(' im hereeeeeeeeeeeeeee', { profilePath });
-    if (!profilePath || profilePath.startsWith('http://')) return 'kartoffelProfile';
-    if (profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
+    if (!profilePath || profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
+    if (profilePath.startsWith('http://')) return 'kartoffelProfile';
     return 'chooseFile';
 };
+
 const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({ existingUser, handleClose }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
     );
-    // const [selectedNotifications, setSelectedNotifications] = useState<NotificationType[]>(existingUser?.preferences.mailsNotificationsTypes || []);
     const [kartoffelUser, setKartoffelUser] = useState<IKartoffelUser>();
-    // const [profile, setProfile] = useState<any>();
     const [editProfile, setEditProfile] = useState(false);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
     const [imageName, setImageName] = useState('');
@@ -70,9 +69,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     }, []);
 
     useEffect(() => {
-        // Check if there are any changes between original and updated data
         const arePreferencesChange = !isEqual(preferences, existingUser.preferences);
-        // JSON.stringify(existingUser.preferences) !== JSON.stringify(preferences);
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
         const areNotificationsUpdated = !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
         console.log({ arePreferencesChange, areNotificationsUpdated }, { updatedNotificationsTypes }, existingUser.preferences, preferences);
@@ -191,7 +188,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                     </>
                 ))}
 
-                <Grid item display="flex" justifyContent="center">
+                <Grid item display="flex" justifyContent="space-between" alignItems="center" width="100%" margin={2}>
                     <SelectCheckbox
                         title={i18next.t('notifications.notificationType')}
                         options={allNotifications}
@@ -200,9 +197,23 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                         getOptionId={({ type }) => type}
                         getOptionLabel={(option) => option.displayName()}
                         size="small"
+                        toUserProfile
                         isDraggableDisabled
-                        horizontalOrigin={156}
+                        horizontalOrigin={148}
                         overrideSx={{ bgcolor: 'red' }}
+                    />
+                    <FormControlLabel
+                        control={
+                            <Switch
+                                sx={{ m: 1 }}
+                                defaultChecked={preferences.darkMode}
+                                onChange={(_e, checked) => {
+                                    console.log({ checked });
+                                    setPreferences({ ...preferences, darkMode: checked });
+                                }}
+                            />
+                        }
+                        label=""
                     />
                 </Grid>
             </Grid>
