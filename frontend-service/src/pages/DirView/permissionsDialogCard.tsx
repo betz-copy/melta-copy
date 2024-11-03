@@ -48,7 +48,8 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             id="user-info-card"
             variant="outlined"
             sx={{
-                borderRadius: '12px',
+                borderRadius: '10px',
+                borderColor: 'primary',
                 margin: '5px 0',
                 width: '100%',
                 transition: 'ease-out 0.2s',

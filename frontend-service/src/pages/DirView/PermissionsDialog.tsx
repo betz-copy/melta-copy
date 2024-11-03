@@ -11,6 +11,7 @@ import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
+import { BorderRadius } from '../../utils/icons/boxIcons';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -61,6 +62,31 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     variant="h4"
                 />
             </DialogTitle>
+            <DialogActions sx={{ padding: '0 1.5rem' }}>
+                <Box display="flex" boxSizing="border-box" width="100%">
+                    <Box width="100%">
+                        <UserAutocomplete
+                            mode="external"
+                            value={searchedUser}
+                            label={i18next.t('userAutocomplete.searchLabel')}
+                            onChange={(_e, chosenUser) => setSearchedUser(chosenUser)}
+                            isError={false}
+                        />
+                    </Box>
+                    <Button
+                        color="primary"
+                        variant="text"
+                        onClick={() => {
+                            giveUserPermissionsToWorkspace();
+                            setSearchedUser(null);
+                            setDisplaySearchBar(false);
+                        }}
+                        disabled={!searchedUser}
+                    >
+                        {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                    </Button>
+                </Box>
+            </DialogActions>
             <DialogContent
                 sx={{
                     height: '50vh',
@@ -68,6 +94,7 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     justifyContent: isLoading ? 'center' : 'start',
                     alignItems: 'center',
                     flexDirection: 'column',
+                    margin: '0.5rem 0',
                 }}
             >
                 {/* eslint-disable-next-line no-nested-ternary */}
@@ -79,48 +106,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     <BlueTitle title={i18next.t('relationshipTemplateAutocomplete.noOptions')} component="h6" variant="h6" />
                 )}
             </DialogContent>
-            <DialogActions sx={{ width: '100%', flexDirection: 'row-reverse', justifyContent: 'end' }}>
-                {displaySearchBar ? (
-                    <>
-                        <IconButton>
-                            <RemoveCircle
-                                color="primary"
-                                fontSize="large"
-                                onClick={() => {
-                                    setSearchedUser(null);
-                                    setDisplaySearchBar(false);
-                                }}
-                            />
-                        </IconButton>
-                        <Box display="flex" flexDirection="row" width="100%">
-                            <Box width="100%">
-                                <UserAutocomplete
-                                    mode="external"
-                                    value={searchedUser}
-                                    onChange={(_e, chosenUser) => setSearchedUser(chosenUser)}
-                                    isError={false}
-                                />
-                            </Box>
-                            <Button
-                                color="primary"
-                                variant="text"
-                                onClick={() => {
-                                    giveUserPermissionsToWorkspace();
-                                    setSearchedUser(null);
-                                    setDisplaySearchBar(false);
-                                }}
-                                disabled={!searchedUser}
-                            >
-                                {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                            </Button>
-                        </Box>
-                    </>
-                ) : (
-                    <IconButton>
-                        <AddCircle color="primary" fontSize="large" onClick={() => setDisplaySearchBar(true)} />
-                    </IconButton>
-                )}
-            </DialogActions>
         </Dialog>
     );
 };
