@@ -10,6 +10,7 @@ import config from './config';
 import { getTemplatesWithFiles } from './clients/mongo/repository';
 
 const { rabbit } = config;
+let messageCount = 0;
 
 // This is a service that reads all entities who have a file in them in Neo4j and sends them to the RabbitMQ queue in order for the semantic search to work.
 // Should probably delete after.
@@ -30,6 +31,35 @@ const getFileProperties = (templateWithFiles: IMongoEntityTemplate[]) => {
     }, {});
 };
 
+const waitXSeconds = async () => {
+    console.log(`Begin waiting ${rabbit.asyncMsgWait / 1000} seconds`);
+    await new Promise<void>((res) => setTimeout(() => res(), rabbit.asyncMsgWait));
+    console.log(`Finished waiting ${rabbit.asyncMsgWait / 1000} seconds`);
+};
+
+const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId: string, fileProperties: string[]) => {
+    const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
+    console.log(`Files found in Neo ${JSON.stringify(filesInDb)}`);
+    const promises: Promise<any>[] = [];
+
+    for (const { _id, files } of filesInDb) {
+        const rabbitMessage = {
+            minioFileIds: files.flat(),
+            templateId,
+            entityId: _id,
+        };
+        console.log(`Sending to rabbit: ${JSON.stringify(rabbitMessage)}`);
+
+        if (messageCount !== 0 && messageCount % rabbit.asyncMsgAmount === 0) {
+            await Promise.all(promises);
+            await waitXSeconds();
+        }
+
+        promises.push(sendToQueue(rabbit.insertQueue, rabbitMessage, workspaceId));
+        messageCount++;
+    }
+};
+
 const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
     console.log(`Extracting from workspace ${workspaceId}`);
 
@@ -37,34 +67,14 @@ const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
 
     console.log(`Found ${templatesWithFiles.length} templates with files`);
 
-    const fileProperties = getFileProperties(templatesWithFiles as IMongoEntityTemplate[]);
+    const templateFileProperties = getFileProperties(templatesWithFiles as IMongoEntityTemplate[]);
 
-    console.log(`File properties of templates: ${JSON.stringify(fileProperties)}`);
+    console.log(`File properties of templates: ${JSON.stringify(templateFileProperties)}`);
 
-    return Object.entries(fileProperties).map(async ([templateId, fileProperties]) => {
-        const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
-        console.log(`Files found in Neo ${JSON.stringify(filesInDb)}`);
-
-        return filesInDb.map(({ _id, files }) => {
-            console.log(
-                `Sending to rabbit: ${JSON.stringify({
-                    minioFileIds: files.flat(),
-                    templateId,
-                    entityId: _id,
-                })}`,
-            );
-
-            return sendToQueue(
-                rabbit.insertQueue,
-                {
-                    minioFileIds: files.flat(),
-                    templateId,
-                    entityId: _id,
-                },
-                workspaceId,
-            );
-        });
-    });
+    for (const [index, [templateId, fileProperty]] of Object.entries(templateFileProperties).entries()) {
+        console.log(`Starting template: ${templateId} (${index} / ${Object.keys(templateFileProperties).length}) in workspace`);
+        await sendFilesToRabbit(driver, workspaceId, templateId, fileProperty);
+    }
 };
 
 const main = async () => {
@@ -72,8 +82,9 @@ const main = async () => {
 
     const workspaceIds = await WorkspaceService.getWorkspaceIds(WorkspaceTypes.mlt);
 
-    const result = await Promise.allSettled(workspaceIds.map((workspaceId) => extractFromWorkspace(driver, workspaceId)));
-    console.log(result);
+    for (const workspaceId of workspaceIds) {
+        await extractFromWorkspace(driver, workspaceId);
+    }
 };
 
 main().catch(console.error);

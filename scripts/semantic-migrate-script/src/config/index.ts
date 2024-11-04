@@ -41,6 +41,8 @@ const config = {
             retries: env.get('RABBIT_RETRY_RETRIES').default(10).asIntPositive(),
             factor: env.get('RABBIT_RETRY_FACTOR').default(1.8).asFloatPositive(),
         },
+        asyncMsgAmount: env.get('RABBIT_ASYNC_MSG_AMOUNT').default(100).asFloatPositive(),
+        asyncMsgWait: env.get('RABBIT_ASYNC_MSG_WAIT').default(10000).asFloatPositive(),
     },
     services: {
         workspacesUri: env.get('WORKSPACE_SERVICE_URL').default('http://workspace-service:8000').asString(),

@@ -22,7 +22,7 @@ export const listFilesInDB = async (
     workspaceId: string,
     templateId: string,
     fileProperties: string[],
-): Promise<{ _id: string; files: [] }[]> => {
+): Promise<{ _id: string; files: string[] }[]> => {
     const session = driver.session({ database: `${workspaceNamePrefix}${workspaceId}` });
 
     const listFilesQuery = `
