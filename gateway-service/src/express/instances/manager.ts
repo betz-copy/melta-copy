@@ -295,25 +295,33 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesBatch(searchBody: ISearchBatchBody) {
-        const semanticSearchBody = {
-            textSearch: searchBody.textSearch,
-            limit: searchBody.limit,
-            skip: searchBody.skip,
-            templates: Object.keys(searchBody.templates),
-        };
+        let entityIdsToInclude: string[] | undefined;
 
-        const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        if (searchBody.textSearch) {
+            const semanticSearchBody = {
+                textSearch: searchBody.textSearch,
+                limit: searchBody.limit,
+                skip: searchBody.skip,
+                templates: Object.keys(searchBody.templates),
+            };
+
+            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        }
 
         return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
     }
 
     async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody) {
-        const semanticSearchBody = {
-            textSearch: searchBody.textSearch,
-            templates: searchBody.templateIds,
-        };
+        let entityIdsToInclude: string[] | undefined;
 
-        const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        if (searchBody.textSearch) {
+            const semanticSearchBody = {
+                textSearch: searchBody.textSearch,
+                templates: searchBody.templateIds,
+            };
+
+            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        }
 
         return this.service.getEntitiesCountByTemplates({ ...searchBody, entityIdsToInclude });
     }
