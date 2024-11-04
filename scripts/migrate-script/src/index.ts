@@ -42,13 +42,22 @@ const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
     console.log(`File properties of templates: ${JSON.stringify(fileProperties)}`);
 
     return Object.entries(fileProperties).map(async ([templateId, fileProperties]) => {
-        const files = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
+        const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
+        console.log(`Files found in Neo ${JSON.stringify(filesInDb)}`);
 
-        return files.map(({ _id, files }) => {
+        return filesInDb.map(({ _id, files }) => {
+            console.log(
+                `Sending to rabbit: ${JSON.stringify({
+                    minioFileIds: files.flat(),
+                    templateId,
+                    entityId: _id,
+                })}`,
+            );
+
             return sendToQueue(
                 rabbit.insertQueue,
                 {
-                    minioFileIds: files,
+                    minioFileIds: files.flat(),
                     templateId,
                     entityId: _id,
                 },
