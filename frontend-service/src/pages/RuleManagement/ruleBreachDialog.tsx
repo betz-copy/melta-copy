@@ -184,7 +184,7 @@ const RuleBreachDialog: React.FC<{
                         </TabContext>
                     )}
                     {(ruleBreach?.actions?.length || 0) === 1 && (
-                        <Grid style={{ backgroundColor: '#F0F2F7', borderRadius: '10px', padding: '20px' }}>
+                        <Grid sx={{ borderRadius: '10px', padding: '20px' }}>
                             <ActionInfo
                                 actionType={ruleBreach.actions[0].actionType}
                                 actionMetadata={ruleBreach.actions[0].actionMetadata}
