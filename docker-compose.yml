@@ -132,8 +132,8 @@ services:
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
-  migrate-script:
-    build: './scripts/migrate-script'
+  semantic-migrate-script:
+    build: './scripts/semantic-migrate-script'
     environment:
       RABBIT_URL: ${RABBIT_URL}
       MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}

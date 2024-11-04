@@ -330,7 +330,7 @@ services:
     networks:
       - network
 
-  migrate-script:
+  semantic-migrate-script:
     restart: always
     networks:
       - network
