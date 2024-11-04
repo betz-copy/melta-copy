@@ -1,4 +1,4 @@
-import { Driver, Session } from 'neo4j-driver';
+import { Driver, Record, Session } from 'neo4j-driver';
 import { IEntity, normalizeReturnedEntity } from '../../utils/neo4j';
 import config from '../../config';
 
@@ -22,14 +22,23 @@ export const listFilesInDB = async (driver: Driver, workspaceId: string, templat
 
     const listFilesQuery = `
     MATCH (n)
-    WHERE $templateId IN labels(node)
-    RETURN n, ${fileProperties.join(', ')}
+    WHERE $templateId IN labels(n)
+    RETURN ${fileProperties.map((fileProperty) => `n.${fileProperty} as ${fileProperty}`).join(', ')}
     `;
     const records = await runCypherQuery(session, listFilesQuery, { templateId });
-    return normalizeReturnedEntity('multipleResponses')(records);
+    const kaki = [
+        ...new Set(
+            records
+                .map((record: Record) => {
+                    return (record as any)._fields[0];
+                })
+                .filter((fileId) => !!fileId),
+        ),
+    ];
+    return kaki;
 };
 
-export const runCypherQuery = async (session, cypherQuery, parameters = {}) => {
-    const result = await session.readTransaction((tx) => tx.run(cypherQuery, parameters));
+export const runCypherQuery = async (session, cypherQuery, normalizeFunction, parameters = {}) => {
+    const result = session.performTransaction('readTransaction', normalizeFunction, cypherQuery, parameters);
     return result?.records;
 };

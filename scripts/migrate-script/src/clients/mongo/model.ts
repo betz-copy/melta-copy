@@ -1,9 +1,7 @@
-import mongoose, { connection } from 'mongoose';
+import mongoose from 'mongoose';
 import config from '../../config';
 import { transformResultDocsObjectIdKeysToString } from '../../utils/mongo';
-import { IMongoEntityTemplate } from './interface';
 
-const { mongo } = config;
 export const EntityTemplateSchema = new mongoose.Schema(
     {
         name: {
@@ -63,11 +61,6 @@ export const EntityTemplateSchema = new mongoose.Schema(
     },
 );
 
-EntityTemplateSchema.index({ displayName: 'text' });
-
 EntityTemplateSchema.post(['find', 'findOne', 'findOneAndUpdate', 'findOneAndDelete'], (res) => {
     transformResultDocsObjectIdKeysToString(res);
 });
-
-export const initModelPerWorkspace = (workspaceId: string) =>
-    connection.useDb(workspaceId, { useCache: true }).model<IMongoEntityTemplate>(mongo.entityTemplatesCollectionName, EntityTemplateSchema);

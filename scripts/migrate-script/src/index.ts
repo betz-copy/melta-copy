@@ -1,6 +1,5 @@
 import { initializeRabbit } from './utils/rabbitmq';
 import { initializeMongo } from './utils/mongo';
-import { initModelPerWorkspace } from './clients/mongo/model';
 import { initializeNeo } from './utils/neo4j';
 import { WorkspaceService, WorkspaceTypes } from './services/workspace';
 import { IMongoEntityTemplate } from './clients/mongo/interface';
@@ -8,6 +7,7 @@ import { listFilesInDB } from './clients/neo4j';
 import { Driver } from 'neo4j-driver';
 import { sendToQueue } from './clients/rabbit/manager';
 import config from './config';
+import { initModelPerWorkspace } from './clients/mongo/initModelPerWorkspace';
 
 const { rabbit } = config;
 
@@ -36,10 +36,34 @@ const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
 
     const templatesWithFiles = await entityTemplateModel
         .find({
-            $or: [
-                { 'properties.properties': { $elemMatch: { format: 'fileId' } } },
-                { 'properties.properties': { $elemMatch: { 'items.format': 'fileId' } } },
-            ],
+            $expr: {
+                $or: [
+                    {
+                        $in: [
+                            'fileId',
+                            {
+                                $map: {
+                                    input: { $objectToArray: '$properties.properties' },
+                                    as: 'entry',
+                                    in: '$$entry.v.format',
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        $in: [
+                            'fileId',
+                            {
+                                $map: {
+                                    input: { $objectToArray: '$properties.properties' },
+                                    as: 'entry',
+                                    in: '$$entry.v.items.format',
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
         })
         .lean()
         .exec();
@@ -47,9 +71,10 @@ const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
     console.log(`Found ${templatesWithFiles.length} templates with files`);
 
     const fileProperties = getFileProperties(templatesWithFiles as IMongoEntityTemplate[]);
-
     console.log(`File properties of templates: ${JSON.stringify(fileProperties)}`);
+
     const files = await listFilesInDB(driver, workspaceId, Object.keys(fileProperties)[0], Object.values(fileProperties)[0]);
+    console.log({ files });
 
     return files.map((file) => {
         return sendToQueue(
@@ -69,7 +94,8 @@ const main = async () => {
 
     const workspaceIds = await WorkspaceService.getWorkspaceIds(WorkspaceTypes.mlt);
 
-    await Promise.allSettled(workspaceIds.map((workspaceId) => extractFromWorkspace(driver, workspaceId)));
+    const result = await Promise.allSettled(workspaceIds.map((workspaceId) => extractFromWorkspace(driver, workspaceId)));
+    console.log(result);
 };
 
 main().catch(console.error);
