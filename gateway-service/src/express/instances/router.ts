@@ -16,7 +16,7 @@ import {
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
-    searchEntitiesByTemplates,
+    getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -53,9 +53,9 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/count',
-    ValidateRequest(searchEntitiesByTemplates),
+    ValidateRequest(getEntitiesCountByTemplates),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
-    InstancesControllerMiddleware.searchEntitiesByTemplates,
+    InstancesControllerMiddleware.getEntitiesCountByTemplates,
 );
 
 InstancesRouter.post(

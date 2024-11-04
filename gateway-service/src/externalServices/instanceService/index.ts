@@ -102,7 +102,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesByTemplates(searchBody: ITemplateSearchBody & { entityIdsToInclude?: string[] }) {
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/count`, searchBody);
 
         return data;

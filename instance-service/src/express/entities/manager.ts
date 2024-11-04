@@ -684,13 +684,14 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '', entityIdsToInclude?: string[]) {
-        const entityIdMatch = entityIdsToInclude?.length ? `
+        const entityIdMatch = entityIdsToInclude?.length
+            ? `
             UNION
             MATCH (node)
             WHERE templateId IN labels(node) AND node._id IN $entityIdsToInclude
             RETURN node
         `
-        : '';
+            : '';
 
         const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch || '')}*`;
 
@@ -702,10 +703,14 @@ export class EntityManager extends DefaultManagerNeo4j {
                 RETURN node
                 ${entityIdMatch}
             }
-            RETURN templateId, count(node) as count, $entityIdsToInclude as entityIdsToInclude;
+            RETURN templateId, count(node) as count ${entityIdsToInclude?.length ? ', $entityIdsToInclude as entityIdsToInclude' : ''};
         `;
 
-        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, { templateIds, textSearchFixed, entityIdsToInclude });
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
+            templateIds,
+            textSearchFixed,
+            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
+        });
     }
 
     searchRelatedEntitiesOfEntitiesInTransaction(
