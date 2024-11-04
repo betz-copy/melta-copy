@@ -18,6 +18,7 @@ import { BackendConfigState, getBackendConfigRequest } from './services/backendC
 import { getMyUserRequest } from './services/userService';
 import { getById } from './services/workspacesService';
 import { useUserStore } from './stores/user';
+import { useDarkModeStore } from './stores/darkMode';
 
 const App: React.FC = () => {
     const [isLoadingUser, setIsLoadingUser] = useState(true);
@@ -38,6 +39,8 @@ const App: React.FC = () => {
 
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
+
+    const setDarkMode = useDarkModeStore((state) => state.setDarkMode);
 
     const { isError: isErrorBackendConfig } = useQuery<BackendConfigState>('getBackendConfig', getBackendConfigRequest, {
         onError: () => {
@@ -65,6 +68,7 @@ const App: React.FC = () => {
                 const isAdminRoot = (await Promise.all(adminWorkspaceIds.map((id) => getById(id)))).some((workspace) => workspace.path === '/');
                 user.isRoot = isAdminRoot;
                 setUser({ ...user, ...userFromDb });
+                if (userFromDb.preferences.darkMode) setDarkMode(true);
 
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);

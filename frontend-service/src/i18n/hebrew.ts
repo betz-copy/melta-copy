@@ -388,6 +388,11 @@ export default {
         email: 'מייל',
         jobTitle: 'תפקיד',
         hierarchy: 'היררכיה',
+        addFile: 'הוסף קובץ',
+        close: 'סגור',
+        cancel: 'ביטול שינויים',
+        edit: 'ערוך פרופיל',
+        done:'סיים',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',

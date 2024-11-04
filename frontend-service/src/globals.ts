@@ -232,6 +232,7 @@ export const environment = {
         height: '24px',
     },
     draftAutoSaveDebounce: 250,
+    profileIconsCount: 15,
     fileExtensions: {
         image: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'tiff', 'webp', 'ico', 'psd', 'raw', 'heif', 'indd', 'ai', 'eps'],
         video: ['mp4', 'mov', 'avi', 'wmv', 'flv', 'mkv', 'webm', 'avchd', '3gp', '3g2', '3gpp', '3gpp2', 'm4v'],

@@ -1,15 +1,14 @@
-import { Box, Button, Dialog, Grid, IconButton, Tab, useTheme } from '@mui/material';
-import _isEqual from 'lodash.isequal';
-import React, { ReactElement } from 'react';
-import i18next from 'i18next';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { useTour } from '@reactour/tour';
-import { useLocation } from 'wouter';
 import CloseIcon from '@mui/icons-material/Close';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Button, Dialog, Grid, IconButton, Tab, useTheme } from '@mui/material';
+import { useTour } from '@reactour/tour';
+import i18next from 'i18next';
+import React, { ReactElement } from 'react';
+import { useLocation } from 'wouter';
 import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
-import MyPermissions from './myPermissions';
 import MyAccount from './myAccount';
+import MyPermissions from './myPermissions';
 
 const PermissionsOfUserDialog: React.FC<{
     isOpen: boolean;
@@ -40,73 +39,69 @@ const PermissionsOfUserDialog: React.FC<{
             onClose={handleClose}
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', overflow: 'hidden' } }}
         >
-            <Box
-                sx={{
-                    width: '100%',
-                    height: '100%',
-                    padding: ' 0 20px 0px 20px',
-                }}
-            >
-                <IconButton
-                    aria-label="close"
-                    onClick={handleClose}
+            <IconButton onClick={handleClose} sx={{ position: 'absolute', right: 8, top: 8, zIndex: 99 }}>
+                <CloseIcon fontSize="medium" />
+            </IconButton>
+            {mode !== 'view' ? (
+                <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />
+            ) : (
+                <Box
                     sx={{
-                        position: 'absolute',
-                        right: 7,
-                        top: 3,
+                        width: '100%',
+                        height: '100%',
+                        padding: '0 20px 0px 20px',
                     }}
                 >
-                    <CloseIcon fontSize="medium" />
-                </IconButton>
-                <TabContext value={tabValue}>
-                    <Grid container direction="column">
-                        <Grid item>
-                            <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
-                                {Object.keys(tabsComponentsMapping).map((tabName) => (
-                                    <Tab
-                                        key={tabName}
-                                        label={i18next.t(tabName)}
-                                        value={tabName}
-                                        wrapped
-                                        style={{
-                                            fontWeight: tabValue === tabName ? '600' : '400',
-                                            fontSize: '16px',
-                                            fontFamily: 'Rubik',
-                                        }}
-                                        sx={{
-                                            borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
-                                        }}
-                                    />
-                                ))}
-                            </TabList>
+                    <TabContext value={tabValue}>
+                        <Grid container direction="column">
+                            <Grid item>
+                                <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
+                                    {Object.keys(tabsComponentsMapping).map((tabName) => (
+                                        <Tab
+                                            key={tabName}
+                                            label={i18next.t(tabName)}
+                                            value={tabName}
+                                            wrapped
+                                            style={{
+                                                fontWeight: tabValue === tabName ? '600' : '400',
+                                                fontSize: '16px',
+                                                fontFamily: 'Rubik',
+                                            }}
+                                            sx={{
+                                                borderBottom: tabValue === tabName ? `2px solid ${theme.palette.primary.main}` : '',
+                                            }}
+                                        />
+                                    ))}
+                                </TabList>
+                            </Grid>
+                            <Grid item>
+                                {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
+                                    return (
+                                        <TabPanel key={tabName} value={tabName}>
+                                            {tabComponent}
+                                        </TabPanel>
+                                    );
+                                })}
+                            </Grid>
                         </Grid>
-                        <Grid item>
-                            {Object.entries(tabsComponentsMapping).map(([tabName, tabComponent]) => {
-                                return (
-                                    <TabPanel key={tabName} value={tabName}>
-                                        {/* {tabsPermissionsMapping[tabName] ? tabComponent : <NoPermissions />}  */}
-                                        {tabComponent}
-                                    </TabPanel>
-                                );
-                            })}
-                        </Grid>
+                    </TabContext>
+
+                    <Grid display="flex" sx={{ position: 'absolute', bottom: 9, left: 10 }}>
+                        {mode === 'view' && (
+                            <Button
+                                onClick={() => {
+                                    handleClose();
+                                    setIsOpen(true);
+                                    setCurrentStep(0);
+                                    navigate('?search=&viewMode=templates-tables-view');
+                                }}
+                            >
+                                {i18next.t('showTour')}
+                            </Button>
+                        )}
                     </Grid>
-                </TabContext>
-                <Grid display="flex" sx={{ position: 'absolute', bottom: 9, left: 10 }}>
-                    {mode === 'view' && (
-                        <Button
-                            onClick={() => {
-                                handleClose();
-                                setIsOpen(true);
-                                setCurrentStep(0);
-                                navigate('?search=&viewMode=templates-tables-view');
-                            }}
-                        >
-                            {i18next.t('showTour')}
-                        </Button>
-                    )}
-                </Grid>
-            </Box>
+                </Box>
+            )}
         </Dialog>
     );
 };

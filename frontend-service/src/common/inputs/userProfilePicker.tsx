@@ -1,40 +1,31 @@
-import React, { useState } from 'react';
-import { Grid, ToggleButtonGroup, ToggleButton, Avatar, Box, Tooltip, IconButton } from '@mui/material';
+import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
-import FileInput from './ImageFileInput';
+import React, { useEffect, useState } from 'react';
 import fileDetails from '../../interfaces/fileDetails';
-import UserAvatar, { getNameInitials } from '../UserAvatar';
 import { IUser } from '../../interfaces/users';
+import { getFileName } from '../../utils/getFileName';
+import FileInput from './ImageFileInput';
+import { environment } from '../../globals';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
 export interface UserProfilePickerProps {
-    image?: string;
+    imageName?: string;
     onPick: (profileImage: fileDetails | string | undefined) => void;
     onDelete: () => void;
     defaultInputType?: InputSelectType;
     kartoffelProfile?: string;
     user: IUser;
 }
-const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
+const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
+    console.log({ imageName });
 
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
     const [iconPickerValue, setIconPickerValue] = useState<string>();
+    const [image, setImage] = useState<{ name: string } | undefined>(undefined);
+    const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `/icons/profileAvatar/avatar${index}.png`);
 
-    const iconPaths = [
-        '/icons/profileAvatar/c.png',
-        '/icons/profileAvatar/avatar1.png',
-        '/icons/profileAvatar/avatar2.png',
-        '/icons/profileAvatar/avatar3.png',
-        '/icons/profileAvatar/avatar4.png',
-        '/icons/profileAvatar/avatar5.png',
-        '/icons/profileAvatar/avatar6.png',
-        '/icons/profileAvatar/avatar7.png',
-        '/icons/profileAvatar/avatar8.png',
-        '/icons/profileAvatar/avatar9.png',
-        '/icons/profileAvatar/avatar10.png',
-    ];
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
         setInputType(selected);
@@ -55,6 +46,10 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
         setSelectedIcon(iconPath ?? null);
         onPick(iconPath);
     };
+
+    useEffect(() => {
+        if (imageName) setImage({ name: getFileName(imageName) });
+    }, []);
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
@@ -104,13 +99,9 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
                                         height: 50,
                                         cursor: 'pointer',
                                         boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
-                                        border: !selectedIcon ? '1px solid green' : '',
+                                        border: !selectedIcon ? '10px solid white' : '',
                                     }}
                                     onClick={() => {
-                                        console.log('egegegegeegrerf', { selectedIcon });
-
-                                        console.log('11', selectedIcon);
-
                                         handleAvatarClick(undefined);
                                     }}
                                 />
@@ -122,22 +113,23 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ image, onPick, on
             {inputType === 'chooseFile' && (
                 <Grid item>
                     <FileInput
-                        fileFieldName="icon"
+                        fileFieldName="profileFile"
                         onDropFile={(acceptedFile) => {
                             const detailedFile = { file: acceptedFile, name: acceptedFile.name };
                             setFileInputValue(detailedFile);
-                            console.log('1');
-
+                            setImage({ name: detailedFile.name });
                             onPick(detailedFile);
-                            console.log('2');
                         }}
                         onDeleteFile={() => {
                             setFileInputValue(undefined);
+                            setImage(undefined);
                             onDelete();
                         }}
-                        file={{ name: image }}
-                        inputText={i18next.t('wizard.file')}
-                        acceptedFilesTypes={{ 'image/png': ['.svg', '.png'] }}
+                        file={image}
+                        inputText={i18next.t('user.addFile')}
+                        acceptedFilesTypes={{ 'image/png': ['.svg', '.png', '.jpeg'] }}
+                        disableCamera
+                        profileImageFile
                     />
                 </Grid>
             )}

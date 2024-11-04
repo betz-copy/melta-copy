@@ -39,39 +39,39 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
                     console.log({ icon }, icon.src);
                     setProfile(icon.src);
                 }
-                // if (user.preferences.profilePath) {
-                //     if (user.preferences.profilePath.startsWith('/icons/profileAvatar') || user.preferences.profilePath.startsWith('http://')) {
-                //         setProfile(user.preferences.profilePath);
-                //     } else {
-                //         const icon = new Image();
-                //         icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${user.preferences.profilePath}`, 'users-global-bucket');
-                //         console.log({ icon }, icon.src);
-
-                //         setProfile(icon.src);
-                //     }
-                // }
             };
             getUserProfile();
         }
-    }, []);
+    }, [defaultProfile, user.preferences.profilePath]);
 
     return (
         <Avatar
             sx={{
                 height: size,
                 width: size,
-                maxWidth: '100%',
-                padding: '0.5rem',
-                font: `${Math.round(size / 2)}px Rubik`,
-                fontSize: Math.round(size / 2),
                 backgroundColor: bgColor ?? '#fcfeff',
-                fontWeight: 500,
                 color: fontColor,
                 boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                overflow: 'hidden',
+                maxWidth: '100%',
+                font: `${Math.round(size / 2)}px Rubik`,
+                fontSize: Math.round(size / 2),
+                fontWeight: 500,
             }}
-            src={profile}
         >
-            {getNameInitials(user)}
+            {profile ? (
+                <div
+                    style={{
+                        backgroundImage: `url(${profile})`,
+                        backgroundSize: 'cover',
+                        backgroundPosition: 'center',
+                        height: '100%',
+                        width: '100%',
+                    }}
+                />
+            ) : (
+                getNameInitials(user)
+            )}
         </Avatar>
     );
 };

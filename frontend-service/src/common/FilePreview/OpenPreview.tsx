@@ -46,6 +46,8 @@ const OpenPreview: React.FC<{
     download?: boolean;
 }> = ({ fileId, img, showText = true, download }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
+    console.log({ fileName });
+
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 

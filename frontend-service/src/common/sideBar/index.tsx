@@ -1,23 +1,24 @@
-import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import {
-    Add as PlusIcon,
-    Air as FluidSimulationIcon,
     CalendarMonth as CalendarIcon,
+    MeetingRoom as ExitIcon,
+    Air as FluidSimulationIcon,
     Gavel as GavelIcon,
     Hive as HiveIcon,
     ManageAccounts as ManageAccountsIcon,
-    MeetingRoom as ExitIcon,
+    Add as PlusIcon,
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
 import LinkIcon from '@mui/icons-material/Link';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
+import { searchIFrames } from '../../services/iFramesService';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
@@ -27,7 +28,6 @@ import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
-import { searchIFrames } from '../../services/iFramesService';
 import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
@@ -35,7 +35,6 @@ import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
-import { SwitchThemeButton } from './SwitchThemeButton';
 import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
@@ -50,7 +49,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
@@ -222,17 +220,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             </Grid>
                         )}
                     </Grid>
-
-                    {(meltaPlus || darkMode) && (
-                        <Grid container item marginTop="1rem" width="90%" justifyContent="center">
-                            <SwitchThemeButton
-                                text={i18next.t('sideBar.changeTheme')}
-                                isDrawerOpen={isDrawerOpen}
-                                darkMode={darkMode}
-                                onClick={toggleDarkMode}
-                            />
-                        </Grid>
-                    )}
                 </Grid>
 
                 <Grid

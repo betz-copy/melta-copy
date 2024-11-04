@@ -52,7 +52,7 @@ export const updateUserPreferencesMetadataRequest = async (
     }
 
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
-    formData.append('darkMode', JSON.stringify(updatedPreferences.darkMode));
+    formData.append('darkMode', JSON.stringify(updatedPreferences.darkMode ?? false));
 
     console.log('formData', ...formData);
 

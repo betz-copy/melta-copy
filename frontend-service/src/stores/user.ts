@@ -43,9 +43,7 @@ export const useUserStore = create<UserState>((set) => ({
         hierarchy: '',
         mail: '',
         profile: '',
-        preferences: {
-            darkMode: false,
-        },
+        preferences: {},
         externalMetadata: {
             kartoffelId: '',
             digitalIdentitySource: '',

@@ -12,6 +12,7 @@ import { getFileName } from '../../utils/getFileName';
 
 interface FileInputProps {
     file: Partial<File> | { name: string } | undefined;
+    fileName?: string;
     onDeleteFile: MouseEventHandler;
     onDropFile: (acceptedFile: File) => void;
     inputText: string;
@@ -19,9 +20,19 @@ interface FileInputProps {
     fileFieldName?: string;
     errorText?: string;
     disableCamera?: boolean;
+    profileImageFile?: boolean;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText, disableCamera = false }) => {
+const FileInput: React.FC<FileInputProps> = ({
+    file,
+    onDeleteFile,
+    onDropFile,
+    inputText,
+    acceptedFilesTypes,
+    errorText,
+    disableCamera = false,
+    profileImageFile,
+}) => {
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -36,6 +47,7 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
     const onDrop = (acceptedFiles: File[]) => {
         onDropFile(acceptedFiles[0]);
     };
+
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: acceptedFilesTypes,
@@ -60,7 +72,6 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         };
     }, []);
 
-
     const onCameraClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
         event.stopPropagation();
         try {
@@ -84,8 +95,9 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         alignItems: 'center',
         cursor: 'pointer',
     };
+    console.log({ file });
 
-    const isFileFromInput = useMemo(() => file instanceof File, [file]);
+    const isFileFromInput = useMemo(() => file instanceof File || profileImageFile, [file]);
 
     return (
         <>

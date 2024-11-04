@@ -36,7 +36,7 @@ export type MenuItemContentProps<Option = any> = {
     group?: boolean;
     insideGroup?: boolean;
     option?: Option;
-    showIcon: boolean;
+    showIcon?: boolean;
 };
 
 export const MenuItemContent: React.FC<MenuItemContentProps> = ({
@@ -90,7 +90,6 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                                 lineHeight: '17px',
                                 letterSpacing: '0em',
                                 textAlign: 'right',
-                                color: '#101440',
                                 width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
@@ -170,7 +169,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     menuItemSx?: SxProps<Theme>;
     insideGroup?: boolean;
     handleOnDragEnd?: (result: DropResult) => void;
-    showIcon: boolean;
+    showIcon?: boolean;
 }) => {
     const isOptionChecked = (option: Option) => selectedOptions?.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 
@@ -626,11 +625,6 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontSize: '14px',
                     fontWeight: 400,
                     boxShadow: toUserProfile ? '0px 4px 15px rgba(0,0,0,0.2)' : 'none',
-                    // eslint-disable-next-line no-nested-ternary
-                    '& .MuiOutlinedInput-notchedOutline': {
-                        display: 'none',
-                    },
-                    background: toTopBar ? '#EBEFFA' : '#FFFFFF',
                     // eslint-disable-next-line no-nested-ternary
                     borderRadius: '8px',
                     ...(darkMode

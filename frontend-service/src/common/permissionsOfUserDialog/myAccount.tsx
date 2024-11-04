@@ -1,21 +1,20 @@
-import { Avatar, Button, Checkbox, Divider, FormControlLabel, Grid, Switch, Typography } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
+import { Button, Divider, Grid, Typography } from '@mui/material';
 import { AxiosError } from 'axios';
-import { useMutation } from 'react-query';
 import i18next from 'i18next';
 import isEqual from 'lodash/isEqual';
-import { IUser } from '../../interfaces/users';
-import { NotificationType } from '../../interfaces/notifications';
+import React, { useEffect, useState } from 'react';
+import { useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { getKartoffelUseByIdRequest, updateUserPreferencesMetadataRequest } from '../../services/userService';
-import { UserProfilePicker } from '../inputs/userProfilePicker';
 import { IKartoffelUser } from '../../interfaces/kartoffel';
-import { apiUrlToImageSource } from '../../services/storageService';
-import { SelectCheckbox } from '../SelectCheckbox';
-import UserAvatar, { getNameInitials } from '../UserAvatar';
-import { getFileName } from '../../utils/getFileName';
-import { DayNightSwitch } from '../inputs/DayNightSwitch';
+import { IUser } from '../../interfaces/users';
+import { getKartoffelUseByIdRequest, updateUserPreferencesMetadataRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { SelectCheckbox } from '../SelectCheckbox';
+import UserAvatar from '../UserAvatar';
+import { DayNightSwitch } from '../inputs/DayNightSwitch';
+import { UserProfilePicker } from '../inputs/userProfilePicker';
 
 const { notificationsMoreData } = environment.notifications;
 
@@ -37,12 +36,12 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     const [kartoffelUser, setKartoffelUser] = useState<IKartoffelUser>();
     const [editProfile, setEditProfile] = useState(false);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
-    const [imageName, setImageName] = useState('');
     const [isDataUpdated, setIsDataUpdated] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(preferences.darkMode ?? false);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
-    console.log({ darkMode });
+    const currentUser = useUserStore((state) => state.user);
+    const setUser = useUserStore((state) => state.setUser);
 
     const userDetailsMap: { [key: string]: string | boolean | undefined } = {
         fullName: existingUser.fullName,
@@ -65,14 +64,6 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     }, [existingUser]);
 
     useEffect(() => {
-        const fileName = existingUser.preferences.profilePath ? getFileName(existingUser.preferences.profilePath) : '';
-        console.log({ fileName }, existingUser.preferences.profilePath);
-
-        setImageName(isProfileFileType(preferences.profilePath) ? fileName : '');
-        console.log({ imageName });
-    }, []);
-
-    useEffect(() => {
         const arePreferencesChange = !isEqual(preferences, existingUser.preferences);
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
         const areNotificationsUpdated = !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
@@ -84,9 +75,22 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     const { isLoading, mutateAsync } = useMutation(
         (id: string) => updateUserPreferencesMetadataRequest(id, preferences, notificationsToShowCheckbox),
         {
-            onSuccess: (data) => {
-                // if (onSuccessUpdate) onSuccessUpdate(data);
+            onSuccess: (updatedUser: IUser) => {
+                if (!existingUser) return;
+
+                if (existingUser?._id === currentUser._id) {
+                    console.log(currentUser, preferences);
+
+                    setUser({
+                        ...currentUser,
+                        preferences: updatedUser.preferences,
+                    });
+                }
+
+                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
+                handleClose();
             },
+
             onError: (err: AxiosError) => {
                 console.log({ err });
                 // const errorMetadata = handleMutationError(err, entityTemplate);
@@ -106,19 +110,17 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     return (
         <>
             <Grid container spacing={2} style={{ padding: '15px', marginTop: '0.2px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                <Grid container item display="flex" flexDirection="row" width="100%" xs={12} padding={2}>
+                <Grid container item display="flex" width="100%" xs={12} padding={2}>
                     <Grid item xs={6}>
-                        <UserAvatar user={existingUser} size={65} />
-                    </Grid>
+                        <UserAvatar user={existingUser} size={100} />
 
-                    <Grid item xs={6}>
                         <Button
                             onClick={() => {
                                 setEditProfile(!editProfile);
                             }}
-                            sx={{ justifyContent: 'end' }}
+                            sx={{ color: darkMode ? 'white' : 'black', paddingTop: '12px' }}
                         >
-                            {editProfile ? 'סגור' : 'עריכת פרופיל'}
+                            {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
                         </Button>
 
                         {editProfile && (
@@ -136,9 +138,9 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                                     setPreferences(updatedPreferences);
                                     setEditProfile(!editProfile);
                                 }}
-                                sx={{ justifyContent: 'center' }}
+                                sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', paddingTop: '13px' }}
                             >
-                                ביטול שינויים
+                                {i18next.t('user.cancel')}
                             </Button>
                         )}
                     </Grid>
@@ -148,26 +150,22 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                             <UserProfilePicker
                                 user={existingUser}
                                 onPick={(value: any) => {
-                                    console.log('3', { value });
-
                                     if (!existingUser) return;
                                     if (!value) {
+                                        console.log('no value ');
+
                                         setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
                                     } else if (value.file) {
                                         setPreferences({ ...preferences, icon: value, profilePath: undefined });
-                                        setImageName(value.name);
                                     } else {
                                         setPreferences({ ...preferences, icon: undefined, profilePath: value });
                                     }
-                                    console.log('4');
                                 }}
                                 onDelete={() => {
-                                    console.log('lllllllllllllllllllllllllllllllllllllllllllll');
-                                    setImageName('');
                                     setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
                                 }}
                                 kartoffelProfile={kartoffelUser?.pictures?.profile?.url}
-                                image={imageName}
+                                imageName={isProfileFileType(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                                 defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                             />
                         </Grid>
@@ -192,28 +190,31 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                     </>
                 ))}
 
-                <Grid item display="flex" justifyContent="space-around" alignItems="center" width="100%" margin={0}>
-                    <SelectCheckbox
-                        title={i18next.t('notifications.notificationType')}
-                        options={allNotifications}
-                        selectedOptions={notificationsToShowCheckbox}
-                        setSelectedOptions={setNotificationsToShowCheckbox}
-                        getOptionId={({ type }) => type}
-                        getOptionLabel={(option) => option.displayName()}
-                        size="small"
-                        toUserProfile
-                        isDraggableDisabled
-                        horizontalOrigin={148}
-                    />
-
-                    <DayNightSwitch
-                        checked={darkMode}
-                        onClick={() => {
-                            setIsDarkMode(!isDarkMode);
-                            setPreferences({ ...preferences, darkMode: !isDarkMode });
-                            toggleDarkMode();
-                        }}
-                    />
+                <Grid container item display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                    <Grid item marginLeft={1}>
+                        <SelectCheckbox
+                            title={i18next.t('notifications.notificationType')}
+                            options={allNotifications}
+                            selectedOptions={notificationsToShowCheckbox}
+                            setSelectedOptions={setNotificationsToShowCheckbox}
+                            getOptionId={({ type }) => type}
+                            getOptionLabel={(option) => option.displayName()}
+                            size="small"
+                            toUserProfile
+                            isDraggableDisabled
+                            horizontalOrigin={148}
+                        />
+                    </Grid>
+                    <Grid item marginRight={2}>
+                        <DayNightSwitch
+                            checked={darkMode}
+                            onClick={() => {
+                                setIsDarkMode(!isDarkMode);
+                                setPreferences({ ...preferences, darkMode: !isDarkMode });
+                                toggleDarkMode();
+                            }}
+                        />
+                    </Grid>
                 </Grid>
             </Grid>
             <Grid padding={2}>
@@ -231,7 +232,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                         bottom: 3,
                     }}
                 >
-                    סיים
+                    {i18next.t('user.done')}
                 </Button>
             </Grid>
         </>

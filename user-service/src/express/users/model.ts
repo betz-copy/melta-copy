@@ -30,9 +30,11 @@ const UserSchema = new mongoose.Schema(
         preferences: {
             darkMode: {
                 type: Boolean,
+                default: false,
             },
             mailsNotificationsTypes: {
-                type: [],
+                type: [String],
+                default: [],
             },
             profilePath: {
                 type: String,

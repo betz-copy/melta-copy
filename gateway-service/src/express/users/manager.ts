@@ -126,10 +126,8 @@ export class UsersManager {
         const user = await UserService.getUserById(userId);
         console.log('got the user ', { user });
 
-        const { _id, displayName, permissions, existingDigitalIdentitySource, ...digitalIdentity } = await this.getExternalUserDigitalIdentity(
-            user.externalMetadata.kartoffelId,
-            user.externalMetadata.digitalIdentitySource,
-        );
+        const { _id, displayName, permissions, preferences, existingDigitalIdentitySource, ...digitalIdentity } =
+            await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
         console.log('pass the validate');
@@ -182,7 +180,6 @@ export class UsersManager {
         const mail = digitalIdentity.mail || kartoffelUser.mail;
 
         const kartoffelId = kartoffelUser._id || kartoffelUser.id;
-        const profile = kartoffelUser.pictures?.profile?.url;
         if (!digitalIdentity.source || !kartoffelId) throw new KartoffelUserMissingDataError(kartoffelUser._id);
 
         const existingUser = await UserService.getUserByExternalId(kartoffelId).catch(() => ({}) as IUser);
@@ -194,16 +191,11 @@ export class UsersManager {
             jobTitle,
             mail,
             displayName: `[${digitalIdentity.source}] ${fullName} - ${hierarchy}/${jobTitle}`,
-            profile,
             externalMetadata: {
                 kartoffelId,
                 digitalIdentitySource: digitalIdentity.source,
             },
-            preferences: {
-                mailsNotificationsTypes: [],
-                // darkMode: false,
-                profilePath: profile,
-            },
+            preferences: existingUser.preferences,
             permissions: existingUser.permissions || {},
             existingDigitalIdentitySource: existingUser.externalMetadata?.digitalIdentitySource,
         };

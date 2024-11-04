@@ -29,7 +29,7 @@ const MyPermissions: React.FC<{
     mode: 'create' | 'edit' | 'view';
     existingUser?: IUser;
     onSuccess?: (user?: IUser) => void;
-}> = ({ handleClose, mode, existingUser }) => {
+}> = ({ handleClose, mode, existingUser, onSuccess }) => {
     const currentUser = useUserStore((state) => state.user);
     const setUser = useUserStore((state) => state.setUser);
     const workspace = useWorkspaceStore((state) => state.workspace);
@@ -343,7 +343,8 @@ const MyPermissions: React.FC<{
                                 />
                             </Box>
                         </DialogContent>
-                        <DialogActions>
+
+                        <DialogActions sx={{ direction: 'rtl', marginRight: '1rem', marginBottom: '0.5rem' }}>
                             <Grid container justifyContent="space-between">
                                 <Grid>
                                     {mode !== 'view' && (
