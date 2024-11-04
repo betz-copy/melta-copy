@@ -1,12 +1,15 @@
 import { Driver, Session } from 'neo4j-driver';
+import { IEntity, normalizeReturnedEntity } from '../../utils/neo4j';
 
-export const getEntitiesByTemplate = async (session: Session, templateId: string): Promise<any[]> => {
+export const getEntitiesByTemplate = async (session: Session, templateId: string): Promise<IEntity[]> => {
     const getEntitiesByTemplateQuery = `
     MATCH (n)
     WHERE n.templateId = $templateId
     RETURN n
     `;
-    return runCypherQuery(session, getEntitiesByTemplateQuery, { templateId });
+    const records = await runCypherQuery(session, getEntitiesByTemplateQuery, { templateId });
+
+    return normalizeReturnedEntity('multipleResponses')(records);
 };
 
 export const listDatabases = async (session: Session): Promise<any[]> => {

@@ -1,6 +1,11 @@
 import config from '../config';
-import neo4j, { Driver, Session, SessionMode, Transaction } from 'neo4j-driver';
+import Neo4j, { Node, QueryResult } from 'neo4j-driver';
+import { fromZonedTime } from 'date-fns-tz';
 
+export interface IEntity {
+    templateId: string;
+    properties: Record<string, any>;
+}
 const {
     neo4j: { url, auth },
 } = config;
@@ -14,120 +19,62 @@ export const initializeNeo = async () => {
     return driver;
 };
 
-const { url, auth, connectionRetries, connectionRetryDelay, workspaceNamePrefix } = config.neo4j;
+type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleResponses';
+type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
+    ? Data | null
+    : ResType extends 'singleResponseNotNullable'
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
-type TransactionType = 'writeTransaction' | 'readTransaction';
-type TransactionWork<T> = (tx: Transaction) => Promise<T> | T;
+export const formatDate = (date: string) => {
+    return date.slice(0, 10);
+};
 
-export default class Neo4jClient {
-    private static driver: Driver;
+const normalizeFields = (properties: Record<string, any>): Record<string, any> => {
+    const props = {};
 
-    private static isInitialized: boolean = false;
-
-    private database: string;
-
-    constructor(workspaceId: string) {
-        this.database = `${workspaceNamePrefix}${workspaceId}`;
-    }
-
-    static async initialize() {
-        Neo4jClient.driver = neo4j.driver(url, neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true });
-
-        await Neo4jClient.verifyConnectivity();
-
-        console.log('[NEO4J]: client initialized');
-
-        Neo4jClient.isInitialized = true;
-    }
-
-    private createSession(defaultAccessMode?: SessionMode): Session {
-        return Neo4jClient.driver.session({ database: this.database, defaultAccessMode });
-    }
-
-    private async closeSession(session: Session) {
-        try {
-            await session.close();
-        } catch (err) {
-            console.error('Failed to close session. Possible leak, Error:', { err });
+    Object.entries(properties).forEach(([key, value]) => {
+        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
+            return;
         }
-    }
 
-    async wrapDBNotExistsError<T>(func: (session: Session) => Promise<T>, defaultAccessMode?: SessionMode): Promise<T> {
-        const session = this.createSession(defaultAccessMode);
+        if (value instanceof Neo4j.types.LocalDateTime) {
+            props[key] = fromZonedTime(new Date(value.toString()), 'Asia/Jerusalem').toISOString();
 
-        try {
-            const result = await func(session);
-            await this.closeSession(session);
-            return result;
-        } catch (err) {
-            await this.closeSession(session);
-
-            // Check if the error is caused by non-existing database
-            if (err instanceof Neo4jError && err.code === 'Neo.ClientError.Database.DatabaseNotFound') {
-                // Create the db if it doesn't exist
-                const newWorkspaceSession = Neo4jClient.driver.session();
-                await newWorkspaceSession.run(`CREATE DATABASE \`${this.database}\` IF NOT EXISTS`).catch(() => {});
-                await newWorkspaceSession.close();
-
-                const newSession = this.createSession();
-
-                // Retry
-                const result = await func(newSession);
-                await this.closeSession(newSession);
-                return result;
-            }
-
-            // Throw the error if it's not caused by non-existing database
-            throw err;
+            return;
         }
-    }
 
-    async readTransaction(cypherQuery: string, parameters = {}) {
-        return this.performTransaction('readTransaction', cypherQuery, parameters);
-    }
+        if (value instanceof Neo4j.types.Date) {
+            props[key] = formatDate(value.toString());
 
-    async writeTransaction(cypherQuery: string, parameters = {}) {
-        return this.performTransaction('writeTransaction', cypherQuery, parameters);
-    }
+            return;
+        }
 
-    private async performTransaction(transactionType: TransactionType, cypherQuery: string, parameters: Record<string, any>) {
-        return this.wrapDBNotExistsError((session) => session[transactionType]((tx) => tx.run(cypherQuery, parameters)));
-    }
+        props[key] = value;
+    });
 
-    async performComplexTransaction<T>(transactionType: TransactionType, transactionWork: TransactionWork<T>) {
-        return this.wrapDBNotExistsError(
-            async (session) => {
-                const trx = session.beginTransaction();
-                const result = await transactionWork(trx);
+    return props;
+};
 
-                await trx.commit();
+const nodeToEntity = (node: Node): IEntity => {
+    const entity = {
+        templateId: node.labels[0],
+        properties: normalizeFields(node.properties),
+    };
 
-                return result;
-            },
-            transactionType === 'readTransaction' ? 'READ' : 'WRITE',
-        );
-    }
+    return entity;
+};
 
-    async runInTransactionAndNormalize<T>(
-        transaction: Transaction,
-        cypherQuery: string,
-        normalizeFunction: (queryResult: QueryResult) => T,
-        parameters?: Record<string, any>,
-    ): Promise<T> {
-        const result = await transaction.run(cypherQuery, parameters);
+export const normalizeReturnedEntity =
+    <T extends ResponseType>(response: T) =>
+    (records: QueryResult['records']): Response<T, IEntity> => {
+        const entities = records.map((record) => nodeToEntity(record.get(0) as Node));
 
-        return normalizeFunction(result);
-    }
+        if (response === 'singleResponse' || response === 'singleResponseNotNullable') {
+            return (entities.length > 0 ? entities[0] : null) as Response<T, IEntity>;
+        }
 
-    static async close() {
-        if (this.isInitialized) await Neo4jClient.driver.close();
-    }
-
-    static async verifyConnectivity() {
-        await retry(() => this.driver.verifyConnectivity(), {
-            retries: connectionRetries,
-            delay: connectionRetryDelay,
-            logger: logger.info.bind(logger),
-        });
-    }
-}
+        return entities as Response<T, IEntity>;
+    };

@@ -18,12 +18,14 @@
   "author": "Alexander Gurevich",
   "license": "ISC",
   "dependencies": {
+    "date-fns-tz": "^3.2.0",
     "env-var": "^7.5.0",
     "lodash.foreach": "^4.5.0",
     "menashmq": "^0.1.6",
     "minio": "^8.0.2",
     "mongoose": "^8.8.0",
-    "neo4j-driver": "^5.26.0"
+    "neo4j-driver": "^5.26.0",
+    "ts-retry-promise": "^0.8.1"
   },
   "devDependencies": {
     "@types/mongoose": "^5.11.96",
