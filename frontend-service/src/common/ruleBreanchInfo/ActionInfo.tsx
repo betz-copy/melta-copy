@@ -250,7 +250,7 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                     <EntityLink
                         entity={entity}
                         entityTemplate={entityTemplate}
-                        linkable={!entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                        linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
                         entityPropertiesToHighlightTooltip={failedProperties}
                         entityPropertiesToHighlightColor="red"
                     />
