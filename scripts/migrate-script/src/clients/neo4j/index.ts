@@ -1,15 +1,13 @@
-import Neo4j, { Driver, Session } from "neo4j-driver";
-import config from "../config";
-const { neo4j: { url, auth } } = config;
+import { Driver, Session } from 'neo4j-driver';
 
-export const initializeNeo = async() => {
-    const driver = Neo4j.driver(url, Neo4j.auth.basic(auth.username, auth.password), { disableLosslessIntegers: true });
-
-    await driver.verifyConnectivity();
-
-    console.log('[NEO4J]: client initialized');
-    return driver;
-}
+export const getEntitiesByTemplate = async (session: Session, templateId: string): Promise<any[]> => {
+    const getEntitiesByTemplateQuery = `
+    MATCH (n)
+    WHERE n.templateId = $templateId
+    RETURN n
+    `;
+    return runCypherQuery(session, getEntitiesByTemplateQuery, { templateId });
+};
 
 export const listDatabases = async (session: Session): Promise<any[]> => {
     const listDatabasesQuery = 'SHOW DATABASES';
@@ -25,7 +23,6 @@ export const listFilesInDB = async (driver: Driver, DbName: string): Promise<any
     `;
     return runCypherQuery(session, listFilesQuery);
 };
-
 
 export const runCypherQuery = async (session, cypherQuery, parameters = {}) => {
     const result = await session.readTransaction((tx) => tx.run(cypherQuery, parameters));
