@@ -1,5 +1,4 @@
-import { AddCircle, RemoveCircle } from '@mui/icons-material';
-import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, useTheme } from '@mui/material';
+import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -11,7 +10,6 @@ import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
-import { BorderRadius } from '../../utils/icons/boxIcons';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -23,7 +21,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
 
     const queryClient = useQueryClient();
 
-    const [displaySearchBar, setDisplaySearchBar] = useState<boolean>(false);
     const [searchedUser, setSearchedUser] = useState<IUser | null>(null);
 
     const { data: users, isLoading } = useQuery<IMongoUser[]>(['usersByWorkspaceId', workspace._id], () => searchUsersByPermissions(workspace._id), {
@@ -47,7 +44,6 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
         <Dialog
             open={open}
             onClose={() => {
-                setDisplaySearchBar(false);
                 handleClose();
             }}
             fullWidth
@@ -79,9 +75,9 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                         onClick={() => {
                             giveUserPermissionsToWorkspace();
                             setSearchedUser(null);
-                            setDisplaySearchBar(false);
                         }}
                         disabled={!searchedUser}
+                        sx={{ marginLeft: '10px' }}
                     >
                         {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
                     </Button>

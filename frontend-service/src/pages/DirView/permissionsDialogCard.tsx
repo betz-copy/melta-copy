@@ -11,6 +11,8 @@ import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import { IMongoUser } from '../../interfaces/users';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useUserStore } from '../../stores/user';
+import { useWorkspaceStore } from '../../stores/workspace';
 import { getDateWithoutTime } from '../../utils/date';
 
 interface IPermissionsDialogCardProps {
@@ -19,6 +21,9 @@ interface IPermissionsDialogCardProps {
 }
 
 export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ user, workspaceId }) => {
+    const currentUser = useUserStore((state) => state.user);
+    const workspace = useWorkspaceStore((state) => state.workspace);
+
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [hover, setHover] = useState<Boolean>(false);
@@ -42,6 +47,11 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             toast.error(i18next.t('permissions.failedToDeleteUser'));
         },
     });
+
+    const hasPermissionsToDelete = (): boolean => {
+        const hierarchyIds = queryClient.getQueryData<string[]>(['getWorkspaceHierarchyIds', workspace._id])!;
+        return !!currentUser.permissions[hierarchyIds[hierarchyIds.length - 2]];
+    };
 
     return (
         <Paper
@@ -96,7 +106,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                     </Typography>
                 </Box>
 
-                {hover && (
+                {hover && hasPermissionsToDelete() && (
                     <>
                         <Divider orientation="vertical" variant="middle" flexItem />
                         <IconButton>
