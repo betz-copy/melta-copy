@@ -342,8 +342,8 @@ export const ActionInfo: React.FC<{
     isCompact: boolean;
     actionIndex: number;
     actions: IActionPopulated[];
-    failedProperties: string[];
-}> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties }) => {
+    failedProperties?: string[];
+}> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties = [] }) => {
     return (
         <Grid container flexDirection="column">
             <Grid item>

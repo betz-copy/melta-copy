@@ -36,7 +36,6 @@ export const BrokenRuleFull: React.FC<{
 
     const entityTemplate = entityTemplates.get(ruleTemplate.entityTemplateId)!;
 
-
     return (
         <>
             <ListItemButton onClick={() => setOpenRule((prev) => !prev)}>
