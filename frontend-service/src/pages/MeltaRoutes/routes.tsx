@@ -19,6 +19,7 @@ import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
+import Map from '../Map';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -180,6 +181,12 @@ export const MeltaRoutesInner: React.FC = () => {
                             <Route path="/entity/:entityId/graph">
                                 <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                     <Graph />
+                                </EntityProtectedRoute>
+                            </Route>
+
+                            <Route path="/entity/:entityId/map">
+                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
+                                    <Map />
                                 </EntityProtectedRoute>
                             </Route>
 

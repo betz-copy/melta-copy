@@ -136,6 +136,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
+
+    console.log('expandedEntity', expandedEntity.entity.properties.location);
+
     return (
         <>
             <Card
@@ -150,6 +153,15 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
+                                <Grid
+                                    onClick={() => {
+                                        navigate(`/entity/${entity.properties._id}/map`);
+                                    }}
+                                >
+                                    <IconButtonWithPopover popoverText="מפה">
+                                        <img src="/icons/icon-plus.svg" />
+                                    </IconButtonWithPopover>
+                                </Grid>
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
