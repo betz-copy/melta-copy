@@ -133,7 +133,7 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   semantic-migrate-script:
-    build: './scripts/semantic-migrate-script'
+    build: './scripts/migrations/semantic-migrate-script'
     environment:
       RABBIT_URL: ${RABBIT_URL}
       MONGO_URL: ${WORKSPACE_SERVICE_MONGO_URL}
