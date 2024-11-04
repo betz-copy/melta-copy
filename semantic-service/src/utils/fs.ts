@@ -68,6 +68,7 @@ export const splitTextIntoChunks = async (
                 entityId,
                 minioFileId,
                 workspaceId,
+                chunkIndex: 0,
             },
         ];
     }
@@ -93,6 +94,7 @@ export const splitTextIntoChunks = async (
                     entityId,
                     minioFileId,
                     workspaceId,
+                    chunkIndex: index,
                 });
             });
         }),

@@ -17,4 +17,5 @@ export interface IElasticDoc extends Omit<IIndexFilesRequest, 'minioFileIds'> {
     title: string;
     minioFileId: string;
     workspaceId: string;
+    chunkIndex: number;
 }

@@ -69,6 +69,7 @@ class ElasticClient {
                     templateId: { type: 'text' },
                     entityId: { type: 'text' },
                     minioFileId: { type: 'text' },
+                    chunkIndex: { type: 'integer' },
                 },
             },
         });
