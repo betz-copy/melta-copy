@@ -2,7 +2,7 @@
 import pickBy from 'lodash.pickby';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
-import { BadRequestError, ForbiddenError, ServiceError } from '../error';
+import { BadRequestError, ForbiddenError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
@@ -259,7 +259,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
-                if (error instanceof ServiceError && error.metadata.errorCode === errorCodes.ruleBlock) {
+                if (error.metadata.errorCode === errorCodes.ruleBlock) {
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
                 }
 

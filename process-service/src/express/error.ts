@@ -165,7 +165,7 @@ export class InstanceNotFoundError extends ServiceError {
 
 export class TemplateNotFoundError extends NotFoundError {
     constructor(type: 'process' | 'step', id: string) {
-        super(type, id);
+        super(type, { id });
         const msg = `${type} template with the id ${id} not found`;
         this.message = msg;
     }
