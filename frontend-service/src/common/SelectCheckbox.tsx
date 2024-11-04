@@ -37,7 +37,7 @@ export type MenuItemContentProps<Option = any> = {
     option?: Option;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
     return (
         <>
             {!group && (
