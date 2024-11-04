@@ -6,7 +6,7 @@ import {
     countEntitiesOfTemplatesRequestSchema,
     createEntityRequestSchema,
     deleteEntitiesByTemplateIdRequestSchema,
-    deleteEntityByIdRequestSchema,
+    deleteEntitiesByIdsRequestSchema,
     enumerateNewSerialNumberFieldsRequestSchema,
     getAllConstraintsRequestSchema,
     getConstraintsOfTemplateRequestSchema,
@@ -77,7 +77,7 @@ entityRouter.post(
 entityRouter.post('/', ValidateRequest(createEntityRequestSchema), entityValidatorController.validateEntityRequest, entityController.createEntity);
 entityRouter.get('/:id', ValidateRequest(getEntityByIdRequestSchema), entityController.getEntityById);
 entityRouter.post('/ids', ValidateRequest(getEntitiesByIdsRequestSchema), entityController.getEntitiesByIds);
-entityRouter.delete('/:id', ValidateRequest(deleteEntityByIdRequestSchema), entityController.deleteEntityById);
+entityRouter.post('/delete/bulk', ValidateRequest(deleteEntitiesByIdsRequestSchema), entityController.deleteEntityById);
 entityRouter.delete('/', ValidateRequest(deleteEntitiesByTemplateIdRequestSchema), entityController.deleteEntitiesByTemplateId);
 entityRouter.put(
     '/:id',

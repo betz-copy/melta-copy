@@ -61,17 +61,16 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
     },
 });
 
-/**
- * DELETE /api/instances/entities/:id?deleteAllRelationships=true
- */
-export const deleteEntityByIdRequestSchema = Joi.object({
-    query: {
-        deleteAllRelationships: Joi.boolean().default(false),
-    },
-    body: {},
-    params: {
-        id: Joi.string().required(),
-    },
+// /**
+//  * POST /api/instances/entities/delete/bulk
+//  */
+export const deleteEntitiesByIdsRequestSchema = Joi.object({
+    body: Joi.object({
+        ids: Joi.array().items(Joi.string()).required(),
+        deleteAllRelationships: Joi.boolean(),
+    }).unknown(true),
+    query: {},
+    params: {},
 });
 
 /**

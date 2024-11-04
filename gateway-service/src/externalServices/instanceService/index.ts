@@ -76,8 +76,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstance(id: string) {
-        const { data } = await this.api.delete<string>(`${baseEntitiesRoute}/${id}`);
+    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean) {
+        const { data } = await this.api.post<string>(`${baseEntitiesRoute}/delete/bulk`, { ids, deleteAllRelationships });
 
         return data;
     }

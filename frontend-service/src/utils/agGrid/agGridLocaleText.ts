@@ -1,6 +1,8 @@
 const agGridLocaleText = {
     // Set Filter
     selectAll: 'בחר הכל',
+    selectedRows: 'נבחרו',
+
     selectAllSearchResults: '(Select All Search Results)',
     searchOoo: 'חיפוש...',
     blanks: '(ריק)',

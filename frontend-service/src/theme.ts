@@ -114,6 +114,8 @@ export const darkTheme = createTheme({
                     '--ag-border-color': '#404040 !important',
                     '--ag-control-panel-background-color': '#202020 !important',
                     '--ag-subheader-background-color': '#202020 !important',
+                    '--ag-selected-row-background-color': '#363636 !important',
+                    '--ag-checkbox-unchecked-color': '#fff !important',
 
                     '--ag-header-cell-hover-background-color': 'rgba(255, 255, 255, 0.12) !important',
                     '--ag-header-cell-moving-background-color': 'rgba(255, 255, 255, 0.12) !important',

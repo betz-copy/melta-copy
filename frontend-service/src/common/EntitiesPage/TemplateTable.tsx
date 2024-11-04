@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    LibraryAddCheckOutlined,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -53,6 +54,8 @@ const TemplateTable = forwardRef<
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
+    const [multipleChoice, setMultipleChoice] = useState(false);
+
     useImperativeHandle(ref, () => entitiesTableRef.current!);
 
     const handleExpandClick = useCallback(() => {
@@ -179,6 +182,15 @@ const TemplateTable = forwardRef<
                         icon={isExportingTableToExcelFile ? <CircularProgress size="24px" /> : <Download fontSize="small" />}
                         text={isExportingTableToExcelFile ? '' : i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}
                     />
+
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: i18next.t('entitiesTableOfTemplate.multipleChoice'),
+                            iconButtonProps: { onClick: () => setMultipleChoice(!multipleChoice) },
+                        }}
+                        icon={<LibraryAddCheckOutlined fontSize="small" />}
+                        text={i18next.t('entitiesTableOfTemplate.multipleChoice')}
+                    />
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
@@ -247,10 +259,11 @@ const TemplateTable = forwardRef<
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                    rowModelType={isExpand ? 'infinite' : 'serverSide'}
+                    rowModelType={isExpand || multipleChoice ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
+                    multipleSelect={multipleChoice}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,

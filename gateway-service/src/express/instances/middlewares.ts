@@ -95,9 +95,7 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, permissionScope: PermissionScope) {
-        const instanceId = req.params.id;
-
+    private async validateUserPermissionForEntityInstance(req: Request, instanceId: string, permissionScope: PermissionScope) {
         const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
@@ -116,7 +114,15 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanWriteEntityInstance(req: Request) {
-        await this.validateUserPermissionForEntityInstance(req, PermissionScope.write);
+        const { id } = req.params;
+
+        await this.validateUserPermissionForEntityInstance(req, id, PermissionScope.write);
+    }
+
+    async validateUserCanWriteEntityInstances(req: Request) {
+        const { ids } = req.body;
+
+        await this.validateUserPermissionForEntityInstance(req, ids[0], PermissionScope.write);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[]) {
@@ -153,7 +159,9 @@ export class InstancesValidator extends DefaultController {
     }
 
     async validateUserCanReadEntityInstance(req: Request) {
-        await this.validateUserPermissionForEntityInstance(req, PermissionScope.read);
+        const { id } = req.params;
+
+        await this.validateUserPermissionForEntityInstance(req, id, PermissionScope.read);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {

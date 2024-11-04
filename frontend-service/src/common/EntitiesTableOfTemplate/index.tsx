@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
 import { AgGridReact } from '@ag-grid-community/react';
@@ -48,6 +48,7 @@ import { trycatch } from '../../utils/trycatch';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -148,6 +149,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     rowHeight: number;
     pageRowCount?: number;
     fontSize: React.CSSProperties['fontSize'];
+    multipleSelect?: boolean;
     hideNonPreview?: boolean;
     saveStorageProps: {
         shouldSaveFilter: boolean;
@@ -175,6 +177,12 @@ export type EntitiesTableOfTemplateRef<Data> = {
     showSideBar: () => void;
 };
 
+const isFirstColumn = (params) => {
+    const displayedColumns = params.columnApi.getAllDisplayedColumns();
+    const thisIsFirstColumn = displayedColumns[0] === params.column;
+    return thisIsFirstColumn;
+};
+
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
     <Data extends any>(
         {
@@ -195,6 +203,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
+            multipleSelect,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -214,6 +223,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
+        const [selectedRowsIds, setSelectedRowsIds] = useState<string[]>([]);
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -406,8 +416,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     enableRtl
                     enableCellTextSelection
                     maintainColumnOrder
-                    rowSelection={onRowSelected ? 'single' : undefined}
+                    // rowSelection={onRowSelected ? 'single' : 'multiple'}
+                    rowSelection="multiple"
+                    // rowMultiSelectWithClick instead of ctrl+click
                     onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
+                    // onSelectionChanged={onSelectionChanged}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {
@@ -490,7 +503,10 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         resizable: true,
                         lockPinned: true,
                         initialWidth: 250,
+                        checkboxSelection: isFirstColumn,
+                        // headerCheckboxSelection: isFirstColumn,
                     }}
+                    suppressRowClickSelection // Prevent row click for selection
                     sideBar={{
                         toolPanels: [
                             {
@@ -516,6 +532,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                       {
                                           statusPanel: RowCountGridStatusBar,
                                           align: 'right',
+                                      },
+                                      { statusPanel: 'agSelectedRowCountComponent', align: 'right' },
+                                      {
+                                          statusPanel: MultiSelectStatusBar,
+                                          align: 'left',
                                       },
                                   ],
                               }

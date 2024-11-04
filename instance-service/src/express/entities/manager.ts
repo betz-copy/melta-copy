@@ -555,7 +555,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     fixActions = (actions: IAction[], results: IEntity[]) =>
         actions.map((action, index) => {
             const { actionMetadata, actionType } = action;
-            if (actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) {
+
+            if (actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity)
                 return {
                     ...action,
                     actionMetadata: {
@@ -563,7 +564,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         properties: results[index].properties,
                     },
                 };
-            }
 
             if (actionType === ActionTypes.UpdateEntity) {
                 const { entityId } = actionMetadata as IUpdateEntityMetadata;
@@ -768,6 +768,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesByIds(ids: string[]) {
+        console.log('came here');
+
         return this.neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
@@ -844,40 +846,47 @@ export class EntityManager extends DefaultManagerNeo4j {
         return this.relationshipManager.deleteRelationshipByIdInTransaction(relationshipToDelete.properties._id, [], transaction);
     }
 
-    async deleteEntityById(id: string, deleteAllRelationships: boolean) {
+    async deleteRelationshipReferenceForEntity(entityToDelete: IEntity, entityTemplate: IMongoEntityTemplate, transaction: Transaction) {
+        return Promise.all(
+            Object.entries(entityTemplate.properties.properties)
+                .filter(([name, property]) => property.format === 'relationshipReference' && entityToDelete.properties[name])
+                .map(([name, property]) =>
+                    this.deleteRelationshipReferenceInTransaction(
+                        property.relationshipReference!,
+                        entityToDelete.properties[name].properties._id,
+                        entityToDelete.properties._id,
+                        transaction,
+                    ),
+                ),
+        );
+    }
+
+    async deleteEntityById(ids: string[], deleteAllRelationships: boolean) {
+        console.log({ deleteAllRelationships });
+
         try {
-            return this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const entityToDelete = await this.getEntityByIdInTransaction(id, transaction);
-                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entityToDelete.templateId);
+            return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+                const entitiesToDelete = await this.getEntitiesByIds(ids);
+                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entitiesToDelete[0].templateId);
 
-                await Promise.all(
-                    Object.entries(entityTemplate.properties.properties).map(async ([name, property]) => {
-                        if (property.format === 'relationshipReference' && entityToDelete.properties[name]) {
-                            await this.deleteRelationshipReferenceInTransaction(
-                                property.relationshipReference!,
-                                entityToDelete.properties[name].properties._id,
-                                id,
-                                transaction,
-                            );
-                        }
-                    }),
+                const deletionRelationshipReferencesPromises = entitiesToDelete.map((entityToDelete) =>
+                    this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction),
                 );
 
-                const node = await runInTransactionAndNormalize(
+                await Promise.all(deletionRelationshipReferencesPromises);
+
+                await runInTransactionAndNormalize(
                     transaction,
-                    `MATCH (e {_id: '${id}'}) ${deleteAllRelationships ? 'DETACH' : ''} DELETE e RETURN e`,
-                    normalizeReturnedEntity('singleResponse'),
+                    `MATCH (e) WHERE e._id IN $ids  ${deleteAllRelationships ? 'DETACH' : ''} DELETE e`,
+                    normalizeReturnedEntity('multipleResponses'),
+                    { ids },
                 );
 
-                if (!node) {
-                    throw new NotFoundError(`[NEO4J] entity "${id}" not found`);
-                }
-
-                return id;
+                return ids;
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                throw new ServiceError(400, `[NEO4J] some entities has existing relationships. Delete them first.`, {
                     errorCode: config.errorCodes.entityHasRelationships,
                 });
             }

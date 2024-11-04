@@ -495,29 +495,31 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedEntity;
     }
 
-    private async deleteAllEntityFiles(currentEntity: IEntity) {
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
+    private async deleteAllEntitiesFiles(currentEntities: IEntity[]) {
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntities[0].templateId);
 
-        const filePropertiesToRemove = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
-        const fileIdsToRemove = Object.values(filePropertiesToRemove).flat();
+        const filesProperties: Record<string, string | string[]> = currentEntities.reduce((acc, currentEntity) => {
+            const entityProps = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
+            return { ...acc, ...entityProps };
+        }, {});
 
-        if (fileIdsToRemove.length === 0) {
-            return [];
-        }
+        const fileIdsToRemove = Object.values(filesProperties).flat();
+
+        if (!fileIdsToRemove.length) return [];
 
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstance(id: string) {
-        const currentEntity = await this.service.getEntityInstanceById(id);
-        const deletedInstance = await this.service.deleteEntityInstance(id);
+    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean) {
+        const currentEntities = await this.service.getEntityInstancesByIds(ids);
+        const deletedInstance = await this.service.deleteEntityInstance(ids, deleteAllRelationships);
 
-        const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
+        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(currentEntities));
 
         if (error) {
-            logger.error(`failed to delete files of instanceId ${id}`, { error });
+            logger.error(`failed to delete files of instances`, { error });
         }
 
         return deletedInstance;

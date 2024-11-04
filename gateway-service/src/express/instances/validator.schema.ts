@@ -43,11 +43,14 @@ export const updateEntityStatusSchema = Joi.object({
     params: { id: Joi.string().required() },
 });
 
-// DELETE /api/instances/entities/:id
-export const deleteEntityInstanceSchema = Joi.object({
-    body: {},
+// POST /api/instances/entities/delete/bulk
+export const deleteEntityInstancesSchema = Joi.object({
+    body: Joi.object({
+        ids: Joi.array().items(Joi.string()).required(),
+        deleteAllRelationships: Joi.boolean(),
+    }).unknown(true),
     query: {},
-    params: { id: Joi.string().required() },
+    params: {},
 });
 
 // POST /api/instances/entities/export/document/:entityId

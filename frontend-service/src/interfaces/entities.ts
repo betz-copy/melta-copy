@@ -140,3 +140,8 @@ export interface IGraphFilterBody {
 export interface IGraphFilterBodyBatch {
     [key: string]: IGraphFilterBody;
 }
+
+export interface IDeleteEntityBody {
+    ids: string[];
+    deleteAllRelationships?: boolean;
+}

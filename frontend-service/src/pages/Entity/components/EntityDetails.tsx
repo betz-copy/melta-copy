@@ -103,7 +103,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         },
     );
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest({ ids: [entity.properties._id] }), {
         onError: (error: AxiosError) => {
             closeDeleteDialog();
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);

@@ -62,6 +62,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
+        multipleChoice: 'בחירה מרובה',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -89,6 +90,9 @@ export default {
         'deleteRelationshipPopoverText-cant': 'לא ניתן למחוק קשרים מסוג זה',
         failedToDeleteRelationship: 'נכשל למחוק קשר',
         succeededToDeleteRelationship: 'הקשר נמחק בהצלחה',
+        payAttention: 'שים לב',
+        wouldYouLikeToDeleteTheRelationships:
+            'לחלק מהישויות מחוברים קשרים. בעת לחיצה על אישור ימחקו הישיות והקשרים שלהם, בעת לחיצה על ביטול לא ימחקו גם הישיות',
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
         relationshipTitle: 'קשרים',
