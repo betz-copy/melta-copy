@@ -307,7 +307,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
     }
 
-    async searchEntitiesByTemplates(searchBody: ITemplateSearchBody) {
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody) {
         const semanticSearchBody = {
             textSearch: searchBody.textSearch,
             templates: searchBody.templateIds,
@@ -315,7 +315,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
         const entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
 
-        return this.service.searchEntitiesByTemplates({ ...searchBody, entityIdsToInclude });
+        return this.service.getEntitiesCountByTemplates({ ...searchBody, entityIdsToInclude });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

@@ -105,7 +105,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
 /*
  * POST /api/instances/entities/count
  */
-export const searchEntitiesByTemplates = Joi.object({
+export const getEntitiesCountByTemplates = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
@@ -113,7 +113,6 @@ export const searchEntitiesByTemplates = Joi.object({
     query: {},
     params: {},
 });
-
 
 // POST /api/instances/search/templates
 export const searchEntitiesByTemplatesSchema = Joi.object({
