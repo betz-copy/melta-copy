@@ -1,5 +1,10 @@
 import { Driver, Session } from 'neo4j-driver';
 import { IEntity, normalizeReturnedEntity } from '../../utils/neo4j';
+import config from '../../config';
+
+const {
+    neo4j: { workspaceNamePrefix },
+} = config;
 
 export const getEntitiesByTemplate = async (session: Session, templateId: string): Promise<IEntity[]> => {
     const getEntitiesByTemplateQuery = `
@@ -12,19 +17,16 @@ export const getEntitiesByTemplate = async (session: Session, templateId: string
     return normalizeReturnedEntity('multipleResponses')(records);
 };
 
-export const listDatabases = async (session: Session): Promise<any[]> => {
-    const listDatabasesQuery = 'SHOW DATABASES';
-    return runCypherQuery(session, listDatabasesQuery);
-};
+export const listFilesInDB = async (driver: Driver, workspaceId: string, templateId: string, fileProperties: string[]): Promise<any[]> => {
+    const session = driver.session({ database: `${workspaceNamePrefix}${workspaceId}` });
 
-export const listFilesInDB = async (driver: Driver, DbName: string): Promise<any[]> => {
-    const session = driver.session({ database: DbName });
     const listFilesQuery = `
     MATCH (n)
-    WHERE
-    RETURN n, labels(n) AS templateId
+    WHERE $templateId IN labels(node)
+    RETURN n, ${fileProperties.join(', ')}
     `;
-    return runCypherQuery(session, listFilesQuery);
+    const records = await runCypherQuery(session, listFilesQuery, { templateId });
+    return normalizeReturnedEntity('multipleResponses')(records);
 };
 
 export const runCypherQuery = async (session, cypherQuery, parameters = {}) => {
