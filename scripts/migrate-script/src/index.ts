@@ -7,7 +7,7 @@ import { listFilesInDB } from './clients/neo4j';
 import { Driver } from 'neo4j-driver';
 import { sendToQueue } from './clients/rabbit/manager';
 import config from './config';
-import { initModelPerWorkspace } from './clients/mongo/initModelPerWorkspace';
+import { getTemplatesWithFiles } from './clients/mongo/repository';
 
 const { rabbit } = config;
 
@@ -31,61 +31,30 @@ const getFileProperties = (templateWithFiles: IMongoEntityTemplate[]) => {
 };
 
 const extractFromWorkspace = async (driver: Driver, workspaceId: string) => {
-    const entityTemplateModel = initModelPerWorkspace(workspaceId);
     console.log(`Extracting from workspace ${workspaceId}`);
 
-    const templatesWithFiles = await entityTemplateModel
-        .find({
-            $expr: {
-                $or: [
-                    {
-                        $in: [
-                            'fileId',
-                            {
-                                $map: {
-                                    input: { $objectToArray: '$properties.properties' },
-                                    as: 'entry',
-                                    in: '$$entry.v.format',
-                                },
-                            },
-                        ],
-                    },
-                    {
-                        $in: [
-                            'fileId',
-                            {
-                                $map: {
-                                    input: { $objectToArray: '$properties.properties' },
-                                    as: 'entry',
-                                    in: '$$entry.v.items.format',
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
-        })
-        .lean()
-        .exec();
+    const templatesWithFiles = await getTemplatesWithFiles(workspaceId);
 
     console.log(`Found ${templatesWithFiles.length} templates with files`);
 
     const fileProperties = getFileProperties(templatesWithFiles as IMongoEntityTemplate[]);
+
     console.log(`File properties of templates: ${JSON.stringify(fileProperties)}`);
 
-    const files = await listFilesInDB(driver, workspaceId, Object.keys(fileProperties)[0], Object.values(fileProperties)[0]);
-    console.log({ files });
+    return Object.entries(fileProperties).map(async ([templateId, fileProperties]) => {
+        const files = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
 
-    return files.map((file) => {
-        return sendToQueue(
-            rabbit.insertQueue,
-            {
-                minioFileIds: file.fileId,
-                templateId: file.templateId[0],
-                entityId: file.id,
-            },
-            workspaceId,
-        );
+        return files.map(({ _id, files }) => {
+            return sendToQueue(
+                rabbit.insertQueue,
+                {
+                    minioFileIds: files,
+                    templateId,
+                    entityId: _id,
+                },
+                workspaceId,
+            );
+        });
     });
 };
 
