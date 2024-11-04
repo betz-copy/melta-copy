@@ -55,7 +55,8 @@ InstancesRouter.post(
     '/entities/count',
     ValidateRequest(searchEntitiesByTemplates),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
-    InstancesControllerMiddleware.searchEntitiesByTemplates);
+    InstancesControllerMiddleware.searchEntitiesByTemplates,
+);
 
 InstancesRouter.post(
     '/entities/search/templates',

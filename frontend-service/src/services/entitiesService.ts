@@ -227,7 +227,10 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
 };
 
 export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string) => {
-    const { data } = await axios.post<{ templateId: string; count: number, entityIdsToInclude?: string[] }[]>(`${entities}/count`, { templateIds, textSearch });
+    const { data } = await axios.post<{ templateId: string; count: number; entityIdsToInclude?: string[] }[]>(`${entities}/count`, {
+        templateIds,
+        textSearch,
+    });
     return data;
 };
 
