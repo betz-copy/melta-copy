@@ -12,46 +12,46 @@ export const BrokenRuleActions: React.FC<{
 }> = ({ actions, failedProperties }) => {
     const [openActions, setOpenActions] = useState(false);
 
+    if (actions.length === 0) return null;
+
     return (
         <Grid>
-            {actions.length > 0 && (
-                <Grid item>
-                    <Grid item container alignItems="center">
-                        <Grid item paddingTop="8px">
-                            {openActions ? (
-                                <ExpandLessIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
-                            ) : (
-                                <ExpandMoreIcon style={{ color: '#787C9E', width: '20px', height: '20px' }} />
-                            )}
-                        </Grid>
-                        <Grid style={{ width: 'fit-content', cursor: 'pointer' }} onClick={() => setOpenActions((prev) => !prev)}>
-                            {i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}
-                        </Grid>
+            <Grid item>
+                <Grid item container alignItems="center">
+                    <Grid item paddingTop="8px">
+                        {openActions ? (
+                            <ExpandLessIcon sx={{ color: '#787C9E', width: '20px', height: '20px' }} />
+                        ) : (
+                            <ExpandMoreIcon sx={{ color: '#787C9E', width: '20px', height: '20px' }} />
+                        )}
                     </Grid>
-                    <Collapse in={openActions} timeout="auto" unmountOnExit style={{ marginRight: '15px' }}>
-                        {actions.map((action, index) => {
-                            return (
-                                <Grid item container key={index} spacing={1}>
-                                    <Grid item>
-                                        <Typography>{index + 1}.</Typography>
-                                    </Grid>
-
-                                    <Grid item>
-                                        <ActionInfo
-                                            actionType={action.actionType}
-                                            actionMetadata={action.actionMetadata}
-                                            isCompact
-                                            actionIndex={index}
-                                            actions={actions}
-                                            failedProperties={failedProperties}
-                                        />
-                                    </Grid>
-                                </Grid>
-                            );
-                        })}
-                    </Collapse>
+                    <Grid style={{ width: 'fit-content', cursor: 'pointer' }} onClick={() => setOpenActions((prev) => !prev)}>
+                        {i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}
+                    </Grid>
                 </Grid>
-            )}
+                <Collapse in={openActions} timeout="auto" unmountOnExit style={{ marginRight: '15px' }}>
+                    {actions.map((action, index) => {
+                        return (
+                            <Grid item container key={index} spacing={1}>
+                                <Grid item>
+                                    <Typography>{index + 1}.</Typography>
+                                </Grid>
+
+                                <Grid item>
+                                    <ActionInfo
+                                        actionType={action.actionType}
+                                        actionMetadata={action.actionMetadata}
+                                        isCompact
+                                        actionIndex={index}
+                                        actions={actions}
+                                        failedProperties={failedProperties}
+                                    />
+                                </Grid>
+                            </Grid>
+                        );
+                    })}
+                </Collapse>
+            </Grid>
         </Grid>
     );
 };
