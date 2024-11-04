@@ -2,7 +2,6 @@ import React from 'react';
 import i18next from 'i18next';
 import { Box } from '@mui/material';
 import { Field, FormikProps } from 'formik';
-import { getFileName } from '../../../utils/getFileName';
 import { ProcessStepValues } from '../../wizards/processInstance/ProcessSteps';
 import { ProcessDetailsValues } from '../../wizards/processInstance/ProcessDetails';
 import FileInput from '../ImageFileInput';
@@ -36,9 +35,6 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
     setFieldTouched,
     setExternalErrors,
 }) => {
-    const fileId = value?.name;
-    const fileName = fileId && !(value instanceof File) ? getFileName(fileId) : fileId;
-
     return (
         <Box
             marginTop={1}
@@ -58,7 +54,7 @@ export const InstanceSingleFileInput: React.FC<InstanceFileInputProps> = ({
                 component={FileInput}
                 fileFieldName={fileFieldName}
                 inputText={`${fieldTemplateTitle} ${required ? '*' : ''}`}
-                fileName={fileName}
+                file={value}
                 onDropFile={(acceptedFile) => {
                     setFieldValue(fileFieldName, acceptedFile);
                     setFieldTouched(fileFieldName, true, false);

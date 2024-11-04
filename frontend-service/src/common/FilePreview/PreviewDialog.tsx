@@ -184,6 +184,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
             fullScreen
             PaperProps={{ sx: { bgcolor: darkMode ? 'rgba(20,20,20,0.7)' : 'rgba(49,49,49,0.7)' } }}
             disableEnforceFocus
+            onClick={(e) => e.stopPropagation()}
         >
             <DialogContent sx={{ height: '100vh', position: 'relative', overflow: 'hidden' }}>
                 <FlexBox

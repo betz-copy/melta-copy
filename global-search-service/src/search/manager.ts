@@ -7,7 +7,7 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: { globalSearchIndex, templateSearchIndexPrefix, stringPropertySuffix },
+    neo4j: { globalSearchIndexPrefix, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
 } = config;
 
 export default class Manager extends DefaultManagerNeo4j {
@@ -112,7 +112,27 @@ export default class Manager extends DefaultManagerNeo4j {
             }),
         );
 
-        await this.upsertSearchIndex(globalSearchIndex, templateIds, Array.from(allTemplatesProperties));
+        // https://github.com/neo4j/neo4j/issues/12288
+        // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
+        // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
+        // Here we only create the global search index if we already have more then one template.
+        // But the global search actually works without the global search index initialized.
+        if (templates.length > 1) {
+            const propertiesArray = Array.from(allTemplatesProperties);
+            if (propertiesArray.length >= indexPropertiesLimit) {
+                const propertiesChunks: string[][] = [];
+                for (let i = 0; i < propertiesArray.length; i += indexPropertiesLimit) {
+                    propertiesChunks.push(propertiesArray.slice(i, i + indexPropertiesLimit));
+                }
+                await Promise.all(
+                    propertiesChunks.map(async (properties, index) => {
+                        await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
+                    }),
+                );
+            } else {
+                await this.upsertSearchIndex(globalSearchIndexPrefix, templateIds, Array.from(allTemplatesProperties));
+            }
+        }
     }
 
     async upsertChangedTemplateSearchIndex(changedTemplateId: string) {

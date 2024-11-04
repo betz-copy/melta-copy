@@ -1,4 +1,4 @@
-import { Box, Grid, Tab } from '@mui/material';
+import { Box, Grid, Tab, useTheme } from '@mui/material';
 import React from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
@@ -44,6 +44,7 @@ const Steps: React.FC<IStepsProp> = ({
 }) => {
     const [tabValue, setTabValue] = React.useState(defaultStepTemplate ? defaultStepTemplate._id : processTemplate.steps[0]._id);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const theme = useTheme();
     const defaultTabColor = darkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)';
     return (
         <Box
@@ -63,7 +64,7 @@ const Steps: React.FC<IStepsProp> = ({
                                     icon={
                                         iconFileId ? (
                                             <CustomIcon
-                                                color={_id === tabValue ? '#1565c0' : defaultTabColor}
+                                                color={_id === tabValue ? theme.palette.primary.main : defaultTabColor}
                                                 iconUrl={iconFileId}
                                                 width="25px"
                                                 height="25px"

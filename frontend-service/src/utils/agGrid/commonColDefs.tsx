@@ -23,7 +23,9 @@ export const numberColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => <Value hideValue={hideValue} value={props.value?.toString() ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => (
+            <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />
+        ),
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,

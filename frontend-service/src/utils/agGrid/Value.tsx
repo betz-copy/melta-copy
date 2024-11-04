@@ -6,14 +6,15 @@ import { ColoredEnumChip } from '../../common/ColoredEnumChip';
 import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
-import { isStartWithHebrewLetter } from '../../common/inputs/JSONSchemaFormik/RjsfStringWidget';
+import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
 
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
     color?: string;
     calculateTime?: boolean;
-}> = ({ hideValue, value, color, calculateTime }) => {
+    isNumberField?: boolean;
+}> = ({ hideValue, value, color, calculateTime, isNumberField }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -45,6 +46,7 @@ const Value: React.FC<{
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
+    else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
     else innerContent = value;
 
     let popoverText;

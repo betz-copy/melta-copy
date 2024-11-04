@@ -5,7 +5,6 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
-import { environment } from '../../../globals';
 import {
     INotificationPopulated,
     isArchiveProcessNotification,
@@ -31,8 +30,6 @@ import { ProcessStatusUpdateNotification } from './processNotifications/ProcessS
 import { RuleBreachAlertNotification } from './ruleBreachNotification/RuleBreachAlertNotification';
 import { RuleBreachRequestNotification } from './ruleBreachNotification/RuleBreachRequestNotification';
 import { RuleBreachResponseNotification } from './ruleBreachNotification/RuleBreachResponseNotification';
-
-const { titleColor } = environment.notifications;
 
 interface NotificationCardProps {
     notification: INotificationPopulated;
@@ -69,39 +66,29 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                 <Grid container direction="column">
                     {!isDateAboutToExpireNotification(notification) && (
                         <Grid item container justifyContent="flex-end" wrap="nowrap">
-                            <Typography sx={{ fontSize: '11px', fontWeight: '350px', color: '#5A6173' }}>
-                                {getShortDate(notification.createdAt)}
-                            </Typography>
+                            <Typography sx={{ fontSize: '11px', fontWeight: '350px' }}>{getShortDate(notification.createdAt)}</Typography>
                         </Grid>
                     )}
                     <Grid item sx={{ padding: '10px' }}>
-                        {isRuleBreachAlertNotification(notification) && (
-                            <RuleBreachAlertNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
-                        )}
+                        {isRuleBreachAlertNotification(notification) && <RuleBreachAlertNotification notificationMetadata={notification.metadata} />}
                         {isRuleBreachRequestNotification(notification) && (
-                            <RuleBreachRequestNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
+                            <RuleBreachRequestNotification notificationMetadata={notification.metadata} />
                         )}
                         {isRuleBreachResponseNotification(notification) && (
-                            <RuleBreachResponseNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
+                            <RuleBreachResponseNotification notificationMetadata={notification.metadata} />
                         )}
-                        {isNewProcessNotification(notification) && (
-                            <NewProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
-                        )}
+                        {isNewProcessNotification(notification) && <NewProcessNotification notificationMetadata={notification.metadata} />}
                         {isProcessStatusUpdateNotification(notification) && (
-                            <ProcessStatusUpdateNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
+                            <ProcessStatusUpdateNotification notificationMetadata={notification.metadata} />
                         )}
                         {isProcessReviewerUpdateNotification(notification) && (
-                            <ProcessReviewerUpdateNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
+                            <ProcessReviewerUpdateNotification notificationMetadata={notification.metadata} />
                         )}
                         {isDateAboutToExpireNotification(notification) && (
                             <DateAboutToExpireNotification notificationMetadata={notification.metadata} />
                         )}
-                        {isDeleteProcessNotification(notification) && (
-                            <DeleteProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
-                        )}
-                        {isArchiveProcessNotification(notification) && (
-                            <ArchiveProcessNotification notificationMetadata={notification.metadata} titleColor={titleColor} />
-                        )}
+                        {isDeleteProcessNotification(notification) && <DeleteProcessNotification notificationMetadata={notification.metadata} />}
+                        {isArchiveProcessNotification(notification) && <ArchiveProcessNotification notificationMetadata={notification.metadata} />}
                     </Grid>
                     <Grid container wrap="nowrap" margin="-5px">
                         {isDateAboutToExpireNotification(notification) && (
@@ -119,7 +106,7 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({ notification
                             onMouseLeave={() => setIsHovered(false)}
                         >
                             <LoadingButton onClick={() => mutate()} loading={isLoading}>
-                                <Grid item container alignItems="center" fontSize="12px" fontWeight={400} color="#5A6173">
+                                <Grid item container alignItems="center" fontSize="12px" fontWeight={400}>
                                     {isHovered && <DoneIcon fontSize="small" />}
                                     {i18next.t('notifications.setAsSeen')}
                                 </Grid>

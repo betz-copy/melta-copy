@@ -1,3 +1,5 @@
+import React, { useRef, useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import {
     Add as PlusIcon,
     Air as FluidSimulationIcon,
@@ -8,17 +10,16 @@ import {
     MeetingRoom as ExitIcon,
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
+import LinkIcon from '@mui/icons-material/Link';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { useRef, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
 import { useLocation } from 'wouter';
-
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
 import { PermissionScope } from '../../interfaces/permissions';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
+import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';
 import { useUserStore } from '../../stores/user';
 import { useWorkspaceStore } from '../../stores/workspace';
@@ -26,6 +27,7 @@ import { sideBarTransition } from '../../theme';
 import { CustomIcon, CustomImage } from '../CustomIcon';
 import { GlobalSearchBar } from '../EntitiesPage/Headline';
 import IconButtonWithPopover from '../IconButtonWithPopover';
+import { searchIFrames } from '../../services/iFramesService';
 import { MeltaIcon } from '../MeltaIcon';
 import PermissionsOfUserDialog from '../permissionsOfUserDialog';
 import { NavButton } from './NavButton';
@@ -33,6 +35,8 @@ import { NotificationsButton } from './notifications/NotificationsButton';
 import { NotificationsScreen } from './notifications/NotificationsScreen';
 import { ProfileButton } from './ProfileButton';
 import { Drawer, DrawerDivider } from './SideBar.styled';
+import { SwitchThemeButton } from './SwitchThemeButton';
+import { CloseDrawerButton, OpenDrawerButton } from './ToggleDrawerButtons';
 
 interface SideBarProps {
     toggleDrawer: () => any;
@@ -45,12 +49,19 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const theme = useTheme();
 
     const currentUser = useUserStore((state) => state.user);
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+    const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
 
     const drawerRef = useRef<React.ComponentRef<typeof Drawer>>(null);
 
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
+
+    const iFramesStored = localStorage.getItem('iFramesOrder');
+    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+
+    const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
 
     const [isMyPermissionsDialogOpen, setIsMyPermissionsDialogOpen] = useState<boolean>(false);
     const [isNotificationsScreenOpen, setIsNotificationsScreenOpen] = useState<boolean>(false);
@@ -64,6 +75,11 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const [_, navigate] = useLocation();
 
+    const handleMenuItemClick = (event, id: string) => {
+        event.stopPropagation();
+        event.preventDefault();
+        navigate(`/iframes/${id}`);
+    };
     const { data: notificationCountDetailsResponse, refetch: updateNotificationCountDetails } = useQuery(
         ['getMyNotificationCount', isNotificationsScreenOpen],
         () => getMyNotificationGroupCountRequest(isNotificationsScreenOpen ? (notifications.groups as unknown as INotificationCountGroups) : {}),
@@ -81,16 +97,8 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
-        <Drawer
-            ref={drawerRef}
-            variant="permanent"
-            open={isDrawerOpen}
-            PaperProps={{ sx: { backgroundColor: theme.palette.primary.main } }}
-            data-tour="side-bar"
-            style={{ zIndex: '1' }}
-            sx={{ zIndex: '1' }}
-        >
-            <Grid container direction="column" wrap="nowrap" height="100%" bgcolor={theme.palette.primary.main}>
+        <Drawer ref={drawerRef} variant="permanent" open={isDrawerOpen} data-tour="side-bar" style={{ zIndex: '1' }} sx={{ zIndex: '1' }}>
+            <Grid container direction="column" wrap="nowrap" height="100%" sx={{ bgcolor: darkMode ? '#000' : theme.palette.primary.main }}>
                 <Grid
                     item
                     container
@@ -199,6 +207,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 size="small"
                                 borderRadius="30px"
                                 width="199px"
+                                autoSearch
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>
@@ -214,14 +223,16 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         )}
                     </Grid>
 
-                    {/* 
-                    // TODO - implement when dark mode will be supported
-                    <SwitchThemeButton
-                        text={i18next.t('sideBar.changeTheme')}
-                        isDrawerOpen={isDrawerOpen}
-                        darkMode={darkMode}
-                        onClick={() => dispatch(toggleDarkMode())}
-                    /> */}
+                    {(meltaPlus || darkMode) && (
+                        <Grid container item marginTop="1rem" width="90%" justifyContent="center">
+                            <SwitchThemeButton
+                                text={i18next.t('sideBar.changeTheme')}
+                                isDrawerOpen={isDrawerOpen}
+                                darkMode={darkMode}
+                                onClick={toggleDarkMode}
+                            />
+                        </Grid>
+                    )}
                 </Grid>
 
                 <Grid
@@ -237,7 +248,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         '::-webkit-scrollbar': { width: 4 },
                         '::-webkit-scrollbar-track': { background: 'transparent' },
                         '::-webkit-scrollbar-thumb': { background: 'lightgray' },
-                        marginTop: isDrawerOpen ? '25px' : '0px',
+                        marginTop: isDrawerOpen ? '0.5rem' : '0.25rem',
                     }}
                 >
                     {Array.from(
@@ -290,6 +301,70 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             />
                         </NavButton>
                     )}
+
+                    <NavButton
+                        to="/iframes"
+                        text={i18next.t('pages.iFrames')}
+                        extension={
+                            iFramesInSidebar?.length! > 0 ? (
+                                <Grid container display="flex" flexDirection="column">
+                                    <Grid item padding={1}>
+                                        {i18next.t('iFrames.favoritesIFrames')}
+                                    </Grid>
+                                    <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
+                                        {iFramesInSidebar?.map((iFrame) => (
+                                            <Grid
+                                                key={iFrame._id}
+                                                onClick={(event) => {
+                                                    handleMenuItemClick(event, iFrame._id);
+                                                }}
+                                                sx={{
+                                                    '&:hover': {
+                                                        backgroundColor: '#B8B8B8',
+                                                        borderRadius: '5px',
+                                                    },
+                                                    padding: '9px 9px 9px 18px',
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                }}
+                                            >
+                                                {iFrame.iconFileId ? (
+                                                    <CustomIcon color="white" iconUrl={iFrame.iconFileId!} height="15px" width="15px" />
+                                                ) : (
+                                                    <HiveIcon style={{ color: 'white' }} fontSize="inherit" />
+                                                )}
+                                                <Typography
+                                                    style={{
+                                                        fontFamily: 'Rubik',
+                                                        fontSize: '14px',
+                                                        fontWeight: '400',
+                                                        lineHeight: '17px',
+                                                        letterSpacing: '0em',
+                                                        textAlign: 'right',
+                                                        width: '125px',
+                                                        height: '17px',
+                                                        marginRight: '10px',
+                                                        textOverflow: 'ellipsis',
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                    }}
+                                                >
+                                                    {iFrame.name}
+                                                </Typography>
+                                            </Grid>
+                                        ))}
+                                    </Grid>
+                                </Grid>
+                            ) : (
+                                i18next.t('pages.iFrames')
+                            )
+                        }
+                        isDrawerOpen={isDrawerOpen}
+                        onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
+                        isActiveButton={activeButton === 'iFrames'}
+                    >
+                        <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                    </NavButton>
 
                     <NavButton
                         to="/rule-management"
@@ -386,7 +461,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         onClick={toggleDrawer}
                         style={{
                             height: '50px',
-                            width: '30px',
+                            width: '27px',
                             position: 'fixed',
                             marginRight: isDrawerOpen ? '219px' : '73px',
                             marginTop: '-4.25rem',
@@ -394,7 +469,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             transition: sideBarTransition,
                         }}
                     >
-                        <img src={`/icons/${isDrawerOpen ? 'close-menu' : 'open-menu'}.svg`} />
+                        {isDrawerOpen ? <CloseDrawerButton /> : <OpenDrawerButton />}
                     </IconButton>
                 </Grid>
             </Grid>

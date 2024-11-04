@@ -10,8 +10,7 @@ import { NotificationColor } from '../../../notificationColor';
 
 export const ProcessStatusUpdateNotification: React.FC<{
     notificationMetadata: IProcessStatusUpdateNotificationMetadataPopulated;
-    titleColor: string;
-}> = ({ notificationMetadata: { process, step, status }, titleColor }) => {
+}> = ({ notificationMetadata: { process, step, status } }) => {
     const { notificationsMoreData } = environment.notifications;
     const color = notificationsMoreData.general.find((notificationData) => notificationData.type === NotificationType.processStatusUpdate)?.color;
 
@@ -19,7 +18,7 @@ export const ProcessStatusUpdateNotification: React.FC<{
         <Grid container direction="column" spacing={1}>
             <Grid container>
                 <NotificationColor color={color!} />
-                <Typography display="inline" fontFamily="Rubik" color={titleColor} paddingLeft="10px">
+                <Typography display="inline" fontFamily="Rubik" color="primary" fontWeight="bold" paddingLeft="10px">
                     {`${i18next.t('processStatusUpdateNotification.statusUpdate')} 
                     ${i18next.t(`processStatusUpdateNotification.${step !== undefined ? 'step' : 'process'}`)} `}
                 </Typography>
