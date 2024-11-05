@@ -10,4 +10,4 @@
 # done
 
 # git commit --no-verify for override
-cd ./frontend-service/ && npm run lint && node --max_old_space_size=16384 ./node_modules/vite/bin/vite.js
+cd ./frontend-service/ && npm run lint && node --max_old_space_size=16384 npm run build
