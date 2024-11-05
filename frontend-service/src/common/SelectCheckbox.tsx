@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
+import { Menu, Search } from '@mui/icons-material';
 import {
     Box,
     Button,
