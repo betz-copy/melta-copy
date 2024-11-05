@@ -1,3 +1,4 @@
+/* eslint-disable no-nested-ternary */
 import { Grid, styled, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React from 'react';
@@ -8,9 +9,8 @@ import RelationshipReferenceView from '../../../../common/RelationshipReferenceV
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { IRelationshipTemplateMap } from '../../../../interfaces/relationshipTemplates';
 import { IActivityLog } from '../../../../services/activityLogService';
-import { containsHTMLTags, getFirstLine, getNumLines, renderHTML } from '../../../../utils/HtmlTagsStringValue';
-import { getFileName, getFilesName } from '../../../../utils/getFileName';
-import { P } from '../../../../utils/icons/fa6Icons';
+import { containsHTMLTags, getFirstLine, getNumLines } from '../../../../utils/HtmlTagsStringValue';
+import { getFilesName } from '../../../../utils/getFileName';
 
 const StyledTypography = styled(Typography)(({ theme }) => ({
     fontFamily: 'Rubik',
@@ -139,7 +139,6 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
 }) => {
     const containsHtmlTags = containsHTMLTags(value);
     let innerContent: React.ReactNode = containsHtmlTags ? `"${getFirstLine(value)}${getNumLines(value) > 1 ? '...' : ''}"` : `"${value}"`;
-    let titleContent: string = containsHtmlTags ? renderHTML(value) : value;
     const entityTemplateUpdatedField = entityTemplate.properties.properties[fieldName];
 
     if (entityTemplateUpdatedField.format === 'relationshipReference') {
@@ -150,18 +149,7 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
                 relatedTemplateField={entityTemplateUpdatedField.relationshipReference!.relatedTemplateField}
             />
         );
-        titleContent = '';
     }
-
-    const contentDisplayNameByTemplate = (content: string) => {
-        if (isFileIdFormat()) {
-            return getFilesName(content);
-        } else if (isArrayOfFileIds()) {
-            return getFilesName(content);
-        }
-
-        return content;
-    };
 
     const isFileIdFormat = (): boolean => {
         const { type, format } = entityTemplate.properties.properties[fieldName];
@@ -173,6 +161,17 @@ const UpdateTextValue: React.FC<{ value: any; old: boolean; fieldName: string; e
         const { type, items } = entityTemplate.properties.properties[fieldName];
 
         return type === 'array' && items?.type === 'string' && items.format === 'fileId';
+    };
+
+    const contentDisplayNameByTemplate = (content: string) => {
+        if (isFileIdFormat()) {
+            return getFilesName(content);
+        }
+        if (isArrayOfFileIds()) {
+            return getFilesName(content);
+        }
+
+        return content;
     };
 
     return (

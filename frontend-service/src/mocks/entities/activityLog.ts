@@ -1,8 +1,9 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 
 const mockActivityLog = (mock: MockAdapter) => {
     mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: undefined, limit: 10 } }).reply(() => [
-        200,
+        StatusCodes.OK,
         [
             {
                 _id: '61e7ea2e4251a83e87e83c7e',
@@ -127,7 +128,7 @@ const mockActivityLog = (mock: MockAdapter) => {
     ]);
 
     mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: 10, limit: 10 } }).reply(() => [
-        200,
+        StatusCodes.OK,
         [
             {
                 _id: '61e7ea2e4251a83e87e83c7e',
@@ -263,7 +264,7 @@ const mockActivityLog = (mock: MockAdapter) => {
     ]);
 
     mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: 20, limit: 10 } }).reply(() => [
-        200,
+        StatusCodes.OK,
         [
             {
                 _id: '61e7ea2e4451aa3e87e83c7e',
@@ -372,7 +373,7 @@ const mockActivityLog = (mock: MockAdapter) => {
         ],
     ]);
 
-    mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: 30, limit: 10 } }).reply(() => [200, []]);
+    mock.onGet(/\/api\/activity-log\/[0-9a-fA-F]{24}/, { params: { skip: 30, limit: 10 } }).reply(() => [StatusCodes.OK, []]);
 };
 
 export { mockActivityLog };

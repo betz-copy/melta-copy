@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { Request } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
@@ -21,9 +22,8 @@ export default class RelationshipValidator extends DefaultController<EntityManag
         );
 
         if (getRelationshipTemplateByIdErr || !relationshipTemplate) {
-            if (axios.isAxiosError(getRelationshipTemplateByIdErr) && getRelationshipTemplateByIdErr.response?.status === 404) {
+            if (axios.isAxiosError(getRelationshipTemplateByIdErr) && getRelationshipTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND)
                 throw new ValidationError(`Relationship template doesnt exist (id: "${templateId}")`);
-            }
 
             throw getRelationshipTemplateByIdErr;
         }

@@ -6,6 +6,7 @@ import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
@@ -29,7 +30,7 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
-import { NotFoundError, ServiceError } from '../error';
+import { NotFoundError, ServiceError, ValidationError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
@@ -60,6 +61,8 @@ import BulkActionManager from '../bulkActions/manager';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
+
+const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
 export class EntityManager extends DefaultManagerNeo4j {
     private entityTemplateManagerService: EntityTemplateManagerService;
@@ -171,7 +174,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 templateId: label,
                 property: fixedProperty,
             };
-            throw new ServiceError(400, `[NEO4J] instance is missing required property`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] instance is missing required property`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: requiredConstraint,
                 neo4jMessage,
@@ -200,7 +203,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 properties,
             };
 
-            throw new ServiceError(400, `[NEO4J] instance has duplicates on unique properties`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] instance has duplicates on unique properties`, {
                 errorCode: config.errorCodes.failedConstraintsValidation,
                 constraint: uniqueConstraint,
                 neo4jMessage,
@@ -300,7 +303,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const { relationshipTemplateId, relationshipTemplateDirection, relatedTemplateId } = relationshipReference;
 
         if (relatedEntity.templateId !== relatedTemplateId)
-            throw new ServiceError(400, `[NEO4J] Related entity "${relatedEntity.properties._id}" is not of template "${relatedTemplateId}"`);
+            throw new ValidationError(`[NEO4J] Related entity "${relatedEntity.properties._id}" is not of template "${relatedTemplateId}"`);
 
         const relationshipToCreate = {
             sourceEntityId: relationshipTemplateDirection === 'incoming' ? relatedEntity.properties._id : originalEntityId,
@@ -488,7 +491,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                       };
 
             default:
-                throw new ServiceError(400, 'Invalid crudAction');
+                throw new ValidationError('Invalid crudAction');
         }
     };
 
@@ -733,6 +736,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     async searchEntitiesBatch(searchBody: ISearchBatchBody, entityTemplatesMap: Map<string, IMongoEntityTemplate>) {
         const globalSearchIndexes = await this.neo4jClient.getAllGlobalSearchIndexNames();
 
+        if (globalSearchIndexes.length === 0) {
+            throw new ValidationError(`[NEO4J] Global search index not found.`);
+        }
+
         const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
         const searchCountCypherQuery = searchWithRelationshipsToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
 
@@ -898,7 +905,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
+                throw new ServiceError(badRequestStatus, `[NEO4J] entity "${id}" has existing relationships. Delete them first.`, {
                     errorCode: config.errorCodes.entityHasRelationships,
                 });
             }
@@ -1056,13 +1063,10 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce(
-            (acc, property) => {
-                acc[property] = newEntity[property];
-                return acc;
-            },
-            {} as Record<string, any>,
-        );
+        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
+            acc[property] = newEntity[property];
+            return acc;
+        }, {} as Record<string, any>);
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1168,7 +1172,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entity = await this.getEntityByIdInTransaction(id, transaction);
 
         if (entity.properties.disabled) {
-            throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+            throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
 
         const updatedProperties = this.getKeysOfUpdatedProperties(
@@ -1279,7 +1283,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
-        if (entity.properties.disabled) throw new ServiceError(400, `[NEO4J] cannot update disabled entity.`);
+        if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(
@@ -1467,7 +1471,7 @@ export class EntityManager extends DefaultManagerNeo4j {
 
     private throwServiceErrorIfFailedToCreateConstraint(err: unknown, constraint: IConstraint) {
         if (err instanceof Neo4jError && err.code === 'Neo.DatabaseError.Schema.ConstraintCreationFailed') {
-            throw new ServiceError(400, `[NEO4J] failed to create constraint due to existing invalid data`, {
+            throw new ServiceError(badRequestStatus, `[NEO4J] failed to create constraint due to existing invalid data`, {
                 errorCode: config.errorCodes.failedToCreateConstraints,
                 constraint,
                 neo4jMessage: err.message,

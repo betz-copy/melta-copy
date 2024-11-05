@@ -3,7 +3,7 @@ import { ConsumerMessage } from 'menashmq';
 import { IActivityLog } from '../express/activityLog/interface';
 import ActivityLogManager from '../express/activityLog/manager';
 import { basicValidateRequest } from '../utils/joi';
-import logger from '../utils/logger/logsLogger';
+import { ServiceError } from '../express/error';
 import activityLogSchema from '../utils/rabbit/joi.schema';
 import config from '../config';
 
@@ -23,8 +23,8 @@ class ActivityLogConsumer {
 
             msg.ack();
         } catch (err: any) {
-            logger.error('Rabbit consumer error: ', { error: err });
             msg.nack(false);
+            throw new ServiceError(undefined, `Rabbit consumer error`, { error: err });
         }
     }
 }

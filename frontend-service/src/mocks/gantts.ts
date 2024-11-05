@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { generateMongoId } from './permissions';
 import { IGantt, IGanttItem } from '../interfaces/gantts';
 import { entityTemplates } from './templates/entityTemplates';
@@ -122,28 +123,28 @@ export const mockGantts = (mock: MockAdapter) => {
         const id = data.url?.split('gantts/')[1];
         const gantt = gantts.find((currGantt) => currGantt._id === id);
 
-        if (!gantt) return [404];
-        return [200, gantt];
+        if (!gantt) return [StatusCodes.NOT_FOUND];
+        return [StatusCodes.OK, gantt];
     });
 
     mock.onPost('/api/gantts').reply((data) => {
         const newGantt = JSON.parse(data.data);
 
         gantts.push(newGantt);
-        return [200, newGantt];
+        return [StatusCodes.OK, newGantt];
     });
 
     mock.onPost('/api/gantts/search').reply((data) => {
         const { step = 0, limit = 0 } = JSON.parse(data.data);
         const skip = step * limit;
 
-        return [200, gantts.slice(skip, limit + skip)];
+        return [StatusCodes.OK, gantts.slice(skip, limit + skip)];
     });
 
     mock.onPut(/\/api\/gantts\/.*/).reply((data) => {
         const id = data.url?.split('gantts/')[1];
         const updatedGantt = JSON.parse(data.data);
 
-        return [200, gantts.map((gantt) => (gantt._id === id ? updatedGantt : gantt))];
+        return [StatusCodes.OK, gantts.map((gantt) => (gantt._id === id ? updatedGantt : gantt))];
     });
 };
