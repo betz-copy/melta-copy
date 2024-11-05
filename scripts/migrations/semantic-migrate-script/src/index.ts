@@ -43,11 +43,11 @@ const waitXSeconds = async () => {
 
 const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId: string, fileProperties: string[]) => {
     const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
-    console.log(`Files found in Neo ${JSON.stringify(filesInDb)}`);
     const promises: Promise<any>[] = [];
 
     for (const { _id, files } of filesInDb) {
         const minioFileIds = files.flat().filter((file) => !!file && supportedFileExtensions.includes(path.extname(file)));
+        console.log(`Files found in Neo ${JSON.stringify(minioFileIds)}`);
 
         if (!minioFileIds?.length) continue;
 
