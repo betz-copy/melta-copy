@@ -240,9 +240,7 @@ services:
       DISPLAY_CRON_DATES: ${DISPLAY_CRON_DATES}
 
   semantic-service:
-    build:
-      context: ./semantic-service
-      dockerfile: Dockerfile
+    build: ./semantic-service
     environment:
       PORT: 8000
       RABBIT_URL: ${RABBIT_URL}
