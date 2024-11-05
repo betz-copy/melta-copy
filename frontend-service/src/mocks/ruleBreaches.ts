@@ -12,7 +12,7 @@ import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreach
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../interfaces/ruleBreaches/ruleBreachRequest';
 import { generateMongoId, generateUser } from './permissions';
 import { IEntity } from '../interfaces/entities';
-import { IRelationship } from '../interfaces/relationships';
+import { IRelationship, IRelationshipPopulated } from '../interfaces/relationships';
 
 const chance = new Chance();
 
@@ -90,6 +90,12 @@ const tourist2OnFlight: IRelationship = {
     destinationEntityId: flight.properties._id,
 };
 
+const populatedTourist2OnFlight: IRelationshipPopulated = {
+    ...tourist2OnFlight,
+    sourceEntity: tourist2,
+    destinationEntity: flight,
+};
+
 const generateBrokenRules = (options?: { nullables?: boolean; actionType?: ActionTypes }): IRuleBreachPopulated['brokenRules'] => {
     const { nullables = true, actionType } = options ?? {};
     return [
@@ -100,11 +106,11 @@ const generateBrokenRules = (options?: { nullables?: boolean; actionType?: Actio
                     entity: actionType === ActionTypes.CreateEntity ? '$0._id' : flight,
                     causes: [
                         {
-                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist2 } },
+                            instance: { entity: flight, aggregatedRelationship: { relationship: populatedTourist2OnFlight, otherEntity: tourist2 } },
                             properties: [],
                         },
                         {
-                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist3 } },
+                            instance: { entity: flight, aggregatedRelationship: { relationship: populatedTourist2OnFlight, otherEntity: tourist3 } },
                             properties: [],
                         },
                         ...(nullables
