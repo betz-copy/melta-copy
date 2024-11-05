@@ -57,7 +57,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return Object.values(entityTemplate.properties.properties).some((property) => property.relationshipReference);
     }
 
-    async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession) {
+    async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession, isEditMode?: boolean) {
         const fixedEntityTemplate: IMongoEntityTemplate = JSON.parse(JSON.stringify(entityTemplate));
 
         await Promise.all(
@@ -77,7 +77,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                         isProperty: true,
                     };
 
-                    if (relationshipTemplateId) {
+                    if (isEditMode && relationshipTemplateId) {
                         await this.relationshipTemplateManager.updateTemplateById(relationshipTemplateId, relationshipTemplateToUpsert, session);
                     } else {
                         const upsertedRelationshipTemplate = await this.relationshipTemplateManager.createTemplate(
@@ -180,7 +180,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
             if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
-                entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session);
+                entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
             }
 
             const updatedEntityTemplate = await this.model
