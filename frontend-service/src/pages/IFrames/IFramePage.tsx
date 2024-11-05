@@ -8,10 +8,10 @@ import { getIFrameById } from '../../services/iFramesService';
 import IFrameHeadline from './Headline';
 
 interface IFramePageProps {
-    iFrame: IMongoIFrame;
-    setIFramesOrder: (value: string[]) => void;
-    isIFramePage: boolean;
-    setIFrameDeleted: React.Dispatch<React.SetStateAction<boolean>>;
+    iFrame?: IMongoIFrame;
+    setIFramesOrder?: (value: string[]) => void;
+    isIFramePage?: boolean;
+    setIFrameDeleted?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFramePage = true, setIFrameDeleted }) => {
@@ -22,8 +22,7 @@ const IFramePage: React.FC<IFramePageProps> = ({ iFrame, setIFramesOrder, isIFra
     const { data: iFrameData, isLoading } = useQuery(['getIFrame', id], async () => getIFrameById(id!), {
         initialData: iFrame,
         retry: false,
-        onError: (err) => {
-            console.log(err);
+        onError: (_err) => {
             if (iFrameId) navigate('/404');
         },
     });
