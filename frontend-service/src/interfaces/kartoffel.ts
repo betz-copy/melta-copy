@@ -1,4 +1,4 @@
-export interface IKartoffelUserRole {
+interface IKartoffelUserRole {
     roleId?: string;
     jobTitle?: string;
     directGroup?: string;
@@ -8,8 +8,7 @@ export interface IKartoffelUserRole {
     source?: string;
     displayName?: string;
 }
-
-export interface IKartoffelUserDigitalIdentity {
+interface IKartoffelUserDigitalIdentity {
     _id: string;
     entityId?: string;
     uniqueId?: string;

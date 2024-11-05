@@ -19,7 +19,6 @@ export interface UserProfilePickerProps {
 }
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-    console.log({ imageName });
 
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
     const [iconPickerValue, setIconPickerValue] = useState<string>();
@@ -61,11 +60,9 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                     <ToggleButton value="chooseFile" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseFile')}
                     </ToggleButton>
-                    <Tooltip title={!kartoffelProfile ? 'תמונת חוגר אינה קיימת' : ''}>
-                        <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }} disabled={!kartoffelProfile}>
-                            {i18next.t('input.imagePicker.kartoffelProfile')}
-                        </ToggleButton>
-                    </Tooltip>
+                    <ToggleButton value="kartoffelProfile" sx={{ width: '10rem' }} disabled={!kartoffelProfile}>
+                        {i18next.t('input.imagePicker.kartoffelProfile')}
+                    </ToggleButton>
                 </ToggleButtonGroup>
             </Grid>
 
@@ -83,9 +80,8 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                                             height: 50,
                                             cursor: 'pointer',
                                             boxShadow:
-                                                selectedIcon === iconPath ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 5px rgba(0, 0, 0, 0.5)',
-
-                                            border: selectedIcon === iconPath ? '1.5px solid green' : '',
+                                                selectedIcon === iconPath ? '0px 4px 20px rgba(0, 0, 0, 1.5)' : '0px 4px 5px rgba(0, 0, 0, 0.5)',
+                                            border: selectedIcon === iconPath ? '2.5px solid green' : '',
                                         }}
                                         onClick={() => handleAvatarClick(iconPath)}
                                     />
@@ -93,13 +89,13 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                             ))}
                             <Grid item padding={2}>
                                 <Avatar
-                                    src="/icons/profileAvatar/noneAvatar.png"
+                                    src="/icons/profileAvatar/none.png"
                                     style={{
                                         width: 50,
                                         height: 50,
                                         cursor: 'pointer',
                                         boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
-                                        border: !selectedIcon ? '10px solid white' : '',
+                                        border: !selectedIcon ? '1px solid green' : '',
                                     }}
                                     onClick={() => {
                                         handleAvatarClick(undefined);
@@ -135,23 +131,25 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
             )}
             {inputType === 'kartoffelProfile' && (
                 <Grid padding="20px">
-                    <Tooltip title={!kartoffelProfile ? 'תמונת חוגר אינה קיימת' : ''}>
+                    <Tooltip title={!kartoffelProfile ? i18next.t('user.kartoffelProfileNotExist') : ''}>
                         <IconButton
                             onClick={() => {
-                                if (kartoffelProfile) {
-                                    setSelectedIcon('kartoffelProfile');
-                                    handleAvatarClick(kartoffelProfile);
-                                }
+                                if (kartoffelProfile) handleAvatarClick(kartoffelProfile);
                             }}
+                            style={{
+                                width: 50,
+                                height: 50,
+                                cursor: 'pointer',
+                                boxShadow: selectedIcon === 'kartoffelProfile' ? '0px 4px 10px rgba(0, 0, 0, 0.8)' : '',
+                                border: selectedIcon === 'kartoffelProfile' ? '3px solid green' : '',
+                            }}
+                            disabled={!kartoffelProfile}
                         >
                             <Avatar
                                 style={{
                                     width: 50,
                                     height: 50,
                                     cursor: 'pointer',
-                                    boxShadow:
-                                        selectedIcon === 'kartoffelProfile' ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
-                                    border: selectedIcon === 'kartoffelProfile' ? '1px solid black' : '',
                                 }}
                                 src={kartoffelProfile}
                             />

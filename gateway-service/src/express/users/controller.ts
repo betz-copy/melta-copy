@@ -14,6 +14,10 @@ export class UsersController {
         res.json(await UsersManager.getKartoffelUserById(req.params.kartoffelId));
     }
 
+    static async getKartoffelUserProfile(req: Request, res: Response) {
+        res.json(await UsersManager.getKartoffelUserProfileRequest(req.params.kartoffelId));
+    }
+
     static async searchUserIds(req: Request, res: Response) {
         res.json(await UsersManager.searchUserIds(req.body));
     }

@@ -23,7 +23,6 @@ export class RabbitManager {
         await menash.send(rabbit.notificationQueue, { viewers, type, metadata }, { headers: { [workspaceIdHeaderName]: this.workspaceId } });
 
         const filteredViewers: IUser[] = await this.filterViewers(viewers, type);
-        console.log({ filteredViewers });
 
         if (filteredViewers.length > 0) {
             const mailData = await new MailManager(this.workspaceId).createMail({ viewers: filteredViewers, type, populatedMetaData });

@@ -1,4 +1,3 @@
-import { preReleaseLabel } from '@mui/material';
 import axios from '../axios';
 import { environment } from '../globals';
 import { IKartoffelUser } from '../interfaces/kartoffel';
@@ -34,27 +33,17 @@ export const updateUserPreferencesMetadataRequest = async (
     notificationsToShowCheckbox: any,
 ) => {
     const formData = new FormData();
-    console.log({ updatedPreferences, notificationsToShowCheckbox });
-
     if (updatedPreferences.icon) {
-        // console.log('have icon!!');
-
         if (updatedPreferences.icon.file instanceof File) {
             formData.append('file', updatedPreferences.icon.file);
         } else {
-            // console.log('noooooow its else');
             formData.append('profilePath', updatedPreferences.icon.file.name!);
         }
     } else if (updatedPreferences.profilePath) {
-        // console.log(' i think we here');
         formData.append('profilePath', updatedPreferences.profilePath);
-        // console.log(...formData);
     }
-
     formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
     formData.append('darkMode', JSON.stringify(updatedPreferences.darkMode ?? false));
-
-    console.log('formData', ...formData);
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;
@@ -84,11 +73,12 @@ export const deletePermissionsFromMetadata = async (
     return data;
 };
 
-export const getKartoffelUseByIdRequest = async (kartoffelId: string) => {
-    console.log({ kartoffelId });
-
+export const getKartoffelUserByIdRequest = async (kartoffelId: string) => {
     const { data } = await axios.get<IKartoffelUser>(`${users}/kartoffelUser/${kartoffelId}`);
-    console.log({ data });
+    return data;
+};
 
+export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
+    const { data } = await axios.get<string>(`${users}/kartoffelUserProfile/${kartoffelId}`);
     return data;
 };

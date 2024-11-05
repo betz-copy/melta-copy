@@ -95,7 +95,6 @@ const FileInput: React.FC<FileInputProps> = ({
         alignItems: 'center',
         cursor: 'pointer',
     };
-    console.log({ file });
 
     const isFileFromInput = useMemo(() => file instanceof File || profileImageFile, [file]);
 

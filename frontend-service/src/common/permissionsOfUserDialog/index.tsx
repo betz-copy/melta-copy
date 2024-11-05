@@ -9,6 +9,7 @@ import { IUser } from '../../interfaces/users';
 import { useDarkModeStore } from '../../stores/darkMode';
 import MyAccount from './myAccount';
 import MyPermissions from './myPermissions';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 const PermissionsOfUserDialog: React.FC<{
     isOpen: boolean;
@@ -25,9 +26,20 @@ const PermissionsOfUserDialog: React.FC<{
 
     const initialTab = mode === 'view' ? 'myAccount' : 'myPermissions';
     const [tabValue, setTabValue] = React.useState(initialTab);
+    const [isPreferencesUpdated, setIsPreferencesUpdated] = React.useState(false);
+    const [isUnsavedChangesDialogOpen, setIsUnsavedChangesDialogOpen] = React.useState(false);
 
     const tabsComponentsMapping: Record<string, ReactElement> = {
-        ...(mode === 'view' && { myAccount: <MyAccount handleClose={handleClose} existingUser={existingUser!} /> }),
+        ...(mode === 'view' && {
+            myAccount: (
+                <MyAccount
+                    handleClose={handleClose}
+                    existingUser={existingUser!}
+                    isPreferencesUpdated={isPreferencesUpdated}
+                    setIsPreferencesUpdated={setIsPreferencesUpdated}
+                />
+            ),
+        }),
         myPermissions: <MyPermissions handleClose={handleClose} mode={mode} existingUser={existingUser} onSuccess={onSuccess} />,
     };
     return (
@@ -54,8 +66,16 @@ const PermissionsOfUserDialog: React.FC<{
                 >
                     <TabContext value={tabValue}>
                         <Grid container direction="column">
-                            <Grid item>
-                                <TabList onChange={(_event, newValue) => setTabValue(newValue)} scrollButtons="auto" variant="scrollable">
+                            <Grid item marginBottom={1}>
+                                <TabList
+                                    onChange={(_event, newValue) => {
+                                        if (newValue === 'myPermissions' && isPreferencesUpdated) {
+                                            setIsUnsavedChangesDialogOpen(true);
+                                        } else setTabValue(newValue);
+                                    }}
+                                    scrollButtons="auto"
+                                    variant="scrollable"
+                                >
                                     {Object.keys(tabsComponentsMapping).map((tabName) => (
                                         <Tab
                                             key={tabName}
@@ -86,7 +106,7 @@ const PermissionsOfUserDialog: React.FC<{
                         </Grid>
                     </TabContext>
 
-                    <Grid display="flex" sx={{ position: 'absolute', bottom: 9, left: 10 }}>
+                    <Grid display="flex" sx={{ position: 'absolute', bottom: 13, left: 15 }}>
                         {mode === 'view' && (
                             <Button
                                 onClick={() => {
@@ -102,6 +122,22 @@ const PermissionsOfUserDialog: React.FC<{
                     </Grid>
                 </Box>
             )}
+
+            <AreYouSureDialog
+                open={isUnsavedChangesDialogOpen}
+                onYes={() => {
+                    setTabValue('myPermissions');
+                    setIsUnsavedChangesDialogOpen(false);
+                }}
+                onNo={() => {
+                    setTabValue(tabValue);
+                    setIsUnsavedChangesDialogOpen(false);
+                }}
+                handleClose={() => {
+                    setIsUnsavedChangesDialogOpen(false);
+                }}
+                body={i18next.t('user.areYouSure')}
+            />
         </Dialog>
     );
 };

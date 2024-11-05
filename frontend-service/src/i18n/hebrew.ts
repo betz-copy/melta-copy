@@ -308,7 +308,7 @@ export default {
         noOptions: 'אין תוצאות',
     },
     notifications: {
-        notificationType: 'סוג התראה',
+        notificationType: 'התראות למייל',
         title: 'התראות',
         failedToGetNotifications: 'נכשל לטעון התראות',
         noNotificationsLeft: 'אין עוד התראות',
@@ -392,7 +392,12 @@ export default {
         close: 'סגור',
         cancel: 'ביטול שינויים',
         edit: 'ערוך פרופיל',
-        done:'סיים',
+        save: 'שמור',
+        kartoffelProfileNotExist: 'תמונת חוגר אינה קיימת',
+        yes: 'כן',
+        no: 'לא',
+        areYouSure: 'בפעולה זו השינויים ימחקו',
+        succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',

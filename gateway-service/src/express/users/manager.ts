@@ -29,6 +29,10 @@ export class UsersManager {
         return Kartoffel.getUserById(kartoffelId);
     }
 
+    static async getKartoffelUserProfileRequest(kartoffelId: string) {
+        return Kartoffel.getUserProfile(kartoffelId);
+    }
+
     static async searchUserIds(searchBody: IUserSearchBody): Promise<string[]> {
         return UserService.searchUserIds(searchBody);
     }
@@ -73,8 +77,6 @@ export class UsersManager {
     }
 
     static async updateUserExternalMetadata(userId: string, externalMetadata: Partial<IBaseUser['externalMetadata']>): Promise<IUser> {
-        console.log('here?');
-
         return UserService.updateUser(userId, { externalMetadata });
     }
 
@@ -86,28 +88,19 @@ export class UsersManager {
         const {
             preferences: { profilePath },
         } = await UserService.getUserById(userId);
-        console.log({ preferences });
 
-        console.log({ file, profilePath, preferences });
         if (file) {
-            if (profilePath && this.isProfileFileType(profilePath)) {
-                console.log('its ok');
-
-                await UsersManager.storageService.deleteFile(profilePath);
-            }
+            if (profilePath && this.isProfileFileType(profilePath)) await UsersManager.storageService.deleteFile(profilePath);
             const newProfilePath = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
-            // preferences.profilePath = newProfilePath;
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: newProfilePath } });
         }
 
         if (profilePath && (!preferences.profilePath || preferences.profilePath !== profilePath)) {
-            console.log(preferences.profilePath ? 'Updating to a new profilePath' : 'Resetting to default profile path');
-
             await this.storageService.deleteFile(profilePath);
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: preferences.profilePath || undefined } });
         }
-        console.log('Final update without changes', { preferences });
+
         return UserService.updateUser(userId, { preferences });
     }
 
@@ -124,16 +117,12 @@ export class UsersManager {
 
     static async syncUser(userId: string): Promise<IUser> {
         const user = await UserService.getUserById(userId);
-        console.log('got the user ', { user });
 
         const { _id, displayName, permissions, preferences, existingDigitalIdentitySource, ...digitalIdentity } =
             await this.getExternalUserDigitalIdentity(user.externalMetadata.kartoffelId, user.externalMetadata.digitalIdentitySource);
 
         UsersManager.validateDigitalIdentity(user.externalMetadata.kartoffelId, digitalIdentity);
-        console.log('pass the validate');
-
         if (objectContains(user, digitalIdentity)) return user;
-        console.log({ digitalIdentity });
 
         return UserService.updateUser(userId, digitalIdentity);
     }

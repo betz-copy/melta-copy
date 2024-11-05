@@ -35,8 +35,8 @@ export const baseUserSchema = joi.object({
     preferences: joi
         .object({
             darkMode: joi.boolean(),
-            // mailsNotificationsTypes: joi.array().items(NotificationType),
             mailsNotificationsTypes: joi.array().items(joi.string()),
+            profilePath: joi.string(),
         })
         .required(),
 });
@@ -60,6 +60,15 @@ export const getUserByIdRequestSchema = joi.object({
 
 // GET /api/users/kartoffelUser/:kartoffelId
 export const getKartoffelUserByIdRequestSchema = joi.object({
+    query: {},
+    body: {},
+    params: {
+        kartoffelId: joi.string().required(),
+    },
+});
+
+// GET /api/users/kartoffelUserProfile/:kartoffelId
+export const getKartoffelUserProfileRequestSchema = joi.object({
     query: {},
     body: {},
     params: {

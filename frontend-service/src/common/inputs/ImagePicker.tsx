@@ -6,7 +6,7 @@ import IconPicker from './IconPicker';
 import fileDetails from '../../interfaces/fileDetails';
 
 type InputSelectType = 'chooseFile' | 'chooseFromOptions';
-export interface ImagePickerProps {
+interface ImagePickerProps {
     image?: fileDetails;
     onPick: (image: fileDetails) => void;
     onDelete: () => void;
@@ -56,8 +56,6 @@ const ImagePicker: React.FC<ImagePickerProps> = ({ image, onPick, onDelete, defa
                         selectedIconName={image?.name.split('.')[0]}
                         onPick={(icon) => {
                             const detailedFile = { file: icon, name: icon.name };
-                            console.log({ icon });
-
                             setIconPickerValue(detailedFile);
                             onPick(detailedFile);
                         }}

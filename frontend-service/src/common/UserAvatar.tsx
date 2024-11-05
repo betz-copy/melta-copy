@@ -13,7 +13,7 @@ interface UserAvatarProps {
     defaultProfile?: boolean;
 }
 
-export const getNameInitials = (user: IUser): string => {
+const getNameInitials = (user: IUser): string => {
     const names = user.fullName?.split(' ') ?? [];
 
     if (names.length < 3) return names.map((name) => name.charAt(0)).join('');

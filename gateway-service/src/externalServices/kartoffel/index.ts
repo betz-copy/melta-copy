@@ -28,4 +28,10 @@ export class Kartoffel {
         const { data } = await this.kartoffel.get<IKartoffelUser>(`${getByIdRoute}/${id}`);
         return data;
     };
+
+    static getUserProfile = async (kartoffelId: string) => {
+        const { data } = await this.kartoffel.get<IKartoffelUser>(`${baseEntitiesRoute}/${kartoffelId}/pictures/profile`);
+        console.log({ data });
+        return data;
+    };
 }

@@ -6,9 +6,8 @@ import React, { useEffect, useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IKartoffelUser } from '../../interfaces/kartoffel';
 import { IUser } from '../../interfaces/users';
-import { getKartoffelUseByIdRequest, updateUserPreferencesMetadataRequest } from '../../services/userService';
+import { getKartoffelUserProfileRequest, updateUserPreferencesMetadataRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { SelectCheckbox } from '../SelectCheckbox';
@@ -28,15 +27,19 @@ export const defaultInputType = (profilePath?: string) => {
     return 'chooseFile';
 };
 
-const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({ existingUser, handleClose }) => {
+const MyAccount: React.FC<{
+    existingUser: IUser;
+    handleClose: () => void;
+    isPreferencesUpdated: boolean;
+    setIsPreferencesUpdated: (isUpdate: boolean) => void;
+}> = ({ existingUser, handleClose, isPreferencesUpdated, setIsPreferencesUpdated }) => {
     const allNotifications = [...notificationsMoreData.requests, ...notificationsMoreData.general];
     const [notificationsToShowCheckbox, setNotificationsToShowCheckbox] = useState(
         allNotifications.filter((notification) => existingUser?.preferences.mailsNotificationsTypes?.includes(notification.type)),
     );
-    const [kartoffelUser, setKartoffelUser] = useState<IKartoffelUser>();
+    const [kartoffelUserProfile, setKartoffelUserProfile] = useState<string>();
     const [editProfile, setEditProfile] = useState(false);
     const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
-    const [isDataUpdated, setIsDataUpdated] = useState(false);
     const [isDarkMode, setIsDarkMode] = useState(preferences.darkMode ?? false);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
@@ -51,74 +54,66 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
     };
 
     useEffect(() => {
-        const getKartoffelUser = async () => {
+        const fetchUserProfile = async () => {
             try {
-                const user: IKartoffelUser = await getKartoffelUseByIdRequest(existingUser.externalMetadata.kartoffelId);
-                setKartoffelUser(user);
+                const kartoffelProfile = await getKartoffelUserProfileRequest(existingUser.externalMetadata.kartoffelId);
+                setKartoffelUserProfile(kartoffelProfile);
             } catch (error) {
-                console.error('Failed to fetch Kartoffel user:', error);
+                console.error('Failed to fetch Kartoffel user profile:', error);
             }
         };
 
-        getKartoffelUser();
+        fetchUserProfile();
     }, [existingUser]);
 
     useEffect(() => {
         const arePreferencesChange = !isEqual(preferences, existingUser.preferences);
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
         const areNotificationsUpdated = !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
-        console.log({ arePreferencesChange, areNotificationsUpdated }, { updatedNotificationsTypes }, existingUser.preferences, preferences);
-
-        setIsDataUpdated(arePreferencesChange || areNotificationsUpdated);
+        setIsPreferencesUpdated(arePreferencesChange || areNotificationsUpdated);
     }, [preferences, notificationsToShowCheckbox]);
 
-    const { isLoading, mutateAsync } = useMutation(
-        (id: string) => updateUserPreferencesMetadataRequest(id, preferences, notificationsToShowCheckbox),
-        {
-            onSuccess: (updatedUser: IUser) => {
-                if (!existingUser) return;
+    const { mutateAsync } = useMutation((id: string) => updateUserPreferencesMetadataRequest(id, preferences, notificationsToShowCheckbox), {
+        onSuccess: (updatedUser: IUser) => {
+            if (!existingUser) return;
 
-                if (existingUser?._id === currentUser._id) {
-                    console.log(currentUser, preferences);
+            if (existingUser?._id === currentUser._id) {
+                setUser({
+                    ...currentUser,
+                    preferences: updatedUser.preferences,
+                });
+            }
 
-                    setUser({
-                        ...currentUser,
-                        preferences: updatedUser.preferences,
-                    });
-                }
-
-                toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
-                handleClose();
-            },
-
-            onError: (err: AxiosError) => {
-                console.log({ err });
-                // const errorMetadata = handleMutationError(err, entityTemplate);
-                // if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
-                //     setCreateOrUpdateWithRuleBreachDia   logState!({
-                //         isOpen: true,
-                //         brokenRules: errorMetadata.brokenRules,
-                //         rawBrokenRules: errorMetadata.rawBrokenRules,
-                //         newEntityData,
-                //     });
-                // }
-                throw err;
-            },
+            toast.success(i18next.t('user.succeededToUpdatePreferences'));
+            handleClose();
         },
-    );
+
+        onError: (err: AxiosError) => {
+            console.log({ err });
+            throw err;
+        },
+    });
 
     return (
         <>
-            <Grid container spacing={2} style={{ padding: '15px', marginTop: '0.2px', border: '1px solid #ccc', borderRadius: '8px' }}>
-                <Grid container item display="flex" width="100%" xs={12} padding={2}>
+            <Grid
+                container
+                spacing={2}
+                sx={{
+                    padding: '0px 15px 9px 8px',
+                    marginBottom: '0.8px',
+                    border: '1px solid #ccc',
+                    borderRadius: '8px',
+                }}
+            >
+                <Grid container item display="flex" width="100%" xs={12} padding={editProfile ? 1 : 0}>
                     <Grid item xs={6}>
                         <UserAvatar user={existingUser} size={100} />
-
                         <Button
                             onClick={() => {
                                 setEditProfile(!editProfile);
                             }}
-                            sx={{ color: darkMode ? 'white' : 'black', paddingTop: '12px' }}
+                            sx={{ color: darkMode ? 'white' : 'black', paddingTop: '12px', left: editProfile ? 0 : 5 }}
                         >
                             {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
                         </Button>
@@ -152,8 +147,6 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                                 onPick={(value: any) => {
                                     if (!existingUser) return;
                                     if (!value) {
-                                        console.log('no value ');
-
                                         setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
                                     } else if (value.file) {
                                         setPreferences({ ...preferences, icon: value, profilePath: undefined });
@@ -164,7 +157,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                                 onDelete={() => {
                                     setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
                                 }}
-                                kartoffelProfile={kartoffelUser?.pictures?.profile?.url}
+                                kartoffelProfile={kartoffelUserProfile}
                                 imageName={isProfileFileType(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                                 defaultInputType={defaultInputType(existingUser.preferences.profilePath)}
                             />
@@ -202,7 +195,7 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                             size="small"
                             toUserProfile
                             isDraggableDisabled
-                            horizontalOrigin={148}
+                            horizontalOrigin={153}
                         />
                     </Grid>
                     <Grid item marginRight={2}>
@@ -217,22 +210,22 @@ const MyAccount: React.FC<{ existingUser: IUser; handleClose: () => void }> = ({
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid padding={2}>
+            <Grid padding={3}>
                 <Button
                     onClick={() => {
                         mutateAsync(existingUser!._id);
                         handleClose();
                     }}
-                    disabled={!isDataUpdated}
+                    disabled={!isPreferencesUpdated}
                     variant="contained"
                     sx={{
                         position: 'absolute',
-                        margin: '7px',
-                        right: editProfile ? 10 : 20,
-                        bottom: 3,
+                        marginY: '0.5px',
+                        right: editProfile ? 16 : 20,
+                        bottom: editProfile ? 10 : 18,
                     }}
                 >
-                    {i18next.t('user.done')}
+                    {i18next.t('user.save')}
                 </Button>
             </Grid>
         </>

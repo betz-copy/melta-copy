@@ -7,6 +7,7 @@ import {
     createUserRequestSchema,
     deletePermissionsFromMetadataRequestSchema,
     getKartoffelUserByIdRequestSchema,
+    getKartoffelUserProfileRequestSchema,
     getMyUserRequestSchema,
     getUserByIdRequestSchema,
     searchExternalUsersRequestSchema,
@@ -31,6 +32,12 @@ usersRouter.get(
     '/kartoffelUser/:kartoffelId',
     ValidateRequest(getKartoffelUserByIdRequestSchema),
     wrapController(UsersController.getKartoffelUserById),
+);
+
+usersRouter.get(
+    '/kartoffelUserProfile/:kartoffelId',
+    ValidateRequest(getKartoffelUserProfileRequestSchema),
+    wrapController(UsersController.getKartoffelUserProfile),
 );
 
 usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapController(UsersController.getUserById));

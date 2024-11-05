@@ -320,8 +320,6 @@ const CreateOrEditEntityDetails: React.FC<{
             }}
         >
             {({ setFieldValue, values, errors, touched, setFieldTouched, setValues, dirty, initialValues: formInitialValues }) => {
-                console.log({ values });
-
                 const { templateFilesProperties, templateFileKeys, requiredFilesNames } = getEntityTemplateFilesFieldsInfo(
                     values.template || entityTemplate,
                 );
@@ -410,7 +408,6 @@ const CreateOrEditEntityDetails: React.FC<{
                         isEditMode={isEditMode}
                     />
                 );
-                console.log({ templateFilesProperties }, Object.entries(templateFilesProperties));
 
                 const propertiesFilesComp = templateFileKeys.length > 0 && (
                     <>

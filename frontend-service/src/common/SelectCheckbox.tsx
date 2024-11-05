@@ -624,7 +624,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                     fontFamily: 'Rubik',
                     fontSize: '14px',
                     fontWeight: 400,
-                    boxShadow: toUserProfile ? '0px 4px 15px rgba(0,0,0,0.2)' : 'none',
+                    boxShadow: toUserProfile ? '0px 3px 10px rgba(0,0,0,0.2)' : 'none',
                     // eslint-disable-next-line no-nested-ternary
                     borderRadius: '8px',
                     ...(darkMode
