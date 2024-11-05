@@ -1,8 +1,8 @@
+import { StatusCodes } from 'http-status-codes';
 import React from 'react';
 import { useQuery } from 'react-query';
 import { IFile } from '../../interfaces/preview';
 import { getFilePreviewRequest } from '../../services/previewService';
-import { StatusCodes } from 'http-status-codes';
 
 export const useFilePreview = (
     fileId: IFile['id'] | File,
