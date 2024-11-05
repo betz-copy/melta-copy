@@ -25,6 +25,7 @@ export type WizardBaseType<T extends object> = {
 
 export type StepsType<T extends object> = {
     label: string;
+    description?: string;
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
@@ -40,6 +41,8 @@ const Wizard = <T extends object>({
     isLoading,
     submitFunction,
     isEditMode,
+    direction = 'row',
+    showPrevSteps = false,
 }: PropsWithChildren<
     WizardBaseType<T> & {
         initialValues: T;
@@ -47,6 +50,8 @@ const Wizard = <T extends object>({
         steps: StepsType<T>;
         isLoading: boolean;
         submitFunction: (values: T) => Promise<any>;
+        direction?: 'row' | 'column';
+        showPrevSteps?: boolean;
     }
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
@@ -93,7 +98,7 @@ const Wizard = <T extends object>({
                 <Formik
                     initialValues={initialValues}
                     validationSchema={
-                        steps[activeStep].validationSchema instanceof Yup.ObjectSchema
+                        steps[activeStep].validationSchema && steps[activeStep].validationSchema instanceof Yup.ObjectSchema
                             ? steps[activeStep].validationSchema
                             : Yup.object(steps[activeStep].validationSchema as ObjectShape)
                     }
@@ -117,6 +122,8 @@ const Wizard = <T extends object>({
                                 isLoading={isLoading}
                                 formikProps={formikProps}
                                 isEditMode={!!isEditMode}
+                                direction={direction}
+                                showPrevSteps={showPrevSteps}
                             />
                         </Form>
                     )}

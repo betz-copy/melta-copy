@@ -12,6 +12,8 @@ const Stepper = <T extends object>({
     isLoading,
     formikProps,
     isEditMode,
+    direction,
+    showPrevSteps = false,
 }: {
     activeStep: number;
     handleBack: () => void;
@@ -19,34 +21,46 @@ const Stepper = <T extends object>({
     isLoading: boolean;
     formikProps: FormikProps<T>;
     isEditMode: boolean;
+    direction: 'row' | 'column';
+    showPrevSteps?: boolean;
 }): JSX.Element | null => {
     const [block, setBlock] = useState(false);
 
     return (
-        <Grid container minWidth="70vh">
+        <Grid container minWidth="70vh" spacing={2}>
             {steps.length > 1 && (
-                <Grid container marginBottom="5%">
-                    <StepperSideBar steps={steps} activeStep={activeStep} />
+                <Grid item xs={direction === 'row' ? 3 : 12}>
+                    <StepperSideBar
+                        steps={steps}
+                        activeStep={activeStep}
+                        direction={direction}
+                        componentProps={{ formikProps, helpers: { isEditMode, setBlock } }}
+                        showPrevSteps={showPrevSteps}
+                    />
                 </Grid>
             )}
-            <Grid
-                container
-                direction="column"
-                justifyContent="space-between"
-                alignItems="center"
-                height="100%"
-                marginBottom="0.5rem"
-                marginTop="1rem"
-            >
-                {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
-            </Grid>
-            <StepperActions
-                handleBack={handleBack}
-                isLastStep={activeStep === steps.length - 1}
-                isFirstStep={activeStep === 0}
-                isLoading={isLoading || block}
-                formikProps={formikProps}
-            />
+            {direction === 'row' && (
+                <Grid
+                    container
+                    direction="column"
+                    justifyContent="space-between"
+                    alignItems="center"
+                    height="100%"
+                    marginBottom="0.5rem"
+                    marginTop="1rem"
+                >
+                    {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
+                </Grid>
+            )}
+            {!showPrevSteps && (
+                <StepperActions
+                    handleBack={handleBack}
+                    isLastStep={activeStep === steps.length - 1}
+                    isFirstStep={activeStep === 0}
+                    isLoading={isLoading || block}
+                    formikProps={formikProps}
+                />
+            )}
         </Grid>
     );
 };

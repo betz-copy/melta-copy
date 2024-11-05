@@ -108,9 +108,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, onlyColumns }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, onlyColumns);
         });
 
         await Promise.all(tasks);
@@ -122,32 +122,35 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
+        onlyColumns?: boolean,
     ) {
-        const worksheet = await cerateWorksheet(workbook, template);
-        const { searchEntitiesChunkSize } = config.service;
-        const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-            limit: 1,
-            filter,
-            sort,
-        });
-        for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
-            const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-                skip,
-                limit: searchEntitiesChunkSize,
-                textSearch,
+        const worksheet = await cerateWorksheet(workbook, template, onlyColumns);
+        if (!onlyColumns) {
+            const { searchEntitiesChunkSize } = config.service;
+            const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                limit: 1,
                 filter,
                 sort,
             });
-            const rows = fixComplexProperties(
-                chunk.map((row) => row.entity.properties),
-                template,
-            );
+            for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
+                const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                    skip,
+                    limit: searchEntitiesChunkSize,
+                    textSearch,
+                    filter,
+                    sort,
+                });
+                const rows = fixComplexProperties(
+                    chunk.map((row) => row.entity.properties),
+                    template,
+                );
 
-            rows.forEach((row) => {
-                const excelRow = worksheet.addRow(row);
-                styleAWorksheet(worksheet);
-                excelRow.commit();
-            });
+                rows.forEach((row) => {
+                    const excelRow = worksheet.addRow(row);
+                    styleAWorksheet(worksheet);
+                    excelRow.commit();
+                });
+            }
         }
     }
 

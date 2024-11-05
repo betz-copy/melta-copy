@@ -55,14 +55,24 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
-const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated) => {
+const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated, onlyColumns?: boolean) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
     const sheetColumns: Partial<Excel.Column>[] = [];
     Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
-        sheetColumns.push({ key: propertyKey, header: propertyTemplate.title, width: 20 });
+        const { propertyType } = excelConfig;
+        let type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+        if (type === propertyType.fileId && propertyTemplate.items) type = propertyType.multipleFiles;
+        if (type === propertyType.array && propertyTemplate.enum) type = propertyType.enum;
+        if (propertyTemplate.uniqueItems) type += `, ${excelConfig.unique}`;
+
+        sheetColumns.push({
+            key: propertyKey,
+            header: `${propertyTemplate.title}${onlyColumns ? `(${type})` : ''}`,
+            width: 20,
+        });
     });
-    worksheet.columns = sheetColumns.concat(excelConfig.excelDefaultColumns);
+    worksheet.columns = sheetColumns.concat(onlyColumns ? excelConfig.excelDefaultColumnsOnlyColumns : excelConfig.excelDefaultColumns);
     return worksheet;
 };
 

@@ -323,7 +323,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                                                                         <OpenPreview
                                                                             fileId={values.attachmentsProperties[fieldName].name}
                                                                             key={`${fieldName} - 1`}
-                                                                            download={toPrint}
+                                                                            type={toPrint ? 'download' : 'preview'}
                                                                         />
                                                                     );
                                                                 }

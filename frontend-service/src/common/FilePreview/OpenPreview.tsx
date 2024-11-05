@@ -1,4 +1,4 @@
-import { Box, Grid, IconButton, Link, Typography } from '@mui/material';
+import { Box, CircularProgress, Grid, IconButton, Link, Typography } from '@mui/material';
 import React, { ReactNode, useState } from 'react';
 import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
@@ -6,12 +6,12 @@ import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } 
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
 
-const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<void>; img?: ReactNode; showText?: boolean }> = ({
-    fileName,
-    onClick,
-    img,
-    showText,
-}) => (
+const OpenPreviewContent: React.FC<{
+    fileName: string;
+    onClick?: () => Promise<void> | React.MouseEventHandler<HTMLButtonElement>;
+    img?: ReactNode;
+    showText?: boolean;
+}> = ({ fileName, onClick, img, showText }) => (
     <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
         <IconButton
             sx={{ borderRadius: 10, maxWidth: '100%' }}
@@ -43,9 +43,12 @@ const OpenPreview: React.FC<{
     fileId: string | File;
     img?: ReactNode;
     showText?: boolean;
-    download?: boolean;
-}> = ({ fileId, img, showText = true, download }) => {
-    const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
+    type?: 'download' | 'preview' | 'exportTable';
+    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    loading?: boolean;
+}> = ({ fileId, img, showText = true, type = 'preview', onClick, loading }) => {
+    // eslint-disable-next-line no-nested-ternary
+    const fileName = typeof fileId === 'string' ? (type === 'exportTable' ? fileId : getFileName(fileId)) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
 
@@ -55,16 +58,23 @@ const OpenPreview: React.FC<{
 
     return (
         <Grid>
-            {download ? (
+            {type === 'download' && (
                 <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
                     <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
                 </Link>
-            ) : (
+            )}
+            {type === 'preview' && (
                 <Box>
                     <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} />
                     {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
                 </Box>
             )}
+            {type === 'exportTable' &&
+                (loading ? (
+                    <CircularProgress size="24px" />
+                ) : (
+                    <OpenPreviewContent fileName={fileName} onClick={onClick as React.MouseEventHandler<HTMLButtonElement>} showText={showText} />
+                ))}
         </Grid>
     );
 };

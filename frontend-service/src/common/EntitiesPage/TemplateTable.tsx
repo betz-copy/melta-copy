@@ -5,6 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
+    UploadFile,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -182,6 +183,24 @@ const TemplateTable = forwardRef<
                 </Grid>
 
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
+                    <AddEntityButton
+                        initialStep={1}
+                        disabled={!userHasWritePermissions}
+                        initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
+                        style={{
+                            display: 'flex',
+                            gap: '0.25rem',
+                            borderRadius: '5px',
+                            fontSize: '0.75rem',
+                            color: theme.palette.primary.main,
+                        }}
+                        onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
+                        setUpdatedEntities={setUpdatedEntities}
+                        isLoadEntities
+                    >
+                        <UploadFile fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
+                        {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
+                    </AddEntityButton>
                     <AddEntityButton
                         initialStep={1}
                         disabled={!userHasWritePermissions}
