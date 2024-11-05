@@ -56,7 +56,7 @@ export const GlobalSearchBar: React.FC<{
             };
         }
 
-        return () => {};
+        return undefined;
     }, [debouncedSearchValue, gridApi, onSearch, autoSearch]);
 
     return (
