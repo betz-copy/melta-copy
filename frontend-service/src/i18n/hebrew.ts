@@ -789,6 +789,8 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        brokenRules: 'חריגות',
+        actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
         actionBrokeTheFollowingRules: 'הפעולה שנעשתה',
         brokeTheFollowingRule: 'הפרה את החוק',
@@ -800,6 +802,7 @@ export default {
         noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
         warning: 'אזהרה',
         enforcement: 'אכיפה',
+        relationshipsCombination: 'צירוף הקשרים',
     },
     ruleBreachAlertNotification: {
         breach: 'הפרת חוק',

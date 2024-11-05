@@ -686,17 +686,29 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         return entitiesMap.get(entityId) ?? null;
     }
 
-    private populateRelationshipForBrokenRules(relationshipId: string, relationshipsMap: Map<string, IEntity>): IRelationshipForBrokenRules {
+    private populateRelationshipForBrokenRules(
+        relationshipId: string,
+        relationshipsMap: Map<string, IRelationship>,
+        entitiesMap: Map<string, IEntity>,
+    ): IRelationshipForBrokenRules {
         if (relationshipId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             return relationshipId;
         }
-        return relationshipsMap.get(relationshipId) ?? null;
+        const relationship = relationshipsMap.get(relationshipId) ?? null;
+
+        if (!relationship) return null;
+
+        return {
+            ...relationship,
+            sourceEntity: entitiesMap.get(relationship.sourceEntityId)!,
+            destinationEntity: entitiesMap.get(relationship.destinationEntityId)!,
+        };
     }
 
     private populateBrokenRule(
         { ruleId, failures }: IBrokenRule,
         entitiesMap: Map<string, IEntity>,
-        relationshipsMap: Map<string, IEntity>,
+        relationshipsMap: Map<string, IRelationship>,
     ): IBrokenRulePopulated {
         const failuresPopulated: IBrokenRulePopulated['failures'] = failures.map((failure) => {
             return {
@@ -707,7 +719,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                     if (cause.instance.aggregatedRelationship) {
                         const { relationshipId, otherEntityId } = cause.instance.aggregatedRelationship;
                         aggregatedRelationship = {
-                            relationship: this.populateRelationshipForBrokenRules(relationshipId, relationshipsMap),
+                            relationship: this.populateRelationshipForBrokenRules(relationshipId, relationshipsMap, entitiesMap),
                             otherEntity: this.populateEntityForBrokenRules(otherEntityId, entitiesMap),
                         };
                     }
@@ -746,20 +758,27 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             });
         });
 
-        // no point to do getInstanceById to unexisting entity
-        entitiyIds.forEach((str) => {
-            if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
-                entitiyIds.delete(str);
-            }
-        });
         relationshipIds.forEach((str) => {
             if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
                 relationshipIds.delete(str);
             }
         });
 
+        const relationships = await this.instancesService.getRelationshipsByIds(Array.from(relationshipIds));
+
+        relationships.forEach((relationship) => {
+            entitiyIds.add(relationship.sourceEntityId);
+            entitiyIds.add(relationship.destinationEntityId);
+        });
+
+        // no point to do getInstanceById to unexisting entity
+        entitiyIds.forEach((str) => {
+            if (str.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
+                entitiyIds.delete(str);
+            }
+        });
+
         const entities = await this.instancesService.getEntityInstancesByIds(Array.from(entitiyIds));
-        const relationships = await this.instancesService.getEntityInstancesByIds(Array.from(relationshipIds));
 
         const entitiesMap = new Map(entities.map((entity) => [entity.properties._id, entity]));
         const relationshipsMap = new Map(relationships.map((relationship) => [relationship.properties._id, relationship]));
@@ -857,6 +876,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         if (entityId.startsWith(ruleBreachService.brokenRulesFakeEntityIdPrefix)) {
             const numberPart = parseInt(entityId.slice(1, -4), 10);
             entity = actions[numberPart].actionMetadata as IEntity;
+            entity.properties._id = entityId;
         } else entity = await this.instancesService.getEntityInstanceById(entityId).catch(() => null);
 
         if (entity) {

@@ -1,0 +1,24 @@
+{
+  "name": "melta",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pre-push": "cd ./frontend-service && npm run lint && npm run build",
+    "prepare": "husky install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/melta-team/melta.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/melta-team/melta/issues"
+  },
+  "homepage": "https://github.com/melta-team/melta#readme",
+  "devDependencies": {
+    "husky": "^6.0.0"
+  }
+}
