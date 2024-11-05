@@ -324,7 +324,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const queryClient = useQueryClient();
 
     const [localOption, setLocalOption] = useState<string>('');
-    const [duplicate, setDuplicate] = useState<boolean>(false);
+    const [editError, setEditError] = useState<string>('');
 
     const chipRefs = useRef<(HTMLDivElement | null)[]>([]);
     const [open, setOpen] = useState<boolean>(false);
@@ -336,7 +336,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const handleEditChange = (e, _tagIndex) => {
         e.preventDefault();
         setLocalOption(e.target.value);
-        setDuplicate(false);
+        setEditError('');
     };
     const { mutate: updateEnumField, isLoading } = useMutation(
         (mutationArgs: { id: string; tagIndex: number; option: string; fieldValue: any }) => {
@@ -448,26 +448,29 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     };
 
     useEffect(() => {
-        if (!editIndex) setDuplicate(false);
+        if (!editIndex) setEditError('');
     }, [editIndex]);
 
     const handleSaveEdit = (tagIndex: number) => {
         const checkIfOldEnumValue = initialOptionArray.length > tagIndex && isDisabled;
-        setDuplicate(false);
-        if (value.options[tagIndex] === localOption) setEditIndex(null);
-        else if (value.options.includes(localOption)) {
-            setDuplicate(true);
+        const trimValue = localOption.trim();
+        setEditError('');
+        if (value.options[tagIndex] === trimValue) setEditIndex(null);
+        else if (trimValue.length === 0) {
+            setEditError('errorPage.emptyInputError');
+        } else if (value.options.includes(trimValue)) {
+            setEditError('errorPage.duplicateValue');
         } else if (checkIfOldEnumValue) {
-            handleUpdateEnumField(templateId, tagIndex, localOption, value);
+            handleUpdateEnumField(templateId, tagIndex, trimValue, value);
             return;
         } else {
             const oldColor = value.optionColors?.[value.options[tagIndex]];
-            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? localOption : option));
+            const newOptions = value.options.map((option, valIndex) => (valIndex === tagIndex ? trimValue : option));
 
             if (oldColor) {
                 const newOptionColors = { ...value.optionColors! };
                 delete newOptionColors[value.options[tagIndex]];
-                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [localOption]: oldColor }, options: newOptions }));
+                setValues?.((prev) => ({ ...prev, optionColors: { ...newOptionColors, [trimValue]: oldColor }, options: newOptions }));
             } else {
                 setValues?.((prev) => ({ ...prev, options: newOptions }));
             }
@@ -597,6 +600,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                 freeSolo
                                                 value={value.options}
                                                 onChange={(_e, currValue) => {
+                                                    currValue[currValue.length - 1] = currValue[currValue.length - 1].trim();
                                                     if (isDisabled) {
                                                         updateOldDisabledEnumVals(currValue);
                                                     } else {
@@ -605,6 +609,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             options: currValue,
                                                         }));
                                                     }
+                                                }}
+                                                isOptionEqualToValue={(option, value) => {
+                                                    return option.trim() === value.trim() || option.trim().length === 0;
                                                 }}
                                                 renderTags={(tagValue, getTagProps) =>
                                                     tagValue.map((option, tagIndex) => {
@@ -657,7 +664,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     {supportEditEnum && (
                                                                         <MemoizedIconButton
                                                                             onClick={() => {
-                                                                                setDuplicate(false);
+                                                                                setEditError('');
                                                                                 setEditIndex(tagIndex);
                                                                                 setLocalOption(value.options[tagIndex]);
                                                                             }}
@@ -703,8 +710,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                         style={{
                                                                             display: 'flex',
                                                                             alignItems: 'center',
-                                                                            borderColor: duplicate ? 'red' : 'inherit',
-                                                                            borderStyle: duplicate ? 'solid' : 'inherit',
+                                                                            borderColor: editError !== '' ? 'red' : 'inherit',
+                                                                            borderStyle: editError !== '' ? 'solid' : 'inherit',
                                                                             borderWidth: '1px',
                                                                             borderRadius: '10px',
                                                                         }}
@@ -724,8 +731,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                     e.preventDefault();
                                                                                     if (
                                                                                         tagIndex > initialOptionArray.length - 1 ||
-                                                                                        value.options[tagIndex] === localOption ||
-                                                                                        value.options.includes(localOption)
+                                                                                        value.options[tagIndex] === localOption.trim() ||
+                                                                                        value.options.includes(localOption.trim()) ||
+                                                                                        localOption.trim().length === 0
                                                                                     ) {
                                                                                         setOpen(false);
                                                                                         handleSaveEdit(editIndex!);
@@ -746,9 +754,9 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                                 {isDeleteLoading ? <CircularProgress size={20} /> : <DeleteIcon />}
                                                                             </IconButton>
                                                                         )}
-                                                                        {duplicate && (
+                                                                        {editError && (
                                                                             <Typography variant="body2" color="error">
-                                                                                {i18next.t('errorPage.duplicateValue')}
+                                                                                {i18next.t(editError)}
                                                                             </Typography>
                                                                         )}
                                                                     </Box>
