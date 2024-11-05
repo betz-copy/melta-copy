@@ -115,7 +115,7 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    rank_window_size: rrfWindowConstant, // When merge to prod change to 'window_size'
+                    window_size: rrfWindowConstant, // When merge to prod change to 'window_size'
                     rank_constant: rrfRankConstant,
                 },
             },
