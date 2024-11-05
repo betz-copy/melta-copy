@@ -4,6 +4,7 @@ import './dotenv';
 const config = {
     service: {
         workspaceIdHeaderName: env.get('WORKSPACE_ID_HEADER_NAME').default('workspace-id').asString(),
+        supportedFileExtensions: env.get('SUPPORTED_FILE_EXTENSIONS').default('.pdf,.doc,.docx,.txt').asArray(),
     },
     mongo: {
         url: env.get('MONGO_URL').required().asString(),

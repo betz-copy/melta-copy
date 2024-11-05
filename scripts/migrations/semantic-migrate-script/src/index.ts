@@ -8,8 +8,12 @@ import { Driver } from 'neo4j-driver';
 import { sendToQueue } from './clients/rabbit/manager';
 import config from './config';
 import { getTemplatesWithFiles } from './clients/mongo/repository';
+import path from 'path';
 
-const { rabbit } = config;
+const {
+    rabbit,
+    service: { supportedFileExtensions },
+} = config;
 let messageCount = 0;
 
 // This is a service that reads all entities who have a file in them in Neo4j and sends them to the RabbitMQ queue in order for the semantic search to work.
@@ -43,8 +47,12 @@ const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId
     const promises: Promise<any>[] = [];
 
     for (const { _id, files } of filesInDb) {
+        const minioFileIds = files.flat().filter((file) => !!file && supportedFileExtensions.includes(path.extname(file)));
+
+        if (!minioFileIds?.length) continue;
+
         const rabbitMessage = {
-            minioFileIds: files.flat(),
+            minioFileIds,
             templateId,
             entityId: _id,
         };
