@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/melta-team/melta#readme",
   "devDependencies": {
-    "husky": "^4.3.8"
+    "husky": "^6.0.0"
   }
 }
