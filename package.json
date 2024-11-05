@@ -17,6 +17,11 @@
   "bugs": {
     "url": "https://github.com/melta-team/melta/issues"
   },
+  "husky": {
+    "hooks": {
+      "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build"
+    }
+  },
   "homepage": "https://github.com/melta-team/melta#readme",
   "devDependencies": {
     "husky": "^6.0.0"
