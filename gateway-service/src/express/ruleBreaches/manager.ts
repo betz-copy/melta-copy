@@ -2,7 +2,7 @@
 import pickBy from 'lodash.pickby';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
-import { ServiceError } from '../error';
+import { BadRequestError, ForbiddenError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
@@ -157,7 +157,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
     checkIfRuleBreachRequestIsReviewable(ruleBreachRequest: IRuleBreachRequest) {
         if (ruleBreachRequest.status !== RuleBreachRequestStatus.Pending) {
-            throw new ServiceError(400, 'rule breach requests was already reviewed');
+            throw new BadRequestError('rule breach requests was already reviewed');
         }
     }
 
@@ -259,7 +259,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                         ruleBreachRequest.brokenRules,
                     );
             } catch (error: any) {
-                if (error instanceof ServiceError && error.metadata.errorCode === errorCodes.ruleBlock) {
+                if (error.metadata.errorCode === errorCodes.ruleBlock) {
                     await this.service.updateRuleBreachRequestBrokenRules(ruleBreachRequestId, error.metadata.rawBrokenRules);
                 }
 
@@ -519,7 +519,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
         if (ruleBreachRequest.originUserId !== user.id) {
-            throw new ServiceError(403, 'only the origin user can cancel rule breach request');
+            throw new ForbiddenError('only the origin user can cancel rule breach request');
         }
 
         return this.discardRuleBreachRequest(ruleBreachRequest, user, RuleBreachRequestStatus.Canceled);
@@ -573,7 +573,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
             return;
         }
 
-        throw new ServiceError(400, 'shouldnt upload files to create rule breach request if not create/duplicate/update entity');
+        throw new BadRequestError('shouldnt upload files to create rule breach request if not create/duplicate/update entity');
     }
 
     private async deleteRuleBreachFiles(ruleBreach: Omit<IRuleBreachRequest | IRuleBreachAlert, '_id' | 'createdAt' | 'originUserId'>) {
@@ -645,9 +645,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         if (user && ruleBreachRequest.originUserId !== user.id) {
             const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
-            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
-                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
-            }
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
+                throw new ForbiddenError('user does not have permissions to this rule breach request');
         }
 
         return this.populateRuleBreachRequest(ruleBreachRequest);
@@ -658,9 +657,8 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         if (user && ruleBreachAlert.originUserId !== user.id) {
             const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
-            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write) {
-                throw new ServiceError(403, 'user does not have permissions to this rule breach request');
-            }
+            if (!userPermissions.admin?.scope && userPermissions.rules?.scope !== PermissionScope.write)
+                throw new ForbiddenError('user does not have permissions to this rule breach alert');
         }
 
         return this.populateRuleBreachAlert(ruleBreachAlert);

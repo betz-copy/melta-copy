@@ -2,7 +2,7 @@ import * as archiver from 'archiver';
 import * as express from 'express';
 import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
-import logger from '../../utils/logger/logsLogger';
+import { ServiceError } from '../error';
 import { FilesManager } from './manager';
 
 export default class FilesController extends DefaultController<FilesManager> {
@@ -45,8 +45,7 @@ export default class FilesController extends DefaultController<FilesManager> {
 
             archive.finalize();
         } catch (error) {
-            logger.error('Error downloading zip:', { error });
-            res.status(500).send('Internal Server Error');
+            throw new ServiceError(undefined, 'Internal Server Error', { error });
         }
     }
 

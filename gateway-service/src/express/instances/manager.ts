@@ -31,7 +31,7 @@ import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet 
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
@@ -309,13 +309,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (Array.isArray(value)) {
                 const unknownFileId = value.find((fileId) => !(currentEntity.properties[key] as string[] | undefined)?.includes(fileId));
                 if (unknownFileId) {
-                    throw new ServiceError(400, `duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
+                    throw new BadRequestError(`duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
                 }
                 return;
             }
 
             if (value !== currentEntity.properties[key]) {
-                throw new ServiceError(400, `duplicated entity contains unknown fileId ${value} in key ${key}`);
+                throw new BadRequestError(`duplicated entity contains unknown fileId ${value} in key ${key}`);
             }
         });
     }
@@ -409,7 +409,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
                 if (updatedInstanceDataProperties[key] !== currentEntity.properties[key]) {
-                    throw new ServiceError(400, "can't change serial properties");
+                    throw new BadRequestError("can't change serial properties");
                 }
             }
         });
@@ -441,8 +441,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             )
             .catch((err) => this.handleBrokenRulesError(err));
-        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
-            logger.error(`failed to delete files of instanceId ${id}`),
+        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
+            logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -582,7 +582,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules, actions } = error.response.data.metadata;
 
-            throw new ServiceError(400, error.message, {
+            throw new BadRequestError(error.message, {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,

@@ -6,7 +6,6 @@ import logger from './utils/logger/logsLogger';
 
 const { mongo, service } = config;
 
-
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 

@@ -1,7 +1,8 @@
+import { StatusCodes } from 'http-status-codes';
 import { ServiceError } from '../error';
 
 export class UserDoesNotExistError extends ServiceError {
     constructor(userId: string) {
-        super(404, `A user with id '${userId}' does not exist`);
+        super(StatusCodes.NOT_FOUND, `A user with id '${userId}' does not exist`);
     }
 }

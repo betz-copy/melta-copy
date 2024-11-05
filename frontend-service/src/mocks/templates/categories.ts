@@ -1,4 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 
 const categories = [
     {
@@ -48,7 +49,7 @@ const categories = [
 const mockCategories = (mock: MockAdapter) => {
     // Create
     mock.onPost('/api/templates/categories').reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e328384d51a83e87e83c74',
             name: 'pepole',
@@ -58,7 +59,7 @@ const mockCategories = (mock: MockAdapter) => {
 
     // Update
     mock.onPut(/\/api\/templates\/categories\/[0-9a-fA-F]{24}/).reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3d8384d51a83e87e83c74',
             name: 'pepole',
@@ -67,7 +68,7 @@ const mockCategories = (mock: MockAdapter) => {
     ]);
 
     // Delete
-    mock.onDelete(/\/api\/templates\/categories\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/categories\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]);
 };
 
 export { mockCategories, categories };
