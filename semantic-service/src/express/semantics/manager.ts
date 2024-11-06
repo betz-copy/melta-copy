@@ -8,6 +8,7 @@ import { IIndexFilesRequest, ISearchRequest } from './interface';
 
 const {
     consts: { fileIdLength },
+    minio: { useDevBucket, devBucketPrefix },
 } = config;
 
 export class SemanticManager {
@@ -20,7 +21,9 @@ export class SemanticManager {
     constructor(workspaceId: string) {
         this.workspaceId = workspaceId;
         this.elasticClient = new ElasticClient(workspaceId);
-        this.minioClient = new MinIOClient(workspaceId);
+
+        const fixedBucketName = `${useDevBucket ? devBucketPrefix : ''}${workspaceId}`;
+        this.minioClient = new MinIOClient(fixedBucketName);
     }
 
     public async search(searchBody: ISearchRequest) {
