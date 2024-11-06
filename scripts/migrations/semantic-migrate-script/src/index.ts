@@ -14,6 +14,7 @@ const {
     rabbit,
     service: { supportedFileExtensions },
 } = config;
+
 let messageCount = 0;
 
 // This is a service that reads all entities who have a file in them in Neo4j and sends them to the RabbitMQ queue in order for the semantic search to work.
@@ -43,7 +44,7 @@ const waitXSeconds = async () => {
 
 const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId: string, fileProperties: string[]) => {
     const filesInDb = await listFilesInDB(driver, workspaceId, templateId, fileProperties);
-    const promises: Promise<any>[] = [];
+    let promises: Promise<any>[] = [];
 
     for (const { _id, files } of filesInDb) {
         const minioFileIds = files.flat().filter((file) => !!file && supportedFileExtensions.includes(path.extname(file)));
@@ -61,6 +62,7 @@ const sendFilesToRabbit = async (driver: Driver, workspaceId: string, templateId
         if (messageCount !== 0 && messageCount % rabbit.asyncMsgAmount === 0) {
             await Promise.all(promises);
             await waitXSeconds();
+            promises = [];
         }
 
         promises.push(sendToQueue(rabbit.insertQueue, rabbitMessage, workspaceId));
