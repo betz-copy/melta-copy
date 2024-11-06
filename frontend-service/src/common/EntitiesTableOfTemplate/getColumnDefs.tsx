@@ -20,6 +20,7 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
+import { CustomHeaderCheckbox } from './SelectAllHeader';
 
 export interface IGetColumnDefsOptions<Data extends any> {
     template: IMongoEntityTemplatePopulated;
@@ -33,6 +34,8 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
+    setSelectAll: React.Dispatch<React.SetStateAction<boolean>>;
+    multipleSelect?: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -47,7 +50,11 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
+    setSelectAll,
+    multipleSelect,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
+    console.log('asss', { setSelectAll });
+
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
         const { type, format, calculateTime } = propertyTemplate;
@@ -106,6 +113,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
         }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
     });
+
     columnDefs.push(
         booleanColDef(
             'disabled',
@@ -154,6 +162,20 @@ export const getColumnDefs = <Data extends any = IEntity>({
         // If the result is 0, the order of a and b remains unchanged.
         // If the result is greater than 0, b is sorted before a.
         return orderA - orderB;
+    });
+
+    columnDefs.unshift({
+        headerName: '',
+        field: 'select',
+        width: 5,
+        headerComponent: CustomHeaderCheckbox,
+        headerComponentParams: {
+            setSelectAll,
+        },
+        checkboxSelection: true,
+        sortable: false,
+        filter: false,
+        hide: !multipleSelect,
     });
 
     if (onNavigateToRow || deleteRowButtonProps || editRowButtonProps) {

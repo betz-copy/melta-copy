@@ -1,8 +1,6 @@
 /* eslint-disable no-param-reassign */
 import React, { ForwardedRef, forwardRef, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
 
-import { AgGridReact } from '@ag-grid-community/react';
 import {
     BodyScrollEvent,
     ColumnMovedEvent,
@@ -14,9 +12,9 @@ import {
     IServerSideGetRowsRequest,
     PaginationChangedEvent,
     RowStyle,
+    StatusPanelDef,
 } from '@ag-grid-community/core';
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
+import { AgGridReact } from '@ag-grid-community/react';
 
 import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
@@ -29,11 +27,6 @@ import { useLocation } from 'wouter';
 import '../../css/resizeTable.css';
 import '../../css/table.css';
 
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -45,10 +38,11 @@ import { IAGGridRequest } from '../../utils/agGrid/interfaces';
 import useDeepCompareMemo from '../../utils/hooks/useDeepCompareMemo';
 import { LocalStorage } from '../../utils/localStorage';
 import { trycatch } from '../../utils/trycatch';
+import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
-import { MultiSelectStatusBar } from '../EntitiesPage/MultiSelectStatusBar';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -179,8 +173,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
 
 const isFirstColumn = (params) => {
     const displayedColumns = params.columnApi.getAllDisplayedColumns();
-    const thisIsFirstColumn = displayedColumns[0] === params.column;
-    return thisIsFirstColumn;
+    return displayedColumns[0] === params.column;
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -207,6 +200,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        console.log({ multipleSelect });
+        const darkMode = useDarkModeStore((state) => state.darkMode);
+
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
@@ -223,7 +219,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const minHeightTable = rowHeight * pageRowCount + rowHeight * 2;
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
-        const [selectedRowsIds, setSelectedRowsIds] = useState<string[]>([]);
+        const [selectAll, setSelectAll] = useState(false);
+        const [notSelected, setNotSelected] = useState<Set<string>>(new Set());
 
         const getSortModel = () => {
             const colState = gridRef.current!.columnApi.getColumnState();
@@ -232,6 +229,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 (c) => c.sortIndex,
             ).map((s) => ({ colId: s.colId, sort: s.sort! }))!;
         };
+        useEffect(() => console.log({ index: selectAll }), [selectAll]);
 
         useImperativeHandle(ref, () => ({
             getExcelData() {
@@ -268,11 +266,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 if (!gridApi) return;
                 const isSideBarOpen = gridApi.isToolPanelShowing();
                 gridApi.setSideBarVisible(!isSideBarOpen);
-                if (isSideBarOpen) {
-                    gridApi.closeToolPanel();
-                } else {
-                    gridApi.openToolPanel('columns');
-                }
+                if (isSideBarOpen) gridApi.closeToolPanel();
+                else gridApi.openToolPanel('columns');
             },
         }));
 
@@ -288,6 +283,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
+            setSelectAll,
+            multipleSelect,
         };
 
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
@@ -352,19 +349,40 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const handlePaginationChanged = (params: PaginationChangedEvent<Data>) => {
+            const { api, newPage } = params;
+
+            if (api && selectAll) api.forEachNode((node) => node.setSelected(true));
+
             if (!saveStorageProps.shouldSavePagination) return;
-            if (params.api && params.newPage) {
-                const currentPage = params.api.paginationGetCurrentPage();
+            if (api && newPage) {
+                const currentPage = api.paginationGetCurrentPage();
                 sessionStorage.setItem(`currentPage-${saveStorageProps.pageType}-${template._id}`, JSON.stringify(currentPage));
             }
         };
 
         const handleBodyScroll = debounce((params: BodyScrollEvent<Data>) => {
             if (!saveStorageProps.shouldSaveScrollPosition) return;
-            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
+            if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite')
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
-            }
         }, 300);
+
+        const statusPanels = useMemo(
+            () =>
+                [
+                    {
+                        statusPanel: RowCountGridStatusBar,
+                        align: 'right',
+                        statusPanelParams: { selectAll },
+                        key: 'selectRowCount',
+                    },
+                    multipleSelect ? { statusPanel: MultiSelectStatusBar, align: 'left' } : undefined,
+                ].filter(Boolean) as StatusPanelDef[],
+            [multipleSelect, selectAll],
+        );
+
+        useEffect(() => {
+            console.log({ notSelected });
+        }, [notSelected]);
 
         const gridContent = (
             <Box
@@ -383,7 +401,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                         return undefined;
                     }}
-                    className="ag-theme-material"
+                    className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                     containerStyle={{
                         width: '100%',
                         height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
@@ -391,14 +409,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         fontSize,
                         fontWeight: 300,
                     }}
-                    modules={[
-                        ServerSideRowModelModule,
-                        ColumnsToolPanelModule,
-                        MenuModule,
-                        SetFilterModule,
-                        ClientSideRowModelModule,
-                        StatusBarModule,
-                    ]}
                     domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
@@ -416,11 +426,36 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     enableRtl
                     enableCellTextSelection
                     maintainColumnOrder
-                    // rowSelection={onRowSelected ? 'single' : 'multiple'}
+                    // rowSelection={(onRowSelected && 'single') || (multipleSelect && 'multiple') || undefined}
                     rowSelection="multiple"
-                    // rowMultiSelectWithClick instead of ctrl+click
-                    onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
-                    // onSelectionChanged={onSelectionChanged}
+                    // TODO
+                    // onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
+                    onRowSelected={(event) => {
+                        const statusBarComponent = gridRef.current!.api.getStatusPanel<{
+                            getSelectAll: () => boolean;
+                            setSelectAll: (newSelectAll: boolean) => void;
+                            setNotSelectedSet: (newSet: Set<string>) => void;
+                        }>('selectRowCount')!;
+
+                        if (!event.node.isSelected()) {
+                            if (selectAll) {
+                                console.log('hiii');
+
+                                const a = new Set<string>(notSelected);
+                                a.add(event.data?.properties._id);
+                                setNotSelected(a);
+                                statusBarComponent.setNotSelectedSet(a);
+                            }
+
+                            statusBarComponent.setSelectAll(false);
+                        } else if (selectAll && notSelected.size > 0) {
+                            const a = new Set(notSelected);
+                            a.delete(event.data?.properties._id);
+                            setNotSelected(a);
+                            statusBarComponent.setNotSelectedSet(a);
+                        }
+                    }}
+                    suppressRowClickSelection={multipleSelect}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {
@@ -503,10 +538,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         resizable: true,
                         lockPinned: true,
                         initialWidth: 250,
-                        checkboxSelection: isFirstColumn,
-                        // headerCheckboxSelection: isFirstColumn,
+                        // checkboxSelection: multipleSelect ? isFirstColumn : false,
                     }}
-                    suppressRowClickSelection // Prevent row click for selection
                     sideBar={{
                         toolPanels: [
                             {
@@ -525,23 +558,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         hiddenByDefault: true,
                         position: 'left',
                     }}
-                    statusBar={
-                        rowModelType === 'infinite'
-                            ? {
-                                  statusPanels: [
-                                      {
-                                          statusPanel: RowCountGridStatusBar,
-                                          align: 'right',
-                                      },
-                                      { statusPanel: 'agSelectedRowCountComponent', align: 'right' },
-                                      {
-                                          statusPanel: MultiSelectStatusBar,
-                                          align: 'left',
-                                      },
-                                  ],
-                              }
-                            : undefined
-                    }
+                    statusBar={rowModelType === 'infinite' ? { statusPanels } : undefined}
                     localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
                 />
             </Box>

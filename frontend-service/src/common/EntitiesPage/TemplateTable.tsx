@@ -50,13 +50,35 @@ const TemplateTable = forwardRef<
     const currentUser = useUserStore((state) => state.user);
 
     const theme = useTheme();
+    const drafts = useDraftsStore((state) => state.drafts);
+
+    const setDraftId = useDraftIdStore((state) => state.setDraftId);
 
     const entitiesTableRef = useRef<EntitiesTableOfTemplateRef<IEntity>>(null);
 
     const [isExpand, setIsExpand] = useState(() => sessionStorage.getItem(`isExpand-${template._id}`) === 'true');
-    const [multipleChoice, setMultipleChoice] = useState(false);
+    const [multipleSelect, setMultipleSelect] = useState(false);
+    const [isFiltered, setIsFiltered] = useState(false);
+    const initializedExternalErrors = { files: false, unique: {}, action: '' };
+    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
+    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
+        isOpen: false,
+    });
+    const [editDialog, setEditDialog] = useState<{
+        isOpen: boolean;
+        isEditMode: boolean;
+        entity?: IEntity;
+        wizardValues?: EntityWizardValues;
+    }>({
+        isOpen: false,
+        isEditMode: true,
+    });
 
     useImperativeHandle(ref, () => entitiesTableRef.current!);
+
+    useEffect(() => {
+        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
+    }, [isExpand, template._id]);
 
     const handleExpandClick = useCallback(() => {
         setIsExpand((prevExpand) => {
@@ -67,7 +89,9 @@ const TemplateTable = forwardRef<
             sessionStorage.setItem(`resizeHeight-${template._id}`, JSON.stringify(defaultExpandedTableHeight));
             return newExpandState;
         });
-    }, [template._id, page]);
+
+        if (multipleSelect) setMultipleSelect(false);
+    }, [template._id, page, multipleSelect]);
 
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async () => {
@@ -92,31 +116,9 @@ const TemplateTable = forwardRef<
         },
     );
 
-    const [isFiltered, setIsFiltered] = useState(false);
-    const initializedExternalErrors = { files: false, unique: {}, action: '' };
-    const [externalErrors, setExternalErrors] = useState(initializedExternalErrors);
-    const [editDialog, setEditDialog] = useState<{
-        isOpen: boolean;
-        isEditMode: boolean;
-        entity?: IEntity;
-        wizardValues?: EntityWizardValues;
-    }>({
-        isOpen: false,
-        isEditMode: true,
-    });
-    const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
-        isOpen: false,
-    });
     const entityTemplateColor = getEntityTemplateColor(template);
 
     const userHasWritePermissions = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, template.category, PermissionScope.write);
-
-    const drafts = useDraftsStore((state) => state.drafts);
-
-    const setDraftId = useDraftIdStore((state) => state.setDraftId);
-    useEffect(() => {
-        sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
-    }, [isExpand, template._id]);
 
     return (
         <Grid container minWidth="fit-content">
@@ -185,11 +187,16 @@ const TemplateTable = forwardRef<
 
                     <TableButton
                         iconButtonWithPopoverProps={{
-                            popoverText: i18next.t('entitiesTableOfTemplate.multipleChoice'),
-                            iconButtonProps: { onClick: () => setMultipleChoice(!multipleChoice) },
+                            popoverText: i18next.t('entitiesTableOfTemplate.multipleSelect'),
+                            iconButtonProps: {
+                                onClick: () => {
+                                    setMultipleSelect(!multipleSelect);
+                                    if (!(isExpand && !multipleSelect)) setIsExpand(!isExpand);
+                                },
+                            },
                         }}
                         icon={<LibraryAddCheckOutlined fontSize="small" />}
-                        text={i18next.t('entitiesTableOfTemplate.multipleChoice')}
+                        text={i18next.t('entitiesTableOfTemplate.multipleSelect')}
                     />
                 </Grid>
 
@@ -259,11 +266,11 @@ const TemplateTable = forwardRef<
                     showNavigateToRowButton
                     getRowId={(currentEntity) => currentEntity.properties._id}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                    rowModelType={isExpand || multipleChoice ? 'infinite' : 'serverSide'}
+                    rowModelType={isExpand ? 'infinite' : 'serverSide'}
                     quickFilterText={quickFilterText}
                     rowHeight={defaultRowHeight}
                     fontSize={`${defaultFontSize}px`}
-                    multipleSelect={multipleChoice}
+                    multipleSelect={multipleSelect}
                     saveStorageProps={{
                         shouldSaveFilter: true,
                         shouldSaveWidth: true,

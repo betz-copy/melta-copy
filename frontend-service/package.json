@@ -6,7 +6,8 @@
     "build": "tsc && vite build",
     "eslint": "eslint -h",
     "lint": "eslint --ext .ts,.tsx .",
-    "lint:fix": "eslint --ext .ts,.tsx . --fix"
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "postinstall": "patch-package"
   },
   "browserslist": {
     "production": [
@@ -27,10 +28,16 @@
   "author": "Itay Marder",
   "license": "ISC",
   "dependencies": {
-    "@ag-grid-community/client-side-row-model": "^29.0.0",
-    "@ag-grid-community/core": "29.0.0",
-    "@ag-grid-community/react": "29.0.0",
-    "@ag-grid-community/styles": "29.0.0",
+    "@ag-grid-community/client-side-row-model": "^32.3.2",
+    "@ag-grid-community/core": "^32.3.2",
+    "@ag-grid-community/react": "^32.3.2",
+    "@ag-grid-community/styles": "^32.3.2",
+    "@ag-grid-enterprise/column-tool-panel": "^32.3.2",
+    "@ag-grid-enterprise/core": "^32.3.2",
+    "@ag-grid-enterprise/menu": "^32.3.2",
+    "@ag-grid-enterprise/server-side-row-model": "^32.3.2",
+    "@ag-grid-enterprise/set-filter": "^32.3.2",
+    "@ag-grid-enterprise/status-bar": "^32.3.2",
     "@datapunt/matomo-tracker-react": "^0.5.1",
     "@emotion/cache": "^11.7.1",
     "@emotion/react": "^11.7.1",
@@ -41,12 +48,6 @@
     "@mui/material": "^5.11.10",
     "@mui/styles": "^5.2.3",
     "@mui/x-date-pickers": "^5.0.20",
-    "@noam7700/ag-grid-enterprise-column-tool-panel": "29.0.0",
-    "@noam7700/ag-grid-enterprise-core": "29.0.0",
-    "@noam7700/ag-grid-enterprise-menu": "29.0.0",
-    "@noam7700/ag-grid-enterprise-server-side-row-model": "29.0.0",
-    "@noam7700/ag-grid-enterprise-set-filter": "29.0.0",
-    "@noam7700/ag-grid-enterprise-status-bar": "^29.0.0",
     "@react-awesome-query-builder/mui": "^6.4.2",
     "@reactour/tour": "^3.1.2",
     "@rjsf/core": "^5.18.1",
@@ -118,7 +119,7 @@
     "react-webcam": "^7.2.0",
     "stylis": "^4.0.13",
     "stylis-plugin-rtl": "^2.1.1",
-    "three": "^0.148.0",
+    "three": "^0.170.0",
     "typescript-actions": "npm:typescript@^5.5.4",
     "uuid": "^8.3.2",
     "wouter": "^3.3.1",
@@ -149,10 +150,10 @@
     "@types/react-color": "^3.0.6",
     "@types/react-dom": "^17.0.19",
     "@types/stylis": "^4.0.2",
-    "@types/three": "^0.148.0",
+    "@types/three": "^0.169.0",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^4.3.3",
     "chance": "^1.1.8",
     "eslint": "^8.45.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -163,9 +164,10 @@
     "eslint-plugin-react": "^7.33.0",
     "eslint-plugin-react-hooks": "^4.3.0",
     "json-schema-faker": "^0.5.0-rcv.46",
+    "patch-package": "^8.0.0",
     "prettier": "^2.3.1",
     "source-map-explorer": "^2.5.2",
     "typescript": "^4.9.5",
-    "vite": "^5.0.12"
+    "vite": "^5.4.10"
   }
 }

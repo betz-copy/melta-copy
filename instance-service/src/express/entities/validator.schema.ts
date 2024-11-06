@@ -68,6 +68,7 @@ export const deleteEntitiesByIdsRequestSchema = Joi.object({
     body: Joi.object({
         ids: Joi.array().items(Joi.string()).required(),
         deleteAllRelationships: Joi.boolean(),
+        selectAll: Joi.boolean(),
     }).unknown(true),
     query: {},
     params: {},

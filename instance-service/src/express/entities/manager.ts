@@ -768,8 +768,6 @@ export class EntityManager extends DefaultManagerNeo4j {
     }
 
     async getEntitiesByIds(ids: string[]) {
-        console.log('came here');
-
         return this.neo4jClient.readTransaction(`MATCH (e) WHERE e._id IN $ids RETURN e`, normalizeReturnedEntity('multipleResponses'), { ids });
     }
 
@@ -861,23 +859,19 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    async deleteEntityById(ids: string[], deleteAllRelationships: boolean) {
-        console.log({ deleteAllRelationships });
-
+    async deleteEntityById(ids: string[], deleteAllRelationships: boolean, selectAll: boolean) {
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
                 const entitiesToDelete = await this.getEntitiesByIds(ids);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entitiesToDelete[0].templateId);
 
-                const deletionRelationshipReferencesPromises = entitiesToDelete.map((entityToDelete) =>
-                    this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction),
+                await Promise.all(
+                    entitiesToDelete.map((entityToDelete) => this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction)),
                 );
-
-                await Promise.all(deletionRelationshipReferencesPromises);
 
                 await runInTransactionAndNormalize(
                     transaction,
-                    `MATCH (e) WHERE e._id IN $ids  ${deleteAllRelationships ? 'DETACH' : ''} DELETE e`,
+                    `MATCH (e) ${selectAll ? '' : 'WHERE e._id IN $ids'}  ${deleteAllRelationships ? 'DETACH' : ''} DELETE e`,
                     normalizeReturnedEntity('multipleResponses'),
                     { ids },
                 );
@@ -885,11 +879,10 @@ export class EntityManager extends DefaultManagerNeo4j {
                 return ids;
             });
         } catch (error) {
-            if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed') {
-                throw new ServiceError(400, `[NEO4J] some entities has existing relationships. Delete them first.`, {
+            if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed')
+                throw new ServiceError(400, `[NEO4J] some entities with ids ${ids} have existing relationships. Delete them first.`, {
                     errorCode: config.errorCodes.entityHasRelationships,
                 });
-            }
 
             throw error;
         }
