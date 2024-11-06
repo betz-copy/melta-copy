@@ -28,6 +28,8 @@ const config = {
             keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
             keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
         },
+        useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
+        devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asString(),
