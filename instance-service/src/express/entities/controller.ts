@@ -30,7 +30,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.textSearch));
+        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.textSearch, req.body.entityIdsToInclude));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {

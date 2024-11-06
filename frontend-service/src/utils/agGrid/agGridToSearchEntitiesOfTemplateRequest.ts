@@ -212,7 +212,7 @@ export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearc
 
 export const agGridToSearchEntitiesOfTemplateRequest = (
     agGridRequest: IAGGridRequest,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] },
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;
     return {
@@ -222,5 +222,6 @@ export const agGridToSearchEntitiesOfTemplateRequest = (
         filter: filterModelToFilterOfTemplate(filterModel, entityTemplate),
         showRelationships: false,
         sort: sortModelToSortOfSearchRequest(sortModel),
+        entityIdsToInclude: entityTemplate.entityIdsToInclude,
     };
 };

@@ -644,9 +644,13 @@ export class EntityManager extends DefaultManagerNeo4j {
             limit: searchBody.limit,
             textSearch: searchBody.textSearch,
             templates: {
-                [entityTemplate._id]: { filter: searchBody.filter, showRelationships: searchBody.showRelationships },
+                [entityTemplate._id]: {
+                    filter: searchBody.filter,
+                    showRelationships: searchBody.showRelationships,
+                },
             },
             sort: searchBody.sort,
+            entityIdsToInclude: searchBody.entityIdsToInclude,
         };
 
         const searchCypherQuery = searchWithRelationshipsToNeoQuery(searchBodyOfTemplate, new Map([[entityTemplate._id, entityTemplate]]));
@@ -682,17 +686,34 @@ export class EntityManager extends DefaultManagerNeo4j {
         return results;
     }
 
-    async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '') {
+    async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '', entityIdsToInclude?: string[]) {
+        const entityIdMatch = entityIdsToInclude?.length
+            ? `
+            UNION
+            MATCH (node)
+            WHERE templateId IN labels(node) AND node._id IN $entityIdsToInclude
+            RETURN node
+        `
+            : '';
+
         const textSearchFixed = `*${escapeNeo4jQuerySpecialChars(textSearch || '')}*`;
 
         const query = `
             UNWIND $templateIds AS templateId
-            WITH templateId, $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName
-            CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
-            RETURN templateId, count(node) AS count;
+            CALL (templateId) {
+                WITH $textSearchFixed as textSearch, '${config.neo4j.templateSearchIndexPrefix}' + templateId AS indexName
+                CALL db.index.fulltext.queryNodes(indexName, textSearch) YIELD node, score
+                RETURN node
+                ${entityIdMatch}
+            }
+            RETURN templateId, count(node) as count ${entityIdsToInclude?.length ? ', $entityIdsToInclude as entityIdsToInclude' : ''};
         `;
 
-        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, { templateIds, textSearchFixed });
+        return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
+            templateIds,
+            textSearchFixed,
+            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
+        });
     }
 
     searchRelatedEntitiesOfEntitiesInTransaction(

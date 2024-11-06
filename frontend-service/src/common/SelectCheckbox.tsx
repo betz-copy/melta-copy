@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
+import { Menu, Search } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -25,7 +25,6 @@ import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
-import { CustomIcon } from './CustomIcon';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -39,18 +38,7 @@ export type MenuItemContentProps<Option = any> = {
     showIcon?: boolean;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({
-    checked,
-    indeterminate,
-    label,
-    isDraggable,
-    group,
-    insideGroup,
-    option,
-    showIcon,
-}) => {
-    const theme = useTheme();
-
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
     return (
         <>
             {!group && (
@@ -69,15 +57,8 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            {showIcon ? (
-                option.iconFileId?.length > 0 ? (
-                    <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
-                ) : (
-                    <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
-                )
-            ) : (
-                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
-            )}
+            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
+
             <ListItemText
                 primary={
                     <MeltaTooltip title={label}>
