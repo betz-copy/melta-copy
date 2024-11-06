@@ -28,7 +28,7 @@ export const syncCompactPermissionsRequestSchema = joi.object({
 export const deletePermissionsFromMetadataRequestSchema = joi.object({
     query: {},
     body: {
-        metadata: SubCompactNullablePermissionSchema,
+        metadata: SubCompactNullablePermissionSchema.required(),
         query: {
             workspaceId: mongoIdSchema.required(),
             type: joi

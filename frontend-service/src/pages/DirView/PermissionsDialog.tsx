@@ -10,6 +10,7 @@ import { IMongoUser, IUser } from '../../interfaces/users';
 import { createUserRequest, searchUsersByPermissions } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { PermissionsDialogCard } from './permissionsDialogCard';
+import { useUserStore } from '../../stores/user';
 
 interface IPermissionsDialogProps {
     open: boolean;
@@ -18,12 +19,16 @@ interface IPermissionsDialogProps {
 
 export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, handleClose }) => {
     const workspace = useWorkspaceStore((state) => state.workspace);
+    const currentUser = useUserStore((state) => state.user);
 
     const queryClient = useQueryClient();
 
     const [searchedUser, setSearchedUser] = useState<IUser | null>(null);
 
-    const { data: users, isLoading } = useQuery<IMongoUser[]>(['usersByWorkspaceId', workspace._id], () => searchUsersByPermissions(workspace._id), {
+    const usersQueryKey = ['usersByWorkspaceId', workspace._id];
+
+    const { data: users = [], isLoading } = useQuery<IMongoUser[]>(usersQueryKey, () => searchUsersByPermissions(workspace._id), {
+        initialData: [] as IMongoUser[],
         enabled: !!workspace._id,
     });
 
@@ -33,12 +38,17 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                 [workspace._id]: { admin: { scope: PermissionScope.write } },
             }),
         onSuccess: () => {
-            queryClient.invalidateQueries(['usersByWorkspaceId', workspace._id]);
+            queryClient.invalidateQueries(usersQueryKey);
         },
         onError: () => {
             toast.error(i18next.t('permissions.permissionsOfUserDialog.failedToCreatePermissionsOfUser'));
         },
     });
+
+    const hasPermissionsToModify = (): boolean => {
+        const hierarchyIds = queryClient.getQueryData<string[]>(['getWorkspaceHierarchyIds', workspace._id])!;
+        return !!currentUser.permissions[hierarchyIds[hierarchyIds.length - 2]];
+    };
 
     return (
         <Dialog
@@ -52,37 +62,39 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
             <DialogTitle>
                 <BlueTitle
                     title={`${i18next.t('permissions.dialog.title')} ${
-                        workspace.displayName ? workspace.displayName : i18next.t('permissions.dialog.mainWorkspaceTitle')
+                        workspace.name === '' && workspace.path === '/' ? i18next.t('permissions.dialog.mainWorkspaceTitle') : workspace.displayName
                     }`}
                     component="h4"
                     variant="h4"
                 />
             </DialogTitle>
-            <DialogActions sx={{ padding: '0 1.5rem' }}>
-                <Box display="flex" boxSizing="border-box" width="100%">
-                    <Box width="100%">
-                        <UserAutocomplete
-                            mode="external"
-                            value={searchedUser}
-                            label={i18next.t('userAutocomplete.searchLabel')}
-                            onChange={(_e, chosenUser) => setSearchedUser(chosenUser)}
-                            isError={false}
-                        />
+            {hasPermissionsToModify() && (
+                <DialogActions sx={{ paddingX: '1.5rem' }}>
+                    <Box display="flex" boxSizing="border-box" width="100%">
+                        <Box width="100%">
+                            <UserAutocomplete
+                                mode="external"
+                                value={searchedUser}
+                                label={i18next.t('userAutocomplete.searchLabel')}
+                                onChange={(_e, chosenUser) => setSearchedUser(chosenUser)}
+                                isError={false}
+                            />
+                        </Box>
+                        <Button
+                            color="primary"
+                            variant="text"
+                            onClick={() => {
+                                giveUserPermissionsToWorkspace();
+                                setSearchedUser(null);
+                            }}
+                            disabled={!searchedUser}
+                            sx={{ marginLeft: '0.625rem' }}
+                        >
+                            {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
+                        </Button>
                     </Box>
-                    <Button
-                        color="primary"
-                        variant="text"
-                        onClick={() => {
-                            giveUserPermissionsToWorkspace();
-                            setSearchedUser(null);
-                        }}
-                        disabled={!searchedUser}
-                        sx={{ marginLeft: '10px' }}
-                    >
-                        {i18next.t('permissions.permissionsOfUserDialog.createBtn')}
-                    </Button>
-                </Box>
-            </DialogActions>
+                </DialogActions>
+            )}
             <DialogContent
                 sx={{
                     height: '50vh',
@@ -90,14 +102,22 @@ export const PermissionsDialog: React.FC<IPermissionsDialogProps> = ({ open, han
                     justifyContent: isLoading ? 'center' : 'start',
                     alignItems: 'center',
                     flexDirection: 'column',
-                    margin: '0.5rem 0',
+                    marginY: '0.5rem',
                 }}
             >
                 {/* eslint-disable-next-line no-nested-ternary */}
                 {isLoading ? (
                     <CircularProgress size={50} />
-                ) : users?.length ? (
-                    users?.map((user) => <PermissionsDialogCard key={user._id} user={user} workspaceId={workspace._id} />)
+                ) : users.length ? (
+                    users.map((user) => (
+                        <PermissionsDialogCard
+                            key={user._id}
+                            user={user}
+                            workspaceId={workspace._id}
+                            usersQueryKey={usersQueryKey}
+                            canModify={hasPermissionsToModify()}
+                        />
+                    ))
                 ) : (
                     <BlueTitle title={i18next.t('relationshipTemplateAutocomplete.noOptions')} component="h6" variant="h6" />
                 )}

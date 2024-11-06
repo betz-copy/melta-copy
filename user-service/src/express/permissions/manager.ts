@@ -107,8 +107,12 @@ export class PermissionsManager {
         limit: number,
         step: number,
     ): Promise<{ permissions: IPermission[]; count: number }> {
-        const permissions: IPermission[] = await PermissionsModel.find({ workspaceId }, { limit, skip: step * limit });
-        const count: number = await PermissionsModel.countDocuments({ workspaceId });
+        const [permissions, count] = await Promise.all([
+            PermissionsModel.find({ workspaceId }, { limit, skip: step * limit })
+                .lean()
+                .exec(),
+            PermissionsModel.countDocuments({ workspaceId }),
+        ]);
 
         return { permissions, count };
     }

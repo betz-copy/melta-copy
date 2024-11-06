@@ -11,19 +11,16 @@ import { ICompactPermissions } from '../../interfaces/permissions/permissions';
 import { IMongoUser } from '../../interfaces/users';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useDarkModeStore } from '../../stores/darkMode';
-import { useUserStore } from '../../stores/user';
-import { useWorkspaceStore } from '../../stores/workspace';
 import { getDateWithoutTime } from '../../utils/date';
 
 interface IPermissionsDialogCardProps {
     user: IMongoUser;
     workspaceId: string;
+    usersQueryKey: string[];
+    canModify: boolean;
 }
 
-export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ user, workspaceId }) => {
-    const currentUser = useUserStore((state) => state.user);
-    const workspace = useWorkspaceStore((state) => state.workspace);
-
+export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ user, workspaceId, usersQueryKey, canModify }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
     const [hover, setHover] = useState<Boolean>(false);
@@ -41,17 +38,12 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
     const { mutate: handlePermissionsDelete } = useMutation({
         mutationFn: () => syncUserPermissionsRequest(user._id, { [workspaceId]: { admin: null } }),
         onSuccess: () => {
-            queryClient.invalidateQueries(['usersByWorkspaceId', workspaceId]);
+            queryClient.invalidateQueries(usersQueryKey);
         },
         onError: () => {
             toast.error(i18next.t('permissions.failedToDeleteUser'));
         },
     });
-
-    const hasPermissionsToDelete = (): boolean => {
-        const hierarchyIds = queryClient.getQueryData<string[]>(['getWorkspaceHierarchyIds', workspace._id])!;
-        return !!currentUser.permissions[hierarchyIds[hierarchyIds.length - 2]];
-    };
 
     return (
         <Paper
@@ -60,7 +52,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
             sx={{
                 borderRadius: '10px',
                 borderColor: 'primary',
-                margin: '5px 0',
+                marginY: '0.3rem',
                 width: '100%',
                 transition: 'ease-out 0.2s',
                 '&:hover': { backgroundColor: darkMode ? '#242424' : '#ebebeb' },
@@ -106,7 +98,7 @@ export const PermissionsDialogCard: React.FC<IPermissionsDialogCardProps> = ({ u
                     </Typography>
                 </Box>
 
-                {hover && hasPermissionsToDelete() && (
+                {hover && canModify && (
                     <>
                         <Divider orientation="vertical" variant="middle" flexItem />
                         <IconButton>

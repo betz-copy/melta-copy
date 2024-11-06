@@ -15,6 +15,7 @@ import {
     syncUserPermissionsRequestSchema,
     updateUserExternalMetadataRequestSchema,
 } from './validator.schema';
+import { AuthorizerControllerMiddleware } from '../../utils/authorizer';
 
 const { userService } = config;
 
@@ -35,18 +36,30 @@ usersRouter.get('/:userId', ValidateRequest(getUserByIdRequestSchema), wrapContr
 usersRouter.post('/search-ids', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUserIds));
 usersRouter.post('/search', ValidateRequest(searchUsersRequestSchema), wrapController(UsersController.searchUsers));
 
-usersRouter.post('/', ValidateRequest(createUserRequestSchema), wrapController(UsersController.createUser));
+usersRouter.post(
+    '/',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(createUserRequestSchema),
+    wrapController(UsersController.createUser),
+);
 
 usersRouter.patch(
     '/:userId/external',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
     ValidateRequest(updateUserExternalMetadataRequestSchema),
     wrapController(UsersController.updateUserExternalMetadata),
 );
 
-usersRouter.post('/:userId/permissions/sync', ValidateRequest(syncUserPermissionsRequestSchema), wrapController(UsersController.syncUserPermissions));
+usersRouter.post(
+    '/:userId/permissions/sync',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
+    ValidateRequest(syncUserPermissionsRequestSchema),
+    wrapController(UsersController.syncUserPermissions),
+);
 
 usersRouter.patch(
     '/metadata',
+    AuthorizerControllerMiddleware.userCanWritePermissions,
     ValidateRequest(deletePermissionsFromMetadataRequestSchema),
     wrapController(UsersController.deletePermissionsFromMetadata),
 );

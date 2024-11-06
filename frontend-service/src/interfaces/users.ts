@@ -20,6 +20,7 @@ export interface IUser extends IBaseUser {
 }
 
 export interface IMongoUser extends IUser {
+    createdAt: Date;
     updatedAt: Date;
 }
 

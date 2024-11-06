@@ -63,6 +63,7 @@ export class UserService {
     }
 
     static async searchUsersByPermissions(workspaceId: string) {
-        return (await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`)).data;
+        const { data } = await this.userService.get<IUser[]>(`${usersRoute}/search/${workspaceId}`);
+        return data;
     }
 }

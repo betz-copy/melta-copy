@@ -116,8 +116,7 @@ export class UsersManager {
     static async searchUsersByPermWithCount(workspaceId: string, limit: number, step: number): Promise<{ users: IUser[]; count: number }> {
         const { permissions, count } = await PermissionsManager.getPermissionsByWorkspaceIdWithCount(workspaceId, limit, step);
 
-        const userPromises: Promise<IUser>[] = permissions.map((permission) => this.getUserById(permission.userId));
-        const users: IUser[] = await Promise.all(userPromises);
+        const users = await Promise.all(permissions.map(({ userId }) => this.getUserById(userId)));
 
         return { users, count };
     }

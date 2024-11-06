@@ -51,5 +51,6 @@ export const deletePermissionsFromMetadata = async (
 };
 
 export const searchUsersByPermissions = async (workspaceId: string): Promise<IMongoUser[]> => {
-    return (await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`)).data;
+    const { data } = await axios.get<IMongoUser[]>(`${users}/search/${workspaceId}`);
+    return data;
 };
