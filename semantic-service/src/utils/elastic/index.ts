@@ -19,6 +19,7 @@ const {
         password,
         topHitsByGroupSize,
         groupByEntityIdSize,
+        rrfWindowFieldName,
     },
 } = config;
 
@@ -115,7 +116,7 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    window_size: rrfWindowConstant, // When merge to prod change to 'window_size'
+                    [rrfWindowFieldName]: rrfWindowConstant, // When merge to prod change to 'window_size'
                     rank_constant: rrfRankConstant,
                 },
             },

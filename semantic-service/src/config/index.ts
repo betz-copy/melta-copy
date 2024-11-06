@@ -70,6 +70,7 @@ const config = {
         lexicalFuzziness: env.get('ELASTIC_LEXICAL_FUZZINESS').default('1').asString(),
         knnGroupSize: env.get('ELASTIC_KNN_GROUP_SIZE').default(20).asInt(),
         rrfWindowConstant: env.get('ELASTIC_RRF_WINDOW_CONSTANT').default(50).asInt(),
+        rrfWindowFieldName: env.get('ELASTIC_RRF_WINDOW_FIELD_NAME').default('window_size').asString(),
         rrfRankConstant: env.get('ELASTIC_RRF_RANK_CONSTANT').default(60).asInt(),
         vectorDims: env.get('ELASTIC_VECTOR_DIMS').default(770).asInt(),
         similarityAlgorithm: env.get('SIMILARITY_ALGORITHM').default('l2_norm').asString(),
