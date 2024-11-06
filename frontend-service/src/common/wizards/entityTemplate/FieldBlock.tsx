@@ -88,6 +88,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         calculateTime: undefined,
         relationshipReference: undefined,
         serialStarter: 0,
+        archive: false,
     },
 }: React.PropsWithChildren<FieldBlockProps<PropertiesType, Values>>) => {
     // copy of values of formik in order to show changes on inputs fast (formik rerenders are slow)
@@ -147,6 +148,14 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
             setDisplayValues(displayValuesCopy);
             updateFormik();
         }
+    };
+
+    const setArchive = (index: number, newValue: boolean): void => {
+        console.log({ newValue });
+        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
+        displayValuesCopy[index].archive = newValue;
+
+        setDisplayValues(displayValuesCopy);
     };
 
     const move = (src: number, dst: number) => {
@@ -230,6 +239,7 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportRelationshipReference,
                                                 supportUnique,
                                                 hasActions,
+                                                setArchive,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {
