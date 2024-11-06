@@ -1,7 +1,7 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { memo } from 'react';
+import React, { memo, ReactNode } from 'react';
 import { Link } from 'wouter';
 import { IButtonProps } from '.';
 import { IEntity } from '../../interfaces/entities';
@@ -33,6 +33,8 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
+    shouldDisplayRowIcon?: (entity: any) => boolean | undefined;
+    rowIcon?: ReactNode;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -47,6 +49,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
+    shouldDisplayRowIcon: getRowIcon,
+    rowIcon,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -169,7 +173,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
             lockPinned: true,
             suppressColumnsToolPanel: true,
             cellRenderer: memo<{ data: Data }>(({ data }) => {
-                const { disabled: disabledEntity } = getEntityPropertiesData(data);
+                const entity = getEntityPropertiesData(data);
+                const { disabled: disabledEntity } = entity;
                 return (
                     <Grid flexWrap="nowrap">
                         {onNavigateToRow && (
@@ -192,6 +197,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 </IconButtonWithPopover>
                             </Link>
                         )}
+                        {getRowIcon && getRowIcon(entity) && rowIcon ? rowIcon : undefined}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopover
                                 popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}
@@ -214,7 +220,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 <ImageWithDisable srcPath="/icons/edit-icon.svg" disabled={editRowButtonProps.disabledButton || disabledEntity} />
                             </IconButtonWithPopover>
                         )}
-
                         {onNavigateToRow && (
                             <Link
                                 href={`/entity/${getEntityPropertiesData(data)._id}/graph`}

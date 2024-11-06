@@ -115,6 +115,9 @@ const TemplateTable = forwardRef<
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
 
+    console.log(template);
+    console.log(entitiesTableRef.current);
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">

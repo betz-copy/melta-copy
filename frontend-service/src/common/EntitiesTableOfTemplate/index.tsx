@@ -17,6 +17,7 @@ import {
 } from '@ag-grid-community/core';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
+import { FaInfoCircle } from 'react-icons/fa';
 
 import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
@@ -94,6 +95,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
+            // Somewhere here maybe check if entityId is in the entityIdsToInclude!
             params.success({
                 rowData: data.entities.map(({ entity }) => entity as Data),
                 rowCount: data.count,
@@ -133,7 +135,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
 };
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -278,8 +280,9 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
+            rowIcon: <FaInfoCircle />,
+            shouldDisplayRowIcon: (entity) => template.entityIdsToInclude?.includes(entity._id),
         };
-
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
         const datasourceOnFail = (err: unknown) => {
