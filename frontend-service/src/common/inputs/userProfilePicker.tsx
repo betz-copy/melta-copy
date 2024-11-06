@@ -19,10 +19,10 @@ export interface UserProfilePickerProps {
 }
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
-
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
     const [iconPickerValue, setIconPickerValue] = useState<string>();
     const [image, setImage] = useState<{ name: string } | undefined>(undefined);
+    const [selectedIcon, setSelectedIcon] = useState<string | null>(user.preferences.profilePath ?? null);
     const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `/icons/profileAvatar/avatar${index}.png`);
 
     const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
@@ -38,7 +38,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
 
         onPick(selectedValue);
     };
-    const [selectedIcon, setSelectedIcon] = useState<string | null>(user.preferences.profilePath ?? null);
 
     const handleAvatarClick = (iconPath?: string) => {
         setIconPickerValue(iconPath);

@@ -31,7 +31,6 @@ export class Kartoffel {
 
     static getUserProfile = async (kartoffelId: string) => {
         const { data } = await this.kartoffel.get<IKartoffelUser>(`${baseEntitiesRoute}/${kartoffelId}/pictures/profile`);
-        console.log({ data });
         return data;
     };
 }

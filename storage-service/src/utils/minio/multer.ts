@@ -30,7 +30,6 @@ export class MinioMulter {
         if (typeof bucketName !== 'string') return null;
 
         const storage = new MinioStorage(bucketName);
-        console.log('kkkkkkkkk', { storage }, await storage.minioClient.bucketExists());
 
         if (!(await storage.minioClient.bucketExists())) await storage.minioClient.makeBucket();
 
@@ -47,7 +46,6 @@ export class MinioMulter {
 
     static async uploadToMinio(req: Request, res: Response, next: NextFunction) {
         const storage = await MinioMulter.wrapMulterMiddleware(req);
-        console.log('happy');
 
         if (!storage) return next(new ServiceError(400, 'Invalid workspace id in header'));
 

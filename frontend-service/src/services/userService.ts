@@ -29,21 +29,22 @@ export const createUserRequest = async (kartoffelId: string, digitalIdentitySour
 
 export const updateUserPreferencesMetadataRequest = async (
     userId: string,
-    updatedPreferences: IUserPreferences,
+    profilePreference: IUserPreferences,
     notificationsToShowCheckbox: any,
+    darkMode?: boolean,
 ) => {
     const formData = new FormData();
-    if (updatedPreferences.icon) {
-        if (updatedPreferences.icon.file instanceof File) {
-            formData.append('file', updatedPreferences.icon.file);
+    if (profilePreference.icon) {
+        if (profilePreference.icon.file instanceof File) {
+            formData.append('file', profilePreference.icon.file);
         } else {
-            formData.append('profilePath', updatedPreferences.icon.file.name!);
+            formData.append('profilePath', profilePreference.icon.file.name!);
         }
-    } else if (updatedPreferences.profilePath) {
-        formData.append('profilePath', updatedPreferences.profilePath);
+    } else if (profilePreference.profilePath) {
+        formData.append('profilePath', profilePreference.profilePath);
     }
-    formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox.map(({ type }) => type)));
-    formData.append('darkMode', JSON.stringify(updatedPreferences.darkMode ?? false));
+    formData.append('mailsNotificationsTypes', JSON.stringify(notificationsToShowCheckbox));
+    if (darkMode !== undefined) formData.append('darkMode', JSON.stringify(darkMode));
 
     const { data } = await axios.patch<IUser>(`${users}/${userId}/preferences`, formData);
     return data;

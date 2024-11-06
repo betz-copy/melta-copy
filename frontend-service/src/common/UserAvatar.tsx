@@ -36,7 +36,6 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
                 } else {
                     const icon = new Image();
                     icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${user.preferences.profilePath}`, 'users-global-bucket');
-                    console.log({ icon }, icon.src);
                     setProfile(icon.src);
                 }
             };

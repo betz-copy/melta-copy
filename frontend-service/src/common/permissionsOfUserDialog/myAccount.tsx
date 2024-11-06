@@ -14,6 +14,7 @@ import { SelectCheckbox } from '../SelectCheckbox';
 import UserAvatar from '../UserAvatar';
 import { DayNightSwitch } from '../inputs/DayNightSwitch';
 import { UserProfilePicker } from '../inputs/userProfilePicker';
+import { ErrorToast } from '../ErrorToast';
 
 const { notificationsMoreData } = environment.notifications;
 
@@ -21,7 +22,7 @@ export const isProfileFileType = (profilePath?: string): boolean => {
     return !!profilePath && profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && !profilePath.startsWith('http://');
 };
 
-export const defaultInputType = (profilePath?: string) => {
+const defaultInputType = (profilePath?: string) => {
     if (!profilePath || profilePath.startsWith('/icons/profileAvatar')) return 'chooseAvatar';
     if (profilePath.startsWith('http://')) return 'kartoffelProfile';
     return 'chooseFile';
@@ -39,8 +40,10 @@ const MyAccount: React.FC<{
     );
     const [kartoffelUserProfile, setKartoffelUserProfile] = useState<string>();
     const [editProfile, setEditProfile] = useState(false);
-    const [preferences, setPreferences] = useState<any>(existingUser?.preferences);
-    const [isDarkMode, setIsDarkMode] = useState(preferences.darkMode ?? false);
+    const [profilePreference, setProfilePreference] = useState<{ profilePath?: string; icon?: any }>({
+        profilePath: existingUser?.preferences.profilePath,
+    });
+    const [isDarkMode, setIsDarkMode] = useState(existingUser.preferences.darkMode ?? false);
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const toggleDarkMode = useDarkModeStore((state) => state.toggleDarkMode);
     const currentUser = useUserStore((state) => state.user);
@@ -67,32 +70,41 @@ const MyAccount: React.FC<{
     }, [existingUser]);
 
     useEffect(() => {
-        const arePreferencesChange = !isEqual(preferences, existingUser.preferences);
+        const arePreferencesChange = profilePreference.icon || !isEqual(profilePreference.profilePath, existingUser.preferences.profilePath);
         const updatedNotificationsTypes = notificationsToShowCheckbox.map(({ type }) => type);
         const areNotificationsUpdated = !isEqual(updatedNotificationsTypes, existingUser.preferences.mailsNotificationsTypes);
-        setIsPreferencesUpdated(arePreferencesChange || areNotificationsUpdated);
-    }, [preferences, notificationsToShowCheckbox]);
+        setIsPreferencesUpdated(arePreferencesChange || areNotificationsUpdated || !isEqual(isDarkMode, existingUser.preferences.darkMode));
+    }, [profilePreference, notificationsToShowCheckbox]);
 
-    const { mutateAsync } = useMutation((id: string) => updateUserPreferencesMetadataRequest(id, preferences, notificationsToShowCheckbox), {
-        onSuccess: (updatedUser: IUser) => {
-            if (!existingUser) return;
+    const { mutateAsync } = useMutation(
+        (id: string) =>
+            updateUserPreferencesMetadataRequest(
+                id,
+                profilePreference,
+                notificationsToShowCheckbox.map(({ type }) => type),
+                isDarkMode,
+            ),
+        {
+            onSuccess: (updatedUser: IUser) => {
+                if (!existingUser) return;
 
-            if (existingUser?._id === currentUser._id) {
-                setUser({
-                    ...currentUser,
-                    preferences: updatedUser.preferences,
-                });
-            }
+                if (existingUser?._id === currentUser._id) {
+                    setUser({
+                        ...currentUser,
+                        preferences: updatedUser.preferences,
+                    });
+                }
 
-            toast.success(i18next.t('user.succeededToUpdatePreferences'));
-            handleClose();
+                toast.success(i18next.t('user.succeededToUpdatePreferences'));
+                handleClose();
+            },
+
+            onError: (err: AxiosError) => {
+                console.log('failed to create rule breach request. error:', err);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToCreateRequest')} />);
+            },
         },
-
-        onError: (err: AxiosError) => {
-            console.log({ err });
-            throw err;
-        },
-    });
+    );
 
     return (
         <>
@@ -121,7 +133,7 @@ const MyAccount: React.FC<{
                         {editProfile && (
                             <Button
                                 onClick={() => {
-                                    const updatedPreferences = { ...preferences };
+                                    const updatedPreferences = { ...profilePreference };
                                     delete updatedPreferences.icon;
 
                                     if (existingUser.preferences.profilePath) {
@@ -130,7 +142,7 @@ const MyAccount: React.FC<{
                                         delete updatedPreferences.profilePath;
                                     }
 
-                                    setPreferences(updatedPreferences);
+                                    setProfilePreference(updatedPreferences);
                                     setEditProfile(!editProfile);
                                 }}
                                 sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', paddingTop: '13px' }}
@@ -147,15 +159,15 @@ const MyAccount: React.FC<{
                                 onPick={(value: any) => {
                                     if (!existingUser) return;
                                     if (!value) {
-                                        setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
+                                        setProfilePreference({ icon: undefined, profilePath: undefined });
                                     } else if (value.file) {
-                                        setPreferences({ ...preferences, icon: value, profilePath: undefined });
+                                        setProfilePreference({ icon: value, profilePath: undefined });
                                     } else {
-                                        setPreferences({ ...preferences, icon: undefined, profilePath: value });
+                                        setProfilePreference({ icon: undefined, profilePath: value });
                                     }
                                 }}
                                 onDelete={() => {
-                                    setPreferences({ ...preferences, icon: undefined, profilePath: undefined });
+                                    setProfilePreference({ icon: undefined, profilePath: undefined });
                                 }}
                                 kartoffelProfile={kartoffelUserProfile}
                                 imageName={isProfileFileType(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
@@ -203,8 +215,13 @@ const MyAccount: React.FC<{
                             checked={darkMode}
                             onClick={() => {
                                 setIsDarkMode(!isDarkMode);
-                                setPreferences({ ...preferences, darkMode: !isDarkMode });
                                 toggleDarkMode();
+                                updateUserPreferencesMetadataRequest(
+                                    existingUser!._id,
+                                    existingUser.preferences,
+                                    existingUser.preferences.mailsNotificationsTypes,
+                                    !isDarkMode,
+                                );
                             }}
                         />
                     </Grid>

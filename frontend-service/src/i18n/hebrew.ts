@@ -398,6 +398,7 @@ export default {
         no: 'לא',
         areYouSure: 'בפעולה זו השינויים ימחקו',
         succeededToUpdatePreferences: 'עודכנו העדפות משתמש בהצלחה',
+        failedToCreateRequest: 'נכשל בעידכון העדפות המשתמש',
     },
     entitiesCardView: {
         failedToLoadResults: 'נכשל לטעון תוצאות',

@@ -41,18 +41,9 @@ export class UserService {
     }
 
     static async updateUser(userId: string, updates: DeepPartial<IBaseUser>): Promise<IUser> {
-        console.log('updates,', updates);
-
         const { data } = await this.userService.patch<IUser>(`${usersRoute}/${userId}`, updates);
-        console.log({ data });
-
         return data;
     }
-
-    // static async updateUserPreferencesMetadata(userId: string, preferences: DeepPartial<IBaseUser>): Promise<IUser> {
-    //     const { data } = await this.userService.patch<IUser>(`${usersRoute}/preferences/${userId}`, preferences);
-    //     return data;
-    // }
 
     static async getUserPermissions(userId: string, workspaceIds?: string[]): Promise<ICompactPermissions> {
         const { data } = await this.userService.post<ICompactPermissions>(`${permissionsRoute}/compact/find-by-user-id/${userId}`, { workspaceIds });
