@@ -59,9 +59,9 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoE
         searchInput,
     );
 
-    return templates.filter(({ _id }) => {
-        const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
-        return count > 0;
+    return templates.flatMap((template) => {
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
+        return entityCount?.count ? { ...template, entityIdsToInclude: entityCount.entityIdsToInclude } : [];
     });
 };
 

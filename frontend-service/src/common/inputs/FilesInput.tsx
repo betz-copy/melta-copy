@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
 import { CloseOutlined as DeleteIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
+import { v4 } from 'uuid';
 import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
 import OpenPreview from '../FilePreview/OpenPreview';
@@ -84,7 +85,7 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                 {files.length > 0 ? (
                     <Grid item flexWrap="wrap" overflow="auto" width="100%">
                         {files.map((file: FilesInputProps['files'][number], index) => (
-                            <Grid key={`${file.name}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
+                            <Grid key={v4()} item container justifyContent="space-between" alignItems="center" width="100%">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
                                         <FileIcon extension={getFileExtension(file.name)} style={{ height: '20px' }} />

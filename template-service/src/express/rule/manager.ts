@@ -1,8 +1,8 @@
 import { FilterQuery } from 'mongoose';
+import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
 import { IMongoRule, IRule } from './interfaces';
 import { RuleTemplateSchema } from './model';
 
@@ -12,7 +12,7 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
     }
 
     async getRuleById(ruleId: string) {
-        return this.model.findById(ruleId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findById(ruleId).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
     async getManyRulesByIds(rulesIds: string[]) {
@@ -23,19 +23,19 @@ export class RuleManager extends DefaultManagerMongo<IMongoRule> {
     }
 
     async updateRuleById(ruleId: string, updatedFields: Pick<IRule, 'name' | 'description'>) {
-        return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findByIdAndUpdate(ruleId, updatedFields, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
     async updateRuleStatusById(ruleId: string, disabled: boolean) {
         // todo: (extra feature) if enabling again, same as behaviour as creating new rule.
         // ignoring possible breaches in existing entities. make sure client know (popup)
 
-        return this.model.findByIdAndUpdate(ruleId, { disabled }, { new: true }).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findByIdAndUpdate(ruleId, { disabled }, { new: true }).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
     async deleteRuleById(ruleId: string) {
         // todo: (extra feature) allow to delete if no existing alerts/requests breaches. or maybe allow to delete them together
-        return this.model.findByIdAndDelete(ruleId).orFail(new ServiceError(404, 'Rule not found')).lean().exec();
+        return this.model.findByIdAndDelete(ruleId).orFail(new NotFoundError('Rule not found')).lean().exec();
     }
 
     async createRule(rule: Omit<IRule, 'disabled'>) {

@@ -1,8 +1,16 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
+import {
+    IConstraintsOfTemplate,
+    IEntity,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchResult,
+    ITemplateSearchBody,
+    IUniqueConstraintOfTemplate,
+} from './interfaces/entities';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
 const {
@@ -84,6 +92,18 @@ export class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesBatch(searchBody: ISearchBatchBody & { entityIdsToInclude?: string[] }) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/search/batch`, searchBody);
+
+        return data;
+    }
+
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody & { entityIdsToInclude?: string[] }) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/count`, searchBody);
 
         return data;
     }

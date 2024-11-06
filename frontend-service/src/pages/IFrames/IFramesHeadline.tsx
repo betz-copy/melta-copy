@@ -80,6 +80,7 @@ const IFramesPageHeadline: React.FC<{
                         toTopBar
                         onDragEnd={handleOnDragEnd}
                         isSelectDisabled
+                        showIcon
                     />
                 </Grid>
 

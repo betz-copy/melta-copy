@@ -26,9 +26,7 @@ const fsCreateReadStream = async (path: fs.PathLike, options?: BufferEncoding | 
 
 export const removeTmpFile = async (filePath: string) => {
     const { err: rmTmpFileErr } = await trycatch(() => fs.promises.unlink(filePath));
-    if (rmTmpFileErr) {
-        logger.error(`failed to remove tmp file (storage leak)`, { error: rmTmpFileErr });
-    }
+    if (rmTmpFileErr) logger.error(`failed to remove tmp file (storage leak)`, { error: rmTmpFileErr });
 };
 
 export default fsCreateReadStream;

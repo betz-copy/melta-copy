@@ -39,7 +39,7 @@ const RuleBreachInfo: React.FC<{
                             </Grid>
                         )}
 
-                        <Grid item>
+                        <Grid item marginBottom={2}>
                             <ActionInfo
                                 originUser={originUser}
                                 actionType={action.actionType}

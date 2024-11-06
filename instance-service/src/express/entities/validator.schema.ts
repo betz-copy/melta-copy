@@ -152,7 +152,7 @@ export const getExpandedGraphByIdRequestSchema = Joi.object({
     },
 });
 
-const seachByTemplateSchema = {
+const searchByTemplateSchema = {
     skip: Joi.number().integer().min(0).default(0),
     limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
     textSearch: Joi.string().allow(''),
@@ -174,7 +174,8 @@ const seachByTemplateSchema = {
  */
 export const searchEntitiesOfTemplateRequestSchema = Joi.object({
     body: {
-        ...seachByTemplateSchema,
+        ...searchByTemplateSchema,
+        entityIdsToInclude: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {
@@ -188,7 +189,7 @@ export const searchEntitiesOfTemplateRequestSchema = Joi.object({
 export const searchEntitiesByTemplatesSchema = Joi.object({
     body: {
         searchConfigs: Joi.object().pattern(Joi.string(), {
-            ...seachByTemplateSchema,
+            ...searchByTemplateSchema,
         }),
     },
     query: {},
@@ -202,6 +203,7 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
+        entityIdsToInclude: Joi.array().items(Joi.string()),
     },
     query: {},
     params: {},
@@ -215,6 +217,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.number().integer().min(0).default(0),
         limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
         textSearch: Joi.string().allow(''),
+        entityIdsToInclude: Joi.array().items(Joi.string()),
         templates: Joi.object().pattern(Joi.string(), {
             filter: searchFilterSchema,
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),

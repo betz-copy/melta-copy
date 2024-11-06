@@ -10,7 +10,13 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntity,
+    ISearchBatchBody,
+    ISearchFilter,
+    ISearchSort,
+    ITemplateSearchBody,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -31,10 +37,12 @@ import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet 
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { RabbitManager } from '../../utils/rabbit';
+import { SemanticSearchService } from '../../externalServices/semanticSearchService';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -43,13 +51,19 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private storageService: StorageService;
 
+    private semanticSearchSearch: SemanticSearchService;
+
     private ruleBreachesManager: RuleBreachesManager;
+
+    private rabbitManager: RabbitManager;
 
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
+        this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+        this.rabbitManager = new RabbitManager(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -195,7 +209,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
-        const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
+        const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
         const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
@@ -203,6 +217,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return {
             templateId: instanceData.templateId,
             properties: newInstanceProperties,
+            files: upserstedFiles,
         };
     }
 
@@ -213,10 +228,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId)
+            .createEntityInstance({ properties, templateId }, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -235,6 +250,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
         return createdEntity;
@@ -261,6 +278,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
 
         return fileIdsToDelete;
@@ -274,6 +292,38 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entityProperties: IEntity['properties'];
     }) {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+    }
+
+    async searchEntitiesBatch(searchBody: ISearchBatchBody) {
+        let entityIdsToInclude: string[] | undefined;
+
+        if (searchBody.textSearch) {
+            const semanticSearchBody = {
+                textSearch: searchBody.textSearch,
+                limit: searchBody.limit,
+                skip: searchBody.skip,
+                templates: Object.keys(searchBody.templates),
+            };
+
+            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        }
+
+        return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
+    }
+
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody) {
+        let entityIdsToInclude: string[] | undefined;
+
+        if (searchBody.textSearch) {
+            const semanticSearchBody = {
+                textSearch: searchBody.textSearch,
+                templates: searchBody.templateIds,
+            };
+
+            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+        }
+
+        return this.service.getEntitiesCountByTemplates({ ...searchBody, entityIdsToInclude });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
@@ -309,13 +359,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (Array.isArray(value)) {
                 const unknownFileId = value.find((fileId) => !(currentEntity.properties[key] as string[] | undefined)?.includes(fileId));
                 if (unknownFileId) {
-                    throw new ServiceError(400, `duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
+                    throw new BadRequestError(`duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
                 }
                 return;
             }
 
             if (value !== currentEntity.properties[key]) {
-                throw new ServiceError(400, `duplicated entity contains unknown fileId ${value} in key ${key}`);
+                throw new BadRequestError(`duplicated entity contains unknown fileId ${value} in key ${key}`);
             }
         });
     }
@@ -396,6 +446,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            const fileIds = Object.values(fileProperties).flat();
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
         return createdEntity;
@@ -409,7 +462,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
                 if (updatedInstanceDataProperties[key] !== currentEntity.properties[key]) {
-                    throw new ServiceError(400, "can't change serial properties");
+                    throw new BadRequestError("can't change serial properties");
                 }
             }
         });
@@ -423,7 +476,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const { props: uploadedFilesAndProperties } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
@@ -441,8 +494,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             )
             .catch((err) => this.handleBrokenRulesError(err));
-        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
-            logger.error(`failed to delete files of instanceId ${id}`),
+        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
+            logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -490,6 +543,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
         return updatedEntity;
@@ -505,6 +560,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
         return fileIdsToRemove;
@@ -582,7 +638,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules, actions } = error.response.data.metadata;
 
-            throw new ServiceError(400, error.message, {
+            throw new BadRequestError(error.message, {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,
