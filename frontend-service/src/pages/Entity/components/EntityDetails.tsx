@@ -6,13 +6,14 @@ import {
     Edit as EditIcon,
     MoreVertOutlined,
 } from '@mui/icons-material';
-import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
+import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import MapIcon from '@mui/icons-material/Map';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -33,6 +34,7 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import Map from '../../Map';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -42,6 +44,8 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [_, navigate] = useLocation();
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [mapPopupOpen, setMapPopupOpen] = useState(false);
+
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
@@ -136,8 +140,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
-
-    console.log('expandedEntity', expandedEntity.entity.properties.location);
+    const includeLocationProperty = Object.keys(expandedEntity.entity.properties).some((key) => key.includes('location'));
 
     return (
         <>
@@ -153,15 +156,13 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
-                                <Grid
-                                    onClick={() => {
-                                        navigate(`/entity/${entity.properties._id}/map`);
-                                    }}
-                                >
-                                    <IconButtonWithPopover popoverText="מפה">
-                                        <img src="/icons/icon-plus.svg" />
-                                    </IconButtonWithPopover>
-                                </Grid>
+                                {includeLocationProperty && (
+                                    <Grid onClick={() => setMapPopupOpen(true)}>
+                                        <IconButtonWithPopover popoverText="מפה">
+                                            <MapIcon />
+                                        </IconButtonWithPopover>
+                                    </Grid>
+                                )}
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -341,6 +342,16 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                         }))
                     }
                 />
+            )}
+            {mapPopupOpen && (
+                <Dialog open={mapPopupOpen} onClose={() => setMapPopupOpen(false)}>
+                    <Map
+                        properties={entity.properties}
+                        entityTemplate={entityTemplate}
+                        darkMode={darkMode}
+                        styles={{ height: '800px', width: '600px' }}
+                    />
+                </Dialog>
             )}
         </>
     );

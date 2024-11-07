@@ -19,7 +19,6 @@ import {
     PermissionsManagementProtectedRoute,
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
-import Map from '../Map';
 
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
 const Category = lazy(() => import('../Category'));
@@ -35,6 +34,7 @@ const Unavailable = lazy(() => import('../Unavailable'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
 const Entity = lazy(() => import('../Entity'));
 const Graph = lazy(() => import('../Graph'));
+const Map = lazy(() => import('../Map'));
 const Duplicate = lazy(() => import('../Entity/components/DuplicateEntity'));
 
 const FluidSimulation = lazy(() => import('../MeltaPlus/FluidSimulation'));
@@ -184,11 +184,11 @@ export const MeltaRoutesInner: React.FC = () => {
                                 </EntityProtectedRoute>
                             </Route>
 
-                            <Route path="/entity/:entityId/map">
+                            {/* <Route path="/entity/:entityId/map">
                                 <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
                                     <Map />
                                 </EntityProtectedRoute>
-                            </Route>
+                            </Route> */}
 
                             <Route path="/entity/:entityId/duplicate">
                                 <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
