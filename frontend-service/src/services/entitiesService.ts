@@ -11,11 +11,11 @@ import {
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
+    ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { ISemanticSearchResult } from '../interfaces/semanticSearch';
 
 const { entities, relationships } = environment.api;
 
@@ -228,13 +228,7 @@ export const searchEntitiesOfTemplateRequest = async (templateId: string, search
 };
 
 export const getCountByTemplateIdsRequest = async (templateIds: string[], textSearch: string) => {
-    const { data } = await axios.post<{ templateId: string; count: number; entityIdsToInclude?: ISemanticSearchResult[string] }[]>(
-        `${entities}/count`,
-        {
-            templateIds,
-            textSearch,
-        },
-    );
+    const { data } = await axios.post<ICountSearchResult[]>(`${entities}/count`, { templateIds, textSearch });
     return data;
 };
 

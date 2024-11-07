@@ -21,4 +21,4 @@ export interface IElasticDoc extends Omit<IIndexFilesRequest, 'minioFileIds'> {
 }
 
 // { [templateId]: { [entityId]: title } }
-export type ISemanticSearchResult = Record<string, Record<string, string>>;
+export type ISemanticSearchResult = Record<string, Record<string, string[]>>;

@@ -90,8 +90,9 @@ class ElasticClient {
             const entityId = hit._source?.entityId;
 
             if (!acc[templateId]) acc[templateId] = {};
+            if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
 
-            acc[templateId][entityId] = hit._source?.title;
+            acc[templateId][entityId].push(hit._source?.minioFileId);
 
             return acc;
         }, {} as ISemanticSearchResult);

@@ -61,12 +61,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoE
 
     return templates.flatMap((template) => {
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
-        return entityCount?.count
-            ? {
-                  ...template,
-                  entityIdsToInclude: entityCount.entityIdsToInclude ? Object.keys(entityCount.entityIdsToInclude) : undefined,
-              }
-            : [];
+        return entityCount?.count ? { ...template, entityIdsToInclude: entityCount.entityIdsToInclude } : [];
     });
 };
 

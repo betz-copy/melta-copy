@@ -87,14 +87,16 @@ export const fileColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     searchValue: string | undefined = undefined,
-    // entityTemplateIds: string[] | undefined = undefined,
+    entityIdsToInclude: string[] | undefined = undefined,
 ): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) =>
-            props.value?.toString() ? <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} /> : null,
+            props.value?.toString() ? (
+                <OpenPreview fileId={props.value?.toString()} searchValue={searchValue} entityIdsToInclude={entityIdsToInclude} />
+            ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,

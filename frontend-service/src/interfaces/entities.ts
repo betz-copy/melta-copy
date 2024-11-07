@@ -1,6 +1,7 @@
 import { IMongoEntityTemplatePopulated } from './entityTemplates';
 import { IMongoRelationshipTemplate } from './relationshipTemplates';
 import { IRelationship } from './relationships';
+import { ISemanticSearchResult } from './semanticSearch';
 
 export interface IEntity {
     templateId: string;
@@ -119,6 +120,12 @@ export interface ISearchResult {
 
 export interface ISearchResultByTemplates {
     [templateId: string]: ISearchResult;
+}
+
+export interface ICountSearchResult {
+    templateId: string;
+    count: number;
+    entityIdsToInclude?: ISemanticSearchResult[string];
 }
 
 export interface IExportEntitiesBody {
