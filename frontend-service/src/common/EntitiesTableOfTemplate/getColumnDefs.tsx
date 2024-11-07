@@ -1,7 +1,7 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { memo, ReactNode } from 'react';
+import React, { memo } from 'react';
 import { Link } from 'wouter';
 import { IButtonProps } from '.';
 import { IEntity } from '../../interfaces/entities';
@@ -33,8 +33,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
-    shouldDisplayRowIcon?: (entity: any) => boolean | undefined;
-    rowIcon?: ReactNode;
+    searchValue?: string;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -49,8 +48,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
-    shouldDisplayRowIcon: getRowIcon,
-    rowIcon,
+    searchValue,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -65,11 +63,22 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
-        if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (type === 'number')
+            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+        if (type === 'boolean')
+            return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
         if (format === 'date' || format === 'date-time')
-            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
-        if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
+            return dateColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                calculateTime,
+                searchValue,
+            );
+        if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, searchValue);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,
@@ -79,6 +88,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 hideColumn,
+                searchValue,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -90,9 +100,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                searchValue,
             );
         if (propertyTemplate.pattern)
-            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
                 property,
@@ -104,11 +115,20 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                searchValue,
             );
         if (propertyTemplate.items) {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                defaultColumnWidths[property],
+                rowHeight,
+                false,
+                searchValue,
+            );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
     });
     columnDefs.push(
         booleanColDef(
@@ -197,7 +217,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 </IconButtonWithPopover>
                             </Link>
                         )}
-                        {getRowIcon && getRowIcon(entity) && rowIcon ? rowIcon : undefined}
                         {deleteRowButtonProps && (
                             <IconButtonWithPopover
                                 popoverText={disabledEntity ? i18next.t('entityPage.disabledEntity') : deleteRowButtonProps.popoverText}

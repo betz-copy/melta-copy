@@ -36,19 +36,19 @@ export const GlobalSearchBar: React.FC<{
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
+    const debouncedSearch = debounce((value: string) => {
+        if (value !== valueForSearchButtonRef.current) {
+            valueForSearchButtonRef.current = value;
+            onSearch(value);
+            if (gridApi) {
+                gridApi.setQuickFilter(value);
+            }
+        }
+    }, 300);
+
     // eslint-disable-next-line consistent-return
     useEffect(() => {
         if (autoSearch) {
-            const debouncedSearch = debounce((value: string) => {
-                if (value !== valueForSearchButtonRef.current) {
-                    valueForSearchButtonRef.current = value;
-                    onSearch(value);
-                    if (gridApi) {
-                        gridApi.setQuickFilter(value);
-                    }
-                }
-            }, 300);
-
             debouncedSearch(debouncedSearchValue);
 
             return () => {
@@ -57,7 +57,7 @@ export const GlobalSearchBar: React.FC<{
         }
 
         return undefined;
-    }, [debouncedSearchValue, gridApi, onSearch, autoSearch]);
+    }, [debouncedSearchValue, gridApi, onSearch, autoSearch, debouncedSearch]);
 
     return (
         <SearchInput

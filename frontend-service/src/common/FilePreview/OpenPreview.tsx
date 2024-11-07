@@ -5,13 +5,15 @@ import { getFileName } from '../../utils/getFileName';
 import { getFileExtension, getFileNameWithoutExtension, getPreviewContentType } from '../../utils/getFileType';
 import FileIcon from './FileIcon';
 import { PreviewDialog } from './PreviewDialog';
+import { HighlightText } from '../../utils/HighlightText';
 
-const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<void>; img?: ReactNode; showText?: boolean }> = ({
-    fileName,
-    onClick,
-    img,
-    showText,
-}) => (
+const OpenPreviewContent: React.FC<{
+    fileName: string;
+    onClick?: () => Promise<void>;
+    img?: ReactNode;
+    showText?: boolean;
+    searchValue?: string;
+}> = ({ fileName, onClick, img, showText, searchValue }) => (
     <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
         <IconButton
             sx={{ borderRadius: 10, maxWidth: '100%' }}
@@ -32,7 +34,7 @@ const OpenPreviewContent: React.FC<{ fileName: string; onClick?: () => Promise<v
                         maxWidth: '100%',
                     }}
                 >
-                    {getFileNameWithoutExtension(fileName)}
+                    <HighlightText text={getFileNameWithoutExtension(fileName)} searchedText={searchValue} />
                 </Typography>
             )}
         </IconButton>
@@ -44,7 +46,8 @@ const OpenPreview: React.FC<{
     img?: ReactNode;
     showText?: boolean;
     download?: boolean;
-}> = ({ fileId, img, showText = true, download }) => {
+    searchValue?: string;
+}> = ({ fileId, img, showText = true, download, searchValue }) => {
     const fileName = typeof fileId === 'string' ? getFileName(fileId) : fileId.name;
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);
@@ -57,11 +60,11 @@ const OpenPreview: React.FC<{
         <Grid>
             {download ? (
                 <Link href={`/api${environment.api.storage}/${fileId}`} target="_blank" download>
-                    <OpenPreviewContent fileName={fileName} img={img} showText={showText} />
+                    <OpenPreviewContent searchValue={searchValue} fileName={fileName} img={img} showText={showText} />
                 </Link>
             ) : (
                 <Box>
-                    <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} />
+                    <OpenPreviewContent fileName={fileName} onClick={handleButtonClick} img={img} showText={showText} searchValue={searchValue} />
                     {open && <PreviewDialog fileId={fileId} setOpen={setOpen} open={open} fileName={fileName} contentType={contentType} />}
                 </Box>
             )}

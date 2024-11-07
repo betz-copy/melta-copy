@@ -17,7 +17,6 @@ import {
 } from '@ag-grid-community/core';
 import '@ag-grid-community/styles/ag-grid.css';
 import '@ag-grid-community/styles/ag-theme-material.css';
-import { FaInfoCircle } from 'react-icons/fa';
 
 import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
@@ -280,8 +279,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
-            rowIcon: <FaInfoCircle />,
-            shouldDisplayRowIcon: (entity) => template.entityIdsToInclude?.includes(entity._id),
+            searchValue: quickFilterText,
         };
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
