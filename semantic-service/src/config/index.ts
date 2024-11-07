@@ -1,6 +1,14 @@
 import * as env from 'env-var';
 import './dotenv';
 
+type SplitOptions = {
+    minLength?: number;
+    maxLength?: number;
+    overlap?: number;
+    splitter?: 'sentence' | 'paragraph';
+    delimiters?: string;
+};
+
 const config = {
     service: {
         port: env.get('PORT').required().asPortNumber(),
@@ -13,7 +21,11 @@ const config = {
     model: {
         maxSentenceLength: env.get('MODEL_MAX_SENTENCE_LENGTH').default(1).asInt(),
         sentenceSplitter: env.get('MODEL_SENTENCE_SPILTTER').default('.').asString(),
-        charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('["\n","\t",",","."]').asArray(),
+        charsToRemove: env.get('MODEL_CHARS_TO_REMOVE').default('\n\t').asString(),
+        llmChunkSplitterOptions: env
+            .get('LLM_CHUNK_SPLITTER_OPTIONS')
+            .default({ minLength: 128, maxLength: 512, splitter: 'sentence' })
+            .asJsonObject() as SplitOptions,
     },
     minio: {
         url: env.get('MINIO_ENDPOINT').default('localhost').asString(),

@@ -1,23 +1,31 @@
 import { Stream } from 'stream';
+import { chunk } from 'llm-chunk';
 import config from '../config';
 import { IElasticDoc } from '../express/semantics/interface';
 import { ModelApiService } from '../externalServices/modelApi';
 
 const {
-    model: { charsToRemove, sentenceSplitter, maxSentenceLength },
+    model: { charsToRemove, sentenceSplitter, maxSentenceLength, llmChunkSplitterOptions },
     modelApi: { concurrentSentenceEmbeddingLimit },
 } = config;
 
 export const streamToBuffer = (stream: Stream) => {
     return new Promise<Buffer>((resolve, reject) => {
         const buffer: Uint8Array[] = [];
-        stream.on('data', (chunk) => buffer.push(chunk));
+        stream.on('data', (dataChunk) => buffer.push(dataChunk));
         stream.on('end', () => resolve(Buffer.concat(buffer)));
         stream.on('error', reject);
     });
 };
+const escapeRegExp = (string: string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+};
 
-const cleanText = (text: string) => text.replaceAll(new RegExp(`[${charsToRemove.join()}]`, 'g'), '');
+const cleanText = (text: string) =>
+    text
+        .replace(new RegExp(`[${escapeRegExp(charsToRemove)}]`, 'g'), ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
 
 /**
  * Example: chunks: ['Lorem', 'ipsum', 'dolor', 'sit', 'amet', 'consectetur', 'adipiscing']
@@ -73,7 +81,8 @@ export const splitTextIntoChunks = async (
         ];
     }
 
-    const splitText = cleanedText.split(sentenceSplitter);
+    const splitText = chunk(cleanedText, { ...llmChunkSplitterOptions });
+
     const chunksForEmbedding = getTextForEmbedding(splitText);
 
     console.log('chunksForEmbedding', chunksForEmbedding);
