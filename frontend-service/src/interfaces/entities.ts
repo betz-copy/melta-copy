@@ -115,7 +115,7 @@ export interface ISearchBatchBody {
 
 export interface ISearchResult {
     count: number;
-    entities: IEntityWithDirectConnections[];
+    entities: (IEntityWithDirectConnections & { title?: string[] })[];
 }
 
 export interface ISearchResultByTemplates {

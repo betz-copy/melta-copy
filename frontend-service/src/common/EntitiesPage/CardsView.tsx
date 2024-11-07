@@ -4,7 +4,7 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
+import { IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
@@ -44,7 +44,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntity>
+                    <InfiniteScroll<IEntityWithDirectConnections & { title?: string[] }>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -59,8 +59,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             });
 
                             setEntitiesCount(searchEntitiesResult.count);
-
-                            return searchEntitiesResult.entities.map(({ entity }) => entity);
+                            return searchEntitiesResult.entities;
                         }}
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
@@ -69,7 +68,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
                             setEntitiesCount(null);
                         }}
-                        getItemId={(entity) => entity.properties._id}
+                        getItemId={({ entity }) => entity.properties._id}
                         getNextPageParam={(lastPage, allPages) => {
                             const nextPage = allPages.length * infiniteScrollPageCount;
                             return lastPage.length ? nextPage : undefined;
@@ -78,7 +77,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {(entity) => {
+                        {({ entity }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (

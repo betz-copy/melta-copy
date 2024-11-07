@@ -29,6 +29,7 @@ import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { NoFile } from './NoFile';
+import { HighlightText } from '../../../utils/HighlightText';
 
 export const StyledCard = styled(Card)(({ theme }) => ({
     background: theme.palette.mode === 'light' ? '#FFFFFF 0% 0% no-repeat padding-box' : undefined,
@@ -95,6 +96,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
         const property = entityTemplate.properties.properties[propertyName];
         return property.format === 'fileId' || (property.items && property.items.format === 'fileId');
     });
+    console.log({ entityTemplate });
 
     const files: IFile[] = useMemo(
         () =>
@@ -355,7 +357,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                {files[previewImageIndex]?.name || ''}
+                                                <HighlightText text={files[previewImageIndex]?.name || ''} searchedText={searchedText} />
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
