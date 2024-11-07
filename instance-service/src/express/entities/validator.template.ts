@@ -27,14 +27,14 @@ import {
     IUniqueConstraintOfTemplate,
 } from './interface';
 
-const { neo4j,ajvFormats } = config;
+const { neo4j, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
 
-ajv.addFormat('fileId', ajvFormats.fileIdFieldRegex);
-ajv.addFormat('text-area',ajvFormats.textAreaFieldRegex);
-ajv.addFormat('relationshipReference', ajvFormats.relationshipReferenceFieldRegex);
-ajv.addFormat('location', ajvFormats.locationFieldRegex);
+ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
+ajv.addFormat('text-area', ajvCustomFormats.textAreaFieldRegex);
+ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
 
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);

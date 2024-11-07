@@ -30,7 +30,7 @@ export interface ISearchCategoriesBody {
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'location';
     enum?: string[];
     readOnly?: true;
     items?: {
@@ -158,6 +158,7 @@ export class EntityTemplateService extends TemplatesManagerService {
     }
 
     async updateEntityTemplate(entityTemplateId: string, updatedEntityTemplate: Omit<IEntityTemplate, 'disabled'>) {
+        console.log("I am here idiottttttt")
         const { data } = await this.api.put<IMongoEntityTemplatePopulated>(`${baseEntitiesRoute}/${entityTemplateId}`, updatedEntityTemplate);
 
         return data;

@@ -5,12 +5,14 @@ import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface
 import config from '../../config';
 import { ColorSchema, variableNameValidation } from '../../utils/joi';
 
-const { notifications } = config;
+const { notifications, ajvCustomFormats } = config;
 
 const ajv = new Ajv();
-ajv.addFormat('fileId', /.*/);
-ajv.addFormat('text-area', /.*/);
-ajv.addFormat('relationshipReference', /.*/);
+ajv.addFormat('fileId', ajvCustomFormats.fileIdFieldRegex);
+ajv.addFormat('text-area',ajvCustomFormats.textAreaFieldRegex);
+ajv.addFormat('relationshipReference', ajvCustomFormats.relationshipReferenceFieldRegex);
+ajv.addFormat('location', ajvCustomFormats.locationFieldRegex);
+
 addFormats(ajv);
 ajv.addVocabulary(['patternCustomErrorMessage', 'hide']);
 ajv.addKeyword({
@@ -32,7 +34,7 @@ ajv.addKeyword({
 ajv.addKeyword({ keyword: 'calculateTime', type: 'boolean' });
 ajv.addKeyword({ keyword: 'isDailyAlert', type: 'boolean' });
 
-const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
+const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference', 'location'];
 const allowedJSONSchemaTypes = ['string', 'number', 'boolean', 'array'];
 
 const propertiesArraySchema = Joi.array()

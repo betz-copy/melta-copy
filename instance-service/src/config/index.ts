@@ -62,7 +62,7 @@ const config = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
-    ajvFormats: {
+    ajvCustomFormats: {
         fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default(/.*/).asRegExp(),
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default(/.*/).asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default(/.*/).asRegExp(),
