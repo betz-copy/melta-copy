@@ -62,6 +62,13 @@ const config = {
         failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
         actionsCustomError: 'ACTIONS_CUSTOM_ERROR',
     },
+    ajvFormats: {
+        fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default(/.*/).asRegExp(),
+        textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default(/.*/).asRegExp(),
+        relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default(/.*/).asRegExp(),
+        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default(/.*/).asRegExp(),
+
+    },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
     createdEntityIdInBrokenRules: env.get('CREATED_ENTITY_ID_IN_BROKEN_RULES').default('created-entity-id').asString(),
     createdRelationshipIdInBrokenRules: env.get('CREATED_RELATIONSHIP_ID_IN_BROKEN_RULES').default('created-relationship-id').asString(),
@@ -73,6 +80,7 @@ const config = {
     searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),
     cypherRulesResultValueVariableNameSuffix: env.get('CYPHER_RULES_RESULT_VALUE_VARIABLE_NAME_SUFFIX').default('value').asString(),
     cypherRulesResultCausesVariableNameSuffix: env.get('CYPHER_RULES_RESULT_CAUSES_VARIABLE_NAME_SUFFIX').default('instancesCauses').asString(),
+
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
         enableFile: env.get('ENABLE_FILE_LOGGING').default('false').asBool(),
