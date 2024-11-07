@@ -4,16 +4,9 @@ import { ReadMore as ReadMoreIcon } from '@mui/icons-material';
 
 import { ColDef, ICellRendererParams, IServerSideDatasource, ValueFormatterParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@noam7700/ag-grid-enterprise-core';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
 import '../../css/table.css';
 
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
@@ -26,6 +19,7 @@ import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBre
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { BreachType, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../globals';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const getDatasource = (breachType: BreachType, onFail: ((err: unknown) => void) | undefined): IServerSideDatasource => {
     return {
@@ -160,6 +154,8 @@ const RuleBreachTable = forwardRef<
         onReviewBreachClick: (ruleBreach: IRuleBreachAlertPopulated | IRuleBreachRequestPopulated, breachType: BreachType) => void;
     }
 >(({ rowHeight, pageRowCount = 5, fontSize, minColumnWidth, breachType, onReviewBreachClick }, ref) => {
+    const darkMode = useDarkModeStore((state) => state.darkMode);
+
     const gridRef = useRef<AgGridReact>(null);
     const columnDefs: ColDef[] = getColumnDefs(breachType, onReviewBreachClick);
 
@@ -190,7 +186,7 @@ const RuleBreachTable = forwardRef<
         <Box>
             <GlobalStyles styles={getGlobalStyles()} />
             <AgGridReact<IRuleBreachPopulated>
-                className="ag-theme-material"
+                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 ref={gridRef}
                 containerStyle={{
                     width: '100%',
@@ -198,7 +194,6 @@ const RuleBreachTable = forwardRef<
                     fontSize,
                     fontWeight: 300,
                 }}
-                modules={[ServerSideRowModelModule, ColumnsToolPanelModule, MenuModule, SetFilterModule]}
                 domLayout="autoHeight"
                 getRowId={({ data }) => data._id}
                 columnDefs={columnDefs}

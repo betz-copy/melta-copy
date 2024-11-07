@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IStatusPanelParams } from '@ag-grid-community/core';
 import { CircularProgress, Grid, useTheme } from '@mui/material';
 import { Delete } from '@mui/icons-material';
@@ -12,13 +12,23 @@ import { ErrorToast } from '../ErrorToast';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IDeleteEntityBody } from '../../interfaces/entities';
 
-const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
+export const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
     const theme = useTheme();
 
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
+    const [selectedRowCount, setSelectedRowCount] = useState(0);
+
+    useEffect(() => {
+        const updateSelectedRowCount = () => setSelectedRowCount(api.getSelectedRows().length);
+
+        api.addEventListener('selectionChanged', updateSelectedRowCount);
+        updateSelectedRowCount();
+
+        return () => api.removeEventListener('selectionChanged', updateSelectedRowCount);
+    }, [api]);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
-        ({ ids, deleteAllRelationships }: IDeleteEntityBody) => deleteEntityRequest({ ids, deleteAllRelationships }),
+        (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
         {
             onError: (error: AxiosError) => {
                 const errorIdentifier = error.response?.data?.metadata?.errorCode;
@@ -44,10 +54,6 @@ const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
         deleteMutation({ ids, deleteAllRelationships });
     };
 
-    const handleDeleteClick = () => {
-        deleteSelectedRows();
-    };
-
     const handleYesDeleteWithRelationships = () => {
         deleteSelectedRows(true);
         handleClose();
@@ -58,7 +64,7 @@ const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
             <IconButtonWithPopover
                 popoverText={i18next.t('actions.delete')}
                 iconButtonProps={{
-                    onClick: handleDeleteClick,
+                    onClick: () => deleteSelectedRows(),
                 }}
                 style={{
                     display: 'flex',
@@ -66,7 +72,9 @@ const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
                     borderRadius: '5px',
                     fontSize: '15px',
                     color: theme.palette.primary.main,
+                    marginTop: 5,
                 }}
+                disabled={selectedRowCount === 0}
             >
                 <>
                     {isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
@@ -84,5 +92,3 @@ const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
         </Grid>
     );
 };
-
-export { MultiSelectStatusBar };

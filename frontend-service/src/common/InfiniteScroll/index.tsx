@@ -1,5 +1,5 @@
 import { Grid, GridProps } from '@mui/material';
-import React, { CSSProperties, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { PureInfiniteScroll, PureInfiniteScrollProps } from './PureInfiniteScroll';
 
 interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {

@@ -1,18 +1,10 @@
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams, ModuleRegistry } from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import '@noam7700/ag-grid-enterprise-core';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
@@ -24,11 +16,10 @@ import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
 import { searchUsersRequest } from '../../services/userService';
 import { trycatch } from '../../utils/trycatch';
 import { IWorkspace } from '../../interfaces/workspaces';
+import { useDarkModeStore } from '../../stores/darkMode';
 
 const { defaultRowHeight } = environment.agGrid;
 const { infiniteScrollPageCount } = environment.permission;
-
-ModuleRegistry.registerModules([ServerSideRowModelModule]);
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
@@ -227,6 +218,7 @@ export type PermissionsTableRef<Data> = {
 
 const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
     ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }, ref: ForwardedRef<PermissionsTableRef<IUser>>) => {
+        const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<IUser>>(null);
 
@@ -258,8 +250,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
         return (
             <AgGridReact<IUser>
                 ref={gridRef}
-                className="ag-theme-material"
-                modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
+                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
                 defaultColDef={defaultColDef}
                 columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}

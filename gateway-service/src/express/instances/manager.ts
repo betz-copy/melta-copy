@@ -512,14 +512,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return fileIdsToRemove;
     }
 
-    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean) {
+    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean, selectAll?: boolean) {
         const currentEntities = await this.service.getEntityInstancesByIds(ids);
-        const deletedInstance = await this.service.deleteEntityInstance(ids, deleteAllRelationships);
+        const deletedInstance = await this.service.deleteEntityInstances(ids, deleteAllRelationships, selectAll);
 
         const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(currentEntities));
 
         if (error) {
-            logger.error(`failed to delete files of instances`, { error });
+            logger.error(`failed to delete files of instances ${ids}`, { error });
         }
 
         return deletedInstance;

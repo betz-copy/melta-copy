@@ -144,4 +144,5 @@ export interface IGraphFilterBodyBatch {
 export interface IDeleteEntityBody {
     ids: string[];
     deleteAllRelationships?: boolean;
+    selectAll?: boolean;
 }
