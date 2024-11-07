@@ -93,7 +93,7 @@ export default {
         createdAt: 'תאריך יצירה',
         updatedAt: 'תאריך עדכון',
         relationshipTitle: 'קשרים',
-        save: 'שמירה',
+        save: 'hhשמירה',
         cancel: 'ביטול',
         duplicate: 'שכפל',
         disable: 'לא פעיל',
@@ -1107,6 +1107,8 @@ export default {
         takePicture: 'צלם תמונה',
     },
     DynamicsConfigs: {
+        isDrawerOpen: 'תפריט צד פתוח',
+        shouldNavigateToEntityPage: 'עבור לעמוד פרט בעת יצירת/עריכת ישות',
         agGrid: {
             rowCount: 'מספר שורות ב-agGrid',
             defaultExpandedRowCount: 'מספר שורות מורחבות ברירת מחדל ב-agGrid',

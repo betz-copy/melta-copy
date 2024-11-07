@@ -8,8 +8,6 @@ export const getDefaultValue = (path: string, defaultObj: any) => {
     for (const key of keys) {
         if (obj[key] !== undefined) {
             obj = obj[key];
-        } else {
-            return undefined;
         }
     }
     return obj;
@@ -33,8 +31,6 @@ export const getValueByPath = (obj: any, path: string) => {
     for (const key of keys) {
         if (current[key] !== undefined) {
             current = current[key];
-        } else {
-            return undefined;
         }
     }
     return current;

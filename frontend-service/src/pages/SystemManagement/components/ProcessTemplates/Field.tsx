@@ -7,9 +7,9 @@ import { deepClone, setNestedValue } from '../../../../utils/configs/configsUtil
 
 interface FieldProps {
     keyPath: string;
-    value: any;
-    defaultValue: any;
-    updateConfig: (path: string, newValue: any) => void;
+    value: string | number | boolean;
+    defaultValue: string | number | boolean;
+    updateConfig: (path: string, newValue: string | number | boolean) => void;
     workspaceMetadata: any;
     updateWorkspaceMetadata: (changes: any) => void;
     workspaceId: string;
@@ -18,7 +18,7 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfig, workspaceMetadata, updateWorkspaceMetadata, workspaceId }) => {
     const translateConfigProp = i18next.t(`DynamicsConfigs.${keyPath}`);
 
-    const [inputValue, setInputValue] = useState(value);
+    const [inputValue, setInputValue] = useState<string | number | boolean>(value);
     const [isModified, setIsModified] = useState(false);
 
     const isValueDifferentFromDefault = inputValue !== defaultValue;
@@ -70,7 +70,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
         setIsModified(false);
     };
 
-    const handleInputChange = (newValue: any) => {
+    const handleInputChange = (newValue: string | number) => {
         setInputValue(newValue);
         setIsModified(newValue !== value);
     };
@@ -78,7 +78,7 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
     switch (typeof value) {
         case 'string':
             return (
-                <Grid item key={keyPath} xs={12} sm={6} md={4} lg={3}>
+                <Grid item key={keyPath}>
                     <ViewingCard
                         width={400}
                         title={
@@ -148,16 +148,68 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                 </Grid>
             );
         case 'boolean':
+            console.log({ inputValue });
+
             return (
-                <Grid item key={keyPath} xs={12} sm={6} md={4} lg={3}>
-                    <Typography>{translateConfigProp}</Typography>
-                    <Switch checked={inputValue} onChange={(e) => handleInputChange(e.target.checked)} />
+                <Grid item key={keyPath}>
+                    <ViewingCard
+                        width={400}
+                        title={
+                            <Grid direction="column" container gap="10px">
+                                <Grid
+                                    item
+                                    container
+                                    direction="row"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                    paddingLeft="20px"
+                                    flexWrap="nowrap"
+                                >
+                                    <Grid item>
+                                        <Typography sx={{ fontSize: '14px', fontWeight: '400', color: 'rgb(30, 39, 117)' }}>
+                                            {translateConfigProp}
+                                        </Typography>
+                                        <Switch
+                                            id={keyPath}
+                                            name={keyPath}
+                                            value={Boolean(inputValue)}
+                                            onClick={() => {
+                                                setInputValue((prev) => !prev);
+                                                setIsModified((prev) => !prev);
+                                            }}
+                                            checked={Boolean(inputValue)}
+                                        />
+                                    </Grid>
+                                </Grid>
+                                <Grid item container direction="row" justifyContent="space-between" alignItems="center" flexWrap="nowrap">
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleUpdate}
+                                        sx={{ fontSize: '12px' }}
+                                        disabled={!isModified}
+                                    >
+                                        {i18next.t('schedule.schedule.updateButton')}
+                                    </Button>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={handleReset}
+                                        sx={{ fontSize: '12px' }}
+                                        disabled={!isValueDifferentFromDefault}
+                                    >
+                                        {i18next.t('schedule.schedule.resetButton')}
+                                    </Button>
+                                </Grid>
+                            </Grid>
+                        }
+                    />
                 </Grid>
             );
         case 'number':
         default:
             return (
-                <Grid item key={keyPath} xs={12} sm={6} md={4} lg={3}>
+                <Grid item key={keyPath}>
                     <ViewingCard
                         width={400}
                         title={

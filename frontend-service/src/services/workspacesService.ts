@@ -68,8 +68,3 @@ export const updateMetadata = async (id: string, updatedMetadata: Partial<IMetad
     const { data } = await axios.patch<IWorkspace>(`${workspaces}/${id}/metadata`, metadataToSend);
     return data;
 };
-
-// export const fetchDynamicConfigsFromGateway = async (id: string) => {
-//     const { data } = await axios.get(`${workspaces}/${id}/metadata`);
-//     return data.metadata || {};
-// };

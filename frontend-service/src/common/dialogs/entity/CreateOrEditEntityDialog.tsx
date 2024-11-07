@@ -29,6 +29,7 @@ import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/Instanc
 import { ajvValidate, JSONSchemaFormik } from '../../inputs/JSONSchemaFormik';
 import { DraftWarningDialog } from './draftWarningDialog';
 import { useDraftIdStore, useDraftsStore } from '../../../stores/drafts';
+import { useWorkspaceStore } from '../../../stores/workspace';
 
 const { errorCodes } = environment;
 
@@ -199,6 +200,8 @@ const CreateOrEditEntityDetails: React.FC<{
     );
 
     const [_, navigate] = useLocation();
+    const workspace = useWorkspaceStore((state) => state.workspace);
+    const { shouldNavigateToEntityPage } = workspace.metadata;
 
     const { isLoading: isCreateLoading, mutateAsync: createMutation } = useMutation(
         ({ newEntityData, ignoredRules }: { newEntityData: EntityWizardValues; ignoredRules?: IRuleBreach['brokenRules'] }) =>
@@ -574,11 +577,21 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 <DoneIcon />
                                                             )
                                                         }
-                                                        onClick={() =>
-                                                            Object.keys(errors).length > 0
-                                                                ? ''
-                                                                : setTimeout(() => (externalErrors ? undefined : handleClose()), 5000)
-                                                        }
+                                                        onClick={() => {
+                                                            const hasErrors = Object.keys(errors).length > 0;
+
+                                                            if (!hasErrors) {
+                                                                if (shouldNavigateToEntityPage === true) {
+                                                                    navigate(`/entity/${entityId}`);
+                                                                } else {
+                                                                    setTimeout(() => {
+                                                                        if (!externalErrors) {
+                                                                            handleClose();
+                                                                        }
+                                                                    }, 5000);
+                                                                }
+                                                            }
+                                                        }}
                                                         disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}

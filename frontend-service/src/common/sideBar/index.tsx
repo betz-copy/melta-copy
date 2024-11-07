@@ -82,7 +82,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
 
     const meltaPlus = useMeltaPlusStore((state) => state.meltaPlus);
     const toggleMeltaPlus = useMeltaPlusStore((state) => state.toggleMeltaPlus);
-
     const workspace = useWorkspaceStore((state) => state.workspace);
 
     return (
@@ -222,7 +221,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Grid>
                     )}
                 </Grid>
-
                 <Grid
                     item
                     container
@@ -274,9 +272,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                             ),
                     )}
                 </Grid>
-
                 <DrawerDivider />
-
                 <Grid item container direction="column" paddingY="0.5rem">
                     {meltaPlus && (
                         <NavButton
@@ -370,7 +366,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </NavButton>
                     )}
                 </Grid>
-
                 {Object.keys(currentUser.permissions).length > 1 && (
                     <>
                         <DrawerDivider />
@@ -388,7 +383,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         </Grid>
                     </>
                 )}
-
                 <Grid item>
                     <IconButton
                         onClick={toggleDrawer}
