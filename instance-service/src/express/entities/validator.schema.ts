@@ -219,7 +219,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.number().integer().min(0).default(0),
         limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
         textSearch: Joi.string().allow(''),
-        semanticSearchResult,
+        entityIdsToInclude: Joi.array().items(Joi.string()),
         templates: Joi.object().pattern(Joi.string(), {
             filter: searchFilterSchema,
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),

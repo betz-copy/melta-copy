@@ -357,13 +357,14 @@ const buildFulltextSearchQuery = (
     entityIdsToInclude?: string[],
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
-    const entityIdMatch = entityIdsToInclude?.length ? `
+    const entityIdMatch = entityIdsToInclude?.length
+        ? `
         UNION
         MATCH (node)
         WHERE node._id IN $entityIdsToInclude
         RETURN node
     `
-   : '';
+        : '';
 
     if (calculateOverallCount) {
         return {
@@ -381,7 +382,7 @@ const buildFulltextSearchQuery = (
                 query,
                 ...parameters,
                 ...filterQuery.parameters,
-                ...(entityIdsToInclude?.length && { entityIdsToInclude })
+                ...(entityIdsToInclude?.length && { entityIdsToInclude }),
             },
         };
     }
@@ -407,7 +408,7 @@ const buildFulltextSearchQuery = (
             limit: searchBody.limit,
             ...parameters,
             ...filterQuery.parameters,
-            ...(entityIdsToInclude?.length && { entityIdsToInclude })
+            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
         },
     };
 };
@@ -464,9 +465,21 @@ const searchToNeoQuery = (
     entityIdsToInclude?: string[],
 ): CypherQueryWithParameters => {
     if (globalSearchIndexes.length === 0)
-        return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, config.neo4j.templateSearchIndexPrefix, calculateOverallCount, entityIdsToInclude);
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.templateSearchIndexPrefix,
+            calculateOverallCount,
+            entityIdsToInclude,
+        );
     if (globalSearchIndexes.length === 1)
-        return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, config.neo4j.globalSearchIndexPrefix, calculateOverallCount, entityIdsToInclude);
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.globalSearchIndexPrefix,
+            calculateOverallCount,
+            entityIdsToInclude,
+        );
     return fulltextBatchSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount, globalSearchIndexes, entityIdsToInclude);
 };
 

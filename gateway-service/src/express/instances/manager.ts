@@ -302,7 +302,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                   ...searchResults,
                   entities: searchResults.entities.map((entity) => ({
                       ...entity,
-                      title: semanticSearchResult[entity.entity.templateId][entity.entity.properties._id],
+                      title: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
                   })),
               }
             : searchResults;
@@ -321,7 +321,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.formatEntitiesSearch(
             await this.service.searchEntitiesBatch({
                 ...searchBody,
-                semanticSearchResult,
+                entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
             }),
             semanticSearchResult,
         );

@@ -98,7 +98,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesBatch(searchBody: ISearchBatchBody & { semanticSearchResult?: ISemanticSearchResult }) {
+    async searchEntitiesBatch(searchBody: ISearchBatchBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/search/batch`, searchBody);
 
         return data;
