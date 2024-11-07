@@ -110,6 +110,7 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
     relatedTemplateId: string,
     relatedTemplateField: string,
     hideColumn = false,
+    searchValue: string | undefined = undefined,
 ): ColDef<Data> => {
     return {
         field,
@@ -117,7 +118,12 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, IEntity | undefined>) =>
             props.value ? (
-                <RelationshipReferenceView entity={props.value} relatedTemplateId={relatedTemplateId} relatedTemplateField={relatedTemplateField} />
+                <RelationshipReferenceView
+                    entity={props.value}
+                    relatedTemplateId={relatedTemplateId}
+                    relatedTemplateField={relatedTemplateField}
+                    searchValue={searchValue}
+                />
             ) : null,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,

@@ -45,7 +45,7 @@ const Value: React.FC<{
 
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} searchValue={searchValue} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
