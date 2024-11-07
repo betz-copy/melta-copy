@@ -23,6 +23,16 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     return data;
 };
 
+export const loadExcelEntitiesRequest = async (file: File, templateId: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('templateId', templateId);
+
+    const { data } = await axios.post(`${entities}/loadExcel`, formData);
+
+    return data;
+};
+
 export const getExpandedEntityByIdRequest = async (
     entityId: string,
     expandedParams: { [key: string]: number },

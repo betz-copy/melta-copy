@@ -154,6 +154,8 @@ export class EntityManager extends DefaultManagerNeo4j {
     };
 
     throwServiceErrorIfFailedConstraintsValidation = (err: unknown): never => {
+        console.log('throwServiceErrorIfFailedConstraintsValidation', { err });
+
         if (!(err instanceof Neo4jError) || err.code !== 'Neo.ClientError.Schema.ConstraintValidationFailed') {
             throw err;
         }

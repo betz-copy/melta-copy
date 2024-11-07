@@ -59,8 +59,9 @@ const AddEntityButton: React.FC<{
                 iconButtonWithPopoverProps={{
                     iconButtonProps: {
                         onClick: () => {
-                            if (isLoadEntities) setLoadEntitiesState({ isOpen: true });
-                            else {
+                            if (isLoadEntities) {
+                                if (!disabled) setLoadEntitiesState({ isOpen: true });
+                            } else {
                                 setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                                 setExternalErrors({ files: false, unique: {}, action: '' });
                                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });

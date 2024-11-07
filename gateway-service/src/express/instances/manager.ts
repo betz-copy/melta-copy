@@ -2,8 +2,8 @@
 /* eslint-disable no-continue */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
-import axios from 'axios';
-import { stream } from 'exceljs';
+import axios, { AxiosError } from 'axios';
+import Excel, { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
@@ -23,6 +23,7 @@ import {
 import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
+    IEntitySingleProperty,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
@@ -35,6 +36,7 @@ import { ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { excelConfig } from '../../utils/excel/excelConfig';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -152,6 +154,108 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 });
             }
         }
+    }
+
+    async loadExcelEntities(file: Express.Multer.File, templateId: string, userId: string) {
+        const template = await this.entityTemplateService.getEntityTemplateById(templateId);
+        const actions = await this.readExcelFile(file, template);
+        let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
+        const failedEntities: { type: string; message: string; properties: Record<string, any> }[] = [];
+        while (result[0].status !== 'fulfilled' && result.length > 0) {
+            try {
+                result = await this.runBulkOfActions([actions], true, userId, []);
+                console.dir({ result }, { depth: null });
+
+                // if (result[0].status === 'rejected') {
+                //     if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
+                //         const indicesAndProperties = result[0].reason.metadata.brokenRules
+                //             .map((brokenRule) =>
+                //                 brokenRule.failures.map((failure) => {
+                //                     const entityIdNumberMatch = failure.entityId.match(/\d+/);
+                //                     const index = entityIdNumberMatch ? entityIdNumberMatch[0] : null;
+                //                     const entity = actions[index];
+                //                     actions.splice(index, 1);
+
+                //                     const errorProperties = failure.causes.flatMap((cause) => cause.properties);
+
+                //                     failedEntities.push({ type: 'RULE_BLOCK', message: , entity });
+
+                //                     return { index, errorProperties };
+                //                 }),
+                //             )
+                //             .flat();
+
+                //         console.log(indicesAndProperties);
+                //     }
+                // }
+            } catch (error) {
+                const errorData = (error as AxiosError).response?.data as {
+                    type: string;
+                    message: string;
+                    metadata: Record<string, any> & { index: number };
+                };
+                const { type, message, metadata } = errorData;
+                const { index, ...properties } = metadata;
+
+                actions.splice(index, 1);
+                console.dir({ type, message, properties }, { depth: null });
+                // if (type === 'TemplateValidationError'){
+                //     const errorData = JSON.parse(message.match(/\[.*\]/)[0]);
+
+                //     // Transform the error data into the desired format
+                //     const errorProperty = {
+                //         instancePath: errorData[0].instancePath.replace("/", ""),
+                //         schemaPath: errorData[0].schemaPath.replace("#/", ""),
+                //         keyword: errorData[0].keyword,
+                //         params: `${Object.keys(errorData[0].params)[0]}, ${Object.values(errorData[0].params)[0]}`,
+                //         message: errorData[0].message
+                //     };}
+                // failedEntities.push({ type, message, properties, errorProperty });
+                failedEntities.push({ type, message, properties });
+            }
+            console.dir({ actions }, { depth: null });
+        }
+
+        if (result[0].status === 'fulfilled') {
+            return { succeededEntities: result[0].value, failedEntities };
+        }
+        return { succeededEntities: [], failedEntities };
+    }
+
+    private formatExcel(value: Excel.CellValue | string, type: IEntitySingleProperty['type'], format: IEntitySingleProperty['format']) {
+        if (type === 'boolean') {
+            if (value === excelConfig.TRUE_TO_HEBREW) return true;
+            if (value === excelConfig.FALSE_TO_HEBREW) return false;
+        }
+        if (type === 'string') {
+            if (format === 'date') return new Date(value as string).toLocaleDateString('en-uk');
+            if (format === 'date-time') return new Date(value as string).toLocaleString('en-uk');
+        }
+        return value;
+    }
+
+    private async readExcelFile(file: Express.Multer.File, template: IMongoEntityTemplatePopulated) {
+        const workbook = new Excel.Workbook();
+        await workbook.xlsx.readFile(file.path);
+        const worksheet = workbook.worksheets[0];
+
+        const actions: IAction[] = [];
+        worksheet.eachRow((row, rowIndex) => {
+            if (rowIndex === 1) return;
+
+            const rowData: Record<string, any> = {};
+
+            Object.entries(template.properties.properties).forEach(([key, value], columnIndex) => {
+                const cellValue = row.getCell(columnIndex + 1).value;
+                const formatCellValue = this.formatExcel(cellValue, value.type, value.format);
+                rowData[key] = formatCellValue;
+            });
+            const action = { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, properties: rowData } };
+
+            actions.push(action);
+        });
+
+        return actions;
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {

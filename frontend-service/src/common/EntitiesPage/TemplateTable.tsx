@@ -116,6 +116,15 @@ const TemplateTable = forwardRef<
         sessionStorage.setItem(`isExpand-${template._id}`, isExpand.toString());
     }, [isExpand, template._id]);
 
+    const checkIfLoadEntityIsDisabled = () => {
+        const { properties } = template.properties;
+        const requiredProperties = new Set(template.properties.required);
+
+        return Object.entries(properties).some(([key, property]) => {
+            return (property.format === 'fileId' || property.format === 'relationshipReference') && requiredProperties.has(key);
+        });
+    };
+
     return (
         <Grid container minWidth="fit-content">
             <Grid container justifyContent="space-between" width="fit-content" minWidth="fit-content">
@@ -185,7 +194,7 @@ const TemplateTable = forwardRef<
                 <Grid container item flexGrow={1} width={0} justifyContent="flex-end" alignItems="center">
                     <AddEntityButton
                         initialStep={1}
-                        disabled={!userHasWritePermissions}
+                        disabled={!userHasWritePermissions || checkIfLoadEntityIsDisabled()}
                         initialValues={{ template, properties: { disabled: false }, attachmentsProperties: {} }}
                         style={{
                             display: 'flex',
@@ -197,6 +206,9 @@ const TemplateTable = forwardRef<
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         setUpdatedEntities={setUpdatedEntities}
                         isLoadEntities
+                        popoverText={
+                            checkIfLoadEntityIsDisabled() ? i18next.t('wizard.entity.LoadEntitiesFromExcel.tableCantLoadEntities') : undefined
+                        }
                     >
                         <UploadFile fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}

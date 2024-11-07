@@ -15,6 +15,7 @@ import {
     exportEntitiesSchema,
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
+    loadExcelEntitiesSchema,
     searchEntitiesBatchRequestSchema,
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
@@ -65,6 +66,14 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     InstancesControllerMiddleware.exportEntities,
 );
+InstancesRouter.post(
+    '/entities/loadExcel',
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadExcelEntitiesSchema),
+    InstancesControllerMiddleware.loadExcelEntities,
+);
+
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);
 InstancesRouter.get('/entities/constraints/:templateId', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
 

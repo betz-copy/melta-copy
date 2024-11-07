@@ -3,7 +3,11 @@ import express from 'express';
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {
-    constructor(public code: number, message: string, public metadata: object = {}) {
+    constructor(
+        public code: number,
+        message: string,
+        public metadata: object = {},
+    ) {
         super(message);
         this.code = code;
         this.metadata = metadata;
@@ -18,9 +22,24 @@ export class NotFoundError extends ServiceError {
 }
 
 export class ValidationError extends ServiceError {
-    constructor(message: string) {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
         super(400, message);
         this.name = 'TemplateValidationError';
+        this.metadata = metadata;
+    }
+}
+
+export class BadRequestError extends ServiceError {
+    constructor(
+        message: string,
+        public metadata: object = {},
+    ) {
+        super(400, message);
+        this.name = 'badRequest';
+        this.metadata = metadata;
     }
 }
 

@@ -1,5 +1,5 @@
 import React, { MouseEventHandler, useEffect, useMemo, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography } from '@mui/material';
+import { IconButton, Grid, useTheme, Typography, LinearProgress } from '@mui/material';
 import { CloseOutlined as DeleteIcon, CameraAltOutlined as CameraIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import i18next from 'i18next';
@@ -19,9 +19,19 @@ interface FileInputProps {
     fileFieldName?: string;
     errorText?: string;
     disableCamera?: boolean;
+    isLoading?: boolean;
 }
 
-const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, inputText, acceptedFilesTypes, errorText, disableCamera = false }) => {
+const FileInput: React.FC<FileInputProps> = ({
+    file,
+    onDeleteFile,
+    onDropFile,
+    inputText,
+    acceptedFilesTypes,
+    errorText,
+    disableCamera = false,
+    isLoading,
+}) => {
     const theme = useTheme();
 
     const [stream, setStream] = useState<MediaStream | null>(null);
@@ -71,20 +81,63 @@ const FileInput: React.FC<FileInputProps> = ({ file, onDeleteFile, onDropFile, i
         }
     };
 
-    const inputStyle = {
+    const style = {
         border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: '40px',
         display: 'flex',
-        padding: '0px 10px',
-        alignItems: 'center',
+        padding: '5px 20px',
         cursor: 'pointer',
     };
+    const inputStyle = { ...style, height: '40px', alignItems: 'center', padding: '0px 10px' };
 
     const isFileFromInput = useMemo(() => file instanceof File, [file]);
+
+    if (isLoading && file) {
+        return (
+            <Grid container style={style} direction="column">
+                <Grid item container alignItems="center" wrap="nowrap">
+                    <Grid item xs={10}>
+                        <Typography
+                            style={{
+                                overflow: 'hidden',
+                                whiteSpace: 'nowrap',
+                                textOverflow: 'ellipsis',
+                                maxWidth: inputWidth * 0.7,
+                            }}
+                        >
+                            {isFileFromInput ? file.name : getFileName(file.name!)}
+                        </Typography>
+                    </Grid>
+                    <Grid item container justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                        <IconButton
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                onDeleteFile(e);
+                            }}
+                            size="small"
+                        >
+                            <DeleteIcon fontSize="small" />
+                        </IconButton>
+                    </Grid>
+                </Grid>
+
+                <Grid display="flex" justifyContent="center">
+                    <LinearProgress
+                        style={{ width: '100%', backgroundColor: '#E1F5FE', borderRadius: '25px', margin: '5px' }}
+                        sx={{
+                            '& .MuiLinearProgress-bar': {
+                                backgroundColor: '#4752B6',
+                            },
+                        }}
+                    />
+                </Grid>
+            </Grid>
+        );
+    }
 
     return (
         <>

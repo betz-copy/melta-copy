@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import config from '../../config/index';
 import { excelConfig } from './excelConfig';
@@ -55,16 +55,48 @@ const createWorkbook = async (fileName: string) => {
     };
 };
 
+const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
+    const { propertyType } = excelConfig;
+    let type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+
+    if (type === propertyType.array && propertyTemplate.enum) {
+        type = propertyType.enum;
+    }
+    if (propertyTemplate.uniqueItems) {
+        type += `, ${excelConfig.unique}`;
+    }
+
+    return type;
+};
+
+const columnIndexToExcelColumn = (index: number): string => {
+    let result = '';
+    while (index > 0) {
+        index--;
+        result = String.fromCharCode((index % 26) + 65) + result;
+        index = Math.floor(index / 26);
+    }
+    return result;
+};
+
 const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated, onlyColumns?: boolean) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
     const sheetColumns: Partial<Excel.Column>[] = [];
-    Object.entries(properties).forEach(([propertyKey, propertyTemplate]) => {
-        const { propertyType } = excelConfig;
-        let type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
-        if (type === propertyType.fileId && propertyTemplate.items) type = propertyType.multipleFiles;
-        if (type === propertyType.array && propertyTemplate.enum) type = propertyType.enum;
-        if (propertyTemplate.uniqueItems) type += `, ${excelConfig.unique}`;
+    Object.entries(properties).forEach(([propertyKey, propertyTemplate], index) => {
+        const type = TypesToHebrew(propertyTemplate);
+        if (propertyTemplate.type === 'boolean') {
+            for (let row = 2; row <= 100; row++) {
+                worksheet.getCell(`${columnIndexToExcelColumn(index + 1)}${row}`).dataValidation = {
+                    type: 'list',
+                    allowBlank: true,
+                    formulae: ['כן, לא'],
+                    showErrorMessage: true,
+                    errorTitle: 'אופציה לא תקינה',
+                    error: 'בבקשה תבחר כן או לא',
+                };
+            }
+        }
 
         sheetColumns.push({
             key: propertyKey,
@@ -72,7 +104,11 @@ const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTempla
             width: 20,
         });
     });
-    worksheet.columns = sheetColumns.concat(onlyColumns ? excelConfig.excelDefaultColumnsOnlyColumns : excelConfig.excelDefaultColumns);
+    worksheet.columns = onlyColumns ? sheetColumns : sheetColumns.concat(excelConfig.excelDefaultColumns);
+    worksheet.getRow(1).eachCell((cell) => {
+        cell.font = excelStyle.columnHeader.font;
+        cell.alignment = excelStyle.columnHeader.alignment;
+    });
     return worksheet;
 };
 

@@ -6,12 +6,17 @@ import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { StepsType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
-import { exportEntitiesRequest } from '../../../services/entitiesService';
+import { exportEntitiesRequest, loadExcelEntitiesRequest } from '../../../services/entitiesService';
+import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
+import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { LoadEntitiesTable } from './loadEntitiesTable';
 
 export interface EntitiesWizardValues {
     file?: File;
 }
+
+let finishedDryRun = false;
+let tablesData = { succeededEntities: [], failedEntities: [] };
 
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
@@ -39,6 +44,24 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
     );
 
+    const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(
+        async (file: File) => {
+            return loadExcelEntitiesRequest(file, template._id);
+        },
+        {
+            onError() {
+                toast.error(i18next.t('wizard.entity.LoadEntitiesFromExcel.failedLoadEntities'));
+            },
+            onSuccess(data) {
+                if (data) {
+                    finishedDryRun = true;
+                    tablesData = data;
+                }
+                console.log({ data });
+            },
+        },
+    );
+
     const steps: StepsType<EntitiesWizardValues> = [
         {
             label: i18next.t('wizard.entity.LoadEntitiesFromExcel.downloadFileTitle'),
@@ -57,23 +80,42 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             label: i18next.t('wizard.entity.LoadEntitiesFromExcel.uploadFilesTitle'),
             component: (props) => {
-                const { setFieldTouched, values } = props;
+                const { values, setFieldValue, setFieldTouched } = props;
+
                 return (
-                    <InstanceFileInput
+                    <InstanceSingleFileInput
                         {...props}
-                        fileFieldName={i18next.t('wizard.entity.LoadEntitiesFromExcel.onlyExcelFiles')}
+                        fileFieldName="file"
                         fieldTemplateTitle={i18next.t('wizard.entity.LoadEntitiesFromExcel.onlyExcelFiles')}
-                        multipleFiles={false}
-                        required={false}
+                        value={values.file}
+                        setFieldValue={setFieldValue}
+                        required
                         acceptedFilesTypes={{ 'excel/xlsx': ['.xlsx', '.xls'] }}
                         setFieldTouched={setFieldTouched}
                         error={props.errors.file}
-                        setFieldValue={props.setFieldValue}
-                        value={values}
+                        onDrop={(file: File) => loadExcelEntities(file)}
+                        isLoading={isLoadingExcelEntities}
+                        disableCamera
                     />
                 );
             },
-            // validationSchema:
+            validationSchema: attachmentPropertiesBaseSchema,
+        },
+    ];
+
+    const stepsExpand: StepsType<EntitiesWizardValues> = [
+        steps[0],
+        {
+            label: i18next.t('wizard.entity.LoadEntitiesFromExcel.uploadFilesTitle'),
+            component: (props) => <OpenPreview fileId={props.values.file!} type="preview" showText />,
+            validationSchema: {},
+        },
+        {
+            label: i18next.t('wizard.entity.LoadEntitiesFromExcel.entitiesStatus'),
+            component: (props) => {
+                return <LoadEntitiesTable {...props} tablesData={tablesData} template={template} />;
+            },
+            validationSchema: attachmentPropertiesBaseSchema,
         },
     ];
 
@@ -82,10 +124,10 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
-            initialStep={0}
+            initialStep={finishedDryRun ? 2 : 1}
             isEditMode={isEditMode}
             title={i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
-            steps={steps}
+            steps={finishedDryRun ? stepsExpand : steps}
             isLoading={false}
             submitFunction={(values) => mutateAsync(values)}
             direction="column"

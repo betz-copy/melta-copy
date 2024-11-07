@@ -23,6 +23,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         }
     }
 
+    async loadExcelEntities(req: Request, res: Response) {
+        res.json(await this.manager.loadExcelEntities(req.file as Express.Multer.File, req.body.templateId, req.user!.id));
+    }
+
     async updateEntityInstance(req: Request, res: Response) {
         const { ignoredRules, ...instanceData } = req.body;
         res.json(

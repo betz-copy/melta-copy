@@ -25,7 +25,6 @@ interface InstanceFileInputProps {
             action: string;
         }>
     >;
-    multipleFiles?: boolean;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -38,7 +37,6 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     error,
     setFieldTouched,
     setExternalErrors,
-    multipleFiles = true,
 }) => {
     return (
         <Box
@@ -75,7 +73,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 }}
                 errorText={error}
                 acceptedFilesTypes={acceptedFilesTypes}
-                multiple={multipleFiles}
+                multiple
             />
         </Box>
     );

@@ -570,6 +570,9 @@ export default {
                 failedEntities: 'יישויות שכשלו להטען',
                 failedEntitiesDescription:
                     '* קובץ Excel של היישויות השגויות יורד ברגעים אלו - בקובץ זה רק היישויות שלא עלו. יש לתקנן ולהעלות את הקובץ מחדש. במידה וההורדה טרם החלה יש ללחוץ כאן',
+                failedLoadEntities: 'טעינת קובץ נכשלה',
+                entitiesStatus: 'סטטוס יישויות',
+                tableCantLoadEntities: 'טבלה זו לא יכולה לטעון יישויות',
             },
         },
         rule: {

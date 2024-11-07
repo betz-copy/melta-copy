@@ -57,31 +57,37 @@ export class BulkActionValidator extends DefaultController {
 
     private validateRelationship(relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) {
         if (!relationshipTemplate) {
-            throw new ValidationError(`Relationship template doesnt exist`);
+            throw new ValidationError(`Relationship template doesnt exist`, { relationshipTemplate, sourceEntity, destinationEntity });
         }
 
         if (
             relationshipTemplate.destinationEntityId !== destinationEntity.templateId ||
             relationshipTemplate.sourceEntityId !== sourceEntity.templateId
         ) {
-            throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
+            throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`, {
+                relationshipTemplate,
+                sourceEntity,
+                destinationEntity,
+            });
         }
     }
 
     private validateEntity(entityTemplate: IMongoEntityTemplate, metadataProperties: Record<string, any>) {
         if (!entityTemplate) {
-            throw new ValidationError(`Entity template doesnt exist`);
+            throw new ValidationError(`Entity template doesnt exist`, metadataProperties);
         }
 
         const validateFunction = ajv.compile(entityTemplate.properties);
         const valid = validateFunction(metadataProperties);
 
         if (!valid) {
-            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`);
+            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`, metadataProperties);
         }
     }
 
     async validateActionsGroups(req: Request) {
+        console.log('validateActionsGroups');
+
         const { actionsGroups } = req.body;
 
         const entitiesIds = new Set<string>();
@@ -117,7 +123,7 @@ export class BulkActionValidator extends DefaultController {
         const entitiesTemplatesByEntitiesTemplatesIds = groupBy(entitiesTemplates, (entityTemplate) => entityTemplate._id);
 
         (actionsGroups as IAction[][]).forEach((actionsGroup) =>
-            actionsGroup.forEach((action) => {
+            actionsGroup.forEach((action, index) => {
                 if (action.actionType === ActionTypes.CreateRelationship) {
                     const metadata = action.actionMetadata as ICreateRelationshipMetadata;
 
@@ -136,7 +142,7 @@ export class BulkActionValidator extends DefaultController {
                     const metadata = action.actionMetadata as ICreateEntityMetadata;
 
                     if (!metadata.templateId.startsWith(brokenRulesFakeEntityIdPrefix)) {
-                        this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], metadata.properties);
+                        this.validateEntity(entitiesTemplatesByEntitiesTemplatesIds[metadata.templateId][0], { ...metadata.properties, index });
                     }
                 }
             }),
