@@ -140,7 +140,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
-    const includeLocationProperty = Object.keys(expandedEntity.entity.properties).some((key) => key.includes('location'));
+    const includeLocationProperty = Object.values(entityTemplate.properties.properties).some((key) => key.format === 'location');
 
     return (
         <>
