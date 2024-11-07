@@ -724,7 +724,7 @@ export default {
         'text-area': 'טקסט ארוך',
         fileId: 'קובץ יחיד',
         multipleFiles: 'קבצים מרובים',
-        location: 'מיקום'
+        location: 'מיקום',
     },
     input: {
         imagePicker: {
