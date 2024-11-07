@@ -90,6 +90,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
                                     }}
                                     refetchQuery={refetch}
+                                    searchedText={searchInput}
                                 />
                             );
                         }}

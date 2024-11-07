@@ -54,6 +54,7 @@ interface EntityCardProps {
     customCardStyle?: React.CSSProperties;
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
+    searchedText?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -66,6 +67,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     customCardStyle,
     variant = 'outlined',
     refetchQuery,
+    searchedText,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -309,6 +311,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                 width: '100%',
                             }}
                             viewFirstLineOfLongText
+                            searchedText={searchedText}
                         />
                     </Grid>
                     {shouldDisplayFilePreview && (
@@ -459,6 +462,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             fileId={files[previewImageIndex].id}
                                             img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                             showText={false}
+                                            searchValue={searchedText}
                                         />
                                     </Grid>
                                 </Grid>

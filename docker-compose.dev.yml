@@ -330,13 +330,6 @@ services:
     networks:
       - network
 
-  semantic-migrate-script:
-    restart: always
-    networks:
-      - network
-    depends_on:
-      - mongo
-      - workspace-service
 volumes:
   elastic_data:
   logstash_data:
