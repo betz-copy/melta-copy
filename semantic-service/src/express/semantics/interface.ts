@@ -19,3 +19,6 @@ export interface IElasticDoc extends Omit<IIndexFilesRequest, 'minioFileIds'> {
     workspaceId: string;
     chunkIndex: number;
 }
+
+// { [templateId]: { [entityId]: title } }
+export type ISemanticSearchResult = Record<string, Record<string, string>>;

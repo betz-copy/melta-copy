@@ -3,7 +3,6 @@ import React from 'react';
 export const HighlightText: React.FC<{ text: string; searchedText?: string }> = ({ text, searchedText }) => {
     // eslint-disable-next-line react/jsx-no-useless-fragment
     if ((typeof text !== 'string' && typeof text !== 'number') || !searchedText) return <>{text}</>;
-    console.log({ text, searchedText });
 
     return (
         <span>

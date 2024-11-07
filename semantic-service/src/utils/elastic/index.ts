@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
 import config from '../../config';
-import { IElasticDoc } from '../../express/semantics/interface';
+import { IElasticDoc, ISemanticSearchResult } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
@@ -80,12 +80,21 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): string[] {
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
         const { buckets } = response.aggregations!.group_by_entity_id;
 
-        if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return [];
+        if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return {};
 
-        return buckets[0].top_hits_by_group.hits.hits.flatMap((hit) => hit?._source?.entityId ?? []);
+        return buckets[0].top_hits_by_group.hits.hits.reduce((acc, hit) => {
+            const templateId = hit._source?.templateId;
+            const entityId = hit._source?.entityId;
+
+            if (!acc[templateId]) acc[templateId] = {};
+
+            acc[templateId][entityId] = hit._source?.title;
+
+            return acc;
+        }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {

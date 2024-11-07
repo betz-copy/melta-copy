@@ -203,7 +203,7 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
-        entityIdsToInclude: Joi.array().items(Joi.string()),
+        semanticSearchResult: Joi.object().pattern(Joi.string(), Joi.object().pattern(Joi.string(), Joi.string())),
     },
     query: {},
     params: {},
@@ -217,7 +217,7 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.number().integer().min(0).default(0),
         limit: Joi.number().integer().min(1).max(searchEntitiesMaxLimit).required(),
         textSearch: Joi.string().allow(''),
-        entityIdsToInclude: Joi.array().items(Joi.string()),
+        semanticSearchResult: Joi.object().pattern(Joi.string(), Joi.object().pattern(Joi.string(), Joi.string())),
         templates: Joi.object().pattern(Joi.string(), {
             filter: searchFilterSchema,
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
