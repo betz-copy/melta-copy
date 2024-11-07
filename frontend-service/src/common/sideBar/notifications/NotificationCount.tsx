@@ -9,7 +9,7 @@ interface NotificationCountProps {
 export const NotificationCount: React.FC<NotificationCountProps> = ({ notificationCount, style }) => {
     if (!notificationCount) return null;
 
-    const color = '#FF1D18';
+    const color = '#FF006B';
 
     return (
         <Typography

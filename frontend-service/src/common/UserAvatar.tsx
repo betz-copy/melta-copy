@@ -56,6 +56,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
                 font: `${Math.round(size / 2)}px Rubik`,
                 fontSize: Math.round(size / 2),
                 fontWeight: 500,
+                border: '3px solid #FF006B',
             }}
         >
             {profile ? (
