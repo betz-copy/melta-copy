@@ -1,4 +1,4 @@
-import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
+import { AppRegistration as AppRegistrationIcon, AutoAwesome } from '@mui/icons-material';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Box, Card, CardContent, CardHeader, Dialog, Divider, Grid, IconButton, styled, Typography } from '@mui/material';
@@ -162,11 +162,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
             .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
     ];
 
-    // const foundIndex = files.findIndex(({ id }) => id === title);
     useMemo(() => {
         const fileIndex = files.findIndex(({ id }) => id === title || id === searchedText);
         setPreviewImageIndex(fileIndex > 0 ? fileIndex : 0);
     }, [files, title, searchedText]);
+
+    const fileName = files[previewImageIndex]?.name;
 
     return (
         <Card
@@ -352,7 +353,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                     }}
                                 >
                                     <Grid item xs={9}>
-                                        <MeltaTooltip title={files[previewImageIndex]?.name || ''}>
+                                        <MeltaTooltip title={fileName || ''}>
                                             <Typography
                                                 sx={{
                                                     marginLeft: '7px',
@@ -364,7 +365,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                <HighlightText text={files[previewImageIndex]?.name || ''} searchedText={searchedText} />
+                                                <HighlightText text={fileName || ''} searchedText={title ? fileName : searchedText} />
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
@@ -375,6 +376,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                 img={<img src="/icons/expand-preview-file.svg" style={{ height: '11px' }} />}
                                                 showText={false}
                                             />
+                                        )}
+                                        {title && searchedText && fileName.includes(searchedText) && (
+                                            <MeltaTooltip title={i18next.t('entitiesTableOfTemplate.semanticSearch')} arrow>
+                                                <AutoAwesome style={{ height: '18px', color: 'white' }} />
+                                            </MeltaTooltip>
                                         )}
                                     </Grid>
                                 </Grid>
