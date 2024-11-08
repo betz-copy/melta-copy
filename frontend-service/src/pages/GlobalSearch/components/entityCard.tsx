@@ -96,7 +96,6 @@ const EntityCard: React.FC<EntityCardProps> = ({
         const property = entityTemplate.properties.properties[propertyName];
         return property.format === 'fileId' || (property.items && property.items.format === 'fileId');
     });
-    console.log({ entityTemplate });
 
     const files: IFile[] = useMemo(
         () =>

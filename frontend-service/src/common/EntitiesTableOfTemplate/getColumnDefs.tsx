@@ -135,6 +135,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 rowHeight,
                 false,
                 searchValue,
+                Object.values(template.entityIdsToInclude ?? {}).flat(),
             );
         }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);

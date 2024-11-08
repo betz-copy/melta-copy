@@ -262,6 +262,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
     rowHeight: number,
     hideColumn = false,
     searchValue: string | undefined = undefined,
+    entityIdsToInclude: string[] | undefined = undefined,
 ): ColDef<Data> => {
     const filterParams: ISetFilterParams<Data, Record<string, any>> = {
         suppressMiniFilter: true,
@@ -281,7 +282,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
                         searchValue={searchValue}
                         items={enumArray}
                         getItemKey={(item) => item}
-                        renderItem={(item) => <OpenPreview fileId={item} />}
+                        renderItem={(item) => <OpenPreview fileId={item} entityIdsToInclude={entityIdsToInclude} searchValue={searchValue} />}
                         containerStyle={{ height: `${rowHeight}px` }}
                         files={items}
                     />
