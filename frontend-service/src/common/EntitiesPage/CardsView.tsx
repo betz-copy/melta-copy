@@ -77,11 +77,12 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {({ entity }) => {
+                        {({ entity, title }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
+                                    title={title?.[0]} // Navigate to the first found file
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}

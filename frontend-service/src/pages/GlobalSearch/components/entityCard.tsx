@@ -56,6 +56,7 @@ interface EntityCardProps {
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
     searchedText?: string;
+    title?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -69,6 +70,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     variant = 'outlined',
     refetchQuery,
     searchedText,
+    title,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -159,6 +161,12 @@ const EntityCard: React.FC<EntityCardProps> = ({
             )
             .slice(0, Math.max(5 - entityTemplate.propertiesPreview.length, 0)),
     ];
+
+    // const foundIndex = files.findIndex(({ id }) => id === title);
+    useMemo(() => {
+        const fileIndex = files.findIndex(({ id }) => id === title || id === searchedText);
+        setPreviewImageIndex(fileIndex > 0 ? fileIndex : 0);
+    }, [files, title, searchedText]);
 
     return (
         <Card
