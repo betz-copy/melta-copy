@@ -56,7 +56,7 @@ interface EntityCardProps {
     variant?: 'outlined' | 'elevation';
     refetchQuery?: () => void;
     searchedText?: string;
-    title?: string;
+    minioFileId?: string;
 }
 
 const EntityCard: React.FC<EntityCardProps> = ({
@@ -70,7 +70,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     variant = 'outlined',
     refetchQuery,
     searchedText,
-    title,
+    minioFileId,
 }) => {
     const [open, setOpen] = useState<boolean>(expandCard);
     const [externalErrors, setExternalErrors] = useState({ files: false, unique: {}, action: '' });
@@ -164,10 +164,10 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     useMemo(() => {
         const fileIndex = files.findIndex(
-            ({ id, name }) => id === title || (searchedText && getFileNameWithoutExtension(name).includes(searchedText)),
+            ({ id, name }) => id === minioFileId || (searchedText && getFileNameWithoutExtension(name).includes(searchedText)),
         );
         setPreviewImageIndex(fileIndex > 0 ? fileIndex : 0);
-    }, [files, title, searchedText]);
+    }, [files, minioFileId, searchedText]);
 
     const fileName = files[previewImageIndex]?.name;
 
@@ -367,7 +367,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                     color: 'white',
                                                 }}
                                             >
-                                                <HighlightText text={fileName || ''} searchedText={title ? fileName : searchedText} />
+                                                <HighlightText text={fileName || ''} searchedText={minioFileId ? fileName : searchedText} />
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
@@ -379,7 +379,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                 showText={false}
                                             />
                                         )}
-                                        {title && searchedText && fileName.includes(searchedText) && (
+                                        {minioFileId && searchedText && fileName.includes(searchedText) && (
                                             <MeltaTooltip title={i18next.t('entitiesTableOfTemplate.semanticSearch')} arrow>
                                                 <AutoAwesome style={{ height: '18px', color: 'white' }} />
                                             </MeltaTooltip>

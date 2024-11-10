@@ -94,7 +94,6 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            // Somewhere here maybe check if entityId is in the entityIdsToInclude!
             params.success({
                 rowData: data.entities.map(({ entity }) => entity as Data),
                 rowCount: data.count,

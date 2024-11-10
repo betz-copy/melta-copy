@@ -302,7 +302,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                   ...searchResults,
                   entities: searchResults.entities.map((entity) => ({
                       ...entity,
-                      title: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
+                      minioFileIds: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
                   })),
               }
             : searchResults;
@@ -317,13 +317,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                   templates: Object.keys(searchBody.templates),
               })
             : undefined;
-
-        const batch = await this.service.searchEntitiesBatch({
-            ...searchBody,
-            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
-        });
-
-        console.log({ batch, semanticSearchResult });
 
         return this.formatEntitiesSearch(
             await this.service.searchEntitiesBatch({

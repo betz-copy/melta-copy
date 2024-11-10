@@ -44,7 +44,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { title?: string[] }>
+                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -77,12 +77,12 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {({ entity, title }) => {
+                        {({ entity, minioFileIds }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
-                                    title={title?.[0]} // Navigate to the first found file
+                                    minioFileId={minioFileIds?.[0]} // Navigate to the first found file
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}
