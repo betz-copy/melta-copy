@@ -10,7 +10,8 @@ export enum WorkspaceTypes {
 }
 
 export interface IMetadata {
-    shouldDisplayProcesses?: boolean;
+    shouldNavigateToEntityPage: boolean;
+    isDrawerOpen: boolean;
     agGrid: {
         rowCount: number;
         defaultExpandedRowCount: number;

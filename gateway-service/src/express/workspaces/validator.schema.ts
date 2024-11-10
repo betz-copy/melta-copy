@@ -3,6 +3,8 @@ import { ExtendedJoi, FilePathSchema, iconFileSchema, MongoIdSchema, WorkspaceNa
 import { WorkspaceTypes } from './interface';
 
 const metadataSchema = Joi.object({
+    shouldNavigateToEntityPage: Joi.boolean(),
+    isDrawerOpen: Joi.boolean(),
     agGrid: Joi.object({
         rowCount: Joi.number(),
         defaultExpandedRowCount: Joi.number(),

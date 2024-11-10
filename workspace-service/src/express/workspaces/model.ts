@@ -6,7 +6,8 @@ import { AllowedEmptyString } from '../../utils/mongoose';
 
 const MetadataSchema = new mongoose.Schema<IMetadata>(
     {
-        shouldDisplayProcesses: { type: Boolean },
+        shouldNavigateToEntityPage: { type: Boolean },
+        isDrawerOpen: { type: Boolean },
         agGrid: {
             rowCount: { type: Number },
             defaultExpandedRowCount: { type: Number },
