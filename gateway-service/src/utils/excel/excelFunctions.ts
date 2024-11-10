@@ -57,14 +57,13 @@ const createWorkbook = async (fileName: string) => {
 
 const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const { propertyType } = excelConfig;
-    let type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
+    const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
 
-    if (type === propertyType.array && propertyTemplate.enum) {
-        type = propertyType.enum;
+    if (type === propertyType.string) {
+        if (propertyTemplate.enum) return propertyType.enum;
+        if (propertyTemplate.pattern) return propertyType.pattern;
     }
-    if (propertyTemplate.uniqueItems) {
-        type += `, ${excelConfig.unique}`;
-    }
+    if (type === propertyType.array && propertyTemplate.items?.type === 'string') return propertyType.enumArray;
 
     return type;
 };
@@ -79,32 +78,86 @@ const columnIndexToExcelColumn = (index: number): string => {
     return result;
 };
 
-const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated, onlyColumns?: boolean) => {
+const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySingleProperty, columnIndex: number) => {
+    const { formulae } = excelConfig;
+    if (propertyTemplate.type === 'boolean') {
+        for (let row = 2; row <= 100; row++) {
+            const allowedValues = formulae.boolean;
+            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+                type: 'list',
+                allowBlank: true,
+                formulae: [allowedValues],
+                showErrorMessage: true,
+                errorTitle: formulae.errorTitle,
+                error: `${formulae.errorDescription} ${allowedValues}`,
+            };
+        }
+    }
+    if (propertyTemplate.type === 'number') {
+        for (let row = 2; row <= 100; row++) {
+            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+                type: 'decimal',
+                operator: 'between',
+                formulae: ['-9999999999', '9999999999'],
+                allowBlank: true,
+                showErrorMessage: true,
+                errorTitle: formulae.errorTitle,
+                error: formulae.numberError,
+            };
+        }
+    }
+    if (propertyTemplate.type === 'string' && propertyTemplate.enum) {
+        const allowedValues = propertyTemplate.enum.join(', ');
+
+        for (let row = 2; row <= 100; row++) {
+            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+                type: 'list',
+                allowBlank: true,
+                formulae: [allowedValues],
+                showErrorMessage: true,
+                errorTitle: formulae.errorTitle,
+                error: `${formulae.errorDescription} ${allowedValues}`,
+            };
+        }
+    }
+    // TODO: array list not working
+    // if (propertyTemplate.type === 'array' && propertyTemplate.items?.type === 'string' && propertyTemplate.items.enum) {
+    //     const allowedValues = propertyTemplate.items.enum.join(', ');
+
+    //     for (let row = 2; row <= 100; row++) {
+    //         worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+    //             type: 'list',
+    //             allowBlank: true,
+    //             formulae: [allowedValues],
+    //             showErrorMessage: true,
+    //             errorTitle: formulae.errorTitle,
+    //             error: `${formulae.errorDescription} ${allowedValues}`,
+    //         };
+    //     }
+    // }
+};
+
+const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated, emptySheet?: boolean) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
     const sheetColumns: Partial<Excel.Column>[] = [];
     Object.entries(properties).forEach(([propertyKey, propertyTemplate], index) => {
-        const type = TypesToHebrew(propertyTemplate);
-        if (propertyTemplate.type === 'boolean') {
-            for (let row = 2; row <= 100; row++) {
-                worksheet.getCell(`${columnIndexToExcelColumn(index + 1)}${row}`).dataValidation = {
-                    type: 'list',
-                    allowBlank: true,
-                    formulae: ['כן, לא'],
-                    showErrorMessage: true,
-                    errorTitle: 'אופציה לא תקינה',
-                    error: 'בבקשה תבחר כן או לא',
-                };
-            }
-        }
+        const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
+        const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
+        const shouldAddColumn = emptySheet ? !isRelationshipRef && !isFile : true;
 
-        sheetColumns.push({
-            key: propertyKey,
-            header: `${propertyTemplate.title}${onlyColumns ? `(${type})` : ''}`,
-            width: 20,
-        });
+        if (shouldAddColumn) {
+            const type = TypesToHebrew(propertyTemplate);
+            columnDataValidation(worksheet, propertyTemplate, index);
+
+            sheetColumns.push({
+                key: propertyKey,
+                header: `${propertyTemplate.title}${emptySheet ? `(${type})` : ''}`,
+                width: 20,
+            });
+        }
     });
-    worksheet.columns = onlyColumns ? sheetColumns : sheetColumns.concat(excelConfig.excelDefaultColumns);
+    worksheet.columns = emptySheet ? sheetColumns : sheetColumns.concat(excelConfig.excelDefaultColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
@@ -165,14 +218,12 @@ const styleAWorksheet = (worksheet: Excel.Worksheet) => {
             if (typeof cell.value === 'boolean') {
                 cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
             }
-            // Check if value is date
             if (excelConfig.regexOfDateFormat.test(String(cell.value))) {
                 const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
                     timeZone: excelConfig.DATE_TIMEZONE,
                 });
                 cell.value = date;
             }
-            // Check if value is html tags when format is text area
             if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
                 cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                 cell.alignment = { vertical: 'top' };

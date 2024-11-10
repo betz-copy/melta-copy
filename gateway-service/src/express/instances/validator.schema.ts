@@ -69,7 +69,7 @@ export const exportEntitiesSchema = Joi.object({
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(), // will be checked by instance-manager
             sort: Joi.any(), // will be checked by instance-manager
-            onlyColumns: Joi.boolean(),
+            emptySheet: Joi.boolean(),
         }),
     },
     query: {},

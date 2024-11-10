@@ -27,5 +27,5 @@ export const excelConfig = {
         array: 'מערך',
         'text-area': 'טקסט ארוך',
     },
-    unique: 'ייחודי',
+    formulae: { errorTitle: 'אופציה לא תקינה', errorDescription: 'בבקשה תבחר', boolean: 'כן, לא', numberError: 'נא להזין מספר חוקי' },
 };

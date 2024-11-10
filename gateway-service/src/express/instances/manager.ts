@@ -110,9 +110,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, onlyColumns }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, emptySheet }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, onlyColumns);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, emptySheet);
         });
 
         await Promise.all(tasks);
@@ -124,10 +124,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
-        onlyColumns?: boolean,
+        emptySheet?: boolean,
     ) {
-        const worksheet = await cerateWorksheet(workbook, template, onlyColumns);
-        if (!onlyColumns) {
+        const worksheet = await cerateWorksheet(workbook, template, emptySheet);
+        if (!emptySheet) {
             const { searchEntitiesChunkSize } = config.service;
             const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 limit: 1,
@@ -160,58 +160,66 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const actions = await this.readExcelFile(file, template);
         let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
-        const failedEntities: { type: string; message: string; properties: Record<string, any> }[] = [];
+        type IErrorProperty = { instancePath: string; schemaPath: string; keyword: string; params: string; message: string };
+        type IErrorData = { type: string; message: string; properties: Record<string, any>; errorProperty?: IErrorProperty };
+        const failedEntities: IErrorData[] = [];
         while (result[0].status !== 'fulfilled' && result.length > 0) {
             try {
                 result = await this.runBulkOfActions([actions], true, userId, []);
                 console.dir({ result }, { depth: null });
 
-                // if (result[0].status === 'rejected') {
-                //     if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
-                //         const indicesAndProperties = result[0].reason.metadata.brokenRules
-                //             .map((brokenRule) =>
-                //                 brokenRule.failures.map((failure) => {
-                //                     const entityIdNumberMatch = failure.entityId.match(/\d+/);
-                //                     const index = entityIdNumberMatch ? entityIdNumberMatch[0] : null;
-                //                     const entity = actions[index];
-                //                     actions.splice(index, 1);
+                if (result[0].status === 'rejected') {
+                    if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
+                        const indicesAndProperties = result[0].reason.metadata.brokenRules
+                            .map((brokenRule) =>
+                                brokenRule.failures.map((failure) => {
+                                    const entityIdNumberMatch = failure.entityId.match(/\d+/);
+                                    const index = entityIdNumberMatch ? entityIdNumberMatch[0] : null;
+                                    const entity = actions[index];
+                                    actions.splice(index, 1);
 
-                //                     const errorProperties = failure.causes.flatMap((cause) => cause.properties);
+                                    const errorProperties = failure.causes.flatMap((cause) => cause.properties);
 
-                //                     failedEntities.push({ type: 'RULE_BLOCK', message: , entity });
+                                    failedEntities.push({ type: 'RULE_BLOCK', message: ``, entity });
 
-                //                     return { index, errorProperties };
-                //                 }),
-                //             )
-                //             .flat();
+                                    return { index, errorProperties };
+                                }),
+                            )
+                            .flat();
 
-                //         console.log(indicesAndProperties);
-                //     }
-                // }
+                        console.log(indicesAndProperties);
+                    }
+                }
             } catch (error) {
                 const errorData = (error as AxiosError).response?.data as {
                     type: string;
                     message: string;
                     metadata: Record<string, any> & { index: number };
+                    errorProperty?: IErrorProperty;
                 };
                 const { type, message, metadata } = errorData;
                 const { index, ...properties } = metadata;
 
                 actions.splice(index, 1);
                 console.dir({ type, message, properties }, { depth: null });
-                // if (type === 'TemplateValidationError'){
-                //     const errorData = JSON.parse(message.match(/\[.*\]/)[0]);
+                if (type === 'TemplateValidationError') {
+                    const match = message.match(/\[.*\]/);
+                    if (match) {
+                        const errorMessage = JSON.parse(match[0]);
 
-                //     // Transform the error data into the desired format
-                //     const errorProperty = {
-                //         instancePath: errorData[0].instancePath.replace("/", ""),
-                //         schemaPath: errorData[0].schemaPath.replace("#/", ""),
-                //         keyword: errorData[0].keyword,
-                //         params: `${Object.keys(errorData[0].params)[0]}, ${Object.values(errorData[0].params)[0]}`,
-                //         message: errorData[0].message
-                //     };}
-                // failedEntities.push({ type, message, properties, errorProperty });
-                failedEntities.push({ type, message, properties });
+                        const errorProperty: IErrorProperty = {
+                            instancePath: errorMessage[0].instancePath.replace('/', ''),
+                            schemaPath: errorMessage[0].schemaPath.replace('#/', ''),
+                            keyword: errorMessage[0].keyword,
+                            params: `${Object.keys(errorMessage[0].params)[0]}, ${Object.values(errorMessage[0].params)[0]}`,
+                            message: errorMessage[0].message,
+                        };
+
+                        failedEntities.push({ type, message, properties, errorProperty });
+                    }
+                } else {
+                    failedEntities.push({ type, message, properties });
+                }
             }
             console.dir({ actions }, { depth: null });
         }

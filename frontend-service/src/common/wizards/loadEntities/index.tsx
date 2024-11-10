@@ -30,7 +30,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             return exportEntitiesRequest({
                 fileName: `${template.displayName}.xlsx`,
                 templates: {
-                    [template._id]: { onlyColumns: true },
+                    [template._id]: { emptySheet: true },
                 },
             });
         },

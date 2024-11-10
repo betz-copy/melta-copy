@@ -13,7 +13,7 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            onlyColumns?: boolean;
+            emptySheet?: boolean;
         };
     };
 }

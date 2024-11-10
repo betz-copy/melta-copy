@@ -368,6 +368,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 <AgGridReact<Data>
                     ref={gridRef}
                     getRowStyle={(params): RowStyle | undefined => {
+                        console.log({ params });
+
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
                             return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
                         }
