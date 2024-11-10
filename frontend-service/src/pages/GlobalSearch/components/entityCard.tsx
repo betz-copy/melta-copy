@@ -172,7 +172,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
     const fileName = files[previewImageIndex]?.name;
 
     const isFoundByAi = useMemo(() => {
-        const isFileNameSearched = searchedText && !fileName.toLowerCase().includes(searchedText.toLowerCase());
+        const isFileNameSearched = searchedText && !fileName?.toLowerCase()?.includes(searchedText?.toLowerCase());
         return isFileNameSearched && minioFileId;
     }, [fileName, minioFileId, searchedText]);
 
