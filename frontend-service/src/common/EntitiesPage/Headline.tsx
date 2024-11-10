@@ -5,7 +5,7 @@ import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
 import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
@@ -36,15 +36,18 @@ export const GlobalSearchBar: React.FC<{
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
-    const debouncedSearch = debounce((value: string) => {
-        if (value !== valueForSearchButtonRef.current) {
-            valueForSearchButtonRef.current = value;
-            onSearch(value);
-            if (gridApi) {
-                gridApi.setQuickFilter(value);
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            if (value !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = value;
+                onSearch(value);
+                if (gridApi) {
+                    gridApi.setQuickFilter(value);
+                }
             }
-        }
-    }, 300);
+        }, 300),
+        [onSearch, gridApi, valueForSearchButtonRef.current],
+    );
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
