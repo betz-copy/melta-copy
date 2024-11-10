@@ -318,6 +318,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
               })
             : undefined;
 
+        const batch = await this.service.searchEntitiesBatch({
+            ...searchBody,
+            entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+        });
+
+        console.log({ batch, semanticSearchResult });
+
         return this.formatEntitiesSearch(
             await this.service.searchEntitiesBatch({
                 ...searchBody,

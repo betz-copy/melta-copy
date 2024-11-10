@@ -393,11 +393,13 @@ const buildFulltextSearchQuery = (
 
     return {
         cypherQuery: `
-            ${indexHandling}
-            YIELD node, score
-            WHERE ${filterQuery.cypherQuery}
+            CALL () { ${indexHandling}
+                YIELD node, score
+                WHERE ${filterQuery.cypherQuery}
+                RETURN node
+                ${entityIdMatch}
+            }
             RETURN node
-            ${entityIdMatch}
             ${sortQuery}
             SKIP toInteger($skip)
             LIMIT toInteger($limit)
