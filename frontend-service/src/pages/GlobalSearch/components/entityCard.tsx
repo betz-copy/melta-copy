@@ -171,6 +171,11 @@ const EntityCard: React.FC<EntityCardProps> = ({
 
     const fileName = files[previewImageIndex]?.name;
 
+    const isFoundByAi = useMemo(() => {
+        const isFileNameSearched = searchedText && !fileName.toLowerCase().includes(searchedText.toLowerCase());
+        return isFileNameSearched && minioFileId;
+    }, [fileName, minioFileId, searchedText]);
+
     return (
         <Card
             raised
@@ -379,7 +384,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                                 showText={false}
                                             />
                                         )}
-                                        {minioFileId && searchedText && fileName.includes(searchedText) && (
+                                        {isFoundByAi && (
                                             <MeltaTooltip title={i18next.t('entitiesTableOfTemplate.semanticSearch')} arrow>
                                                 <AutoAwesome style={{ height: '18px', color: 'white' }} />
                                             </MeltaTooltip>

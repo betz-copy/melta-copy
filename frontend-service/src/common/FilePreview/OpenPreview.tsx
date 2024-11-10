@@ -71,7 +71,10 @@ const OpenPreview: React.FC<{
         setOpen(true);
     };
 
-    const highlightAll = useMemo(() => entityIdsToInclude?.includes(typeof fileId === 'string' ? fileId : fileId.name), [entityIdsToInclude, fileId]);
+    const highlightAll = useMemo(() => {
+        const isFileNameSearched = searchValue && fileName.toLowerCase().includes(searchValue);
+        return !isFileNameSearched && entityIdsToInclude?.includes(typeof fileId === 'string' ? fileId : fileId.name);
+    }, [entityIdsToInclude, fileId, fileName, searchValue]);
 
     return (
         <Grid>
