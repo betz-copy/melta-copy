@@ -69,7 +69,7 @@ const createWorksheet = async (workbook: Excel.Workbook, template: IMongoEntityT
         .map((key) => ({
             key,
             header: properties[key].title,
-            width: 20,
+            width: config.excel.columnWidth,
         }));
 
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns.includes(externalColumn.key));
@@ -169,11 +169,20 @@ const styleAWorksheet = (
                         cell.value = cell.value ? excelConfig.TRUE_TO_HEBREW : excelConfig.FALSE_TO_HEBREW;
                     }
                     // Check if value is date
-                    if (excelConfig.regexOfDateFormat.test(String(cell.value))) {
-                        const date = new Date(String(cell.value)).toLocaleString(excelConfig.DATE_LOCALES, {
-                            timeZone: excelConfig.DATE_TIMEZONE,
-                        });
-                        cell.value = date;
+                    if (cell.value && typeof cell.value === 'string') {
+                        const cellValue = String(cell.value);
+
+                        if (excelConfig.regexOfDateFormat.test(cellValue)) {
+                            const date = new Date(cellValue);
+
+                            if (cellValue.includes(':')) {
+                                cell.value = date;
+                                cell.numFmt = 'dd/mm/yyyy hh:mm';
+                            } else {
+                                cell.value = new Date(date.setHours(0, 0, 0, 0));
+                                cell.numFmt = 'dd/mm/yyyy';
+                            }
+                        }
                     }
                     // Check if value is html tags when format is text area
                     if (excelConfig.regexOfTextAreaFormat.test(String(cell.value))) {
