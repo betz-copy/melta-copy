@@ -174,8 +174,6 @@ export const getFileName = (fileId: string) => {
 };
 
 const fixComplexProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
-    console.log({ rows });
-
     const { properties } = template.properties;
     Object.entries(properties).forEach(([key, value]) => {
         if (value.format === 'relationshipReference') {

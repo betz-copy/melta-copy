@@ -86,8 +86,6 @@ export class BulkActionValidator extends DefaultController {
     }
 
     async validateActionsGroups(req: Request) {
-        console.log('validateActionsGroups');
-
         const { actionsGroups } = req.body;
 
         const entitiesIds = new Set<string>();

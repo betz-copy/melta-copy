@@ -27,8 +27,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
 }) => {
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
         async (fileName: string, insertEntities?: { insert: boolean; entities?: Record<string, any>[] }) => {
-            console.log({ fileName, insertEntities });
-
             return exportEntitiesRequest({
                 fileName,
                 templates: {
@@ -58,17 +56,12 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 if (data) {
                     finishedDryRun = true;
                     tablesData = data;
-                    console.log({
-                        insert: true,
-                        entities: data.failedEntities.map((entity) => entity.properties),
-                    });
 
                     await exportTemplateToExcel(`${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`, {
                         insert: true,
                         entities: data.failedEntities.map((entity) => entity.properties),
                     });
                 }
-                console.log({ data });
             },
         },
     );

@@ -109,9 +109,6 @@ export const throwIfActionCausedRuleFailures = (
     actionsResults: { createdRelationshipId?: string; createdEntityId?: string; updatedEntityId?: string }[],
     actions?: IAction[],
 ) => {
-    console.log('throwIfActionCausedRuleFailures');
-    console.dir({ actions, actionsResults }, { depth: null });
-
     const ruleFailuresWithNewCauses = filteredMap(ruleFailuresAfterAction, (ruleFailureAfterAction) => {
         const ruleFailureBeforeAction = ruleFailuresBeforeAction.find(({ rule, entityId }) => {
             return rule._id === ruleFailureAfterAction.rule._id && entityId === ruleFailureAfterAction.entityId;
@@ -138,8 +135,6 @@ export const throwIfActionCausedRuleFailures = (
         .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionsResults));
 
     if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
-        console.dir({ brokenRules, actions }, { depth: null });
-
         throw new BadRequestError(`[NEO4J] action is blocked by rules.`, {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules,

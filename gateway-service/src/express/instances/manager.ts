@@ -180,7 +180,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         while (result[0].status !== 'fulfilled' && result.length > 0) {
             try {
                 result = await this.runBulkOfActions([actions], true, userId, []);
-                console.dir({ result }, { depth: null });
 
                 if (result[0].status === 'rejected') {
                     if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
@@ -211,8 +210,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                                 }),
                             )
                             .flat();
-
-                        console.dir({ indicesAndProperties }, { depth: null });
                     }
                 }
             } catch (error) {
@@ -226,7 +223,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 const { index, ...properties } = metadata;
 
                 actions.splice(index, 1);
-                console.dir({ type, message, properties }, { depth: null });
                 if (type === 'TemplateValidationError') {
                     const match = message.match(/\[.*\]/);
                     if (match) {
@@ -246,7 +242,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     failedEntities.push({ type, message, properties });
                 }
             }
-            console.dir({ actions }, { depth: null });
         }
 
         if (result[0].status === 'fulfilled') {
