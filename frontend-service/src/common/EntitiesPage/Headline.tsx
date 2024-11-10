@@ -1,9 +1,9 @@
-import { Search, TableChartOutlined } from '@mui/icons-material';
+import { AutoAwesome, Search, TableChartOutlined } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
-import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
@@ -17,6 +17,8 @@ import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -32,6 +34,8 @@ export const GlobalSearchBar: React.FC<{
     autoSearch?: boolean;
 }> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
+    const [localStorage, setLocalStorage] = useLocalStorage<boolean>('searchWithAI', true);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({ searchWithAI: '' });
     const theme = useTheme();
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
@@ -48,6 +52,20 @@ export const GlobalSearchBar: React.FC<{
         }, 300),
         [onSearch, gridApi, valueForSearchButtonRef.current],
     );
+
+    useEffect(() => {
+        const urlValue = urlSearchParams.get('searchWithAI');
+        let realValue: boolean;
+
+        if (urlValue !== null && urlValue !== '') {
+            realValue = urlValue === 'true';
+        } else {
+            realValue = localStorage;
+        }
+
+        setLocalStorage(realValue);
+        setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), searchWithAI: realValue.toString() });
+    }, [localStorage, setLocalStorage, setUrlSearchParams, urlSearchParams]);
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
@@ -75,14 +93,31 @@ export const GlobalSearchBar: React.FC<{
                 }
             }}
             endAdornmentChildren={
-                <IconButton
-                    style={{ color: theme.palette.primary.main }}
-                    onClick={() => onSearch(valueForSearchButtonRef.current)}
-                    sx={{ padding: 0 }}
-                    disableRipple
-                >
-                    <Search sx={{ fontSize: '1.25rem' }} />
-                </IconButton>
+                <Box>
+                    <IconButton
+                        style={{ color: theme.palette.primary.main }}
+                        onClick={() => onSearch(valueForSearchButtonRef.current)}
+                        sx={{ padding: 0 }}
+                        disableRipple
+                    >
+                        <Search sx={{ fontSize: '1.25rem' }} />
+                    </IconButton>
+                    <MeltaTooltip title={i18next.t('globalSearch.searchWithAiExplanation')} arrow>
+                        <IconButton
+                            style={{ color: theme.palette.primary.main }}
+                            onClick={() =>
+                                setUrlSearchParams({
+                                    ...Object.fromEntries(urlSearchParams.entries()),
+                                    searchWithAI: (!(urlSearchParams.get('searchWithAI') === 'true')).toString(),
+                                })
+                            }
+                            sx={{ padding: 0 }}
+                            disableRipple
+                        >
+                            <AutoAwesome sx={{ fontSize: '1.25rem' }} />
+                        </IconButton>
+                    </MeltaTooltip>
+                </Box>
             }
             placeholder={placeholder}
             size={size}
@@ -129,6 +164,7 @@ const EntitiesPageHeadline: React.FC<{
     refreshServerSide,
     setUpdatedEntities,
 }) => {
+    console.log('zain');
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 

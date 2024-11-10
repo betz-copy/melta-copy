@@ -53,10 +53,15 @@ const TemplateTablesViewResults = forwardRef<
     );
 });
 
-const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
+const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
+    templates: IMongoEntityTemplatePopulated[],
+    searchInput: string,
+    searchWithAI: boolean,
+) => {
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
         templates.map(({ _id }) => _id),
         searchInput,
+        searchWithAI,
     );
 
     return templates.flatMap((template) => {
@@ -69,6 +74,7 @@ export interface TemplateTablesViewProps {
     templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
+    searchWithAI: boolean;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }
 
@@ -78,16 +84,17 @@ export interface TemplateTablesViewRef {
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
-    ({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+    ({ templates, searchInput, pageType, setUpdatedEntities, searchWithAI }, ref) => {
         const { setSteps } = useTour();
+        console.log(searchWithAI);
 
         const {
             data: templatesFilteredByCount,
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery(
-            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
-            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
+            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput, searchWithAI],
+            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput, searchWithAI),
             {
                 onSuccess: (data) => {
                     if (data.length === 0 && pageType === 'globalSearch') {
