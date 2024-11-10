@@ -694,6 +694,8 @@ export class EntityManager extends DefaultManagerNeo4j {
             ? `
             UNION
             MATCH (node)
+            // Search for entities that have an Id of specific entities (keys($semanticSearchResult[templateId]))
+            // and that are in the current searched template
             WHERE templateId IN labels(node) AND node._id IN keys($semanticSearchResult[templateId])
             RETURN node
         `
