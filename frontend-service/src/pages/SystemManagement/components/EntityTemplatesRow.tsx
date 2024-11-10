@@ -101,17 +101,15 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
     const checkEntityTemplateHasTemplates = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
-        const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
-            templates.map(({ _id }) => _id),
-            searchInput,
-        );
-
-        const hasTemplatesWithCount = templates.some(({ _id }) => {
-            const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
+        const templateIds = templates.map(({ _id }) => _id);
+        const entitiesCountByTemplates = await getCountByTemplateIdsRequest(templateIds, searchInput);
+        const countByTemplateIdMap = new Map(entitiesCountByTemplates.map(({ templateId, count }) => [templateId, count]));
+        const templatesHaveEntities = templates.some(({ _id }) => {
+            const count = countByTemplateIdMap.get(_id) || 0;
             return count > 0;
         });
 
-        setIsDeleteButtonDisabled(hasTemplatesWithCount);
+        setIsDeleteButtonDisabled(templatesHaveEntities);
     };
 
     const handleHover = (isHover: boolean) => {

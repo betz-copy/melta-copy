@@ -9,7 +9,7 @@ import { v4 as uuid } from 'uuid';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
-import { CreateTemplateName, useCreateTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from '../entityTemplate/CreateTemplateName'; // Import the schema
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
@@ -59,8 +59,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
 }) => {
     const queryClient = useQueryClient();
 
-    // Call the hook inside the component
-    const createTemplateNameSchema = useCreateTemplateNameSchema();
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema();
 
     const { isLoading, mutateAsync } = useMutation(
         (processTemplate: ProcessTemplateWizardValues) =>
@@ -113,7 +112,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t(isEditMode ? 'wizard.processTemplate.editTitle' : 'wizard.processTemplate.title')}
+            title={isEditMode ? i18next.t('wizard.processTemplate.updateTitle') : i18next.t('wizard.processTemplate.createTitle')}
             steps={stepsComponents}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

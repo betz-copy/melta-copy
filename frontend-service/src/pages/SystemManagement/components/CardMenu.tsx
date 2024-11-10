@@ -17,7 +17,7 @@ import { useUserStore } from '../../../stores/user';
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled: boolean; canEdit: boolean; tooltipTitle: string };
+    disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
@@ -47,7 +47,7 @@ export const CardMenu: React.FC<{
                 <MeltaTooltip
                     placement="left"
                     title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
-                    disableHoverListener={!disabledProps?.canEdit}
+                    disableHoverListener={!disabledProps?.isEditDisabled}
                 >
                     <Grid>
                         <MenuButton
@@ -56,7 +56,7 @@ export const CardMenu: React.FC<{
                                 handleClose(e);
                             }}
                             text={i18next.t('actions.edit')}
-                            disabled={disabledProps?.canEdit}
+                            disabled={disabledProps?.isEditDisabled}
                             icon={<EditIcon color="action" />}
                         />
                     </Grid>

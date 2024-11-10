@@ -391,7 +391,8 @@ export default {
         failedToUpdateSystemData: 'נכשל לעדכן נתוני מערכת',
         date: 'בחר תאריך',
         category: {
-            title: 'יצירת קטגוריה',
+            createTitle: 'יצירת קטגוריה',
+            updateTitle: 'עריכת קטגוריה',
             createdSuccessfully: 'קטגוריה נוצרה בהצלחה',
             editedSuccessfully: 'קטגוריה עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור קטגוריה',
@@ -403,7 +404,8 @@ export default {
             chooseColor: 'בחירת צבע',
         },
         entityTemplate: {
-            title: 'יצירת תבנית ישות',
+            createTitle: 'יצירת תבנית ישות',
+            updateTitle: 'עריכת תבנית ישות',
             createdSuccessfully: 'תבנית ישות נוצרה בהצלחה',
             editedSuccessfully: 'תבנית ישות עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית ישות',
@@ -461,7 +463,8 @@ export default {
             deleteUniqueGrouptoList: 'מחק',
         },
         relationshipTemplate: {
-            title: 'יצירת תבנית קשר',
+            createTitle: 'יצירת תבנית קשר',
+            updateTitle: 'עריכת תבנית קשר',
             createdSuccessfully: 'תבנית קשר נוצרה בהצלחה',
             editedSuccessfully: 'תבנית קשר עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית קשר',
@@ -472,8 +475,8 @@ export default {
             destinationEntity: 'תבנית ישות יעד',
         },
         processTemplate: {
-            title: 'יצירת תבנית תהליך',
-            editTitle: 'עריכת תבנית תהליך',
+            createTitle: 'יצירת תבנית תהליך',
+            updateTitle: 'עריכת תבנית תהליך',
             createdSuccessfully: 'תבנית תהליך נוצרה בהצלחה',
             editedSuccessfully: 'תבנית תהליך עודכנה בהצלחה',
             failedToCreate: 'נכשל ליצור תבנית תהליך',
@@ -525,7 +528,8 @@ export default {
             readMore: 'קרא עוד',
         },
         rule: {
-            title: 'יצירת חוק',
+            createTitle: 'יצירת חוק',
+            updateTitle: 'עריכת חוק',
             createdSuccessfully: 'חוק נוצר בהצלחה',
             editedSuccessfully: 'חוק עודכן בהצלחה',
             failedToCreate: 'נכשל ליצור חוק',

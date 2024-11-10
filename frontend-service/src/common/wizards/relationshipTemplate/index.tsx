@@ -114,7 +114,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.relationshipTemplate.title')}
+            title={isEditMode ? i18next.t('wizard.relationshipTemplate.updateTitle') : i18next.t('wizard.relationshipTemplate.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={mutateAsync}

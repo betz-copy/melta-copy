@@ -7,7 +7,7 @@ import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
-import { CreateTemplateName, useCreateTemplateNameSchema } from './CreateTemplateName';
+import { CreateTemplateName, useCreateOrEditTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
 import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
@@ -81,8 +81,9 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
 }) => {
     const queryClient = useQueryClient();
 
-    // Hook call inside the component
-    const createTemplateNameSchema = useCreateTemplateNameSchema();
+    const currentTemplateId = isEditMode ? (initialValues as EntityTemplateWizardValues & { _id: string })._id : undefined;
+
+    const createTemplateNameSchema = useCreateOrEditTemplateNameSchema(currentTemplateId);
 
     const { isLoading, mutateAsync } = useMutation(
         (entityTemplate: EntityTemplateWizardValues) =>
@@ -141,7 +142,6 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToCreate')} />);
                 }
 
-                // eslint-disable-next-line no-console
                 console.log('failed to create/update entity template. error', error);
             },
         },
@@ -156,7 +156,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         {
             label: i18next.t('wizard.entityTemplate.chooseEntityTemplateName'),
             component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema, // Pass schema here
+            validationSchema: createTemplateNameSchema,
         },
         {
             label: i18next.t('wizard.entityTemplate.chooseIcon'),
@@ -180,7 +180,7 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={i18next.t('wizard.entityTemplate.title')}
+            title={isEditMode ? i18next.t('wizard.entityTemplate.updateTitle') : i18next.t('wizard.entityTemplate.createTitle')}
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

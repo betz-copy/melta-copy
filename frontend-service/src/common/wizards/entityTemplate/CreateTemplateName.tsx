@@ -7,13 +7,15 @@ import { variableNameValidation } from '../../../utils/validation';
 import { StepComponentProps } from '../index';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
-export const useCreateTemplateNameSchema = () => {
+export const useCreateOrEditTemplateNameSchema = (currentTemplateId?: string) => {
     const queryClient = useQueryClient();
 
-    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+    const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates') || new Map();
 
-    const existingTemplateNames = Array.from(templates!.values()).map((template) => template.name);
-    const existingTemplateDisplayNames = Array.from(templates!.values()).map((template) => template.displayName);
+    const otherTemplates = Array.from(templates.values()).filter((template) => template._id !== currentTemplateId);
+
+    const existingTemplateNames = otherTemplates.map((template) => template.name);
+    const existingTemplateDisplayNames = otherTemplates.map((template) => template.displayName);
 
     return Yup.object({
         name: Yup.string()

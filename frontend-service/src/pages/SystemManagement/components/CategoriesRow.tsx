@@ -18,6 +18,8 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { useUserStore } from '../../../stores/user';
+import { PermissionScope } from '../../../interfaces/permissions';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -43,6 +45,12 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
     const queryClient = useQueryClient();
 
     const templates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+
+    const currentUser = useUserStore((state) => state.user);
+
+    const canEdit =
+        currentUser.currentWorkspacePermissions.templates?.scope === PermissionScope.write ||
+        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write;
 
     const checkCategoryHasTemplates = (categoryId: string) => {
         const hasTemplates = Array.from(templates!.values()).some((template) => template.category._id === categoryId);
@@ -98,7 +106,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({ category, setDeleteCategory
                                 onDeleteClick={() => setDeleteCategoryDialogState({ isDialogOpen: true, categoryId: category._id })}
                                 disabledProps={{
                                     isDisabled: isDeleteButtonDisabled,
-                                    canEdit: false,
+                                    isEditDisabled: !canEdit,
                                     tooltipTitle: isDeleteButtonDisabled ? i18next.t('wizard.entity.deleteDisabledDueToTemplates') : '',
                                 }}
                             />
@@ -151,18 +159,7 @@ const CategoriesRow: React.FC = () => {
     return (
         <Grid item container gap="10px">
             <Box
-                header={
-                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
-                        <Typography style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
-                            {i18next.t('general')}
-                        </Typography>
-                        {isHoverOnBox && (
-                            <IconButton onClick={() => {}}>
-                                <img src="\icons\edit-icon.svg" />
-                            </IconButton>
-                        )}
-                    </Grid>
-                }
+                header={<Grid item container alignItems="center" height="20px" />}
                 addingIcon={
                     <IconButton
                         style={{ borderRadius: '5px', width: 'fit-content' }}

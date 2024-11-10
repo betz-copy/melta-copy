@@ -92,7 +92,7 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                 }}
                                 disabledProps={{
                                     isDisabled: false,
-                                    canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
+                                    isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
                                     tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
                                 }}
                             />
