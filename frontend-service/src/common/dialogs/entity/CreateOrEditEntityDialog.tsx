@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-use-before-define */
 import { Grid, Card, CardContent, Box, Divider, Button, IconButton, CircularProgress, Typography } from '@mui/material';
 import { Done as DoneIcon, Clear as ClearIcon, Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -192,6 +193,9 @@ const CreateOrEditEntityDetails: React.FC<{
         {
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
+                if (shouldNavigateToEntityPage === true) {
+                    navigate(`/entity/${data.properties._id}`);
+                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
@@ -211,6 +215,9 @@ const CreateOrEditEntityDetails: React.FC<{
                 onSuccessCreate?.(currEntity);
                 onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
+                if (shouldNavigateToEntityPage === true) {
+                    navigate(`/entity/${currEntity.properties._id}`);
+                }
             },
             onError: (err: AxiosError, { newEntityData }) => {
                 handleMutationError(err, entityTemplate, newEntityData);
@@ -294,13 +301,16 @@ const CreateOrEditEntityDetails: React.FC<{
     return (
         <Formik<EntityWizardValues>
             initialValues={initialValues}
-            onSubmit={(values, formikHelpers) => {
+            onSubmit={async (values, formikHelpers) => {
                 formikHelpers.setTouched({});
-                mutationPromiseToastify(values);
+                await mutationPromiseToastify(values);
+                if (shouldNavigateToEntityPage === true) {
+                    navigate(`/entity/${entityId}`);
+                }
 
                 if (!draftId) return;
 
-                // ? created via debounce, this counters that (waits for the debounce to complete and then removes the draft)
+                // delete the draft after the debounce
                 setTimeout(
                     () =>
                         deleteDraft(
@@ -577,21 +587,6 @@ const CreateOrEditEntityDetails: React.FC<{
                                                                 <DoneIcon />
                                                             )
                                                         }
-                                                        onClick={() => {
-                                                            const hasErrors = Object.keys(errors).length > 0;
-
-                                                            if (!hasErrors) {
-                                                                if (shouldNavigateToEntityPage === true) {
-                                                                    navigate(`/entity/${entityId}`);
-                                                                } else {
-                                                                    setTimeout(() => {
-                                                                        if (!externalErrors) {
-                                                                            handleClose();
-                                                                        }
-                                                                    }, 5000);
-                                                                }
-                                                            }
-                                                        }}
                                                         disabled={!dirty || isUpdateLoading || isCreateLoading}
                                                     >
                                                         {i18next.t('entityPage.save')}

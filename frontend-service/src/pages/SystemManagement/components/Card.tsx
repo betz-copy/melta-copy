@@ -14,8 +14,8 @@ export const ViewingCard: React.FC<{
     return (
         <Grid item>
             <Card
-                onMouseEnter={() => (onHover ? onHover(true) : '')}
-                onMouseLeave={() => (onHover ? onHover(false) : '')}
+                onMouseEnter={() => (onHover ? onHover(true) : undefined)}
+                onMouseLeave={() => (onHover ? onHover(false) : undefined)}
                 sx={{
                     bgcolor: darkMode ? '#111111' : '#fff',
                     ':hover': { transform: 'scale(1.01)' },
@@ -30,21 +30,17 @@ export const ViewingCard: React.FC<{
             >
                 <CardContent
                     style={{ padding: '10px' }}
-                    onClick={(event) => {
-                        event.preventDefault();
-
-                        event.stopPropagation();
+                    onClick={() => {
                         setOpen(!!expendedCard);
                     }}
                 >
                     {!open && title}
                 </CardContent>
 
-                <Collapse in={open} style={{ transformOrigin: '0 0 0' }} {...{ timeout: 500 }} mountOnEnter unmountOnExit>
+                <Collapse in={open} style={{ transformOrigin: '0 0 0' }} timeout={500} mountOnEnter unmountOnExit>
                     <CardContent
                         style={{ padding: '10px' }}
-                        onClick={(event) => {
-                            event.stopPropagation();
+                        onClick={() => {
                             setOpen(false);
                         }}
                     >
