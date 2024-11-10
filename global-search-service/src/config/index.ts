@@ -38,6 +38,7 @@ const config = {
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
+        dummyTemplateId: env.get('NEO4J_DUMMY_TEMPLATE_ID').default('DUMMY').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
