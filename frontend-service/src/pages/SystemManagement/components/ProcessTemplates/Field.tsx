@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Grid, TextField, Switch, Button, Typography, InputAdornment } from '@mui/material';
 import i18next from 'i18next';
 import { updateMetadata } from '../../../../services/workspacesService';
@@ -18,8 +18,6 @@ interface FieldProps {
 const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfig, workspaceMetadata, updateWorkspaceMetadata, workspaceId }) => {
     const translateConfigProp = i18next.t(`DynamicsConfigs.${keyPath}`);
 
-    const initialValueRef = useRef(value);
-
     const [inputValue, setInputValue] = useState<string | number | boolean>(value);
     const [isModified, setIsModified] = useState(false);
 
@@ -28,7 +26,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
     useEffect(() => {
         setInputValue(value);
         setIsModified(false);
-        initialValueRef.current = value;
     }, [value]);
 
     const handleUpdate = async () => {
@@ -75,10 +72,8 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
     };
 
     const handleInputChange = (newValue: string | number | boolean) => {
-        console.log({ newValue, isModified });
-
         setInputValue(newValue);
-        setIsModified(newValue !== initialValueRef.current);
+        setIsModified(newValue !== value);
     };
 
     switch (typeof value) {
@@ -178,8 +173,6 @@ const Field: React.FC<FieldProps> = ({ keyPath, value, defaultValue, updateConfi
                                             name={keyPath}
                                             checked={Boolean(inputValue)}
                                             onChange={(event) => {
-                                                console.log('triggered');
-
                                                 const newValue = event.target.checked;
                                                 handleInputChange(newValue);
                                             }}

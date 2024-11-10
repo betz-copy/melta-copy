@@ -12,17 +12,13 @@ const ConfigurationManagement: React.FC = () => {
     const [updatedConfigs, setUpdatedConfigs] = useState<any>({});
 
     useEffect(() => {
-        console.log('hhh');
-
         setUpdatedConfigs(deepClone(configs));
     }, [configs]);
 
     const updateConfig = (path: string, newValue: any) => {
-        setUpdatedConfigs((prevConfigs) => {
-            const updated = deepClone(prevConfigs);
-            setNestedValue(updated, path, newValue);
-            return updated;
-        });
+        const updated = deepClone(updatedConfigs);
+        setNestedValue(updated, path, newValue);
+        setUpdatedConfigs(updated);
     };
 
     // eslint-disable-next-line @typescript-eslint/no-shadow
