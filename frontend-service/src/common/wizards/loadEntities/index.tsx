@@ -26,11 +26,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     template,
 }) => {
     const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async () => {
+        async (fileName: string, insertEntities?: { insert: boolean; entities?: Record<string, any>[] }) => {
+            console.log({ fileName, insertEntities });
+
             return exportEntitiesRequest({
-                fileName: `${template.displayName}.xlsx`,
+                fileName,
                 templates: {
-                    [template._id]: { emptySheet: true },
+                    [template._id]: { insertEntities },
                 },
             });
         },
@@ -52,10 +54,19 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             onError() {
                 toast.error(i18next.t('wizard.entity.LoadEntitiesFromExcel.failedLoadEntities'));
             },
-            onSuccess(data) {
+            async onSuccess(data) {
                 if (data) {
                     finishedDryRun = true;
                     tablesData = data;
+                    console.log({
+                        insert: true,
+                        entities: data.failedEntities.map((entity) => entity.properties),
+                    });
+
+                    await exportTemplateToExcel(`${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`, {
+                        insert: true,
+                        entities: data.failedEntities.map((entity) => entity.properties),
+                    });
                 }
                 console.log({ data });
             },
@@ -69,7 +80,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             component: () => (
                 <OpenPreview
                     fileId={`${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}.xlsx`}
-                    onClick={() => exportTemplateToExcel()}
+                    onClick={() => exportTemplateToExcel(`${template.displayName} .xlsx`, { insert: true })}
                     loading={isExportingTableToExcelFile}
                     type="exportTable"
                     showText
@@ -113,7 +124,22 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             label: i18next.t('wizard.entity.LoadEntitiesFromExcel.entitiesStatus'),
             component: (props) => {
-                return <LoadEntitiesTable {...props} tablesData={tablesData} template={template} />;
+                return (
+                    <LoadEntitiesTable
+                        {...props}
+                        tablesData={tablesData}
+                        template={template}
+                        handleClose={handleClose}
+                        // onDownload={exportTemplateToExcel(
+                        //     `${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`,
+                        //     {
+                        //         insert: true,
+                        //         entities: tablesData.failedEntities.map((entity) => entity.properties),
+                        //     },
+                        // )}
+                        isDownloadLoading={isLoadingExcelEntities}
+                    />
+                );
             },
             validationSchema: attachmentPropertiesBaseSchema,
         },
@@ -126,10 +152,10 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             initialValues={initialValues}
             initialStep={finishedDryRun ? 2 : 1}
             isEditMode={isEditMode}
-            title={i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
+            title={i18next.t('wizard.entity.LoadEntitiesFromExcel.title')}
             steps={finishedDryRun ? stepsExpand : steps}
             isLoading={false}
-            submitFunction={(values) => mutateAsync(values)}
+            submitFunction={async () => handleClose()}
             direction="column"
             showPrevSteps
         />

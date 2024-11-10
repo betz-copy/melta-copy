@@ -5,7 +5,7 @@ import {
     Download,
     Expand,
     TableRowsOutlined,
-    UploadFile,
+    Upload,
 } from '@mui/icons-material';
 import { Box, CircularProgress, Dialog, Grid, useTheme } from '@mui/material';
 import i18next from 'i18next';
@@ -210,7 +210,7 @@ const TemplateTable = forwardRef<
                             checkIfLoadEntityIsDisabled() ? i18next.t('wizard.entity.LoadEntitiesFromExcel.tableCantLoadEntities') : undefined
                         }
                     >
-                        <UploadFile fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
+                        <Upload fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}
                     </AddEntityButton>
                     <AddEntityButton

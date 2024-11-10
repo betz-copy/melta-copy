@@ -138,6 +138,8 @@ export const throwIfActionCausedRuleFailures = (
         .map((brokenRule) => getBrokenRuleFormatted(brokenRule, actionsResults));
 
     if (!areAllBrokenRulesIgnored(brokenRules, ignoredRules)) {
+        console.dir({ brokenRules, actions }, { depth: null });
+
         throw new BadRequestError(`[NEO4J] action is blocked by rules.`, {
             errorCode: config.errorCodes.ruleBlock,
             brokenRules,

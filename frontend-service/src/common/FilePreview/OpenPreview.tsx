@@ -14,7 +14,7 @@ const OpenPreviewContent: React.FC<{
 }> = ({ fileName, onClick, img, showText }) => (
     <Grid style={{ overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '100%' }}>
         <IconButton
-            sx={{ borderRadius: 10, maxWidth: '100%' }}
+            sx={{ borderRadius: 10, maxWidth: '100%', gap: '10px' }}
             onClick={(e) => {
                 e.stopPropagation();
                 onClick?.();

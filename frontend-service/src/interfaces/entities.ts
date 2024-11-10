@@ -127,7 +127,7 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
-            emptySheet?: boolean;
+            insertEntities?: { insert: boolean; entities?: Record<string, any>[] };
         };
     };
 }

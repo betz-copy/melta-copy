@@ -1,6 +1,8 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
+import { Box } from '@mui/material';
+import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
@@ -9,6 +11,7 @@ import { Value } from './Value';
 import { agGridLocaleText } from './agGridLocaleText';
 import { getFileName } from '../getFileName';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
+import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -17,15 +20,27 @@ export const numberColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
         valueGetter,
         filter: 'agNumberColumnFilter',
-        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => (
-            <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />
-        ),
+        cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
+            if (showErrors && props.data && props.data.errorProperty) {
+                return (
+                    <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                        <Value hideValue={hideValue} value={props.value?.toString() ?? ''} color="#A40000" />
+                        <MeltaTooltip title={props.data.errorProperty.message}>
+                            <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
+                        </MeltaTooltip>
+                    </Box>
+                );
+            }
+
+            return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />;
+        },
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,

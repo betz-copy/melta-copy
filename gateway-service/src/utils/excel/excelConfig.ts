@@ -6,6 +6,7 @@ export const excelConfig = {
     ],
     TRUE_TO_HEBREW: 'כן',
     FALSE_TO_HEBREW: 'לא',
+    failedEntities: 'יישויות שכשלו להטען',
     DATE_TIMEZONE: 'Israel',
     DATE_LOCALES: 'en-UK',
     regexOfDateFormat: /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])/,

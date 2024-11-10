@@ -33,6 +33,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
+    showErrors?: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -47,6 +48,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
+    showErrors,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -61,7 +63,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (type === 'number')
+            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors);
         if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
         if (format === 'date' || format === 'date-time')
             return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);

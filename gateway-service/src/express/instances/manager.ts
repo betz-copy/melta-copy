@@ -10,7 +10,7 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, IEntityWithDirectRelationships, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -110,9 +110,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, emptySheet }]) => {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, insertEntities }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, emptySheet);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, insertEntities);
         });
 
         await Promise.all(tasks);
@@ -124,26 +124,38 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
-        emptySheet?: boolean,
+        insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
     ) {
-        const worksheet = await cerateWorksheet(workbook, template, emptySheet);
-        if (!emptySheet) {
+        const worksheet = await cerateWorksheet(workbook, template, insertEntities);
+        if (!insertEntities?.insert || (insertEntities && insertEntities.entities)) {
             const { searchEntitiesChunkSize } = config.service;
-            const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-                limit: 1,
-                filter,
-                sort,
-            });
-            for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
-                const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-                    skip,
-                    limit: searchEntitiesChunkSize,
-                    textSearch,
+            let length = 0;
+            if (insertEntities && insertEntities.entities) {
+                length = insertEntities.entities.length;
+            } else {
+                const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                    limit: 1,
                     filter,
                     sort,
                 });
+                length = count;
+            }
+            for (let skip = 0; length - skip > 0; skip += searchEntitiesChunkSize) {
+                let chunk: IEntityWithDirectRelationships[] | Record<string, any>[] = [];
+                if (insertEntities && insertEntities.entities) {
+                    chunk = insertEntities.entities.splice(skip, searchEntitiesChunkSize);
+                } else {
+                    const { entities } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                        skip,
+                        limit: searchEntitiesChunkSize,
+                        textSearch,
+                        filter,
+                        sort,
+                    });
+                    chunk = entities;
+                }
                 const rows = fixComplexProperties(
-                    chunk.map((row) => row.entity.properties),
+                    insertEntities && insertEntities.entities ? chunk : chunk.map((row) => row.entity.properties),
                     template,
                 );
 
@@ -160,8 +172,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const actions = await this.readExcelFile(file, template);
         let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
+
         type IErrorProperty = { instancePath: string; schemaPath: string; keyword: string; params: string; message: string };
         type IErrorData = { type: string; message: string; properties: Record<string, any>; errorProperty?: IErrorProperty };
+
         const failedEntities: IErrorData[] = [];
         while (result[0].status !== 'fulfilled' && result.length > 0) {
             try {
@@ -180,14 +194,25 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                                     const errorProperties = failure.causes.flatMap((cause) => cause.properties);
 
-                                    failedEntities.push({ type: 'RULE_BLOCK', message: ``, entity });
+                                    failedEntities.push({
+                                        type: 'RULE_BLOCK',
+                                        message: `broken rule: ${brokenRule.ruleId}`,
+                                        properties: (entity.actionMetadata as ICreateEntityMetadata).properties,
+                                        // errorProperty: {
+                                        //     instancePath: errorMessage[0].instancePath.replace('/', ''),
+                                        //     schemaPath: errorMessage[0].schemaPath.replace('#/', ''),
+                                        //     keyword: errorMessage[0].keyword,
+                                        //     params: `${Object.keys(errorMessage[0].params)[0]}, ${Object.values(errorMessage[0].params)[0]}`,
+                                        //     message: errorMessage[0].message,
+                                        // },
+                                    });
 
-                                    return { index, errorProperties };
+                                    return { index, errorProperties, entity, actions };
                                 }),
                             )
                             .flat();
 
-                        console.log(indicesAndProperties);
+                        console.dir({ indicesAndProperties }, { depth: null });
                     }
                 }
             } catch (error) {
@@ -225,6 +250,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
 
         if (result[0].status === 'fulfilled') {
+            const succeededActions = result[0].value.map((entity) => ({
+                actionType: ActionTypes.CreateEntity,
+                actionMetadata: entity,
+            }));
+            if (succeededActions.length > 0) await this.runBulkOfActions([succeededActions], false, userId, []);
             return { succeededEntities: result[0].value, failedEntities };
         }
         return { succeededEntities: [], failedEntities };

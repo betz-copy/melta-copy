@@ -137,14 +137,18 @@ const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEnt
     // }
 };
 
-const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTemplatePopulated, emptySheet?: boolean) => {
+const cerateWorksheet = async (
+    workbook: Excel.Workbook,
+    template: IEntityTemplatePopulated,
+    insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
+) => {
     const worksheet = workbook.addWorksheet(template.displayName);
     const { properties } = template.properties;
     const sheetColumns: Partial<Excel.Column>[] = [];
     Object.entries(properties).forEach(([propertyKey, propertyTemplate], index) => {
         const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
         const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-        const shouldAddColumn = emptySheet ? !isRelationshipRef && !isFile : true;
+        const shouldAddColumn = insertEntities?.insert ? !isRelationshipRef && !isFile : true;
 
         if (shouldAddColumn) {
             const type = TypesToHebrew(propertyTemplate);
@@ -152,12 +156,12 @@ const cerateWorksheet = async (workbook: Excel.Workbook, template: IEntityTempla
 
             sheetColumns.push({
                 key: propertyKey,
-                header: `${propertyTemplate.title}${emptySheet ? `(${type})` : ''}`,
+                header: `${propertyTemplate.title}${insertEntities?.insert ? `(${type})` : ''}`,
                 width: 20,
             });
         }
     });
-    worksheet.columns = emptySheet ? sheetColumns : sheetColumns.concat(excelConfig.excelDefaultColumns);
+    worksheet.columns = insertEntities?.insert ? sheetColumns : sheetColumns.concat(excelConfig.excelDefaultColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
@@ -170,6 +174,8 @@ export const getFileName = (fileId: string) => {
 };
 
 const fixComplexProperties = (rows: IEntity['properties'][], template: IEntityTemplatePopulated) => {
+    console.log({ rows });
+
     const { properties } = template.properties;
     Object.entries(properties).forEach(([key, value]) => {
         if (value.format === 'relationshipReference') {

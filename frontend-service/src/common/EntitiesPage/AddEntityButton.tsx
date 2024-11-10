@@ -120,6 +120,7 @@ const AddEntityButton: React.FC<{
             <LoadEntitiesWizard
                 open={loadEntitiesState.isOpen}
                 handleClose={() => {
+                    onSuccessCreate();
                     setLoadEntitiesState({ isOpen: false });
                 }}
                 template={initialValues?.template}
