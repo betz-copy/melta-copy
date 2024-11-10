@@ -23,7 +23,7 @@ import { FileExtensions, IFile } from '../../../interfaces/preview';
 import { useUserStore } from '../../../stores/user';
 import { getEntityTemplateColor } from '../../../utils/colors';
 import { getFileName } from '../../../utils/getFileName';
-import { getPreviewContentType } from '../../../utils/getFileType';
+import { getFileNameWithoutExtension, getPreviewContentType } from '../../../utils/getFileType';
 import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { EntityDisableCheckbox } from '../../Entity/components/EntityDisableCheckbox';
@@ -163,7 +163,9 @@ const EntityCard: React.FC<EntityCardProps> = ({
     ];
 
     useMemo(() => {
-        const fileIndex = files.findIndex(({ id }) => id === title || id === searchedText);
+        const fileIndex = files.findIndex(
+            ({ id, name }) => id === title || (searchedText && getFileNameWithoutExtension(name).includes(searchedText)),
+        );
         setPreviewImageIndex(fileIndex > 0 ? fileIndex : 0);
     }, [files, title, searchedText]);
 
@@ -369,7 +371,7 @@ const EntityCard: React.FC<EntityCardProps> = ({
                                             </Typography>
                                         </MeltaTooltip>
                                     </Grid>
-                                    <Grid item xs={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Grid item xs={3} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                                         {files[previewImageIndex] && (
                                             <OpenPreview
                                                 fileId={files[previewImageIndex].id}
