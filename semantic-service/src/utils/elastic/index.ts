@@ -17,8 +17,6 @@ const {
         rrfRankConstant,
         user,
         password,
-        topHitsByGroupSize,
-        groupByEntityIdSize,
         rrfWindowFieldName,
     },
 } = config;
@@ -81,18 +79,15 @@ class ElasticClient {
     }
 
     formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
-        const { buckets } = response.aggregations!.group_by_entity_id;
+        return response.hits.hits.reduce((acc, hit) => {
+            const { templateId, entityId, minioFileId } = hit?._source ?? {};
 
-        if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return {};
-
-        return buckets[0].top_hits_by_group.hits.hits.reduce((acc, hit) => {
-            const templateId = hit._source?.templateId;
-            const entityId = hit._source?.entityId;
+            if (!templateId || !entityId || !minioFileId) return acc;
 
             if (!acc[templateId]) acc[templateId] = {};
             if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
 
-            acc[templateId][entityId].push(hit._source?.minioFileId);
+            acc[templateId][entityId].push(minioFileId);
 
             return acc;
         }, {} as ISemanticSearchResult);
@@ -131,21 +126,6 @@ class ElasticClient {
                 },
             },
             min_score: queryMinScore,
-            aggs: {
-                group_by_entity_id: {
-                    terms: {
-                        field: 'entityId.keyword',
-                        size: groupByEntityIdSize,
-                    },
-                    aggs: {
-                        top_hits_by_group: {
-                            top_hits: {
-                                size: topHitsByGroupSize,
-                            },
-                        },
-                    },
-                },
-            },
         };
 
         const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
