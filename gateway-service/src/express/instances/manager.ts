@@ -308,15 +308,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             : searchResults;
     }
 
-    async searchEntitiesBatch(searchBody: ISearchBatchBody) {
-        const semanticSearchResult = searchBody.textSearch
-            ? await this.semanticSearchSearch.search({
-                  textSearch: searchBody.textSearch,
-                  limit: searchBody.limit,
-                  skip: searchBody.skip,
-                  templates: Object.keys(searchBody.templates),
-              })
-            : undefined;
+    async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
+        const semanticSearchResult =
+            shouldSemanticSearch && searchBody.textSearch
+                ? await this.semanticSearchSearch.search({
+                      textSearch: searchBody.textSearch,
+                      limit: searchBody.limit,
+                      skip: searchBody.skip,
+                      templates: Object.keys(searchBody.templates),
+                  })
+                : undefined;
 
         return this.formatEntitiesSearch(
             await this.service.searchEntitiesBatch({
@@ -327,15 +328,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
     }
 
-    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody) {
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
         return this.service.getEntitiesCountByTemplates({
             ...searchBody,
-            semanticSearchResult: searchBody.textSearch
-                ? await this.semanticSearchSearch.search({
-                      textSearch: searchBody.textSearch,
-                      templates: searchBody.templateIds,
-                  })
-                : undefined,
+            semanticSearchResult:
+                searchBody.textSearch && shouldSemanticSearch
+                    ? await this.semanticSearchSearch.search({
+                          textSearch: searchBody.textSearch,
+                          templates: searchBody.templateIds,
+                      })
+                    : undefined,
         });
     }
 
