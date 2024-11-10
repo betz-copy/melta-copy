@@ -89,7 +89,7 @@ export const GlobalSearchBar: React.FC<{
             }}
             onKeyDown={(event) => {
                 if (!autoSearch && event.key === 'Enter') {
-                    onSearch(valueForSearchButtonRef.current);
+                    onSearch(debouncedSearchValue);
                 }
             }}
             endAdornmentChildren={
