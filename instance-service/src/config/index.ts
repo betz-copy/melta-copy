@@ -66,7 +66,7 @@ const config = {
         fileIdFieldRegex: env.get('FILE_ID_FIELD_REGEX').default(/.*/).asRegExp(),
         textAreaFieldRegex: env.get('TEXT_AREA_FIELD_REGEX').default(/.*/).asRegExp(),
         relationshipReferenceFieldRegex: env.get('RELATIONSHIP_REFERENCE_FIELD_REGEX').default(/.*/).asRegExp(),
-        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default(/.*/).asRegExp(),
+        locationFieldRegex: env.get('LOCATION_FIELD_REGEX').default(".*").asRegExp(),
 
     },
     brokenRulesFakeEntityIdPrefix: env.get('BROKEN_RULES_FAKE_ENTITY_ID_PREFIX').default('$').asString(),
