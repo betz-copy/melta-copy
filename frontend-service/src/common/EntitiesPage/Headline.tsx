@@ -7,6 +7,7 @@ import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButt
 import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -19,6 +20,8 @@ import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+
+const convertToBool = (value: string) => value === 'true';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -34,9 +37,12 @@ export const GlobalSearchBar: React.FC<{
     autoSearch?: boolean;
 }> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
+    const theme = useTheme();
+
     const [localStorage, setLocalStorage] = useLocalStorage<boolean>('searchWithAI', true);
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({ searchWithAI: '' });
-    const theme = useTheme();
+    const urlSearchWithAi = urlSearchParams.get('searchWithAI');
+    const boolUrl = convertToBool(urlSearchWithAi!);
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
@@ -54,18 +60,12 @@ export const GlobalSearchBar: React.FC<{
     );
 
     useEffect(() => {
-        const urlValue = urlSearchParams.get('searchWithAI');
-        let realValue: boolean;
+        // If a value exists in the url, override the value in the localStorage.
+        const realValue = urlSearchWithAi !== null && urlSearchWithAi !== '' ? boolUrl : localStorage;
 
-        if (urlValue !== null && urlValue !== '') {
-            realValue = urlValue === 'true';
-        } else {
-            realValue = localStorage;
-        }
-
-        setLocalStorage(realValue);
-        setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), searchWithAI: realValue.toString() });
-    }, [localStorage, setLocalStorage, setUrlSearchParams, urlSearchParams]);
+        if (realValue !== localStorage) setLocalStorage(realValue);
+        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), searchWithAI: realValue.toString() });
+    }, [boolUrl, localStorage, setLocalStorage, setUrlSearchParams, urlSearchParams, urlSearchWithAi]);
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
@@ -102,19 +102,19 @@ export const GlobalSearchBar: React.FC<{
                     >
                         <Search sx={{ fontSize: '1.25rem' }} />
                     </IconButton>
-                    <MeltaTooltip title={i18next.t('globalSearch.searchWithAiExplanation')} arrow>
+                    <MeltaTooltip
+                        title={boolUrl ? i18next.t('globalSearch.turnOffSearchWithAi') : i18next.t('globalSearch.turnOnSearchWithAi')}
+                        arrow
+                    >
                         <IconButton
-                            style={{ color: theme.palette.primary.main }}
                             onClick={() =>
                                 setUrlSearchParams({
                                     ...Object.fromEntries(urlSearchParams.entries()),
-                                    searchWithAI: (!(urlSearchParams.get('searchWithAI') === 'true')).toString(),
+                                    searchWithAI: (!convertToBool(urlSearchWithAi!)).toString(),
                                 })
                             }
-                            sx={{ padding: 0 }}
-                            disableRipple
                         >
-                            <AutoAwesome sx={{ fontSize: '1.25rem' }} />
+                            {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
                         </IconButton>
                     </MeltaTooltip>
                 </Box>
@@ -164,7 +164,6 @@ const EntitiesPageHeadline: React.FC<{
     refreshServerSide,
     setUpdatedEntities,
 }) => {
-    console.log('zain');
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const theme = useTheme();
 

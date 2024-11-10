@@ -15,7 +15,6 @@ import CardsView, { CardsViewRef } from './CardsView';
 import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -42,7 +41,6 @@ const EntitiesPage: React.FC<{
     const cardsViewRef = useRef<CardsViewRef>(null);
 
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({ searchWithAI: '', search: '', viewMode: 'templates-tables-view' });
-    const [searchWithAI, setSearchWithAI] = useLocalStorage<boolean | undefined>('searchWithAI', true);
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);

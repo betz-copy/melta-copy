@@ -86,8 +86,6 @@ export interface TemplateTablesViewRef {
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
     ({ templates, searchInput, pageType, setUpdatedEntities, searchWithAI }, ref) => {
         const { setSteps } = useTour();
-        console.log(searchWithAI);
-
         const {
             data: templatesFilteredByCount,
             refetch: refetchTemplatesFilteredByCount,
