@@ -17,7 +17,7 @@ const customFormat = format.combine(
     }),
     format.printf(({ timestamp, level, message, metadata }) => {
         const extra: IExtra = { ...logs.extraDefault };
-        return JSON.stringify({ timestamp, level, extra, message, ...metadata }, jsonReplacer);
+        return JSON.stringify({ timestamp, level, extra, message, ...(typeof metadata === 'object' ? metadata : {}) }, jsonReplacer);
     }),
 );
 

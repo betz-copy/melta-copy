@@ -1,4 +1,4 @@
-import { IMongoCategory } from '@microservices/shared/src/interfaces/category';
+import { ICategory, IMongoCategory } from '@microservices/shared/src/interfaces/category';
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';

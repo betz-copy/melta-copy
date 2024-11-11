@@ -5,6 +5,7 @@ import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
+import { ICategory } from '@microservices/shared/src/interfaces/category';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
@@ -13,7 +14,6 @@ import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
-    ICategory,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -815,6 +815,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const curentTemplateEnum = template.properties.properties[values.name].enum || values.options;
         let templateEnumFieldValues = [...curentTemplateEnum];
         if (update) templateEnumFieldValues[valueIndex] = field;
+        // eslint-disable-next-line @typescript-eslint/no-shadow
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
         const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {

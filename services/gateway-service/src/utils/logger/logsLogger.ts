@@ -2,7 +2,7 @@ import 'winston-daily-rotate-file';
 import { Logform, Logger, format } from 'winston';
 
 import config from '../../config';
-import initializeLogger, { IExtra, IPrintData } from './loggerFactory';
+import initializeLogger, { IExtra } from './loggerFactory';
 
 const { logs } = config;
 
@@ -37,12 +37,12 @@ const customFormat: IWinstonFormat = format.combine(
     format.printf(({ timestamp, level, message, metadata = {} }) => {
         const extra: IExtra = { ...logs.extraDefault };
 
-        const printData: IPrintData = {
+        const printData: any = {
             timestamp,
             level,
             message: typeof message === 'object' ? { ...message } : message,
             extra,
-            ...metadata,
+            ...(typeof metadata === 'object' && metadata !== null ? metadata : {}),
         };
 
         return JSON.stringify(printData, jsonReplacer);
