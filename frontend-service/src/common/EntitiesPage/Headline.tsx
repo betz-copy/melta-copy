@@ -5,7 +5,7 @@ import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
 import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -20,8 +20,7 @@ import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
-
-const convertToBool = (value: string) => value === 'true';
+import { convertToBool } from '../../utils/convertStringToBool';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -61,7 +60,7 @@ export const GlobalSearchBar: React.FC<{
 
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
-        const realValue = urlSearchWithAi !== null && urlSearchWithAi !== '' ? boolUrl : localStorage;
+        const realValue = urlSearchWithAi ? boolUrl : localStorage;
 
         if (realValue !== localStorage) setLocalStorage(realValue);
         if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), searchWithAI: realValue.toString() });
@@ -79,6 +78,24 @@ export const GlobalSearchBar: React.FC<{
 
         return undefined;
     }, [debouncedSearchValue, gridApi, onSearch, autoSearch, debouncedSearch]);
+
+    const aiToolTip = useCallback(
+        () => (
+            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSearchWithAi') : i18next.t('globalSearch.turnOnSearchWithAi')} arrow>
+                <IconButton
+                    onClick={() =>
+                        setUrlSearchParams({
+                            ...Object.fromEntries(urlSearchParams.entries()),
+                            searchWithAI: (!convertToBool(urlSearchWithAi!)).toString(),
+                        })
+                    }
+                >
+                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
+                </IconButton>
+            </MeltaTooltip>
+        ),
+        [boolUrl, setUrlSearchParams, urlSearchParams, urlSearchWithAi],
+    );
 
     return (
         <SearchInput
@@ -102,21 +119,7 @@ export const GlobalSearchBar: React.FC<{
                     >
                         <Search sx={{ fontSize: '1.25rem' }} />
                     </IconButton>
-                    <MeltaTooltip
-                        title={boolUrl ? i18next.t('globalSearch.turnOffSearchWithAi') : i18next.t('globalSearch.turnOnSearchWithAi')}
-                        arrow
-                    >
-                        <IconButton
-                            onClick={() =>
-                                setUrlSearchParams({
-                                    ...Object.fromEntries(urlSearchParams.entries()),
-                                    searchWithAI: (!convertToBool(urlSearchWithAi!)).toString(),
-                                })
-                            }
-                        >
-                            {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
-                        </IconButton>
-                    </MeltaTooltip>
+                    {aiToolTip()}
                 </Box>
             }
             placeholder={placeholder}

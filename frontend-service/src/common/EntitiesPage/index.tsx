@@ -15,6 +15,7 @@ import CardsView, { CardsViewRef } from './CardsView';
 import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { convertToBool } from '../../utils/convertStringToBool';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -158,7 +159,7 @@ const EntitiesPage: React.FC<{
                         ref={templateTablesViewRef}
                         templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
-                        searchWithAI={urlSearchParams.get('searchWithAI') === 'true'}
+                        searchWithAI={convertToBool(urlSearchParams.get('searchWithAI'))}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
                     />
