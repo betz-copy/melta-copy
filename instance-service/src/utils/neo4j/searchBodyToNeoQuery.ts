@@ -393,7 +393,8 @@ const buildFulltextSearchQuery = (
 
     return {
         cypherQuery: `
-            CALL () { ${indexHandling}
+            CALL () {
+                ${indexHandling}
                 YIELD node, score
                 WHERE ${filterQuery.cypherQuery}
                 RETURN node

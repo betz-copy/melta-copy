@@ -309,23 +309,24 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
-        const semanticSearchResult =
-            shouldSemanticSearch && searchBody.textSearch
-                ? await this.semanticSearchSearch.search({
-                      textSearch: searchBody.textSearch,
-                      limit: searchBody.limit,
-                      skip: searchBody.skip,
-                      templates: Object.keys(searchBody.templates),
-                  })
-                : undefined;
+        if (shouldSemanticSearch && searchBody.textSearch) {
+            const semanticSearchResult = await this.semanticSearchSearch.search({
+                textSearch: searchBody.textSearch,
+                limit: searchBody.limit,
+                skip: searchBody.skip,
+                templates: Object.keys(searchBody.templates),
+            });
 
-        return this.formatEntitiesSearch(
-            await this.service.searchEntitiesBatch({
-                ...searchBody,
-                entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
-            }),
-            semanticSearchResult,
-        );
+            return this.formatEntitiesSearch(
+                await this.service.searchEntitiesBatch({
+                    ...searchBody,
+                    entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+                }),
+                semanticSearchResult,
+            );
+        }
+
+        return this.service.searchEntitiesBatch(searchBody);
     }
 
     async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
