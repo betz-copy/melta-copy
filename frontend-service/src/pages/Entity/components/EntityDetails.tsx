@@ -167,17 +167,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                                 state: { entityTemplate, expandedEntity, currentEntityTemplate },
                                             });
                                         }
-                                        // handleClose();
                                     }}
                                     onDeleteClick={() => {
                                         setOpenDeleteDialog(true);
-                                        // handleClose();
                                     }}
                                     onDisableClick={() => {
                                         if (canWriteInstance) {
                                             updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
                                         }
-                                        // handleClose();
                                     }}
                                     disabledProps={{
                                         isDisabled: isEntityDisabled,

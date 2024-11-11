@@ -69,7 +69,6 @@
     "draft-js-export-html": "^1.4.1",
     "formik": "^2.2.9",
     "gsap": "^3.11.1",
-    "i": "^0.3.7",
     "i18next": "^21.10.0",
     "js-cookie": "^3.0.1",
     "js-file-download": "^0.4.12",

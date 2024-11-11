@@ -39,7 +39,6 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnsOrder?: { [key: string]: { order: number } };
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
-    refetchData?: () => void;
     navigate: (to: string, options?: { replace?: boolean; state?: any }) => void;
     setSelectedRow: React.Dispatch<React.SetStateAction<string>>;
     setOpenDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
@@ -69,7 +68,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnsOrder = {},
     defaultColumnWidths = {},
     rowHeight,
-    refetchData,
     navigate,
     setSelectedRow,
     setOpenDeleteDialog,
@@ -80,45 +78,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
     deleteMutation,
     isDeleteLoading,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    // const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    // const [_, navigate] = useLocation();
-
-    // const closeDeleteDialog = () => {
-    //     setOpenDeleteDialog(false);
-    // };
-
-    // const [selectedRow, setSelectedRow] = useState('');
-
-    // const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
-    //     onError: (error: AxiosError) => {
-    //         toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
-    //     },
-    //     onSuccess: () => {
-    //         refetchData?.();
-    //         toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-    //     },
-    //     onSettled: () => {
-    //         closeDeleteDialog();
-    //         setSelectedRow('');
-    //     },
-    // });
-
-    // const { mutateAsync: updateEntityStatus } = useMutation(
-    //     ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-    //         updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
-    //     {
-    //         onSuccess: (data) => {
-    //             if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
-    //             else toast.success(i18next.t('entityPage.activatedSuccessfully'));
-    //             refetchData?.();
-    //         },
-    //         onError: (_err: AxiosError, { disabled }) => {
-    //             if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
-    //             else toast.error(i18next.t('entityPage.failedToActivate'));
-    //         },
-    //     },
-    // );
-
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
         const { type, format, calculateTime } = propertyTemplate;
