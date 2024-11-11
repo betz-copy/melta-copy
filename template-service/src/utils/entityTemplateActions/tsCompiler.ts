@@ -1,7 +1,7 @@
 import * as ts from 'typescript-actions';
 import * as fs from 'fs';
 import * as path from 'path';
-import { ServiceError } from '../../express/error';
+import { BadRequestError } from '../../express/error';
 
 const createCustomCompilerHost = (
     defaultCompilerHost: ts.CompilerHost,
@@ -54,10 +54,10 @@ const handleDiagnostics = (diagnostics: readonly ts.Diagnostic[]) => {
 
         if (file) {
             const { line, character } = ts.getLineAndCharacterOfPosition(file, diagnostic.start!);
-            throw new ServiceError(400, `[validate entityTemplate actions]: ${file.fileName} (${line + 1},${character + 1}): ${message}`);
+            throw new BadRequestError(`[validate entityTemplate actions]: ${file.fileName} (${line + 1},${character + 1}): ${message}`);
         }
 
-        throw new ServiceError(400, `[validate entityTemplate actions]: ${message}`);
+        throw new BadRequestError(`[validate entityTemplate actions]: ${message}`);
     });
 };
 

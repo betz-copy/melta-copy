@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import MockAdapter from 'axios-mock-adapter';
 import faker from '@faker-js/faker';
+import { StatusCodes } from 'http-status-codes';
 import { allEntities } from './allEntities';
 
 const mockEntites = (mock: MockAdapter) => {
@@ -13,7 +14,7 @@ const mockEntites = (mock: MockAdapter) => {
             faker.datatype.boolean() || allPossibleRows.length === 0 ? 0 : faker.datatype.number({ min: 1, max: allPossibleRows.length });
         const searchedRows = faker.helpers.arrayElements(allPossibleRows, countOfSearchedRows);
         return [
-            200,
+            StatusCodes.OK,
             {
                 rows: searchedRows,
                 lastRowIndex: countOfSearchedRows,
@@ -22,7 +23,7 @@ const mockEntites = (mock: MockAdapter) => {
     });
 
     mock.onPost(/\/api\/instances\/entities\/expanded\/[0-9a-fA-F]{24}/).reply((config) => [
-        200,
+        StatusCodes.OK,
         {
             entity: {
                 templateId: '61e3ea6e4d51a83e87e83c7f',
@@ -262,7 +263,7 @@ const mockEntites = (mock: MockAdapter) => {
     // Get specific entity
     mock.onGet(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
-            200,
+            StatusCodes.OK,
             {
                 nodes: [
                     {
@@ -455,7 +456,7 @@ const mockEntites = (mock: MockAdapter) => {
 
     // Create
     mock.onPost('/api/instances/entities').reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
         },
@@ -464,7 +465,7 @@ const mockEntites = (mock: MockAdapter) => {
     // Update
     mock.onPut(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply((config) => {
         return [
-            200,
+            StatusCodes.OK,
             {
                 templateId: '61e3ea6e4d51a83e87e83c7f',
                 properties: {
@@ -481,7 +482,7 @@ const mockEntites = (mock: MockAdapter) => {
 
     // Delete
     mock.onDelete(/\/api\/instances\/entities\/[0-9a-fA-F]{24}/).reply(() => {
-        return [200, {}];
+        return [StatusCodes.OK, {}];
     });
 };
 

@@ -1,12 +1,25 @@
-import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import {
+    Box,
+    Button,
+    CircularProgress,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    Divider,
+    Grid,
+    IconButton,
+    Tab,
+    Typography,
+} from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
 
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AxiosError } from 'axios';
-import RuleBreachInfo from '../../common/ruleBreanchInfo/RuleBreachInfo';
 import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
@@ -15,6 +28,8 @@ import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
 import { PermissionScope } from '../../interfaces/permissions';
+import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
+import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
 
 const { errorCodes } = environment;
 
@@ -28,6 +43,11 @@ const RuleBreachDialog: React.FC<{
 }> = ({ isOpen, handleClose, ruleBreach, breachType, refreshBreaches, onUpdatedRuleBreach }) => {
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
+    const [value, setValue] = React.useState('1');
+
+    const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
+        setValue(newValue);
+    };
 
     const { mutateAsync: updateRequestStatus, isLoading: isLoadingReviewRuleBrach } = useMutation(
         (status: RuleBreachRequestStatus) => {
@@ -90,7 +110,12 @@ const RuleBreachDialog: React.FC<{
     if (!ruleBreach) return <div />;
 
     return (
-        <Dialog open={isOpen} onClose={handleClose} PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }} fullWidth>
+        <Dialog
+            open={isOpen}
+            onClose={handleClose}
+            PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white', height: (ruleBreach?.actions?.length || 0) > 1 ? '840px' : 'fit-content' } }}
+            fullWidth
+        >
             <DialogTitle>
                 {i18next.t('ruleManagement.breachDetails')}
                 <IconButton
@@ -107,12 +132,72 @@ const RuleBreachDialog: React.FC<{
                 </IconButton>
             </DialogTitle>
             <DialogContent>
-                <RuleBreachInfo
-                    originUser={ruleBreach.originUser}
-                    brokenRules={ruleBreach.brokenRules}
-                    actions={ruleBreach.actions}
-                    isCompact={false}
-                />
+                <>
+                    {(ruleBreach?.actions?.length || 0) > 1 && (
+                        <TabContext value={value}>
+                            <Box>
+                                <TabList onChange={handleChange}>
+                                    <Tab label={`${i18next.t('ruleBreachInfo.brokenRules')} ${ruleBreach.brokenRules.length}`} value="1" />
+                                    <Tab label={`${i18next.t('ruleBreachInfo.actionsOrder')} ${ruleBreach.actions.length}`} value="2" />
+                                </TabList>
+                            </Box>
+                            <TabPanel value="1">
+                                <BrokenRulesInfo brokenRules={ruleBreach.brokenRules} actions={ruleBreach.actions} isCompact={false} />
+                            </TabPanel>
+                            <TabPanel value="2">
+                                <Grid flexDirection="column">
+                                    <Grid item>
+                                        <Typography variant="body1">{`${i18next.t('ruleBreachInfo.actionsBrokeTheFollowingRules')}:`}</Typography>
+                                    </Grid>
+                                    <Grid container item paddingRight="15px">
+                                        {ruleBreach.actions.map((action, index) => {
+                                            return (
+                                                // eslint-disable-next-line react/no-array-index-key
+                                                <Grid item container key={index} spacing={2}>
+                                                    <Grid item>
+                                                        <Typography>{index + 1}.</Typography>
+                                                    </Grid>
+
+                                                    <Grid item>
+                                                        <ActionInfo
+                                                            actionType={action.actionType}
+                                                            actionMetadata={action.actionMetadata}
+                                                            isCompact={false}
+                                                            actionIndex={index}
+                                                            actions={ruleBreach.actions}
+                                                        />
+                                                    </Grid>
+                                                </Grid>
+                                            );
+                                        })}
+                                    </Grid>
+                                    {ruleBreach.originUser && (
+                                        <Grid item marginTop="15px">
+                                            <Box component="span">{i18next.t('ruleBreachAlertNotification.by')}</Box>{' '}
+                                            <Box component="span" fontWeight="bold">
+                                                {ruleBreach.originUser.fullName}
+                                            </Box>
+                                        </Grid>
+                                    )}
+                                </Grid>
+                            </TabPanel>
+                        </TabContext>
+                    )}
+                    {(ruleBreach?.actions?.length || 0) === 1 && (
+                        <Grid sx={{ borderRadius: '10px', padding: '20px' }}>
+                            <ActionInfo
+                                actionType={ruleBreach.actions[0].actionType}
+                                actionMetadata={ruleBreach.actions[0].actionMetadata}
+                                isCompact={false}
+                                actionIndex={0}
+                                actions={ruleBreach.actions}
+                                originUser={ruleBreach.originUser}
+                            />
+                            <Divider orientation="horizontal" style={{ width: '95%', alignSelf: 'center' }} />
+                            <BrokenRulesInfo brokenRules={ruleBreach.brokenRules} actions={ruleBreach.actions} isCompact={false} />
+                        </Grid>
+                    )}
+                </>
             </DialogContent>
             {breachType === 'request' &&
                 (ruleBreach as IRuleBreachRequestPopulated).status === RuleBreachRequestStatus.Pending &&

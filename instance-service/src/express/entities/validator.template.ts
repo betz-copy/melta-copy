@@ -4,6 +4,7 @@ import axios from 'axios';
 import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
@@ -71,9 +72,8 @@ export class EntityValidator extends DefaultController {
             this.entityTemplateManagerService.getEntityTemplateById(templateId),
         );
         if (getEntityTemplateByIdErr || !entityTemplate) {
-            if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === 404) {
+            if (axios.isAxiosError(getEntityTemplateByIdErr) && getEntityTemplateByIdErr.response?.status === StatusCodes.NOT_FOUND)
                 throw new ValidationError(`Entity template doesn't exist (id: "${templateId}")`);
-            }
 
             throw getEntityTemplateByIdErr;
         }

@@ -4,6 +4,7 @@ import { ICompactPermissions, ISubCompactPermissions } from '../express/permissi
 import { config } from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 import { createNewUser, getOldPermissionsOfUsers } from './requests';
+import logger from '../utils/logger/logsLogger';
 
 const oldPermissionsToNewPermissions = (
     oldPermissions: IPermissionsOfUser[],
@@ -51,4 +52,4 @@ const main = async () => {
     );
 };
 
-main();
+main().catch((error) => logger.error('Main error: ', { error }));

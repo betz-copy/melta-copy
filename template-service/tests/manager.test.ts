@@ -6,9 +6,12 @@ import Server from '../src/express/server';
 import * as entityTemplateManager from '../src/entityTemplateManager';
 import RelationshipTemplateModel from '../src/express/relationshipTemplate/model';
 import { IRelationshipTemplate } from '../src/express/relationshipTemplate/interface';
+import { StatusCodes } from 'http-status-codes';
 
 jest.mock('../src/entityTemplateManager');
 const entityTemplateManagerMocked = jest.mocked(entityTemplateManager, true);
+
+const { OK: okStatus, NOT_FOUND: notFoundStatus, INTERNAL_SERVER_ERROR: internalServerErrorStatus, FORBIDDEN: forbiddenStatus } = StatusCodes;
 
 jest.mock('../src/express/relationshipTemplate/model', () => ({
     // mocking model.ts accidently mock Map. see here: https://github.com/sideway/joi/issues/2350#issuecomment-739639198
@@ -43,7 +46,7 @@ const mockMongooseFindOneWithChainingResolveValue = (resolveValue: any) =>
         orFail: jest.fn().mockReturnThis(),
         lean: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    } as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>);
+    }) as unknown as Query<IRelationshipTemplate & Document, IRelationshipTemplate & Document>;
 
 const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
     ({
@@ -51,7 +54,7 @@ const mockMongooseFindManyWithChainingResolveValue = (resolveValue: any) =>
         skip: jest.fn().mockReturnThis(),
         limit: jest.fn().mockReturnThis(),
         exec: jest.fn().mockResolvedValue(resolveValue),
-    } as unknown as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>);
+    }) as unknown as Query<(IRelationshipTemplate & Document)[], IRelationshipTemplate & Document>;
 
 // const mockMongooseFindWithChainingRejectValue = (rejectValue: any) =>
 //     ({
@@ -74,7 +77,7 @@ describe('manager logic', () => {
     it('getTemplateById', async () => {
         RelationshipTemplateModelMocked.findById.mockReturnValueOnce(mockMongooseFindOneWithChainingResolveValue(exampleRelation));
 
-        const { body } = await request(app).get('/api/relationships/templates/123451234512345123451234').expect(200);
+        const { body } = await request(app).get('/api/relationships/templates/123451234512345123451234').expect(okStatus);
         // const getByIdPromise = RelationshipTemplateManager.getTemplateById('123');
 
         // await expect(getByIdPromise).resolves.toEqual(exampleRelation);
@@ -84,7 +87,7 @@ describe('manager logic', () => {
     it('getTemplates', async () => {
         RelationshipTemplateModelMocked.find.mockReturnValueOnce(mockMongooseFindManyWithChainingResolveValue([exampleRelation]));
 
-        const { body } = await request(app).get('/api/relationships/templates').expect(200);
+        const { body } = await request(app).get('/api/relationships/templates').expect(okStatus);
         // const getByIdPromise = RelationshipTemplateManager.getTemplateById('123');
 
         // await expect(getByIdPromise).resolves.toEqual(exampleRelation);
@@ -95,7 +98,7 @@ describe('manager logic', () => {
         it('resolve when no source & dest updated', async () => {
             RelationshipTemplateModelMocked.findByIdAndUpdate.mockReturnValueOnce(mockMongooseFindOneWithChainingResolveValue(exampleRelation));
 
-            const { body } = await request(app).put('/api/relationships/templates/123451234512345123451234').send({}).expect(200);
+            const { body } = await request(app).put('/api/relationships/templates/123451234512345123451234').send({}).expect(okStatus);
 
             expect(body).toEqual(exampleRelation);
             expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(0);
@@ -109,7 +112,7 @@ describe('manager logic', () => {
             const { body } = await request(app)
                 .put('/api/relationships/templates/123451234512345123451234')
                 .send({ sourceEntityId: '123451234512345123451234', destinationEntityId: '123451234512345123451234' })
-                .expect(200);
+                .expect(okStatus);
 
             expect(body).toEqual(exampleRelation);
             expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(2);
@@ -123,7 +126,7 @@ describe('manager logic', () => {
             if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
             else updatedFields.destinationEntityId = '123451234512345123451234';
 
-            const { body } = await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(200);
+            const { body } = await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(okStatus);
 
             expect(body).toEqual(exampleRelation);
             expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
@@ -132,13 +135,13 @@ describe('manager logic', () => {
         it.each(['source', 'dest'] as ['source', 'dest'])(
             'throw 403 when only %s updated and doesnt exist',
             async (sourceOrDest: 'source' | 'dest') => {
-                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: 404 } });
+                entityTemplateManagerMocked.getEntityTemplatebyId.mockRejectedValueOnce({ response: { status: notFoundStatus } });
 
                 const updatedFields: Partial<IRelationshipTemplate> = {};
                 if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
                 else updatedFields.destinationEntityId = '123451234512345123451234';
 
-                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(403);
+                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(forbiddenStatus);
 
                 expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
                 expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
@@ -153,7 +156,7 @@ describe('manager logic', () => {
                 if (sourceOrDest === 'source') updatedFields.sourceEntityId = '123451234512345123451234';
                 else updatedFields.destinationEntityId = '123451234512345123451234';
 
-                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(500);
+                await request(app).put('/api/relationships/templates/123451234512345123451234').send(updatedFields).expect(internalServerErrorStatus);
 
                 expect(entityTemplateManagerMocked.getEntityTemplatebyId).toBeCalledTimes(1);
                 expect(RelationshipTemplateModelMocked.findByIdAndUpdate).toBeCalledTimes(0);
@@ -162,7 +165,7 @@ describe('manager logic', () => {
     });
     it('deleteTemplateById', async () => {
         RelationshipTemplateModelMocked.findByIdAndDelete.mockReturnValueOnce(mockMongooseFindOneWithChainingResolveValue(exampleRelation));
-        const { body } = await request(app).delete('/api/relationships/templates/123451234512345123451234').expect(200);
+        const { body } = await request(app).delete('/api/relationships/templates/123451234512345123451234').expect(okStatus);
 
         expect(body).toEqual(exampleRelation);
         expect(RelationshipTemplateModelMocked.findByIdAndDelete).toBeCalledTimes(1);
@@ -182,15 +185,15 @@ describe('manager logic', () => {
         it.each(['source', 'dest'] as ['source', 'dest'])('throw 403 when %s doesnt exist', async (sourceOrDest: 'source' | 'dest') => {
             entityTemplateManagerMocked.getEntityTemplatebyId.mockImplementation(async (templateId: string) => {
                 // eslint-disable-next-line no-throw-literal
-                if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw { response: { status: 404 } };
+                if (sourceOrDest === 'source' && templateId === exampleRelation.sourceEntityId) throw { response: { status: notFoundStatus } };
                 // eslint-disable-next-line no-throw-literal
-                if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw { response: { status: 404 } };
+                if (sourceOrDest === 'dest' && templateId === exampleRelation.destinationEntityId) throw { response: { status: notFoundStatus } };
 
                 return exampleEntity;
             });
             RelationshipTemplateModelMocked.create.mockImplementationOnce(async (doc) => doc);
 
-            await request(app).post('/api/relationships/templates').send(exampleRelation).expect(403);
+            await request(app).post('/api/relationships/templates').send(exampleRelation).expect(forbiddenStatus);
 
             expect(RelationshipTemplateModelMocked.create).toBeCalledTimes(0);
         });
@@ -207,7 +210,7 @@ describe('manager logic', () => {
                 });
                 RelationshipTemplateModelMocked.create.mockImplementationOnce(async (doc) => doc);
 
-                await request(app).post('/api/relationships/templates').send(exampleRelation).expect(500);
+                await request(app).post('/api/relationships/templates').send(exampleRelation).expect(internalServerErrorStatus);
 
                 expect(RelationshipTemplateModelMocked.create).toBeCalledTimes(0);
             },

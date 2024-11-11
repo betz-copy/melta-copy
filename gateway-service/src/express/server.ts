@@ -5,6 +5,7 @@ import helmet from 'helmet';
 import passport from 'passport';
 import cookieParser from 'cookie-parser';
 
+import { StatusCodes } from 'http-status-codes';
 import { initPassport } from '../utils/express/passport';
 import { errorMiddleware } from './error';
 import appRouter from './router';
@@ -32,7 +33,7 @@ class Server {
         app.use(cookieParser());
 
         app.use(['/isAlive', '/isalive', '/health'], (_req, res) => {
-            res.status(200).send('alive');
+            res.status(StatusCodes.OK).send('alive');
         });
 
         app.use(passport.initialize());
@@ -43,7 +44,7 @@ class Server {
         app.use(appRouter);
 
         app.use('*', (_req, res) => {
-            res.status(404).send('Invalid Route');
+            res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
         });
 
         app.use(errorMiddleware);

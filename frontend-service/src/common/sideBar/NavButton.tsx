@@ -1,6 +1,6 @@
+import React, { ReactNode, useEffect } from 'react';
 import { ListItemButton } from '@mui/material';
 import i18next from 'i18next';
-import React, { useEffect } from 'react';
 import { Link, useRoute } from 'wouter';
 import { MeltaTooltip } from '../MeltaTooltip';
 import { StyledListItemText } from './NavBar.styled';
@@ -9,14 +9,25 @@ import './NavButton.css';
 interface NavButtonProps {
     to: string;
     isDrawerOpen: boolean;
-    text: string;
+    extension?: ReactNode;
     disabled?: boolean;
     onChangeToActive: (isActive: boolean) => void;
     isActiveButton?: boolean;
+    text: string;
     onClick?: () => void;
 }
 
-const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children, disabled = false, onChangeToActive, isActiveButton, onClick }) => {
+const NavButton: React.FC<NavButtonProps> = ({
+    to,
+    isDrawerOpen,
+    text,
+    children,
+    disabled = false,
+    onChangeToActive,
+    isActiveButton,
+    onClick,
+    extension,
+}) => {
     const [isActive] = useRoute(to);
 
     useEffect(() => {
@@ -40,9 +51,9 @@ const NavButton: React.FC<NavButtonProps> = ({ to, isDrawerOpen, text, children,
     return (
         <Link href={to} onClick={(e) => handleClick(e)} className="nav-button" style={{ textDecoration: 'none', color: 'inherit' }}>
             <MeltaTooltip
-                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : text}
-                placement="left"
-                disableHoverListener={!disabled && isDrawerOpen} // when drawer is opened text is already shown, so no need for tooltip
+                title={disabled ? (i18next.t('permissions.dontHavePermissionsToCategory') as string) : extension ?? text}
+                placement="left-start"
+                disableHoverListener={!disabled && isDrawerOpen && !extension} // when drawer is opened text is already shown, so no need for tooltip
             >
                 <div>
                     <ListItemButton
