@@ -1,3 +1,4 @@
+import { IMongoCategory } from '@microservices/shared/src/interfaces/category';
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -7,19 +8,6 @@ const {
         entities: { baseEntitiesRoute, baseCategoriesRoute },
     },
 } = config;
-
-export interface ICategory {
-    name: string;
-    displayName: string;
-    iconFileId: string | null;
-    color: string;
-}
-
-export interface IMongoCategory extends ICategory {
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-}
 export interface ISearchCategoriesBody {
     search?: string;
     ids?: string[];

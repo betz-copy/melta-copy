@@ -18,6 +18,7 @@
   "author": "Itay Marder",
   "license": "ISC",
   "dependencies": {
+    "@microservices/shared": "^1.0.0",
     "@yesodot/passport-shraga": "^1.5.2",
     "axios": "^1.7.4",
     "cheerio": "^1.0.0-rc.12",
