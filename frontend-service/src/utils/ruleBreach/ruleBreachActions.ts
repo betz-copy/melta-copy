@@ -157,8 +157,23 @@ export const getEntityForRelationshipInfo = (
     entity: IEntity | string | null,
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
+    entityId?: string,
 ): IMongoEntityTemplatePopulated => {
     if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
+        const entityTemplate = entityTemplates.get(entityId || '');
+
+        if (entityTemplate) {
+            return {
+                ...entityTemplate,
+                displayName: `${entityTemplate.displayName} (נמחק)`,
+                properties: {
+                    hide: [],
+                    properties: {},
+                    required: [],
+                    type: 'object',
+                },
+            };
+        }
         return {
             _id: 'empty',
             properties: {
@@ -167,7 +182,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: { _id: 'empty', color: 'empty', displayName: 'empty', name: 'empty' },
+            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty' },
             disabled: false,
             displayName: '---',
             name: '---',
@@ -269,8 +284,13 @@ export const getRelationshipForRelationshipInfo = (
 
         return {
             _id: 'temp',
-            sourceEntity: getEntityForRelationshipInfo(actionMetadata.sourceEntity, actions, entityTemplates),
-            destinationEntity: getEntityForRelationshipInfo(actionMetadata.destinationEntity, actions, entityTemplates),
+            sourceEntity: getEntityForRelationshipInfo(actionMetadata.sourceEntity, actions, entityTemplates, relationshipTemplate.sourceEntityId),
+            destinationEntity: getEntityForRelationshipInfo(
+                actionMetadata.destinationEntity,
+                actions,
+                entityTemplates,
+                relationshipTemplate.destinationEntityId,
+            ),
             name: relationshipTemplate.name,
             displayName: relationshipTemplate.displayName,
             createdAt: relationshipTemplate.createdAt,
@@ -282,8 +302,18 @@ export const getRelationshipForRelationshipInfo = (
 
     return {
         _id: 'temp',
-        sourceEntity: getEntityForRelationshipInfo((relationship as IRelationshipPopulated).sourceEntity, actions, entityTemplates),
-        destinationEntity: getEntityForRelationshipInfo((relationship as IRelationshipPopulated).destinationEntity, actions, entityTemplates),
+        sourceEntity: getEntityForRelationshipInfo(
+            (relationship as IRelationshipPopulated).sourceEntity,
+            actions,
+            entityTemplates,
+            relationshipTemplate?.sourceEntityId,
+        ),
+        destinationEntity: getEntityForRelationshipInfo(
+            (relationship as IRelationshipPopulated).destinationEntity,
+            actions,
+            entityTemplates,
+            relationshipTemplate?.destinationEntityId,
+        ),
         name: relationshipTemplate?.name || '',
         displayName: relationshipTemplate?.displayName || '',
         createdAt: relationshipTemplate?.createdAt || '',
