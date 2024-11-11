@@ -151,7 +151,9 @@ services:
       - network
 
   mock-service:
-    build: ./mock-service
+    build:
+      context: .
+      dockerfile: services/mock-service/Dockerfile
     environment:
       TEMPLATE_SERVICE_URL: ${TEMPLATE_SERVICE_URL}
       INSTANCE_SERVICE_URL: ${INSTANCE_SERVICE_URL}
