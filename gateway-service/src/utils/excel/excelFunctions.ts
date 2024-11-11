@@ -3,11 +3,7 @@ import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../../config/index';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import {
-    IEntitySingleProperty,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-} from '../../externalServices/templates/entityTemplateService';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
 
@@ -95,23 +91,8 @@ const filesCell = (cell: Excel.Cell, isFileArray: boolean, rowIndex: number, val
     };
 };
 
-const listCell = (cell: Excel.Cell, row: Record<string, any>, key: string, template: IEntityTemplatePopulated) => {
-    const list = row[key].flatMap((text: string, index: number) => (index < row[key].length - 1 ? [text, ', '] : [text]));
-
-    cell.value = {
-        richText: list.map((text: string) => ({
-            text,
-            font: {
-                ...excelStyle.cell,
-                color: { argb: text === ', ' ? 'FF000000' : hexToARGB(template.enumPropertiesColors![key][text]) },
-            },
-        })),
-    };
-};
-
 const fixComplexProperties = (
     cell: Excel.Cell,
-    template: IEntityTemplatePopulated,
     row: Record<string, any>,
     [key, value]: [string, IEntitySingleProperty],
     rowIndex: number,
@@ -119,16 +100,13 @@ const fixComplexProperties = (
 ) => {
     const isFileArray = value.type === 'array' && value.items?.format === 'fileId';
     const isSingleFile = value.format === 'fileId';
+
     if (value.format === 'relationshipReference') {
         relationshipRefCell(cell, [key, value], row, workspace.path);
         return true;
     }
     if (isSingleFile || isFileArray) {
         filesCell(cell, isFileArray, rowIndex, row[key], workspace.id);
-        return true;
-    }
-    if (value.type === 'array') {
-        listCell(cell, row, key, template);
         return true;
     }
     return false;
@@ -161,7 +139,8 @@ const styleAWorksheet = (
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
-                const isComplex = fixComplexProperties(cell, template, row, [key, value], rowIndex, workspace);
+
+                const isComplex = fixComplexProperties(cell, row, [key, value], rowIndex, workspace);
 
                 if (!isComplex) {
                     cell.value = row[key];
@@ -189,6 +168,13 @@ const styleAWorksheet = (
                         cell.value = String(cell.value).replace(/<[^>]*>/g, '');
                         cell.alignment = { vertical: 'top' };
                     }
+
+                    // Check if value is simple list
+                    if (value.type === 'string' && value.enum)
+                        cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors![key][row[key]]) } };
+
+                    // Check if value is multiple list
+                    if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
                 }
             }
         });
