@@ -62,6 +62,11 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
         setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
     };
 
+    const checkRelationshipTemplateHasRules = async () => {
+        const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
+        setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+    };
+
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
         if (isHover) {

@@ -155,6 +155,7 @@ const CategoriesRow: React.FC = () => {
     });
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
+    console.log({ isHoverOnBox });
 
     return (
         <Grid item container gap="10px">
