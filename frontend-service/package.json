@@ -6,7 +6,8 @@
     "build": "tsc && vite build",
     "eslint": "eslint -h",
     "lint": "eslint --ext .ts,.tsx .",
-    "lint:fix": "eslint --ext .ts,.tsx . --fix"
+    "lint:fix": "eslint --ext .ts,.tsx . --fix",
+    "prepare": "husky install"
   },
   "browserslist": {
     "production": [
@@ -57,6 +58,7 @@
     "@szhsin/react-menu": "^4.2.2",
     "@types/lodash.flatten": "^4.4.7",
     "@types/uuid": "^8.3.4",
+    "@vitejs/plugin-react": "^4.2.1",
     "ajv": "^8.11.0",
     "ajv-formats": "^2.1.1",
     "axios": "^0.24.0",
@@ -70,6 +72,7 @@
     "draft-js-export-html": "^1.4.1",
     "formik": "^2.2.9",
     "gsap": "^3.11.1",
+    "http-status-codes": "^2.3.0",
     "i18next": "^21.10.0",
     "js-cookie": "^3.0.1",
     "js-file-download": "^0.4.12",
@@ -126,8 +129,10 @@
     "three": "^0.148.0",
     "typescript-actions": "npm:typescript@^5.5.4",
     "uuid": "^8.3.2",
+    "vite": "^5.0.12",
     "wouter": "^3.3.5",
     "yup": "^0.32.11",
+    "@testing-library/jest-dom": "^6.6.3",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
@@ -157,7 +162,6 @@
     "@types/three": "^0.148.0",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
-    "@vitejs/plugin-react": "^4.2.1",
     "chance": "^1.1.8",
     "eslint": "^8.45.0",
     "eslint-config-airbnb": "^19.0.4",
@@ -170,7 +174,6 @@
     "json-schema-faker": "^0.5.0-rcv.46",
     "prettier": "^2.3.1",
     "source-map-explorer": "^2.5.2",
-    "typescript": "^4.9.5",
-    "vite": "^5.0.12"
+    "typescript": "^4.9.5"
   }
 }

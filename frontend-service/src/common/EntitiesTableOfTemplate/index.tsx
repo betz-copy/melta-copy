@@ -174,6 +174,7 @@ export type EntitiesTableOfTemplateRef<Data> = {
     getSortModel: () => IServerSideGetRowsRequest['sortModel'];
     scrollIntoView: () => void;
     showSideBar: () => void;
+    getDisplayColumns: () => string[];
 };
 
 const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, EntitiesTableOfTemplateProps<unknown>>(
@@ -266,6 +267,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridApi.openToolPanel('columns');
                 }
             },
+            getDisplayColumns: () => gridRef.current?.columnApi.getAllDisplayedColumns().map((column) => column.getColId()) || [],
         }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {

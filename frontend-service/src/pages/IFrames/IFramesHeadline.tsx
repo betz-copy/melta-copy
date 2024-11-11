@@ -27,6 +27,7 @@ const IFramesPageHeadline: React.FC<{
     const theme = useTheme();
     const queryClient = useQueryClient();
     const [allIFramesAllowed, setAllIFramesAllowed] = useState<IMongoIFrame[]>();
+    const [inputValue, setInputValue] = useState('');
     const currentUser = useUserStore((state) => state.user);
 
     useEffect(() => {
@@ -80,12 +81,22 @@ const IFramesPageHeadline: React.FC<{
                         toTopBar
                         onDragEnd={handleOnDragEnd}
                         isSelectDisabled
+                        showIcon
                     />
                 </Grid>
 
                 <Grid item>
                     <Grid container wrap="nowrap" gap="15px">
-                        <GlobalSearchBar onSearch={onSearch} borderRadius="7px" placeholder={i18next.t('globalSearch.searchInPage')} toTopBar />
+                        <GlobalSearchBar
+                            inputValue={inputValue}
+                            setInputValue={setInputValue}
+                            onSearch={() => {
+                                onSearch(inputValue);
+                            }}
+                            borderRadius="7px"
+                            placeholder={i18next.t('globalSearch.searchInPage')}
+                            toTopBar
+                        />
                     </Grid>
                 </Grid>
                 <Grid item>

@@ -80,9 +80,12 @@ const formikErrorsToRjsfExtraErrors = (formikErrors: Record<string, string>): Er
 
 const mergeErrorSchemas = (errors1: ErrorSchema<{}>, errors2: ErrorSchema<{}>) => {
     const merged = { ...errors1 };
+    // eslint-disable-next-line no-restricted-syntax
     for (const key in errors2) {
+        // eslint-disable-next-line no-prototype-builtins
         if (errors2.hasOwnProperty(key)) {
             if (!merged[key]) merged[key] = errors2[key];
+            // eslint-disable-next-line no-underscore-dangle
             else merged[key].__errors = [...new Set([...merged[key].__errors, ...errors2[key].__errors])];
         }
     }

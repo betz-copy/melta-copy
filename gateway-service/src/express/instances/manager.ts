@@ -28,15 +28,16 @@ import {
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { cerateWorksheet, createWorkbook, fixComplexProperties, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { excelConfig } from '../../utils/excel/excelConfig';
+import { WorkspaceService } from '../workspaces/service';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -47,8 +48,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private ruleBreachesManager: RuleBreachesManager;
 
+    private workspaceId: string;
+
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
+        this.workspaceId = workspaceId;
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
@@ -99,8 +103,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async exportEntities(exportEntitiesBody: IExportEntitiesBody) {
         const { workbook, filePath } = await createWorkbook(exportEntitiesBody.fileName);
+
+        const workspace = await WorkspaceService.getById(this.workspaceId);
+        const { path, name, type } = workspace;
+        const workspacePath = `${path}/${name}${type}`;
+
         try {
-            await this.addWorksheetsToWB(exportEntitiesBody, workbook);
+            await this.addWorksheetsToWB(exportEntitiesBody, workbook, { path: workspacePath, id: this.workspaceId });
             await workbook.commit();
         } catch (err) {
             await fsp.unlink(filePath);
@@ -109,10 +118,14 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return filePath;
     }
 
-    private async addWorksheetsToWB({ templates, textSearch }: IExportEntitiesBody, workbook: stream.xlsx.WorkbookWriter): Promise<void> {
-        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, insertEntities }]) => {
+    private async addWorksheetsToWB(
+        { templates, textSearch }: IExportEntitiesBody,
+        workbook: stream.xlsx.WorkbookWriter,
+        workspace: { path: string; id: string },
+    ): Promise<void> {
+        const tasks = Object.entries(templates).map(async ([templateId, { filter, sort, displayColumns, insertEntities }]) => {
             const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-            await this.createWorksheet(workbook, template, filter, sort, textSearch, insertEntities);
+            await this.createWorksheet(workbook, template, filter, sort, textSearch, displayColumns, insertEntities, workspace);
         });
 
         await Promise.all(tasks);
@@ -124,9 +137,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         filter: ISearchFilter | undefined,
         sort: ISearchSort | undefined,
         textSearch: string | undefined,
+        displayColumns: string[],
         insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
+        workspace: { path: string; id: string },
     ) {
-        const worksheet = await cerateWorksheet(workbook, template, insertEntities);
+        const worksheet = await createWorkbook(workbook, template, displayColumns, insertEntities);
         if (!insertEntities?.insert || (insertEntities && insertEntities.entities)) {
             const { searchEntitiesChunkSize } = config.service;
             let length = 0;
@@ -161,7 +176,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
                 rows.forEach((row) => {
                     const excelRow = worksheet.addRow(row);
-                    styleAWorksheet(worksheet);
+                    styleAWorksheet(
+                        worksheet,
+                        chunk.map((row) => row.entity.properties),
+                        template,
+                        displayColumns,
+                        workspace,
+                    );
                     excelRow.commit();
                 });
             }
@@ -210,6 +231,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                                 }),
                             )
                             .flat();
+                        console.log({ indicesAndProperties });
                     }
                 }
             } catch (error) {
@@ -449,13 +471,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             if (Array.isArray(value)) {
                 const unknownFileId = value.find((fileId) => !(currentEntity.properties[key] as string[] | undefined)?.includes(fileId));
                 if (unknownFileId) {
-                    throw new ServiceError(400, `duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
+                    throw new BadRequestError(`duplicated entity contains unknown fileId ${unknownFileId} in key ${key}`);
                 }
                 return;
             }
 
             if (value !== currentEntity.properties[key]) {
-                throw new ServiceError(400, `duplicated entity contains unknown fileId ${value} in key ${key}`);
+                throw new BadRequestError(`duplicated entity contains unknown fileId ${value} in key ${key}`);
             }
         });
     }
@@ -549,7 +571,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         Object.keys(entityTemplate.properties.properties).forEach((key) => {
             if (entityTemplate.properties.properties[key].serialCurrent !== undefined) {
                 if (updatedInstanceDataProperties[key] !== currentEntity.properties[key]) {
-                    throw new ServiceError(400, "can't change serial properties");
+                    throw new BadRequestError("can't change serial properties");
                 }
             }
         });
@@ -581,8 +603,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 userId,
             )
             .catch((err) => this.handleBrokenRulesError(err));
-        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch(() =>
-            logger.error(`failed to delete files of instanceId ${id}`),
+        await this.deleteUnusedFiles(currentEntity, updatedInstanceData, files).catch((error) =>
+            logger.error(`failed to delete files of instanceId ${id}`, { error }),
         );
 
         const updatedFields: Record<string, any> = {};
@@ -722,7 +744,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         if (axios.isAxiosError(error) && error.response?.data.metadata?.errorCode === errorCodes.ruleBlock) {
             const { brokenRules, actions } = error.response.data.metadata;
 
-            throw new ServiceError(400, error.message, {
+            throw new BadRequestError(error.message, {
                 errorCode: errorCodes.ruleBlock,
                 brokenRules: await this.ruleBreachesManager.populateBrokenRules(brokenRules),
                 rawBrokenRules: brokenRules,

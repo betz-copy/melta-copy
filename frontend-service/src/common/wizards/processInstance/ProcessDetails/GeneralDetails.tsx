@@ -128,7 +128,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     return (
         <>
             {Object.entries(templateFileProperties).map(([fieldName, { title }]) => {
-                let attachments = (
+                let attachments: React.JSX.Element | React.JSX.Element[] = (
                     <Typography display="inline" variant="h6">
                         -
                     </Typography>

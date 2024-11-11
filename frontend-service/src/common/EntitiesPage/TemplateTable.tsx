@@ -76,6 +76,7 @@ const TemplateTable = forwardRef<
                     [template._id]: {
                         filter: filterModelToFilterOfTemplate(entitiesTableRef.current?.getFilterModel() ?? {}, template),
                         sort: sortModelToSortOfSearchRequest(entitiesTableRef.current?.getSortModel() ?? []),
+                        displayColumns: entitiesTableRef.current?.getDisplayColumns() ?? [],
                     },
                 },
             });
