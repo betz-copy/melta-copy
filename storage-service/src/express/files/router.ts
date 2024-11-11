@@ -2,16 +2,18 @@ import { Router } from 'express';
 import { createController } from '../../utils/express';
 import { ValidateRequest } from '../../utils/joi';
 import { MinioMulter } from '../../utils/minio';
-import FilesController from './controller';
-import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema } from './validator.schema';
+import FilesController, { workspaceIdInHeader } from './controller';
+import { bulkFilesRequestSchema, defaultSchema, uploadFileRequestSchema, uploadFilesRequestSchema, workspaceSchema } from './validator.schema';
 
 const filesRouter: Router = Router();
 
 const filesController = createController(FilesController);
 
+filesRouter.get('/zip/:path/:workspaceId', ValidateRequest(workspaceSchema), workspaceIdInHeader);
 filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController.downloadZip);
 
 filesRouter.get('/', filesController.listFiles);
+filesRouter.get('/:path/:workspaceId', ValidateRequest(workspaceSchema), workspaceIdInHeader);
 filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController.downloadFile);
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController.fileStat);
 
