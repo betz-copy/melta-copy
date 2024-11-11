@@ -1,4 +1,4 @@
-import React, { MouseEventHandler } from 'react';
+import React, { MouseEventHandler, useMemo } from 'react';
 import { Grid, IconButton, Menu } from '@mui/material';
 import i18next from 'i18next';
 import {
@@ -17,7 +17,7 @@ import { useUserStore } from '../../../stores/user';
 export const CardMenu: React.FC<{
     onEditClick: MouseEventHandler;
     onDeleteClick?: MouseEventHandler;
-    disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string };
+    disabledProps?: { isDisabled: boolean; isEditDisabled: boolean; tooltipTitle: string; editTooltipTitle?: string };
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
@@ -38,17 +38,19 @@ export const CardMenu: React.FC<{
         setAnchorEl(null);
     };
 
+    const editTooltipTitle = useMemo(() => {
+        if (disabledProps?.isEditDisabled && disabledProps?.editTooltipTitle) return disabledProps.editTooltipTitle;
+        if (disabledProps?.isDisabled) return disabledProps.tooltipTitle;
+        return i18next.t('systemManagement.defaultCantEdit');
+    }, [disabledProps]);
+
     return (
         <>
             <IconButton onClick={handleClick} style={{ ...environment.iconSize }}>
                 <OptionsIcon />
             </IconButton>
             <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                <MeltaTooltip
-                    placement="left"
-                    title={disabledProps?.tooltipTitle || String(i18next.t('systemManagement.defaultCantEdit'))}
-                    disableHoverListener={!disabledProps?.isEditDisabled}
-                >
+                <MeltaTooltip placement="left" title={editTooltipTitle} disableHoverListener={!disabledProps?.isEditDisabled}>
                     <Grid>
                         <MenuButton
                             onClick={(e) => {

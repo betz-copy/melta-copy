@@ -91,7 +91,7 @@ const ProcessTemplateWizard: React.FC<WizardBaseType<ProcessTemplateWizardValues
         {
             label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
             component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,
-            validationSchema: createTemplateNameSchema, // Use schema here
+            validationSchema: createTemplateNameSchema,
         },
         {
             label: i18next.t('wizard.processTemplate.otherDetails'),
