@@ -5,7 +5,6 @@ import DefaultController from '../../utils/express/controller';
 import { getFileName } from '../../utils/generatePath';
 import { ServiceError } from '../error';
 import { FilesManager } from './manager';
-import { ServiceError } from '../error';
 
 export default class FilesController extends DefaultController<FilesManager> {
     constructor(workspaceId: string) {
