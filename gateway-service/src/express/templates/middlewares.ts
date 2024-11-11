@@ -46,11 +46,16 @@ export class TemplatesValidator extends DefaultController {
 
     async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
+        console.log('11', { sourceEntityId, destinationEntityId });
+
+        const t = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
+        console.log({ t });
 
         const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([
             this.entityTemplateService.getEntityTemplateById(sourceEntityId),
             this.entityTemplateService.getEntityTemplateById(destinationEntityId),
         ]);
+        console.log('12', { srcCategory, dstCategory });
 
         return lodashUniqby([srcCategory._id, dstCategory._id], '_id');
     }
@@ -72,10 +77,16 @@ export class TemplatesValidator extends DefaultController {
     }
 
     async validateUserCanUpdateOrDeleteRelationshipTemplate(req: Request) {
+        console.log('1');
+
         const relationshipTemplate = await this.relationshipsTemplateService.getRelationshipTemplateById(req.params.id);
+        console.log('2');
+
         const relatedCategories = await this.getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate);
+        console.log('3');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
+        console.log('4');
 
         if (
             !userPermissions.admin?.scope &&
@@ -85,5 +96,6 @@ export class TemplatesValidator extends DefaultController {
         ) {
             throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
+        console.log('5');
     }
 }

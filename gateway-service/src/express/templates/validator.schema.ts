@@ -172,6 +172,23 @@ export const updateRelationshipTemplateSchema = Joi.object({
         displayName: Joi.string().required(),
         sourceEntityId: MongoIdSchema.required(),
         destinationEntityId: MongoIdSchema.required(),
+        isProperty: Joi.boolean(),
+    },
+    query: {},
+    params: {
+        id: MongoIdSchema.required(),
+    },
+});
+
+// PUT /api/templates/relationships/convertToRelationshipField/:id
+export const convertToRelationshipFieldRequestSchema = Joi.object({
+    body: {
+        fieldName: Joi.string().required(),
+        displayFieldName: Joi.string().required(),
+        relatedTemplateField: Joi.string().required(),
+        relationshipTemplateDirection: Joi.string().valid('outgoing', 'incoming').required(),
+        sourceEntityId: MongoIdSchema.required(),
+        destinationEntityId: MongoIdSchema.required(),
     },
     query: {},
     params: {

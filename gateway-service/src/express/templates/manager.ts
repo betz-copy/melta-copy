@@ -14,12 +14,14 @@ import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
     ICategory,
+    IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import {
+    IConvertToRelationshipField,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
@@ -972,6 +974,58 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.relationshipTemplateService.updateRelationshipTemplate(templateId, updatedFields);
+    }
+
+    async convertToRelationshipField(
+        templateId: string,
+        {
+            fieldName,
+            displayFieldName,
+            destinationEntityId,
+            sourceEntityId,
+            relatedTemplateField,
+            relationshipTemplateDirection,
+        }: IConvertToRelationshipField,
+    ) {
+        const { name, displayName }: IRelationshipTemplate = await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
+        const updatedRelationShip: IRelationshipTemplate = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
+            name,
+            displayName,
+            sourceEntityId,
+            destinationEntityId,
+            isProperty: true,
+        });
+        console.log({ updatedRelationShip });
+
+        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
+        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
+        const newRelationshipField: IEntitySingleProperty = {
+            title: displayFieldName,
+            type: 'string',
+            format: 'relationshipReference',
+            relationshipReference: {
+                relationshipTemplateId: templateId,
+                relationshipTemplateDirection,
+                relatedTemplateId: destinationEntityId,
+                relatedTemplateField,
+            },
+        };
+
+        const updatedTemplateProperties = {
+            ...entityTemplate.properties.properties,
+            [fieldName]: newRelationshipField,
+        };
+
+        await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
+            ...restOfEntityTemplate,
+            category: category._id,
+            properties: {
+                ...entityTemplate.properties,
+                properties: updatedTemplateProperties,
+            },
+            propertiesOrder: [...entityTemplate.propertiesOrder, fieldName],
+        });
+        return updatedRelationShip;
     }
 
     getDependentRelationshipTemplates(formula: IFormula) {

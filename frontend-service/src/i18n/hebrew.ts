@@ -85,6 +85,7 @@ export default {
         expansion: 'הרחבה',
         favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
+        convertToRelationShipFieldClick: 'המרה לשדה קשר',
     },
     entityPage: {
         deleteRelationshipPopoverText: 'מחק קשר',

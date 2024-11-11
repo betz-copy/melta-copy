@@ -8,6 +8,15 @@ export interface IRelationshipTemplate {
     isProperty?: boolean;
 }
 
+export interface IConvertToRelationshipField {
+    fieldName: string; // שם השדה באנגלית לדיבי
+    displayFieldName: string; // שם השדה לתצוגה
+    relatedTemplateField: string; // של הישות יעד - שם השדה חובה
+    relationshipTemplateDirection: 'outgoing' | 'incoming'; // כיוון הקשר outgoing/incoming
+    sourceEntityId: string;
+    destinationEntityId: string;
+}
+
 export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
     _id: string;
     createdAt: string;

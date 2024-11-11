@@ -18,6 +18,7 @@ import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
+    convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
@@ -89,6 +90,17 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     setDeleteRelationshipTemplateDialogState({
                                         isDialogOpen: true,
                                         relationshipTemplateId: relationshipTemplate._id,
+                                    });
+                                }}
+                                onConvertToRelationShipFieldClick={() => {
+                                    const { sourceEntity, destinationEntity } = relationshipTemplate;
+                                    convertToRelationshipFieldRequest(relationshipTemplate._id, {
+                                        fieldName: 'englishName',
+                                        displayFieldName: 'hebrewName',
+                                        relatedTemplateField: 'name',
+                                        relationshipTemplateDirection: 'outgoing',
+                                        sourceEntityId: sourceEntity._id,
+                                        destinationEntityId: destinationEntity._id,
                                     });
                                 }}
                                 disabledProps={{

@@ -37,6 +37,14 @@ export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPe
 export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
     searchBody: ISearchRulesBody;
 }
+export interface IConvertToRelationshipField {
+    fieldName: string;
+    displayFieldName: string;
+    relatedTemplateField: string;
+    relationshipTemplateDirection: 'outgoing' | 'incoming';
+    sourceEntityId: string;
+    destinationEntityId: string;
+}
 
 export class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {

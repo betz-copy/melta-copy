@@ -2,7 +2,12 @@ import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../../interfaces/relationshipTemplates';
+import {
+    IConvertToRelationshipField,
+    IMongoRelationshipTemplate,
+    IRelationshipTemplate,
+    ISearchRelationshipTemplatesBody,
+} from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -45,6 +50,18 @@ const updateRelationshipTemplateRequest = async (relationshipTemplateId: string,
     return data;
 };
 
+const convertToRelationshipFieldRequest = async (relationshipTemplateId: string, updatedData: IConvertToRelationshipField) => {
+    console.log({ updatedData });
+
+    const { data } = await axios.put<IMongoRelationshipTemplate>(
+        `${relationshipTemplates}/convertToRelationshipField/${relationshipTemplateId}`,
+        updatedData,
+    );
+    console.log({ data });
+
+    return data;
+};
+
 const deleteRelationshipTemplateRequest = async (relationshipTemplateId: string) => {
     const { data } = await axios.delete<IMongoRelationshipTemplate>(`${relationshipTemplates}/${relationshipTemplateId}`);
     return data;
@@ -63,6 +80,7 @@ const getAllRelationshipTemplatesRequest = async () => {
 export {
     createRelationshipTemplateRequest,
     updateRelationshipTemplateRequest,
+    convertToRelationshipFieldRequest,
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
     relationshipTemplateFormToRelationshipTemplateObject,

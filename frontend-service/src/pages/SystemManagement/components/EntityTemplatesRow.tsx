@@ -578,6 +578,7 @@ const EntityTemplatesRow: React.FC = () => {
             category: categories.get(result.destination.droppableId)!,
         });
     };
+    console.log(entityTemplateWizardDialogState.entityTemplate);
 
     return (
         <Grid item container>

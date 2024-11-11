@@ -9,6 +9,7 @@ import {
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
 } from '@mui/icons-material';
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import { MenuButton } from '../../../common/MenuButton';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { environment } from '../../../globals';
@@ -21,7 +22,8 @@ export const CardMenu: React.FC<{
     onDisableClick?: MouseEventHandler;
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick }) => {
+    onConvertToRelationShipFieldClick?: MouseEventHandler;
+}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, onConvertToRelationShipFieldClick }) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -90,6 +92,21 @@ export const CardMenu: React.FC<{
                         }}
                         text={i18next.t('actions.delete')}
                         icon={<DeleteIcon color="action" />}
+                    />
+                )}
+
+                {onConvertToRelationShipFieldClick && (
+                    <MenuButton
+                        onClick={(e) => {
+                            console.log('1');
+
+                            onConvertToRelationShipFieldClick(e);
+                            console.log('2');
+
+                            handleClose(e);
+                        }}
+                        text={i18next.t('actions.convertToRelationShipFieldClick')}
+                        icon={<CompareArrowsIcon color="action" />}
                     />
                 )}
 
