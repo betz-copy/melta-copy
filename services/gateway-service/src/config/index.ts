@@ -186,6 +186,10 @@ const config = {
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
     },
+    excel: {
+        multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
+        columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
+    },
 };
 
 export default config;
