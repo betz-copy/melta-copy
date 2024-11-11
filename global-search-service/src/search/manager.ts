@@ -7,7 +7,14 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: { globalSearchIndexPrefix, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
+    neo4j: {
+        globalSearchIndexPrefix,
+        templateSearchIndexPrefix,
+        stringPropertySuffix,
+        indexPropertiesLimit,
+        booleanPropertySuffix,
+        filePropertySuffix,
+    },
 } = config;
 
 export default class Manager extends DefaultManagerNeo4j {
@@ -65,7 +72,15 @@ export default class Manager extends DefaultManagerNeo4j {
 
     private getTemplatePropertiesIndex(template: IEntityTemplate) {
         const templateProperties = Object.entries(template.properties.properties).map(([key, value]) => {
-            const { type, format } = value;
+            const { type, format, items } = value;
+
+            if (type === 'boolean') {
+                return `${key}${booleanPropertySuffix}`;
+            }
+
+            if (format === 'fileId' || items?.format === 'fileId') {
+                return `${key}${filePropertySuffix}`;
+            }
 
             if (type !== 'string' || format === 'date' || format === 'date-time') {
                 return `${key}${stringPropertySuffix}`;

@@ -423,6 +423,11 @@ export const addStringFieldsAndNormalizeDateValues = (
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
         }
 
+        if (type === 'string' && format === 'fileId') {
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = String(propertyValue);
+            return;
+        }
+
         if (type === 'string' && format === 'date') {
             normalizedEntity[key] = getNeo4jDate(new Date(propertyValue));
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = formatDateForFullTextSearch(new Date(propertyValue));
