@@ -1,5 +1,5 @@
 {
-  "name": "rabaz-team-typescript-template",
+  "name": "template-service",
   "version": "1.0.0",
   "description": "",
   "main": "",
@@ -18,6 +18,7 @@
   "author": "Alexander Gurevich",
   "license": "ISC",
   "dependencies": {
+    "@microservices/shared": "^1.0.0",
     "ajv": "^8.17.1",
     "ajv-formats": "^3.0.1",
     "axios": "^1.7.4",

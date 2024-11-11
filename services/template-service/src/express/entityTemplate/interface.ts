@@ -1,5 +1,5 @@
 import { Document } from 'mongoose';
-import { IMongoCategory } from '../category/interface';
+import { IMongoCategory } from '@microservices/shared/src/interfaces/category';
 
 export interface IEntitySingleProperty {
     title: string;

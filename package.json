@@ -3,10 +3,14 @@
   "version": "1.0.1",
   "description": "",
   "main": "index.js",
+  "workspaces": [
+    "packages/*",
+    "services/*"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-    "prepare": "husky install"
+    "build": "npm run build --workspaces"
   },
   "repository": {
     "type": "git",

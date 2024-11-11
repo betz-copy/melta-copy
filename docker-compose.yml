@@ -29,7 +29,9 @@ services:
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
 
   template-service:
-    build: ./template-service
+    build:
+      context: .
+      dockerfile: services/template-service/Dockerfile
     environment:
       PORT: 8000
       MONGO_URL: ${TEMPLATE_SERVICE_MONGO_URL}
