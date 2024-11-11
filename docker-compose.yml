@@ -27,6 +27,7 @@ services:
       RABBIT_URL: ${RABBIT_URL}
       ELASTIC_APM_ACTIVE: ${ELASTIC_APM_ACTIVE}
       WORKSPACE_ID_HEADER_NAME: ${WORKSPACE_ID_HEADER_NAME}
+      SYSTEM_MELTA_BASE_URL: ${SYSTEM_MELTA_BASE_URL}
 
   template-service:
     build: ./template-service

@@ -135,6 +135,7 @@ export interface IExportEntitiesBody {
         [templateId: string]: {
             filter?: ISearchFilter;
             sort?: ISearchSort;
+            displayColumns: string[];
         };
     };
 }
