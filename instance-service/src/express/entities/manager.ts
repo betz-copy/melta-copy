@@ -696,7 +696,9 @@ export class EntityManager extends DefaultManagerNeo4j {
             MATCH (node)
             // Search for entities that have an Id of specific entities (keys($semanticSearchResult[templateId]))
             // and that are in the current searched template
-            WHERE templateId IN labels(node) AND node._id IN keys($semanticSearchResult[templateId])
+            WHERE templateId IN labels(node)
+                AND $semanticSearchResult[templateId] IS NOT NULL
+                AND node._id IN keys($semanticSearchResult[templateId])
             RETURN node
         `
             : '';
@@ -711,7 +713,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 RETURN node
                 ${entityIdMatch}
             }
-            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult as semanticSearchResult, $semanticSearchResult[templateId] as entityIdsToInclude' : ''};
+            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entityIdsToInclude' : ''};
         `;
 
         return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
