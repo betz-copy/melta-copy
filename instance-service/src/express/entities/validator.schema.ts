@@ -196,6 +196,8 @@ export const searchEntitiesByTemplatesSchema = Joi.object({
     params: {},
 });
 
+const semanticSearchResult = Joi.object().pattern(Joi.string(), Joi.object().pattern(Joi.string(), Joi.array().items(Joi.string())));
+
 /*
  * POST /api/instances/entities/count
  */
@@ -203,7 +205,7 @@ export const countEntitiesOfTemplatesRequestSchema = Joi.object({
     body: {
         templateIds: Joi.array().items(Joi.string()).required(),
         textSearch: Joi.string().allow(''),
-        entityIdsToInclude: Joi.array().items(Joi.string()),
+        semanticSearchResult,
     },
     query: {},
     params: {},

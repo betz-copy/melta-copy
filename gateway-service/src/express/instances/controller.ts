@@ -31,11 +31,13 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {
-        res.json(await this.manager.searchEntitiesBatch(req.body));
+        const { shouldSemanticSearch, ...body } = req.body;
+        res.json(await this.manager.searchEntitiesBatch(shouldSemanticSearch, body));
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getEntitiesCountByTemplates(req.body));
+        const { shouldSemanticSearch, ...body } = req.body;
+        res.json(await this.manager.getEntitiesCountByTemplates(shouldSemanticSearch, body));
     }
 
     async duplicateEntityInstance(req: Request, res: Response) {

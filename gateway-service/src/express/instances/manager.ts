@@ -14,6 +14,7 @@ import {
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
+    ISearchResult,
     ISearchSort,
     ITemplateSearchBody,
 } from '../../externalServices/instanceService/interfaces/entities';
@@ -42,7 +43,8 @@ import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
 import { RabbitManager } from '../../utils/rabbit';
-import { SemanticSearchService } from '../../externalServices/semanticSearchService';
+import { SemanticSearchService } from '../../externalServices/semanticSearch';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -294,36 +296,50 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
     }
 
-    async searchEntitiesBatch(searchBody: ISearchBatchBody) {
-        let entityIdsToInclude: string[] | undefined;
+    private async formatEntitiesSearch(searchResults: ISearchResult, semanticSearchResult?: ISemanticSearchResult) {
+        return semanticSearchResult
+            ? {
+                  ...searchResults,
+                  entities: searchResults.entities.map((entity) => ({
+                      ...entity,
+                      minioFileIds: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
+                  })),
+              }
+            : searchResults;
+    }
 
-        if (searchBody.textSearch) {
-            const semanticSearchBody = {
+    async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
+        if (shouldSemanticSearch && searchBody.textSearch) {
+            const semanticSearchResult = await this.semanticSearchSearch.search({
                 textSearch: searchBody.textSearch,
                 limit: searchBody.limit,
                 skip: searchBody.skip,
                 templates: Object.keys(searchBody.templates),
-            };
+            });
 
-            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
+            return this.formatEntitiesSearch(
+                await this.service.searchEntitiesBatch({
+                    ...searchBody,
+                    entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+                }),
+                semanticSearchResult,
+            );
         }
 
-        return this.service.searchEntitiesBatch({ ...searchBody, entityIdsToInclude });
+        return this.service.searchEntitiesBatch(searchBody);
     }
 
-    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody) {
-        let entityIdsToInclude: string[] | undefined;
-
-        if (searchBody.textSearch) {
-            const semanticSearchBody = {
-                textSearch: searchBody.textSearch,
-                templates: searchBody.templateIds,
-            };
-
-            entityIdsToInclude = await this.semanticSearchSearch.search(semanticSearchBody);
-        }
-
-        return this.service.getEntitiesCountByTemplates({ ...searchBody, entityIdsToInclude });
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
+        return this.service.getEntitiesCountByTemplates({
+            ...searchBody,
+            semanticSearchResult:
+                searchBody.textSearch && shouldSemanticSearch
+                    ? await this.semanticSearchSearch.search({
+                          textSearch: searchBody.textSearch,
+                          templates: searchBody.templateIds,
+                      })
+                    : undefined,
+        });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

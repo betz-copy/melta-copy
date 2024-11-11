@@ -16,6 +16,7 @@ import { MeltaTooltip } from './MeltaTooltip';
 import RelationshipReferenceView from './RelationshipReferenceView';
 import { VerifyLink } from './VerifyLink';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
+import { HighlightText } from '../utils/HighlightText';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -84,6 +85,7 @@ interface IEntityPropertiesProps {
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
     pureString?: boolean;
+    searchedText?: string;
 }
 
 const getPropertyColor = (
@@ -116,6 +118,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
     pureString = false,
+    searchedText,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -244,7 +247,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
-                                        <VerifyLink>{innerContent}</VerifyLink>
+                                        <VerifyLink>
+                                            <HighlightText text={innerContent} searchedText={searchedText} />
+                                        </VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

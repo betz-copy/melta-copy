@@ -1,7 +1,7 @@
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
 import config from '../../config';
-import { IElasticDoc } from '../../express/semantics/interface';
+import { IElasticDoc, ISemanticSearchResult } from '../../express/semantics/interface';
 import logger from '../logger/logsLogger';
 
 const {
@@ -17,8 +17,6 @@ const {
         rrfRankConstant,
         user,
         password,
-        topHitsByGroupSize,
-        groupByEntityIdSize,
         rrfWindowFieldName,
     },
 } = config;
@@ -80,12 +78,19 @@ class ElasticClient {
         return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
     }
 
-    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): string[] {
-        const { buckets } = response.aggregations!.group_by_entity_id;
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
+        return response.hits.hits.reduce((acc, hit) => {
+            const { templateId, entityId, minioFileId } = hit?._source ?? {};
 
-        if (!buckets || !buckets[0]?.top_hits_by_group?.hits?.hits) return [];
+            if (!templateId || !entityId || !minioFileId) return acc;
 
-        return buckets[0].top_hits_by_group.hits.hits.flatMap((hit) => hit?._source?.entityId ?? []);
+            if (!acc[templateId]) acc[templateId] = {};
+            if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+
+            acc[templateId][entityId].push(minioFileId);
+
+            return acc;
+        }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
@@ -121,21 +126,6 @@ class ElasticClient {
                 },
             },
             min_score: queryMinScore,
-            aggs: {
-                group_by_entity_id: {
-                    terms: {
-                        field: 'entityId.keyword',
-                        size: groupByEntityIdSize,
-                    },
-                    aggs: {
-                        top_hits_by_group: {
-                            top_hits: {
-                                size: topHitsByGroupSize,
-                            },
-                        },
-                    },
-                },
-            },
         };
 
         const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);

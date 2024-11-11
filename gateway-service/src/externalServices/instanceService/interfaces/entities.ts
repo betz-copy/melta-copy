@@ -108,3 +108,9 @@ export interface ISearchResult {
     count: number;
     entities: IEntityWithDirectRelationships[];
 }
+
+export interface ICountSearchResult {
+    count: number;
+    templateId: string;
+    entityIdsToInclude: string[];
+}

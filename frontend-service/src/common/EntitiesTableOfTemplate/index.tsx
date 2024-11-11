@@ -133,7 +133,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
 };
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -278,8 +278,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnsOrder,
             defaultColumnWidths,
             rowHeight,
+            searchValue: quickFilterText,
         };
-
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
         const datasourceOnFail = (err: unknown) => {

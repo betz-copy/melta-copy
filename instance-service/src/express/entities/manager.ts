@@ -59,6 +59,7 @@ import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, 
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -686,12 +687,18 @@ export class EntityManager extends DefaultManagerNeo4j {
         return results;
     }
 
-    async getEntitiesCountByTemplates(templateIds: string[], textSearch: string = '', entityIdsToInclude?: string[]) {
-        const entityIdMatch = entityIdsToInclude?.length
+    async getEntitiesCountByTemplates(templateIds: string[], semanticSearchResult: ISemanticSearchResult = {}, textSearch: string = '') {
+        const includeSemantic = Boolean(Object.keys(semanticSearchResult).length);
+
+        const entityIdMatch = includeSemantic
             ? `
             UNION
             MATCH (node)
-            WHERE templateId IN labels(node) AND node._id IN $entityIdsToInclude
+            // Search for entities that have an Id of specific entities (keys($semanticSearchResult[templateId]))
+            // and that are in the current searched template
+            WHERE templateId IN labels(node)
+                AND $semanticSearchResult[templateId] IS NOT NULL
+                AND node._id IN keys($semanticSearchResult[templateId])
             RETURN node
         `
             : '';
@@ -706,13 +713,13 @@ export class EntityManager extends DefaultManagerNeo4j {
                 RETURN node
                 ${entityIdMatch}
             }
-            RETURN templateId, count(node) as count ${entityIdsToInclude?.length ? ', $entityIdsToInclude as entityIdsToInclude' : ''};
+            RETURN templateId, count(node) as count ${includeSemantic ? ', $semanticSearchResult[templateId] as entityIdsToInclude' : ''};
         `;
 
         return this.neo4jClient.readTransaction(query, normalizeResponseTemplatesCount, {
             templateIds,
             textSearchFixed,
-            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
+            ...(includeSemantic && { semanticSearchResult }),
         });
     }
 
@@ -1063,10 +1070,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }

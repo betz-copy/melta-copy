@@ -62,6 +62,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
+        semanticSearch: 'נמצא באמצעות AI',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -396,6 +397,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
+        turnOnSearchWithAi: 'הדלק חיפוש עם AI',
+        turnOffSearchWithAi: 'כבה חיפוש עם AI',
     },
     wizard: {
         next: 'הבא',

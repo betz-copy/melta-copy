@@ -619,7 +619,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
                 {!isSelectDisabled && !hideChooseAll ? (
-                    <>
+                    <Box>
                         <ChooseAllMenuItem
                             options={options}
                             selectedOptionsFiltered={selectedOptionsFiltered}
@@ -629,7 +629,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
-                    </>
+                    </Box>
                 ) : (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}
