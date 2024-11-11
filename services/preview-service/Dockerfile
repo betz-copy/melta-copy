@@ -12,10 +12,10 @@ RUN apk add --no-cache \
     && fc-cache -f \
     && rm -rf /var/cache/apk/*
 
-COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
+COPY ["./services/preview-service/package.json", "./services/preview-service/package-lock.json*", "./services/preview-service/npm-shrinkwrap.json*", "./"]
 RUN npm ci --silent
 
-COPY . .
+COPY ./services/preview-service .
 
 RUN npm run build
 

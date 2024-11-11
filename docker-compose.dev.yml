@@ -57,7 +57,7 @@ services:
 
   neo4j:
     build:
-      context: ./instance-service
+      context: ./services/instance-service
       dockerfile: Dockerfile-neo4j
     environment:
       - NEO4J_AUTH=neo4j/test1234
