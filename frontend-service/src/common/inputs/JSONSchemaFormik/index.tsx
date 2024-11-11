@@ -16,6 +16,7 @@ import RjsfTextWidget from './RjsfStringWidget';
 import RjfsTextAreaWidget from './RjfsTextAreaWidget';
 import './form.css';
 import RjfsTemplateReferenceWidget from './RjfsTemplateReferenceWidget';
+import RjsfLocationWidget from './RjsfLocationWidget';
 
 const ajvErrorsToFormikErrors = (schema: IMongoEntityTemplatePopulated['properties'], ajvErrors: ErrorObject[]): FormikErrors<any> => {
     const formikErrorsEntries = ajvErrors.map((ajvError) => {
@@ -170,6 +171,10 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                     return {
                         'ui:widget': 'TemplateReferenceWidget',
                     };
+                if (propertySchema.format === 'location')
+                    return {
+                        'ui:widget': 'LocationWidget',
+                    };
                 return {};
             })}
             onChange={({ formData }) => {
@@ -197,6 +202,7 @@ export const JSONSchemaFormik: React.FC<JSONSchemaFormFormikProps> = ({
                 EmailWidget: RjsfTextWidget,
                 TextAreaWidget: RjfsTextAreaWidget,
                 TemplateReferenceWidget: RjfsTemplateReferenceWidget,
+                LocationWidget: RjsfLocationWidget,
             }}
         >
             <div /> {/* remove the built in submit button */}

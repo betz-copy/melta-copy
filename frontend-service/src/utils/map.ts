@@ -1,11 +1,4 @@
-import { LatLng } from 'leaflet';
-
-export const polygonStyle = (darkMode) => ({
-    color: darkMode ? '#ffffff' : '#3388ff', // Border color
-    fillColor: darkMode ? '#555555' : '#3388ff', // Fill color
-    fillOpacity: 0.4, // Fill opacity
-    weight: 2, // Border thickness
-});
+import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
 
 export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
     const prefix = 'POLYGON((';
@@ -28,4 +21,20 @@ export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
     });
 
     return coordinates.length > 0 ? coordinates : undefined;
+};
+
+export const calculateDistance = (latlngs: LatLng[]) => {
+    let totalDistance = 0;
+    for (let i = 1; i < latlngs.length; i++) {
+        totalDistance += latlngs[i - 1].distanceTo(latlngs[i]);
+    }
+    return totalDistance;
+};
+
+export const calculatePolygonArea = (latlngs: LatLng[]) => GeometryUtil.geodesicArea(latlngs);
+
+export const stringToCoordinates = (strCoords: string) => {
+    const formatted = strCoords.split(',').map((val) => +val);
+    return formatted as LatLngExpression;
+    // TODO: add validation to format
 };
