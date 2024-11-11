@@ -81,7 +81,7 @@ export const splitTextIntoChunks = async (
         ];
     }
 
-    const splitText = chunk(cleanedText, { ...llmChunkSplitterOptions });
+    const splitText = chunk(cleanedText, llmChunkSplitterOptions);
 
     const chunksForEmbedding = getTextForEmbedding(splitText);
 
