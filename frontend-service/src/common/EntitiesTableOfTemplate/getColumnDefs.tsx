@@ -1,11 +1,10 @@
 import { ColDef, ValueGetterFunc } from '@ag-grid-community/core';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import React, { memo, useState } from 'react';
-import { Link, useLocation } from 'wouter';
+import React, { memo } from 'react';
+import { Link } from 'wouter';
 import { AxiosError } from 'axios';
-import { UseMutateAsyncFunction, useMutation } from 'react-query';
-import { toast } from 'react-toastify';
+import { UseMutateAsyncFunction } from 'react-query';
 import { IButtonPopoverProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -24,8 +23,6 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { deleteEntityRequest, updateEntityStatusRequest } from '../../services/entitiesService';
-import { ErrorToast } from '../ErrorToast';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 

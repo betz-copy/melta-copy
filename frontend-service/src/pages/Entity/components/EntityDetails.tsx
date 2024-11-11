@@ -1,5 +1,4 @@
-import { ContentCopy as DuplicateIcon, Delete as DeleteIcon, DoDisturbAlt, MoreVertOutlined } from '@mui/icons-material';
-import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
+import { Card, CardContent, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -23,7 +22,6 @@ import { checkUserCategoryPermission } from '../../../utils/permissions/instance
 import { EditEntityDetails } from './EditEntityDetails';
 import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
-import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 import { CardMenu } from '../../SystemManagement/components/CardMenu';
 
@@ -36,20 +34,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [isEditMode, setIsEditMode] = useState(false);
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
-    const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
-
-    const open = Boolean(anchorEl);
-
-    const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setAnchorEl(event.currentTarget);
-    };
-
-    const handleClose = () => {
-        setAnchorEl(null);
-    };
 
     const closeDeleteDialog = () => {
         setOpenDeleteDialog(false);
@@ -142,7 +129,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems={'center'}>
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems="center">
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -180,17 +167,17 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                                 state: { entityTemplate, expandedEntity, currentEntityTemplate },
                                             });
                                         }
-                                        handleClose();
+                                        // handleClose();
                                     }}
                                     onDeleteClick={() => {
                                         setOpenDeleteDialog(true);
-                                        handleClose();
+                                        // handleClose();
                                     }}
                                     onDisableClick={() => {
                                         if (canWriteInstance) {
                                             updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
                                         }
-                                        handleClose();
+                                        // handleClose();
                                     }}
                                     disabledProps={{
                                         isDisabled: isEntityDisabled,
