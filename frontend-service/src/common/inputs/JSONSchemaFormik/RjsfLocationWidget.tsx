@@ -7,7 +7,7 @@ import { Dialog, InputAdornment, TextField } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import { convertToPlainText, containsHTMLTags } from '../../../utils/HtmlTagsStringValue';
 import { getFixedNumber, getTextDirection } from '../../../utils/stringValues';
-import AddMapField from '../../../pages/Map/AddMapField';
+import AddLocationField from '../../../pages/Map/AddLocationField';
 
 const RjsfLocationWidget = ({
     id,
@@ -52,7 +52,7 @@ const RjsfLocationWidget = ({
     else finalValue = value ?? '';
 
     const [mapOpen, setMapOpen] = useState(false);
-    const [newValue, setNewValue] = useState<string>();
+    const [newValue, setNewValue] = useState<string>(finalValue);
 
     const handleCloseDialog = () => {
         onChange(newValue);
@@ -99,7 +99,7 @@ const RjsfLocationWidget = ({
             />
 
             <Dialog open={mapOpen} onClose={handleCloseDialog}>
-                <AddMapField
+                <AddLocationField
                     styles={{ height: '800px', width: '600px' }}
                     defaultLocation={finalValue}
                     updateValue={(newVal: string) => setNewValue(newVal)}

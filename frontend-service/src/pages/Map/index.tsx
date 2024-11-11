@@ -36,8 +36,8 @@ const Map = ({ styles, properties, entityTemplate, darkMode }: Props) => {
                     latLngList.push(...parsedPolygon);
                 } else {
                     const position = stringToCoordinates(properties[key]);
-                    markerList.push({ key, position });
-                    latLngList.push(position as LatLngExpression);
+                    markerList.push({ key, position: position.value as LatLngExpression });
+                    latLngList.push(position.value as LatLngExpression);
                 }
             }
         });

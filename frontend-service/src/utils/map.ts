@@ -33,8 +33,17 @@ export const calculateDistance = (latlngs: LatLng[]) => {
 
 export const calculatePolygonArea = (latlngs: LatLng[]) => GeometryUtil.geodesicArea(latlngs);
 
-export const stringToCoordinates = (strCoords: string) => {
+type CoordinatesResult = {
+    type: 'polygon' | 'marker';
+    value: LatLngExpression | LatLng[];
+};
+
+export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
+    const polygon = parsePolygon(strCoords);
+    if (polygon) return { type: 'polygon', value: polygon };
+
     const formatted = strCoords.split(',').map((val) => +val);
-    return formatted as LatLngExpression;
+    return { type: 'marker', value: formatted as LatLngExpression };
+
     // TODO: add validation to format
 };
