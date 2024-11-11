@@ -1,9 +1,4 @@
-import {
-    ContentCopy as DuplicateIcon,
-    Delete as DeleteIcon,
-    DoDisturbAlt,
-    MoreVertOutlined,
-} from '@mui/icons-material';
+import { ContentCopy as DuplicateIcon, Delete as DeleteIcon, DoDisturbAlt, MoreVertOutlined } from '@mui/icons-material';
 import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
@@ -30,6 +25,7 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
+import { CardMenu } from '../../SystemManagement/components/CardMenu';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -62,7 +58,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const currentEntityTemplate = entityTemplates.get(expandedEntity?.entity.templateId);
     const templateIds = Array.from(entityTemplates.keys());
-
     const [updateStatusWithRuleBreachDialogState, setUpdateStatusWithRuleBreachDialogState] = useState<{
         isOpen: boolean;
         brokenRules?: IRuleBreachPopulated['brokenRules'];
@@ -147,7 +142,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <CardContent sx={{ '&:last-child': { padding: 0 } }}>
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
-                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
+                            <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end" alignItems={'center'}>
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -178,49 +173,31 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         <img src="/icons/graph-icon.svg" />
                                     </IconButtonWithPopover>
                                 </Grid>
-                                <IconButton onClick={handleClick}>
-                                    <MoreVertOutlined />
-                                </IconButton>
-                                <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
-                                    <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
-                                        onClick={() => {
-                                            if (canWriteInstance && !isEntityDisabled) {
-                                                navigate(`/entity/${entity.properties._id}/duplicate`, {
-                                                    state: { entityTemplate, expandedEntity, currentEntityTemplate },
-                                                });
-                                            }
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance}
-                                        icon={DuplicateIcon}
-                                        text={i18next.t('actions.duplicate')}
-                                    />
-
-                                    <TooltipMenuButton
-                                        tooltipTitle={i18next.t('permissions.dontHaveWritePermissionsToCategory')}
-                                        onClick={() => {
-                                            setOpenDeleteDialog(true);
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance}
-                                        icon={DeleteIcon}
-                                        text={i18next.t('actions.delete')}
-                                    />
-
-                                    <TooltipMenuButton
-                                        tooltipTitle={!canWriteInstance ? i18next.t('permissions.dontHaveWritePermissionsToCategory') : ''}
-                                        onClick={() => {
-                                            if (canWriteInstance) {
-                                                updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
-                                            }
-                                            handleClose();
-                                        }}
-                                        disabled={!canWriteInstance}
-                                        icon={DoDisturbAlt}
-                                        text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                                    />
-                                </Menu>
+                                <CardMenu
+                                    onDuplicateClick={() => {
+                                        if (canWriteInstance && !isEntityDisabled) {
+                                            navigate(`/entity/${entity.properties._id}/duplicate`, {
+                                                state: { entityTemplate, expandedEntity, currentEntityTemplate },
+                                            });
+                                        }
+                                        handleClose();
+                                    }}
+                                    onDeleteClick={() => {
+                                        setOpenDeleteDialog(true);
+                                        handleClose();
+                                    }}
+                                    onDisableClick={() => {
+                                        if (canWriteInstance) {
+                                            updateEntityStatus({ currEntity: entity, disabled: !entity.properties.disabled });
+                                        }
+                                        handleClose();
+                                    }}
+                                    disabledProps={{
+                                        isDisabled: isEntityDisabled,
+                                        canEdit: canWriteInstance,
+                                        tooltipTitle: i18next.t('systemManagement.disabledEntity'),
+                                    }}
+                                />
                             </Grid>
                         </Grid>
 

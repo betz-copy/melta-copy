@@ -240,6 +240,7 @@ export default {
         sourceTemplates: 'תבניות מקור',
         destinationTemplates: 'תבניות יעד',
         disabledEntityTemplate: 'תבנית לא פעילה',
+        disabledEntity: "ישות לא פעילה",
         disabledRule: 'חוק לא פעיל',
         defaultCantEdit: 'לא ניתן לערוך ',
         deleteField: 'מחיקת שדה',

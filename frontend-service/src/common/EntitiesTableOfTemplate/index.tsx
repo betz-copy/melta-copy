@@ -1,7 +1,6 @@
 /* eslint-disable no-param-reassign */
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-
 import { AgGridReact } from '@ag-grid-community/react';
 import {
     BodyScrollEvent,
@@ -33,11 +32,13 @@ import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
 import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
+import { AxiosError } from 'axios';
+import { useMutation } from 'react-query';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
-import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { deleteEntityRequest, searchEntitiesOfTemplateRequest, updateEntityStatusRequest } from '../../services/entitiesService';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
@@ -47,6 +48,8 @@ import { trycatch } from '../../utils/trycatch';
 import { ResizeBox } from '../EntitiesPage/ResizeBox';
 import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
+import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
+import { ErrorToast } from '../ErrorToast';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -218,6 +221,40 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const [_, navigate] = useLocation();
 
+        const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+        const closeDeleteDialog = () => {
+            setOpenDeleteDialog(false);
+        };
+        const [selectedRow, setSelectedRow] = useState('');
+        const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
+            onError: (error: AxiosError) => {
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+            },
+            onSuccess: () => {
+                refetch?.();
+                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+            },
+            onSettled: () => {
+                closeDeleteDialog();
+                setSelectedRow('');
+            },
+        });
+        const { mutateAsync: updateEntityStatus } = useMutation(
+            ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+                updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+            {
+                onSuccess: (data) => {
+                    if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
+                    else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+                    refetch?.();
+                },
+                onError: (_err: AxiosError, { disabled }) => {
+                    if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
+                    else toast.error(i18next.t('entityPage.failedToActivate'));
+                },
+            },
+        );
+
         const gridRef = useRef<AgGridReact<Data>>(null);
         const tableRef = useRef<HTMLDivElement>(null);
 
@@ -293,6 +330,15 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnWidths,
             rowHeight,
             refetchData: refetch,
+            navigate,
+            setSelectedRow,
+            setOpenDeleteDialog,
+            updateEntityStatus,
+            openDeleteDialog,
+            selectedRow,
+            closeDeleteDialog,
+            deleteMutation,
+            isDeleteLoading,
         };
 
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);

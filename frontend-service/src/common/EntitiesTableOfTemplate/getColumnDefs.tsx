@@ -3,6 +3,9 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo, useState } from 'react';
 import { Link, useLocation } from 'wouter';
+import { AxiosError } from 'axios';
+import { UseMutateAsyncFunction, useMutation } from 'react-query';
+import { toast } from 'react-toastify';
 import { IButtonPopoverProps } from '.';
 import { IEntity } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
@@ -21,9 +24,6 @@ import {
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
-import { AxiosError } from 'axios';
-import { useMutation } from 'react-query';
-import { toast } from 'react-toastify';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../services/entitiesService';
 import { ErrorToast } from '../ErrorToast';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
@@ -34,7 +34,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
-    menuRowButtonProps?: boolean
+    menuRowButtonProps?: boolean;
     hideNonPreview?: boolean;
     editRowButtonProps?: IButtonPopoverProps<Data>;
     hasPermissionToCategory?: boolean;
@@ -43,6 +43,20 @@ export interface IGetColumnDefsOptions<Data extends any> {
     defaultColumnWidths?: { [key: string]: number };
     rowHeight: number;
     refetchData?: () => void;
+    navigate: (to: string, options?: { replace?: boolean; state?: any }) => void;
+    setSelectedRow: React.Dispatch<React.SetStateAction<string>>;
+    setOpenDeleteDialog: React.Dispatch<React.SetStateAction<boolean>>;
+    updateEntityStatus: UseMutateAsyncFunction<
+        IEntity,
+        AxiosError<any, any>,
+        { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] },
+        unknown
+    >;
+    openDeleteDialog: boolean;
+    selectedRow: string;
+    closeDeleteDialog: () => void;
+    deleteMutation: UseMutateAsyncFunction<any, AxiosError<any, any>, string, unknown>;
+    isDeleteLoading: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -59,45 +73,54 @@ export const getColumnDefs = <Data extends any = IEntity>({
     defaultColumnWidths = {},
     rowHeight,
     refetchData,
+    navigate,
+    setSelectedRow,
+    setOpenDeleteDialog,
+    updateEntityStatus,
+    openDeleteDialog,
+    selectedRow,
+    closeDeleteDialog,
+    deleteMutation,
+    isDeleteLoading,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
-    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-    const [_, navigate] = useLocation();
+    // const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    // const [_, navigate] = useLocation();
 
-    const closeDeleteDialog = () => {
-        setOpenDeleteDialog(false);
-    };
+    // const closeDeleteDialog = () => {
+    //     setOpenDeleteDialog(false);
+    // };
 
-    const [selectedRow, setSelectedRow] = useState('');
+    // const [selectedRow, setSelectedRow] = useState('');
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
-        onError: (error: AxiosError) => {
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
-        },
-        onSuccess: () => {
-            refetchData?.();
-            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-        },
-        onSettled: () => {
-            closeDeleteDialog();
-            setSelectedRow('');
-        },
-    });
+    // const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation((id: string) => deleteEntityRequest(id), {
+    //     onError: (error: AxiosError) => {
+    //         toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+    //     },
+    //     onSuccess: () => {
+    //         refetchData?.();
+    //         toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+    //     },
+    //     onSettled: () => {
+    //         closeDeleteDialog();
+    //         setSelectedRow('');
+    //     },
+    // });
 
-    const { mutateAsync: updateEntityStatus } = useMutation(
-        ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
-            updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
-        {
-            onSuccess: (data) => {
-                if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
-                else toast.success(i18next.t('entityPage.activatedSuccessfully'));
-                refetchData?.();
-            },
-            onError: (_err: AxiosError, { disabled }) => {
-                if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
-                else toast.error(i18next.t('entityPage.failedToActivate'));
-            },
-        },
-    );
+    // const { mutateAsync: updateEntityStatus } = useMutation(
+    //     ({ currEntity, disabled, ignoredRules }: { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] }) =>
+    //         updateEntityStatusRequest(currEntity.properties._id, disabled, JSON.stringify(ignoredRules)),
+    //     {
+    //         onSuccess: (data) => {
+    //             if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
+    //             else toast.success(i18next.t('entityPage.activatedSuccessfully'));
+    //             refetchData?.();
+    //         },
+    //         onError: (_err: AxiosError, { disabled }) => {
+    //             if (disabled) toast.error(i18next.t('entityPage.failedToDisable'));
+    //             else toast.error(i18next.t('entityPage.failedToActivate'));
+    //         },
+    //     },
+    // );
 
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -321,7 +344,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                     disabledProps={{
                                         isDisabled: getEntityPropertiesData(data).disabled,
                                         canEdit: menuRowButtonProps,
-                                        tooltipTitle: '',
+                                        tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
                                 />
                                 <AreYouSureDialog
