@@ -25,7 +25,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         return new Map(entityTemplates.map((template) => [template._id, template]));
     };
 
-    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IMongoEntityTemplate>) => {
+    private cleanActionCode = (action: string, entitiesTemplatesByIds: Map<string, IEntityTemplatePopulated>) => {
         const defaultCode = [
             '/// To throw a custom error in your code, use the following syntax:',
             '// throw new CustomError("Your error message")',
