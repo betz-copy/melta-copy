@@ -1,4 +1,3 @@
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import React, { useEffect, useRef, useState } from 'react';
 import { Grid, IconButton, Skeleton, Typography, useTheme } from '@mui/material';
 import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
@@ -188,7 +187,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                 }
                                 disabledProps={{
                                     isDisabled: isDeleteButtonDisabled,
-                                    canEdit: entityTemplate.disabled,
+                                    isEditDisabled: entityTemplate.disabled,
                                     // eslint-disable-next-line no-nested-ternary
                                     tooltipTitle: entityTemplate.disabled
                                         ? i18next.t('systemManagement.disabledEntityTemplate')

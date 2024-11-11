@@ -27,6 +27,7 @@ import { CardMenu } from './CardMenu';
 import { environment } from '../../../globals';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
+import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -52,7 +53,21 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     setDeleteRelationshipTemplateDialogState,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
     const { isProperty } = relationshipTemplate;
+
+    const checkRelationshipTemplateHasRelationships = async () => {
+        const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
+        setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkRelationshipTemplateHasRelationships();
+        }
+    };
 
     return (
         <ViewingCard
@@ -91,16 +106,22 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     });
                                 }}
                                 disabledProps={{
-                                    isDisabled: false,
+                                    isDisabled: isDeleteButtonDisabled,
                                     isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    tooltipTitle:
+                                        // eslint-disable-next-line no-nested-ternary
+                                        relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled
+                                            ? i18next.t('systemManagement.cannotEditEntityDisabled')
+                                            : isDeleteButtonDisabled
+                                            ? i18next.t('systemManagement.cannotDeleteWithRelationship')
+                                            : '',
                                 }}
                             />
                         )}
                     </Grid>
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
