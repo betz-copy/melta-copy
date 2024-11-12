@@ -34,7 +34,7 @@ import { EntityDates } from './EntityDates';
 import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
-import Map from '../../Map';
+import EntityWithLocationFields from '../../Map/EntityWithLocationFields';
 
 const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
@@ -345,7 +345,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
             )}
             {mapPopupOpen && (
                 <Dialog open={mapPopupOpen} onClose={() => setMapPopupOpen(false)}>
-                    <Map
+                    <EntityWithLocationFields
                         properties={entity.properties}
                         entityTemplate={entityTemplate}
                         darkMode={darkMode}

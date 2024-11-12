@@ -10,7 +10,7 @@ interface MapPopupProps {
     darkMode?: boolean;
 }
 
-export const MapPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
+const EntityPopup = ({ header, properties, entityTemplate }: MapPopupProps) => {
     const fieldsToShow = entityTemplate.propertiesPreview;
 
     const filteredObject = Object.keys(properties)
@@ -40,3 +40,5 @@ export const MapPopup = ({ header, properties, entityTemplate }: MapPopupProps) 
         </Popup>
     );
 };
+
+export default EntityPopup;

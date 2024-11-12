@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
-import { EditControl } from 'react-leaflet-draw';
-import L, { LatLng, LatLngExpression } from 'leaflet';
+import L, { LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import { stringToCoordinates } from '../../utils/map';
+import { EditControl } from 'react-leaflet-draw';
+import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, stringToCoordinates } from '../../utils/map';
 
 type Props = {
     defaultLocation?: string;
@@ -12,44 +12,28 @@ type Props = {
     updateValue: (newValue: string) => void;
 };
 
-const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
-
 const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
-    const [markerPosition, setMarkerPosition] = useState<LatLngExpression | null>(null);
+    const [markerPosition, setMarkerPosition] = useState<LatLng | null>(null);
     const [polygonPosition, setPolygonPosition] = useState<LatLng[] | null>(null);
 
     useEffect(() => {
         const initialCoordinates = defaultLocation ? stringToCoordinates(defaultLocation) : null;
         if (initialCoordinates?.type === 'marker') {
-            setMarkerPosition(initialCoordinates.value as LatLngExpression);
+            setMarkerPosition(initialCoordinates.value as LatLng);
         }
         if (initialCoordinates?.type === 'polygon') {
             setPolygonPosition(initialCoordinates.value as LatLng[]);
         }
     }, []);
 
-    const handleMarkerCreate = (e: L.DrawEvents.Created) => {
+    const handleLayerCreate = (e: L.DrawEvents.Created) => {
         const { layer } = e;
         if (layer instanceof L.Marker) {
-            const { lat, lng } = layer.getLatLng();
-            setMarkerPosition([lat, lng]);
+            const latLng = layer.getLatLng();
+            setMarkerPosition(latLng);
+            const { lat, lng } = latLng;
             updateValue([[lat, lng]].toString());
-        }
-    };
-
-    const handleMarkerEdit = (e: L.DrawEvents.Edited) => {
-        e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Marker) {
-                const { lat, lng } = layer.getLatLng();
-                setMarkerPosition([lat, lng]);
-                updateValue([[lat, lng]].toString());
-            }
-        });
-    };
-
-    const handlePolygonCreate = (e: L.DrawEvents.Created) => {
-        const { layer } = e;
-        if (layer instanceof L.Polygon) {
+        } else if (layer instanceof L.Polygon) {
             const latLngs = (layer.getLatLngs()[0] as LatLng[]).map((latLng) => [latLng.lat, latLng.lng] as unknown as LatLng);
             setPolygonPosition(latLngs);
             const coordinatesString = latLngs.map((location) => `${location[0].toFixed(5)} ${location[1].toFixed(5)}`).join(',');
@@ -57,9 +41,14 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
         }
     };
 
-    const handlePolygonEdit = (e: L.DrawEvents.Edited) => {
+    const handleLayerEdit = (e: L.DrawEvents.Edited) => {
         e.layers.eachLayer((layer) => {
-            if (layer instanceof L.Polygon) {
+            if (layer instanceof L.Marker) {
+                const latLng = layer.getLatLng();
+                setMarkerPosition(latLng);
+                const { lat, lng } = latLng;
+                updateValue([[lat, lng]].toString());
+            } else if (layer instanceof L.Polygon) {
                 const latLngs = (layer.getLatLngs()[0] as LatLng[]).map((latLng) => [latLng.lat, latLng.lng] as unknown as LatLng);
                 setPolygonPosition(latLngs);
                 const coordinatesString = latLngs.map((location) => `${location[0].toFixed(5)} ${location[1].toFixed(5)}`).join(',');
@@ -96,18 +85,13 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                     <FeatureGroup>
                         {markerPosition && (
                             <Marker position={markerPosition}>
-                                <Popup>
-                                    Coordinates: {markerPosition[0].toFixed(5)}, {markerPosition[1].toFixed(5)}
-                                </Popup>
+                                <Popup>{bindPopupForMarker(markerPosition)}</Popup>
                             </Marker>
                         )}
 
                         {polygonPosition && (
                             <Polygon positions={polygonPosition}>
-                                <Popup>
-                                    Coordinates:{' '}
-                                    {polygonPosition.map((location) => `[${location[0].toFixed(5)},${location[1].toFixed(5)}]`).join(', ')}
-                                </Popup>
+                                <Popup>{bindPopupForPolygon(polygonPosition)}</Popup>
                             </Polygon>
                         )}
 
@@ -117,31 +101,16 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
                                 rectangle: false,
                                 circlemarker: false,
                                 circle: false,
-                                polygon: !markerPosition,
                                 polyline: false,
-                                marker: !polygonPosition, // Allow adding a marker only if one is not already set
+                                polygon: !markerPosition && !polygonPosition, // enabling creation of layers only if none exist
+                                marker: !markerPosition && !polygonPosition,
                             }}
                             edit={{
-                                edit: defaultLocation ? {} : false, // Enable editing of existing markers
+                                edit: defaultLocation ? {} : false, // Enable editing of existing layers only if exist
                                 remove: false,
                             }}
-                            onCreated={(e) => {
-                                const { layer } = e;
-                                if (layer instanceof L.Marker) {
-                                    handleMarkerCreate(e);
-                                } else if (layer instanceof L.Polygon) {
-                                    handlePolygonCreate(e);
-                                }
-                            }}
-                            onEdited={(e) => {
-                                e.layers.eachLayer((layer) => {
-                                    if (layer instanceof L.Marker) {
-                                        handleMarkerEdit(e);
-                                    } else if (layer instanceof L.Polygon) {
-                                        handlePolygonEdit(e);
-                                    }
-                                });
-                            }}
+                            onCreated={handleLayerCreate}
+                            onEdited={handleLayerEdit}
                         />
                     </FeatureGroup>
                 </LayerGroup>

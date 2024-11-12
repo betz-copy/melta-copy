@@ -147,6 +147,10 @@ export const MeltaRoutesInner: React.FC = () => {
                                 <RuleManagement setTitle={setTitle} />
                             </Route>
 
+                            <Route path="/map">
+                                <Map />
+                            </Route>
+
                             <Route path="/gantts">
                                 <TopBar title={title} />
                                 <Gantts setTitle={setTitle} />
@@ -183,12 +187,6 @@ export const MeltaRoutesInner: React.FC = () => {
                                     <Graph />
                                 </EntityProtectedRoute>
                             </Route>
-
-                            {/* <Route path="/entity/:entityId/map">
-                                <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>
-                                    <Map />
-                                </EntityProtectedRoute>
-                            </Route> */}
 
                             <Route path="/entity/:entityId/duplicate">
                                 <EntityProtectedRoute permissions={currentUser.currentWorkspacePermissions} entityTemplates={entityTemplates}>

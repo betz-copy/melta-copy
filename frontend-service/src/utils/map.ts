@@ -1,5 +1,7 @@
 import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
 
+export const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
+
 export const parsePolygon = (polygonStr: string): LatLng[] | undefined => {
     const prefix = 'POLYGON((';
     const suffix = '))';
@@ -46,4 +48,31 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     return { type: 'marker', value: formatted as LatLngExpression };
 
     // TODO: add validation to format
+};
+
+// ugly af find better solution
+export const bindPopupForMarker = (coordinates: LatLng) => {
+    const { lat, lng } = coordinates;
+    if (lat && lng) {
+        return `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+    }
+    return `Coordinates: ${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`;
+};
+
+export const bindPopupForLine = (coordinates: LatLng[]) => {
+    const distanceMeters = calculateDistance(coordinates);
+    const distanceKm = distanceMeters / 1000;
+    return `Distance: ${distanceKm.toFixed(2)} km`;
+};
+
+export const bindPopupForPolygon = (coordinates: LatLng[]) => {
+    const areaMeters = calculatePolygonArea(coordinates);
+    const areaKm2 = areaMeters / 1_000_000;
+    return `Area: ${areaKm2.toFixed(2)} km²`;
+};
+
+export const bindPopupForCircle = (radius: number) => {
+    const areaMeters = Math.PI * radius * radius;
+    const areaKm2 = areaMeters / 1_000_000;
+    return `Area: ${areaKm2.toFixed(2)} km²`;
 };
