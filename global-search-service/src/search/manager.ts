@@ -16,6 +16,7 @@ const {
         filePropertySuffix,
         booleanHeYesValue,
         booleanHeNoValue,
+        dummyTemplateId,
     },
     fileIdLength,
 } = config;
@@ -130,26 +131,28 @@ export default class Manager extends DefaultManagerNeo4j {
             }),
         );
 
-        // https://github.com/neo4j/neo4j/issues/12288
-        // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
-        // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
-        // Here we only create the global search index if we already have more then one template.
-        // But the global search actually works without the global search index initialized.
-        if (templates.length > 1) {
-            const propertiesArray = Array.from(allTemplatesProperties);
-            if (propertiesArray.length >= indexPropertiesLimit) {
-                const propertiesChunks: string[][] = [];
-                for (let i = 0; i < propertiesArray.length; i += indexPropertiesLimit) {
-                    propertiesChunks.push(propertiesArray.slice(i, i + indexPropertiesLimit));
-                }
-                await Promise.all(
-                    propertiesChunks.map(async (properties, index) => {
-                        await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
-                    }),
-                );
-            } else {
-                await this.upsertSearchIndex(globalSearchIndexPrefix, templateIds, Array.from(allTemplatesProperties));
+        const propertiesArray = Array.from(allTemplatesProperties);
+        if (propertiesArray.length >= indexPropertiesLimit) {
+            const propertiesChunks: string[][] = [];
+            for (let i = 0; i < propertiesArray.length; i += indexPropertiesLimit) {
+                propertiesChunks.push(propertiesArray.slice(i, i + indexPropertiesLimit));
             }
+            await Promise.all(
+                propertiesChunks.map(async (properties, index) => {
+                    await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
+                }),
+            );
+        } else {
+            // https://github.com/neo4j/neo4j/issues/12288
+            // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
+            // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
+            // So we insert a dummy property Id in order for it work
+            const shouldAddDummyProperty = templateIds.length <= 1;
+            await this.upsertSearchIndex(
+                globalSearchIndexPrefix,
+                [...templateIds, ...(shouldAddDummyProperty ? [dummyTemplateId] : [])],
+                Array.from(allTemplatesProperties),
+            );
         }
     }
 
@@ -206,7 +209,10 @@ export default class Manager extends DefaultManagerNeo4j {
     // Helper function to create SET clauses for booleans
     createBooleanSetClauses(propertyNames: string[]) {
         return propertyNames
-            .map((prop) => `n.${prop}${booleanPropertySuffix} = CASE n.${prop} WHEN true THEN 'כן' WHEN false THEN 'לא' END`)
+            .map(
+                (prop) =>
+                    `n.${prop}${booleanPropertySuffix} = CASE n.${prop} WHEN true THEN '${booleanHeYesValue}' WHEN false THEN '${booleanHeNoValue}' END`,
+            )
             .join(', ');
     }
 

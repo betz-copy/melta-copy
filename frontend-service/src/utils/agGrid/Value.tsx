@@ -7,6 +7,7 @@ import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
 import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
+import { HighlightText } from '../HighlightText';
 
 const Value: React.FC<{
     hideValue: boolean;
@@ -14,7 +15,8 @@ const Value: React.FC<{
     color?: string;
     calculateTime?: boolean;
     isNumberField?: boolean;
-}> = ({ hideValue, value, color, calculateTime, isNumberField }) => {
+    searchValue?: string;
+}> = ({ hideValue, value, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -43,7 +45,7 @@ const Value: React.FC<{
 
     let innerContent;
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} searchValue={searchValue} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
     else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
@@ -62,7 +64,6 @@ const Value: React.FC<{
                 item
                 sx={{
                     fontFamily: 'Rubik',
-                    fontWeight: '200',
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
@@ -70,7 +71,9 @@ const Value: React.FC<{
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                <VerifyLink>{innerContent}</VerifyLink>
+                <VerifyLink>
+                    <HighlightText text={innerContent} searchedText={searchValue} />
+                </VerifyLink>
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>

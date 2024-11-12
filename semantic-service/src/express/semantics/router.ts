@@ -1,0 +1,15 @@
+import { Router } from 'express';
+import { createController } from '../../utils/express';
+import ValidateRequest from '../../utils/joi';
+import SemanticController from './controller';
+import { search } from './validator.schema';
+
+const semanticRouter: Router = Router();
+
+const controller = createController(SemanticController);
+
+semanticRouter.post('/search', ValidateRequest(search), controller.search);
+semanticRouter.post('/createIndex', controller.createIndex);
+semanticRouter.post('/deleteIndex', controller.deleteIndex);
+
+export default semanticRouter;
