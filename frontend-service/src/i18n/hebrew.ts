@@ -397,8 +397,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
-        turnOnSemanticSearch: 'הדלק חיפוש עם AI',
-        turnOffSemanticSearch: 'כבה חיפוש עם AI',
+        turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
+        turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
     },
     wizard: {
         next: 'הבא',
