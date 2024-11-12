@@ -1,3 +1,4 @@
+import { escapeRegExp } from 'lodash';
 import React from 'react';
 
 export const HighlightText: React.FC<{ text?: string | React.JSX.Element; searchedText?: string }> = ({ text, searchedText }) => {
@@ -7,7 +8,7 @@ export const HighlightText: React.FC<{ text?: string | React.JSX.Element; search
     return (
         <span>
             {String(text)
-                .split(new RegExp(`(${searchedText})`, 'gi'))
+                .split(new RegExp(`(${escapeRegExp(searchedText)})`, 'gi'))
                 .map((part) => (part.toLowerCase() === searchedText.toLowerCase() ? <b key={part}>{part}</b> : part))}
         </span>
     );
