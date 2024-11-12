@@ -3,14 +3,7 @@ import config from '../../config';
 import { IKartoffelUser } from './interface';
 
 const {
-    kartoffel: {
-        url,
-        baseEntitiesRoute,
-        searchRoute,
-        fieldToSearch,
-        getByIdRoute,
-        requestTimeout,
-    },
+    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout },
 } = config;
 
 export class Kartoffel {
@@ -21,7 +14,6 @@ export class Kartoffel {
     });
 
     static searchUsers = async (queryString: string): Promise<IKartoffelUser[]> => {
-        console.log(fieldToSearch);
         const { data } = await this.kartoffel.get<IKartoffelUser[]>(searchRoute, {
             params: {
                 fields: fieldToSearch,

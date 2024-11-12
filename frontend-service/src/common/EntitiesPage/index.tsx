@@ -74,6 +74,7 @@ const EntitiesPage: React.FC<{
                     return {
                         filter: filterModelToFilterOfTemplate(templateTableRef.getFilterModel()!, template),
                         sort: sortModelToSortOfSearchRequest(templateTableRef.getSortModel()!),
+                        displayColumns: templateTableRef.getDisplayColumns(),
                     };
                 },
             );

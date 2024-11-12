@@ -5,7 +5,7 @@ export const getWorkspacePermissions = async (workspaceId: string, permissions: 
     const hierarchyIds = await getWorkspaceHierarchyIds(workspaceId);
     const hierarcyId = hierarchyIds.find((id) => Boolean(permissions[id]));
 
-    if (!hierarcyId) return;
+    if (!hierarcyId) return undefined;
 
     return permissions[hierarcyId];
 };

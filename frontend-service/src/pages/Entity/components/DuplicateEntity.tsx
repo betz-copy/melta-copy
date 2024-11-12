@@ -8,6 +8,7 @@ import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import { StatusCodes } from 'http-status-codes';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
@@ -61,7 +62,7 @@ const DuplicateEntity: React.FC<{}> = () => {
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
             onError: (err: AxiosError) => {
-                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
+                if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {
                     const { properties } = errorMetadata.constraint as Omit<IUniqueConstraint, 'constraintName'>;

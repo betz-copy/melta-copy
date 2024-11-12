@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Grid, Typography } from '@mui/material'; 
-import i18next from 'i18next'; 
+import { Grid, Typography } from '@mui/material';
+import i18next from 'i18next';
 
 interface IStatusPanelParams {
-    api: any; 
+    api: any;
 }
 
 const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
@@ -14,7 +14,7 @@ const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
         isMounted.current = true;
 
         const updateCount = () => {
-            if (isMounted.current) { 
+            if (isMounted.current) {
                 const rowCount = api.getDisplayedRowCount();
                 setCount(rowCount);
             }

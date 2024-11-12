@@ -21,6 +21,10 @@ const config = {
             },
         }).asJsonObject,
     },
+    mongo: {
+        url: env.get('MONGO_URL').required().asString(),
+        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
+    },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
@@ -181,6 +185,10 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
+    },
+    excel: {
+        multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
+        columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
     },
 };
 
