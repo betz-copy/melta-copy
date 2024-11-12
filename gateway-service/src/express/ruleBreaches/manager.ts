@@ -640,6 +640,10 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
+    async updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId: string, status: RuleBreachRequestStatus): Promise<IRuleBreachRequest[]> {
+        return this.service.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status);
+    }
+
     async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 

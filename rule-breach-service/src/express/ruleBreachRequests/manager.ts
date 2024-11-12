@@ -35,6 +35,65 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
         return this.model.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
     }
 
+    public async updateManyRuleBreachRequestsStatusesByRelatedEntityId(
+        entityId: string,
+        status: RuleBreachRequestStatus,
+    ): Promise<IRuleBreachRequest[]> {
+        return this.model
+            .updateMany(
+                {
+                    $and: [
+                        {
+                            status: RuleBreachRequestStatus.Pending,
+                        },
+                        {
+                            $or: [
+                                {
+                                    brokenRules: {
+                                        $elemMatch: {
+                                            failures: {
+                                                $elemMatch: {
+                                                    $or: [
+                                                        { entityId },
+                                                        {
+                                                            causes: {
+                                                                $elemMatch: {
+                                                                    $or: [
+                                                                        { 'instance.entityId': entityId },
+                                                                        { 'instance.aggregatedRelationship.otherEntityId': entityId },
+                                                                    ],
+                                                                },
+                                                            },
+                                                        },
+                                                    ],
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                                {
+                                    actions: {
+                                        $elemMatch: {
+                                            $or: [
+                                                { 'actionMetadata.sourceEntityId': entityId },
+                                                { 'actionMetadata.destinationEntityId': entityId },
+                                                { 'actionMetadata.properties._id': entityId },
+                                                { 'actionMetadata.entityIdToDuplicate': entityId },
+                                                { 'actionMetadata.entityId': entityId },
+                                            ],
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    ],
+                },
+                { status },
+                { new: true },
+            )
+            .lean();
+    }
+
     public async updateRuleBreachRequestStatus(
         ruleBreachRequestId: string,
         reviewerId: string,
