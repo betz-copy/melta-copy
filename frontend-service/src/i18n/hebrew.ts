@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -1016,7 +1015,6 @@ export default {
             primary: 'ראשי',
         },
     },
-    agGridLocaleText,
     muiDatePickersLocaleText,
     schedule: {
         schedule: {

@@ -11,7 +11,7 @@ import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
-    color?: string;
+    color?: string | null;
     calculateTime?: boolean;
     isNumberField?: boolean;
 }> = ({ hideValue, value, color, calculateTime, isNumberField }) => {
