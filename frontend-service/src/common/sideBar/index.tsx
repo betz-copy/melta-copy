@@ -208,6 +208,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 borderRadius="30px"
                                 width="199px"
                                 autoSearch
+                                showAiButton
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>

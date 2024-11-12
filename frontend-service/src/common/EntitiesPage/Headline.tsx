@@ -1,12 +1,13 @@
-import { Search, TableChartOutlined } from '@mui/icons-material';
+import { AutoAwesome, Search, TableChartOutlined } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
 import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
 import { GridApi } from '@ag-grid-community/core';
-import { BaseTextFieldProps, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -17,6 +18,9 @@ import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { convertToBool } from '../../utils/convertStringToBool';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
@@ -30,25 +34,55 @@ export const GlobalSearchBar: React.FC<{
     height?: string;
     width?: string;
     autoSearch?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
+    showAiButton?: boolean;
+}> = ({
+    inputValue,
+    setInputValue,
+    onSearch,
+    gridApi,
+    borderRadius,
+    placeholder,
+    size,
+    toTopBar = false,
+    height,
+    width,
+    autoSearch = false,
+    showAiButton = false,
+}) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    const boolUrl = convertToBool(urlSemanticSearch!);
+
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            if (value !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = value;
+                onSearch(value);
+                if (gridApi) {
+                    gridApi.setGridOption('quickFilterText', value);
+                }
+            }
+        }, 300),
+        [onSearch, gridApi, valueForSearchButtonRef.current],
+    );
+
+    useEffect(() => {
+        // If a value exists in the url, override the value in the localStorage.
+        const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
+
+        if (realValue !== semanticSearch) setSemanticSearch(realValue);
+        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+    }, [boolUrl, semanticSearch, JSON.stringify(urlSearchParams), urlSemanticSearch, showAiButton]);
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
         if (autoSearch) {
-            const debouncedSearch = debounce((value: string) => {
-                if (value !== valueForSearchButtonRef.current) {
-                    valueForSearchButtonRef.current = value;
-                    onSearch(value);
-                    if (gridApi) {
-                        gridApi.setGridOption('quickFilterText', value);
-                    }
-                }
-            }, 300);
-
             debouncedSearch(debouncedSearchValue);
 
             return () => {
@@ -57,7 +91,25 @@ export const GlobalSearchBar: React.FC<{
         }
 
         return undefined;
-    }, [debouncedSearchValue, gridApi, onSearch, autoSearch]);
+    }, [debouncedSearchValue, gridApi, onSearch, autoSearch, debouncedSearch]);
+
+    const aiToolTip = useCallback(
+        () => (
+            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')} arrow>
+                <IconButton
+                    onClick={() =>
+                        setUrlSearchParams({
+                            ...Object.fromEntries(urlSearchParams.entries()),
+                            semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
+                        })
+                    }
+                >
+                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
+                </IconButton>
+            </MeltaTooltip>
+        ),
+        [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
+    );
 
     return (
         <SearchInput
@@ -68,18 +120,21 @@ export const GlobalSearchBar: React.FC<{
             }}
             onKeyDown={(event) => {
                 if (!autoSearch && event.key === 'Enter') {
-                    onSearch(valueForSearchButtonRef.current);
+                    onSearch(debouncedSearchValue);
                 }
             }}
             endAdornmentChildren={
-                <IconButton
-                    style={{ color: theme.palette.primary.main }}
-                    onClick={() => onSearch(valueForSearchButtonRef.current)}
-                    sx={{ padding: 0 }}
-                    disableRipple
-                >
-                    <Search sx={{ fontSize: '1.25rem' }} />
-                </IconButton>
+                <Box>
+                    <IconButton
+                        style={{ color: theme.palette.primary.main }}
+                        onClick={() => onSearch(valueForSearchButtonRef.current)}
+                        sx={{ padding: 0 }}
+                        disableRipple
+                    >
+                        <Search sx={{ fontSize: '1.25rem' }} />
+                    </IconButton>
+                    {showAiButton && aiToolTip()}
+                </Box>
             }
             placeholder={placeholder}
             size={size}
@@ -187,6 +242,7 @@ const EntitiesPageHeadline: React.FC<{
                                     placeholder={i18next.t('globalSearch.searchInPage')}
                                     toTopBar
                                     autoSearch
+                                    showAiButton
                                 />
                             </Grid>
                         </Grid>
