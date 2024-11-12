@@ -423,8 +423,22 @@ export const addStringFieldsAndNormalizeDateValues = (
             normalizedEntity[`${key}${neo4j.stringPropertySuffix}`] = String(propertyValue);
         }
 
+        if (type === 'boolean') {
+            normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = propertyValue ? neo4j.booleanHeYesValue : neo4j.booleanHeNoValue;
+        }
+
+        if (type === 'array' && value.items?.format === 'fileId') {
+            console.log('entityProperties', entityProperties);
+            const fileName = ''; // TODO: get files names from file service
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((item: string) => `${item}${fileName}`);
+            return;
+        }
+
         if (type === 'string' && format === 'fileId') {
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = String(propertyValue);
+            console.log('entityProperties', entityProperties);
+            const fileName = ''; // TODO: get file name from file service
+
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = fileName;
             return;
         }
 

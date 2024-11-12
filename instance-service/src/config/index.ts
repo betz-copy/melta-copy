@@ -19,6 +19,8 @@ const config = {
         templateSearchIndexPrefix: env.get('NEO4J_TEMPLATE_SEARCH_INDEX_PREFIX').default('templateSearch_').asString(),
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         booleanPropertySuffix: env.get('BOOLEAN_PROPERTY_SUFFIX').default('_toheboolean').asString(),
+        booleanHeYesValue: env.get('BOOLEAN_HE_YES_VALUE').default('כן').asString(),
+        booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         filePropertySuffix: env.get('FILE_PROPERTY_SUFFIX').default('_tofilename').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         mockUserId: env.get('NEO4J_MOCK_USER_ID').default('mock-user-id').asString(),
