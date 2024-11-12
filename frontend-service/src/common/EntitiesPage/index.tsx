@@ -16,6 +16,7 @@ import { IEntity, IExportEntitiesBody } from '../../interfaces/entities';
 import { filterModelToFilterOfTemplate, sortModelToSortOfSearchRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { convertToBool } from '../../utils/convertStringToBool';
+import { LocalStorage } from '../../utils/localStorage';
 
 const EntitiesPage: React.FC<{
     templates: IMongoEntityTemplatePopulated[];
@@ -41,7 +42,11 @@ const EntitiesPage: React.FC<{
     const templateTablesViewRef = useRef<TemplateTablesViewRef>(null);
     const cardsViewRef = useRef<CardsViewRef>(null);
 
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams({ searchWithAI: '', search: '', viewMode: 'templates-tables-view' });
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams({
+        semanticSearch: LocalStorage.get('semanticSearch') ?? 'true',
+        search: '',
+        viewMode: 'templates-tables-view',
+    });
     const search = urlSearchParams.get('search')!;
 
     const [searchInput, setSearchInput] = useState(search);
@@ -160,7 +165,7 @@ const EntitiesPage: React.FC<{
                         ref={templateTablesViewRef}
                         templates={templatesToShowCheckbox}
                         searchInput={urlSearchParams.get('search')!}
-                        searchWithAI={convertToBool(urlSearchParams.get('searchWithAI'))}
+                        semanticSearch={convertToBool(urlSearchParams.get('semanticSearch'))}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
                     />

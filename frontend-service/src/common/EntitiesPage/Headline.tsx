@@ -34,14 +34,28 @@ export const GlobalSearchBar: React.FC<{
     height?: string;
     width?: string;
     autoSearch?: boolean;
-}> = ({ inputValue, setInputValue, onSearch, gridApi, borderRadius, placeholder, size, toTopBar = false, height, width, autoSearch = false }) => {
+    showAiButton?: boolean;
+}> = ({
+    inputValue,
+    setInputValue,
+    onSearch,
+    gridApi,
+    borderRadius,
+    placeholder,
+    size,
+    toTopBar = false,
+    height,
+    width,
+    autoSearch = false,
+    showAiButton = false,
+}) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
-    const [localStorage, setLocalStorage] = useLocalStorage<boolean>('searchWithAI', true);
-    const [urlSearchParams, setUrlSearchParams] = useSearchParams({ searchWithAI: '' });
-    const urlSearchWithAi = urlSearchParams.get('searchWithAI');
-    const boolUrl = convertToBool(urlSearchWithAi!);
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    const boolUrl = convertToBool(urlSemanticSearch!);
 
     const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
 
@@ -60,11 +74,11 @@ export const GlobalSearchBar: React.FC<{
 
     useEffect(() => {
         // If a value exists in the url, override the value in the localStorage.
-        const realValue = urlSearchWithAi ? boolUrl : localStorage;
+        const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
 
-        if (realValue !== localStorage) setLocalStorage(realValue);
-        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), searchWithAI: realValue.toString() });
-    }, [boolUrl, localStorage, setLocalStorage, setUrlSearchParams, urlSearchParams, urlSearchWithAi]);
+        if (realValue !== semanticSearch) setSemanticSearch(realValue);
+        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+    }, [boolUrl, semanticSearch, JSON.stringify(urlSearchParams), urlSemanticSearch, showAiButton]);
 
     // eslint-disable-next-line consistent-return
     useEffect(() => {
@@ -81,12 +95,12 @@ export const GlobalSearchBar: React.FC<{
 
     const aiToolTip = useCallback(
         () => (
-            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSearchWithAi') : i18next.t('globalSearch.turnOnSearchWithAi')} arrow>
+            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')} arrow>
                 <IconButton
                     onClick={() =>
                         setUrlSearchParams({
                             ...Object.fromEntries(urlSearchParams.entries()),
-                            searchWithAI: (!convertToBool(urlSearchWithAi!)).toString(),
+                            semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
                         })
                     }
                 >
@@ -94,7 +108,7 @@ export const GlobalSearchBar: React.FC<{
                 </IconButton>
             </MeltaTooltip>
         ),
-        [boolUrl, setUrlSearchParams, urlSearchParams, urlSearchWithAi],
+        [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
     );
 
     return (
@@ -119,7 +133,7 @@ export const GlobalSearchBar: React.FC<{
                     >
                         <Search sx={{ fontSize: '1.25rem' }} />
                     </IconButton>
-                    {aiToolTip()}
+                    {showAiButton && aiToolTip()}
                 </Box>
             }
             placeholder={placeholder}
@@ -228,6 +242,7 @@ const EntitiesPageHeadline: React.FC<{
                                     placeholder={i18next.t('globalSearch.searchInPage')}
                                     toTopBar
                                     autoSearch
+                                    showAiButton
                                 />
                             </Grid>
                         </Grid>
