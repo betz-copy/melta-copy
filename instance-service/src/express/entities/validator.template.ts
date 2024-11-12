@@ -403,6 +403,10 @@ const formatDateForFullTextSearch = (date: Date) => {
     return formatFns(date, 'dd/MM/yyyy');
 };
 
+const getFileName = (fileId: string): string => {
+    return fileId.slice(config.fileIdLength);
+};
+
 export const addStringFieldsAndNormalizeDateValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
@@ -428,18 +432,11 @@ export const addStringFieldsAndNormalizeDateValues = (
         }
 
         if (type === 'array' && value.items?.format === 'fileId') {
-            console.log('entityProperties', entityProperties);
-            const fileName = ''; // TODO: get files names from file service
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((item: string) => `${item}${fileName}`);
-            return;
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = propertyValue.map((fileId: string) => getFileName(fileId));
         }
 
         if (type === 'string' && format === 'fileId') {
-            console.log('entityProperties', entityProperties);
-            const fileName = ''; // TODO: get file name from file service
-
-            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = fileName;
-            return;
+            normalizedEntity[`${key}${neo4j.filePropertySuffix}`] = getFileName(propertyValue);
         }
 
         if (type === 'string' && format === 'date') {
