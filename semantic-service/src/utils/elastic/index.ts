@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
 import config from '../../config';
@@ -15,8 +16,8 @@ const {
         rrfWindowConstant,
         queryMinScore,
         rrfRankConstant,
-        user,
-        password,
+        // user,
+        // password,
         rrfWindowFieldName,
     },
 } = config;
@@ -42,7 +43,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
+            ElasticClient.client = new Client({ node: url, auth: { apiKey: 'Mld4WERKTUJrNWJOMHNzbF9kRFM6cndpM1l0Y1BSSUs0M0JyRWpQZG96Zw==' } });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
@@ -79,15 +80,21 @@ class ElasticClient {
     }
 
     formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
-        return response.hits.hits.reduce((acc, hit) => {
-            const { templateId, entityId, minioFileId } = hit?._source ?? {};
+        const { buckets } = response.aggregations!.group_by_entity_id;
 
-            if (!templateId || !entityId || !minioFileId) return acc;
+        if (!buckets) return {};
 
-            if (!acc[templateId]) acc[templateId] = {};
-            if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+        return (buckets as Record<string, any>[]).reduce((acc, { key: entityId, top_hits_by_group }) => {
+            top_hits_by_group.hits.hits.forEach((hit) => {
+                const { templateId, minioFileId } = hit?._source ?? {};
 
-            acc[templateId][entityId].push(minioFileId);
+                if (!templateId || !minioFileId) return;
+
+                if (!acc[templateId]) acc[templateId] = {};
+                if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+
+                acc[templateId][entityId].push(minioFileId);
+            });
 
             return acc;
         }, {} as ISemanticSearchResult);
@@ -126,6 +133,21 @@ class ElasticClient {
                 },
             },
             min_score: queryMinScore,
+            aggs: {
+                group_by_entity_id: {
+                    terms: {
+                        field: 'entityId.keyword',
+                        size: limit,
+                    },
+                    aggs: {
+                        top_hits_by_group: {
+                            top_hits: {
+                                size: 1,
+                            },
+                        },
+                    },
+                },
+            },
         };
 
         const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
