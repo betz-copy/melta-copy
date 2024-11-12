@@ -416,7 +416,11 @@ export const addStringFieldsAndNormalizeDateValues = (
 
     Object.entries(entityTemplate.properties.properties).forEach(([key, value]) => {
         if (!(key in entityProperties)) {
-            if (value.type === 'boolean') normalizedEntity[key] = false;
+            if (value.type === 'boolean') {
+                normalizedEntity[key] = false;
+                normalizedEntity[`${key}${neo4j.booleanPropertySuffix}`] = neo4j.booleanHeNoValue;
+            }
+
             return;
         }
 

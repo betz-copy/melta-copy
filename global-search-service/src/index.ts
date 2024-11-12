@@ -41,7 +41,7 @@ const main = async () => {
     axios.defaults.maxContentLength = service.maxRequestSize;
 
     await Neo4jClient.initialize();
-    const workspaceId: string = '673312888a067adc333d8e1d';
+    const workspaceId: string = '67331fe530bc90555d1383ac';
     await updateNonStringPropertiesScript(workspaceId);
 
     if (process.env.RUN_SCRIPT) {

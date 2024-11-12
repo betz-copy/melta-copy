@@ -224,7 +224,7 @@ export default class Manager extends DefaultManagerNeo4j {
     }
 
     createFixedFilesArrayProps(propertyNames: string[]) {
-        return `,${propertyNames.map((prop) => `n.${prop}${filePropertySuffix} = [x IN n.${prop} | substring(x, ${fileIdLength})]`).join(', ')}`;
+        return propertyNames.map((prop) => `n.${prop}${filePropertySuffix} = [x IN n.${prop} | substring(x, ${fileIdLength})]`).join(', ');
     }
 
     // Update all boolean and file properties of a template script
