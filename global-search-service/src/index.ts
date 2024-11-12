@@ -25,7 +25,7 @@ const initializeRabbit = async () => {
     logger.info('Rabbit initialized');
 };
 
-const updateNonStringPropertiesScript = async (workspaceId: string) => {
+export const updateNonStringPropertiesScript = async (workspaceId: string) => {
     console.log(`INFO: Start running Updating non-string properties script for workspace: ${workspaceId}`);
     const manager = new Manager(workspaceId);
 
@@ -41,12 +41,7 @@ const main = async () => {
     axios.defaults.maxContentLength = service.maxRequestSize;
 
     await Neo4jClient.initialize();
-    const workspaceId: string = '67331fe530bc90555d1383ac';
-    await updateNonStringPropertiesScript(workspaceId);
-
-    if (process.env.RUN_SCRIPT) {
-        await initializeRabbit();
-    }
+    await initializeRabbit();
 };
 
 main().catch((error) => logger.error('Main error: ', { error }));
