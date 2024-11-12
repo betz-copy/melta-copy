@@ -14,7 +14,10 @@ const {
         indexPropertiesLimit,
         booleanPropertySuffix,
         filePropertySuffix,
+        booleanHeYesValue,
+        booleanHeNoValue,
     },
+    fileIdLength,
 } = config;
 
 export default class Manager extends DefaultManagerNeo4j {
@@ -160,5 +163,109 @@ export default class Manager extends DefaultManagerNeo4j {
 
     async deleteTemplateSearchIndex(templateId: string) {
         await this.dropIndexTransaction(`${templateSearchIndexPrefix}${templateId}`);
+    }
+
+    async createAllIndexes() {
+        console.log('INFO: Start creating all indexes of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+        await Promise.all(
+            templates.map(async (template) => {
+                const templateProperties = this.getTemplatePropertiesIndex(template);
+                const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
+                const allProperties = [...relationshipReferencesProperties, ...templateProperties];
+
+                await this.upsertSearchIndex(`${templateSearchIndexPrefix}${template._id}`, [template._id], allProperties);
+            }),
+        );
+        console.log('INFO: Finished creating all indexes of templates');
+
+        console.log('INFO: Start creating global search index');
+        await this.upsertGlobalSearchIndex();
+        console.log('INFO: Finished creating global search index');
+    }
+
+    async deleteAllIndexes() {
+        console.log('INFO: Start deleting all indexes of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+        await Promise.all(
+            templates.map(async (template) => {
+                await this.dropIndexTransaction(`${templateSearchIndexPrefix}${template._id}`);
+            }),
+        );
+        console.log('INFO: Finished deleting all indexes of templates');
+
+        console.log('INFO: Start deleting global search index');
+        await this.dropIndexTransaction(globalSearchIndexPrefix);
+        console.log('INFO: Finished deleting global search index');
+    }
+
+    createBooleanPropertyChecks(propertyNames: string[]) {
+        return propertyNames.map((prop) => `(n.${prop} = true OR n.${prop} = false)`).join(' OR ');
+    }
+
+    // Helper function to create SET clauses for booleans
+    createBooleanSetClauses(propertyNames: string[]) {
+        return propertyNames
+            .map((prop) => `n.${prop}${booleanPropertySuffix} = CASE n.${prop} WHEN true THEN 'כן' WHEN false THEN 'לא' END`)
+            .join(', ');
+    }
+
+    createFilePropertyChecks(propertyNames: string[]) {
+        return propertyNames.map((prop) => `EXISTS(.${prop})`).join(' OR ');
+    }
+
+    createFileSetClauses(propertyNames: string[]) {
+        return propertyNames
+            .map(
+                (prop) => `
+            n.${prop}${filePropertySuffix} = CASE
+                WHEN apoc.meta.type(n.${prop}) = 'STRING' THEN substring(n.${prop}, ${fileIdLength})
+                WHEN apoc.meta.type(n.${prop}) = 'LIST' THEN [x IN n.${prop} | substring(x, ${fileIdLength})]
+            ELSE NULL
+          END`,
+            )
+            .join(', ');
+    }
+
+    // Update all boolean and file properties of a template script
+    async updateTemplateNonStringProps(template: IEntityTemplate) {
+        try {
+            console.log('INFO: Start updating non-string properties of template: ', template._id);
+            const booleanProperties: string[] = [];
+            const fileProperties: string[] = [];
+
+            Object.entries(template.properties.properties).forEach(([key, value]) => {
+                if (value.type === 'boolean') booleanProperties.push(key);
+                if (value.format === 'fileId' || value.items?.format === 'fileId') fileProperties.push(key);
+            });
+
+            const query = `
+            MATCH (n:${template._id})
+            WHERE ${this.createBooleanPropertyChecks(booleanProperties)} OR ${this.createFilePropertyChecks(fileProperties)}
+            SET
+            ${this.createBooleanSetClauses(booleanProperties)},
+            ${this.createFileSetClauses(fileProperties)}
+            RETURN count(n) AS nodesUpdated
+            WITH n
+            `;
+            console.log('INFO: Running query: ', query);
+
+            const nodesResult = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+                const res = await transaction.run(query);
+                return res;
+            });
+            const nodesUpdated = nodesResult.records[0].get('nodesUpdated').toNumber();
+            console.log('INFO: Finished updating non-string properties of template: ', template._id, ' nodes updated: ', nodesUpdated);
+        } catch (error) {
+            console.log('ERROR: Failed to update non-string properties of template: ', template._id, ' error: ', error);
+        }
+    }
+
+    async updateAllNonStringProps() {
+        console.log('INFO: Start updating all non-string properties of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+
+        await Promise.all(templates.map((template) => this.updateTemplateNonStringProps(template)));
+        console.log('INFO: Finished updating all non-string properties of templates');
     }
 }

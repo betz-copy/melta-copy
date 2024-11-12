@@ -23,6 +23,7 @@ const config = {
         },
         timeout: env.get('TEMPLATE_SERVICE_TIMEOUT').default(5000).asIntPositive(),
     },
+    fileIdLength: env.get('FILE_ID_LENGTH').default(32).asIntPositive(),
     neo4j: {
         url: env.get('NEO4J_URL').default('neo4j://localhost').asString(),
         auth: {
@@ -38,6 +39,8 @@ const config = {
         stringPropertySuffix: env.get('STRING_PROPERTY_SUFFIX').default('_tostring').asString(),
         booleanPropertySuffix: env.get('BOOLEAN_PROPERTY_SUFFIX').default('_toheboolean').asString(),
         filePropertySuffix: env.get('FILE_PROPERTY_SUFFIX').default('_tofilename').asString(),
+        booleanHeYesValue: env.get('BOOLEAN_HE_YES_VALUE').default('כן').asString(),
+        booleanHeNoValue: env.get('BOOLEAN_HE_NO_VALUE').default('לא').asString(),
         relationshipReferencePropertySuffix: env.get('RELATIONSHIP_REFERENCE_PROPERTY_SUFFIX').default('_reference').asString(),
         workspaceNamePrefix: env.get('NEO4J_WORKSPACE_NAME_PREFIX').default('workspace-').asString(),
     },
