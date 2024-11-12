@@ -202,12 +202,11 @@ export default class Manager extends DefaultManagerNeo4j {
         console.log('INFO: Finished deleting global search index');
     }
 
-    createBooleanPropertyChecks(propertyNames: string[]) {
+    isBooleanPropsExists(propertyNames: string[]) {
         return propertyNames.map((prop) => `(n.${prop} = true OR n.${prop} = false)`).join(' OR ');
     }
 
-    // Helper function to create SET clauses for booleans
-    createBooleanSetClauses(propertyNames: string[]) {
+    createFixedBooleanProps(propertyNames: string[]) {
         return propertyNames
             .map(
                 (prop) =>
@@ -216,11 +215,11 @@ export default class Manager extends DefaultManagerNeo4j {
             .join(', ');
     }
 
-    createFilePropertyChecks(propertyNames: string[]) {
+    isFilePropsExists(propertyNames: string[]) {
         return propertyNames.map((prop) => `EXISTS(.${prop})`).join(' OR ');
     }
 
-    createFileSetClauses(propertyNames: string[]) {
+    createFixedFileProps(propertyNames: string[]) {
         return propertyNames
             .map(
                 (prop) => `
@@ -245,22 +244,35 @@ export default class Manager extends DefaultManagerNeo4j {
                 if (value.format === 'fileId' || value.items?.format === 'fileId') fileProperties.push(key);
             });
 
-            const query = `
-            MATCH (n:${template._id})
-            WHERE ${this.createBooleanPropertyChecks(booleanProperties)} OR ${this.createFilePropertyChecks(fileProperties)}
-            SET
-            ${this.createBooleanSetClauses(booleanProperties)},
-            ${this.createFileSetClauses(fileProperties)}
-            RETURN count(n) AS nodesUpdated
-            WITH n
+            const addFixedBooleanPropsQuery = `
+                MATCH (n:${template._id})
+                WHERE ${this.isBooleanPropsExists(booleanProperties)}
+                SET
+                ${this.createFixedBooleanProps(booleanProperties)},
+                RETURN count(n) AS nodesUpdated
+                WITH n
             `;
-            console.log('INFO: Running query: ', query);
+            const addFixedFilePropsQuery = `
+                MATCH (n:${template._id})
+                WHERE ${this.isFilePropsExists(fileProperties)}
+                SET
+                ${this.createFixedFileProps(fileProperties)},
+                RETURN count(n) AS nodesUpdated
+                WITH n
+            `;
+            console.log('INFO: Running addFixedBooleanProps query: ', addFixedBooleanPropsQuery);
+            console.log('INFO: Running addFixedFileProps query: ', addFixedFilePropsQuery);
 
-            const nodesResult = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const res = await transaction.run(query);
-                return res;
+            const { updateBooleanRes, updateFileRes } = await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
+                const updateBooleanPropsRes = await transaction.run(addFixedBooleanPropsQuery);
+                const updateFilePropsRes = await transaction.run(addFixedFilePropsQuery);
+
+                return { updateBooleanRes: updateBooleanPropsRes, updateFileRes: updateFilePropsRes };
             });
-            const nodesUpdated = nodesResult.records[0].get('nodesUpdated').toNumber();
+
+            const nodesUpdatedBoolean = updateBooleanRes.records[0].get('nodesUpdated').toNumber();
+            const nodesUpdatedFile = updateFileRes.records[0].get('nodesUpdated').toNumber();
+            const nodesUpdated = nodesUpdatedBoolean + nodesUpdatedFile;
             console.log('INFO: Finished updating non-string properties of template: ', template._id, ' nodes updated: ', nodesUpdated);
         } catch (error) {
             console.log('ERROR: Failed to update non-string properties of template: ', template._id, ' error: ', error);
