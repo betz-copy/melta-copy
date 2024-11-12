@@ -283,7 +283,7 @@ const TemplateTable = forwardRef<
                         setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false);
                     }}
                     menuRowButtonProps={userHasWritePermissions}
-                    refetch={()=> entitiesTableRef.current?.refreshServerSide()}
+                    refetch={() => entitiesTableRef.current?.refreshServerSide()}
                 />
             </Box>
 
