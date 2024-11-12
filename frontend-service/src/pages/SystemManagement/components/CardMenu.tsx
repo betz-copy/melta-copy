@@ -5,7 +5,8 @@ import {
     Edit as EditIcon,
     Delete as DeleteIcon,
     MoreVertOutlined as OptionsIcon,
-    DoDisturbAlt as DisabledIcon,
+    DoNotDisturbOnOutlined as DoNotDisturbOnOutlinedIcon,
+    DoNotDisturbOffOutlined as DoNotDisturbOffOutlinedIcon,
     ContentCopy as DuplicateIcon,
     ControlPoint as AddIcon,
 } from '@mui/icons-material';
@@ -22,7 +23,17 @@ export const CardMenu: React.FC<{
     onDuplicateClick?: MouseEventHandler;
     onAddActionsClick?: MouseEventHandler;
     isEntityTemplateDisabled?: boolean;
-}> = ({ onEditClick, onDeleteClick, disabledProps, onDisableClick, onDuplicateClick, onAddActionsClick, isEntityTemplateDisabled }) => {
+    isRuleDisabled?: boolean;
+}> = ({
+    onEditClick,
+    onDeleteClick,
+    disabledProps,
+    onDisableClick,
+    onDuplicateClick,
+    onAddActionsClick,
+    isEntityTemplateDisabled,
+    isRuleDisabled,
+}) => {
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
     const open = Boolean(anchorEl);
 
@@ -108,8 +119,14 @@ export const CardMenu: React.FC<{
                             onDisableClick(e);
                             handleClose(e);
                         }}
-                        text={isEntityTemplateDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
-                        icon={<DisabledIcon color="action" />}
+                        text={isEntityTemplateDisabled || isRuleDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                        icon={
+                            isEntityTemplateDisabled || isRuleDisabled ? (
+                                <DoNotDisturbOffOutlinedIcon color="action" />
+                            ) : (
+                                <DoNotDisturbOnOutlinedIcon color="action" />
+                            )
+                        }
                     />
                 )}
             </Menu>

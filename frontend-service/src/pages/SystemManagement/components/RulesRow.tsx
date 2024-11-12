@@ -1,20 +1,22 @@
+import { WarningAmberRounded, WarningRounded } from '@mui/icons-material';
+import { Grid, Typography, useTheme } from '@mui/material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
 import React, { useState } from 'react';
-import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { ViewingCard } from './Card';
-import SearchInput from '../../../common/inputs/SearchInput';
-import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
-import { RuleWizard } from '../../../common/wizards/rule';
-import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { CardMenu } from './CardMenu';
-import { environment } from '../../../globals';
 import { InfiniteScroll } from '../../../common/InfiniteScroll';
+import SearchInput from '../../../common/inputs/SearchInput';
+import { RuleWizard } from '../../../common/wizards/rule';
+import { environment } from '../../../globals';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IMongoRule, IRuleMap } from '../../../interfaces/rules';
+import { deleteRuleRequest, ruleObjectToRuleForm, updateDisabledRuleRequest } from '../../../services/templates/rulesService';
+import { ViewingCard } from './Card';
+import { CardMenu } from './CardMenu';
+import { CreateButton } from './CreateButton';
 
 const { infiniteScrollPageCount } = environment.entitiesCardsView;
 
@@ -46,14 +48,14 @@ export const RuleCard: React.FC<{
                     <Grid item container alignItems="center" justifyContent="space-between" direction="row" flexWrap="nowrap">
                         <Grid item flexBasis="95%" height="30px">
                             <Grid item container alignItems="center" direction="row" flexWrap="nowrap" gap="5px">
-                                {rule.actionOnFail === 'WARNING' ? <img src="/icons/warning-rule.svg" /> : <img src="/icons/force-rule.svg" />}
+                                {rule.actionOnFail === 'WARNING' ? (
+                                    <WarningAmberRounded sx={{ color: '#FFAC2F' }} />
+                                ) : (
+                                    <WarningRounded sx={{ color: '#DD3500' }} />
+                                )}
                                 <Typography
                                     display="inline-block"
-                                    style={{
-                                        fontSize: environment.mainFontSizes.headlineSubTitleFontSize,
-                                        color: theme.palette.primary.main,
-                                        fontWeight: '400',
-                                    }}
+                                    sx={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, color: theme.palette.primary.main }}
                                 >
                                     {rule.name}
                                 </Typography>
@@ -75,8 +77,9 @@ export const RuleCard: React.FC<{
                                     disabledProps={{
                                         isDisabled: rule.disabled,
                                         isEditDisabled: rule.disabled,
-                                        tooltipTitle: i18next.t('systemManagement.disabledRule'),
+                                        tooltipTitle: rule.disabled ? i18next.t('systemManagement.disabledRule') : '',
                                     }}
+                                    isRuleDisabled={rule.disabled}
                                 />
                             )}
                         </Grid>
@@ -86,27 +89,27 @@ export const RuleCard: React.FC<{
             expendedCard={
                 <Grid item container gap="10px" paddingLeft="5px" direction="column" marginTop="20px">
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.description')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
+                        <Grid item flexBasis="70%">
                             <Typography>{rule.description}</Typography>
                         </Grid>
                     </Grid>
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.actionOnFail')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
+                        <Grid item flexBasis="70%">
                             <Typography>{i18next.t(`wizard.rule.actions.${rule.actionOnFail.toLocaleLowerCase()}`)}</Typography>
                         </Grid>
                     </Grid>
                     <Grid item container justifyContent="space-between">
-                        <Grid item flexBasis="27%" color="#9398C2">
+                        <Grid item flexBasis="27%" color={theme.palette.primary.main}>
                             <Typography>{i18next.t('wizard.rule.primaryEntityTemplate')}</Typography>
                         </Grid>
-                        <Grid item flexBasis="70%" color="#53566E" fontWeight="400">
-                            <Typography style={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
+                        <Grid item flexBasis="70%">
+                            <Typography sx={{ textOverflow: 'ellipsis', whiteSpace: 'nowrap', overflow: 'hidden' }}>
                                 {entityTemplates.get(rule.entityTemplateId)?.displayName}
                             </Typography>
                         </Grid>
@@ -175,9 +178,10 @@ const RulesRow: React.FC = () => {
                     <SearchInput borderRadius="7px" onChange={setSearchText} placeholder={i18next.t('globalSearch.searchRules')} />
                 </Grid>
                 <Grid item>
-                    <IconButton style={{ borderRadius: '5px' }} onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}>
-                        <img src="/icons/Add-New-Rule.svg" />
-                    </IconButton>
+                    <CreateButton
+                        onClick={() => setRuleWizardDialogState({ isWizardOpen: true, rule: null })}
+                        text={i18next.t('systemManagement.newRuleTemplate')}
+                    />
                 </Grid>
             </Grid>
             <Grid item container direction="row" gap="30px" marginTop="30px">
