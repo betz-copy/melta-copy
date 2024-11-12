@@ -44,7 +44,7 @@ export const GlobalSearchBar: React.FC<{
                     valueForSearchButtonRef.current = value;
                     onSearch(value);
                     if (gridApi) {
-                        gridApi.setQuickFilter(value);
+                        gridApi.setGridOption('quickFilterText', value);
                     }
                 }
             }, 300);

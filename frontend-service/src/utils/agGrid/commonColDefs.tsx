@@ -2,13 +2,13 @@ import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, Value
 import i18next from 'i18next';
 import React from 'react';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
+import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
+import { getFileName } from '../getFileName';
+import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
-import { agGridLocaleText } from './agGridLocaleText';
-import { getFileName } from '../getFileName';
-import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
@@ -17,7 +17,7 @@ export const numberColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+): ColDef => {
     return {
         field,
         headerName: value.title,
@@ -39,7 +39,7 @@ export const regexColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+): ColDef => {
     return {
         field,
         headerName: value.title,
@@ -60,7 +60,7 @@ export const stringColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+): ColDef => {
     return {
         field,
         headerName: value.title,
@@ -79,7 +79,7 @@ export const fileColDef = <Data extends any = IEntity>(
     value: { title: string },
     hardcodedWidth: number | undefined,
     hideColumn = false,
-): ColDef<Data> => {
+): ColDef => {
     return {
         field,
         headerName: value.title,
@@ -100,7 +100,7 @@ export const relatedTemplateColDef = <Data extends any = IEntity>(
     relatedTemplateId: string,
     relatedTemplateField: string,
     hideColumn = false,
-): ColDef<Data> => {
+): ColDef => {
     return {
         field,
         headerName: value.title,
@@ -123,8 +123,8 @@ export const booleanColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
-    const formatValue = (propertyValue: boolean | undefined) => {
+): ColDef => {
+    const formatValue = (propertyValue: boolean | null | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
         return i18next.t('booleanOptions.yes');
     };
@@ -160,7 +160,7 @@ export const enumColDef = <Data extends any = IEntity>(
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -191,7 +191,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [...values, undefined],
@@ -229,7 +229,7 @@ export const enumFilesColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     rowHeight: number,
     hideColumn = false,
-): ColDef<Data> => {
+): ColDef => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
         values: [], // You may need to fetch enum values dynamically or provide them here
@@ -271,10 +271,10 @@ export const dateColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     calculateTime = false,
-): ColDef<Data> => {
+): ColDef => {
     const { format } = value;
 
-    const formatDate = (dateValue: string | undefined) => {
+    const formatDate = (dateValue: string | null | undefined) => {
         if (!dateValue) return '';
 
         if (format === 'date') return getDateWithoutTime(new Date(dateValue));
@@ -322,8 +322,8 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
-): ColDef<Data> => {
-    const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
+): ColDef => {
+    const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
