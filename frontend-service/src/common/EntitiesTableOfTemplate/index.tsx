@@ -115,9 +115,15 @@ export const getRowModelProps = <Data extends any = IEntity>(
     paginationPageSize: number,
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
+    hasInstances?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: false, paginationPageSize };
+        return {
+            rowModelType,
+            rowData,
+            pagination: hasInstances ?? true,
+            paginationPageSize,
+        };
     }
 
     const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
@@ -131,6 +137,8 @@ export const getRowModelProps = <Data extends any = IEntity>(
         maxConcurrentDatasourceRequests,
     };
 };
+
+const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
     template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
@@ -161,6 +169,7 @@ export type EntitiesTableOfTemplateProps<Data> = {
     };
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
+    hasInstances?: boolean;
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -196,6 +205,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             saveStorageProps,
             onFilter,
             hasPermissionToCategory,
+            mainEntity,
+            hasInstances,
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
@@ -290,13 +301,17 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {
-            '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            '.ag-column-select-virtual-list-viewport': {
+                height: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+            },
+            '.ag-center-cols-clipper': {
+                minHeight: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+            },
             '.ag-paging-panel': {
                 height: '45px',
             },
@@ -427,8 +442,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     animateRows
-                    // eslint-disable-next-line react/no-unstable-nested-components
-                    loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
+                    loadingCellRenderer={LoadingCellRenderer}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {
