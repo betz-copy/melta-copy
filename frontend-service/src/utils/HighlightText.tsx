@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const HighlightText: React.FC<{ text: unknown; searchedText?: string }> = ({ text, searchedText }) => {
+export const HighlightText: React.FC<{ text?: string | React.JSX.Element; searchedText?: string }> = ({ text, searchedText }) => {
     // eslint-disable-next-line react/jsx-no-useless-fragment
     if ((typeof text !== 'string' && typeof text !== 'number') || !searchedText) return <>{text}</>;
 

@@ -43,15 +43,17 @@ const Value: React.FC<{
 
     const open = Boolean(anchorEl);
 
-    let innerContent;
+    let innerContent: string | React.JSX.Element | undefined;
+
     if (hideValue && hideField) innerContent = <>••••••••</>;
     else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} searchValue={searchValue} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
-    else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
+    else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
     else innerContent = value;
 
     let popoverText;
+
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;

@@ -162,7 +162,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
-                else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else if (propertyValue && propertySchema.calculateTime)
+                    innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
                 else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
                 else innerContent = stringFormatValue;
 
