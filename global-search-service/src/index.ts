@@ -42,6 +42,11 @@ const main = async () => {
 
     await Neo4jClient.initialize();
     await initializeRabbit();
+
+    const workspaceId: string = '';
+    if (process.env.RUN_SCRIPT) {
+        await updateNonStringPropertiesScript(workspaceId);
+    }
 };
 
 main().catch((error) => logger.error('Main error: ', { error }));
