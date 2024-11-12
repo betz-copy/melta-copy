@@ -12,7 +12,7 @@ import { HighlightText } from '../HighlightText';
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
-    color?: string;
+    color?: string | null;
     calculateTime?: boolean;
     isNumberField?: boolean;
     searchValue?: string;
@@ -58,7 +58,7 @@ const Value: React.FC<{
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
 
-    const textDirection = containsHtmlTags ? true : isStartWithHebrewLetter(value);
+    const textDirection = containsHtmlTags || calculateTime ? true : isStartWithHebrewLetter(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
