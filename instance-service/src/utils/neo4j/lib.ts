@@ -23,7 +23,11 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
+        if (
+            key.endsWith(config.neo4j.stringPropertySuffix) ||
+            key.endsWith(config.neo4j.booleanPropertySuffix) ||
+            key.endsWith(config.neo4j.filePropertySuffix)
+        ) {
             return;
         }
 

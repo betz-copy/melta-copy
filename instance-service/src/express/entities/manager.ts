@@ -1661,12 +1661,22 @@ export class EntityManager extends DefaultManagerNeo4j {
         };
 
         Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
-            propertiesToRemove.push(
-                `${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`,
-                ...(value.type === 'string'
-                    ? []
-                    : [`${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`]),
-            );
+            propertiesToRemove.push(`${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`);
+            if (value.type !== 'string') {
+                propertiesToRemove.push(
+                    `${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
+                );
+            }
+            if (value.type === 'boolean') {
+                propertiesToRemove.push(
+                    `${property}.properties.${key}${config.neo4j.booleanPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
+                );
+            }
+            if (value.format === 'fileId' || (value.type === 'array' && value.items?.format === 'fileId')) {
+                propertiesToRemove.push(
+                    `${property}.properties.${key}${config.neo4j.filePropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
+                );
+            }
         });
 
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);
@@ -1678,10 +1688,15 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         for (const property of properties) {
             const propertyTemplate = currentTemplateProperties[property];
-            const isStringType = propertyTemplate.type === 'string';
-            propertiesToRemove.push(property, ...(isStringType ? [] : [`${property}${config.neo4j.stringPropertySuffix}`]));
+            const { type, format, items } = propertyTemplate;
+            propertiesToRemove.push(property);
 
-            if (propertyTemplate.format !== 'relationshipReference') continue;
+            if (type !== 'string') propertiesToRemove.push(`${property}${config.neo4j.stringPropertySuffix}`);
+            if (type === 'boolean') propertiesToRemove.push(`${property}${config.neo4j.booleanPropertySuffix}`);
+            if (format === 'fileId' || (type === 'array' && items?.format === 'fileId'))
+                propertiesToRemove.push(`${property}${config.neo4j.filePropertySuffix}`);
+
+            if (format !== 'relationshipReference') continue;
 
             relationshipTemplatesToRemove.push(propertyTemplate.relationshipReference?.relationshipTemplateId as string);
 
