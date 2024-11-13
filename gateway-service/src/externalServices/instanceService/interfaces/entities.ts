@@ -112,6 +112,5 @@ export interface ISearchResult {
 export interface ICountSearchResult {
     count: number;
     templateId: string;
-    // { entityId: minioFileIds:[] }
-    entityIdsToInclude: Record<string, string[]>;
+    entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
