@@ -3,11 +3,11 @@ import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
 import { pickBy } from 'lodash';
-import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
+import OriGeneralDetails from './originalGeneralDetails';
 
 export interface ProcessDetailsValues {
     template: IMongoProcessTemplatePopulated | null;
@@ -48,7 +48,7 @@ interface ProcessDetailsProps {
 const steps = [
     {
         label: i18next.t('wizard.processInstance.generalDetails'),
-        component: GeneralDetails,
+        component: OriGeneralDetails,
     },
     {
         label: i18next.t('wizard.processInstance.stepsReviewers'),
