@@ -12,6 +12,7 @@ import {
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
 } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
@@ -19,12 +20,7 @@ import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import {
-    IRelationshipTemplate,
-    ISearchRelationshipTemplatesBody,
-    ISearchRulesBody,
-    RelationshipsTemplateService,
-} from '../../externalServices/templates/relationshipsTemplateService';
+import { ISearchRulesBody, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -100,7 +96,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return lodashUniqby([...bySource, ...byDestination], '_id');
     }
 
-    async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IRelationshipTemplate[]) {
+    async getAllowedTemplatesAndRules(entityTemplateIds: string[], relationshipTemplates: IMongoRelationshipTemplate[]) {
         const allowedEntityTemplatesIdsByOneRelationship = this.getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
             relationshipTemplates,
             relationshipTemplates,
@@ -118,13 +114,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     // get all entityTemplates that are one relationship (step) away  from the original users permissions
     private getAllEntityTemplateThatAreOneRelationshipAwayFromUsersPermissions(
-        allowedRelationshipsTemplatesBySource: IRelationshipTemplate[],
-        allowedRelationshipsTemplatesByDestination: IRelationshipTemplate[],
+        allowedRelationshipsTemplatesBySource: IMongoRelationshipTemplate[],
+        allowedRelationshipsTemplatesByDestination: IMongoRelationshipTemplate[],
         allowedEntityTemplatesIds: string[],
     ) {
         const extendedAllowedRelationshipsTemplatesIds = new Set<string>();
 
-        allowedRelationshipsTemplatesBySource.forEach((relationshipTemplate: IRelationshipTemplate) => {
+        allowedRelationshipsTemplatesBySource.forEach((relationshipTemplate: IMongoRelationshipTemplate) => {
             const { destinationEntityId } = relationshipTemplate;
 
             if (!allowedEntityTemplatesIds.includes(destinationEntityId)) {
@@ -132,7 +128,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }
         });
 
-        allowedRelationshipsTemplatesByDestination.forEach((relationshipTemplate: IRelationshipTemplate) => {
+        allowedRelationshipsTemplatesByDestination.forEach((relationshipTemplate: IMongoRelationshipTemplate) => {
             const { sourceEntityId } = relationshipTemplate;
 
             if (!allowedEntityTemplatesIds.includes(sourceEntityId)) {
@@ -145,7 +141,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
 
     private async getAllowedRules(
         allowedEntityTemplatesIds: string[],
-        allowedRelationshipsTemplates: IRelationshipTemplate[],
+        allowedRelationshipsTemplates: IMongoRelationshipTemplate[],
         allowedEntityTemplatesIdsByOneRelationship: string[],
     ) {
         const allowedRelationshipsTemplatesIds = allowedRelationshipsTemplates.map(({ _id }) => _id);
@@ -418,7 +414,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.populateTemplateConstraints(entityTemplate, requiredConstraints, uniqueConstraints);
     }
 
-    entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IRelationshipTemplate[]) {
+    entityHasRelationshipNotReference(entityTemplateToDelete: IMongoEntityTemplatePopulated, relastionships: IMongoRelationshipTemplate[]) {
         return relastionships.some((relationship) => {
             const isUsedAsRelationshipReference =
                 entityTemplateToDelete.properties.properties[relationship.name].relationshipReference?.relationshipTemplateId === relationship._id;
@@ -932,7 +928,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
     }
 
-    async createRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
+    async createRelationshipTemplate(relationshipTemplate: IMongoRelationshipTemplate) {
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
         await this.throwIfEntityTemplateDoesntExist(sourceEntityId, 'source entity of relation doesnt exist');
@@ -947,7 +943,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.relationshipTemplateService.createRelationshipTemplate(relationshipTemplate);
     }
 
-    async updateRelationshipTemplate(templateId: string, updatedFields: Partial<IRelationshipTemplate>) {
+    async updateRelationshipTemplate(templateId: string, updatedFields: Partial<IMongoRelationshipTemplate>) {
         if (updatedFields.sourceEntityId) {
             await this.throwIfEntityTemplateDoesntExist(updatedFields.sourceEntityId, 'source entity of relation doesnt exist');
         }

@@ -5,13 +5,13 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
 } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
 import { NotFoundError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
-import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
 import { EntityTemplateSchema } from './model';
 

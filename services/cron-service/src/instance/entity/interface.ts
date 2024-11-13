@@ -1,4 +1,4 @@
-import { IRelationshipTemplate } from '../../template/relationship/interface';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { IRelationship } from '../relationship/interface';
 
 export interface IEntity {
@@ -58,6 +58,6 @@ export interface ISearchEntitiesOfTemplateBody {
     limit: number;
     textSearch?: string;
     filter?: ISearchFilter;
-    showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
 }

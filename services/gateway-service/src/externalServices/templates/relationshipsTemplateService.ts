@@ -1,4 +1,6 @@
 import { ISearchBody } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
+
 import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
@@ -9,21 +11,6 @@ const {
         relationships: { baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix },
     },
 } = config;
-
-export interface IRelationshipTemplate {
-    _id: string;
-    name: string;
-    displayName: string;
-    sourceEntityId: string;
-    destinationEntityId: string;
-    isProperty: boolean;
-}
-
-export interface ISearchRelationshipTemplatesBody extends ISearchBody {
-    ids?: string[];
-    sourceEntityIds?: string[];
-    destinationEntityIds?: string[];
-}
 
 export interface ISearchRulesBody extends ISearchBody {
     entityTemplateIds?: string[];
@@ -40,36 +27,38 @@ export interface RequestWithSearchRuleTemplateBody extends RequestWithPermission
 
 export class RelationshipsTemplateService extends TemplatesManagerService {
     async searchRelationshipTemplates(searchBody: ISearchRelationshipTemplatesBody = {}) {
-        const { data } = await this.api.post<IRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
+        const { data } = await this.api.post<IMongoRelationshipTemplate[]>(`${baseRelationshipsRoute}/search`, searchBody);
         return data;
     }
 
     async getRelationshipTemplateById(id: string) {
-        const { data } = await this.api.get<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
+        const { data } = await this.api.get<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }
 
-    async createRelationshipTemplate(relationship: Omit<IRelationshipTemplate, '_id'>) {
-        const { data } = await this.api.post<IRelationshipTemplate>(baseRelationshipsRoute, relationship);
+    async createRelationshipTemplate(relationship: Omit<IMongoRelationshipTemplate, '_id'>) {
+        const { data } = await this.api.post<IMongoRelationshipTemplate>(baseRelationshipsRoute, relationship);
 
         return data;
     }
 
-    async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IRelationshipTemplate, '_id'>>) {
-        const { data } = await this.api.put<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`, updatedRelationship);
+    async updateRelationshipTemplate(id: string, updatedRelationship: Partial<Omit<IMongoRelationshipTemplate, '_id'>>) {
+        const { data } = await this.api.put<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`, updatedRelationship);
 
         return data;
     }
 
     async deleteRelationshipTemplate(id: string) {
-        const { data } = await this.api.delete<IRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
+        const { data } = await this.api.delete<IMongoRelationshipTemplate>(`${baseRelationshipsRoute}/${id}`);
 
         return data;
     }
 
     async updateRuleStatusById(ruleId: string, disabled: boolean) {
-        const { data } = await this.api.patch<IRelationshipTemplate>(`${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`, { disabled });
+        const { data } = await this.api.patch<IMongoRelationshipTemplate>(`${baseRulesRoute}/${ruleId}${updateRuleStatusByIdRouteSuffix}`, {
+            disabled,
+        });
 
         return data;
     }

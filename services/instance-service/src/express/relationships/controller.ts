@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { fetchPropertyFromRequest } from '../../utils/express';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipManager } from './manager';
 import DefaultController from '../../utils/express/controller';
 

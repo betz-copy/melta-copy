@@ -8,7 +8,7 @@ import { StatusCodes } from 'http-status-codes';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 import { addPropertyToRequest } from '../../utils/express';

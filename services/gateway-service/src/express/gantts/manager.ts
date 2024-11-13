@@ -1,9 +1,10 @@
 import lodashIsEqual from 'lodash.isequal';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { GanttsService, IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { BadRequestError } from '../error';

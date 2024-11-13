@@ -1,5 +1,5 @@
 import { IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate } from '../../relationshipTemplate/interface';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { IFormula } from './formula';
 
 export interface IRule {

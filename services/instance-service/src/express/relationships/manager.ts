@@ -1,9 +1,9 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import config from '../../config';
 import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import {
     generateDefaultProperties,

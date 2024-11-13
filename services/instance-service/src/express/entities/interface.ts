@@ -1,5 +1,5 @@
 import { IRelationship } from '../relationships/interfaces';
-import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 
 export interface IEntity {
     templateId: string;

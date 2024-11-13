@@ -1,7 +1,8 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
@@ -44,7 +45,7 @@ export class TemplatesValidator extends DefaultController {
         }
     }
 
-    async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IRelationshipTemplate) {
+    async getRelatedCategoriesFromRelationshipTemplate(relationshipTemplate: IMongoRelationshipTemplate) {
         const { sourceEntityId, destinationEntityId } = relationshipTemplate;
 
         const [{ category: srcCategory }, { category: dstCategory }] = await Promise.all([

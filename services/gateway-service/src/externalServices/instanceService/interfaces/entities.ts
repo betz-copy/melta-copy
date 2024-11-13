@@ -1,5 +1,5 @@
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { IRelationship } from './relationships';
-import { IRelationshipTemplate } from '../../templates/relationshipsTemplateService';
 
 export interface IEntity {
     templateId: string;
@@ -82,7 +82,7 @@ export interface ISearchEntitiesOfTemplateBody {
     limit: number;
     textSearch?: string;
     filter?: ISearchFilter;
-    showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
     sort?: ISearchSort;
 }
 
@@ -93,7 +93,7 @@ export interface ISearchBatchBody {
     templates: {
         [templateId: string]: {
             filter?: ISearchFilter;
-            showRelationships?: boolean | Array<IRelationshipTemplate['_id']>;
+            showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
         };
     };
     sort?: ISearchSort;
