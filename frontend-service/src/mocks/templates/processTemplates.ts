@@ -1,4 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { generateProcessTemplatePopulated } from './generateProcessTemplate';
 
@@ -19,13 +20,13 @@ const processTemplates = generatedTemplates;
 
 const mockProcessTemplates = (mock: MockAdapter) => {
     // Create
-    mock.onPost('/api/templates/processes').reply(() => [200, generateProcessTemplatePopulated()]);
+    mock.onPost('/api/templates/processes').reply(() => [StatusCodes.OK, generateProcessTemplatePopulated()]);
 
     // Update
-    mock.onPut(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [200, generateProcessTemplatePopulated()]);
+    mock.onPut(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, generateProcessTemplatePopulated()]);
 
     // Delete
-    mock.onDelete(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/processes\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]);
 };
 
 export { mockProcessTemplates, processTemplates };

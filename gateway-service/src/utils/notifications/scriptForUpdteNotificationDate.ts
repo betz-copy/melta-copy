@@ -1,3 +1,4 @@
+import { ServiceError } from '../../express/error';
 import { WorkspaceTypes } from '../../express/workspaces/interface';
 import { WorkspaceManager } from '../../express/workspaces/manager';
 import { EntityTemplateService, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
@@ -61,9 +62,10 @@ const checkDateNotification = async (entityTemplateService: EntityTemplateServic
             `Succeed to update fields that have a date notification in entityTemplate: ${entityTemplate._id} - ${entityTemplate.name} in properties: ${updatedProperties}`,
         );
     } catch (error) {
-        logger.error(
+        throw new ServiceError(
+            undefined,
             `Failed to update fields that have a date notification in entityTemplate: ${entityTemplate._id} - ${entityTemplate.name} in properties: ${updatedProperties}`,
-            error,
+            { error },
         );
     }
 };
@@ -81,4 +83,4 @@ const main = async () => {
     );
 };
 
-main();
+main().catch((error) => logger.error('Main error: ', { error }));

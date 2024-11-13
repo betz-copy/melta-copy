@@ -18,6 +18,7 @@ import { VerifyLink } from './VerifyLink';
 import UserAvatar from './UserAvatar';
 import OverflowWrapper from '../utils/agGrid/OverflowWrapper';
 import { getFixedNumber, getTextDirection } from '../utils/stringValues';
+import { HighlightText } from '../utils/HighlightText';
 
 const { maxNumOfCharactersNotInFullWidth } = environment.entitiesProperties;
 
@@ -118,6 +119,7 @@ interface IEntityPropertiesProps {
     viewFirstLineOfLongText?: boolean;
     isPrintingMode?: boolean;
     pureString?: boolean;
+    searchedText?: string;
 }
 
 const getPropertyColor = (
@@ -150,6 +152,7 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     viewFirstLineOfLongText = false,
     isPrintingMode = false,
     pureString = false,
+    searchedText,
 }) => {
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
@@ -193,7 +196,8 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                     innerContent = viewFirstLineOfLongText
                         ? `${getFirstLine(stringFormatValue)}${getNumLines(stringFormatValue) > 1 ? '...' : ''}`
                         : renderHTML(stringFormatValue);
-                else if (propertyValue && propertySchema.calculateTime) innerContent = <CalculateDateDifference date={stringFormatValue} />;
+                else if (propertyValue && propertySchema.calculateTime)
+                    innerContent = <CalculateDateDifference date={stringFormatValue} searchValue={searchedText} />;
                 else if (propertyValue && propertySchema.type === 'number') innerContent = getFixedNumber(propertyValue);
                 else innerContent = stringFormatValue;
 
@@ -281,7 +285,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                                             direction: propertySchema.type === 'number' ? 'rtl' : textDirection,
                                         }}
                                     >
-                                        <VerifyLink>{innerContent}</VerifyLink>
+                                        <VerifyLink>
+                                            <HighlightText text={innerContent} searchedText={searchedText} />
+                                        </VerifyLink>
                                     </Typography>
                                 </MeltaTooltip>
                                 <Grid item>

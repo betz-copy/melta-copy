@@ -1,5 +1,5 @@
 /* eslint-disable no-nested-ternary */
-import { Menu, Search, Hive as HiveIcon } from '@mui/icons-material';
+import { Menu, Search } from '@mui/icons-material';
 import {
     Box,
     Button,
@@ -25,7 +25,6 @@ import { IoIosArrowBack, IoIosArrowDown, IoIosArrowUp } from 'react-icons/io';
 import { MeltaTooltip } from './MeltaTooltip';
 import { MeltaCheckbox } from './MeltaCheckbox';
 import { useDarkModeStore } from '../stores/darkMode';
-import { CustomIcon } from './CustomIcon';
 
 export type MenuItemContentProps<Option = any> = {
     checked?: boolean;
@@ -36,11 +35,10 @@ export type MenuItemContentProps<Option = any> = {
     group?: boolean;
     insideGroup?: boolean;
     option?: Option;
+    showIcon?: boolean;
 };
 
-export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup, option }) => {
-    const theme = useTheme();
-
+export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indeterminate, label, isDraggable, group, insideGroup }) => {
     return (
         <>
             {!group && (
@@ -59,13 +57,7 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                     {isDraggable && <Menu sx={{ fontSize: '1rem' }} />}
                 </Grid>
             )}
-            {checked ? (
-                <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
-            ) : option.iconFileId?.length > 0 ? (
-                <CustomIcon color={theme.palette.primary.main} iconUrl={option.iconFileId!} height="15px" width="15px" />
-            ) : (
-                <HiveIcon style={{ color: theme.palette.primary.main }} fontSize="inherit" />
-            )}
+            <MeltaCheckbox checked={checked} indeterminate={indeterminate} />
 
             <ListItemText
                 primary={
@@ -124,6 +116,7 @@ export type SelectCheckboxProps<Option extends any, Group extends any = any> = P
     hideSearchBar?: boolean;
     hideChooseAll?: boolean;
     dynamicWidth?: number;
+    showIcon?: boolean;
 }>;
 
 export const groupByWithInitial = <T extends any>(collection: T[], keys: PropertyKey[], func: (value: T) => PropertyKey) => {
@@ -144,6 +137,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     menuItemSx = { width: '100%', height: '24px', padding: '0px, 5px, 0px, 0px', my: '5px' },
     insideGroup,
     handleOnDragEnd,
+    showIcon,
 }: {
     options: SelectCheckboxProps<Option, Group>['options'];
     selectedOptions?: SelectCheckboxProps<Option, Group>['selectedOptions'];
@@ -155,6 +149,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
     menuItemSx?: SxProps<Theme>;
     insideGroup?: boolean;
     handleOnDragEnd?: (result: DropResult) => void;
+    showIcon?: boolean;
 }) => {
     const isOptionChecked = (option: Option) => selectedOptions?.some((selectedOption) => getOptionId(selectedOption) === getOptionId(option));
 
@@ -210,6 +205,7 @@ export const SelectOptionsMenuItems = <Option extends any, Group extends any>({
                                     >
                                         <MenuItemContent
                                             checked={isOptionChecked(option)}
+                                            showIcon={showIcon}
                                             label={getOptionLabel(option)}
                                             order={index + 1}
                                             isDraggable={!isDraggableDisabled}
@@ -494,6 +490,7 @@ export const ChooseAllMenuItem = <Option extends any, Group extends any>({
                 indeterminate={selectedOptionsFiltered.length < optionsFiltered.length && selectedOptionsFiltered.length > 0}
                 label={i18next.t('selectChooseAll')}
                 order={0}
+                showIcon={false}
             />
         </MenuItem>
     );
@@ -520,6 +517,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
     hideSearchBar,
     hideChooseAll,
     dynamicWidth,
+    showIcon = false,
 }: SelectCheckboxProps<Option, Group>) => {
     const [miniFilterValue, setMiniFilterValue] = useState('');
     const [isOpen, setIsOpen] = useState(false);
@@ -621,7 +619,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
             >
                 {!isSelectDisabled && !hideSearchBar && <MiniFilter value={miniFilterValue} onChange={setMiniFilterValue} toTopBar={toTopBar} />}
                 {!isSelectDisabled && !hideChooseAll ? (
-                    <>
+                    <Box>
                         <ChooseAllMenuItem
                             options={options}
                             selectedOptionsFiltered={selectedOptionsFiltered}
@@ -631,7 +629,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         <Box sx={{ display: 'flex', justifyContent: 'center', my: '5px' }}>
                             <Divider style={{ width: '199px' }} />
                         </Box>
-                    </>
+                    </Box>
                 ) : (
                     <Typography color={theme.palette.primary.main} fontFamily="Rubik" fontWeight={400} marginX="16px" marginY="8px">
                         {title}
@@ -662,6 +660,7 @@ const SelectCheckbox = <Option extends any, Group extends any>({
                         isDraggableDisabled={isDraggableDisabled}
                         setOptions={setOptions}
                         handleOnDragEnd={onDragEnd}
+                        showIcon={showIcon}
                     />
                 )}
             </Select>

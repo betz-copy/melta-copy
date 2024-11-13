@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-import { Transaction } from 'neo4j-driver';
+import { QueryResult, Transaction } from 'neo4j-driver';
 import config from '../config';
 import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
@@ -7,7 +7,18 @@ import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
 const {
-    neo4j: { globalSearchIndexPrefix, templateSearchIndexPrefix, stringPropertySuffix, indexPropertiesLimit },
+    neo4j: {
+        globalSearchIndexPrefix,
+        templateSearchIndexPrefix,
+        stringPropertySuffix,
+        indexPropertiesLimit,
+        booleanPropertySuffix,
+        filePropertySuffix,
+        booleanHeYesValue,
+        booleanHeNoValue,
+        dummyTemplateId,
+    },
+    fileIdLength,
 } = config;
 
 export const usersFieldsSuffix = {
@@ -81,7 +92,15 @@ export default class Manager extends DefaultManagerNeo4j {
 
     private getTemplatePropertiesIndex(template: IEntityTemplate) {
         const templateProperties = Object.entries(template.properties.properties).map(([key, value]) => {
-            const { type, format } = value;
+            const { type, format, items } = value;
+
+            if (type === 'boolean') {
+                return `${key}${booleanPropertySuffix}`;
+            }
+
+            if (format === 'fileId' || items?.format === 'fileId') {
+                return `${key}${filePropertySuffix}`;
+            }
 
             if (type !== 'string' || format === 'date' || format === 'date-time') {
                 return `${key}${stringPropertySuffix}`;
@@ -152,26 +171,28 @@ export default class Manager extends DefaultManagerNeo4j {
             }),
         );
 
-        // https://github.com/neo4j/neo4j/issues/12288
-        // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
-        // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
-        // Here we only create the global search index if we already have more then one template.
-        // But the global search actually works without the global search index initialized.
-        if (templates.length > 1) {
-            const propertiesArray = Array.from(allTemplatesProperties);
-            if (propertiesArray.length >= indexPropertiesLimit) {
-                const propertiesChunks: string[][] = [];
-                for (let i = 0; i < propertiesArray.length; i += indexPropertiesLimit) {
-                    propertiesChunks.push(propertiesArray.slice(i, i + indexPropertiesLimit));
-                }
-                await Promise.all(
-                    propertiesChunks.map(async (properties, index) => {
-                        await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
-                    }),
-                );
-            } else {
-                await this.upsertSearchIndex(globalSearchIndexPrefix, templateIds, Array.from(allTemplatesProperties));
+        const propertiesArray = Array.from(allTemplatesProperties);
+        if (propertiesArray.length >= indexPropertiesLimit) {
+            const propertiesChunks: string[][] = [];
+            for (let i = 0; i < propertiesArray.length; i += indexPropertiesLimit) {
+                propertiesChunks.push(propertiesArray.slice(i, i + indexPropertiesLimit));
             }
+            await Promise.all(
+                propertiesChunks.map(async (properties, index) => {
+                    await this.upsertSearchIndex(`${globalSearchIndexPrefix}_${index + 1}`, templateIds, properties);
+                }),
+            );
+        } else {
+            // https://github.com/neo4j/neo4j/issues/12288
+            // The above issue explains that neo4j doesn't like it when you have 2 indexes with identical props and labels.
+            // It occurs when have 0 indexes in a workspace because we try to create global search index and an index for the templateId.
+            // So we insert a dummy property Id in order for it work
+            const shouldAddDummyProperty = templateIds.length <= 1;
+            await this.upsertSearchIndex(
+                globalSearchIndexPrefix,
+                [...templateIds, ...(shouldAddDummyProperty ? [dummyTemplateId] : [])],
+                Array.from(allTemplatesProperties),
+            );
         }
     }
 
@@ -187,5 +208,147 @@ export default class Manager extends DefaultManagerNeo4j {
 
     async deleteTemplateSearchIndex(templateId: string) {
         await this.dropIndexTransaction(`${templateSearchIndexPrefix}${templateId}`);
+    }
+
+    async createAllIndexes() {
+        console.log('INFO: Start creating all indexes of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+        await Promise.all(
+            templates.map(async (template) => {
+                const templateProperties = this.getTemplatePropertiesIndex(template);
+                const relationshipReferencesProperties = await this.getRelationshipReferencesPropertiesIndex(template);
+                const allProperties = [...relationshipReferencesProperties, ...templateProperties];
+
+                await this.upsertSearchIndex(`${templateSearchIndexPrefix}${template._id}`, [template._id], allProperties);
+            }),
+        );
+        console.log('INFO: Finished creating all indexes of templates');
+
+        console.log('INFO: Start creating global search index');
+        await this.upsertGlobalSearchIndex();
+        console.log('INFO: Finished creating global search index');
+    }
+
+    async deleteAllIndexes() {
+        console.log('INFO: Start deleting all indexes of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+        await Promise.all(
+            templates.map(async (template) => {
+                await this.dropIndexTransaction(`${templateSearchIndexPrefix}${template._id}`);
+            }),
+        );
+        console.log('INFO: Finished deleting all indexes of templates');
+
+        console.log('INFO: Start deleting global search index');
+        await this.dropIndexTransaction(globalSearchIndexPrefix);
+        console.log('INFO: Finished deleting global search index');
+    }
+
+    isBooleanPropsExists(propertyNames: string[]) {
+        return propertyNames.map((prop) => `((n.${prop} = true OR n.${prop} = false) AND n.${prop}${booleanPropertySuffix} IS NULL)`).join(' OR ');
+    }
+
+    createFixedBooleanProps(propertyNames: string[]) {
+        return propertyNames
+            .map(
+                (prop) =>
+                    `n.${prop}${booleanPropertySuffix} = CASE n.${prop} WHEN true THEN '${booleanHeYesValue}' WHEN false THEN '${booleanHeNoValue}' END`,
+            )
+            .join(', ');
+    }
+
+    isFilePropsExists(propertyNames: string[]) {
+        return propertyNames.map((prop) => `(n.${prop} IS NOT NULL AND n.${prop}${filePropertySuffix} IS NULL)`).join(' OR ');
+    }
+
+    createFixedFileProps(propertyNames: string[]) {
+        return propertyNames.map((prop) => `n.${prop}${filePropertySuffix} = substring(n.${prop}, ${fileIdLength})`).join(', ');
+    }
+
+    createFixedFilesArrayProps(propertyNames: string[]) {
+        return propertyNames.map((prop) => `n.${prop}${filePropertySuffix} = [x IN n.${prop} | substring(x, ${fileIdLength})]`).join(', ');
+    }
+
+    // Update all boolean and file properties of a template script
+    async updateTemplateNonStringProps(template: IEntityTemplate) {
+        try {
+            console.log('INFO: Start updating non-string properties of template: ', template._id);
+            const booleanProperties: string[] = [];
+            const fileProperties: string[] = [];
+            const arrayFileProperties: string[] = [];
+
+            Object.entries(template.properties.properties).forEach(([key, value]) => {
+                if (value.type === 'boolean') booleanProperties.push(key);
+                if (value.format === 'fileId') fileProperties.push(key);
+                if (value.items?.format === 'fileId') arrayFileProperties.push(key);
+            });
+
+            const addFixedBooleanPropsQuery = `
+                MATCH (n:\`${template._id}\`)
+                WHERE ${this.isBooleanPropsExists(booleanProperties)}
+                SET
+                ${this.createFixedBooleanProps(booleanProperties)}
+                RETURN count(n) AS nodesUpdated
+            `;
+            const addFixedFilePropsQuery = `
+                MATCH (n:\`${template._id}\`)
+                WHERE ${this.isFilePropsExists(fileProperties)} 
+                SET
+                ${this.createFixedFileProps(fileProperties)}
+                RETURN count(n) AS nodesUpdated
+            `;
+            const addFixedArrayFilePropsQuery = `
+                MATCH (n:\`${template._id}\`)
+                WHERE ${this.isFilePropsExists(arrayFileProperties)}
+                SET
+                ${this.createFixedFilesArrayProps(arrayFileProperties)}
+                RETURN count(n) AS nodesUpdated
+            `;
+
+            const { updateBooleanRes, updateFileRes, updateArrayFileRes } = await this.neo4jClient.performComplexTransaction(
+                'writeTransaction',
+                async (transaction) => {
+                    let updateBooleanPropsRes: QueryResult | undefined;
+                    let updateFilePropsRes: QueryResult | undefined;
+                    let updateArrayFilePropsRes: QueryResult | undefined;
+
+                    if (booleanProperties.length > 0) {
+                        console.log('INFO: Running addFixedBooleanProps query: ', addFixedBooleanPropsQuery);
+                        updateBooleanPropsRes = await transaction.run(addFixedBooleanPropsQuery);
+                    }
+                    if (fileProperties.length > 0) {
+                        console.log('INFO: Running addFixedFileProps query: ', addFixedFilePropsQuery);
+                        updateFilePropsRes = await transaction.run(addFixedFilePropsQuery);
+                    }
+                    if (arrayFileProperties.length > 0) {
+                        console.log('INFO: Running addFixedArrayFileProps query: ', addFixedArrayFilePropsQuery);
+                        updateArrayFilePropsRes = await transaction.run(addFixedArrayFilePropsQuery);
+                    }
+
+                    return {
+                        updateBooleanRes: updateBooleanPropsRes,
+                        updateFileRes: updateFilePropsRes,
+                        updateArrayFileRes: updateArrayFilePropsRes,
+                    };
+                },
+            );
+
+            const nodesUpdatedBoolean = updateBooleanRes?.records[0]?.get('nodesUpdated');
+            console.log('INFO: Finished updating boolean properties of template: ', template._id, ' nodes updated: ', nodesUpdatedBoolean);
+            const nodesUpdatedFile = updateFileRes?.records[0]?.get('nodesUpdated');
+            console.log('INFO: Finished updating file properties of template: ', template._id, ' nodes updated: ', nodesUpdatedFile);
+            const nodesUpdatedArrayFile = updateArrayFileRes?.records[0]?.get('nodesUpdated');
+            console.log('INFO: Finished updating array file properties of template: ', template._id, ' nodes updated: ', nodesUpdatedArrayFile);
+        } catch (error) {
+            console.log('ERROR: Failed to update non-string properties of template: ', template._id, ' error: ', error);
+        }
+    }
+
+    async updateAllNonStringProps() {
+        console.log('INFO: Start updating all non-string properties of templates');
+        const templates = await this.templateManagerService.searchEntityTemplates();
+
+        await Promise.all(templates.map((template) => this.updateTemplateNonStringProps(template)));
+        console.log('INFO: Finished updating all non-string properties of templates');
     }
 }

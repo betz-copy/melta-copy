@@ -27,7 +27,11 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     const userKeys: Set<string> = new Set<string>();
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
+        if (
+            key.endsWith(config.neo4j.stringPropertySuffix) ||
+            key.endsWith(config.neo4j.booleanPropertySuffix) ||
+            key.endsWith(config.neo4j.filePropertySuffix)
+        ) {
             return;
         }
 
@@ -89,10 +93,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -123,6 +127,7 @@ export const normalizeResponseTemplatesCount = (result: QueryResult): { template
     return result.records.map((record) => ({
         templateId: record.get('templateId'),
         count: +record.get('count'),
+        entityIdsToInclude: (record.has('entityIdsToInclude') && record.get('entityIdsToInclude')) ?? undefined,
     }));
 };
 

@@ -1,8 +1,8 @@
 import { FilterQuery } from 'mongoose';
+import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
 import { IGantt, ISearchGanttsBody } from './interface';
 import { GanttSchema } from './model';
 
@@ -29,7 +29,7 @@ export default class GanttManager extends DefaultManagerMongo<IGantt> {
     }
 
     async getGanttById(ganttId: string) {
-        return this.model.findById(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+        return this.model.findById(ganttId).orFail(new NotFoundError('Gantt not found')).lean().exec();
     }
 
     async createGantt(gantt: IGantt) {
@@ -37,13 +37,13 @@ export default class GanttManager extends DefaultManagerMongo<IGantt> {
     }
 
     async deleteGantt(ganttId: string) {
-        return this.model.findByIdAndDelete(ganttId).orFail(new ServiceError(404, 'Gantt not found')).lean().exec();
+        return this.model.findByIdAndDelete(ganttId).orFail(new NotFoundError('Gantt not found')).lean().exec();
     }
 
     async updateGantt(ganttId: string, gantt: IGantt) {
         return this.model
             .findByIdAndUpdate(ganttId, gantt, { new: true, overwrite: true })
-            .orFail(new ServiceError(404, 'Gantt not found'))
+            .orFail(new NotFoundError('Gantt not found'))
             .lean()
             .exec();
     }

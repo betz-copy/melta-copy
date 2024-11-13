@@ -4,7 +4,7 @@ import { IUniqueConstraintOfTemplate } from './entities';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference' | 'user';
+    format?: string;
     enum?: string[];
     items?: {
         type: 'string';
