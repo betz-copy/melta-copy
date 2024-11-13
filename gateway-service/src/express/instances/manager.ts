@@ -11,6 +11,7 @@ import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
+    ICountSearchResult,
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
@@ -157,11 +158,13 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns);
         const { searchEntitiesChunkSize } = config.service;
-        const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-            limit: 1,
-            filter,
-            sort,
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [template._id],
+            textSearch,
         });
+
+        const { count, entityIdsToInclude } = templateCount?.[0] ?? { count: 0, entityIdsToInclude: {} };
+
         for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
@@ -169,6 +172,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 textSearch,
                 filter,
                 sort,
+                entityIdsToInclude: Object.keys(entityIdsToInclude),
             });
             styleAWorksheet(
                 worksheet,
@@ -342,7 +346,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.searchEntitiesBatch(searchBody);
     }
 
-    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
         return this.service.getEntitiesCountByTemplates({
             ...searchBody,
             semanticSearchResult:
