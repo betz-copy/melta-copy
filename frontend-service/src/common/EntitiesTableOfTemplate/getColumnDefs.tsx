@@ -27,7 +27,7 @@ import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonPopoverProps<Data>;
@@ -53,6 +53,7 @@ export interface IGetColumnDefsOptions<Data extends any> {
     closeDeleteDialog: () => void;
     deleteMutation: UseMutateAsyncFunction<any, AxiosError<any, any>, string, unknown>;
     isDeleteLoading: boolean;
+    searchValue?: string;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -77,6 +78,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     closeDeleteDialog,
     deleteMutation,
     isDeleteLoading,
+    searchValue,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -91,11 +93,31 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 ? !defaultVisibleColumns[property]
                 : hideNonPreview && !template.propertiesPreview.includes(property);
 
-        if (type === 'number') return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
-        if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (type === 'number')
+            return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
+        if (type === 'boolean')
+            return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
         if (format === 'date' || format === 'date-time')
-            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
-        if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
+            return dateColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                calculateTime,
+                searchValue,
+            );
+        if (format === 'fileId')
+            return fileColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                searchValue,
+                Object.values(template.entityIdsToInclude ?? {}).flat(),
+            );
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
                 property,
@@ -105,6 +127,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 propertyTemplate.relationshipReference!.relatedTemplateId,
                 propertyTemplate.relationshipReference!.relatedTemplateField,
                 hideColumn,
+                searchValue,
             );
         if (propertyTemplate.enum)
             return enumColDef(
@@ -116,9 +139,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                searchValue,
             );
         if (propertyTemplate.pattern)
-            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
                 property,
@@ -130,16 +154,26 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                searchValue,
             );
         if (propertyTemplate.items) {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+            return enumFilesColDef(
+                property,
+                valueGetter,
+                { title: propertyTemplate.title },
+                defaultColumnWidths[property],
+                rowHeight,
+                false,
+                searchValue,
+                Object.values(template.entityIdsToInclude ?? {}).flat(),
+            );
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, searchValue);
     });
     columnDefs.push(
         booleanColDef(
             'disabled',
-            ({ data }) => (data ? getEntityPropertiesData(data).disabled : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).disabled : undefined),
             {
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
@@ -151,7 +185,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     columnDefs.push(
         dateColDef(
             'createdAt',
-            ({ data }) => (data ? getEntityPropertiesData(data).createdAt : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).createdAt : undefined),
             {
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
@@ -164,7 +198,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     columnDefs.push(
         dateColDef(
             'updatedAt',
-            ({ data }) => (data ? getEntityPropertiesData(data).updatedAt : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).updatedAt : undefined),
             {
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',
@@ -203,8 +237,8 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 justifyContent: 'center',
             },
             cellRenderer: memo<{ data: Data }>(({ data }) => {
-                const { disabled: disabledEntity } = getEntityPropertiesData(data);
-
+                const entity = getEntityPropertiesData(data);
+                const { disabled: disabledEntity } = entity;
                 return (
                     <Grid container flexWrap="nowrap">
                         {onNavigateToRow && (
@@ -258,7 +292,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                 </IconButtonWithPopover>
                             </Grid>
                         )}
-
                         {onNavigateToRow && (
                             <Grid item>
                                 <Link

@@ -28,7 +28,11 @@ const GlobalSearch: React.FC<{}> = () => {
     const [urlSearchParams, setUrlSearchParams] = useSearchParams({});
 
     return urlSearchParams.get('search') === null ? (
-        <StartPageSearch onSearch={(searchValue) => setUrlSearchParams({ search: searchValue, viewMode: 'templates-tables-view' })} />
+        <StartPageSearch
+            onSearch={(searchValue) =>
+                setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), search: searchValue, viewMode: 'templates-tables-view' })
+            }
+        />
     ) : (
         <EntitiesPage
             pageType="globalSearch"

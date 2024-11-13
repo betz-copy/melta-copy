@@ -10,10 +10,10 @@ import {
     MeetingRoom as ExitIcon,
     Widgets as WidgetsIcon,
 } from '@mui/icons-material';
-import LinkIcon from '@mui/icons-material/Link';
 import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
+import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
 import { INotificationCountGroups } from '../../interfaces/notifications';
@@ -208,6 +208,7 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                                 borderRadius="30px"
                                 width="199px"
                                 autoSearch
+                                showAiButton
                             />
                         ) : (
                             <Grid onClick={() => toggleDrawer()}>
@@ -308,9 +309,6 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         extension={
                             iFramesInSidebar?.length! > 0 ? (
                                 <Grid container display="flex" flexDirection="column">
-                                    <Grid item padding={1}>
-                                        {i18next.t('iFrames.favoritesIFrames')}
-                                    </Grid>
                                     <Grid item width="150px" maxHeight="450px" sx={{ overflow: 'auto' }}>
                                         {iFramesInSidebar?.map((iFrame) => (
                                             <Grid
@@ -363,7 +361,10 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
                         onChangeToActive={(isActive: boolean) => handleChangeActiveButton(isActive, 'iFrames')}
                         isActiveButton={activeButton === 'iFrames'}
                     >
-                        <LinkIcon fontSize="large" sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }} />
+                        <StarBorderPurple500Icon
+                            fontSize="large"
+                            sx={{ color: activeButton === 'iFrames' ? '#545eb9' : 'white', ...environment.iconSize }}
+                        />
                     </NavButton>
 
                     <NavButton
