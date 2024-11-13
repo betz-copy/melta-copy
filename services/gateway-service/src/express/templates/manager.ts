@@ -469,13 +469,13 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const entityTemplate = await this.entityTemplateService.deleteEntityTemplate(id);
 
         return {
-            ...entityTemplate.toObject(),
+            ...entityTemplate,
             properties: {
                 ...entityTemplate.properties,
                 required: [],
-            },
-            uniqueConstraints: [],
-        };
+            } as IMongoEntityTemplateWithConstraints['properties'],
+            uniqueConstraints: [] as IMongoEntityTemplateWithConstraints['uniqueConstraints'],
+        } as IMongoEntityTemplateWithConstraints;
     }
 
     async updateNewSerialNumberFields(

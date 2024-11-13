@@ -2,7 +2,7 @@ import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entit
 
 export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate): IMongoEntityTemplate => {
     return {
-        ...entityTemplate.toObject(),
+        ...entityTemplate,
         properties: {
             ...entityTemplate.properties,
             properties: {
@@ -12,7 +12,7 @@ export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate)
                 createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
                 updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
             },
-        },
-        propertiesOrder: [...entityTemplate.propertiesOrder, '_id', 'disabled', 'createdAt', 'updatedAt'],
-    };
+        } as IMongoEntityTemplate['properties'],
+        propertiesOrder: [...entityTemplate.propertiesOrder, '_id', 'disabled', 'createdAt', 'updatedAt'] as IMongoEntityTemplate['propertiesOrder'],
+    } as IMongoEntityTemplate;
 };
