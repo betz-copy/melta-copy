@@ -70,7 +70,6 @@ export const MenuItemContent: React.FC<MenuItemContentProps> = ({ checked, indet
                                 lineHeight: '17px',
                                 letterSpacing: '0em',
                                 textAlign: 'right',
-                                color: '#101440',
                                 width: '120px',
                                 height: '17px',
                                 marginRight: '10px',
