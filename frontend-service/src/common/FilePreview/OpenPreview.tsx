@@ -47,11 +47,8 @@ const OpenPreview: React.FC<{
     onClick?: React.MouseEventHandler<HTMLButtonElement>;
     loading?: boolean;
 }> = ({ fileId, img, showText = true, type = 'preview', onClick, loading }) => {
-    console.log({ fileId, type });
-
     // eslint-disable-next-line no-nested-ternary
     const fileName = typeof fileId === 'string' ? (type === 'exportTable' ? fileId : getFileName(fileId)) : fileId.name;
-    console.log({ fileName });
 
     const [open, setOpen] = useState(false);
     const contentType = getPreviewContentType(fileName);

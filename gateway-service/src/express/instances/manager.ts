@@ -8,9 +8,10 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, IEntityWithDirectRelationships, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -32,7 +33,7 @@ import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/ex
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError } from '../error';
+import { BadRequestError, ServiceError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
@@ -143,50 +144,32 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns, insertEntities);
-        if (!insertEntities?.insert || (insertEntities && insertEntities.entities)) {
-            const { searchEntitiesChunkSize } = config.service;
-            let length = 0;
-            if (insertEntities && insertEntities.entities) length = insertEntities.entities.length;
+        const { searchEntitiesChunkSize } = config.service;
+
+        if (!insertEntities?.insert || insertEntities?.entities) {
+            if (insertEntities?.entities) styleAWorksheet(worksheet, insertEntities.entities, template, workspace, displayColumns);
             else {
                 const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                     limit: 1,
                     filter,
                     sort,
                 });
-                length = count;
-            }
-            for (let skip = 0; length - skip > 0; skip += searchEntitiesChunkSize) {
-                let chunk: IEntityWithDirectRelationships[] | Record<string, any>[] = [];
-                if (insertEntities && insertEntities.entities) chunk = insertEntities.entities.splice(skip, searchEntitiesChunkSize);
-                else {
-                    const { entities } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
+                for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
+                    const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                         skip,
                         limit: searchEntitiesChunkSize,
                         textSearch,
                         filter,
                         sort,
                     });
-                    chunk = entities;
+                    styleAWorksheet(
+                        worksheet,
+                        chunk.map((row) => row.entity.properties),
+                        template,
+                        workspace,
+                        displayColumns,
+                    );
                 }
-
-                // const rows = fixComplexProperties(
-                //     insertEntities && insertEntities.entities ? chunk : chunk.map((row) => row.entity.properties),
-                //     template,
-                // );
-
-                // rows.forEach((row) => {
-                //     const excelRow = worksheet.addRow(row);
-                //     styleAWorksheet(worksheet);
-                //     excelRow.commit();
-                // });
-
-                styleAWorksheet(
-                    worksheet,
-                    chunk.map((row) => row.entity.properties),
-                    template,
-                    workspace,
-                    displayColumns,
-                );
             }
         }
     }
@@ -194,6 +177,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async loadExcelEntities(file: Express.Multer.File, templateId: string, userId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const actions = await this.readExcelFile(file, template);
+        const allEntities = actions.map((action) => action.actionMetadata);
         let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
 
         type IErrorProperty = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
@@ -223,11 +207,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                                 }),
                             )
                             .flat();
-
-                        const brokenRulePopulated = await this.ruleBreachesManager.populateBrokenRules(result[0].reason.metadata.brokenRules);
+                        const rawBrokenRules = result[0].reason.metadata.brokenRules;
+                        const brokenRulePopulated = await this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
 
                         brokenRulesEntities = {
-                            rawBrokenRules: result[0].reason.metadata.brokenRules,
+                            rawBrokenRules,
                             brokenRules: brokenRulePopulated,
                             entities,
                         };
@@ -252,23 +236,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             }
         }
 
-        if (result[0].status === 'fulfilled') {
-            // const succeededActions = result[0].value.map((entity) => ({
-            //     actionType: ActionTypes.CreateEntity,
-            //     actionMetadata: entity,
-            // }));
-            // if (succeededActions.length > 0) await this.runBulkOfActions([succeededActions], false, userId, []);
-            return {
-                allEntities: actions.map((action) => action.actionMetadata),
-                succeededEntities: result[0].value,
-                failedEntities,
-                brokenRulesEntities,
-            };
-        }
-
         return {
-            allEntities: actions.map((action) => action.actionMetadata),
-            succeededEntities: [],
+            allEntities,
+            succeededEntities: result[0].status === 'fulfilled' ? result[0].value : [],
             failedEntities,
             brokenRulesEntities,
         };
@@ -276,18 +246,17 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private formatExcel(value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) {
         const { type, format } = propertyTemplate;
+        if (value === null) return undefined;
 
         if (type === 'boolean') {
             if (value === excelConfig.TRUE_TO_HEBREW) return true;
             if (value === excelConfig.FALSE_TO_HEBREW) return false;
         }
         if (type === 'string') {
-            if (value === null) return undefined;
             if (format === 'date') return new Date(value as string).toLocaleDateString('en-uk');
             if (format === 'date-time') return new Date(value as string).toLocaleString('en-uk');
         }
         if (type === 'array') {
-            if (value === null) return undefined;
             if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
                 return value?.richText.map((item) => item.text).filter((text) => text !== ', ');
         }
@@ -298,6 +267,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const workbook = new Excel.Workbook();
         await workbook.xlsx.readFile(file.path);
         const worksheet = workbook.worksheets[0];
+        if (worksheet.name !== `${template.displayName}${template._id}`) throw new ServiceError(StatusCodes.BAD_REQUEST, 'invalid excel');
 
         const actions: IAction[] = [];
         worksheet.eachRow((row, rowIndex) => {

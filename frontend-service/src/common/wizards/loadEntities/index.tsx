@@ -5,9 +5,10 @@ import { toast } from 'react-toastify';
 import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
 import { StepsType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { exportEntitiesRequest } from '../../../services/entitiesService';
+import { exportEntitiesRequest, runBulkOfActionsRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { LoadEntitiesTable } from './loadEntitiesTable';
 import { IBrokenRule, IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
@@ -68,12 +69,22 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
     );
 
-    const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
-        async (fileName: string, insertEntities?: { insert: boolean; entities?: Record<string, any>[] }) => {
+    interface InsertEntities {
+        insert: boolean;
+        entities?: Record<string, any>[];
+    }
+
+    interface ExportRequestParams {
+        fileName: string;
+        insertEntities?: InsertEntities;
+    }
+
+    const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation<any, unknown, ExportRequestParams>(
+        async ({ fileName, insertEntities }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {
-                    [template._id]: { insertEntities },
+                    [template._id]: { insertEntities, displayColumns: template.propertiesOrder },
                 },
             });
         },
@@ -110,7 +121,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             component: () => (
                 <OpenPreview
                     fileId={`${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}.xlsx`}
-                    onClick={() => exportTemplateToExcel(`${template.displayName} .xlsx`, { insert: true })}
+                    onClick={() =>
+                        exportTemplateToExcel({
+                            fileName: `${template.displayName}.xlsx`,
+                            insertEntities: {
+                                insert: true,
+                            },
+                        })
+                    }
                     loading={isExportingTableToExcelFile}
                     type="exportTable"
                     showText
@@ -156,13 +174,15 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         {...props}
                         tablesData={steps.data}
                         template={template}
-                        // onDownload={exportTemplateToExcel(
-                        //     `${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`,
-                        //     {
-                        //         insert: true,
-                        //         entities: tablesData.failedEntities.map((entity) => entity.properties),
-                        //     },
-                        // )}
+                        onDownload={() => {
+                            return exportTemplateToExcel({
+                                fileName: `${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`,
+                                insertEntities: {
+                                    insert: true,
+                                    entities: steps.data.failedEntities.map((entity) => entity.properties),
+                                },
+                            });
+                        }}
                         isDownloadLoading={isExportingTableToExcelFile}
                     />
                 );
