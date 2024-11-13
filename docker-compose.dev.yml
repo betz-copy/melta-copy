@@ -315,6 +315,23 @@ services:
     networks:
       - network
 
+  semantic-service:
+    ports:
+      - 8014:8000
+    restart: always
+    volumes:
+      - logs:/usr/src/app/logs
+      - ../neo4j-graph-rag/src:/app/src
+    networks:
+      - network
+
+  mock-model-api:
+    ports:
+      - 8015:8000
+    restart: always
+    networks:
+      - network
+
 volumes:
   elastic_data:
   logstash_data:

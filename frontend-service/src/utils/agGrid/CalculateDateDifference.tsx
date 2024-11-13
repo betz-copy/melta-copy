@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { intervalToDuration, isFuture, isToday, isTomorrow, isYesterday, parse } from 'date-fns';
 import i18next from 'i18next';
+import { HighlightText } from '../HighlightText';
 
-const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
+const CalculateDateDifference: React.FC<{ date: string; searchValue?: string }> = ({ date, searchValue }) => {
     const [currentDateTime, setCurrentDateTime] = useState(new Date());
     const [showTimeIndicator, setShowTimeIndicator] = useState(true);
     const [startMinuteTimer, setStartMinuteTimer] = useState(false);
@@ -69,7 +70,7 @@ const CalculateDateDifference: React.FC<{ date: string }> = ({ date }) => {
     return (
         <>
             {showTimeIndicator && isFuture(parsedDate) && i18next.t('agGridTimes.future')}
-            {` ${displayValue()} (${date})`}
+            <HighlightText text={` ${displayValue()} (${date})`} searchedText={searchValue} />
         </>
     );
 };
