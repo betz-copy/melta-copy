@@ -143,7 +143,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     columnDefs.push(
         booleanColDef(
             'disabled',
-            ({ data }) => (data ? getEntityPropertiesData(data).disabled : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).disabled : undefined),
             {
                 title: i18next.t('entitiesTableOfTemplate.disabledHeaderName'),
             },
@@ -155,7 +155,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     columnDefs.push(
         dateColDef(
             'createdAt',
-            ({ data }) => (data ? getEntityPropertiesData(data).createdAt : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).createdAt : undefined),
             {
                 title: i18next.t('entityPage.createdAt'),
                 format: 'date-time',
@@ -168,7 +168,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
     columnDefs.push(
         dateColDef(
             'updatedAt',
-            ({ data }) => (data ? getEntityPropertiesData(data).updatedAt : undefined),
+            ({ data }) => (data ? getEntityPropertiesData(data as Data).updatedAt : undefined),
             {
                 title: i18next.t('entityPage.updatedAt'),
                 format: 'date-time',

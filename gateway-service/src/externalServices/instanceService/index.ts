@@ -92,7 +92,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody & { entityIdsToInclude?: string[] }) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
         return data;
@@ -105,7 +105,7 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody & { semanticSearchResult?: ISemanticSearchResult }) {
-        const { data } = await this.api.post<ICountSearchResult>(`${baseEntitiesRoute}/count`, searchBody);
+        const { data } = await this.api.post<ICountSearchResult[]>(`${baseEntitiesRoute}/count`, searchBody);
 
         return data;
     }
