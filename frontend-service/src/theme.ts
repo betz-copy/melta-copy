@@ -48,10 +48,17 @@ export const sideBarTransition = 'all 0.3s linear';
 //     height: '24px',
 // };
 
+const colors = {
+    main: {
+        light: '#1E2775',
+        dark: '#9398c2',
+    },
+} as const;
+
 export const lightTheme = createTheme({
     ...basicTheme,
     palette: {
-        primary: { main: '#1E2775' },
+        primary: { main: colors.main.light },
     },
     components: {
         ...basicTheme.components,
@@ -63,15 +70,8 @@ export const lightTheme = createTheme({
                 '::-webkit-scrollbar-track': { background: 'lightgray', borderRadius: 20 },
 
                 '.ag-theme-material': {
-                    '--ag-background-color': '#FFF !important',
-                    '--ag-row-hover-color': '#EBEFFA !important',
-                    '--ag-foreground-color': '#53566E !important',
-                    '--ag-row-border-style': 'none',
-                    '--ag-border-style': 'none',
-
-                    '--ag-header-foreground-color': '#101440 !important',
-                    '--ag-header-cell-hover-background-color': '#EBEFFA !important',
-                    '--ag-header-cell-moving-background-color': '#EBEFFA !important',
+                    '--ag-material-primary-color': `${colors.main.light} !important`,
+                    '--ag-material-accent-color': `${colors.main.light} !important`,
                 },
             },
         },
@@ -82,7 +82,7 @@ export const darkTheme = createTheme({
     ...basicTheme,
     palette: {
         mode: 'dark',
-        primary: { main: '#9398c2' },
+        primary: { main: colors.main.dark },
     },
     components: {
         ...basicTheme.components,
@@ -92,25 +92,9 @@ export const darkTheme = createTheme({
                 '::-webkit-scrollbar-thumb': { background: '#8e8e92', borderRadius: 20 },
                 '::-webkit-scrollbar-track': { background: '#535356', borderRadius: 20 },
 
-                // agGrid dark mode:
-                '.ag-theme-material': {
-                    '--ag-row-hover-color': 'rgba(255, 255, 255, 0.1) !important',
-                    '--ag-foreground-color': 'white !important',
-                    '--ag-secondary-foreground-color': 'white !important', // used for "ag-paging-panel", menu icons, and more?
-                    '--ag-disabled-foreground-color': 'rgba(255, 255, 255, 0.7) !important', // used also for placeholders color
-                    '--ag-header-foreground-color': 'white !important',
-                    '--ag-background-color': '#171717 !important',
-                    '--ag-header-background-color': '#171717 !important',
-                    '--ag-border-color': '#404040 !important',
-                    '--ag-control-panel-background-color': '#202020 !important',
-                    '--ag-subheader-background-color': '#202020 !important',
-
-                    '--ag-header-cell-hover-background-color': 'rgba(255, 255, 255, 0.12) !important',
-                    '--ag-header-cell-moving-background-color': 'rgba(255, 255, 255, 0.12) !important',
-                },
-
-                '.ag-row': {
-                    backgroundColor: '#212121 !important',
+                '.ag-theme-material-dark': {
+                    '--ag-material-primary-color': `${colors.main.dark} !important`,
+                    '--ag-material-accent-color': `${colors.main.dark} !important`,
                 },
             },
         },

@@ -1,18 +1,17 @@
-import 'elastic-apm-node/start';
-import mongoose from 'mongoose';
 import axios from 'axios';
+import 'elastic-apm-node/start';
 import menash from 'menashmq';
-import Server from './express/server';
+import mongoose from 'mongoose';
 import config from './config';
+import Server from './express/server';
 import logger from './utils/logger/logsLogger';
 
 const { mongo, service, rabbit } = config;
 
-
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url);
+    await mongoose.connect(mongo.url, mongo.connectionOptions);
 
     logger.info('Mongo connection established');
 };

@@ -1,56 +1,49 @@
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams, ModuleRegistry } from '@ag-grid-community/core';
+import { ColDef, ICellRendererParams, IServerSideDatasource, IServerSideGetRowsParams } from '@ag-grid-community/core';
 import { AgGridReact } from '@ag-grid-community/react';
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
 import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
 import { Chip, Grid, IconButton } from '@mui/material';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
-import '@noam7700/ag-grid-enterprise-core';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
 import i18next from 'i18next';
 import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef } from 'react';
 import ScrollContainer from 'react-indiana-drag-scroll';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
 import { IMongoCategory } from '../../interfaces/categories';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission } from '../../interfaces/permissions/permissions';
 import { IUser } from '../../interfaces/users';
-import { useWorkspaceStore } from '../../stores/workspace';
-import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
-import { searchUsersRequest } from '../../services/userService';
-import { trycatch } from '../../utils/trycatch';
 import { IWorkspace } from '../../interfaces/workspaces';
+import { searchUsersRequest } from '../../services/userService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { useWorkspaceStore } from '../../stores/workspace';
+import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
+import { translatedEnumColDef } from '../../utils/agGrid/commonColDefs';
+import { trycatch } from '../../utils/trycatch';
 
 const { defaultRowHeight } = environment.agGrid;
 const { infiniteScrollPageCount } = environment.permission;
-
-ModuleRegistry.registerModules([ServerSideRowModelModule]);
 
 const scopesTranslation: Record<string, string> = i18next.t('permissions.scopes', { returnObjects: true });
 
 const defaultColDef: ColDef<IUser> = {
     editable: false,
-    sortable: true,
+    sortable: false,
     flex: 1,
     minWidth: 100,
     filterParams: {
-        suppressAndOrCondition: true,
+        maxNumConditions: 1,
         buttons: ['reset'],
     },
     resizable: true,
     menuTabs: ['filterMenuTab'],
+    suppressHeaderMenuButton: true,
 };
 
-const columnDefs = <Data extends IUser>(
+const columnDefs = (
     workspaceId: string,
     categories: IMongoCategory[],
     onDeletePermissionsOfUser: (permissionsOfUser: IUser) => any,
     onEditPermissionsOfUser: (permissionsOfUser: IUser) => any,
-): ColDef<Data>[] => [
+): ColDef[] => [
     {
         field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
@@ -62,7 +55,7 @@ const columnDefs = <Data extends IUser>(
         filter: 'agTextColumnFilter',
         hide: true,
     },
-    translatedEnumColDef({
+    translatedEnumColDef<IUser>({
         field: 'permissionsManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.permissions?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
@@ -70,7 +63,7 @@ const columnDefs = <Data extends IUser>(
         valuesMap: scopesTranslation,
         disableFilterAndSort: true,
     }),
-    translatedEnumColDef({
+    translatedEnumColDef<IUser>({
         field: 'templatesManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
@@ -79,14 +72,14 @@ const columnDefs = <Data extends IUser>(
 
         disableFilterAndSort: true,
     }),
-    translatedEnumColDef({
+    translatedEnumColDef<IUser>({
         field: 'rulesManagement',
         valueGetter: (params) => (params.data?.permissions[workspaceId]?.rules?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.rulesManagement'),
         valuesMap: scopesTranslation,
         disableFilterAndSort: true,
     }),
-    translatedEnumColDef({
+    translatedEnumColDef<IUser>({
         field: 'processesManagement',
         valueGetter: (params) =>
             (params.data?.permissions[workspaceId]?.processes?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
@@ -101,6 +94,7 @@ const columnDefs = <Data extends IUser>(
         filter: false, // todo: do set filter with `.includes` logic
         suppressMenu: true,
         sortable: false,
+        suppressHeaderMenuButton: true,
         // filter: 'agSetColumnFilter',
         // filterParams: {
         //     values: categories.map(({ _id }) => _id),
@@ -154,7 +148,7 @@ const columnDefs = <Data extends IUser>(
         colId: 'actions', // used for autoSizeColumns onFirstDataRendered
         sortable: false,
         filter: false,
-        suppressMenu: true,
+        suppressHeaderMenuButton: true,
         suppressColumnsToolPanel: true,
         cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
@@ -240,6 +234,7 @@ export type PermissionsTableRef<Data> = {
 
 const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTableProps<IUser>>(
     ({ categories, onDeletePermissionsOfUser, onEditPermissionsOfUser, quickFilterText }, ref: ForwardedRef<PermissionsTableRef<IUser>>) => {
+        const darkMode = useDarkModeStore((state) => state.darkMode);
         const workspace = useWorkspaceStore((state) => state.workspace);
         const gridRef = useRef<AgGridReact<IUser>>(null);
 
@@ -271,8 +266,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
         return (
             <AgGridReact<IUser>
                 ref={gridRef}
-                className="ag-theme-material"
-                modules={[MenuModule, ColumnsToolPanelModule, SetFilterModule, ClientSideRowModelModule]}
+                className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                 containerStyle={{ height: '780px', width: '100%', marginBottom: '30px', fontFamily: 'Rubik', fontSize: '16px', borderRadius: '70px' }}
                 defaultColDef={defaultColDef}
                 columnDefs={columnDefs(workspace._id, categories, onDeletePermissionsOfUser, onEditPermissionsOfUser)}
@@ -288,7 +282,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
                 suppressExcelExport
                 suppressContextMenu
                 onFirstDataRendered={(params) => {
-                    params.columnApi.autoSizeColumns([
+                    params.api.autoSizeColumns([
                         'actions',
                         'displayName',
                         'source',
@@ -313,7 +307,7 @@ const PermissionsTable = forwardRef<PermissionsTableRef<IUser>, PermissionsTable
                     position: 'left',
                 }}
                 quickFilterText={quickFilterText}
-                localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+                localeText={agGridLocaleText}
                 animateRows
             />
         );

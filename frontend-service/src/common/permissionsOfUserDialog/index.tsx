@@ -72,6 +72,7 @@ const PermissionsOfUserDialog: React.FC<{
             },
             onSuccess: () => {
                 onSuccess?.();
+                queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToCreatePermission'));
                 handleClose();
             },
@@ -119,6 +120,7 @@ const PermissionsOfUserDialog: React.FC<{
                     });
                 }
 
+                queryClient.invalidateQueries('allIFrames');
                 toast.success(i18next.t('permissions.permissionsOfUserDialog.succeededToUpdatePermission'));
                 handleClose();
             },

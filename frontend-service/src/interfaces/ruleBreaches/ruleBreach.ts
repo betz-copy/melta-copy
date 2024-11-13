@@ -1,6 +1,6 @@
 import { IUser } from '../users';
 import { IEntity } from '../entities';
-import { IRelationship } from '../relationships';
+import { IRelationshipPopulated } from '../relationships';
 import { IAction, IActionPopulated } from './actionMetadata';
 
 export interface ICauseInstance {
@@ -31,7 +31,7 @@ export interface IRuleBreach {
 }
 
 export type IEntityForBrokenRules = IEntity | string | null;
-export type IRelationshipForBrokenRules = IRelationship | string | null;
+export type IRelationshipForBrokenRules = IRelationshipPopulated | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;

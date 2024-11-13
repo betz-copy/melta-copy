@@ -1,4 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 
 const entityTemplates: IMongoEntityTemplatePopulated[] = [
@@ -488,7 +489,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
 const mockEntityTemplates = (mock: MockAdapter) => {
     // Create
     mock.onPost('/api/templates/entities').reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4151a83e87e83c7e',
             name: 'trip',
@@ -533,7 +534,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
 
     // Update
     mock.onPut(/\/api\/templates\/entities\/[0-9a-fA-F]{24}/).reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
             name: 'trip',
@@ -577,7 +578,7 @@ const mockEntityTemplates = (mock: MockAdapter) => {
     ]);
 
     // Delete
-    mock.onDelete(/\/api\/templates\/entities\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/entities\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]);
 };
 
 export { mockEntityTemplates, entityTemplates };

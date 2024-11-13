@@ -4,7 +4,7 @@ import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { environment } from '../../globals';
-import { IEntity } from '../../interfaces/entities';
+import { IEntityWithDirectConnections } from '../../interfaces/entities';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
@@ -24,7 +24,6 @@ export interface CardsViewProps {
 const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searchInput }, ref) => {
     const [entitiesCount, setEntitiesCount] = useState<number | null>(null);
     const [openCardsMap, setOpenCardsMap] = useState<Map<string, boolean>>(new Map());
-
     const queryClient = useQueryClient();
 
     const refetch = () => queryClient.invalidateQueries({ queryKey: ['searchEntities', templateIds, searchInput], exact: true });
@@ -45,7 +44,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntity>
+                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {
@@ -60,8 +59,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             });
 
                             setEntitiesCount(searchEntitiesResult.count);
-
-                            return searchEntitiesResult.entities.map(({ entity }) => entity);
+                            return searchEntitiesResult.entities;
                         }}
                         onQueryError={(error) => {
                             // eslint-disable-next-line no-console
@@ -70,7 +68,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
 
                             setEntitiesCount(null);
                         }}
-                        getItemId={(entity) => entity.properties._id}
+                        getItemId={({ entity }) => entity.properties._id}
                         getNextPageParam={(lastPage, allPages) => {
                             const nextPage = allPages.length * infiniteScrollPageCount;
                             return lastPage.length ? nextPage : undefined;
@@ -79,11 +77,12 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         openIds={openCardsMap}
                         useContainer={false}
                     >
-                        {(entity) => {
+                        {({ entity, minioFileIds }) => {
                             const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard
+                                    minioFileId={minioFileIds?.[0]} // Navigate to the first found file
                                     entity={entity}
                                     entityTemplate={entityTemplate}
                                     expandCard={openCardsMap.has(entity.properties._id)}
@@ -91,6 +90,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                                         setOpenCardsMap((map) => new Map(map.set(entityId, !openCardsMap.get(entityId))));
                                     }}
                                     refetchQuery={refetch}
+                                    searchedText={searchInput}
                                 />
                             );
                         }}

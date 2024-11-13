@@ -3,31 +3,15 @@ import { LocalizationProvider, MobileDatePicker } from '@mui/x-date-pickers';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import heLocale from 'date-fns/locale/he';
 import i18next from 'i18next';
-import React, { forwardRef, useImperativeHandle, useState } from 'react';
+import React from 'react';
 import { CustomDateTimePickerToolbar } from '../../common/inputs/JSONSchemaFormik/RjfsDatesWidgets';
 import { useDarkModeStore } from '../../stores/darkMode';
 
-const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(({ onDateChanged }, ref) => {
-    const [dateValue, setDateValue] = useState<Date | null>(null);
-
+const DateFilterComponent: React.FC<{ date: Date; onDateChange: (newDate: Date | null) => void }> = ({ date, onDateChange }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
-    const handleChange = (newValue: Date | null) => {
-        setDateValue(newValue);
-        onDateChanged(); // notify Ag-Grid on change
-    };
-
-    // functions for Ag-Grid
-    useImperativeHandle(ref, () => ({
-        getDate() {
-            return dateValue;
-        },
-        setDate(date: Date | null) {
-            setDateValue(date);
-        },
-    }));
-
     return (
+        // eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
         <div onMouseDown={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
             <LocalizationProvider
                 dateAdapter={AdapterDateFns}
@@ -36,8 +20,8 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
             >
                 <MobileDatePicker
                     inputFormat="dd/MM/yyyy"
-                    value={dateValue}
-                    onChange={handleChange}
+                    value={date}
+                    onChange={onDateChange}
                     showToolbar
                     componentsProps={{ actionBar: { actions: ['cancel', 'accept'] } }}
                     label={i18next.t('wizard.date')}
@@ -55,6 +39,6 @@ const DateFilterComponent: React.FC<{ onDateChanged: () => void }> = forwardRef(
             </LocalizationProvider>
         </div>
     );
-});
+};
 
 export { DateFilterComponent };

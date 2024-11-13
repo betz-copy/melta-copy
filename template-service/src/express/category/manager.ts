@@ -1,6 +1,6 @@
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import { ICategory, IMongoCategory } from './interface';
 import { CategorySchema } from './model';
 
@@ -17,7 +17,7 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     }
 
     async getCategoryById(id: string) {
-        return this.model.findById(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return this.model.findById(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
     async createCategory(categoryData: ICategory) {
@@ -25,11 +25,11 @@ class CategoryManager extends DefaultManagerMongo<IMongoCategory> {
     }
 
     async deleteCategory(id: string) {
-        return this.model.findByIdAndDelete(id).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return this.model.findByIdAndDelete(id).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 
     async updateCategory(id: string, updatedData: Partial<ICategory>) {
-        return this.model.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new ServiceError(404, 'Category not found')).lean().exec();
+        return this.model.findByIdAndUpdate(id, updatedData, { new: true }).orFail(new NotFoundError('Category not found')).lean().exec();
     }
 }
 

@@ -3,7 +3,7 @@ import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { withTransaction } from '../../utils/mongoose';
-import { ServiceError } from '../error';
+import { NotFoundError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
@@ -44,7 +44,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findById(id)
             .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }
@@ -57,7 +57,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return Object.values(entityTemplate.properties.properties).some((property) => property.relationshipReference);
     }
 
-    async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession) {
+    async upsertRelationshipsProperties(entityTemplate: IMongoEntityTemplate, session?: ClientSession, isEditMode?: boolean) {
         const fixedEntityTemplate: IMongoEntityTemplate = JSON.parse(JSON.stringify(entityTemplate));
 
         await Promise.all(
@@ -77,7 +77,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                         isProperty: true,
                     };
 
-                    if (relationshipTemplateId) {
+                    if (isEditMode && relationshipTemplateId) {
                         await this.relationshipTemplateManager.updateTemplateById(relationshipTemplateId, relationshipTemplateToUpsert, session);
                     } else {
                         const upsertedRelationshipTemplate = await this.relationshipTemplateManager.createTemplate(
@@ -112,7 +112,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                         session,
                     })
                     .populate<Pick<IEntityTemplatePopulated, 'category'>>('category')
-                    .orFail(new ServiceError(404, 'Entity Template not found'))
+                    .orFail(new NotFoundError('Entity Template not found'))
                     .lean()
                     .exec();
             });
@@ -128,9 +128,9 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
 
     async deleteTemplate(id: string) {
         const entityTemplate = await withTransaction(async (session: ClientSession) => {
-            const deletedEntityTemplate:IMongoEntityTemplate = await this.model
+            const deletedEntityTemplate: IMongoEntityTemplate = await this.model
                 .findByIdAndDelete(id, { session })
-                .orFail(new ServiceError(404, 'Entity Template not found'))
+                .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
                 .exec();
 
@@ -180,7 +180,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
             let entityTemplateToUpdate = { ...currentEntityTemplate, ...updatedTemplateData };
 
             if (this.hasRelationshipsProperties(entityTemplateToUpdate)) {
-                entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session);
+                entityTemplateToUpdate = await this.upsertRelationshipsProperties(entityTemplateToUpdate, session, true);
             }
 
             const updatedEntityTemplate = await this.model
@@ -190,7 +190,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
                     session,
                 })
                 .populate('category')
-                .orFail(new ServiceError(404, 'Entity Template not found'))
+                .orFail(new NotFoundError('Entity Template not found'))
                 .lean()
                 .exec();
 
@@ -248,7 +248,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { disabled: disabledStatus }, { new: true })
             .populate('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }
@@ -257,7 +257,7 @@ export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTempl
         return this.model
             .findByIdAndUpdate(id, { actions }, { new: true })
             .populate('category')
-            .orFail(new ServiceError(404, 'Entity Template not found'))
+            .orFail(new NotFoundError('Entity Template not found'))
             .lean()
             .exec();
     }

@@ -15,7 +15,7 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntityManager } from '../entities/manager';
-import { NotFoundError, ServiceError } from '../error';
+import { BadRequestError, NotFoundError } from '../error';
 import { IBrokenRule } from '../rules/interfaces';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IRelationship } from './interfaces';
@@ -108,7 +108,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         );
 
         if (countOfExistingRelationships > 0) {
-            throw new ServiceError(400, `[NEO4J] relationship already exists between requested entities.`, {
+            throw new BadRequestError(`[NEO4J] relationship already exists between requested entities.`, {
                 errorCode: config.errorCodes.relationshipAlreadyExists,
             });
         }
@@ -305,5 +305,18 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         }
 
         return edge;
+    }
+
+    async deleteRelationshipByTemplateIds(transaction: Transaction, templateIds: string[]) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (s)-[r]->(d)
+             WHERE type(r) IN $templateIds
+             WITH *, properties(r) as rProps, type(r) as rType
+             DELETE r 
+             RETURN rProps, rType, s, d`,
+            normalizeReturnedDeletedRelationship,
+            { templateIds },
+        );
     }
 }

@@ -8,6 +8,11 @@ interface IEntitySingleProperty {
     dateNotification?: number;
     isDailyAlert?: boolean;
     calculateTime?: boolean;
+    items?: {
+        type: 'string';
+        enum?: string[];
+        format?: 'fileId';
+    };
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';

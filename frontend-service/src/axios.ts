@@ -1,6 +1,7 @@
 /* eslint-disable no-param-reassign */
 import axiosInstance from 'axios';
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { environment } from './globals';
 import { AuthService } from './services/authService';
 import { useWorkspaceStore } from './stores/workspace';
@@ -23,7 +24,7 @@ axios.interceptors.request.use((config) => {
 axios.interceptors.response.use(
     (response) => response,
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === StatusCodes.UNAUTHORIZED) {
             AuthService.logout();
         }
 
