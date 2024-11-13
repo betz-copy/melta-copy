@@ -1,8 +1,7 @@
-import { ISearchBody } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
 
+import { IRule, ISearchRulesBody } from '@microservices/shared/src/interfaces/rule';
 import config from '../../config';
-import { IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
@@ -11,11 +10,6 @@ const {
         relationships: { baseRelationshipsRoute, baseRulesRoute, updateRuleStatusByIdRouteSuffix },
     },
 } = config;
-
-export interface ISearchRulesBody extends ISearchBody {
-    entityTemplateIds?: string[];
-    disabled?: boolean;
-}
 
 export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPermissionsOfUserId {
     searchBody: ISearchRelationshipTemplatesBody;

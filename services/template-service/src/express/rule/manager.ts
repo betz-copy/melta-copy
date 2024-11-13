@@ -1,9 +1,9 @@
 import { FilterQuery } from 'mongoose';
+import { IMongoRule, IRule } from '@microservices/shared/src/interfaces/rule';
 import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { IMongoRule, IRule } from './interfaces';
 import { RuleTemplateSchema } from './model';
 
 export class RuleManager extends DefaultManagerMongo<IMongoRule> {

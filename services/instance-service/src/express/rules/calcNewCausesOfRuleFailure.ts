@@ -1,21 +1,21 @@
 import isEqual from 'lodash.isequal';
 import groupBy from 'lodash.groupby';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
-import { IEquation, isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
-import { ICausesOfInstance, IRuleFailure } from './interfaces';
-import { IFormulaCauses } from './interfaces/formulaWithCauses';
-import { ICause } from './interfaces/formulaWithCauses/cause';
-import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
-import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
+import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
+import { IEquation, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
+import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
+import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '@microservices/shared/src/interfaces/rule/formula/argument';
 import {
     IRegularFunction,
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '../../externalServices/templates/interfaces/rules/formula/function';
+} from '@microservices/shared/src/interfaces/rule/formula/function';
+import { ICausesOfInstance, IRuleFailure } from './interfaces';
+import { IFormulaCauses } from './interfaces/formulaWithCauses';
+import { ICause } from './interfaces/formulaWithCauses/cause';
+import { IEquationCauses } from './interfaces/formulaWithCauses/equation';
+import { IAggregationGroupCauses, IGroupCauses } from './interfaces/formulaWithCauses/group';
+import { IArgumentCauses, IPropertyOfVariableCauses } from './interfaces/formulaWithCauses/argument';
 import { ICountAggFunctionCauses, IRegularFunctionCauses, ISumAggFunctionCauses } from './interfaces/formulaWithCauses/function';
 import { filteredMap } from '../../utils/filteredMap';
 

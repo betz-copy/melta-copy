@@ -1,9 +1,9 @@
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
-import { IArgument, IVariable, isPropertyOfVariable } from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { isCountAggFunction, isRegularFunction } from '../../externalServices/templates/interfaces/rules/formula/function';
-import { isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
+import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
+import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
+import { IArgument, IVariable, isPropertyOfVariable } from '@microservices/shared/src/interfaces/rule/formula/argument';
+import { isCountAggFunction, isRegularFunction } from '@microservices/shared/src/interfaces/rule/formula/function';
+import { isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
+import { isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
 
 interface IParameterOfFormula {
     variable: IVariable;

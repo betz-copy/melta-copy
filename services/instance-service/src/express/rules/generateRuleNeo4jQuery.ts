@@ -1,4 +1,6 @@
-import { CypherQuery } from './interfaces';
+import { IEquation, IOperatorBool, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
+import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
+import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
 import {
     IArgument,
     IConstant,
@@ -6,8 +8,8 @@ import {
     IVariable,
     isConstant,
     isPropertyOfVariable,
-} from '../../externalServices/templates/interfaces/rules/formula/argument';
-import { IFormula } from '../../externalServices/templates/interfaces/rules/formula';
+} from '@microservices/shared/src/interfaces/rule/formula/argument';
+import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
 import {
     ICountAggFunction,
     IRegularFunction,
@@ -15,10 +17,8 @@ import {
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '../../externalServices/templates/interfaces/rules/formula/function';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '../../externalServices/templates/interfaces/rules/formula/group';
-import { IEquation, IOperatorBool, isEquation } from '../../externalServices/templates/interfaces/rules/formula/equation';
-import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
+} from '@microservices/shared/src/interfaces/rule/formula/function';
+import { CypherQuery } from './interfaces';
 import config from '../../config';
 
 const {

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import DefaultController from '../../utils/express/controller';
-import { IMongoRule } from './interfaces';
+import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
 import { RuleManager } from './manager';
 
 class RuleController extends DefaultController<IMongoRule, RuleManager> {

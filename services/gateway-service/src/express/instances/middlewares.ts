@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IRule } from '@microservices/shared/src/interfaces/rule';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IAction } from '../../externalServices/ruleBreachService/interfaces';
@@ -12,7 +13,6 @@ import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { ForbiddenError, ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
-import { IRule } from '../templates/rules/interfaces';
 import { InstancesManager } from './manager';
 
 export class InstancesValidator extends DefaultController {

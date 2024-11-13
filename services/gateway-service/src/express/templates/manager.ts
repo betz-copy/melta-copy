@@ -13,6 +13,8 @@ import {
     ISearchEntityTemplatesBody,
 } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IRule, ISearchRulesBody } from '@microservices/shared/src/interfaces/rule';
+import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
@@ -20,7 +22,7 @@ import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { ISearchRulesBody, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
+import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -36,8 +38,6 @@ import {
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { getParametersOfFormula } from './rules';
-import { IRule } from './rules/interfaces';
-import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 

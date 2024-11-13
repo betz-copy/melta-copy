@@ -1,4 +1,4 @@
-import { IMongoRule } from '../../../externalServices/templates/interfaces/rules';
+import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
 import { IFormulaCauses } from './formulaWithCauses';
 import { ICauseInstance } from './formulaWithCauses/cause';
 

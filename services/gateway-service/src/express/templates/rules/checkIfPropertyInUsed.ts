@@ -1,10 +1,11 @@
+import { IEquation, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
+
+import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '@microservices/shared/src/interfaces/rule/formula/argument';
+import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from '@microservices/shared/src/interfaces/rule/formula/function';
+import { isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
+import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
 import config from '../../../config';
 import { ServiceError } from '../../error';
-import { IFormula } from './interfaces/formula';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from './interfaces/formula/argument';
-import { IEquation, isEquation } from './interfaces/formula/equation';
-import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from './interfaces/formula/function';
-import { isAggregationGroup, isGroup } from './interfaces/formula/group';
 
 const checkPropertyInUsed = ({ variable, property }: IPropertyOfVariable | ISumAggFunction, entityId: string, properties: string[]) => {
     if (

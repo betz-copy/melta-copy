@@ -1,8 +1,8 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IRule } from '@microservices/shared/src/interfaces/rule';
 import config from '../../config';
-import { IRule } from '../../express/templates/rules/interfaces';
 import { UsersManager } from '../../express/users/manager';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';

@@ -5,14 +5,14 @@ import Joi from 'joi';
 import isEqual from 'lodash.isequal';
 import { IEntitySingleProperty, IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IRelevantTemplates, IRule } from '@microservices/shared/src/interfaces/rule';
+import { IConstant, IPropertyOfVariable, IVariable, isConstant } from '@microservices/shared/src/interfaces/rule/formula/argument';
+import { ICountAggFunction, IRegularFunction, ISumAggFunction } from '@microservices/shared/src/interfaces/rule/formula/function';
+import { IAggregationGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
 import DefaultController from '../../utils/express/controller';
 import { defaultValidationOptions, joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
 import { RelationshipTemplateManager } from '../relationshipTemplate/manager';
-import { IRelevantTemplates, IRule } from './interfaces';
-import { IConstant, IPropertyOfVariable, IVariable, isConstant } from './interfaces/formula/argument';
-import { ICountAggFunction, IRegularFunction, ISumAggFunction } from './interfaces/formula/function';
-import { IAggregationGroup } from './interfaces/formula/group';
 
 const numberRegExp = '[1-9]\\d*'; // digits that doesnt start with 0
 const dateDurationRegExp = new RegExp(`^(${numberRegExp}Y)?(${numberRegExp}M)?(${numberRegExp}D)?$`);
