@@ -16,14 +16,17 @@ const {
         rrfWindowConstant,
         queryMinScore,
         rrfRankConstant,
-        // user,
-        // password,
+        user,
+        password,
         rrfWindowFieldName,
+        topHitsByGroup,
+        groupByEntityId,
+        uniqueEntityForAgg,
     },
 } = config;
 
 interface IGroupByEntityIdAggregate {
-    group_by_entity_id: estypes.AggregationsTermsAggregateBase<
+    group_by_unique_prop: estypes.AggregationsTermsAggregateBase<
         estypes.AggregationsAggregate & {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
         }
@@ -43,7 +46,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: url, auth: { apiKey: 'Mld4WERKTUJrNWJOMHNzbF9kRFM6cndpM1l0Y1BSSUs0M0JyRWpQZG96Zw==' } });
+            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
@@ -80,15 +83,18 @@ class ElasticClient {
     }
 
     formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
-        const { buckets } = response.aggregations!.group_by_entity_id;
+        if (!response?.aggregations?.group_by_unique_prop?.buckets) return {};
 
-        if (!buckets) return {};
+        const buckets = response.aggregations.group_by_unique_prop.buckets as Array<{
+            key: string;
+            top_hits_by_group: estypes.AggregationsTopHitsAggregate;
+        }>;
 
-        return (buckets as Record<string, any>[]).reduce((acc, { key: entityId, top_hits_by_group }) => {
+        return buckets.reduce((acc, { top_hits_by_group }) => {
             top_hits_by_group.hits.hits.forEach((hit) => {
-                const { templateId, minioFileId } = hit?._source ?? {};
+                const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
 
-                if (!templateId || !minioFileId) return;
+                if (!templateId || !minioFileId || !entityId) return;
 
                 if (!acc[templateId]) acc[templateId] = {};
                 if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
@@ -128,21 +134,22 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    [rrfWindowFieldName]: rrfWindowConstant, // When merge to prod change to 'window_size'
+                    [rrfWindowFieldName]: rrfWindowConstant,
                     rank_constant: rrfRankConstant,
                 },
             },
             min_score: queryMinScore,
+            // Group by unique values
             aggs: {
-                group_by_entity_id: {
+                group_by_unique_prop: {
                     terms: {
-                        field: 'entityId.keyword',
-                        size: limit,
+                        field: `${uniqueEntityForAgg}.keyword`,
+                        size: topHitsByGroup, // Control how many of the unique values to return.
                     },
                     aggs: {
                         top_hits_by_group: {
                             top_hits: {
-                                size: 1,
+                                size: groupByEntityId, // Control how many documents are allowed to return within each group.
                             },
                         },
                     },
