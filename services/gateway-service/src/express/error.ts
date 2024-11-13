@@ -1,7 +1,7 @@
 import axios from 'axios';
 import express from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { PermissionScope } from '../externalServices/userService/interfaces/permissions';
+import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
 
 import logger from '../utils/logger/logsLogger';
 

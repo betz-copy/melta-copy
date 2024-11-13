@@ -1,6 +1,6 @@
 import axios from 'axios';
 import config from '../config';
-import { IUserSearchBody } from '../users/intefaces/users';
+import { IUserSearchBody } from '@microservices/shared/src/interfaces/user';
 
 const {
     userService: { url, usersRoute, requestTimeout },

@@ -1,4 +1,4 @@
-import { IUser } from '../../userService/interfaces/users';
+import { IUser } from '@microservices/shared/src/interfaces/user';
 import { IProcessDetails } from './processTemplate';
 
 export interface IStepTemplate extends IProcessDetails {

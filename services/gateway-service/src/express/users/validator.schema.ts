@@ -1,5 +1,5 @@
 import joi from 'joi';
-import { PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { MongoIdSchema } from '../../utils/joi';
 
 const UserExternalMetadataSchema = joi.object({

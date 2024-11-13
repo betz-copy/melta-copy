@@ -1,8 +1,8 @@
+import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { PermissionScope } from '../userService/interfaces/permissions';
 import { IMongoProcessInstanceWithSteps, IProcessInstance, ISearchProcessInstancesBody } from './interfaces/processInstance';
 import { IMongoProcessTemplateWithSteps, IProcessTemplateWithSteps, ISearchProcessTemplatesBody } from './interfaces/processTemplate';
 import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance';

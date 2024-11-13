@@ -1,10 +1,10 @@
 import { Request } from 'express';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
+import { ISubCompactPermissions } from '@microservices/shared/src/interfaces/permission/permissions';
 import { typedObjectEntries } from '.';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import { WorkspaceService } from '../express/workspaces/service';
 import { UserService } from '../externalServices/userService';
-import { PermissionScope, PermissionType } from '../externalServices/userService/interfaces/permissions';
-import { ISubCompactPermissions } from '../externalServices/userService/interfaces/permissions/permissions';
 import { createWorkspacesController } from './express';
 import DefaultController from './express/controller';
 import { WorkspaceManager } from '../express/workspaces/manager';

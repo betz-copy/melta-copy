@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
-import { PermissionScope } from '../express/permissions/interface';
-import { ICompactPermissions, ISubCompactPermissions } from '../express/permissions/interface/permissions';
+import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
+import { ICompactPermissions, ISubCompactPermissions } from '@microservices/shared/src/interfaces/permission/permissions';
 import { config } from './config';
 import { IPermissionsOfUser } from './old_interfaces';
 import { createNewUser, getOldPermissionsOfUsers } from './requests';

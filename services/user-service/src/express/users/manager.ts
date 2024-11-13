@@ -1,10 +1,10 @@
 import { FilterQuery } from 'mongoose';
-import { IBaseUser, IUser } from './interface';
+import { ISubCompactPermissions } from '@microservices/shared/src/interfaces/permission/permissions';
+import { IBaseUser, IUser } from '@microservices/shared/src/interfaces/user';
 import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';
 import { UserDoesNotExistError } from './errors';
-import { ISubCompactPermissions } from '../permissions/interface/permissions';
 
 export class UsersManager {
     static async getUserById(id: string, workspaceIds?: string[]): Promise<IUser> {

@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import config from '../../../config';
 import { InstancesService } from '../../../externalServices/instanceService';
 import {
@@ -32,7 +33,6 @@ import { IMongoStepInstance } from '../../../externalServices/processService/int
 import { IMongoStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { StorageService } from '../../../externalServices/storageService';
 import { EntityTemplateService } from '../../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../../externalServices/userService/interfaces/permissions';
 import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';

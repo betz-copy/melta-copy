@@ -6,7 +6,7 @@ import { InstancesService } from '../services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
 import { EntityTemplateService } from '../services/entityTemplate';
 import { IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
 import logger from '../utils/logger/logsLogger';

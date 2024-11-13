@@ -1,8 +1,13 @@
 import axios from 'axios';
+import { IBaseUser, IUser, IUserSearchBody } from '@microservices/shared/src/interfaces/user';
+import {
+    ICompactNullablePermissions,
+    ICompactPermissions,
+    IPermission,
+    ISubCompactPermissions,
+} from '@microservices/shared/src/interfaces/permission/permissions';
 import config from '../../config';
 import { DeepPartial, RecursiveNullable } from '../../utils/types';
-import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interfaces/permissions/permissions';
-import { IBaseUser, IUser, IUserSearchBody } from './interfaces/users';
 
 const {
     userService: { url, usersRoute, permissionsRoute, requestTimeout },

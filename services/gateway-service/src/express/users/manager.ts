@@ -1,14 +1,14 @@
 /* eslint-disable no-param-reassign */
-import { Kartoffel } from '../../externalServices/kartoffel';
-import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
-import { UserService } from '../../externalServices/userService';
+import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '@microservices/shared/src/interfaces/user';
 import {
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-} from '../../externalServices/userService/interfaces/permissions/permissions';
-import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
+} from '@microservices/shared/src/interfaces/permission/permissions';
+import { Kartoffel } from '../../externalServices/kartoffel';
+import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
+import { UserService } from '../../externalServices/userService';
 import { objectContains } from '../../utils';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';

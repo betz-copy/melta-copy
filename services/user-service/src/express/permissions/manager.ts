@@ -1,11 +1,16 @@
 import { FilterQuery } from 'mongoose';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
+import {
+    ICompactNullablePermissions,
+    ICompactPermissions,
+    IPermission,
+    ISubCompactPermissions,
+} from '@microservices/shared/src/interfaces/permission/permissions';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import { RecursiveNullable } from '../../utils/types';
 import { UsersManager } from '../users/manager';
 import { SinglePermissionOfTypePerUserError } from './errors';
-import { PermissionScope, PermissionType } from './interface';
-import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from './interface/permissions';
 import { PermissionsModel } from './model';
 
 export class PermissionsManager {

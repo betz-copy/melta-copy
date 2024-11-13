@@ -10,7 +10,7 @@ import {
     IUpdateEntityStatusMetadata,
     RuleBreachRequestStatus,
 } from '.';
-import { IUser } from '../../userService/interfaces/users';
+import { IUser } from '@microservices/shared/src/interfaces/user';
 import { IEntity } from '../../instanceService/interfaces/entities';
 import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 

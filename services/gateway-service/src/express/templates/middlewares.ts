@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
 import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { ForbiddenError } from '../error';

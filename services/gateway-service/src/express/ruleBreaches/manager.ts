@@ -57,7 +57,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';

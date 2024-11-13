@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
+import { PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { ServiceError } from '../error';
-import { PermissionType } from './interface';
 
 export class SinglePermissionOfTypePerUserError extends ServiceError {
     constructor(type: PermissionType) {

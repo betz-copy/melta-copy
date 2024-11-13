@@ -1,3 +1,4 @@
+import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
 import config from '../../../config';
 import { ProcessService } from '../../../externalServices/processService';
 import {
@@ -13,7 +14,6 @@ import {
 } from '../../../externalServices/processService/interfaces/processTemplate';
 import { IMongoStepTemplate, IStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { StorageService } from '../../../externalServices/storageService';
-import { PermissionScope } from '../../../externalServices/userService/interfaces/permissions';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
