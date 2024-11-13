@@ -8,6 +8,7 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
+import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
@@ -28,11 +29,7 @@ import {
     IUpdateEntityMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
-import {
-    EntityTemplateService,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-} from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';

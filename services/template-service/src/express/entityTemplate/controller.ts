@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
+import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import DefaultController from '../../utils/express/controller';
-import { IMongoEntityTemplate } from './interface';
 import { EntityTemplateManager } from './manager';
 import { fetchPropertyFromRequest } from '../../utils/express';
 

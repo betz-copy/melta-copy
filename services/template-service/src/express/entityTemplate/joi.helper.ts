@@ -1,7 +1,7 @@
 import Joi from 'joi';
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { IEntityTemplate, IEnumPropertiesColors, IProperties } from './interface';
+import { IEntityTemplate, IEnumPropertiesColors, IProperties } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { ColorSchema, variableNameValidation } from '../../utils/joi';
 

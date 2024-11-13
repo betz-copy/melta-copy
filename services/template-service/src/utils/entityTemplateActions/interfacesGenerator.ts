@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '../../express/entityTemplate/interface';
+import { IEntitySingleProperty, IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,

@@ -6,19 +6,19 @@ import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import { ICategory } from '@microservices/shared/src/interfaces/category';
+import {
+    IEntityTemplate,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
+    ISearchEntityTemplatesBody,
+} from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
-import {
-    EntityTemplateService,
-    IEntityTemplate,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplatePopulated,
-    ISearchEntityTemplatesBody,
-} from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import {
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
@@ -469,7 +469,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         const entityTemplate = await this.entityTemplateService.deleteEntityTemplate(id);
 
         return {
-            ...entityTemplate,
+            ...entityTemplate.toObject(),
             properties: {
                 ...entityTemplate.properties,
                 required: [],
@@ -817,7 +817,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (update) templateEnumFieldValues[valueIndex] = field;
         // eslint-disable-next-line @typescript-eslint/no-shadow
         else templateEnumFieldValues = templateEnumFieldValues.filter((_, index) => valueIndex !== index);
-        const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
+        const templateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(template);
         if (template.enumPropertiesColors?.[values.name]?.[fieldValue] !== undefined) {
             let newFieldName: Record<string, string>;
             if (update)
@@ -866,7 +866,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         if (!templateWithoutProperties.properties.properties[values.name].items)
             // eslint-disable-next-line no-param-reassign
             template.properties.properties[values.name].enum = templateEnumFieldValuesRB;
-        const rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled'> = this.removeBasicFields(template);
+        const rollBackTemplateWithoutProperties: Omit<IEntityTemplatePopulated, 'disabled' | '_id'> = this.removeBasicFields(template);
         try {
             const rolledBackEntityTemplate = await this.entityTemplateService.updateEntityTemplate(id, {
                 ...rollBackTemplateWithoutProperties,

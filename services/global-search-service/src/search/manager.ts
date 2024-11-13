@@ -1,8 +1,8 @@
 /* eslint-disable class-methods-use-this */
 import { QueryResult, Transaction } from 'neo4j-driver';
+import { IEntityTemplate, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../config';
 import { TemplateManagerService } from '../externalServices/entityTemplateManager';
-import { IEntityTemplate } from '../externalServices/entityTemplateManager/interfaces';
 import DefaultManagerNeo4j from '../utils/neo4j/manager';
 import logger from '../utils/logger/logsLogger';
 
@@ -228,7 +228,7 @@ export default class Manager extends DefaultManagerNeo4j {
     }
 
     // Update all boolean and file properties of a template script
-    async updateTemplateNonStringProps(template: IEntityTemplate) {
+    async updateTemplateNonStringProps(template: IMongoEntityTemplate) {
         try {
             console.log('INFO: Start updating non-string properties of template: ', template._id);
             const booleanProperties: string[] = [];

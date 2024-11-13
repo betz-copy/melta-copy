@@ -4,7 +4,8 @@ import { UsersManager } from '../users/manager';
 import { WorkspaceTypes } from '../workspaces/inteface';
 import { InstancesService } from '../services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../services/entityTemplate';
+import { EntityTemplateService } from '../services/entityTemplate';
+import { IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { PermissionScope, PermissionType } from '../users/intefaces/permissions';
 import { WorkspaceManager } from '../workspaces/manager';
 import { RabbitManager } from '../utils/rabbit/rabbit';
@@ -64,7 +65,7 @@ const sendNotificationsForEntityTemplate = async (
     workspaceId: string,
     instancesService: InstancesService,
     rabbitManager: RabbitManager,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IEntityTemplatePopulated,
 ) => {
     const today = new Date();
 

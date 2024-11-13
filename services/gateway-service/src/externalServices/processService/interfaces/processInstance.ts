@@ -1,4 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '../../templates/entityTemplateService';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IEntity } from '../../instanceService/interfaces/entities';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';

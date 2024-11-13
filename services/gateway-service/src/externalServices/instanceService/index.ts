@@ -1,3 +1,4 @@
+import { IEntitySingleProperty } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
@@ -11,7 +12,6 @@ import {
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
 } from './interfaces/entities';
-import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
 import { ISemanticSearchResult } from '../semanticSearch/interface';
 

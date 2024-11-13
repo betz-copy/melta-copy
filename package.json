@@ -24,5 +24,8 @@
   "homepage": "https://github.com/melta-team/melta#readme",
   "devDependencies": {
     "husky": "^6.0.0"
+  },
+  "dependencies": {
+    "mongoose": "^8.8.1"
   }
 }

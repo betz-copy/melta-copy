@@ -1,9 +1,9 @@
 import { Request } from 'express';
 import * as ts from 'typescript-actions';
+import { IEntityTemplatePopulated, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import DefaultController from '../../utils/express/controller';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
 import { BadRequestError } from '../error';
-import { IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
 import { addPropertyToRequest } from '../../utils/express';
 import { compileTsCode } from '../../utils/entityTemplateActions/tsCompiler';

@@ -1,4 +1,10 @@
 import { ClientSession, FilterQuery } from 'mongoose';
+import {
+    IEntitySingleProperty,
+    IEntityTemplate,
+    IEntityTemplatePopulated,
+    IMongoEntityTemplate,
+} from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
@@ -7,7 +13,6 @@ import { NotFoundError } from '../error';
 import GlobalSearchIndexCreator from '../externalServices/globalSearchIndexCreator';
 import { IRelationshipTemplate } from '../relationshipTemplate/interface';
 import RelationshipTemplateManager from '../relationshipTemplate/manager';
-import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
 import { EntityTemplateSchema } from './model';
 
 export class EntityTemplateManager extends DefaultManagerMongo<IMongoEntityTemplate> {

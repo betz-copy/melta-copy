@@ -1,5 +1,6 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
@@ -55,7 +56,7 @@ import {
     IUpdateEntityStatusMetadataPopulated,
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { StorageService } from '../../externalServices/storageService';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { PermissionScope, PermissionType } from '../../externalServices/userService/interfaces/permissions';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';

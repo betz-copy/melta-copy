@@ -2,10 +2,10 @@
 import groupBy from 'lodash.groupby';
 import { Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
+import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoEntityTemplate } from '../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';

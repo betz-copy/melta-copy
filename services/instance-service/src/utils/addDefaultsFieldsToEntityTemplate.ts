@@ -1,8 +1,8 @@
-import { IMongoEntityTemplate } from '../externalServices/templates/interfaces/entityTemplates';
+import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 
 export const addDefaultFieldsToTemplate = (entityTemplate: IMongoEntityTemplate): IMongoEntityTemplate => {
     return {
-        ...entityTemplate,
+        ...entityTemplate.toObject(),
         properties: {
             ...entityTemplate.properties,
             properties: {

@@ -1,9 +1,10 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { IAction } from '../../externalServices/ruleBreachService/interfaces';
-import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { PermissionScope } from '../../externalServices/userService/interfaces/permissions';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';

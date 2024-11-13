@@ -1,6 +1,6 @@
+import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared/src/interfaces/entityTemplate';
 import { TemplatesManagerService } from '.';
 import config from '../../config';
-import { IMongoEntityTemplate, ISearchEntityTemplatesBody } from './interfaces/entityTemplates';
 
 const {
     templateService: {

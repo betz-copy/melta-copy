@@ -1,4 +1,4 @@
-import { IEntityTemplatePopulated } from '../../entityTemplate/interface';
+import { IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRelationshipTemplate } from '../../relationshipTemplate/interface';
 import { IFormula } from './formula';
 

@@ -19,8 +19,8 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
     "esModuleInterop": true,
-    "lib": ["ES2020.Promise", "ESNext"]
+    "lib": ["ES2020.Promise"]
   },
   "include": ["src/**/*"],
-  "exclude" : ["src/**/*.spec.ts", "src/**/*.mock.ts"]
+  "exclude": ["src/**/*.spec.ts", "src/**/*.mock.ts"]
 }

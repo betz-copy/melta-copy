@@ -1,7 +1,8 @@
+import { IEntityTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { ServiceError } from '../../express/error';
 import { WorkspaceTypes } from '../../express/workspaces/interface';
 import { WorkspaceManager } from '../../express/workspaces/manager';
-import { EntityTemplateService, IEntityTemplate, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
+import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import logger from '../logger/logsLogger';
 
 enum dateNotificationOptions {

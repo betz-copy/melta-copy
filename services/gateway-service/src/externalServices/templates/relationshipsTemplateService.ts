@@ -1,7 +1,7 @@
+import { ISearchBody } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config';
 import { IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
-import { ISearchBody } from './entityTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 
 const {
