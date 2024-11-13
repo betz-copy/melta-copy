@@ -27,6 +27,7 @@ import {
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
+    RuleBreachRequestStatus,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
 import {
@@ -601,6 +602,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async deleteEntityInstance(id: string) {
         const currentEntity = await this.service.getEntityInstanceById(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
+
+        await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);
 
         const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
 
