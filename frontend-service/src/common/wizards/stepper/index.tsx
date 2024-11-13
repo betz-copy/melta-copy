@@ -29,7 +29,7 @@ const Stepper = <T extends object>({
     return (
         <Grid container minWidth="70vh" spacing={2}>
             {steps.length > 1 && (
-                <Grid item xs={direction === 'row' ? 3 : 12}>
+                <Grid item width="100%">
                     <StepperSideBar
                         steps={steps}
                         activeStep={activeStep}
@@ -52,8 +52,9 @@ const Stepper = <T extends object>({
                     {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
                 </Grid>
             )}
-            {!showPrevSteps && (
+            {steps[activeStep].stepperActions?.disable !== 'all' && (
                 <StepperActions
+                    step={steps[activeStep]}
                     handleBack={handleBack}
                     isLastStep={activeStep === steps.length - 1}
                     isFirstStep={activeStep === 0}

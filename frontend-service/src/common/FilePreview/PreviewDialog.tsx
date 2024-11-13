@@ -109,6 +109,7 @@ const PreviewDialog: React.FC<PreviewProps> = ({ fileId, contentType, open, setO
     };
 
     let previewContent: React.ReactNode;
+
     if (contentType === 'image') {
         previewContent = (
             <div style={{ overflow: 'auto', height: '95vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>

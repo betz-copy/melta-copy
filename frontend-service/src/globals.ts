@@ -13,6 +13,7 @@ export const environment = {
         rules: '/templates/rules',
         entities: '/instances/entities',
         relationships: '/instances/relationships',
+        bulk: '/instances/bulk',
         processTemplates: '/processes/templates',
         processes: '/processes/instances',
         gantts: '/gantts',

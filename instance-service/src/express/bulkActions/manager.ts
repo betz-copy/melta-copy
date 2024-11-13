@@ -491,6 +491,7 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
+                    console.log({ results });
                     return results;
                 },
                 dryRun,

@@ -68,7 +68,6 @@ const StepDescriptionTypography = styled(Typography)<{ type: 'currentStep' | 'fi
 const DashedHorizontalLine = styled('div')(({ theme }) => ({
     flexGrow: 1,
     margin: '15px',
-    width: '100%',
     borderBottom: `2px solid ${theme.palette.mode === 'dark' ? 'rgb(200, 200, 200, 0.2)' : '#4752B6'}`,
 }));
 

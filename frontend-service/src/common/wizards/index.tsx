@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -29,7 +29,17 @@ export type StepsType<T extends object> = {
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
+    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void };
 }[];
+
+export type StepType<T extends object> = {
+    label: string;
+    description?: string;
+    component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
+    validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
+    validate?: FormikConfig<T>['validate'];
+    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void };
+};
 
 const Wizard = <T extends object>({
     open,
@@ -73,7 +83,7 @@ const Wizard = <T extends object>({
             maxWidth="lg"
             fullWidth
             PaperProps={{ sx: { bgcolor: darkMode ? '#060606' : 'white' } }}
-            style={{ height: '80%', margin: 'auto' }}
+            style={{ height: '100%', margin: 'auto' }}
             disableEnforceFocus
         >
             {/* disableEnforceFocus added for 'raqb' component as mentioned in docs https://github.com/ukrbublik/react-awesome-query-builder#api */}

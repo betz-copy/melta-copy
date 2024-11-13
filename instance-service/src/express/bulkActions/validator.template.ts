@@ -15,7 +15,7 @@ import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
-const ajv = new Ajv();
+const ajv = new Ajv({ allErrors: true });
 
 ajv.addFormat('fileId', /.*/);
 ajv.addFormat('text-area', /.*/);
@@ -81,7 +81,17 @@ export class BulkActionValidator extends DefaultController {
         const valid = validateFunction(metadataProperties);
 
         if (!valid) {
-            throw new ValidationError(`Entity does not match template schema: ${JSON.stringify(validateFunction.errors)}`, metadataProperties);
+            const errors = validateFunction.errors?.map((error) => ({
+                message: error.message,
+                path: error.instancePath,
+                schemaPath: error.schemaPath,
+                params: error.params,
+            }));
+
+            throw new ValidationError(`Entity does not match template schema`, {
+                properties: metadataProperties,
+                errors: errors || [],
+            });
         }
     }
 

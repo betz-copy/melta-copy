@@ -72,17 +72,6 @@ export class ValidationError extends ServiceError {
     }
 }
 
-export class BadRequestError extends ServiceError {
-    constructor(
-        message: string,
-        public metadata: object = {},
-    ) {
-        super(400, message);
-        this.name = 'badRequest';
-        this.metadata = metadata;
-    }
-}
-
 const formatAxiosErrorData = (axiosErrorData: object & { message?: string; metadata?: object }) => {
     if (axiosErrorData.message?.includes('E11000')) {
         return { ...axiosErrorData, errorCode: 'DUPLICATE_ERROR' };

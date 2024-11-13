@@ -1,6 +1,7 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
+import { allEntities } from '../mocks/entities/allEntities';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
@@ -571,9 +572,13 @@ export default {
                 failedEntities: 'יישויות שכשלו להטען',
                 failedEntitiesDescription:
                     '* קובץ Excel של היישויות השגויות יורד ברגעים אלו - בקובץ זה רק היישויות שלא עלו. יש לתקנן ולהעלות את הקובץ מחדש. במידה וההורדה טרם החלה יש ללחוץ כאן',
+                brokenRulesEntities: 'יישויות שמפרות חוקים',
                 failedLoadEntities: 'טעינת קובץ נכשלה',
                 entitiesStatus: 'סטטוס יישויות',
                 tableCantLoadEntities: 'טבלה זו לא יכולה לטעון יישויות',
+                allEntities: 'היישויות שנבחרו',
+                allEntitiesDescription: 'אלה היישויות שנבחרו. האם אתה מאשר העלת יישויות אלה?',
+                tableApproved: 'טבלה אושרה',
             },
         },
         rule: {

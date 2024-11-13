@@ -141,7 +141,7 @@ const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEnt
 const createWorksheet = async (
     workbook: Excel.Workbook,
     template: IMongoEntityTemplatePopulated,
-    displayColumns: string[],
+    displayColumns?: string[],
     insertEntities?: { insert: boolean; entities?: Record<string, any>[] },
 ) => {
     const worksheet = workbook.addWorksheet(template.displayName);
@@ -152,7 +152,7 @@ const createWorksheet = async (
     Object.entries(properties).forEach(([propertyKey, propertyTemplate], index) => {
         const isRelationshipRef = propertyTemplate.format === 'relationshipReference' || propertyTemplate.relationshipReference;
         const isFile = propertyTemplate.format === 'fileId' || (propertyTemplate.type === 'array' && propertyTemplate.items?.format === 'fileId');
-        const shouldAddColumn = displayColumns.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile : true;
+        const shouldAddColumn = displayColumns?.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile : true;
 
         if (shouldAddColumn) {
             const type = TypesToHebrew(propertyTemplate);
@@ -166,7 +166,7 @@ const createWorksheet = async (
         }
     });
 
-    const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns.includes(externalColumn.key));
+    const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
     worksheet.columns = insertEntities?.insert ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -218,8 +218,8 @@ const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
     template: IMongoEntityTemplatePopulated,
-    displayColumns: string[],
     workspace: { path: string; id: string },
+    displayColumns?: string[],
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -229,7 +229,7 @@ const styleAWorksheet = (
     const { createdAt, updatedAt, disabled } = template;
 
     const allProperties: Record<string, any> = Object.entries({ ...properties, disabled, createdAt, updatedAt })
-        .filter(([key]) => displayColumns.includes(key))
+        .filter(([key]) => displayColumns?.includes(key))
         .reduce((acc, [key, value]) => {
             acc[key] = value;
             return acc;
@@ -283,4 +283,4 @@ const styleAWorksheet = (
     });
 };
 
-export { createWorkbook, createWorksheet, styleAWorksheet };
+export { createWorkbook, createWorksheet, styleAWorksheet, fixComplexProperties };

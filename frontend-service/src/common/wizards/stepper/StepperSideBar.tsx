@@ -19,16 +19,51 @@ const StepperSideBar = <T extends object>({
     componentProps: { formikProps: FormikProps<T>; helpers: StepComponentHelpers };
     showPrevSteps: boolean;
 }): JSX.Element | null => {
+    if (direction === 'column')
+        return (
+            <Grid container justifyContent="start" alignItems="center">
+                {steps.map((step, index) => {
+                    // eslint-disable-next-line no-nested-ternary
+                    const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+
+                    return (
+                        <Fragment key={step.label}>
+                            <Grid container justifyContent="start" alignItems="flex-start">
+                                <Grid container justifyContent="start" alignItems="center">
+                                    <Grid item>
+                                        <StepNumberTypography type={type}>
+                                            {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
+                                        </StepNumberTypography>
+                                    </Grid>
+                                    <Grid item>
+                                        <StepNameTypography type={type}>{step.label}</StepNameTypography>
+                                    </Grid>
+                                    <Grid item marginLeft="10px">
+                                        {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
+                                    </Grid>
+                                </Grid>
+                                <Grid container alignItems="center">
+                                    {index !== steps.length - 1 && <DashedVerticalLine />}
+                                    {(type === 'currentStep' || (showPrevSteps && type === 'finishedStep')) &&
+                                        step.component(componentProps.formikProps, componentProps.helpers)}
+                                </Grid>
+                            </Grid>
+                        </Fragment>
+                    );
+                })}
+            </Grid>
+        );
+
     return (
-        <Grid container direction={direction} justifyContent={direction === 'row' ? 'center' : 'start'} alignItems="center">
+        <Grid container justifyContent="space-around" alignItems="center">
             {steps.map((step, index) => {
                 // eslint-disable-next-line no-nested-ternary
                 const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
 
                 return (
                     <Fragment key={step.label}>
-                        <Grid container direction={direction} justifyContent={direction === 'row' ? 'center' : 'start'} alignItems="flex-start">
-                            <Grid container justifyContent={direction === 'row' ? 'center' : 'start'} alignItems="center">
+                        <Grid>
+                            <Grid container justifyContent="center" alignItems="center">
                                 <Grid item>
                                     <StepNumberTypography type={type}>
                                         {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
@@ -37,17 +72,9 @@ const StepperSideBar = <T extends object>({
                                 <Grid item>
                                     <StepNameTypography type={type}>{step.label}</StepNameTypography>
                                 </Grid>
-                                <Grid item marginLeft="10px">
-                                    {step.description && <StepDescriptionTypography type={type}>{step.description}</StepDescriptionTypography>}
-                                </Grid>
-                            </Grid>
-                            <Grid container direction={direction === 'row' ? 'column' : 'row'} alignItems="center">
-                                {index !== steps.length - 1 && (direction === 'row' ? <DashedHorizontalLine /> : <DashedVerticalLine />)}
-                                {direction === 'column' &&
-                                    (type === 'currentStep' || (showPrevSteps && type === 'finishedStep')) &&
-                                    step.component(componentProps.formikProps, componentProps.helpers)}
                             </Grid>
                         </Grid>
+                        {index !== steps.length - 1 && <DashedHorizontalLine />}
                     </Fragment>
                 );
             })}

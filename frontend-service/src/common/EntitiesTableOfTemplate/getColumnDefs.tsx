@@ -65,9 +65,19 @@ export const getColumnDefs = <Data extends any = IEntity>({
 
         if (type === 'number')
             return numberColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors);
-        if (type === 'boolean') return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        if (type === 'boolean')
+            return booleanColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors);
         if (format === 'date' || format === 'date-time')
-            return dateColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, calculateTime);
+            return dateColDef(
+                property,
+                valueGetter,
+                propertyTemplate,
+                defaultColumnWidths[property],
+                hideColumn,
+                hideField,
+                calculateTime,
+                showErrors,
+            );
         if (format === 'fileId') return fileColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn);
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
@@ -89,9 +99,10 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                showErrors,
             );
         if (propertyTemplate.pattern)
-            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+            return regexColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors);
         if (propertyTemplate.items?.enum)
             return enumArrayColDef(
                 property,
@@ -103,11 +114,12 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 template.enumPropertiesColors?.[property],
                 hideColumn,
                 hideField,
+                showErrors,
             );
         if (propertyTemplate.items) {
-            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight);
+            return enumFilesColDef(property, valueGetter, { title: propertyTemplate.title }, defaultColumnWidths[property], rowHeight, showErrors);
         }
-        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField);
+        return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors);
     });
     columnDefs.push(
         booleanColDef(

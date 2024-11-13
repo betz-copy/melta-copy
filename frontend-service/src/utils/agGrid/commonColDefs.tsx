@@ -13,6 +13,21 @@ import { getFileName } from '../getFileName';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 
+const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string) => {
+    const error = props.data!.errors.find((error) => error.path.slice(1) === field);
+
+    return (
+        <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+            <Value hideValue={false} value={props.value} color="#A40000" />
+            <MeltaTooltip title={error.message}>
+                <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
+            </MeltaTooltip>
+        </Box>
+    );
+};
+const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) =>
+    showErrors && props.data && props.data.errors && props.data.errors.find((error) => error.path.slice(1) === field);
+
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,
@@ -28,17 +43,7 @@ export const numberColDef = <Data extends any = IEntity>(
         valueGetter,
         filter: 'agNumberColumnFilter',
         cellRenderer: (props: ICellRendererParams<Data, number | undefined>) => {
-            if (showErrors && props.data && props.data.errorProperty) {
-                return (
-                    <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-                        <Value hideValue={hideValue} value={props.value?.toString() ?? ''} color="#A40000" />
-                        <MeltaTooltip title={props.data.errorProperty.message}>
-                            <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
-                        </MeltaTooltip>
-                    </Box>
-                );
-            }
-
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
             return <Value hideValue={hideValue} value={props.value?.toString() ?? ''} isNumberField />;
         },
         width: hardcodedWidth,
@@ -54,11 +59,15 @@ export const regexColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
+            return <Value hideValue={hideValue} value={props.value ?? ''} />;
+        },
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
@@ -75,11 +84,15 @@ export const stringColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     return {
         field,
         headerName: value.title,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={props.value ?? ''} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
+            return <Value hideValue={hideValue} value={props.value ?? ''} />;
+        },
         valueGetter,
         filter: 'agTextColumnFilter',
         width: hardcodedWidth,
@@ -138,6 +151,7 @@ export const booleanColDef = <Data extends any = IEntity>(
     hardcodedWidth: number | undefined,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     const formatValue = (propertyValue: boolean | undefined) => {
         if (!propertyValue) return i18next.t('booleanOptions.no');
@@ -157,7 +171,10 @@ export const booleanColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, boolean | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
+            return <Value hideValue={hideValue} value={formatValue(props.value)} />;
+        },
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
@@ -175,6 +192,7 @@ export const enumColDef = <Data extends any = IEntity>(
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -186,6 +204,7 @@ export const enumColDef = <Data extends any = IEntity>(
         headerName: value.title,
         valueGetter,
         cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
             return <Value hideValue={hideValue} value={props.value ?? ''} color={props.value && enumColorOptions?.[props.value]} />;
         },
         filter: 'agSetColumnFilter',
@@ -206,6 +225,7 @@ export const enumArrayColDef = <Data extends any = IEntity>(
     enumColorOptions?: Record<string, string>,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     const filterParams: ISetFilterParams<Data, string | undefined> = {
         suppressMiniFilter: true,
@@ -216,9 +236,9 @@ export const enumArrayColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-
         cellRenderer: (props: ICellRendererParams<Data, string[] | undefined>) => {
             if (!props.value) return '';
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
             return (
                 <OverflowWrapper
                     items={props.value}
@@ -228,7 +248,6 @@ export const enumArrayColDef = <Data extends any = IEntity>(
                 />
             );
         },
-
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
@@ -286,6 +305,7 @@ export const dateColDef = <Data extends any = IEntity>(
     hideColumn = false,
     hideValue = false,
     calculateTime = false,
+    showErrors = false,
 ): ColDef<Data> => {
     const { format } = value;
 
@@ -317,9 +337,10 @@ export const dateColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => (
-            <Value hideValue={hideValue} value={formatDate(props.value)} calculateTime={calculateTime} />
-        ),
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
+            return <Value hideValue={hideValue} value={formatDate(props.value)} calculateTime={calculateTime} />;
+        },
         filter: 'agDateColumnFilter',
         filterParams,
         minWidth: format === 'date-time' ? 220 : undefined,
@@ -337,6 +358,7 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
     hardcodedWidth?: number,
     hideColumn = false,
     hideValue = false,
+    showErrors = false,
 ): ColDef<Data> => {
     const formatValue = (propertyValue: string | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
 
@@ -354,7 +376,10 @@ export const translatedEnumColDef = <Data extends any = IEntity>(
         field,
         headerName: value.title,
         valueGetter,
-        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => <Value hideValue={hideValue} value={formatValue(props.value)} />,
+        cellRenderer: (props: ICellRendererParams<Data, string | undefined>) => {
+            if (isError(props, field, showErrors)) return errorColDef(props, field);
+            return <Value hideValue={hideValue} value={formatValue(props.value)} />;
+        },
         filter: 'agSetColumnFilter',
         filterParams,
         width: hardcodedWidth,
