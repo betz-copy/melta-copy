@@ -24,8 +24,9 @@ export const TemplateFields = ({
     templateEntityReferenceProperties,
     onNext,
 }) => {
+    console.log({ templateFileProperties }); // TODO - fix this component....
     return (
-        <Grid container flexDirection="column">
+        <Grid container flexDirection="column" width="100%">
             <Grid
                 item
                 sx={{

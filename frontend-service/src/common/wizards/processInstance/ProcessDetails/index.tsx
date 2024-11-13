@@ -7,7 +7,7 @@ import StepsReviewers from './StepsReviewers';
 import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
-import OriGeneralDetails from './originalGeneralDetails';
+import GeneralDetails from './GeneralDetails';
 
 export interface ProcessDetailsValues {
     template: IMongoProcessTemplatePopulated | null;
@@ -48,7 +48,7 @@ interface ProcessDetailsProps {
 const steps = [
     {
         label: i18next.t('wizard.processInstance.generalDetails'),
-        component: OriGeneralDetails,
+        component: GeneralDetails,
     },
     {
         label: i18next.t('wizard.processInstance.stepsReviewers'),
