@@ -20,13 +20,12 @@ export const TopBarGrid = styled(Grid)(({ theme }) => {
 });
 
 const TopBar: React.FC<{ title: string; boxStyle?: CSSProperties }> = ({ title, boxStyle }) => {
-    if (title.length) {
+    if (title.length)
         return (
             <TopBarGrid sx={boxStyle} display="flex" alignItems="center">
                 <BlueTitle title={title} component="h4" variant="h4" style={{ fontSize: environment.mainFontSizes.headlineTitleFontSize }} />
             </TopBarGrid>
         );
-    }
 
     return null;
 };

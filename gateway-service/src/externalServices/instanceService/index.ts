@@ -1,8 +1,19 @@
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
+import {
+    IConstraintsOfTemplate,
+    ICountSearchResult,
+    IEntity,
+    ISearchBatchBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchResult,
+    ITemplateSearchBody,
+    IUniqueConstraintOfTemplate,
+} from './interfaces/entities';
+import { IEntitySingleProperty } from '../templates/entityTemplateService';
 import { IRelationship } from './interfaces/relationships';
+import { ISemanticSearchResult } from '../semanticSearch/interface';
 
 const {
     instanceService: {
@@ -87,6 +98,18 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
+    async searchEntitiesBatch(searchBody: ISearchBatchBody & { entityIdsToInclude?: string[] }) {
+        const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}/search/batch`, searchBody);
+
+        return data;
+    }
+
+    async getEntitiesCountByTemplates(searchBody: ITemplateSearchBody & { semanticSearchResult?: ISemanticSearchResult }) {
+        const { data } = await this.api.post<ICountSearchResult>(`${baseEntitiesRoute}/count`, searchBody);
+
+        return data;
+    }
+
     // relationships instances
     async getRelationshipInstanceById(id: string) {
         const { data } = await this.api.get<IRelationship>(`${baseRelationshipsRoute}/${id}`);
@@ -149,6 +172,15 @@ export class InstancesService extends DefaultExternalServiceApi {
         const { data } = await this.api.post<number>(`${baseConstraintsRoute}/enumerate-new-serial-number-fields/${templateId}`, {
             newSerialNumberFields,
         });
+        return data;
+    }
+
+    async deletePropertiesOfTemplate(templateId: string, properties: string[], currentTemplateProperties: Record<string, IEntitySingleProperty>) {
+        const { data } = await this.api.patch<IEntity[]>(`${baseEntitiesRoute}/deletePropertiesOfTemplate/${templateId}`, {
+            properties,
+            currentTemplateProperties,
+        });
+
         return data;
     }
 

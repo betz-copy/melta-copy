@@ -21,6 +21,10 @@ const config = {
             },
         }).asJsonObject,
     },
+    mongo: {
+        url: env.get('MONGO_URL').required().asString(),
+        iFramesCollectionName: env.get('MONGO_IFRAMES_COLLECTION_NAME').required().asString(),
+    },
     authentication: {
         isRequired: env.get('IS_AUTHENTICATION_REQUIRED').default('true').asBool(),
         mockAuthenticatedUserId: env.get('MOCK_AUTHENTICATED_USER_ID').default('5e5688324203fc40043591aa').asString(), // niky adidas
@@ -67,6 +71,10 @@ const config = {
         duplicateFilesRoute: env.get('STORAGE_SERVICE_DUPLICATE_FILES_ROUTE').default('api/files/duplicate-bulk').asString(),
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+    },
+    semanticSearchService: {
+        url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
+        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/semantic/search').asString(),
     },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
@@ -129,11 +137,10 @@ const config = {
     kartoffel: {
         url: env.get('KARTOFFEL_BASE_URL').required().asString(),
         baseEntitiesRoute: env.get('KARTOFFEL_BASE_ENTITIES_ROUTE').default('/api/entities').asString(),
-        getByIdentifierRoute: env.get('KARTOFFEL_FIND_USER_BY_IDENTIFIER_ROUTE').default('/identifier').asString(),
-        getByDigitalIdentityRoute: env.get('KARTOFFEL_FIND_USER_BY_DIGITAL_IDENTITY_ROUTE').default('/digitalIdentity').asString(),
-        getByFullNameRoute: env.get('KARTOFFEL_SEARCH_USER_BY_FULLNAME_ROUTE').default('/search').asString(),
         getByIdRoute: env.get('KARTOFFEL_FIND_USER_BY_ID_ROUTE').default('').asString(),
         requestTimeout: env.get('KARTOFFEL_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        searchRoute: env.get('KARTOFFEL_SEARCH_ROUTE').default('/search').asString(),
+        fieldToSearch: env.get('KARTOFFEL_FIELDS_TO_SEARCH').default('fullName,uniqueId,personalNumber,identityCard').asString(),
     },
     errorCodes: {
         categoryHasTemplates: 'CATEGORY_HAS_TEMPLATES',
@@ -144,6 +151,7 @@ const config = {
         relationshipTemplateHasRules: 'RELATIONSHIP_TEMPLATE_HAS_RULES',
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
+        failedToDeleteField: 'FAILED_DELETE_FIELD',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),
@@ -155,6 +163,8 @@ const config = {
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
         mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
         deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
+        insertDocsSemanticQueue: env.get('INSERT_DOCS_SEMATIC_QUEUE').default('insert_documents_queue').asString(),
+        deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
@@ -181,6 +191,10 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
+    },
+    excel: {
+        multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
+        columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
     },
 };
 

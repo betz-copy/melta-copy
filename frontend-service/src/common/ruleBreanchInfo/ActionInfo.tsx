@@ -153,7 +153,8 @@ export const RelationshipInfo: React.FC<{
     sourceEntity: IEntity | string | null;
     destinationEntity: IEntity | string | null;
     actions: IActionPopulated[];
-}> = ({ relationshipTemplatePopulated, sourceEntity, destinationEntity, actions }) => {
+    failedProperties: string[];
+}> = ({ relationshipTemplatePopulated, sourceEntity, destinationEntity, actions, failedProperties }) => {
     return (
         <>
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.relationship')}</Box>{' '}
@@ -161,9 +162,21 @@ export const RelationshipInfo: React.FC<{
                 {relationshipTemplatePopulated.displayName}
             </Box>{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.fromEntity')}</Box>{' '}
-            <EntityInfo entity={sourceEntity} entityTemplate={relationshipTemplatePopulated.sourceEntity} actions={actions} />{' '}
+            <EntityInfo
+                entity={sourceEntity}
+                entityTemplate={relationshipTemplatePopulated.sourceEntity}
+                actions={actions}
+                entityPropertiesToHighlightTooltip={failedProperties}
+                entityPropertiesToHighlightColor="red"
+            />{' '}
             <Box component="span">{i18next.t('ruleBreachInfo.relActionInfo.toEntity')}</Box>{' '}
-            <EntityInfo entity={destinationEntity} entityTemplate={relationshipTemplatePopulated.destinationEntity} actions={actions} />
+            <EntityInfo
+                entity={destinationEntity}
+                entityTemplate={relationshipTemplatePopulated.destinationEntity}
+                actions={actions}
+                entityPropertiesToHighlightTooltip={failedProperties}
+                entityPropertiesToHighlightColor="red"
+            />
         </>
     );
 };
@@ -172,7 +185,8 @@ const CreateOrDeleteRelActionInfo: React.FC<{
     actionType: ActionTypes.CreateRelationship | ActionTypes.DeleteRelationship;
     actionMetadata: ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated;
     actions: IActionPopulated[];
-}> = ({ actionType, actionMetadata, actions }) => {
+    failedProperties: string[];
+}> = ({ actionType, actionMetadata, actions, failedProperties }) => {
     const queryClient = useQueryClient();
 
     const { sourceEntity, destinationEntity, relationshipTemplateId } = actionMetadata;
@@ -191,6 +205,7 @@ const CreateOrDeleteRelActionInfo: React.FC<{
                 sourceEntity={sourceEntity}
                 destinationEntity={destinationEntity}
                 actions={actions}
+                failedProperties={failedProperties}
             />
         </Typography>
     );
@@ -201,7 +216,8 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
     actionMetadata: ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated;
     isCompact: boolean;
     actionIndex: number;
-}> = ({ actionType, actionMetadata, isCompact, actionIndex }) => {
+    failedProperties: string[];
+}> = ({ actionType, actionMetadata, isCompact, actionIndex, failedProperties }) => {
     const queryClient = useQueryClient();
 
     const { templateId, properties } = actionMetadata;
@@ -234,7 +250,9 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
                     <EntityLink
                         entity={entity}
                         entityTemplate={entityTemplate}
-                        linkable={!entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                        linkable={entity.properties._id ? !entity.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix) : false}
+                        entityPropertiesToHighlightTooltip={failedProperties}
+                        entityPropertiesToHighlightColor="red"
                     />
                     {!isCompact ? ':' : ''}
                 </Typography>
@@ -251,7 +269,8 @@ const CreateOrDuplicateEntityActionInfo: React.FC<{
 const UpdateEntityActionInfo: React.FC<{
     actionMetadata: IUpdateEntityMetadataPopulated;
     isCompact: boolean;
-}> = ({ actionMetadata, isCompact }) => {
+    failedProperties: string[];
+}> = ({ actionMetadata, isCompact, failedProperties }) => {
     const queryClient = useQueryClient();
 
     const { entity } = actionMetadata;
@@ -259,12 +278,23 @@ const UpdateEntityActionInfo: React.FC<{
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
 
+    const { templateId, ...restFields } = actionMetadata.updatedFields;
+    // TODO get properties of causes
+
     return (
         <Grid container direction="column">
             <Grid item>
                 <Typography component="p" variant="body1">
                     <Box component="span">{i18next.t('ruleBreachInfo.updateEntityActionInfo.updatingEntity')}</Box>{' '}
-                    <EntityLink entity={entity} entityTemplate={entityTemplate} linkable={entity?.properties._id !== undefined} />
+                    <EntityLink
+                        entityPropertiesToHighlightTooltip={failedProperties}
+                        entityPropertiesToHighlightColor="red"
+                        entity={{ ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } }}
+                        entityTemplate={entityTemplate}
+                        linkable={
+                            entity?.properties._id !== undefined && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
+                        }
+                    />
                     {!isCompact ? ':' : ''}
                 </Typography>
             </Grid>
@@ -279,7 +309,8 @@ const UpdateEntityActionInfo: React.FC<{
 
 const UpdateEntityStatusActionInfo: React.FC<{
     actionMetadata: IUpdateEntityStatusMetadataPopulated;
-}> = ({ actionMetadata }) => {
+    failedProperties: string[];
+}> = ({ actionMetadata, failedProperties }) => {
     const queryClient = useQueryClient();
 
     const { entity, disabled } = actionMetadata;
@@ -289,7 +320,12 @@ const UpdateEntityStatusActionInfo: React.FC<{
     return (
         <Typography component="p" variant="body1">
             <Box component="span">{i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.updatingStatus')}</Box>{' '}
-            <EntityLink entity={entity} entityTemplate={entityTemplate} />{' '}
+            <EntityLink
+                entity={entity}
+                entityTemplate={entityTemplate}
+                entityPropertiesToHighlightColor="red"
+                entityPropertiesToHighlightTooltip={failedProperties}
+            />{' '}
             <Box component="span" fontWeight="bold">
                 {disabled
                     ? i18next.t('ruleBreachInfo.updateEntityStatusActionInfo.toDisabled')
@@ -306,7 +342,8 @@ export const ActionInfo: React.FC<{
     isCompact: boolean;
     actionIndex: number;
     actions: IActionPopulated[];
-}> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions }) => {
+    failedProperties?: string[];
+}> = ({ originUser, actionType, actionMetadata, isCompact, actionIndex, actions, failedProperties = [] }) => {
     return (
         <Grid container flexDirection="column">
             <Grid item>
@@ -315,6 +352,7 @@ export const ActionInfo: React.FC<{
                         actionType={actionType}
                         actionMetadata={actionMetadata as ICreateRelationshipMetadataPopulated | IDeleteRelationshipMetadataPopulated}
                         actions={actions}
+                        failedProperties={failedProperties}
                     />
                 )}
                 {(actionType === ActionTypes.CreateEntity || actionType === ActionTypes.DuplicateEntity) && (
@@ -323,13 +361,21 @@ export const ActionInfo: React.FC<{
                         actionMetadata={actionMetadata as ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated}
                         isCompact={isCompact}
                         actionIndex={actionIndex}
+                        failedProperties={failedProperties}
                     />
                 )}
                 {actionType === ActionTypes.UpdateEntity && (
-                    <UpdateEntityActionInfo actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated} isCompact={isCompact} />
+                    <UpdateEntityActionInfo
+                        actionMetadata={actionMetadata as IUpdateEntityMetadataPopulated}
+                        isCompact={isCompact}
+                        failedProperties={failedProperties}
+                    />
                 )}
                 {actionType === ActionTypes.UpdateStatus && (
-                    <UpdateEntityStatusActionInfo actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated} />
+                    <UpdateEntityStatusActionInfo
+                        actionMetadata={actionMetadata as IUpdateEntityStatusMetadataPopulated}
+                        failedProperties={failedProperties}
+                    />
                 )}
             </Grid>
             {originUser && (

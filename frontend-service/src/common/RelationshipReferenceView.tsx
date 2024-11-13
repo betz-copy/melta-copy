@@ -18,8 +18,9 @@ interface RelationshipReferenceViewProps {
     relatedTemplateId: string;
     relatedTemplateField: string;
     style?: CSSProperties;
+    searchValue?: string;
 }
-const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField }) => {
+const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ entity, relatedTemplateId, relatedTemplateField, searchValue }) => {
     const queryClient = useQueryClient();
 
     const theme = useTheme();
@@ -117,6 +118,7 @@ const RelationshipReferenceView: React.FC<RelationshipReferenceViewProps> = ({ e
                                 />
                             )
                         }
+                        searchValue={searchValue}
                     />
                 </Grid>
             </Link>

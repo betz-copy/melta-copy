@@ -2,7 +2,7 @@ import { Request } from 'express';
 import * as ts from 'typescript-actions';
 import DefaultController from '../../utils/express/controller';
 import { generateInterfaceWithRelationships } from '../../utils/entityTemplateActions/interfacesGenerator';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import { IEntityTemplatePopulated, IMongoEntityTemplate } from './interface';
 import EntityTemplateManager from './manager';
 import { addPropertyToRequest } from '../../utils/express';
@@ -77,7 +77,7 @@ export class EntityTemplateValidator extends DefaultController<IMongoEntityTempl
         if (actions) {
             const { actions: existingActions } = await this.manager.getTemplateById(templateId);
 
-            if (actions !== existingActions) throw new ServiceError(400, 'Cannot update actions in update entityTemplate request');
+            if (actions !== existingActions) throw new BadRequestError('Cannot update actions in update entityTemplate request');
         }
     };
 }

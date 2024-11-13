@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { IconButton, Grid, useTheme, Typography } from '@mui/material';
-import { CloseOutlined as DeleteIcon } from '@mui/icons-material';
+import { CloseOutlined as DeleteIcon, Visibility } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
 import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
+import OpenPreview from '../FilePreview/OpenPreview';
+import { getFileName } from '../../utils/getFileName';
 
 interface FilesInputProps {
-    files: string[];
+    files: File[] | { name: string }[];
     onDropFiles?: (acceptedFiles: File[]) => void;
     onDeleteFile: (fileIndex: number, event: React.MouseEvent<HTMLButtonElement>) => void;
     inputText: string;
@@ -69,6 +71,8 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
         margin: 'auto', // Center the container horizontally
     };
 
+    const isFileFromInput = (file: FilesInputProps['files'][number]) => file instanceof File;
+
     return (
         <Grid container flexDirection="column" justifyContent="space-around" width="100%" ref={inputRef}>
             <Grid item>
@@ -79,11 +83,12 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                 <input {...getInputProps()} />
                 {files.length > 0 ? (
                     <Grid item flexWrap="wrap" overflow="auto" width="100%">
-                        {files.map((file, index) => (
-                            <Grid key={`${file}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
+                        {files.map((file: FilesInputProps['files'][number], index) => (
+                            // eslint-disable-next-line react/no-array-index-key
+                            <Grid key={`${file.name}-${index}`} item container justifyContent="space-between" alignItems="center" width="100%">
                                 <Grid item container xs={1} justifyContent="center" paddingTop="5px">
                                     <Grid item>
-                                        <FileIcon extension={getFileExtension(file)} style={{ height: '20px' }} />
+                                        <FileIcon extension={getFileExtension(file.name)} style={{ height: '20px' }} />
                                     </Grid>
                                 </Grid>
                                 <Grid item xs={10}>
@@ -95,11 +100,15 @@ const FilesInput: React.FC<FilesInputProps> = ({ files, onDropFiles, onDeleteFil
                                             maxWidth: inputWidth * 0.7,
                                         }}
                                     >
-                                        {file}
+                                        {isFileFromInput(file) ? file.name : getFileName(file.name)}
                                     </Typography>
                                 </Grid>
-                                <Grid item container xs={1} justifyContent="flex-end">
-                                    <Grid item justifySelf="flex-end">
+                                <Grid item container xs={1}>
+                                    <Grid container item justifyContent="flex-end" alignItems="center" wrap="nowrap">
+                                        {!isFileFromInput(file) && (
+                                            <OpenPreview fileId={file.name} img={<Visibility fontSize="small" />} showText={false} />
+                                        )}
+
                                         <IconButton onClick={(e) => onDeleteFile(index, e)} size="small">
                                             <DeleteIcon fontSize="small" />
                                         </IconButton>

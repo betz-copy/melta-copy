@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { StatusCodes } from 'http-status-codes';
 import entitiesRouter from './entities/router';
 import relationshipsRouter from './relationships/router';
 import bulkActionRouter from './bulkActions/router';
@@ -10,11 +11,11 @@ appRouter.use('/api/instances/relationships', relationshipsRouter);
 appRouter.use('/api/instances/bulk-actions', bulkActionRouter);
 
 appRouter.use('/isAlive', (_req, res) => {
-    res.status(200).send('alive');
+    res.status(StatusCodes.OK).send('alive');
 });
 
 appRouter.use('*', (_req, res) => {
-    res.status(404).send('Invalid Route');
+    res.status(StatusCodes.NOT_FOUND).send('Invalid Route');
 });
 
 export default appRouter;

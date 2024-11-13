@@ -8,8 +8,8 @@ import { toast } from 'react-toastify';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
+import { environment } from '../../globals';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;
 type TemplateTablesViewResultsRef = {
@@ -82,15 +82,20 @@ const TemplateTablesViewResults = forwardRef<
     );
 });
 
-const filterEmptyTemplateTablesOnGlobalSearchRequest = async (templates: IMongoEntityTemplatePopulated[], searchInput: string) => {
+const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
+    templates: IMongoEntityTemplatePopulated[],
+    searchInput: string,
+    semanticSearch: boolean,
+) => {
     const entitiesCountByTemplates = await getCountByTemplateIdsRequest(
         templates.map(({ _id }) => _id),
         searchInput,
+        semanticSearch,
     );
 
-    return templates.filter(({ _id }) => {
-        const count = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === _id)?.count || 0;
-        return count > 0;
+    return templates.flatMap((template) => {
+        const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
+        return entityCount?.count ? { ...template, entityIdsToInclude: entityCount.entityIdsToInclude } : [];
     });
 };
 
@@ -98,6 +103,7 @@ export interface TemplateTablesViewProps {
     templates: IMongoEntityTemplatePopulated[];
     searchInput: string;
     pageType: string;
+    semanticSearch: boolean;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
 }
 
@@ -107,16 +113,15 @@ export interface TemplateTablesViewRef {
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
-    ({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
+    ({ templates, searchInput, pageType, setUpdatedEntities, semanticSearch }, ref) => {
         const { setSteps } = useTour();
-
         const {
             data: templatesFilteredByCount,
             refetch: refetchTemplatesFilteredByCount,
             isFetching: isLoadingTemplatesFilteredByCount,
         } = useQuery(
-            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput],
-            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput),
+            ['filterEmptyTemplateTablesOnGlobalSearch', templates, searchInput, semanticSearch],
+            () => filterEmptyTemplateTablesOnGlobalSearchRequest(templates, searchInput, semanticSearch),
             {
                 onSuccess: (data) => {
                     if (data.length === 0 && pageType === 'globalSearch') {

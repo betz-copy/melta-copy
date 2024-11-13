@@ -2,8 +2,8 @@ import { menash } from 'menashmq';
 import { Stream } from 'stream';
 import { config } from '../../config';
 import { getFileExtension, isFileDocument } from '../../utils/fileHelper';
+import { ServiceError } from '../error';
 import { generatePath } from '../../utils/generatePath';
-import logger from '../../utils/logger/logsLogger';
 import DefaultManagerMinio from '../../utils/minio/manager';
 
 const {
@@ -45,7 +45,7 @@ export class FilesManager extends DefaultManagerMinio {
         try {
             await this.minioClient.removeFile(pdfFileName);
         } catch (error) {
-            logger.error('Error removing preview file:', { error });
+            throw new ServiceError(undefined, 'Error removing preview file', { error });
         }
         return this.minioClient.removeFile(filePath);
     }
@@ -71,14 +71,16 @@ export class FilesManager extends DefaultManagerMinio {
                 try {
                     await this.minioClient.removeFile(pdfFileName);
                 } catch (error) {
-                    logger.error('Error removing preview file:', { error });
+                    throw new ServiceError(undefined, 'Error removing preview file', { error });
                 }
             }
         });
 
         return Promise.all(removalPromises)
             .then(() => this.minioClient.removeFiles(filePaths))
-            .catch((error) => logger.error('Error removing files:', { error }));
+            .catch((error) => {
+                throw new ServiceError(undefined, 'Error removing files', { error });
+            });
     }
 
     async getFilesData(filePaths: string[]): Promise<Buffer[]> {
