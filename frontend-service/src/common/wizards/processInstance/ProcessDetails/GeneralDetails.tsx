@@ -227,7 +227,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
 
     return (
         <Card sx={{ border: 'none', boxShadow: 'none', background: 'transparent' }}>
-            <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }}>
+            {/* <CardContent sx={{ height: !toPrint ? '56vh' : undefined, overflowY: 'auto' }}>
                 <Grid container direction="column" paddingLeft={toPrint ? 0 : 4} justifyContent="space-around">
                     <Grid item>
                         <FormikProvider value={detailsFormikData}>
@@ -469,7 +469,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
                         </FormikProvider>
                     </Grid>
                 </Grid>
-            </CardContent>
+            </CardContent> */}
             {!toPrint && (
                 <CardActions dir="ltr">
                     <Grid item>
