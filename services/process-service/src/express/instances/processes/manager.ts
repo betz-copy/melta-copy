@@ -145,7 +145,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
         const { steps: processSteps } = await this.getProcessById(id);
         const deletedProcess: IMongoProcessInstance = await transaction(async (session) => {
             await this.stepInstanceManager.deleteStepsByIds(stepsIds, session);
-            return this.model.findByIdAndDelete(id, { session }).orFail(new InstanceNotFoundError('process', id)).lean();
+            return this.model.findByIdAndDelete(id, { session }).orFail(new InstanceNotFoundError('process', id)).lean<IMongoProcessInstance>();
         });
         await this.elasticSearchManager.deleteDocumentOnElastic(deletedProcess._id);
 
@@ -184,7 +184,7 @@ class ProcessInstanceManager extends DefaultManagerMongo<IProcessInstance> {
                 })
                 .populate(config.processFields.steps)
                 .orFail(new InstanceNotFoundError('process', id))
-                .lean();
+                .lean<IMongoProcessInstancePopulated>();
         });
 
         await this.elasticSearchManager.updateDocumentOnElastic(updatedProcess);

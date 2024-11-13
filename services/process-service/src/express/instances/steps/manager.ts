@@ -25,14 +25,14 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async getStepById(id: string): Promise<IMongoStepInstance> {
-        return this.model.findById(id).orFail(new InstanceNotFoundError('step', id)).lean();
+        return this.model.findById(id).orFail(new InstanceNotFoundError('step', id)).lean<IMongoStepInstance>();
     }
 
     async getSteps(ids: string[]): Promise<IMongoStepInstance[]> {
         return this.model
             .find({ _id: { $in: ids } })
             .orFail(new NotFoundError('No matching step Templates found'))
-            .lean();
+            .lean<IMongoStepInstance[]>();
     }
 
     async getStepTemplateByStepInstanceId(id: string): Promise<IMongoStepTemplate> {
@@ -73,7 +73,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                     },
                 )
                 .orFail(new InstanceNotFoundError('step', id))
-                .lean();
+                .lean<IMongoStepInstance>();
         } else {
             const currStep = await this.getStepById(id);
             const updatedProcessStatus = processInstanceManager.getProcessStatus(currProcess, { ...currStep, status: statusReview.status });
@@ -84,7 +84,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                 return this.model
                     .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
                     .orFail(new InstanceNotFoundError('step', id))
-                    .lean();
+                    .lean<IMongoStepInstance>();
             });
         }
         const updatedProcess = await processInstanceManager.getProcessById(processId, true);

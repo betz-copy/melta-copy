@@ -34,7 +34,7 @@ const customFormat: IWinstonFormat = format.combine(
         format: logs.format,
     }),
     format.label({ label: 'logs' }),
-    format.printf(({ timestamp, level, message, metadata = {} }) => {
+    format.printf(({ timestamp, level, message, metadata = {} }: any) => {
         const extra: IExtra = { ...logs.extraDefault };
 
         const printData: any = {

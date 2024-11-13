@@ -58,7 +58,11 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
         await this.throwIfProcessTemplateHasInstances(id);
         return transaction(async (session) => {
             await this.stepTemplateManager.deleteStepsByIds(processTemplateToDelete.steps, session);
-            return this.model.findByIdAndDelete(id).orFail(new TemplateNotFoundError('process', id)).populate(config.processFields.steps).lean();
+            return this.model
+                .findByIdAndDelete(id)
+                .orFail(new TemplateNotFoundError('process', id))
+                .populate(config.processFields.steps)
+                .lean<IMongoProcessTemplatePopulated>();
         });
     }
 
@@ -129,7 +133,7 @@ export default class ProcessTemplateManager extends DefaultManagerMongo<IProcess
                 .findByIdAndUpdate(id, { ...updatedData, steps: stepsIds }, { new: true, session })
                 .populate(config.processFields.steps)
                 .orFail(new TemplateNotFoundError('process', id))
-                .lean();
+                .lean<IMongoProcessTemplatePopulated>();
         });
     }
 

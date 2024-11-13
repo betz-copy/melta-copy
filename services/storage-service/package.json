@@ -17,6 +17,7 @@
   "author": "Unknown",
   "license": "ISC",
   "dependencies": {
+    "@microservices/shared": "^1.0.0",
     "archiver": "^7.0.1",
     "axios": "^1.7.7",
     "body-parser": "^1.20.2",
