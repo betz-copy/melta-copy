@@ -834,9 +834,9 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
 
-        const entity = await this.instancesService.getEntityInstanceById(properties._id).catch(() => null); // check if the entity exists
-
-        if (!entity) createdEntityWithPopulatedRelationshipReferences._id = null;
+        await this.instancesService.getEntityInstanceById(properties._id).catch(() => {
+            createdEntityWithPopulatedRelationshipReferences._id = null;
+        });
 
         return { ...actionMetadata, properties: createdEntityWithPopulatedRelationshipReferences };
     }

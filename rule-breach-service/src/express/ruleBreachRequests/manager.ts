@@ -39,59 +39,47 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
         entityId: string,
         status: RuleBreachRequestStatus,
     ): Promise<IRuleBreachRequest[]> {
-        return this.model
-            .updateMany(
+        const statusFilter = { status: RuleBreachRequestStatus.Pending };
+        const brokenRulesEntityIdConditions = [
+            { 'failures.entityId': entityId },
+            { 'failures.causes.instance.entityId': entityId },
+            { 'failures.causes.instance.aggregatedRelationship.otherEntityId': entityId },
+        ];
+        const actionsEntityIdConditions = [
+            { 'actionMetadata.sourceEntityId': entityId },
+            { 'actionMetadata.destinationEntityId': entityId },
+            { 'actionMetadata.properties._id': entityId },
+            { 'actionMetadata.entityIdToDuplicate': entityId },
+            { 'actionMetadata.entityId': entityId },
+        ];
+        const filter = {
+            $and: [
+                statusFilter,
                 {
-                    $and: [
+                    $or: [
                         {
-                            status: RuleBreachRequestStatus.Pending,
+                            brokenRules: {
+                                $elemMatch: {
+                                    failures: {
+                                        $elemMatch: {
+                                            $or: brokenRulesEntityIdConditions,
+                                        },
+                                    },
+                                },
+                            },
                         },
                         {
-                            $or: [
-                                {
-                                    brokenRules: {
-                                        $elemMatch: {
-                                            failures: {
-                                                $elemMatch: {
-                                                    $or: [
-                                                        { entityId },
-                                                        {
-                                                            causes: {
-                                                                $elemMatch: {
-                                                                    $or: [
-                                                                        { 'instance.entityId': entityId },
-                                                                        { 'instance.aggregatedRelationship.otherEntityId': entityId },
-                                                                    ],
-                                                                },
-                                                            },
-                                                        },
-                                                    ],
-                                                },
-                                            },
-                                        },
-                                    },
+                            actions: {
+                                $elemMatch: {
+                                    $or: actionsEntityIdConditions,
                                 },
-                                {
-                                    actions: {
-                                        $elemMatch: {
-                                            $or: [
-                                                { 'actionMetadata.sourceEntityId': entityId },
-                                                { 'actionMetadata.destinationEntityId': entityId },
-                                                { 'actionMetadata.properties._id': entityId },
-                                                { 'actionMetadata.entityIdToDuplicate': entityId },
-                                                { 'actionMetadata.entityId': entityId },
-                                            ],
-                                        },
-                                    },
-                                },
-                            ],
+                            },
                         },
                     ],
                 },
-                { status },
-                { new: true },
-            )
-            .lean();
+            ],
+        };
+        return this.model.updateMany(filter, { status }, { new: true }).lean();
     }
 
     public async updateRuleBreachRequestStatus(

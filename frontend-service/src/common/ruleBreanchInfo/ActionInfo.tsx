@@ -292,9 +292,7 @@ const UpdateEntityActionInfo: React.FC<{
                         entityPropertiesToHighlightColor="red"
                         entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
                         entityTemplate={entityTemplate || null}
-                        linkable={
-                            entity?.properties._id !== undefined && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
-                        }
+                        linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
                     />
                     {!isCompact && entityTemplate ? ':' : ''}
                 </Typography>
@@ -326,7 +324,7 @@ const UpdateEntityStatusActionInfo: React.FC<{
                 entityTemplate={entityTemplate}
                 entityPropertiesToHighlightColor="red"
                 entityPropertiesToHighlightTooltip={failedProperties}
-                linkable={entity?.properties._id !== undefined && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
+                linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
             />{' '}
             <Box component="span" fontWeight="bold">
                 {disabled

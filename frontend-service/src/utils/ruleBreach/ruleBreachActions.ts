@@ -157,10 +157,10 @@ export const getEntityForRelationshipInfo = (
     entity: IEntity | string | null,
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
-    entityId?: string,
+    entityTemplateId: string = '',
 ): IMongoEntityTemplatePopulated => {
     if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
-        const entityTemplate = entityTemplates.get(entityId || '');
+        const entityTemplate = entityTemplates.get(entityTemplateId);
 
         if (entityTemplate) {
             return {
