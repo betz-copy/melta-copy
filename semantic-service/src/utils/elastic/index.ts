@@ -16,8 +16,8 @@ const {
         rrfWindowConstant,
         queryMinScore,
         rrfRankConstant,
-        user,
-        password,
+        // user,
+        // password,
         rrfWindowFieldName,
         topHitsByGroup,
         groupByEntityId,
@@ -46,7 +46,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
+            ElasticClient.client = new Client({ node: url, auth: { apiKey: 'Mld4WERKTUJrNWJOMHNzbF9kRFM6cndpM1l0Y1BSSUs0M0JyRWpQZG96Zw==' } });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
@@ -90,20 +90,26 @@ class ElasticClient {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
         }>;
 
-        return buckets.reduce((acc, { top_hits_by_group }) => {
-            top_hits_by_group.hits.hits.forEach((hit) => {
-                const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
+        return buckets
+            .sort((a, b) => {
+                const maxScoreA = a.top_hits_by_group.hits.max_score || 0;
+                const maxScoreB = b.top_hits_by_group.hits.max_score || 0;
+                return maxScoreB - maxScoreA;
+            })
+            .reduce((acc, { top_hits_by_group }) => {
+                top_hits_by_group.hits.hits.forEach((hit) => {
+                    const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
 
-                if (!templateId || !minioFileId || !entityId) return;
+                    if (!templateId || !minioFileId || !entityId) return;
 
-                if (!acc[templateId]) acc[templateId] = {};
-                if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+                    if (!acc[templateId]) acc[templateId] = {};
+                    if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
 
-                acc[templateId][entityId].push(minioFileId);
-            });
+                    acc[templateId][entityId].push(minioFileId);
+                });
 
-            return acc;
-        }, {} as ISemanticSearchResult);
+                return acc;
+            }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
