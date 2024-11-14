@@ -1,6 +1,6 @@
 import axios from 'axios';
+import { IWorkspace } from '@microservices/shared/src/interfaces/workspace';
 import config from '../../config';
-import { IWorkspace } from './interface';
 
 const {
     workspaceService: { url, baseRoute, requestTimeout },

@@ -1,5 +1,5 @@
 import * as env from 'env-var';
-import { Colors, IWorkspace } from '../express/workspaces/interface';
+import { Colors, IWorkspace } from '@microservices/shared/src/interfaces/workspace';
 import './dotenv';
 
 export const config = {

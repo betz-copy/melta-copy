@@ -2,7 +2,7 @@ import { FilterQuery } from 'mongoose';
 import { parse as parsePath } from 'node:path/posix';
 import { transaction } from '../../utils/mongoose';
 import { DocumentNotFoundError, PathDoesNotExistError, PathIsNotFolderError, WorkspaceUnderRootMustBeDirError } from '../error';
-import { IWorkspace, WorkspaceTypes } from './interface';
+import { IWorkspace, WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';
 import { WorkspacesModel } from './model';
 
 export class WorkspacesManager {

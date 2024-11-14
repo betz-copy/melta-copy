@@ -1,6 +1,6 @@
 import * as Joi from 'joi';
+import { Colors, WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';
 import { FilePathSchema, HexColorSchema, MongoIdSchema, WorkspaceNameSchema } from '../../utils/joi';
-import { Colors, WorkspaceTypes } from './interface';
 
 const workspaceSchema = Joi.object({
     name: WorkspaceNameSchema,

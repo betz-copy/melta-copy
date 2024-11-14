@@ -1,7 +1,7 @@
 import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../notification/interface';
 import config from '../config';
 import { UsersManager } from '../users/manager';
-import { WorkspaceTypes } from '../workspaces/inteface';
+import { WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';
 import { InstancesService } from '../services/instance';
 import { IFilterDatesRange } from '../instance/entity/interface';
 import { EntityTemplateService } from '../services/entityTemplate';
