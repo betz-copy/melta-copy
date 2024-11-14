@@ -1,4 +1,4 @@
-import { IDateAboutToExpireNotificationMetadata, NotificationType } from '../notification/interface';
+import { IDateAboutToExpireNotificationMetadata, NotificationType } from '@microservices/shared/src/interfaces/notification';
 import config from '../config';
 import { UsersManager } from '../users/manager';
 import { WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';

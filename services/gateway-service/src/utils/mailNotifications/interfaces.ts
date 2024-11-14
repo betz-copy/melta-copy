@@ -1,6 +1,6 @@
 import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
 import { IMongoProcessInstancePopulated } from '@microservices/shared/src/interfaces/process/instances/process';
-import { NotificationType } from '../../externalServices/notificationService/interfaces';
+import { NotificationType } from '@microservices/shared/src/interfaces/notification';
 import {
     INotificationMetadataPopulated,
     IProcessReviewerUpdateNotificationMetadataPopulated,

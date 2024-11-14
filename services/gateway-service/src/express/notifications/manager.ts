@@ -6,6 +6,11 @@ import {
     IRuleBreachAlertNotificationMetadata,
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
+    IDeleteProcessNotificationMetadata,
+    INotification,
+    IArchiveProcessNotificationMetadata,
+} from '@microservices/shared/src/interfaces/notification';
+import {
     isDateAboutToExpireNotification,
     isNewProcessNotification,
     isProcessReviewerUpdateNotification,
@@ -14,10 +19,7 @@ import {
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
     isDeleteProcessNotification,
-    IDeleteProcessNotificationMetadata,
-    IArchiveProcessNotificationMetadata,
     isArchiveProcessNotification,
-    INotification,
 } from '../../externalServices/notificationService/interfaces';
 import {
     IArchiveProcessNotificationMetadataPopulated,

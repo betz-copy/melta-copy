@@ -1,9 +1,14 @@
 import { FilterQuery } from 'mongoose';
+import {
+    IBasicNotificationQuery,
+    INotification,
+    INotificationCountGroups,
+    INotificationGroupCountDetails,
+} from '@microservices/shared/src/interfaces/notification';
 import config from '../../config';
 import transaction from '../../utils/mongo';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotificationDoesNotExistError } from '../error';
-import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from './interface';
 import { NotificationsSchema } from './model';
 
 export class NotificationsManager extends DefaultManagerMongo<INotification> {

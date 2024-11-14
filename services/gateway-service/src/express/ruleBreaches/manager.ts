@@ -13,6 +13,13 @@ import {
 } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IAction, IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
+import {
+    INotificationMetadata,
+    IRuleBreachAlertNotificationMetadata,
+    IRuleBreachRequestNotificationMetadata,
+    IRuleBreachResponseNotificationMetadata,
+    NotificationType,
+} from '@microservices/shared/src/interfaces/notification';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
@@ -21,13 +28,6 @@ import { InstancesManager } from '../instances/manager';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import {
-    INotificationMetadata,
-    IRuleBreachAlertNotificationMetadata,
-    IRuleBreachRequestNotificationMetadata,
-    IRuleBreachResponseNotificationMetadata,
-    NotificationType,
-} from '../../externalServices/notificationService/interfaces';
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,

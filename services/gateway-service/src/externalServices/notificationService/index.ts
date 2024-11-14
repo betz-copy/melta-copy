@@ -1,4 +1,4 @@
-import { INotification } from './interfaces';
+import { INotification } from '@microservices/shared/src/interfaces/notification';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 

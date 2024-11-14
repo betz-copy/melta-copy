@@ -4,8 +4,12 @@ import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
 } from '@microservices/shared/src/interfaces/process/instances/process';
+import {
+    IDeleteProcessNotificationMetadata,
+    INotification,
+    IProcessStatusUpdateNotificationMetadata,
+} from '@microservices/shared/src/interfaces/notification';
 import { IEntity } from '../../instanceService/interfaces/entities';
-import { IDeleteProcessNotificationMetadata, INotification, IProcessStatusUpdateNotificationMetadata } from '.';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {

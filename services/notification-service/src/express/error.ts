@@ -2,7 +2,7 @@
 import * as express from 'express';
 import { StatusCodes } from 'http-status-codes';
 import axios from 'axios';
-import { NotificationType } from './notifications/interface';
+import { NotificationType } from '@microservices/shared/src/interfaces/notification';
 import logger from '../utils/logger/logsLogger';
 
 export class ServiceError extends Error {

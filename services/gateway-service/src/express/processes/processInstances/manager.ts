@@ -13,8 +13,6 @@ import {
     Status,
     IReferencedEntityForProcess,
 } from '@microservices/shared/src/interfaces/process/instances/process';
-import config from '../../../config';
-import { InstancesService } from '../../../externalServices/instanceService';
 import {
     IArchiveProcessNotificationMetadata,
     IDeleteProcessNotificationMetadata,
@@ -22,7 +20,9 @@ import {
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     NotificationType,
-} from '../../../externalServices/notificationService/interfaces';
+} from '@microservices/shared/src/interfaces/notification';
+import config from '../../../config';
+import { InstancesService } from '../../../externalServices/instanceService';
 import {
     IArchiveProcessNotificationMetadataPopulated,
     IDeleteProcessNotificationMetadataPopulated,

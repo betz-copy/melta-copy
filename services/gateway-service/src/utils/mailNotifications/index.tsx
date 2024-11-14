@@ -5,10 +5,10 @@ import { IRule } from '@microservices/shared/src/interfaces/rule';
 import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
 import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import { IDeleteProcessNotificationMetadata, NotificationType } from '@microservices/shared/src/interfaces/notification';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
-import { IDeleteProcessNotificationMetadata, NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
     IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
