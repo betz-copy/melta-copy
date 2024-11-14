@@ -1,17 +1,9 @@
 import { ClientSession, FilterQuery, Types } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import config from '../../../config';
-import ajv from '../../../utils/ajv';
-import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
-import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
-import { IMongoProcessTemplate, IProcessDetails } from '../../templates/processes/interface';
-import ProcessTemplateManager from '../../templates/processes/manager';
-import { IMongoStepTemplate } from '../../templates/steps/interface';
-import { IMongoStepInstance } from '../steps/interface';
-import StepInstanceManager from '../steps/manager';
+import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import { IMongoProcessTemplate, IProcessDetails } from '@microservices/shared/src/interfaces/process/templates/process';
+import { IMongoStepInstance } from '@microservices/shared/src/interfaces/process/instances/step';
 import {
     CreateProcessReqBody,
     IMongoProcessInstance,
@@ -22,7 +14,15 @@ import {
     ProcessInstanceDocument,
     Status,
     UpdateProcessReqBody,
-} from './interface';
+} from '@microservices/shared/src/interfaces/process/instances/process';
+import config from '../../../config';
+import ajv from '../../../utils/ajv';
+import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
+import { getTemplateAggregation, searchAllowedProcessInstanceForReviewerAggregation, transaction } from '../../../utils/mongo';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
+import { InstancePropertiesValidationError, InstanceNotFoundError, ServiceError, ValidationError } from '../../error';
+import ProcessTemplateManager from '../../templates/processes/manager';
+import StepInstanceManager from '../steps/manager';
 import { ProcessInstanceSchema } from './model';
 
 type ProcessInstanceType<T extends boolean> = T extends true ? IMongoProcessInstancePopulated : IMongoProcessInstance;

@@ -1,4 +1,4 @@
-import { Status } from '../process/interface';
+import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
 
 export enum NotificationType {
     ruleBreachAlert = 'ruleBreachAlert',

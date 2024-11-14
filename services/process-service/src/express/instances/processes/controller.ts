@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
+import { IProcessInstance } from '@microservices/shared/src/interfaces/process/instances/process';
 import DefaultController from '../../../utils/express/controller';
-import { IProcessInstance } from './interface';
 import ProcessInstanceManager from './manager';
 
 export default class ProcessInstanceController extends DefaultController<IProcessInstance, ProcessInstanceManager> {

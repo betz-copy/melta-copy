@@ -1,4 +1,4 @@
-import { Status } from '../../processService/interfaces/processInstance';
+import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
 import { INotificationMetadataPopulated } from './populated';
 
 export enum NotificationType {

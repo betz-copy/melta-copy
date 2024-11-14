@@ -1,12 +1,20 @@
 import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
+import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import {
+    IMongoProcessTemplatePopulated,
+    IProcessTemplatePopulated,
+    ISearchProcessTemplatesBody,
+} from '@microservices/shared/src/interfaces/process/templates/process';
+import { IMongoStepInstance, UpdateStepReqBody } from '@microservices/shared/src/interfaces/process/instances/step';
+import {
+    IMongoProcessInstancePopulated,
+    IProcessInstance,
+    IProcessInstanceSearchProperties,
+} from '@microservices/shared/src/interfaces/process/instances/process';
 import config from '../../config';
 import { NotFoundError } from '../../express/processes/error';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IMongoProcessInstanceWithSteps, IProcessInstance, ISearchProcessInstancesBody } from './interfaces/processInstance';
-import { IMongoProcessTemplateWithSteps, IProcessTemplateWithSteps, ISearchProcessTemplatesBody } from './interfaces/processTemplate';
-import { IMongoStepInstance, UpdateStepReqBody } from './interfaces/stepInstance';
-import { IMongoStepTemplate } from './interfaces/stepTemplate';
 
 const {
     processService: { url, templatesBaseRoute, instancesBaseRoute, requestTimeout },
@@ -19,12 +27,12 @@ export class ProcessService extends DefaultExternalServiceApi {
 
     // processes templates
     async searchProcessTemplates(body: ISearchProcessTemplatesBody) {
-        const { data } = await this.api.post<IMongoProcessTemplateWithSteps[]>(`${templatesBaseRoute}/search`, body);
+        const { data } = await this.api.post<IMongoProcessTemplatePopulated[]>(`${templatesBaseRoute}/search`, body);
 
         return data;
     }
 
-    async getProcessTemplateById(id: string, userId?: string): Promise<IMongoProcessTemplateWithSteps> {
+    async getProcessTemplateById(id: string, userId?: string): Promise<IMongoProcessTemplatePopulated> {
         const query: ISearchProcessTemplatesBody = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
@@ -41,27 +49,27 @@ export class ProcessService extends DefaultExternalServiceApi {
         return process;
     }
 
-    async createProcessTemplate(processTemplate: IProcessTemplateWithSteps) {
-        const { data } = await this.api.post<IMongoProcessTemplateWithSteps>(templatesBaseRoute, processTemplate);
+    async createProcessTemplate(processTemplate: IProcessTemplatePopulated) {
+        const { data } = await this.api.post<IMongoProcessTemplatePopulated>(templatesBaseRoute, processTemplate);
 
         return data;
     }
 
-    async updateProcessTemplate(processTemplateId: string, updatedProcessTemplate: IProcessTemplateWithSteps) {
-        const { data } = await this.api.put<IMongoProcessTemplateWithSteps>(`${templatesBaseRoute}/${processTemplateId}`, updatedProcessTemplate);
+    async updateProcessTemplate(processTemplateId: string, updatedProcessTemplate: IProcessTemplatePopulated) {
+        const { data } = await this.api.put<IMongoProcessTemplatePopulated>(`${templatesBaseRoute}/${processTemplateId}`, updatedProcessTemplate);
 
         return data;
     }
 
     async deleteProcessTemplate(processTemplateId: string) {
-        const { data } = await this.api.delete<IMongoProcessTemplateWithSteps>(`${templatesBaseRoute}/${processTemplateId}`);
+        const { data } = await this.api.delete<IMongoProcessTemplatePopulated>(`${templatesBaseRoute}/${processTemplateId}`);
 
         return data;
     }
 
     // Process Instance
-    async getProcessInstanceById(id: string, userId?: string): Promise<IMongoProcessInstanceWithSteps> {
-        const query: ISearchProcessInstancesBody = { limit: 1, skip: 0, ids: [id] };
+    async getProcessInstanceById(id: string, userId?: string): Promise<IMongoProcessInstancePopulated> {
+        const query: IProcessInstanceSearchProperties = { limit: 1, skip: 0, ids: [id] };
 
         if (userId) {
             const userPermissions = await new Authorizer(this.workspaceId).getWorkspacePermissions(userId);
@@ -79,28 +87,28 @@ export class ProcessService extends DefaultExternalServiceApi {
     }
 
     async createProcessInstance(processData: IProcessInstance) {
-        const { data } = await this.api.post<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}`, processData);
+        const { data } = await this.api.post<IMongoProcessInstancePopulated>(`${instancesBaseRoute}`, processData);
         return data;
     }
 
     async updateProcessInstance(id: string, processData: IProcessInstance) {
-        const { data } = await this.api.put<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`, processData);
+        const { data } = await this.api.put<IMongoProcessInstancePopulated>(`${instancesBaseRoute}/${id}`, processData);
         return data;
     }
 
     async archivedProcess(id: string, archived: Boolean) {
-        const { data } = await this.api.patch<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/archive/${id}`, { archived });
+        const { data } = await this.api.patch<IMongoProcessInstancePopulated>(`${instancesBaseRoute}/archive/${id}`, { archived });
 
         return data;
     }
 
     async deleteProcessInstance(id: string) {
-        const { data } = await this.api.delete<IMongoProcessInstanceWithSteps>(`${instancesBaseRoute}/${id}`);
+        const { data } = await this.api.delete<IMongoProcessInstancePopulated>(`${instancesBaseRoute}/${id}`);
         return data;
     }
 
-    async searchProcessInstances(body: ISearchProcessInstancesBody) {
-        const { data } = await this.api.post<IMongoProcessInstanceWithSteps[]>(`${instancesBaseRoute}/search`, body);
+    async searchProcessInstances(body: IProcessInstanceSearchProperties) {
+        const { data } = await this.api.post<IMongoProcessInstancePopulated[]>(`${instancesBaseRoute}/search`, body);
 
         return data;
     }

@@ -1,6 +1,6 @@
 import * as Joi from 'joi';
+import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
 import { MongoIdSchema } from '../../../utils/joi';
-import { Status } from '../processes/interface';
 
 // GET /api/processes/instances/:id
 export const getStepByIdRequestSchema = Joi.object({

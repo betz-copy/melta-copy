@@ -1,11 +1,14 @@
-import { ProcessService } from '../../../externalServices/processService';
-import { IMongoProcessInstancePopulated, IMongoProcessInstanceWithSteps } from '../../../externalServices/processService/interfaces/processInstance';
 import {
     IMongoStepInstance,
     IMongoStepInstancePopulated,
     IStepInstance,
     UpdateStepReqBody,
-} from '../../../externalServices/processService/interfaces/stepInstance';
+} from '@microservices/shared/src/interfaces/process/instances/step';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    IMongoProcessInstancePopulated,
+} from '@microservices/shared/src/interfaces/process/instances/process';
+import { ProcessService } from '../../../externalServices/processService';
 import { StorageService } from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
@@ -26,8 +29,8 @@ export default class StepsInstancesManager extends DefaultManagerProxy<ProcessSe
     }
 
     private async handleNotificationsOnUpdateStepInstance(
-        process: IMongoProcessInstancePopulated,
-        previousProcess: IMongoProcessInstanceWithSteps,
+        process: IMongoProcessInstanceReviewerPopulated,
+        previousProcess: IMongoProcessInstancePopulated,
         updatedStep: IMongoStepInstance,
     ) {
         const processInstancesManager = new ProcessesInstancesManager(this.workspaceId);

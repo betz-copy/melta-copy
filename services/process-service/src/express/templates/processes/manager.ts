@@ -1,13 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
-import config from '../../../config';
-import { escapeRegExp } from '../../../utils';
-import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
-import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { ServiceError, TemplateNotFoundError } from '../../error';
-import ProcessInstanceManager from '../../instances/processes/manager';
-import StepTemplateManager from '../steps/manager';
 import {
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
@@ -15,7 +8,14 @@ import {
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-} from './interface';
+} from '@microservices/shared/src/interfaces/process/templates/process';
+import config from '../../../config';
+import { escapeRegExp } from '../../../utils';
+import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';
+import { DefaultManagerMongo } from '../../../utils/mongo/manager';
+import { ServiceError, TemplateNotFoundError } from '../../error';
+import ProcessInstanceManager from '../../instances/processes/manager';
+import StepTemplateManager from '../steps/manager';
 import { ProcessTemplateSchema } from './model';
 
 type ProcessTemplateType<T extends boolean> = T extends true ? IMongoProcessTemplatePopulated : IMongoProcessTemplate;

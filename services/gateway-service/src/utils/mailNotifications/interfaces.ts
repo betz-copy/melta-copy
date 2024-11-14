@@ -1,14 +1,14 @@
+import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import { IMongoProcessInstancePopulated } from '@microservices/shared/src/interfaces/process/instances/process';
 import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import {
     INotificationMetadataPopulated,
     IProcessReviewerUpdateNotificationMetadataPopulated,
     IProcessStatusUpdateNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
-import { IMongoProcessInstanceWithSteps } from '../../externalServices/processService/interfaces/processInstance';
-import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
 
 export interface IProcessReviewerUpdateMailNotificationMetadataPopulated {
-    process: IMongoProcessInstanceWithSteps;
+    process: IMongoProcessInstancePopulated;
     addedSteps: (IMongoStepTemplate | null)[];
     deletedSteps: (IMongoStepTemplate | null)[];
     unchangedStepIds: (string | null)[];

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import config from '../../../config';
-import { Status } from '../processes/interface';
+import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
 
 // eslint-disable-next-line import/prefer-default-export
 export const StepInstanceSchema = new mongoose.Schema(

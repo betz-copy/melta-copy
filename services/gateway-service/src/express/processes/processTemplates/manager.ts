@@ -1,18 +1,18 @@
 import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
+import { IMongoStepTemplate, IStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import {
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoProcessTemplatePopulated,
+    IProcessTemplatePopulated,
+    ISearchProcessTemplatesBody,
+} from '@microservices/shared/src/interfaces/process/templates/process';
+import {
+    IMongoProcessInstancePopulated,
+    IProcessInstanceSearchProperties,
+    Status,
+} from '@microservices/shared/src/interfaces/process/instances/process';
 import config from '../../../config';
 import { ProcessService } from '../../../externalServices/processService';
-import {
-    IMongoProcessInstanceWithSteps,
-    ISearchProcessInstancesBody,
-    Status,
-} from '../../../externalServices/processService/interfaces/processInstance';
-import {
-    IMongoProcessTemplatePopulated,
-    IMongoProcessTemplateWithSteps,
-    IProcessTemplateWithSteps,
-    ISearchProcessTemplatesBody,
-} from '../../../externalServices/processService/interfaces/processTemplate';
-import { IMongoStepTemplate, IStepTemplate } from '../../../externalServices/processService/interfaces/stepTemplate';
 import { StorageService } from '../../../externalServices/storageService';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
@@ -47,7 +47,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return iconFilePropertiesEntries;
     }
 
-    async getTemplateWithPopulatedStepReviewers(processTemplate: IMongoProcessTemplateWithSteps): Promise<IMongoProcessTemplatePopulated> {
+    async getTemplateWithPopulatedStepReviewers(processTemplate: IMongoProcessTemplatePopulated): Promise<IMongoProcessTemplateReviewerPopulated> {
         const populatedSteps = await Promise.all(processTemplate.steps.map((step) => this.populateStepWithReviewers(step)));
         return { ...processTemplate, steps: populatedSteps };
     }
@@ -90,13 +90,13 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return updatedSteps;
     }
 
-    async createProcessTemplate(templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[]) {
+    async createProcessTemplate(templateData: IProcessTemplatePopulated, icons: Express.Multer.File[]) {
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
         const processTemplate = await this.service.createProcessTemplate({ ...templateData, steps: updatedSteps });
         return this.getTemplateWithPopulatedStepReviewers(processTemplate);
     }
 
-    async updateProcessTemplate(templateId: string, templateData: IProcessTemplateWithSteps, icons: Express.Multer.File[], userId: string) {
+    async updateProcessTemplate(templateId: string, templateData: IProcessTemplatePopulated, icons: Express.Multer.File[], userId: string) {
         const currProcessTemplate = await this.getProcessTemplate(templateId, userId);
 
         const updatedSteps = await this.handleIcons(icons, templateData.steps);
@@ -138,10 +138,10 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
         return Promise.all(processes.map((process) => this.getTemplateWithPopulatedStepReviewers(process)));
     }
 
-    private async getInstancesOfTemplate(templateId: string, query: Omit<ISearchProcessInstancesBody, 'templateIds' | 'skip' | 'limit'> = {}) {
-        const instances: IMongoProcessInstanceWithSteps[] = [];
+    private async getInstancesOfTemplate(templateId: string, query: Omit<IProcessInstanceSearchProperties, 'templateIds' | 'skip' | 'limit'> = {}) {
+        const instances: IMongoProcessInstancePopulated[] = [];
 
-        let instancesChunk: IMongoProcessInstanceWithSteps[];
+        let instancesChunk: IMongoProcessInstancePopulated[];
         let skip = 0;
 
         do {
@@ -161,8 +161,8 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
     }
 
     private async sendProcessReviewerUpdateNotifications(
-        processTemplate: IMongoProcessTemplatePopulated,
-        previousProcessTemplate: IMongoProcessTemplatePopulated,
+        processTemplate: IMongoProcessTemplateReviewerPopulated,
+        previousProcessTemplate: IMongoProcessTemplateReviewerPopulated,
     ) {
         const processes = await this.getInstancesOfTemplate(processTemplate._id, { status: [Status.Pending] });
 

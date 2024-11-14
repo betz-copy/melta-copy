@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
+import { IProcessTemplate } from '@microservices/shared/src/interfaces/process/templates/process';
 import DefaultController from '../../../utils/express/controller';
-import { IProcessTemplate } from './interface';
 import ProcessTemplateManager from './manager';
 
 export default class ProcessTemplateController extends DefaultController<IProcessTemplate, ProcessTemplateManager> {

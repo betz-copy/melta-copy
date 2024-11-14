@@ -1,8 +1,8 @@
 import { Request } from 'express';
+import { IStepInstance, UpdateStepReqBody } from '@microservices/shared/src/interfaces/process/instances/step';
 import ajv from '../../../utils/ajv';
 import DefaultController from '../../../utils/express/controller';
 import { InstancePropertiesValidationError } from '../../error';
-import { IStepInstance, UpdateStepReqBody } from './interface';
 import StepInstanceManager from './manager';
 
 export default class StepInstanceValidator extends DefaultController<IStepInstance, StepInstanceManager> {

@@ -1,13 +1,13 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
+import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
+import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from '@microservices/shared/src/interfaces/process/instances/step';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
 import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
-import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
-import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interface';
 import { StepInstanceSchema } from './model';
 
 export default class StepInstanceManager extends DefaultManagerMongo<IStepInstance> {

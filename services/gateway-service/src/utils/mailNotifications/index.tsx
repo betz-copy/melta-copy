@@ -4,6 +4,7 @@ import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfa
 import { IRule } from '@microservices/shared/src/interfaces/rule';
 import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
 import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
@@ -16,7 +17,6 @@ import {
     IRuleBreachRequestNotificationMetadataPopulated,
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
-import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
 import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,

@@ -1,6 +1,6 @@
 import * as Joi from 'joi';
+import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
 import { updateAndCreateStepsSchema, MongoIdSchema } from '../../../utils/joi';
-import { Status } from './interface';
 
 const StatusValues = Object.values(Status);
 

@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
-import { ProcessPropertyFormats } from '../../express/templates/processes/interface';
+import { ProcessPropertyFormats } from '@microservices/shared/src/interfaces/process/templates/process';
 
 const ajv = new Ajv();
 ajv.addFormat(ProcessPropertyFormats.FileId, /.*/);
