@@ -66,6 +66,7 @@ export class InstancesService extends DefaultExternalServiceApi {
             ignoredRules,
             userId,
         });
+        console.log({ data });
 
         return data;
     }
@@ -114,6 +115,11 @@ export class InstancesService extends DefaultExternalServiceApi {
     async getRelationshipsCountByTemplateId(templateId: string) {
         const { data } = await this.api.get<number>(`${baseRelationshipsRoute}/count`, { params: { templateId } });
 
+        return data;
+    }
+
+    async getRelationshipsByEntitiesAndTemplate(query: { sourceEntityId: string; destinationEntityId: string; templateId: string }) {
+        const { data } = await this.api.get<IRelationship[]>(`${baseRelationshipsRoute}`, { params: query });
         return data;
     }
 

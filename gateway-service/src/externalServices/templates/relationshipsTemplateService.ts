@@ -37,7 +37,7 @@ export interface RequestWithSearchRelationshipTemplateBody extends RequestWithPe
 export interface RequestWithSearchRuleTemplateBody extends RequestWithPermissionsOfUserId {
     searchBody: ISearchRulesBody;
 }
-export interface IConvertToRelationshipField {
+export interface IConvertRelationshipToRelationshipField {
     fieldName: string;
     displayFieldName: string;
     relatedTemplateField: string;

@@ -21,7 +21,6 @@ import {
     ISearchEntityTemplatesBody,
 } from '../../externalServices/templates/entityTemplateService';
 import {
-    IConvertToRelationshipField,
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
     ISearchRulesBody,
@@ -46,6 +45,7 @@ import { IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
+import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 
 const {
     categoryHasTemplates,
@@ -976,28 +976,26 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.relationshipTemplateService.updateRelationshipTemplate(templateId, updatedFields);
     }
 
-    async convertToRelationshipField(
+    async convertRelationshipToRelationshipField(
         templateId: string,
-        {
-            fieldName,
-            displayFieldName,
-            destinationEntityId,
-            sourceEntityId,
-            relatedTemplateField,
-            relationshipTemplateDirection,
-        }: IConvertToRelationshipField,
+        { fieldName, displayFieldName, relatedTemplateField, relationshipTemplateDirection },
+        userId: string,
     ) {
-        const { name, displayName }: IRelationshipTemplate = await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
-        const updatedRelationShip: IRelationshipTemplate = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
-            name,
-            displayName,
-            sourceEntityId,
+        const { destinationEntityId, sourceEntityId, displayName, name } =
+            await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
+
+        const updatedRelationShip = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
             destinationEntityId,
+            sourceEntityId,
+            displayName,
+            name,
             isProperty: true,
         });
-        console.log({ updatedRelationShip });
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
+
+        // console.log({ updatedRelationShip, userId, fieldName }, entityTemplate.propertiesOrder);
+
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
         const newRelationshipField: IEntitySingleProperty = {
             title: displayFieldName,
@@ -1011,20 +1009,41 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
         };
 
-        const updatedTemplateProperties = {
-            ...entityTemplate.properties.properties,
-            [fieldName]: newRelationshipField,
-        };
-
         await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
             ...restOfEntityTemplate,
             category: category._id,
             properties: {
                 ...entityTemplate.properties,
-                properties: updatedTemplateProperties,
+                properties: {
+                    ...entityTemplate.properties.properties,
+                    [fieldName]: newRelationshipField,
+                },
             },
             propertiesOrder: [...entityTemplate.propertiesOrder, fieldName],
         });
+
+        const existingRelationships: IRelationship[] = await this.instancesService.getRelationshipsByEntitiesAndTemplate({
+            sourceEntityId,
+            destinationEntityId,
+            templateId,
+        });
+
+        console.log({ existingRelationships });
+
+        await Promise.all(
+            existingRelationships.map(async (relationship: IRelationship) => {
+                const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
+                console.log('source instance entity ', { sourceEntity });
+
+                await this.instancesService.updateEntityInstance(
+                    relationship.sourceEntityId,
+                    { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },
+                    [],
+                    userId,
+                );
+            }),
+        );
+
         return updatedRelationShip;
     }
 

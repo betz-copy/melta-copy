@@ -44,6 +44,17 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         return relationship;
     }
 
+    async getRelationshipsByEntitiesAndTemplate(sourceEntityId: string, destEntityId: string, templateId: string) {
+        const relationships = await this.neo4jClient.readTransaction(
+            `MATCH (s: \`${sourceEntityId}\`)-[r: \`${templateId}\`]-(d: \`${destEntityId}\`) RETURN r, s, d`,
+            normalizeReturnedRelationship('multipleResponses'),
+        );
+
+        if (!relationships) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+
+        return relationships;
+    }
+
     getRelationshipByEntitiesAndTemplate = async (sourceEntityId: string, destEntityId: string, templateId: string, transaction: Transaction) => {
         const relationship = await runInTransactionAndNormalize(
             transaction,
@@ -122,8 +133,10 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         const { templateId, sourceEntityId, destinationEntityId } = relationship;
+        console.log('lllllllllllllllll1');
 
         await this.validateCreateRelationshipDuplicate(transaction, templateId, sourceEntityId, destinationEntityId);
+        console.log('lllllllllllllllll2');
 
         const ruleFailuresBeforeAction = await this.runRulesDependOnRelationship(
             transaction,
@@ -131,8 +144,10 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             sourceEntityId,
             destinationEntityId,
         );
+        console.log('lllllllllllllllll3');
 
         const { createdRelationship, activityLogsToCreate } = await this.createRelationshipInTransaction(transaction, relationship, userId);
+        console.log('lllllllllllllllll4');
 
         const ruleFailuresAfterAction = await this.runRulesDependOnRelationship(
             transaction,
@@ -140,12 +155,14 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             sourceEntityId,
             destinationEntityId,
         );
+        console.log('lllllllllllllllll5');
 
         throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [
             {
                 createdRelationshipId: createdRelationship.properties._id,
             },
         ]);
+        console.log('lllllllllllllllll6');
 
         return { createdRelationship, activityLogsToCreate };
     }
