@@ -20,7 +20,7 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/temp
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
-import { IRelationship } from '../relationships/interfaces';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import { RelationshipManager } from '../relationships/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';

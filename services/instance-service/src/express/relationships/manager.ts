@@ -18,7 +18,7 @@ import { EntityManager } from '../entities/manager';
 import { BadRequestError, NotFoundError } from '../error';
 import { IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { IRelationship } from './interfaces';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 
 export class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;

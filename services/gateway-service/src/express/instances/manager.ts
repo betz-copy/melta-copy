@@ -24,9 +24,9 @@ import {
     ISearchSort,
     ITemplateSearchBody,
 } from '@microservices/shared/src/interfaces/entity';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';

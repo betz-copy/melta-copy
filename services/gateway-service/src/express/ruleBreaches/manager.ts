@@ -27,7 +27,7 @@ import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,

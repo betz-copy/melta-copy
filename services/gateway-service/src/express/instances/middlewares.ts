@@ -5,7 +5,7 @@ import { IRule } from '@microservices/shared/src/interfaces/rule';
 import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
 import { IAction } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';

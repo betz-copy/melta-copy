@@ -28,6 +28,7 @@ import {
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
 } from '@microservices/shared/src/interfaces/entity';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
@@ -51,7 +52,6 @@ import {
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { NotFoundError, ServiceError, ValidationError } from '../error';
-import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
 import { IRuleFailure } from '../rules/interfaces';

@@ -12,9 +12,9 @@ import {
     IUniqueConstraintOfTemplate,
 } from '@microservices/shared/src/interfaces/entity';
 import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IRelationship } from './interfaces/relationships';
 import { ISemanticSearchResult } from '../semanticSearch/interface';
 
 const {
