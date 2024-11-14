@@ -3,7 +3,7 @@ import config from '../config';
 import { UsersManager } from '../users/manager';
 import { WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';
 import { InstancesService } from '../services/instance';
-import { IFilterDatesRange } from '../instance/entity/interface';
+import { IFilterDatesRange } from '@microservices/shared/src/interfaces/entity';
 import { EntityTemplateService } from '../services/entityTemplate';
 import { IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';

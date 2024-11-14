@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 import neo4j, { QueryResult, Node as Neo4jNode, Relationship as Neo4jRelationship, Transaction } from 'neo4j-driver';
 import { fromZonedTime, toZonedTime } from 'date-fns-tz';
-import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '../../express/entities/interface';
+import { IEntity, IEntityExpanded, IEntityWithDirectRelationships } from '@microservices/shared/src/interfaces/entity';
 import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';

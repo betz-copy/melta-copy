@@ -10,7 +10,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
-    "build": "npm run build --workspaces"
+    "build": "npm run build --workspaces",
+    "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist"
   },
   "repository": {
     "type": "git",
@@ -23,7 +24,8 @@
   },
   "homepage": "https://github.com/melta-team/melta#readme",
   "devDependencies": {
-    "husky": "^6.0.0"
+    "husky": "^6.0.0",
+    "rimraf": "^5.0.0"
   },
   "dependencies": {
     "mongoose": "^8.8.1"

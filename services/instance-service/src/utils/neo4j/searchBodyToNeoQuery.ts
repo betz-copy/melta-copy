@@ -1,8 +1,8 @@
 import mapValues from 'lodash.mapvalues';
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
 import { IMongoEntityTemplate, IEntitySingleProperty } from '@microservices/shared/src/interfaces/entityTemplate';
+import { ISearchBatchBody, IFilterOfField, ISearchFilter, IFilterOfTemplate } from '@microservices/shared/src/interfaces/entity';
 import { getNeo4jDate, getNeo4jDateTime } from './lib';
-import { ISearchBatchBody, IFilterOfField, ISearchFilter, IFilterOfTemplate } from '../../express/entities/interface';
 import config from '../../config';
 import { addDefaultFieldsToTemplate } from '../addDefaultsFieldsToEntityTemplate';
 

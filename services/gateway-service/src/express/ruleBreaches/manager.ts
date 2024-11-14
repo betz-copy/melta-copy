@@ -20,7 +20,7 @@ import {
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
 } from '@microservices/shared/src/interfaces/notification';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
 import { InstancesManager } from '../instances/manager';

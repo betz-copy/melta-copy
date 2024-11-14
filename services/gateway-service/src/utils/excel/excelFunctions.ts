@@ -3,7 +3,7 @@ import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import config from '../../config/index';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
 

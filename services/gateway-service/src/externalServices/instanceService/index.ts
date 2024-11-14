@@ -1,7 +1,5 @@
 import { IEntitySingleProperty } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import config from '../../config';
-import DefaultExternalServiceApi from '../../utils/express/externalService';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,
@@ -9,9 +7,13 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
+    ISearchSort,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-} from './interfaces/entities';
+} from '@microservices/shared/src/interfaces/entity';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import config from '../../config';
+import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IRelationship } from './interfaces/relationships';
 import { ISemanticSearchResult } from '../semanticSearch/interface';
 
@@ -26,6 +28,12 @@ const {
         searchOfTemplateRoute,
     },
 } = config;
+
+export type ISearchEntitiesOfTemplateBodyOptional = Omit<ISearchEntitiesOfTemplateBody, 'skip' | 'sort' | 'showRelationships'> & {
+    skip?: number;
+    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
+    sort?: ISearchSort;
+};
 
 export class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -92,7 +100,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
+    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBodyOptional) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
         return data;

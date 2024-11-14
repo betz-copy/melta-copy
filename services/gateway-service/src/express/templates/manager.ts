@@ -15,15 +15,15 @@ import {
 import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { IRule, ISearchRulesBody } from '@microservices/shared/src/interfaces/rule';
 import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
+import { IUniqueConstraintOfTemplate } from '@microservices/shared/src/interfaces/entity';
+import { PermissionType } from '@microservices/shared/src/interfaces/permission';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
-import { PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { trycatch } from '../../utils';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';

@@ -6,9 +6,19 @@ import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'da
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import {
+    IFilterOfField,
+    IFilterOfTemplate,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
+    IUniqueConstraintOfTemplate,
+} from '@microservices/shared/src/interfaces/entity';
+import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntityTemplate';
 import { addPropertyToRequest } from '../../utils/express';
@@ -16,16 +26,6 @@ import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
 import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
-import {
-    IFilterOfField,
-    IFilterOfTemplate,
-    IGetExpandedEntityBody,
-    ISearchBatchBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    ISearchFilter,
-    IUniqueConstraintOfTemplate,
-} from './interface';
 
 const { neo4j } = config;
 

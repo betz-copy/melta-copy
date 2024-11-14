@@ -16,6 +16,19 @@ import {
     IUpdateEntityMetadata,
 } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import {
+    IConstraint,
+    IConstraintsOfTemplate,
+    IEntity,
+    IEntityWithDirectRelationships,
+    IRequiredConstraint,
+    ISearchBatchBody,
+    ISearchEntitiesByTemplatesBody,
+    ISearchEntitiesOfTemplateBody,
+    IUniqueConstraint,
+    IUniqueConstraintOfTemplate,
+} from '@microservices/shared/src/interfaces/entity';
+import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
@@ -44,23 +57,6 @@ import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from
 import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import {
-    EntitiesIdsRulesReasonsMap,
-    IConstraint,
-    IConstraintsOfTemplate,
-    IEntity,
-    IEntityWithDirectRelationships,
-    IEntityCrudAction,
-    IExecutionOutput,
-    IGetExpandedEntityBody,
-    IRequiredConstraint,
-    ISearchBatchBody,
-    ISearchEntitiesByTemplatesBody,
-    ISearchEntitiesOfTemplateBody,
-    IUniqueConstraint,
-    IUniqueConstraintOfTemplate,
-    RunRuleReason,
-} from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';

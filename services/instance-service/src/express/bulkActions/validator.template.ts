@@ -6,10 +6,10 @@ import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entit
 import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import { ActionTypes, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IAction } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';
-import { IEntity } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { ValidationError } from '../error';
 import config from '../../config';

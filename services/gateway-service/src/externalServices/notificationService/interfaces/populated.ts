@@ -9,7 +9,7 @@ import {
     INotification,
     IProcessStatusUpdateNotificationMetadata,
 } from '@microservices/shared/src/interfaces/notification';
-import { IEntity } from '../../instanceService/interfaces/entities';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {

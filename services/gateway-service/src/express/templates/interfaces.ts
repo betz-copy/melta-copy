@@ -4,7 +4,7 @@ import {
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
 } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IUniqueConstraintOfTemplate } from '@microservices/shared/src/interfaces/entity';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];

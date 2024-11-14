@@ -10,7 +10,7 @@ import {
     IUpdateEntityStatusMetadata,
 } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { IEntity } from '../../instanceService/interfaces/entities';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {

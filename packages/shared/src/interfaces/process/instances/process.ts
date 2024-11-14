@@ -1,4 +1,4 @@
-import { IEntity } from "./../../../../../../services/cron-service/src/instance/entity/interface";
+import { IEntity } from "../../entity";
 import { IMongoEntityTemplatePopulated } from "../../entityTemplate";
 import { IBaseSearchProperties } from "../templates/process";
 import { IMongoStepInstance, IMongoStepInstancePopulated } from "./step";

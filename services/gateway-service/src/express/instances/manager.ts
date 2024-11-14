@@ -16,8 +16,6 @@ import {
     IUpdateEntityMetadata,
 } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import config from '../../config';
-import { InstancesService } from '../../externalServices/instanceService';
 import {
     IEntity,
     ISearchBatchBody,
@@ -25,7 +23,9 @@ import {
     ISearchResult,
     ISearchSort,
     ITemplateSearchBody,
-} from '../../externalServices/instanceService/interfaces/entities';
+} from '@microservices/shared/src/interfaces/entity';
+import config from '../../config';
+import { InstancesService } from '../../externalServices/instanceService';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';

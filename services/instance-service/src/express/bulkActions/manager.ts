@@ -12,12 +12,13 @@ import {
     IUpdateEntityMetadata,
 } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
+import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';

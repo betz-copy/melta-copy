@@ -6,9 +6,9 @@ import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ru
 import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
 import { IDeleteProcessNotificationMetadata, NotificationType } from '@microservices/shared/src/interfaces/notification';
+import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
-import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import {
     IArchiveProcessNotificationMetadataPopulated,
     IDateAboutToExpireMetadataPopulated,
