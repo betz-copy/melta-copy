@@ -1,16 +1,15 @@
+import { IUser } from '@microservices/shared/src/interfaces/user';
+import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
 import {
     ActionTypes,
-    IBrokenRule,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDeleteRelationshipMetadata,
     IDuplicateEntityMetadata,
-    IRuleBreach,
     IUpdateEntityMetadata,
     IUpdateEntityStatusMetadata,
-    RuleBreachRequestStatus,
-} from '.';
-import { IUser } from '@microservices/shared/src/interfaces/user';
+} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { IEntity } from '../../instanceService/interfaces/entities';
 import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 

@@ -10,7 +10,8 @@ import {
     isRegularFunction,
     isSumAggFunction,
 } from '@microservices/shared/src/interfaces/rule/formula/function';
-import { ICausesOfInstance, IRuleFailure } from './interfaces';
+import { ICausesOfInstance } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IRuleFailure } from './interfaces';
 import { IFormulaCauses } from './interfaces/formulaWithCauses';
 import { ICause } from './interfaces/formulaWithCauses/cause';
 import { IEquationCauses } from './interfaces/formulaWithCauses/equation';

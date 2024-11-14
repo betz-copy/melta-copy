@@ -9,6 +9,13 @@ import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import {
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IUpdateEntityMetadata,
+} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
@@ -20,14 +27,6 @@ import {
     ITemplateSearchBody,
 } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
-import {
-    ActionTypes,
-    IAction,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IUpdateEntityMetadata,
-} from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';

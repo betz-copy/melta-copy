@@ -4,6 +4,14 @@ import { Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import {
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
@@ -13,16 +21,7 @@ import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/
 import { EntityManager } from '../entities/manager';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
-import { IBrokenRule } from '../rules/interfaces';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import {
-    ActionTypes,
-    IAction,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IUpdateEntityMetadata,
-} from './interface';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;

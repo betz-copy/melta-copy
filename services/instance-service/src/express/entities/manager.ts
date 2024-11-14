@@ -9,6 +9,13 @@ import { Neo4jError, Transaction } from 'neo4j-driver';
 import { StatusCodes } from 'http-status-codes';
 import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
+import {
+    ActionTypes,
+    ICreateEntityMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
@@ -34,7 +41,7 @@ import { NotFoundError, ServiceError, ValidationError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
-import { IBrokenRule, IRuleFailure } from '../rules/interfaces';
+import { IRuleFailure } from '../rules/interfaces';
 import { runRulesOnEntity } from '../rules/runRulesOnEntity';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import {
@@ -55,7 +62,6 @@ import {
     RunRuleReason,
 } from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
-import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
 import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';

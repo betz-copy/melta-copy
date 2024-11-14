@@ -16,7 +16,7 @@ import {
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntityManager } from '../entities/manager';
 import { BadRequestError, NotFoundError } from '../error';
-import { IBrokenRule } from '../rules/interfaces';
+import { IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import { IRelationship } from './interfaces';
 

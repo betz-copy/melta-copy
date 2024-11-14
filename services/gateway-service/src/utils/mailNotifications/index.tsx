@@ -2,6 +2,8 @@ import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import { IRule } from '@microservices/shared/src/interfaces/rule';
+import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
+import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
 import config from '../../config';
 import { UsersManager } from '../../express/users/manager';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
@@ -15,7 +17,6 @@ import {
     IRuleBreachResponseNotificationMetadataPopulated,
 } from '../../externalServices/notificationService/interfaces/populated';
 import { IMongoStepTemplate } from '../../externalServices/processService/interfaces/stepTemplate';
-import { ActionTypes, RuleBreachRequestStatus } from '../../externalServices/ruleBreachService/interfaces';
 import {
     ICreateRelationshipMetadataPopulated,
     IDeleteRelationshipMetadataPopulated,

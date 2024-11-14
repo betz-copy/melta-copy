@@ -1,7 +1,7 @@
 import { IEntitySingleProperty } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
-import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,

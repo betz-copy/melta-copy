@@ -1,7 +1,7 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { IAction } from '../interfaces/ruleBreach';
-import { ActionTypes } from '../interfaces/actionMetadata';
+import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IAction } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import {
     createEntityMetadataSchema,
     duplicateEntityMetadataSchema,

@@ -1,6 +1,18 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
 import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
+import {
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IDeleteRelationshipMetadata,
+    IDuplicateEntityMetadata,
+    IUpdateEntityMetadata,
+    IUpdateEntityStatusMetadata,
+} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { IAction, IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { IEntity } from '../../externalServices/instanceService/interfaces/entities';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
@@ -24,21 +36,6 @@ import {
 } from '../../externalServices/notificationService/interfaces/populated';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import {
-    ActionTypes,
-    IAction,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    ICreateRelationshipMetadata,
-    IDeleteRelationshipMetadata,
-    IDuplicateEntityMetadata,
-    IRuleBreach,
-    IRuleBreachAlert,
-    IRuleBreachRequest,
-    IUpdateEntityMetadata,
-    IUpdateEntityStatusMetadata,
-    RuleBreachRequestStatus,
-} from '../../externalServices/ruleBreachService/interfaces';
-import {
     IActionMetadataPopulated,
     IBrokenRulePopulated,
     ICauseInstancePopulated,
@@ -57,7 +54,6 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
