@@ -19,7 +19,7 @@ export const GeneralDetailsFields = ({
     setFieldTouched,
 }) => {
     return (
-        <Grid item xs={4}>
+        <Grid item>
             <BlueTitle title={i18next.t('wizard.processInstance.generalDetails')} component="h6" variant="h6" style={{ marginBottom: '30px' }} />
             <Grid container direction="column" spacing={3}>
                 <Grid item>

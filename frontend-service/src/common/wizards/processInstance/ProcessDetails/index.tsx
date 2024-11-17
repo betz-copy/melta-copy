@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
@@ -8,6 +8,9 @@ import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes
 import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
 import GeneralDetails from './GeneralDetails';
+import { TemplateFields } from './TemplateFields';
+import { initDetailsValues } from './detailsFormik';
+import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 
 export interface ProcessDetailsValues {
     template: IMongoProcessTemplatePopulated | null;
@@ -49,6 +52,7 @@ const steps = [
     {
         label: i18next.t('wizard.processInstance.generalDetails'),
         component: GeneralDetails,
+        // component: GeneralDetailsFields,
     },
     {
         label: i18next.t('wizard.processInstance.stepsReviewers'),
@@ -94,6 +98,42 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
         if (detailsFormikData.isValid) setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep + 1);
     };
 
+    const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
+    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+    const viewMode = false;
+    const variant = viewMode ? 'standard' : 'outlined';
+    const templateFileProperties = values.template
+        ? pickBy(
+              values.template.details.properties.properties,
+              (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
+          )
+        : undefined;
+
+    const templateEntityReferenceProperties = values.template
+        ? pickBy(values.template.details.properties.properties, (value) => value.format === 'entityReference')
+        : undefined;
+
+    useEffect(() => {
+        if (values.template) {
+            setPreviousTemplate(values.template);
+            if (values.template.name !== previousTemplate?.name) {
+                resetForm({
+                    values: {
+                        template: values.template,
+                        details: initDetailsValues(values.template),
+                        detailsAttachments: {},
+                        endDate: null,
+                        entityReferences: {},
+                        name: '',
+                        startDate: null,
+                        steps: {},
+                    },
+                });
+            }
+            setFieldValue('steps', setInitialStepsObject(values.template.steps));
+        }
+    }, [values.template?._id]);
+
     const handleBack = () => {
         setActiveProcessDetailsStep((prevActiveStep) => prevActiveStep - 1);
     };
@@ -107,7 +147,7 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
                 height: 1,
             }}
         >
-            <Grid container direction="column">
+            {/* <Grid container direction="column">
                 <Grid item>
                     <Box sx={{ width: '100%', paddingBottom: 5, paddingTop: 1 }}>
                         <Stepper nonLinear activeStep={activeProcessDetailsStep}>
@@ -129,6 +169,24 @@ const ProcessDetails: React.FC<ProcessDetailsProps> = ({ detailsFormikData, isEd
                         processInstance={processInstance}
                     />
                 </Grid>
+            </Grid> */}
+            <Grid item flexBasis="50%">
+                {values.template && (
+                    <TemplateFields
+                        toPrint={false}
+                        // toPrint={toPrint}
+                        values={values}
+                        viewMode={viewMode}
+                        errors={errors}
+                        touched={touched}
+                        setFieldValue={setFieldValue}
+                        setFieldTouched={setFieldTouched}
+                        templateFileProperties={templateFileProperties}
+                        handleBlur={handleBlur}
+                        templateEntityReferenceProperties={templateEntityReferenceProperties}
+                        onNext={handleNext}
+                    />
+                )}
             </Grid>
         </Box>
     );

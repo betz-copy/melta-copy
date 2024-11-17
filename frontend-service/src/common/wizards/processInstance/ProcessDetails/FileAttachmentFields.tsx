@@ -104,6 +104,7 @@ export const FileAttachmentsView: React.FC<FileAttachmentsProps> = ({ templateFi
     );
 };
 
+// TODO - fix problem...
 export const FileAttachments = ({ viewMode, templateFileProperties, values, errors, touched, setFieldValue, required, setFieldTouched, toPrint }) => {
     return (
         <Box>

@@ -6,7 +6,7 @@ import { AxiosError } from 'axios';
 import CloseIcon from '@mui/icons-material/Close';
 import { pickBy } from 'lodash';
 import i18next from 'i18next';
-import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
+import { ProcessDetailsValues } from './ProcessDetails';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { initDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { createProcessRequest } from '../../../services/processesService';
@@ -16,6 +16,7 @@ import { getAllFieldsTouched } from '../../../utils/processWizard/formik';
 import { GeneralDetailsFields } from './ProcessDetails/GeneralDetailsFields';
 import { TemplateFields } from './ProcessDetails/TemplateFields';
 import { setInitialStepsObject } from '../../../utils/processWizard/steps';
+import StepsReviewers from './ProcessDetails/StepsReviewers';
 
 interface ISimpleDialogProps {
     open: boolean;
@@ -130,13 +131,13 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
             >
                 <CloseIcon fontSize="large" />
             </IconButton>
-            <Grid container flexDirection="row" height="100%">
+            <Grid container flexDirection="row" height="100%" flexWrap="nowrap">
                 <Grid
                     container
                     item
                     flexDirection="column"
                     alignItems="center"
-                    flexBasis="15%"
+                    flexBasis="20%"
                     padding={3}
                     style={{
                         backgroundColor: '#F0F2F7',
@@ -146,7 +147,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                         boxShadow: '10px 10px 15px 10px #888888',
                     }}
                 >
-                    <Grid item>
+                    <Grid item width="100%">
                         <BlueTitle
                             title={i18next.t('processInstancesPage.addNewProcess')}
                             component="h5"
@@ -167,25 +168,43 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
                             setFieldTouched={setFieldTouched}
                         />
                     </Grid>
-
-                    <Grid item flexBasis="85%">
-                        {values.template && (
-                            <TemplateFields
-                                toPrint={false}
-                                values={values}
-                                viewMode={viewMode}
-                                errors={errors}
-                                touched={touched}
-                                setFieldValue={setFieldValue}
-                                setFieldTouched={setFieldTouched}
-                                templateFileProperties={templateFileProperties}
-                                handleBlur={handleBlur}
-                                templateEntityReferenceProperties={templateEntityReferenceProperties}
-                                onNext={handleNext}
-                            />
-                        )}
-                        {/* <ProcessDetails detailsFormikData={detailsFormikData} /> */}
-                    </Grid>
+                </Grid>
+                <Grid item flexBasis="75%">
+                    {values.template && activeProcessDetailsStep === 0 && (
+                        <TemplateFields
+                            toPrint={false}
+                            values={values}
+                            viewMode={viewMode}
+                            errors={errors}
+                            touched={touched}
+                            setFieldValue={setFieldValue}
+                            setFieldTouched={setFieldTouched}
+                            templateFileProperties={templateFileProperties}
+                            handleBlur={handleBlur}
+                            templateEntityReferenceProperties={templateEntityReferenceProperties}
+                            onNext={handleNext}
+                        />
+                    )}
+                    {values.template && activeProcessDetailsStep === 1 && (
+                        <StepsReviewers
+                            detailsFormikData={detailsFormikData}
+                            onNext={handleNext}
+                            onBack={handleBack}
+                            processInstance={undefined}
+                            // toPrint={false}
+                            // values={values}
+                            // viewMode={viewMode}
+                            // errors={errors}
+                            // touched={touched}
+                            // setFieldValue={setFieldValue}
+                            // setFieldTouched={setFieldTouched}
+                            // templateFileProperties={templateFileProperties}
+                            // handleBlur={handleBlur}
+                            // templateEntityReferenceProperties={templateEntityReferenceProperties}
+                            // onNext={handleNext}
+                        />
+                    )}
+                    {/* <ProcessDetails detailsFormikData={detailsFormikData} /> */}
                 </Grid>
             </Grid>
         </Dialog>

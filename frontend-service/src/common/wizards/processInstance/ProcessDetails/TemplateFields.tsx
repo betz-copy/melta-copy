@@ -24,7 +24,7 @@ export const TemplateFields = ({
     templateEntityReferenceProperties,
     onNext,
 }) => {
-    console.log({ templateFileProperties }); // TODO - fix this component....
+    console.log({ templateFileProperties, values }); // TODO - fix this component....
     return (
         <Grid container flexDirection="column" width="100%">
             <Grid
@@ -33,7 +33,7 @@ export const TemplateFields = ({
                     overflowY: 'auto',
                     paddingLeft: toPrint ? 0 : 3,
                 }}
-                xs={toPrint ? 15 : 7}
+                // xs={toPrint ? 15 : 7}
             >
                 {Object.keys(pickProcessFieldsPropertiesSchema(values.template?.details)?.properties).length !== 0 && (
                     <SchemaForm {...{ viewMode, values, errors, touched, setFieldValue, setFieldTouched, toPrint }} />
@@ -94,9 +94,10 @@ export const TemplateFields = ({
             </Grid>
             {!toPrint && (
                 <Grid item>
-                    <Grid item>
+                    <Grid item padding={3}>
                         {values.template && (
                             <Fab
+                                size="small"
                                 onClick={() => {
                                     onNext();
                                 }}
