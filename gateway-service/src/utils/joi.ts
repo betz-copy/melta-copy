@@ -4,7 +4,7 @@ import { wrapValidator } from './express';
 
 const validateProperties = (value, helpers) => {
     const properties = value;
-    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true);
+    const requiredFields = Object.keys(properties).filter((key) => properties[key].readOnly !== true || properties[key].archive !== true);
 
     for (const key of requiredFields) {
         if (properties[key].required && properties[key].readOnly) {

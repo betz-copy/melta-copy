@@ -150,14 +150,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
         }
     };
 
-    const setArchive = (index: number, newValue: boolean): void => {
-        console.log({ newValue });
-        const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
-        displayValuesCopy[index].archive = newValue;
-
-        setDisplayValues(displayValuesCopy);
-    };
-
     const move = (src: number, dst: number) => {
         const displayValuesCopy = [...displayValuesRef.current] as Values[PropertiesType];
 
@@ -239,7 +231,6 @@ const FieldBlock = <PropertiesType extends string, Values extends Record<Propert
                                                 supportRelationshipReference,
                                                 supportUnique,
                                                 hasActions,
-                                                setArchive,
                                             };
 
                                             if (propertiesType === 'properties' || propertiesType === 'detailsProperties') {

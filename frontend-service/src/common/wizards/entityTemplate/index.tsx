@@ -50,6 +50,7 @@ export interface EntityTemplateFormInputProperties extends IBaseFormInputPropert
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
+    archive?: boolean;
 }
 export interface EntityTemplateWizardValues
     extends Omit<

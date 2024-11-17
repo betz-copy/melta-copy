@@ -64,6 +64,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
             isDailyAlert: value.isDailyAlert ?? undefined,
             serialStarter: value.serialStarter,
             relationshipReference: value.relationshipReference || undefined,
+            archive: value.archive || undefined,
         };
 
         if (value.format === 'fileId' || value.items?.format === 'fileId') {
@@ -126,6 +127,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
             deleted,
             readOnly,
             relationshipReference,
+            archive,
         }) => {
             if (!deleted) {
                 let propertyType: IEntitySingleProperty['type'];
@@ -153,6 +155,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                     items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                     minItems: type === 'enumArray' ? 1 : undefined,
                     readOnly,
+                    archive,
                     uniqueItems: type === 'enumArray' ? true : undefined,
                     pattern: type === 'pattern' ? pattern : undefined,
                     patternCustomErrorMessage: type === 'pattern' ? patternCustomErrorMessage : undefined,
@@ -313,6 +316,8 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     if (entityTemplate.enumPropertiesColors) {
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
+
+    console.log({ updatedEntityTemplate });
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);

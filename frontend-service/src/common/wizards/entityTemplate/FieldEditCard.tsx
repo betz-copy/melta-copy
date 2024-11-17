@@ -91,7 +91,6 @@ export interface FieldEditCardProps {
     supportEditEnum?: boolean;
     supportUnique?: boolean;
     hasActions?: boolean;
-    setArchive: (index: number, newValue: boolean) => void;
 }
 
 export const FieldEditCard: React.FC<FieldEditCardProps> = ({
@@ -119,7 +118,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportEditEnum,
     supportUnique,
     hasActions,
-    setArchive,
 }) => {
     const currentUser = useUserStore((state) => state.user);
 
@@ -943,7 +941,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                     : isEditMode &&
                                                                       areThereAnyInstances &&
                                                                       (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
-                                                                value.deleted
+                                                                value.deleted ||
+                                                                value.archive
                                                             }
                                                             checked={value.required}
                                                         />
@@ -1059,8 +1058,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
                                             <Grid>
-                                                <IconButton onClick={() => setArchive(index, !value.archive)} disabled={value.required}>
-                                                    {value.archive ? <Unarchive /> : <Archive />}
+                                                <IconButton onClick={() => setFieldValue('archive', !value.archive)} disabled={value.required}>
+                                                    {value.archive ? <Unarchive color="primary" /> : <Archive />}
                                                 </IconButton>
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}

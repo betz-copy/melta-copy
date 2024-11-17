@@ -29,7 +29,7 @@ export interface IEntitySingleProperty {
         relatedTemplateId: string;
         relatedTemplateField: string;
     };
-    archived?: boolean;
+    archive?: boolean;
 }
 
 export interface IEntityTemplate {
