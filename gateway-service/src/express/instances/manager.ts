@@ -10,7 +10,7 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, ISearchEntitiesByLocationBody, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -41,6 +41,8 @@ const { errorCodes, rabbit, ruleBreachService } = config;
 export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     private entityTemplateService: EntityTemplateService;
 
+    private instancesService: InstancesService;
+
     private storageService: StorageService;
 
     private ruleBreachesManager: RuleBreachesManager;
@@ -48,6 +50,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     constructor(workspaceId: string) {
         super(new InstancesService(workspaceId));
         this.entityTemplateService = new EntityTemplateService(workspaceId);
+        this.instancesService = new InstancesService(workspaceId);
         this.storageService = new StorageService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
     }
@@ -692,5 +695,27 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+    }
+
+    async searchEntitiesByLocation(reqBody: ISearchEntitiesByLocationBody) {
+        const entityTemplates = await this.entityTemplateService.searchEntityTemplates({ ids: Object.keys(reqBody.templates) });
+
+        const locationFieldsMap = entityTemplates.reduce((acc, entityTemplate) => {
+            const { _id, properties } = entityTemplate;
+
+            const locationKeys = Object.entries(properties.properties)
+                .filter(([, value]) => value.format === 'location')
+                .map(([key]) => key);
+
+            if (locationKeys.length > 0) {
+                acc[_id] = { filter: reqBody.templates[_id].filter, locationFields: locationKeys };
+            }
+
+            return acc;
+        }, {});
+
+        console.log({ locationFieldsMap });
+
+        return this.instancesService.searchEntitiesByLocationRequest({ ...reqBody, templates: locationFieldsMap } as ISearchEntitiesByLocationBody);
     }
 }

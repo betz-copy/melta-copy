@@ -80,6 +80,7 @@ const config = {
         baseBulkActionsRoute: env.get('INSTANCE_SERVICE_BASE_BULK_ACTIONS_ROUTE').default('/api/instances/bulk-actions').asString(),
         baseConstraintsRoute: env.get('INSTANCE_SERVICE_BASE_CONSTRAINTS_ROUTE').default('/api/instances/entities/constraints').asString(),
         searchOfTemplateRoute: env.get('INSTANCE_SERVICE_SEARCH_OF_TEMPLATE_ROUTE').default('/search/template').asString(),
+        searchEntitiesByLocationRoute: env.get('INSTANCE_SERVICE_SEARCH_ENTITIES_BY_LOCATION_ROUTE').default('/search/location').asString(),
         requestTimeout: env.get('INSTANCE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
         searchEntitiesFlowMaxLimit: env.get('SEARCH_ENTITIES_FLOW_MAX_LIMIT').default(10000).asIntPositive(),
         searchEntitiesMaxLimit: env.get('SEARCH_ENTITIES_MAX_LIMIT').default(10000).asIntPositive(),

@@ -1,13 +1,47 @@
-import React, { useRef } from 'react';
+import React, { useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import L from 'leaflet';
 import { EditControl } from 'react-leaflet-draw';
+import { useMutation, useQueryClient } from 'react-query';
 import { bindPopupForCircle, bindPopupForLine, bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates } from '../../utils/map';
+import { getEntitiesByLocation } from '../../services/entitiesService';
+import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { Circle, ISearchEntitiesByLocationTemplatesBody } from '../../interfaces/entities';
 
 const EditableMapControl = ({ featureGroupRef }) => {
-    const map = useMap(); // Access the map instance
+    const map = useMap();
+    const queryClient = useQueryClient();
+    const entityTemplateMap = queryClient.getQueryData<IEntityTemplateMap>(['getEntityTemplates']);
+
+    const { mutate } = useMutation(getEntitiesByLocation, {
+        onSuccess: (response) => {
+            // test
+            const locationField = response[0]?.properties.test_marker;
+
+            const marker = L.marker([locationField.x, locationField.y]);
+
+            // Add the marker to the map
+            marker.addTo(map);
+        },
+        onError: (error) => {
+            console.log('error', error);
+        },
+    });
+
+    const generateTemplateObject: ISearchEntitiesByLocationTemplatesBody | null = useMemo(() => {
+        return entityTemplateMap ? Array.from(entityTemplateMap.keys()).reduce((acc, elem) => ({ ...acc, [elem]: { filter: {} } }), {}) : null;
+    }, [entityTemplateMap]);
+
+    const handleFetchCircleRequest = (circle: Circle) => {
+        if (generateTemplateObject)
+            mutate({
+                textSearch: '',
+                templates: generateTemplateObject,
+                circle,
+            });
+    };
 
     const handleCreateLayer = (e) => {
         const { layer } = e;
@@ -24,6 +58,7 @@ const EditableMapControl = ({ featureGroupRef }) => {
                 map.fitBounds(bounds);
             });
         } else if (layer instanceof L.Circle) {
+            handleFetchCircleRequest({ coordinate: [layer.getLatLng().lat, layer.getLatLng().lng], radius: layer.getRadius() * 1000 });
             const bounds = layer.getBounds();
             map.fitBounds(bounds);
             layer.bindPopup(bindPopupForCircle(layer.getRadius())).openPopup();

@@ -106,6 +106,26 @@ export interface ISearchBatchBody {
     sort: ISearchSort;
 }
 
+type Coordinate = [number, number];
+
+interface Circle {
+    coordinate: Coordinate; // [latitude, longitude]
+    radius: number; // Positive number
+}
+
+type Polygon = Coordinate[];
+export interface ISearchEntitiesByLocationBody {
+    textSearch?: string;
+    templates: {
+        [templateId: string]: {
+            filter?: ISearchFilter;
+            locationFields?: string[];
+        };
+    };
+    circle?: Circle;
+    polygon?: Polygon;
+}
+
 export interface IGetExpandedEntityBody {
     disabled: boolean | null;
     templateIds: string[];

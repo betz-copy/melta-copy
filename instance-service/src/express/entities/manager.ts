@@ -53,8 +53,9 @@ import {
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
+    ISearchEntitiesByLocationBody,
 } from './interface';
-import { addStringFieldsAndNormalizeDateValues } from './validator.template';
+import { addStringFieldsAndNormalizeSpecialStringValues } from './validator.template';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
 import BulkActionManager from '../bulkActions/manager';
@@ -245,7 +246,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             {
                 properties: {
                     ...generateDefaultProperties(),
-                    ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
+                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
                 },
             },
         );
@@ -326,7 +327,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     async fixRelationshipReferenceField(relatedEntityId: string, transaction: Transaction) {
         const relatedEntity = await this.getEntityByIdInTransaction(relatedEntityId, transaction);
         const relatedEntityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(relatedEntity.templateId);
-        const relatedEntityFixProperties = addStringFieldsAndNormalizeDateValues(relatedEntity.properties, relatedEntityTemplate, true);
+        const relatedEntityFixProperties = addStringFieldsAndNormalizeSpecialStringValues(relatedEntity.properties, relatedEntityTemplate, true);
         return {
             fixedField: {
                 ...relatedEntityFixProperties,
@@ -730,6 +731,70 @@ export class EntityManager extends DefaultManagerNeo4j {
         return { entities, count };
     }
 
+    buildBaseQuery() {
+        return `
+            WITH $templates AS templates
+            UNWIND keys(templates) AS templateId
+            WITH templateId, templates[templateId] AS templateData
+            MATCH (n)
+            WHERE labels(n) = [templateId]
+        `;
+    }
+
+    buildCircleQuery() {
+        let query = this.buildBaseQuery();
+
+        // Add circle-specific spatial condition
+        query += `
+            AND templateData.circle IS NOT NULL 
+            AND ANY(field IN templateData.locationFields WHERE 
+                point.distance(
+                    n[field],  
+                    point({
+                        longitude: templateData.circle.coordinate[1], 
+                        latitude: templateData.circle.coordinate[0]
+                    })
+                ) <= templateData.circle.radius
+            )
+        `;
+
+        query += 'RETURN n';
+        return query;
+    }
+
+    buildPolygonQuery() {
+        let query = this.buildBaseQuery();
+
+        // Add polygon-specific spatial condition
+        query += `
+            AND templateData.polygon IS NOT NULL 
+            AND ANY(field IN templateData.locationFields WHERE 
+                point.inPolygon(
+                    n[field],  
+                    templateData.polygon
+                )
+            )
+        `;
+
+        query += 'RETURN n';
+        return query;
+    }
+
+    async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
+        const { circle, polygon, templates } = requestBody;
+
+        let query: null | string = null;
+
+        if (circle) query = this.buildCircleQuery();
+        if (polygon) query = this.buildPolygonQuery();
+
+        if (!query) throw new Error('Payload must include either circle or polygon, not both.');
+
+        const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
+
+        return this.neo4jClient.readTransaction(query, normalizeReturnedEntity('multipleResponses'), { templates: updatedTemplates });
+    }
+
     async getEntityById(id: string) {
         const node = await this.neo4jClient.readTransaction(`MATCH (e {_id: '${id}'}) RETURN e`, normalizeReturnedEntity('singleResponse'));
 
@@ -1042,10 +1107,13 @@ export class EntityManager extends DefaultManagerNeo4j {
     private getUpdatedProperties(oldEntity: Record<string, any>, newEntity: Record<string, any>, entityTemplate: IMongoEntityTemplate) {
         const updatedPropertiesNames = this.getKeysOfUpdatedProperties(oldEntity, newEntity, entityTemplate);
 
-        const updatedProperties = updatedPropertiesNames.reduce((acc, property) => {
-            acc[property] = newEntity[property];
-            return acc;
-        }, {} as Record<string, any>);
+        const updatedProperties = updatedPropertiesNames.reduce(
+            (acc, property) => {
+                acc[property] = newEntity[property];
+                return acc;
+            },
+            {} as Record<string, any>,
+        );
 
         return this.removeBasicProperties(updatedProperties);
     }
@@ -1180,7 +1248,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             normalizeReturnedEntity('singleResponseNotNullable'),
             {
                 props: {
-                    ...addStringFieldsAndNormalizeDateValues(fixedProperties, entityTemplate),
+                    ...addStringFieldsAndNormalizeSpecialStringValues(fixedProperties, entityTemplate),
                     updatedAt: getNeo4jDateTime(),
                     _id: id,
                 },

@@ -22,6 +22,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    searchEntitiesByLocation,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -62,6 +63,13 @@ entityRouter.post(
     ValidateRequest(searchEntitiesBatchRequestSchema),
     entityValidatorController.validateSearchBatchBody,
     entityController.searchEntitiesBatch,
+);
+
+entityRouter.post(
+    '/search/location',
+    ValidateRequest(searchEntitiesByLocation),
+    // entityValidatorController.validateSearchBatchBody,
+    entityController.searchEntitiesByLocation,
 );
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);

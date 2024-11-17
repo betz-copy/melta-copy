@@ -50,6 +50,32 @@ export const stringToCoordinates = (strCoords: string): CoordinatesResult => {
     // TODO: add validation to format
 };
 
+export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true) => {
+    // Handle single LatLng point
+    if (!Array.isArray(latLng)) {
+        return latLng
+            .toString()
+            .replace(/^LatLng\(|\)$/g, '')
+            .trim();
+    }
+
+    const matchedPoints = latLng.toString().match(/LatLng\(([^)]+)\)/g); // Match each "LatLng(number, number)"
+
+    if (!matchedPoints) {
+        return includePolygon ? 'POLYGON(())' : '';
+    }
+
+    const points = matchedPoints.map((point) =>
+        point
+            .replace(/LatLng|\(|\)/g, '')
+            .replace(',', ' ')
+            .trim(),
+    );
+
+    // Return the POLYGON format
+    return includePolygon ? `POLYGON((${points.join(', ')}))` : points.join(', ');
+};
+
 // ugly af find better solution
 export const bindPopupForMarker = (coordinates: LatLng) => {
     const { lat, lng } = coordinates;

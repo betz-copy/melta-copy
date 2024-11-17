@@ -14,7 +14,7 @@ import { addDefaultFieldsToTemplate } from '../../utils/addDefaultsFieldsToEntit
 import { addPropertyToRequest } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
 import { trycatch } from '../../utils/lib';
-import { getNeo4jDate, getNeo4jDateTime } from '../../utils/neo4j/lib';
+import { getNeo4jDate, getNeo4jDateTime, getNeo4jLocation } from '../../utils/neo4j/lib';
 import { ValidationError } from '../error';
 import {
     IFilterOfField,
@@ -405,7 +405,7 @@ const formatDateForFullTextSearch = (date: Date) => {
     return formatFns(date, 'dd/MM/yyyy');
 };
 
-export const addStringFieldsAndNormalizeDateValues = (
+export const addStringFieldsAndNormalizeSpecialStringValues = (
     entityProperties: Record<string, any>,
     entityTemplate: IMongoEntityTemplate,
     recursiveRelationshipReference = false,
@@ -448,6 +448,12 @@ export const addStringFieldsAndNormalizeDateValues = (
                     normalizedEntity[`${key}.properties.${innerKey}${neo4j.relationshipReferencePropertySuffix}`] = innerProperty;
                 });
             }
+
+            return;
+        }
+
+        if (type === 'string' && format === 'location') {
+            normalizedEntity[key] = getNeo4jLocation(propertyValue);
 
             return;
         }

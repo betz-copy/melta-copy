@@ -10,9 +10,9 @@ import { Card, CardContent, Dialog, Grid, IconButton, Menu } from '@mui/material
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { useLocation } from 'wouter';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { useLocation } from 'wouter';
 import MapIcon from '@mui/icons-material/Map';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';

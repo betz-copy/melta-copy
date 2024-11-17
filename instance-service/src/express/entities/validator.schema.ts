@@ -233,6 +233,27 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
     params: {},
 });
 
+// POST /api/instances/search/map
+export const searchEntitiesByLocation = Joi.object({
+    body: Joi.object({
+        textSearch: Joi.string().allow(''),
+        templates: Joi.object().pattern(
+            Joi.string(),
+            Joi.object({
+                filter: Joi.any(),
+                locationFields: Joi.array().items(Joi.string()).min(1),
+            }),
+        ),
+        circle: Joi.object({
+            coordinate: Joi.array().items(Joi.number()).length(2).required(),
+            radius: Joi.number().positive().required(),
+        }),
+        polygon: Joi.array().items(Joi.array().items(Joi.number()).length(2)),
+    }).xor('circle', 'polygon'),
+    query: Joi.object(),
+    params: Joi.object(),
+});
+
 /**
  * PATCH /api/instances/entities/:id/status
  */

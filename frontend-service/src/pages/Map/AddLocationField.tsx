@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MapContainer, TileLayer, LayersControl, LayerGroup, FeatureGroup, Marker, Popup, Polygon } from 'react-leaflet';
 import L, { LatLng } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { EditControl } from 'react-leaflet-draw';
-import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, stringToCoordinates } from '../../utils/map';
+import { bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates, latLngToString, stringToCoordinates } from '../../utils/map';
 
 type Props = {
     defaultLocation?: string;
@@ -31,13 +31,11 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
         if (layer instanceof L.Marker) {
             const latLng = layer.getLatLng();
             setMarkerPosition(latLng);
-            const { lat, lng } = latLng;
-            updateValue([[lat, lng]].toString());
+            updateValue(latLngToString(latLng));
         } else if (layer instanceof L.Polygon) {
-            const latLngs = (layer.getLatLngs()[0] as LatLng[]).map((latLng) => [latLng.lat, latLng.lng] as unknown as LatLng);
+            const latLngs = layer.getLatLngs()[0] as LatLng[];
             setPolygonPosition(latLngs);
-            const coordinatesString = latLngs.map((location) => `${location[0].toFixed(5)} ${location[1].toFixed(5)}`).join(',');
-            updateValue(`POLYGON((${coordinatesString}))`);
+            updateValue(latLngToString(latLngs));
         }
     };
 
@@ -46,22 +44,28 @@ const AddLocationField = ({ defaultLocation, styles, updateValue }: Props) => {
             if (layer instanceof L.Marker) {
                 const latLng = layer.getLatLng();
                 setMarkerPosition(latLng);
-                const { lat, lng } = latLng;
-                updateValue([[lat, lng]].toString());
+                updateValue(latLngToString(latLng));
             } else if (layer instanceof L.Polygon) {
-                const latLngs = (layer.getLatLngs()[0] as LatLng[]).map((latLng) => [latLng.lat, latLng.lng] as unknown as LatLng);
+                const latLngs = layer.getLatLngs()[0] as LatLng[];
                 setPolygonPosition(latLngs);
-                const coordinatesString = latLngs.map((location) => `${location[0].toFixed(5)} ${location[1].toFixed(5)}`).join(',');
-                updateValue(`POLYGON((${coordinatesString}))`);
+                updateValue(latLngToString(latLngs));
             }
         });
     };
 
+    const bounds = useMemo(() => {
+        if (polygonPosition) {
+            return L.latLngBounds(polygonPosition);
+        }
+        return null;
+    }, [polygonPosition]);
+
     return (
         <MapContainer
             style={{ width: '100%', height: '100vh', ...styles }}
-            center={markerPosition || jerusalemCoordinates}
-            zoom={8}
+            bounds={bounds?.isValid() ? bounds : undefined}
+            center={!bounds?.isValid() ? markerPosition || jerusalemCoordinates : undefined}
+            zoom={!bounds?.isValid() ? 8 : undefined}
             maxBounds={[
                 [-90, -180],
                 [90, 180],

@@ -6,6 +6,7 @@ import { IRelationship } from '../../express/relationships/interfaces';
 import config from '../../config';
 import { EntityManager } from '../../express/entities/manager';
 import { IFormulaCauses } from '../../express/rules/interfaces/formulaWithCauses';
+import { ValidationError } from '../../express/error';
 
 type Node = Neo4jNode<number>;
 type Relationship = Neo4jRelationship<number>;
@@ -39,6 +40,18 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
             return;
         }
 
+        if (value instanceof neo4j.types.Point) {
+            props[key] = `${value.x}, ${value.y}`;
+
+            return;
+        }
+        if (Array.isArray(value) && value.every((item) => item instanceof neo4j.types.Point)) {
+            const points = value.map((point) => `${point.x} ${point.y}`);
+            props[key] = `POLYGON((${points.join(',')}))`;
+
+            return;
+        }
+
         props[key] = value;
     });
 
@@ -49,10 +62,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -259,4 +272,28 @@ export const generateDefaultProperties = () => {
         updatedAt: timestamp,
         disabled: false,
     };
+};
+
+const getLocationPoint = (pointString: string, splitBy: ' ' | ',') => {
+    const [longitude, latitude] = pointString.split(splitBy).map(Number);
+    if (Number.isNaN(longitude) || Number.isNaN(latitude)) {
+        throw new ValidationError('Invalid format. Expected format: "number, number".');
+    }
+
+    return new neo4j.types.Point(4326, longitude, latitude);
+};
+
+export const getNeo4jLocation = (locationString: string) => {
+    if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, ',');
+
+    const prefix = 'POLYGON((';
+    const suffix = '))';
+
+    if (!locationString.startsWith(prefix) || !locationString.endsWith(suffix)) {
+        throw new ValidationError('Invalid format. Expected polygon format: POLYGON((number number, number number, ...))');
+    }
+
+    const coordsStr = locationString.slice(prefix.length, -suffix.length);
+
+    return coordsStr.split(',').map((stringedLocation: string) => getLocationPoint(stringedLocation, ' '));
 };

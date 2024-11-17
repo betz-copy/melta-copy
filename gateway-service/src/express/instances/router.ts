@@ -17,6 +17,7 @@ import {
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
     searchEntitiesByTemplatesSchema,
+    searchEntitiesByLocationRequestSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
 } from './validator.schema';
@@ -44,6 +45,14 @@ InstancesRouter.post(
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
     InstanceManagerProxy,
 );
+
+InstancesRouter.post(
+    '/entities/search/location',
+    ValidateRequest(searchEntitiesByLocationRequestSchema),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
+    InstancesControllerMiddleware.searchEntitiesByLocation,
+);
+
 InstancesRouter.post(
     '/entities/search/template/:templateId',
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesOfTemplate,

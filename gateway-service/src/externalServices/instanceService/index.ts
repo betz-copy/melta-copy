@@ -2,7 +2,14 @@ import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
-import { IConstraintsOfTemplate, IEntity, ISearchEntitiesOfTemplateBody, ISearchResult, IUniqueConstraintOfTemplate } from './interfaces/entities';
+import {
+    IConstraintsOfTemplate,
+    IEntity,
+    ISearchEntitiesByLocationBody,
+    ISearchEntitiesOfTemplateBody,
+    ISearchResult,
+    IUniqueConstraintOfTemplate,
+} from './interfaces/entities';
 import { IRelationship } from './interfaces/relationships';
 
 const {
@@ -14,6 +21,7 @@ const {
         baseConstraintsRoute,
         requestTimeout,
         searchOfTemplateRoute,
+        searchEntitiesByLocationRoute,
     },
 } = config;
 
@@ -84,6 +92,12 @@ export class InstancesService extends DefaultExternalServiceApi {
 
     async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
+
+        return data;
+    }
+
+    async searchEntitiesByLocationRequest(searchBody: ISearchEntitiesByLocationBody) {
+        const { data } = await this.api.post<any>(`${baseEntitiesRoute}${searchEntitiesByLocationRoute}`, searchBody);
 
         return data;
     }
