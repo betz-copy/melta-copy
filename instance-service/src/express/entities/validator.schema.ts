@@ -62,6 +62,18 @@ export const getIfValuefieldIsUsedRequestSchema = Joi.object({
 });
 
 /**
+ * POST /api/instances/entities/rules/dependant
+ */
+export const getDependentRulesRequestSchema = Joi.object({
+    body: {
+        rules: Joi.array().required(),
+        relationshipTemplateId: Joi.string().required(),
+    },
+    params: {},
+    query: {},
+});
+
+/**
  * DELETE /api/instances/entities/:id?deleteAllRelationships=true
  */
 export const deleteEntityByIdRequestSchema = Joi.object({
@@ -257,6 +269,7 @@ export const updateEntityByIdRequestSchema = Joi.object({
         templateId: Joi.string().required(),
         ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
         userId: Joi.string().required(),
+        convertToRelationshipField: Joi.boolean().default(false),
     },
     query: {},
     params: {

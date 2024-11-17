@@ -22,6 +22,7 @@ import {
     updateEntityStatusByIdRequestSchema,
     updateEnumFieldRequestSchema,
     deletePropertiesOfTemplateRequestSchema,
+    getDependentRulesRequestSchema,
 } from './validator.schema';
 import { EntityValidator } from './validator.template';
 
@@ -66,6 +67,8 @@ entityRouter.post(
 
 entityRouter.put('/update-enum-field/:id', ValidateRequest(updateEnumFieldRequestSchema), entityController.updateEnumFieldValue);
 entityRouter.get('/get-is-field-used/:id', ValidateRequest(getIfValuefieldIsUsedRequestSchema), entityController.getIsFieldUsed);
+
+entityRouter.post('/rules/dependant', ValidateRequest(getDependentRulesRequestSchema), entityController.getDependentRules);
 
 entityRouter.post(
     '/expanded/:id',

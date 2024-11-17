@@ -1060,6 +1060,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         updatedProperties: string[],
         transaction: Transaction,
         userId: string,
+        convertToRelationshipField = false,
     ): Promise<{ fixedProperties: Record<string, any>; createdRelationships: IRelationship[]; deletedRelationships: IRelationship[] }> {
         const entityId = entity.properties._id;
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
@@ -1073,8 +1074,6 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 if (property?.format === 'relationshipReference') {
                     if (entity.properties[updatedProperty]) {
-                        console.log('jfkffjfjfjf', entity.properties[updatedProperty]);
-
                         const relatedEntityId = entity.properties[updatedProperty].properties._id;
                         const deletedRelationship = await this.deleteRelationshipReferenceInTransaction(
                             property.relationshipReference!,
@@ -1094,15 +1093,17 @@ export class EntityManager extends DefaultManagerNeo4j {
                         fixedProperties[updatedProperty] = fixedField;
                         console.log({ fixedField });
 
-                        const { createdRelationship } = await this.createRelationshipReference(
-                            property.relationshipReference!,
-                            relatedEntity,
-                            entityId,
-                            transaction,
-                            userId,
-                        );
+                        if (!convertToRelationshipField) {
+                            const { createdRelationship } = await this.createRelationshipReference(
+                                property.relationshipReference!,
+                                relatedEntity,
+                                entityId,
+                                transaction,
+                                userId,
+                            );
 
-                        createdRelationships.push(createdRelationship);
+                            createdRelationships.push(createdRelationship);
+                        }
                     }
                 }
             }),
@@ -1152,6 +1153,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         transaction: Transaction,
         userId?: string,
+        convertToRelationshipField = false,
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
@@ -1179,6 +1181,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             updatedProperties,
             transaction,
             userId ?? '',
+            convertToRelationshipField,
         );
         console.log('e');
 
@@ -1275,6 +1278,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         entityTemplate: IMongoEntityTemplate,
         ignoredRules: IBrokenRule[],
         userId: string,
+        convertToRelationshipField = false,
     ) {
         console.log('1');
 
@@ -1331,6 +1335,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     entityTemplate,
                     transaction,
                     userId,
+                    convertToRelationshipField,
                 );
                 console.log('13');
 
@@ -1706,5 +1711,9 @@ export class EntityManager extends DefaultManagerNeo4j {
                 this.relationshipManager.deleteRelationshipByTemplateIds(transaction, relationshipTemplatesToRemove),
             ]);
         });
+    }
+
+    getDependentRules(rules: IMongoRule[], relationshipTemplateId: string) {
+        return filterDependentRulesViaAggregation(rules, relationshipTemplateId);
     }
 }

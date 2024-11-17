@@ -1,4 +1,5 @@
 import config from '../../config';
+import { IMongoRule } from '../../express/templates/rules/interfaces';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import { IEntitySingleProperty } from '../templates/entityTemplateService';
@@ -60,14 +61,13 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string) {
+    async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
+            convertToRelationshipField,
         });
-        console.log({ data });
-
         return data;
     }
 
@@ -165,6 +165,14 @@ export class InstancesService extends DefaultExternalServiceApi {
             currentTemplateProperties,
         });
 
+        return data;
+    }
+
+    async getDependantRules(rules: IMongoRule[], relationshipTemplateId: string): Promise<IMongoRule[]> {
+        const { data } = await this.api.post<IMongoRule[]>(`${baseEntitiesRoute}/rules/dependant`, {
+            rules,
+            relationshipTemplateId,
+        });
         return data;
     }
 

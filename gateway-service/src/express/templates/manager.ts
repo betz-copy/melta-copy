@@ -7,7 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
+import { IConstraintsOfTemplate, IUniqueConstraintOfTemplate } from '../../externalServices/instanceService/interfaces/entities';
 import { ProcessService } from '../../externalServices/processService';
 import { RuleBreachService } from '../../externalServices/ruleBreachService';
 import { StorageService } from '../../externalServices/storageService';
@@ -976,6 +976,23 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.relationshipTemplateService.updateRelationshipTemplate(templateId, updatedFields);
     }
 
+    async validateConvertRelationshipToRelationshipField(
+        requiredConstraints: IConstraintsOfTemplate['requiredConstraints'],
+        existingRelationships: IRelationship[],
+        templateId: string,
+    ) {
+        if (!requiredConstraints.length) throw new ServiceError(StatusCodes.BAD_REQUEST, 'foo');
+
+        const sourceEntityIdsMap = new Map<string, boolean>();
+        existingRelationships.forEach((relationship) => {
+            if (!sourceEntityIdsMap.has(relationship.sourceEntityId)) sourceEntityIdsMap.set(relationship.sourceEntityId, true);
+            else throw new ServiceError(StatusCodes.BAD_REQUEST, 'bar');
+        });
+
+        if ((await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId)).length)
+            throw new ServiceError(StatusCodes.BAD_REQUEST, 'baz');
+    }
+
     async convertRelationshipToRelationshipField(
         templateId: string,
         { fieldName, displayFieldName, relatedTemplateField, relationshipTemplateDirection },
@@ -983,6 +1000,19 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ) {
         const { destinationEntityId, sourceEntityId, displayName, name } =
             await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
+
+        const [existingRelationships, { requiredConstraints: destRequiredConstraints }] = await Promise.all([
+            this.instancesService.getRelationshipsByEntitiesAndTemplate({
+                sourceEntityId,
+                destinationEntityId,
+                templateId,
+            }),
+            this.instancesService.getConstraintsOfTemplate(destinationEntityId),
+        ]);
+
+        await this.validateConvertRelationshipToRelationshipField(destRequiredConstraints, existingRelationships, templateId);
+
+        const srcEntityTemplate = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
 
         const updatedRelationShip = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
             destinationEntityId,
@@ -992,11 +1022,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             isProperty: true,
         });
 
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
-
         // console.log({ updatedRelationShip, userId, fieldName }, entityTemplate.propertiesOrder);
 
-        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = entityTemplate;
+        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = srcEntityTemplate;
         const newRelationshipField: IEntitySingleProperty = {
             title: displayFieldName,
             type: 'string',
@@ -1009,29 +1037,21 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             },
         };
 
-        await this.entityTemplateService.updateEntityTemplate(entityTemplate._id, {
+        await this.entityTemplateService.updateEntityTemplate(srcEntityTemplate._id, {
             ...restOfEntityTemplate,
             category: category._id,
             properties: {
-                ...entityTemplate.properties,
+                ...srcEntityTemplate.properties,
                 properties: {
-                    ...entityTemplate.properties.properties,
+                    ...srcEntityTemplate.properties.properties,
                     [fieldName]: newRelationshipField,
                 },
             },
-            propertiesOrder: [...entityTemplate.propertiesOrder, fieldName],
+            propertiesOrder: [...srcEntityTemplate.propertiesOrder, fieldName],
         });
-
-        const existingRelationships: IRelationship[] = await this.instancesService.getRelationshipsByEntitiesAndTemplate({
-            sourceEntityId,
-            destinationEntityId,
-            templateId,
-        });
-
-        console.log({ existingRelationships });
 
         await Promise.all(
-            existingRelationships.map(async (relationship: IRelationship) => {
+            existingRelationships.map(async (relationship) => {
                 const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
                 console.log('source instance entity ', { sourceEntity });
 
@@ -1040,6 +1060,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },
                     [],
                     userId,
+                    true,
                 );
             }),
         );

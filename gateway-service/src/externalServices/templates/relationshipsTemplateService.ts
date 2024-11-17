@@ -1,5 +1,5 @@
 import config from '../../config';
-import { IRule } from '../../express/templates/rules/interfaces';
+import { IMongoRule, IRule } from '../../express/templates/rules/interfaces';
 import { TemplatesManagerService } from '.';
 import { ISearchBody } from './entityTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
@@ -83,7 +83,7 @@ export class RelationshipsTemplateService extends TemplatesManagerService {
     }
 
     async searchRules(searchBody: ISearchRulesBody) {
-        const { data } = await this.api.post<IRule[]>(`${baseRulesRoute}/search`, searchBody);
+        const { data } = await this.api.post<IMongoRule[]>(`${baseRulesRoute}/search`, searchBody);
 
         return data;
     }

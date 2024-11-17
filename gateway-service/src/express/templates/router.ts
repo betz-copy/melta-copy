@@ -183,7 +183,7 @@ templatesRouter.post(
 templatesRouter.put(
     '/relationships/convertToRelationshipField/:id',
     ValidateRequest(convertToRelationshipFieldRequestSchema),
-    templatesValidatorMiddleware.validateUserCanUpdateOrDeleteRelationshipTemplate,
+    AuthorizerControllerMiddleware.userCanWriteTemplates,
     templatesControllerMiddleware.convertToRelationshipField,
 );
 
