@@ -81,7 +81,13 @@ export class UsersManager {
     }
 
     static isProfileFileType(profilePath: string) {
-        return profilePath !== '' && !profilePath.startsWith('/icons/profileAvatar') && !profilePath.startsWith('http://');
+        return (
+            !!profilePath &&
+            profilePath !== '' &&
+            !profilePath.startsWith('/icons/profileAvatar') &&
+            !profilePath.startsWith('http://') &&
+            !profilePath.startsWith('https://')
+        );
     }
 
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {

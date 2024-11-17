@@ -68,7 +68,7 @@ const App: React.FC = () => {
                 const isAdminRoot = (await Promise.all(adminWorkspaceIds.map((id) => getById(id)))).some((workspace) => workspace.path === '/');
                 user.isRoot = isAdminRoot;
                 setUser({ ...user, ...userFromDb });
-                if (userFromDb.preferences.darkMode) setDarkMode(true);
+                setDarkMode(userFromDb.preferences?.darkMode || false);
 
                 if (workspaceIds.length === 1) {
                     const workspace = await getById(workspaceIds[0]);

@@ -1,6 +1,7 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
+import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import { getFileName } from '../../utils/getFileName';
@@ -20,39 +21,31 @@ export interface UserProfilePickerProps {
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
-    const [iconPickerValue, setIconPickerValue] = useState<string>();
+    const [iconPickerValue, setIconPickerValue] = useState<string | undefined>();
     const [image, setImage] = useState<{ name: string } | undefined>(undefined);
-    const [selectedIcon, setSelectedIcon] = useState<string | null>(user.preferences.profilePath ?? null);
-    const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `/icons/profileAvatar/avatar${index}.png`);
+    const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
+    const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `${environment.avatarIconPath}${index}.png`);
 
-    const onToggle = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
+    const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
         setInputType(selected);
-
-        const selectedValue = selected === 'chooseFile' ? fileInputValue : iconPickerValue;
-
-        if (!selectedValue) {
-            onDelete();
-            return;
-        }
-
-        onPick(selectedValue);
+        onPick(selected === 'chooseFile' ? fileInputValue : selectedIcon);
     };
 
     const handleAvatarClick = (iconPath?: string) => {
         setIconPickerValue(iconPath);
-        setSelectedIcon(iconPath ?? null);
+        setSelectedIcon(iconPath ?? undefined);
         onPick(iconPath);
     };
 
     useEffect(() => {
         if (imageName) setImage({ name: getFileName(imageName) });
-    }, []);
+    }, [imageName]);
 
     return (
         <Grid container direction="column" alignItems="center" spacing={1}>
             <Grid item>
-                <ToggleButtonGroup value={inputType} exclusive onChange={onToggle} sx={{ height: '2.5rem' }}>
+                <ToggleButtonGroup value={inputType} exclusive onChange={handleToggleChange} sx={{ height: '2.5rem' }}>
                     <ToggleButton value="chooseAvatar" sx={{ width: '10rem' }}>
                         {i18next.t('input.imagePicker.chooseAvatar')}
                     </ToggleButton>
@@ -96,10 +89,20 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                                         boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
                                         border: !selectedIcon ? '1px solid green' : '',
                                     }}
+                                    onClick={() => handleAvatarClick()}
+                                />
+                                {/* <DoNotDisturbAltIcon
+                                    style={{
+                                        width: 50,
+                                        height: 50,
+                                        cursor: 'pointer',
+                                        boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
+                                        border: !selectedIcon ? '1px solid green' : '',
+                                    }}
                                     onClick={() => {
                                         handleAvatarClick(undefined);
                                     }}
-                                />
+                                /> */}
                             </Grid>
                         </Grid>
                     </Box>

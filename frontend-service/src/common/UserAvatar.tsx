@@ -4,7 +4,7 @@ import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
 import { apiUrlToImageSource } from '../services/storageService';
 import { environment } from '../globals';
-import { isProfileFileType } from './permissionsOfUserDialog/myAccount';
+import { isProfileFileType } from '../utils/profileType';
 
 interface UserAvatarProps {
     user: IUser;
