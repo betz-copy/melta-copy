@@ -25,6 +25,7 @@ const StepperSideBar = <T extends object>({
                 {steps.map((step, index) => {
                     // eslint-disable-next-line no-nested-ternary
                     const type = activeStep < index ? 'futureStep' : activeStep === index ? 'currentStep' : 'finishedStep';
+                    if (step.invisibleBeforeStep && type === 'futureStep') return undefined;
 
                     return (
                         <Fragment key={step.label}>
@@ -43,7 +44,11 @@ const StepperSideBar = <T extends object>({
                                     </Grid>
                                 </Grid>
                                 <Grid container alignItems="center">
-                                    {index !== steps.length - 1 && <DashedVerticalLine />}
+                                    {index !== steps.length - 1 &&
+                                        (type === 'finishedStep' ||
+                                            ((type === 'currentStep' || type === 'futureStep') && !steps[index + 1].invisibleBeforeStep)) && (
+                                            <DashedVerticalLine />
+                                        )}
                                     {(type === 'currentStep' || (showPrevSteps && type === 'finishedStep')) &&
                                         step.component(componentProps.formikProps, componentProps.helpers)}
                                 </Grid>

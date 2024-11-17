@@ -1,5 +1,5 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton, DialogActions } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
@@ -29,7 +29,8 @@ export type StepsType<T extends object> = {
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
-    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void };
+    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void; handleNext?: () => void };
+    invisibleBeforeStep?: boolean;
 }[];
 
 export type StepType<T extends object> = {
@@ -38,7 +39,8 @@ export type StepType<T extends object> = {
     component: (formikProps: FormikProps<T>, helpers: StepComponentHelpers) => JSX.Element;
     validationSchema?: ObjectShape | Yup.ObjectSchema<ObjectShape>;
     validate?: FormikConfig<T>['validate'];
-    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void };
+    stepperActions?: { disable?: 'all' | 'back' | 'next'; handleBack?: () => void; handleNext?: () => void };
+    invisibleBeforeStep?: boolean;
 };
 
 const Wizard = <T extends object>({
@@ -66,6 +68,8 @@ const Wizard = <T extends object>({
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
     const isLastStep = activeStep === steps.length - 1;
+
+    console.log('validationSchema', steps[activeStep].validationSchema);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -120,6 +124,7 @@ const Wizard = <T extends object>({
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);
+                            if (steps[activeStep].stepperActions?.handleNext) steps[activeStep].stepperActions.handleNext();
                         }
                     }}
                 >

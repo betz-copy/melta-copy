@@ -267,7 +267,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const workbook = new Excel.Workbook();
         await workbook.xlsx.readFile(file.path);
         const worksheet = workbook.worksheets[0];
-        if (worksheet.name !== `${template.displayName}${template._id}`) throw new ServiceError(StatusCodes.BAD_REQUEST, 'invalid excel');
+
+        const expectedName = `${template.displayName}${template._id}`.trim();
+        if (!expectedName.includes(worksheet.name)) throw new ServiceError(StatusCodes.BAD_REQUEST, 'invalid excel');
 
         const actions: IAction[] = [];
         worksheet.eachRow((row, rowIndex) => {
@@ -829,5 +831,16 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+
+        // if (!catchErrors) return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+        // console.dir({ newActionsGroups }, { depth: null });
+        // let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
+        // while (result[0].status !== 'fulfilled' && result.length > 0) {
+        //     result = this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
+        //     console.dir({ result }, { depth: null });
+
+        //     if (result[0].status === 'rejected') {
+        //     }
+        // }
     }
 }

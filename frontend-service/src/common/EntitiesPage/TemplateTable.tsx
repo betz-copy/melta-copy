@@ -207,9 +207,7 @@ const TemplateTable = forwardRef<
                         onSuccessCreate={() => entitiesTableRef.current?.refreshServerSide()}
                         setUpdatedEntities={setUpdatedEntities}
                         isLoadEntities
-                        popoverText={
-                            checkIfLoadEntityIsDisabled() ? i18next.t('wizard.entity.LoadEntitiesFromExcel.tableCantLoadEntities') : undefined
-                        }
+                        popoverText={checkIfLoadEntityIsDisabled() ? i18next.t('wizard.entity.loadEntities.tableCantLoadEntities') : undefined}
                     >
                         <Upload fontSize="small" sx={{ opacity: !userHasWritePermissions ? 0.3 : 1 }} />
                         {i18next.t('entitiesTableOfTemplate.loadEntitiesTitle')}

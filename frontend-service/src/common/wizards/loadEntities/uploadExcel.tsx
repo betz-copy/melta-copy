@@ -2,19 +2,25 @@ import { FormikProps } from 'formik';
 import React from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { useMutation } from 'react-query';
+import { UseMutateAsyncFunction, useMutation } from 'react-query';
+import { Grid, Typography } from '@mui/material';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { EntitiesWizardValues, ISteps } from '.';
+import { EntitiesWizardValues, ExportRequestParams, ISteps } from '.';
 import { loadExcelEntitiesRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import OpenPreview from '../../FilePreview/OpenPreview';
+import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
+import { environment } from '../../../globals';
+
+const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
 export const UploadExcel: React.FC<{
     formikProps: FormikProps<EntitiesWizardValues>;
     template: IMongoEntityTemplatePopulated;
-    steps: ISteps;
-    setSteps: React.Dispatch<React.SetStateAction<ISteps>>;
-}> = ({ formikProps, template, steps, setSteps }) => {
+    stepsData: ISteps;
+    setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
+    exportTemplateToExcel: UseMutateAsyncFunction<any, unknown, ExportRequestParams, unknown>;
+}> = ({ formikProps, template, stepsData, setStepsData, exportTemplateToExcel }) => {
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(
@@ -23,33 +29,32 @@ export const UploadExcel: React.FC<{
         },
         {
             onError() {
-                toast.error(i18next.t('wizard.entity.LoadEntitiesFromExcel.failedLoadEntities'));
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
             async onSuccess(data) {
                 if (data) {
                     console.log({ data });
-                    setSteps({ status: 'stepsAfterFileUpload', data });
+                    setStepsData({ status: 'stepsPreview', data });
 
-                    // TODO: delete or use automatic download failed entities
-                    // if (data.failedEntities.length > 0)
-                    //     await exportTemplateToExcel(
-                    //         `${template.displayName}: ${i18next.t('wizard.entity.LoadEntitiesFromExcel.failedEntities')}.xlsx`,
-                    //         {
-                    //             insert: true,
-                    //             entities: data.failedEntities.map((entity) => entity.properties),
-                    //         },
-                    //     );
+                    if (data.failedEntities.length > 0)
+                        await exportTemplateToExcel({
+                            fileName: `${template.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}.xlsx`,
+                            insertEntities: {
+                                insert: true,
+                                entities: data.failedEntities.map((entity) => entity.properties),
+                            },
+                        });
                 }
             },
         },
     );
 
-    if (steps.status === 'initialSteps')
+    if (stepsData.status === 'initialSteps')
         return (
             <InstanceSingleFileInput
                 {...formikProps}
                 fileFieldName="file"
-                fieldTemplateTitle={i18next.t('wizard.entity.LoadEntitiesFromExcel.onlyExcelFiles')}
+                fieldTemplateTitle={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
                 value={values.file}
                 setFieldValue={setFieldValue}
                 required
@@ -62,5 +67,42 @@ export const UploadExcel: React.FC<{
             />
         );
 
-    return <OpenPreview fileId={formikProps.values.file!} type="preview" showText />;
+    return (
+        <Grid container direction="column">
+            <Grid>
+                <OpenPreview fileId={formikProps.values.file!} type="preview" showText />
+            </Grid>
+            <Grid>
+                <Grid paddingY="10px">
+                    <Typography color="#1E2775" fontSize="14px" fontWeight={400}>
+                        {i18next.t('wizard.entity.loadEntities.preview')}
+                    </Typography>
+                </Grid>
+                {stepsData.status === 'stepsPreview' && (
+                    <Grid sx={{ marginTop: '10px', marginBottom: '30px', width: '100%' }}>
+                        <EntitiesTableOfTemplate
+                            template={template}
+                            getRowId={(currentEntity) => currentEntity.properties._id}
+                            getEntityPropertiesData={(currentEntity) => currentEntity.properties}
+                            rowModelType="clientSide"
+                            rowHeight={defaultRowHeight}
+                            pageRowCount={10}
+                            fontSize={`${defaultFontSize}px`}
+                            rowData={stepsData.data.allEntities}
+                            saveStorageProps={{
+                                shouldSaveFilter: false,
+                                shouldSaveWidth: false,
+                                shouldSaveVisibleColumns: false,
+                                shouldSaveSorting: false,
+                                shouldSaveColumnOrder: false,
+                                shouldSavePagination: false,
+                                shouldSaveScrollPosition: false,
+                            }}
+                            showErrors
+                        />
+                    </Grid>
+                )}
+            </Grid>
+        </Grid>
+    );
 };
