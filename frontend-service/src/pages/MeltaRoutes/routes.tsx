@@ -20,8 +20,12 @@ import {
     SystemManagementProtectedRoute,
 } from '../../utils/ProtectedRoutes';
 
+type CategoryProps = {
+    pageScrollTarget?: HTMLElement;
+};
+
 const GlobalSearch = lazy(() => import('../GlobalSearch'));
-const Category = lazy(() => import('../Category'));
+const Category = lazy(() => import('../Category') as Promise<{ default: React.FC<CategoryProps> }>);
 const SystemManagement = lazy(() => import('../SystemManagement'));
 const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
@@ -42,7 +46,7 @@ export const MeltaRoutesInner: React.FC = () => {
     const [title, setTitle] = useState('');
     const [open, setOpen] = useState(false);
 
-    const [_, navigate] = useLocation();
+    const [location, navigate] = useLocation();
 
     const { setIsOpen, setCurrentStep } = useTour();
 
@@ -57,7 +61,7 @@ export const MeltaRoutesInner: React.FC = () => {
     const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
 
     useEffect(() => {
-        const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${window.location.pathname}`);
+        const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${location}`);
 
         if (savedScrollPosition && pageScrollTarget) {
             setTimeout(() => {
@@ -67,12 +71,12 @@ export const MeltaRoutesInner: React.FC = () => {
                         behavior: 'smooth',
                     });
                 });
-            }, 150);
+            }, 550);
         }
 
         const handleScroll = debounce(() => {
             if (pageScrollTarget) {
-                sessionStorage.setItem(`pageScrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
+                sessionStorage.setItem(`pageScrollPosition-${location}`, pageScrollTarget.scrollTop.toString());
             }
         }, 300);
 
@@ -85,7 +89,7 @@ export const MeltaRoutesInner: React.FC = () => {
                 pageScrollTarget.removeEventListener('scroll', handleScroll);
             }
         };
-    }, [pageScrollTarget, window.location.pathname]);
+    }, [pageScrollTarget, location]);
 
     useEffect(() => {
         const didTour = LocalStorage.get<boolean>('didTour');
@@ -167,7 +171,7 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/category/:categoryId">
                                 <CategoryProtectedRoute permissions={currentUser.currentWorkspacePermissions}>
-                                    <Category />
+                                    <Category pageScrollTarget={pageScrollTarget} />
                                 </CategoryProtectedRoute>
                             </Route>
 

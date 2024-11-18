@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -52,6 +53,7 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const steps: StepsType<CategoryWizardValues> = [
         {
             label: i18next.t('wizard.category.chooseName'),
+            // eslint-disable-next-line @typescript-eslint/no-shadow
             component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
             validationSchema: useCreateCategoryNameSchema(currentCategoryId),
         },
@@ -73,7 +75,9 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.category.updateTitle') : i18next.t('wizard.category.createTitle')}
+            title={
+                isEditMode ? `${i18next.t('wizard.category.updateTitle')} - ${initialValues.displayName}` : i18next.t('wizard.category.createTitle')
+            }
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}

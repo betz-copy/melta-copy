@@ -157,8 +157,6 @@ const CategoriesRow: React.FC = () => {
     });
 
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
-    console.log({ isHoverOnBox });
-
     const theme = useTheme();
 
     return (

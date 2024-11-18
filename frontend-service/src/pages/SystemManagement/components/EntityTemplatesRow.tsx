@@ -100,7 +100,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const { properties, propertiesOrder, propertiesPreview, propertiesTypeOrder, uniqueConstraints } = entityTemplate;
     const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
 
-    const checkEntityTemplateHasTemplates = async (templates: IMongoEntityTemplatePopulated[]) => {
+    const checkEntityTemplateHasEntities = async (templates: IMongoEntityTemplatePopulated[]) => {
         const templateIds = templates.map(({ _id }) => _id);
         const entitiesCountByTemplates = await getCountByTemplateIdsRequest(templateIds);
         const countByTemplateIdMap = new Map(entitiesCountByTemplates.map(({ templateId, count }) => [templateId, count]));
@@ -115,7 +115,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
     const handleHover = (isHover: boolean) => {
         setIsHoverOnCard(isHover);
         if (isHover) {
-            checkEntityTemplateHasTemplates([entityTemplate]);
+            checkEntityTemplateHasEntities([entityTemplate]);
         }
     };
 
@@ -193,7 +193,7 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
                                     tooltipTitle: entityTemplate.disabled
                                         ? i18next.t('systemManagement.disabledEntityTemplate')
                                         : isDeleteButtonDisabled
-                                        ? i18next.t('systemManagement.cannotDeleteWithTemplates')
+                                        ? i18next.t('systemManagement.cannotDeleteWithEntities')
                                         : '',
                                 }}
                                 isEntityTemplateDisabled={entityTemplate.disabled}

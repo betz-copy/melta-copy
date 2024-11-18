@@ -1,4 +1,3 @@
-import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
@@ -7,8 +6,12 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
-const Category: React.FC = () => {
-    const { categoryId } = useParams();
+interface CategoryProps {
+    pageScrollTarget?: HTMLElement | undefined;
+}
+
+const Category: React.FC<CategoryProps> = ({ pageScrollTarget }) => {
+    const { categoryId } = useParams<{ categoryId: string }>();
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
@@ -37,8 +40,8 @@ const Category: React.FC = () => {
         .filter((template): template is IMongoEntityTemplatePopulated => !!template);
 
     const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
-        setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
-            const prevTemplates = prevtemplateIdsToShowCheckbox
+        setTemplateIdsToShowCheckbox((prevTemplateIdsToShowCheckbox) => {
+            const prevTemplates = prevTemplateIdsToShowCheckbox
                 .map((id) => entityTemplates.get(id))
                 .filter((template): template is IMongoEntityTemplatePopulated => !!template);
             const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
@@ -77,6 +80,7 @@ const Category: React.FC = () => {
             excelExportAllTablesFileName={`${category.displayName}.xlsx`}
             pageType="category"
             pageTitle={category.displayName}
+            pageScrollTarget={pageScrollTarget}
         />
     );
 };

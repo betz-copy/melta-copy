@@ -242,7 +242,7 @@ export default {
         search: 'חיפוש',
         sourceTemplates: 'תבניות מקור',
         destinationTemplates: 'תבניות יעד',
-        cannotDeleteWithTemplates: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
+        cannotDeleteWithEntities: 'לא ניתן למחוק תבנית זאת, קיימות תחתיה ישויות',
         cannotDeleteWithRelationship: 'לא ניתן למחוק קשר זה, קיימים תחתיו קשרים',
         cannotEditEntityDisabled: 'לא ניתן לערוך קשר זה, מכיל ישות מושבתת',
         disabledEntityTemplate: 'תבנית מושבתת',

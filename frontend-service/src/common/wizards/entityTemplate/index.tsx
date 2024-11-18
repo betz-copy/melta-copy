@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-shadow */
+/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -195,7 +197,11 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
-            title={isEditMode ? i18next.t('wizard.entityTemplate.updateTitle') : i18next.t('wizard.entityTemplate.createTitle')}
+            title={
+                isEditMode
+                    ? `${i18next.t('wizard.entityTemplate.updateTitle')} - ${initialValues.displayName}`
+                    : i18next.t('wizard.entityTemplate.createTitle')
+            }
             steps={steps}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
