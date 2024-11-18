@@ -1,6 +1,6 @@
+import { IWorkspace } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IWorkspace } from '../interfaces/workspaces';
 import { WorkspaceWizardValues } from '../pages/DirView/Wizard';
 
 const {

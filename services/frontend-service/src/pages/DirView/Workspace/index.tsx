@@ -2,14 +2,15 @@ import { Folder } from '@mui/icons-material';
 import { Box, Card, Typography } from '@mui/material';
 import React, { useMemo } from 'react';
 import { Link } from 'wouter';
+import { IWorkspace } from '@microservices/shared';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { MeltaIcon } from '../../../common/MeltaIcon';
 import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { IWorkspace, WorkspaceTypes } from '../../../interfaces/workspaces';
 import { useWorkspaceStore } from '../../../stores/workspace';
 import { ActionMenu } from './ActionMenu';
 import './actionMenu.css';
 import { useUserStore } from '../../../stores/user';
+import { WorkspaceTypes } from '@microservices/shared';
 
 interface IWorkspaceProps {
     workspace: IWorkspace;

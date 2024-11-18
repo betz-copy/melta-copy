@@ -6,8 +6,8 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
+import { IWorkspace } from '@microservices/shared';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { IWorkspace } from '../../../interfaces/workspaces';
 import { updateOne } from '../../../services/workspacesService';
 import { workspaceObjectToWorkspaceForm, WorkspaceWizardValues } from '../Wizard';
 

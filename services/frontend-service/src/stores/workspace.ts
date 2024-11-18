@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { IWorkspace, WorkspaceTypes } from '../interfaces/workspaces';
+import { IWorkspace } from '@microservices/shared';
+import { WorkspaceTypes } from '@microservices/shared';
 
 export interface WorkspaceState {
     workspace: IWorkspace;

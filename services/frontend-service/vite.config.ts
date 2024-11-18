@@ -11,4 +11,7 @@ export default defineConfig({
             port: 3001,
         },
     },
+    optimizeDeps: {
+        include: ['@microservices/shared'],
+    },
 });

@@ -1,18 +1,17 @@
 /* eslint-disable no-param-reassign */
 import { mapValues } from 'lodash';
-import axios from '../axios';
-import { environment } from '../globals';
 import {
     IEntity,
     IEntityExpanded,
     ISearchBatchBody,
     ISearchResult,
     ISearchEntitiesOfTemplateBody,
-    IExportEntitiesBody,
-    IGraphFilterBodyBatch,
     ISearchEntitiesByTemplatesBody,
     ICountSearchResult,
-} from '../interfaces/entities';
+} from '@microservices/shared';
+import { IExportEntitiesBody, IGraphFilterBodyBatch } from '../interfaces/entities';
+import axios from '../axios';
+import { environment } from '../globals';
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
