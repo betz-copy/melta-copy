@@ -1,6 +1,4 @@
-/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
-
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
@@ -27,7 +25,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
 }) => {
     const queryClient = useQueryClient();
 
-    // Extract currentCategoryId if in edit mode
     const currentCategoryId = isEditMode ? (initialValues as CategoryWizardValues & { _id: string })._id : undefined;
 
     const { isLoading, mutateAsync } = useMutation(
@@ -55,7 +52,6 @@ const CategoryWizard: React.FC<WizardBaseType<CategoryWizardValues>> = ({
     const steps: StepsType<CategoryWizardValues> = [
         {
             label: i18next.t('wizard.category.chooseName'),
-            // eslint-disable-next-line @typescript-eslint/no-shadow
             component: (props, { isEditMode }) => <CreateCategoryName {...props} isEditMode={isEditMode} />,
             validationSchema: useCreateCategoryNameSchema(currentCategoryId),
         },
