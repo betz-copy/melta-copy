@@ -12,7 +12,8 @@
     "pre-push": "cd ./frontend-service && npm run lint && node --max_old_space_size=16384 npm run build",
     "build": "npm run build --workspaces",
     "clean": "rimraf ./services/**/dist && rimraf ./packages/**/dist",
-    "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules"
+    "clean:node_modules": "rimraf ./services/**/node_modules && rimraf ./node_modules",
+    "start-ui": "npm run -w services/frontend-service start:docker"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,7 @@
     "rimraf": "^5.0.0"
   },
   "dependencies": {
+    "date-fns": "^2.30.0",
     "mongoose": "^8.8.1"
   }
 }

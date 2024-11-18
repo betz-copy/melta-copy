@@ -2,7 +2,7 @@ import { Typography } from '@mui/material';
 import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React from 'react';
-import ReactDiffViewer from 'react-diff-viewer';
+import ReactDiffViewer from 'react-diff-viewer-continued';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IUpdateEntityMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../stores/darkMode';

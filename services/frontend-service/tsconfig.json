@@ -27,7 +27,10 @@
     "alwaysStrict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noImplicitReturns": true
+    "noImplicitReturns": true,
+    "paths": {
+      "@microservices/*": ["./services/*/src"]
+    }
   },
   "include": ["src"]
 }
