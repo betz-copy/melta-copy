@@ -5,7 +5,6 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import i18next from 'i18next';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
