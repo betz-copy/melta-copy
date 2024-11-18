@@ -1,6 +1,6 @@
 import { menash } from 'menashmq';
+import { INotificationMetadata, NotificationType } from '@microservices/shared';
 import config from '../../config';
-import { INotificationMetadata, NotificationType } from '@microservices/shared/src/interfaces/notification';
 
 const {
     rabbit,

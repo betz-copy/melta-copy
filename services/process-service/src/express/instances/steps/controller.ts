@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IStepInstance } from '@microservices/shared/src/interfaces/process/instances/step';
+import { IStepInstance } from '@microservices/shared';
 import DefaultController from '../../../utils/express/controller';
 import StepInstanceManager from './manager';
 

@@ -1,7 +1,7 @@
 import * as joi from 'joi';
+import { PermissionTypeOptions } from '@microservices/shared';
 import { mongoIdSchema } from '../../utils/joi/schemas';
 import { CompactNullablePermissionsSchema, SubCompactNullablePermissionSchema } from '../../utils/joi/schemas/permission/compact';
-import { PermissionTypeOptions } from '@microservices/shared/src/interfaces/permission';
 
 // GET /api/permissions/compact/find-by-user-id/:userId
 export const getCompactPermissionsOfUserRequestSchema = joi.object({

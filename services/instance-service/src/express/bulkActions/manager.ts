@@ -2,17 +2,19 @@
 import groupBy from 'lodash.groupby';
 import { Transaction } from 'neo4j-driver';
 import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import {
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     ActionTypes,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
-} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+    IAction,
+    IBrokenRule,
+    IEntity,
+    IRelationship,
+} from '@microservices/shared';
 import { IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
@@ -20,7 +22,6 @@ import { RelationshipsTemplateManagerService } from '../../externalServices/temp
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntitiesIdsRulesReasonsMap, RunRuleReason } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import { RelationshipManager } from '../relationships/manager';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
 import config from '../../config';

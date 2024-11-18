@@ -9,7 +9,7 @@ import {
     IDeleteProcessNotificationMetadata,
     INotification,
     IArchiveProcessNotificationMetadata,
-} from '@microservices/shared/src/interfaces/notification';
+} from '@microservices/shared';
 import {
     isDateAboutToExpireNotification,
     isNewProcessNotification,

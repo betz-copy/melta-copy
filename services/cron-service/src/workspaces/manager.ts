@@ -1,4 +1,4 @@
-import { IWorkspace } from '@microservices/shared/src/interfaces/workspace';
+import { IWorkspace } from '@microservices/shared';
 import { WorkspaceService } from '../services/workspace';
 import DefaultManagerProxy from '../utils/express/manager';
 

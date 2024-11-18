@@ -17,9 +17,13 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
     "outDir": "./dist/",
     "skipLibCheck": true,
-    "lib": ["ES2020.Promise","ES6"]
+    "lib": ["ES2020.Promise", "ES6"],
+    "paths": {
+      "@microservices/*": ["./services/*/src"]
+    }
   },
   "include": ["src/**/*"]
 }

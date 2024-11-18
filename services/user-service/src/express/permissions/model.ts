@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
+import { PermissionTypeOptions, IPermission } from '@microservices/shared';
 import { config } from '../../config';
-import { PermissionTypeOptions } from '@microservices/shared/src/interfaces/permission';
-import { IPermission } from '@microservices/shared/src/interfaces/permission/permissions';
 
 const { permissionsCollectionName } = config.mongo;
 

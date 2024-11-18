@@ -1,5 +1,4 @@
-import { IEntity, ISearchFilter, ISearchSort } from '@microservices/shared/src/interfaces/entity';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
+import { IEntity, ISearchFilter, ISearchSort, IRelationship } from '@microservices/shared';
 
 export interface IRelationshipPopulated extends Omit<IRelationship, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity;

@@ -1,11 +1,7 @@
 import { Request } from 'express';
 import lodashUniqby from 'lodash.uniqby';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IRule } from '@microservices/shared/src/interfaces/rule';
-import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
-import { IAction } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IMongoEntityTemplatePopulated, IRule, PermissionScope, IAction, IRelationship } from '@microservices/shared';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';

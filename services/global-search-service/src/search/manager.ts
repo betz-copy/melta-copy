@@ -1,6 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { QueryResult, Transaction } from 'neo4j-driver';
-import { IEntityTemplate, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IEntityTemplate, IMongoEntityTemplate } from '@microservices/shared';
 import config from '../config';
 import { TemplateManagerService } from '../externalServices/entityTemplateManager';
 import DefaultManagerNeo4j from '../utils/neo4j/manager';

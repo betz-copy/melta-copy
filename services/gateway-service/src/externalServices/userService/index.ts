@@ -1,11 +1,13 @@
 import axios from 'axios';
-import { IBaseUser, IUser, IUserSearchBody } from '@microservices/shared/src/interfaces/user';
 import {
+    IBaseUser,
+    IUser,
+    IUserSearchBody,
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-} from '@microservices/shared/src/interfaces/permission/permissions';
+} from '@microservices/shared';
 import config from '../../config';
 import { DeepPartial, RecursiveNullable } from '../../utils/types';
 

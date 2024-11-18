@@ -1,13 +1,13 @@
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
-import { IProcessDetails } from '@microservices/shared/src/interfaces/process/templates/process';
 import {
+    IMongoStepTemplate,
+    IProcessDetails,
     CreateProcessReqBody,
     IProcessInstance,
     InstanceProperties,
     UpdateProcessReqBody,
-} from '@microservices/shared/src/interfaces/process/instances/process';
+} from '@microservices/shared';
 import ajv from '../../../utils/ajv';
 import DefaultController from '../../../utils/express/controller';
 import { InstancePropertiesValidationError, ValidationError } from '../../error';

@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { ActionTypes } from '@microservices/shared';
 import { brokenRuleSchema } from '../rules/ignoredRuleSchema';
 
 const createRelationshipSchema = Joi.object({

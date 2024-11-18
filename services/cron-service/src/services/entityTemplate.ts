@@ -1,4 +1,4 @@
-import { IEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IEntityTemplatePopulated, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../config';
 import { TemplatesManagerService } from './template';
 

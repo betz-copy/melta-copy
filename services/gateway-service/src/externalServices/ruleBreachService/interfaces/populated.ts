@@ -1,6 +1,6 @@
-import { IUser } from '@microservices/shared/src/interfaces/user';
-import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
 import {
+    IUser,
+    RuleBreachRequestStatus,
     ActionTypes,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -8,9 +8,10 @@ import {
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
     IUpdateEntityStatusMetadata,
-} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+    IBrokenRule,
+    IRuleBreach,
+    IEntity,
+} from '@microservices/shared';
 import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {

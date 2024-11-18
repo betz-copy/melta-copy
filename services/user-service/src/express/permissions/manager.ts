@@ -1,11 +1,12 @@
 import { FilterQuery } from 'mongoose';
-import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
 import {
+    PermissionScope,
+    PermissionType,
     ICompactNullablePermissions,
     ICompactPermissions,
     IPermission,
     ISubCompactPermissions,
-} from '@microservices/shared/src/interfaces/permission/permissions';
+} from '@microservices/shared';
 import { flattenObject, typedObjectEntries } from '../../utils';
 import { transaction } from '../../utils/mongoose';
 import { RecursiveNullable } from '../../utils/types';

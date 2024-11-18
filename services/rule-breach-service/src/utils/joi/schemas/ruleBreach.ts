@@ -1,5 +1,5 @@
 import * as joi from 'joi';
-import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
+import { ActionTypes } from '@microservices/shared';
 import { mongoIdSchema } from '.';
 import { validateActionMetadata } from '../validateActionMetadata';
 

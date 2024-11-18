@@ -1,16 +1,23 @@
 import isEqual from 'lodash.isequal';
 import groupBy from 'lodash.groupby';
-import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
-import { IEquation, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '@microservices/shared/src/interfaces/rule/formula/argument';
 import {
+    IFormula,
+    IEquation,
+    isEquation,
+    IAggregationGroup,
+    IGroup,
+    isAggregationGroup,
+    isGroup,
+    IArgument,
+    IPropertyOfVariable,
+    isConstant,
+    isPropertyOfVariable,
     IRegularFunction,
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '@microservices/shared/src/interfaces/rule/formula/function';
-import { ICausesOfInstance } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+    ICausesOfInstance,
+} from '@microservices/shared';
 import { IRuleFailure } from './interfaces';
 import { IFormulaCauses } from './interfaces/formulaWithCauses';
 import { ICause } from './interfaces/formulaWithCauses/cause';

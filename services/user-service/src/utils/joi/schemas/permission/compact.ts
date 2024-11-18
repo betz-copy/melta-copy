@@ -1,6 +1,5 @@
 import * as joi from 'joi';
-import { PermissionType } from '@microservices/shared/src/interfaces/permission';
-import { IInstancePermissionOrderedHierarchy } from '@microservices/shared/src/interfaces/permission/permissions';
+import { PermissionType, IInstancePermissionOrderedHierarchy } from '@microservices/shared';
 import { UnknownPermissionTypeError } from '../../../../express/permissions/errors';
 import { getPermissionMetadataSchema } from './metadata';
 

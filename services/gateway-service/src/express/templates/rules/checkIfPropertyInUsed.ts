@@ -1,9 +1,19 @@
-import { IEquation, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
+import {
+    IEquation,
+    isEquation,
+    IArgument,
+    IPropertyOfVariable,
+    isConstant,
+    isPropertyOfVariable,
+    isCountAggFunction,
+    isRegularFunction,
+    isSumAggFunction,
+    ISumAggFunction,
+    isAggregationGroup,
+    isGroup,
+    IFormula,
+} from '@microservices/shared';
 
-import { IArgument, IPropertyOfVariable, isConstant, isPropertyOfVariable } from '@microservices/shared/src/interfaces/rule/formula/argument';
-import { isCountAggFunction, isRegularFunction, isSumAggFunction, ISumAggFunction } from '@microservices/shared/src/interfaces/rule/formula/function';
-import { isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
-import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
 import config from '../../../config';
 import { ServiceError } from '../../error';
 

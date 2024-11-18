@@ -5,9 +5,10 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { format as formatFns, formatInTimeZone as formatFnsInTimeZone } from 'date-fns-tz';
 import { Request } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 import {
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
     IFilterOfField,
     IFilterOfTemplate,
     ISearchBatchBody,
@@ -15,7 +16,7 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchFilter,
     IUniqueConstraintOfTemplate,
-} from '@microservices/shared/src/interfaces/entity';
+} from '@microservices/shared';
 import { IGetExpandedEntityBody } from './interface';
 import config from '../../config';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';

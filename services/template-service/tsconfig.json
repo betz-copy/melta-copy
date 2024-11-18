@@ -21,7 +21,7 @@
     "outDir": "./dist/",
     "skipLibCheck": true,
     "paths": {
-      "@microservices/*": ["../packages/*"]
+      "@microservices/*": ["./services/*/src"]
     }
   },
   "include": ["src/**/*"]

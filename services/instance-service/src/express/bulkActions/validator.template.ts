@@ -2,11 +2,15 @@ import Ajv from 'ajv';
 import addFormats from 'ajv-formats';
 import { Request } from 'express';
 import groupBy from 'lodash.groupby';
-import { IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
-import { ActionTypes, ICreateEntityMetadata, ICreateRelationshipMetadata } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IAction } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+import {
+    IMongoEntityTemplate,
+    IMongoRelationshipTemplate,
+    ActionTypes,
+    ICreateEntityMetadata,
+    ICreateRelationshipMetadata,
+    IAction,
+    IEntity,
+} from '@microservices/shared';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultController from '../../utils/express/controller';

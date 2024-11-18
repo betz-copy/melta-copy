@@ -1,6 +1,5 @@
 import { Request } from 'express';
-import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
-import { ISubCompactPermissions } from '@microservices/shared/src/interfaces/permission/permissions';
+import { PermissionScope, PermissionType, ISubCompactPermissions } from '@microservices/shared';
 import { typedObjectEntries } from '.';
 import { UserIncorrectScopeError, UserNotAuthorizedError } from '../express/error';
 import { WorkspaceService } from '../express/workspaces/service';

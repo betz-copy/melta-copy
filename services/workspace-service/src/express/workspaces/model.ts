@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
+import { Colors, IWorkspace } from '@microservices/shared';
 import { config } from '../../config';
 import { BadRequestError } from '../error';
-import { Colors, IWorkspace } from '@microservices/shared/src/interfaces/workspace';
 import { AllowedEmptyString } from '../../utils/mongoose';
 
 const ColorsSchema = new mongoose.Schema<IWorkspace['colors']>(

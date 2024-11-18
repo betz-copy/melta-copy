@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import 'elastic-apm-node/start';
 import * as mongoose from 'mongoose';
-import { WorkspaceTypes } from '@microservices/shared/src/interfaces/workspace';
+import { WorkspaceTypes } from '@microservices/shared';
 import { config } from './config';
 import { Server } from './express/server';
 import { WorkspacesModel } from './express/workspaces/model';

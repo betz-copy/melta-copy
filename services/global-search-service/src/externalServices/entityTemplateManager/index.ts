@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { IEntityTemplate, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IEntityTemplate, IMongoEntityTemplate, ISearchEntityTemplatesBody } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalService from '../../utils/externalService';
 

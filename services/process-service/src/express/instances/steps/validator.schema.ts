@@ -1,5 +1,5 @@
 import * as Joi from 'joi';
-import { Status } from '@microservices/shared/src/interfaces/process/instances/process';
+import { Status } from '@microservices/shared';
 import { MongoIdSchema } from '../../../utils/joi';
 
 // GET /api/processes/instances/:id

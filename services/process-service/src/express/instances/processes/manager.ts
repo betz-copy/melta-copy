@@ -1,10 +1,11 @@
 import { ClientSession, FilterQuery, Types } from 'mongoose';
 /* eslint-disable class-methods-use-this */
 import { Request } from 'express';
-import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
-import { IMongoProcessTemplate, IProcessDetails } from '@microservices/shared/src/interfaces/process/templates/process';
-import { IMongoStepInstance } from '@microservices/shared/src/interfaces/process/instances/step';
 import {
+    IMongoStepTemplate,
+    IMongoProcessTemplate,
+    IProcessDetails,
+    IMongoStepInstance,
     CreateProcessReqBody,
     IMongoProcessInstance,
     IMongoProcessInstancePopulated,
@@ -14,7 +15,7 @@ import {
     ProcessInstanceDocument,
     Status,
     UpdateProcessReqBody,
-} from '@microservices/shared/src/interfaces/process/instances/process';
+} from '@microservices/shared';
 import config from '../../../config';
 import ajv from '../../../utils/ajv';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';

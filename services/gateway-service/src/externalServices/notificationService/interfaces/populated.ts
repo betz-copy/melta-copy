@@ -1,15 +1,13 @@
-import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
-import { IMongoStepInstancePopulated } from '@microservices/shared/src/interfaces/process/instances/step';
 import {
+    IMongoStepTemplate,
+    IMongoStepInstancePopulated,
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
-} from '@microservices/shared/src/interfaces/process/instances/process';
-import {
     IDeleteProcessNotificationMetadata,
     INotification,
     IProcessStatusUpdateNotificationMetadata,
-} from '@microservices/shared/src/interfaces/notification';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+    IEntity,
+} from '@microservices/shared';
 import { IRuleBreachAlertPopulated, IRuleBreachRequestPopulated } from '../../ruleBreachService/interfaces/populated';
 
 export interface IRuleBreachAlertNotificationMetadataPopulated {

@@ -1,6 +1,4 @@
-import { IRuleBreachAlert } from '@microservices/shared/src/interfaces/ruleBreach';
-import { IAgGridRequest } from '@microservices/shared/src/interfaces/ruleBreach/agGrid';
-import { IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IRuleBreachAlert, IAgGridRequest, IRuleBreach } from '@microservices/shared';
 import config from '../../config';
 import { translateAgGridFilterModel, translateAgGridSortModel } from '../../utils/agGrid';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';

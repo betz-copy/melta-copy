@@ -1,9 +1,8 @@
 /* eslint-disable no-param-reassign */
 import Excel from 'exceljs';
 import { v4 as uuidv4 } from 'uuid';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared';
 import config from '../../config/index';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
 import { excelConfig } from './excelConfig';
 import { hexToARGB } from './colors';
 

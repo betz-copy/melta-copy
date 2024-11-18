@@ -34,3 +34,5 @@ export interface IBasePermission<
   type: T;
   metadata: IPermissionMetadata<H, D>;
 }
+
+export * from "./permissions";

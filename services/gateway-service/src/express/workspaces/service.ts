@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IWorkspace } from '@microservices/shared/src/interfaces/workspace';
+import { IWorkspace } from '@microservices/shared';
 import config from '../../config';
 
 const {

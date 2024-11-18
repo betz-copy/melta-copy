@@ -1,4 +1,4 @@
-import { IFilterOfTemplate } from '@microservices/shared/src/interfaces/entity';
+import { IFilterOfTemplate } from '@microservices/shared';
 import config from '../../config';
 import { InstancesService, ISearchEntitiesOfTemplateBodyOptional } from '../../externalServices/instanceService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';

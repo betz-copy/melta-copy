@@ -1,7 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import * as joi from 'joi';
-import { ActionTypes } from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
+import { ActionTypes, RuleBreachRequestStatus } from '@microservices/shared';
 import { brokenRulesSchema, ruleBreachSchema } from '../../utils/joi/schemas/ruleBreach';
 import { agGridRequestSchema } from '../../utils/joi/schemas/agGrid';
 import { validateActionMetadata } from '../../utils/joi/validateActionMetadata';

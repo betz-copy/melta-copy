@@ -1,6 +1,5 @@
 import { FilterQuery } from 'mongoose';
-import { ISubCompactPermissions } from '@microservices/shared/src/interfaces/permission/permissions';
-import { IBaseUser, IUser } from '@microservices/shared/src/interfaces/user';
+import { ISubCompactPermissions, IBaseUser, IUser } from '@microservices/shared';
 import { UsersModel } from './model';
 import { PermissionsManager } from '../permissions/manager';
 import { typedObjectEntries } from '../../utils';

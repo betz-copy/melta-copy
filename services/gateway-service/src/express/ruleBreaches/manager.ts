@@ -1,8 +1,10 @@
 /* eslint-disable no-plusplus */
 import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus } from '@microservices/shared/src/interfaces/ruleBreach';
 import {
+    IMongoEntityTemplatePopulated,
+    IRuleBreachAlert,
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
     ActionTypes,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
@@ -10,24 +12,25 @@ import {
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
     IUpdateEntityStatusMetadata,
-} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IAction, IBrokenRule, IRuleBreach } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
-import {
+    IAction,
+    IBrokenRule,
+    IRuleBreach,
+    PermissionScope,
+    PermissionType,
     INotificationMetadata,
     IRuleBreachAlertNotificationMetadata,
     IRuleBreachRequestNotificationMetadata,
     IRuleBreachResponseNotificationMetadata,
     NotificationType,
-} from '@microservices/shared/src/interfaces/notification';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+    IEntity,
+    IRelationship,
+} from '@microservices/shared';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
 import { InstancesManager } from '../instances/manager';
 
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 import {
     INotificationMetadataPopulated,
     IRuleBreachAlertNotificationMetadataPopulated,

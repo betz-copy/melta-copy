@@ -1,6 +1,5 @@
 import lodashIsEqual from 'lodash.isequal';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IMongoEntityTemplatePopulated, IRelationshipTemplate } from '@microservices/shared';
 import { GanttsService, IGantt, IGanttItem, IMongoGantt, ISearchGanttsBody } from '../../externalServices/ganttsService';
 import { InstancesService } from '../../externalServices/instanceService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';

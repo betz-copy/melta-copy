@@ -1,6 +1,6 @@
 import * as joi from 'joi';
+import { INotification, NotificationType } from '@microservices/shared';
 import { mongoIdSchema } from '.';
-import { INotification, NotificationType } from '@microservices/shared/src/interfaces/notification';
 import { ProcessStatus } from '../../interfaces/processes';
 
 export const ruleBreachAlertMetadataSchema = joi.object({

@@ -1,6 +1,6 @@
 /* eslint-disable lines-between-class-members */
 import { Request, Response } from 'express';
-import { IMongoCategory } from '@microservices/shared/src/interfaces/category';
+import { IMongoCategory } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import CategoryManager from './manager';
 

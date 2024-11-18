@@ -3,9 +3,10 @@ import {
     IMongoProcessTemplate,
     IMongoProcessTemplatePopulated,
     IProcessTemplate,
-} from '@microservices/shared/src/interfaces/process/templates/process';
-import { IStepInstance } from '@microservices/shared/src/interfaces/process/instances/step';
-import { IProcessInstance, ProcessInstanceDocument } from '@microservices/shared/src/interfaces/process/instances/process';
+    IStepInstance,
+    IProcessInstance,
+    ProcessInstanceDocument,
+} from '@microservices/shared';
 import config from '../../config';
 
 export const transaction = async <T, Func extends (session: ClientSession) => Promise<T>>(func: Func): Promise<T> => {

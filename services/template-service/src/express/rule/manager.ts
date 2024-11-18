@@ -1,5 +1,5 @@
 import { FilterQuery } from 'mongoose';
-import { IMongoRule, IRule } from '@microservices/shared/src/interfaces/rule';
+import { IMongoRule, IRule } from '@microservices/shared';
 import { NotFoundError } from '../error';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';

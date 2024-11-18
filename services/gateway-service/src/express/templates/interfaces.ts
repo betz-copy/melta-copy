@@ -3,8 +3,8 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplate,
     IMongoEntityTemplatePopulated,
-} from '@microservices/shared/src/interfaces/entityTemplate';
-import { IUniqueConstraintOfTemplate } from '@microservices/shared/src/interfaces/entity';
+    IUniqueConstraintOfTemplate,
+} from '@microservices/shared';
 
 export interface IEntityTemplateWithConstraints extends IEntityTemplate {
     uniqueConstraints: IUniqueConstraintOfTemplate[];

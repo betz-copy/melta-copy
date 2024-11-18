@@ -1,5 +1,5 @@
 import { menash } from 'menashmq';
-import { INotificationMetadata, NotificationType } from '@microservices/shared/src/interfaces/notification';
+import { INotificationMetadata, NotificationType } from '@microservices/shared';
 import config from '../config';
 import { MailManager } from './mailNotifications';
 import { IMailNotificationMetadataPopulated } from './mailNotifications/interfaces';

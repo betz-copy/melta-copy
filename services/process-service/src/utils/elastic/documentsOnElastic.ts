@@ -1,5 +1,5 @@
 import { logger } from 'elastic-apm-node';
-import { IMongoProcessInstancePopulated, ProcessInstanceDocument } from '@microservices/shared/src/interfaces/process/instances/process';
+import { IMongoProcessInstancePopulated, ProcessInstanceDocument } from '@microservices/shared';
 import config from '../../config';
 import { ServiceError } from '../../express/error';
 import DefaultManagerElastic from './manager';

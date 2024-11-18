@@ -19,7 +19,10 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "outDir": "./dist/",
-    "lib": ["ES2019"]
+    "lib": ["ES2019"],
+    "paths": {
+      "@microservices/*": ["./services/shared/src"]
+    }
   },
   "include": ["src/**/*"]
 }

@@ -1,10 +1,13 @@
 import axios from 'axios';
 import { StatusCodes } from 'http-status-codes';
-import { PermissionScope, PermissionType } from '@microservices/shared/src/interfaces/permission';
-import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
-import { IProcessDetails, ProcessPropertyFormats } from '@microservices/shared/src/interfaces/process/templates/process';
-import { IMongoStepInstance, IGenericStepPopulated } from '@microservices/shared/src/interfaces/process/instances/step';
 import {
+    PermissionScope,
+    PermissionType,
+    IMongoStepTemplate,
+    IProcessDetails,
+    ProcessPropertyFormats,
+    IMongoStepInstance,
+    IGenericStepPopulated,
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
     InstanceProperties,
@@ -12,15 +15,13 @@ import {
     IProcessInstanceSearchProperties,
     Status,
     IReferencedEntityForProcess,
-} from '@microservices/shared/src/interfaces/process/instances/process';
-import {
     IArchiveProcessNotificationMetadata,
     IDeleteProcessNotificationMetadata,
     INewProcessNotificationMetadata,
     IProcessReviewerUpdateNotificationMetadata,
     IProcessStatusUpdateNotificationMetadata,
     NotificationType,
-} from '@microservices/shared/src/interfaces/notification';
+} from '@microservices/shared';
 import config from '../../../config';
 import { InstancesService } from '../../../externalServices/instanceService';
 import {

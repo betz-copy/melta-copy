@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { IRuleBreachRequest } from '@microservices/shared/src/interfaces/ruleBreach';
+import { IRuleBreachRequest } from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import RuleBreachRequestsManager from './manager';
 

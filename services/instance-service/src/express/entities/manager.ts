@@ -7,16 +7,17 @@ import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
 import { StatusCodes } from 'http-status-codes';
-import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
 import {
+    IEntitySingleProperty,
+    IMongoEntityTemplate,
+    IRelationshipReference,
+    IMongoRule,
     ActionTypes,
     ICreateEntityMetadata,
     IDuplicateEntityMetadata,
     IUpdateEntityMetadata,
-} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import {
+    IAction,
+    IBrokenRule,
     IConstraint,
     IConstraintsOfTemplate,
     IEntity,
@@ -27,8 +28,8 @@ import {
     ISearchEntitiesOfTemplateBody,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
-} from '@microservices/shared/src/interfaces/entity';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
+    IRelationship,
+} from '@microservices/shared';
 import { EntitiesIdsRulesReasonsMap, IEntityCrudAction, IExecutionOutput, IGetExpandedEntityBody, RunRuleReason } from './interface';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';

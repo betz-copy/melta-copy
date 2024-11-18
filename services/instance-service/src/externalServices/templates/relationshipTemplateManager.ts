@@ -1,5 +1,4 @@
-import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
-import { IMongoRule, ISearchRulesBody } from '@microservices/shared/src/interfaces/rule';
+import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody, IMongoRule, ISearchRulesBody } from '@microservices/shared';
 import { TemplatesManagerService } from '.';
 import config from '../../config';
 

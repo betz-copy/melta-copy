@@ -1,4 +1,4 @@
-import { IMongoCategory, ICategory } from '@microservices/shared/src/interfaces/category';
+import { IMongoCategory, ICategory } from '@microservices/shared';
 import config from '../../config';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { NotFoundError } from '../error';

@@ -1,6 +1,6 @@
 /* eslint-disable no-await-in-loop */
 import { Transaction } from 'neo4j-driver';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IMongoRelationshipTemplate, IBrokenRule, IRelationship } from '@microservices/shared';
 import config from '../../config';
 import { ActionsLog, IActivityLog } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
@@ -16,9 +16,7 @@ import {
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { EntityManager } from '../entities/manager';
 import { BadRequestError, NotFoundError } from '../error';
-import { IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import { throwIfActionCausedRuleFailures } from '../rules/throwIfActionCausedRuleFailures';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
 
 export class RelationshipManager extends DefaultManagerNeo4j {
     private relationshipsTemplateManagerService: RelationshipsTemplateManagerService;

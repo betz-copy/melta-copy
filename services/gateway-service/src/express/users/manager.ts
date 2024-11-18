@@ -1,11 +1,6 @@
 /* eslint-disable no-param-reassign */
-import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '@microservices/shared/src/interfaces/user';
-import {
-    ICompactNullablePermissions,
-    ICompactPermissions,
-    IPermission,
-    ISubCompactPermissions,
-} from '@microservices/shared/src/interfaces/permission/permissions';
+import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '@microservices/shared';
+import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '@microservices/shared';
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { UserService } from '../../externalServices/userService';

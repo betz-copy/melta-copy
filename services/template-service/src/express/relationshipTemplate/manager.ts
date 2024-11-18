@@ -1,5 +1,5 @@
 import { ClientSession, FilterQuery } from 'mongoose';
-import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
 import config from '../../config';
 import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';

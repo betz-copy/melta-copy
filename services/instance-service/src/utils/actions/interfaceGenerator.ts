@@ -1,4 +1,4 @@
-import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared/src/interfaces/entityTemplate';
+import { IEntitySingleProperty, IMongoEntityTemplate } from '@microservices/shared';
 
 const generateFromString = (
     { format, relationshipReference, enum: typeEnum }: IEntitySingleProperty,

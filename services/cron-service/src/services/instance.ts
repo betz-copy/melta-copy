@@ -1,7 +1,6 @@
+import { ISearchEntitiesOfTemplateBody, ISearchResult, ISearchSort, IMongoRelationshipTemplate } from '@microservices/shared';
 import config from '../config';
-import { ISearchEntitiesOfTemplateBody, ISearchResult, ISearchSort } from '@microservices/shared/src/interfaces/entity';
 import DefaultExternalServiceApi from '../utils/express/externalService';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
 
 const {
     instanceService: { url, baseEntitiesRoute, requestTimeout, searchOfTemplateRoute },

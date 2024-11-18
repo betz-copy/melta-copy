@@ -3,7 +3,7 @@ import _groupBy from 'lodash.groupby';
 import _isEqual from 'lodash.isequal';
 import _mapValues from 'lodash.mapvalues';
 import _sortBy from 'lodash.sortby';
-import { IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
+import { IAction, IBrokenRule, ICausesOfInstance } from '@microservices/shared';
 import config from '../../config';
 import { filteredMap } from '../../utils/filteredMap';
 import { isEqualStripUndefined } from '../../utils/lib';

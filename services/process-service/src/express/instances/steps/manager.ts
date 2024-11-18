@@ -1,7 +1,6 @@
 /* eslint-disable class-methods-use-this */
 import { ClientSession } from 'mongoose';
-import { IMongoStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
-import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from '@microservices/shared/src/interfaces/process/instances/step';
+import { IMongoStepTemplate, IMongoStepInstance, IStepInstance, UpdateStepReqBody } from '@microservices/shared';
 import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';

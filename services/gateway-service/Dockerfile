@@ -3,7 +3,7 @@ FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
+COPY services/shared/package*.json ./services/shared/
 COPY services/gateway-service/package*.json ./services/gateway-service/
 COPY services/gateway-service/.npmrc ./services/gateway-service/.npmrc
 COPY .npmrc ./
@@ -12,7 +12,7 @@ RUN --mount=type=secret,id=npm_token \
     NPM_TOKEN=$(cat /run/secrets/npm_token) \
     npm ci --silent --progress=false
 
-COPY packages/shared/ ./packages/shared/
+COPY services/shared/ ./services/shared/
 COPY services/gateway-service ./services/gateway-service
 
 RUN npm run build -w @microservices/shared
@@ -25,7 +25,7 @@ FROM node:22-alpine
 WORKDIR /usr/src/app
 
 COPY package*.json ./
-COPY packages/shared/package*.json ./packages/shared/
+COPY services/shared/package*.json ./services/shared/
 COPY services/gateway-service/package*.json ./services/gateway-service/
 COPY services/gateway-service/.npmrc ./services/gateway-service/.npmrc
 COPY .npmrc ./
@@ -36,7 +36,7 @@ RUN --mount=type=secret,id=npm_token \
 
 RUN rm -f .npmrc
 
-COPY --from=builder /usr/src/app/packages/shared/dist ./packages/shared/dist
+COPY --from=builder /usr/src/app/services/shared/dist ./services/shared/dist
 COPY --from=builder /usr/src/app/services/gateway-service/dist ./services/gateway-service/dist
 
 EXPOSE 8000

@@ -1,5 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+import { IMongoEntityTemplatePopulated, IEntity } from '@microservices/shared';
 
 export interface IReferencedEntityForProcess {
     entity: IEntity;

@@ -8,23 +8,23 @@ import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
-import { IEntityTemplatePopulated, IMongoEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
 import {
+    IEntityTemplatePopulated,
+    IMongoEntityTemplatePopulated,
     ActionTypes,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
     IUpdateEntityMetadata,
-} from '@microservices/shared/src/interfaces/ruleBreach/actionMetadata';
-import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import {
+    IAction,
+    IBrokenRule,
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
     ISearchResult,
     ISearchSort,
     ITemplateSearchBody,
-} from '@microservices/shared/src/interfaces/entity';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
+    IRelationship,
+} from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { StorageService } from '../../externalServices/storageService';

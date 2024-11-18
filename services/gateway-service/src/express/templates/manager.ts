@@ -5,18 +5,20 @@ import _isEqual from 'lodash.isequal';
 import lodashUniqby from 'lodash.uniqby';
 import { StatusCodes } from 'http-status-codes';
 import { logger } from 'elastic-apm-node';
-import { ICategory } from '@microservices/shared/src/interfaces/category';
 import {
+    ICategory,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
     ISearchEntityTemplatesBody,
-} from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate, ISearchRelationshipTemplatesBody } from '@microservices/shared/src/interfaces/relationshipTemplate';
-import { IRule, ISearchRulesBody } from '@microservices/shared/src/interfaces/rule';
-import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
-import { IUniqueConstraintOfTemplate } from '@microservices/shared/src/interfaces/entity';
-import { PermissionType } from '@microservices/shared/src/interfaces/permission';
+    IMongoRelationshipTemplate,
+    ISearchRelationshipTemplatesBody,
+    IRule,
+    ISearchRulesBody,
+    IFormula,
+    IUniqueConstraintOfTemplate,
+    PermissionType,
+} from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import { ProcessService } from '../../externalServices/processService';

@@ -19,7 +19,10 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
-    "lib": ["ES2020.Promise"]
+    "lib": ["ES2020.Promise"],
+    "paths": {
+      "@microservices/*": ["./services/*/src"]
+    }
   },
   "include": ["src/**/*"]
 }

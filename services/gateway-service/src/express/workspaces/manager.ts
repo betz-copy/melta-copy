@@ -1,4 +1,4 @@
-import { IWorkspace } from '@microservices/shared/src/interfaces/workspace';
+import { IWorkspace } from '@microservices/shared';
 import { StorageService } from '../../externalServices/storageService';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { UserNotAuthorizedError } from '../error';

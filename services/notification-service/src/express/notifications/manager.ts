@@ -1,10 +1,5 @@
 import { FilterQuery } from 'mongoose';
-import {
-    IBasicNotificationQuery,
-    INotification,
-    INotificationCountGroups,
-    INotificationGroupCountDetails,
-} from '@microservices/shared/src/interfaces/notification';
+import { IBasicNotificationQuery, INotification, INotificationCountGroups, INotificationGroupCountDetails } from '@microservices/shared';
 import config from '../../config';
 import transaction from '../../utils/mongo';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';

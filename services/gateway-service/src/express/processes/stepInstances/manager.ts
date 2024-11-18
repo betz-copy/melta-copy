@@ -3,11 +3,9 @@ import {
     IMongoStepInstancePopulated,
     IStepInstance,
     UpdateStepReqBody,
-} from '@microservices/shared/src/interfaces/process/instances/step';
-import {
     IMongoProcessInstanceReviewerPopulated,
     IMongoProcessInstancePopulated,
-} from '@microservices/shared/src/interfaces/process/instances/process';
+} from '@microservices/shared';
 import { ProcessService } from '../../../externalServices/processService';
 import { StorageService } from '../../../externalServices/storageService';
 import DefaultManagerProxy from '../../../utils/express/manager';

@@ -1,11 +1,5 @@
 import { ClientSession, FilterQuery } from 'mongoose';
-import {
-    IEntitySingleProperty,
-    IEntityTemplate,
-    IEntityTemplatePopulated,
-    IMongoEntityTemplate,
-} from '@microservices/shared/src/interfaces/entityTemplate';
-import { IRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
+import { IEntitySingleProperty, IEntityTemplate, IEntityTemplatePopulated, IMongoEntityTemplate, IRelationshipTemplate } from '@microservices/shared';
 import config from '../../config';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';

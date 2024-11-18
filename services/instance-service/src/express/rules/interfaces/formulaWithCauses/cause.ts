@@ -1,7 +1,5 @@
 import { Date as Neo4jDate, DateTime as Neo4jDateTime } from 'neo4j-driver';
-import { ICauseInstance } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
+import { ICauseInstance, IEntity, IRelationship } from '@microservices/shared';
 
 export interface ICauseInstancePopulated {
     entity: IEntity;

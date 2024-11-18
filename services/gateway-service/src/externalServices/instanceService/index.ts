@@ -1,6 +1,7 @@
-import { IEntitySingleProperty } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IAction, IBrokenRule } from '@microservices/shared/src/interfaces/ruleBreach/ruleBreach';
 import {
+    IEntitySingleProperty,
+    IAction,
+    IBrokenRule,
     IConstraintsOfTemplate,
     ICountSearchResult,
     IEntity,
@@ -10,9 +11,9 @@ import {
     ISearchSort,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-} from '@microservices/shared/src/interfaces/entity';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
-import { IRelationship } from '@microservices/shared/src/interfaces/relationship';
+    IMongoRelationshipTemplate,
+    IRelationship,
+} from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { ISemanticSearchResult } from '../semanticSearch/interface';

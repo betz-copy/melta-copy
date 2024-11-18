@@ -6,7 +6,7 @@ import {
     IAgGridSort,
     numberFilterOperationTypes,
     textFilterOperationTypes,
-} from '@microservices/shared/src/interfaces/ruleBreach/agGrid';
+} from '@microservices/shared';
 import { RuleBreachSearchFilterTypeError } from '../../express/error';
 
 const translateAgGridFilter = (

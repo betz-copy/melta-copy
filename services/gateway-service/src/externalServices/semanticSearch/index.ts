@@ -1,4 +1,4 @@
-import { ISearchBatchBody, ISearchSort } from '@microservices/shared/src/interfaces/entity';
+import { ISearchBatchBody, ISearchSort } from '@microservices/shared';
 import config from '../../config';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 import { ISemanticSearchResult } from './interface';

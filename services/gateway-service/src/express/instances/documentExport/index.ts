@@ -2,7 +2,7 @@ import { load } from 'cheerio';
 import { IPatch, patchDocument, PatchType, TextRun } from 'docx';
 import { toHebrewJewishDate, toJewishDate } from 'jewish-date';
 import mammoth from 'mammoth';
-import { IEntity } from '@microservices/shared/src/interfaces/entity';
+import { IEntity } from '@microservices/shared';
 import config from '../../../config';
 
 const {

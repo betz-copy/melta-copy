@@ -1,16 +1,15 @@
-import { PermissionScope } from '@microservices/shared/src/interfaces/permission';
-import { IMongoStepTemplate, IStepTemplate } from '@microservices/shared/src/interfaces/process/templates/step';
 import {
+    PermissionScope,
+    IMongoStepTemplate,
+    IStepTemplate,
     IMongoProcessTemplateReviewerPopulated,
     IMongoProcessTemplatePopulated,
     IProcessTemplatePopulated,
     ISearchProcessTemplatesBody,
-} from '@microservices/shared/src/interfaces/process/templates/process';
-import {
     IMongoProcessInstancePopulated,
     IProcessInstanceSearchProperties,
     Status,
-} from '@microservices/shared/src/interfaces/process/instances/process';
+} from '@microservices/shared';
 import config from '../../../config';
 import { ProcessService } from '../../../externalServices/processService';
 import { StorageService } from '../../../externalServices/storageService';

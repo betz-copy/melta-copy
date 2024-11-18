@@ -8,7 +8,7 @@ import {
     IProcessTemplate,
     IProcessTemplatePopulated,
     IProcessTemplateSearchProperties,
-} from '@microservices/shared/src/interfaces/process/templates/process';
+} from '@microservices/shared';
 import config from '../../../config';
 import { escapeRegExp } from '../../../utils';
 import { getProcessTemplatesByReviewerIdAggregation, transaction } from '../../../utils/mongo';

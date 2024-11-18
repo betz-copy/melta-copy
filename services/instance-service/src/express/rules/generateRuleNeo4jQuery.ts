@@ -1,23 +1,26 @@
-import { IEquation, IOperatorBool, isEquation } from '@microservices/shared/src/interfaces/rule/formula/equation';
-import { IMongoRule } from '@microservices/shared/src/interfaces/rule';
-import { IAggregationGroup, IGroup, isAggregationGroup, isGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
 import {
+    IEquation,
+    IOperatorBool,
+    isEquation,
+    IMongoRule,
+    IAggregationGroup,
+    IGroup,
+    isAggregationGroup,
+    isGroup,
     IArgument,
     IConstant,
     IPropertyOfVariable,
     IVariable,
     isConstant,
     isPropertyOfVariable,
-} from '@microservices/shared/src/interfaces/rule/formula/argument';
-import { IFormula } from '@microservices/shared/src/interfaces/rule/formula';
-import {
+    IFormula,
     ICountAggFunction,
     IRegularFunction,
     ISumAggFunction,
     isCountAggFunction,
     isRegularFunction,
     isSumAggFunction,
-} from '@microservices/shared/src/interfaces/rule/formula/function';
+} from '@microservices/shared';
 import { CypherQuery } from './interfaces';
 import config from '../../config';
 

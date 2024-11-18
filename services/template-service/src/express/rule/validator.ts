@@ -3,12 +3,21 @@ import { isValid as isValidDate, parse } from 'date-fns';
 import { Request } from 'express';
 import Joi from 'joi';
 import isEqual from 'lodash.isequal';
-import { IEntitySingleProperty, IEntityTemplatePopulated } from '@microservices/shared/src/interfaces/entityTemplate';
-import { IMongoRelationshipTemplate } from '@microservices/shared/src/interfaces/relationshipTemplate';
-import { IRelevantTemplates, IRule } from '@microservices/shared/src/interfaces/rule';
-import { IConstant, IPropertyOfVariable, IVariable, isConstant } from '@microservices/shared/src/interfaces/rule/formula/argument';
-import { ICountAggFunction, IRegularFunction, ISumAggFunction } from '@microservices/shared/src/interfaces/rule/formula/function';
-import { IAggregationGroup } from '@microservices/shared/src/interfaces/rule/formula/group';
+import {
+    IEntitySingleProperty,
+    IEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IRelevantTemplates,
+    IRule,
+    IConstant,
+    IPropertyOfVariable,
+    IVariable,
+    isConstant,
+    ICountAggFunction,
+    IRegularFunction,
+    ISumAggFunction,
+    IAggregationGroup,
+} from '@microservices/shared';
 import DefaultController from '../../utils/express/controller';
 import { defaultValidationOptions, joiValidate } from '../../utils/joi';
 import EntityTemplateManager from '../entityTemplate/manager';
