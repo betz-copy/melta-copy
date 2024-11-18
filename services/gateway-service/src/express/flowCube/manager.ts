@@ -1,6 +1,6 @@
-import { IFilterOfTemplate } from '@microservices/shared';
+import { IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '@microservices/shared';
 import config from '../../config';
-import { InstancesService, ISearchEntitiesOfTemplateBodyOptional } from '../../externalServices/instanceService';
+import { InstancesService } from '../../externalServices/instanceService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import DefaultManagerProxy from '../../utils/express/manager';
 
@@ -44,16 +44,16 @@ export class FlowCubeManager extends DefaultManagerProxy<null> {
             }
         });
 
-        let filter: ISearchEntitiesOfTemplateBodyOptional['filter'];
+        let filter: ISearchEntitiesOfTemplateBody['filter'];
         if (filterAnd.length > 0) {
             filter = { $and: filterAnd };
         }
 
-        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit };
+        return { filter, limit: config.instanceService.searchEntitiesFlowMaxLimit, skip: 0, showRelationships: false, sort: [] };
     }
 
     async searchFlowCube(templateId: string, searchBody: Record<string, any>) {
-        const convertedSearchBody: ISearchEntitiesOfTemplateBodyOptional = await this.convertFlowToNeoSearch(templateId, searchBody);
+        const convertedSearchBody: ISearchEntitiesOfTemplateBody = await this.convertFlowToNeoSearch(templateId, searchBody);
         const res = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, convertedSearchBody);
         const convertToFlow = res.entities.map((entity) => entity.entity.properties);
         return convertToFlow;

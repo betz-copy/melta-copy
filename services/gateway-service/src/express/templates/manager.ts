@@ -447,7 +447,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     }
 
     async throwIfEntityTemplateHasInstances(id: string) {
-        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, showRelationships: false, sort: [] });
         if (count > 0) {
             throw new BadRequestError('entity template still has instances', { errorCode: entityTemplateHasInstances });
         }
@@ -574,6 +574,8 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                     const { entities } = await this.instancesService.searchEntitiesOfTemplateRequest(templateId, {
                         limit: searchEntitiesChunkSize,
                         skip: fileIndex,
+                        showRelationships: false,
+                        sort: [],
                     });
 
                     entities.forEach(({ entity }) => {
@@ -707,7 +709,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
     ): Promise<IMongoEntityTemplateWithConstraintsPopulated> {
         await this.entityTemplateService.getCategoryById(updatedTemplateData.category);
 
-        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1 });
+        const { count } = await this.instancesService.searchEntitiesOfTemplateRequest(id, { limit: 1, skip: 0, showRelationships: false, sort: [] });
         const currTemplate = await this.entityTemplateService.getEntityTemplateById(id);
 
         const populatedTemplates = await this.getAndPopulateAllTemplatesConstraints([currTemplate]);

@@ -8,10 +8,8 @@ import {
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
     ISearchResult,
-    ISearchSort,
     ITemplateSearchBody,
     IUniqueConstraintOfTemplate,
-    IMongoRelationshipTemplate,
     IRelationship,
 } from '@microservices/shared';
 import config from '../../config';
@@ -29,12 +27,6 @@ const {
         searchOfTemplateRoute,
     },
 } = config;
-
-export type ISearchEntitiesOfTemplateBodyOptional = Omit<ISearchEntitiesOfTemplateBody, 'skip' | 'sort' | 'showRelationships'> & {
-    skip?: number;
-    showRelationships?: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort?: ISearchSort;
-};
 
 export class InstancesService extends DefaultExternalServiceApi {
     constructor(workspaceId: string) {
@@ -101,7 +93,7 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBodyOptional) {
+    async searchEntitiesOfTemplateRequest(templateId: string, searchBody: ISearchEntitiesOfTemplateBody) {
         const { data } = await this.api.post<ISearchResult>(`${baseEntitiesRoute}${searchOfTemplateRoute}/${templateId}`, searchBody);
 
         return data;

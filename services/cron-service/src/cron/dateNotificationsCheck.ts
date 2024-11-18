@@ -38,7 +38,12 @@ const getFilteredInstances = async (
     entityTemplateId: string,
     propertiesWithDateNotifications: IFilterDatesRange[],
 ) => {
-    const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, { limit: 1 });
+    const { count } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
+        limit: 1,
+        skip: 0,
+        showRelationships: false,
+        sort: [],
+    });
     const today = new Date();
 
     const dateNotificationFilterQuery = propertiesWithDateNotifications.map((prop) => {
@@ -60,6 +65,9 @@ const getFilteredInstances = async (
     const { entities } = await instancesService.searchEntitiesOfTemplateRequest(entityTemplateId, {
         limit: count,
         filter: { $or: dateNotificationFilterQuery },
+        skip: 0,
+        showRelationships: false,
+        sort: [],
     });
 
     return entities;

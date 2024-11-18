@@ -155,7 +155,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
             limit: 1,
             filter,
-            sort,
+            sort: sort || [],
+            skip: 0,
+            showRelationships: false,
         });
         for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
@@ -163,7 +165,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter,
-                sort,
+                sort: sort || [],
+                showRelationships: false,
             });
             styleAWorksheet(
                 worksheet,
