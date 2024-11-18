@@ -27,6 +27,7 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                         top: '50%',
                         transform: 'translateY(-50%)',
                         zIndex: 2,
+                        color: '#000',
                     }}
                     onClick={decreaseIndex}
                 >
@@ -44,6 +45,7 @@ const OpenSmallPreview: React.FC<IOpenSmallPreview> = ({ files, currentIndex, in
                         top: '50%',
                         transform: 'translateY(-50%)',
                         zIndex: 2,
+                        color: '#000',
                     }}
                     onClick={increaseIndex}
                 >

@@ -16,6 +16,7 @@ import {
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
     searchEntitiesBatchRequestSchema,
+    getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
@@ -42,7 +43,7 @@ InstancesRouter.post(
     '/entities/search/batch',
     ValidateRequest(searchEntitiesBatchRequestSchema),
     InstancesValidatorMiddleware.validateUserCanSearchEntitiesBatch,
-    InstanceManagerProxy,
+    InstancesControllerMiddleware.searchEntitiesBatch,
 );
 InstancesRouter.post(
     '/entities/search/template/:templateId',
@@ -50,7 +51,13 @@ InstancesRouter.post(
     InstanceManagerProxy,
 );
 
-InstancesRouter.post('/entities/count', AuthorizerControllerMiddleware.userCanReadTemplates, InstanceManagerProxy);
+InstancesRouter.post(
+    '/entities/count',
+    ValidateRequest(getEntitiesCountByTemplates),
+    InstancesValidatorMiddleware.validateUserCanSearchEntitiesByTemplates,
+    InstancesControllerMiddleware.getEntitiesCountByTemplates,
+);
+
 InstancesRouter.post(
     '/entities/search/templates',
     ValidateRequest(searchEntitiesByTemplatesSchema),

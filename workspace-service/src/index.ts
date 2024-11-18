@@ -25,7 +25,7 @@ const handleRootDocument = async () => {
 const initializeMongo = async () => {
     logger.info('Connecting to Mongo...');
 
-    await mongoose.connect(mongo.url);
+    await mongoose.connect(mongo.url, mongo.connectionOptions);
 
     logger.info('Mongo connection established');
 
@@ -42,4 +42,4 @@ const main = async () => {
     logger.info(`Server started on port: ${service.port}`);
 };
 
-main().catch((error) => logger.error('main error: ', { error }));
+main().catch((error) => logger.error('Main error: ', { error }));

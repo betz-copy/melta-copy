@@ -333,6 +333,7 @@ export const templatesFilterToNeoQuery = (
             parameters: { [templateId]: filterOfTemplateQuery.parameters },
         };
     });
+
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
         parameters: {
@@ -347,79 +348,159 @@ export const sortToNeo4JSort = (sortModel: ISearchBatchBody['sort']) => {
     return sortModel.map(({ field, sort }) => `node.${field} ${sort}`).join(',');
 };
 
-const fulltextSearchToNeoQuery = (
+const buildFulltextSearchQuery = (
     searchBody: ISearchBatchBody,
-    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
-    calculateOverallCount = false,
+    filterQuery: { cypherQuery: string; parameters: any },
+    indexHandling: string,
+    parameters: any,
+    calculateOverallCount: boolean,
+    entityIdsToInclude?: string[],
 ) => {
-    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
-
-    // warning, in fulltext (lucene) query '*' works only on terms, and not phrases, we assume here the analyzer is "unicode_whitespace".
-    // for example in the standard analyzer "foo,bar" is a phrase (with two terms), so searching "*foo,bar*" wont work at all.
-    // but with "unicode_whitespace" analyzer, adding '*' at start and end, will always search on terms and not phrases,
-    // because in whitespace analyzer "foo,bar" is one term, so '*' will work on it,
-    // and searching "*foo bar*" will also work, because it will search "*foo" and "bar*" separately
-    // read also this to understand: https://stackoverflow.com/questions/25450308/full-text-search-in-neo4j-with-spaces
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
-
-    let latestIndex: string = config.neo4j.globalSearchIndex;
-    if (entityTemplatesMap.size === 1) latestIndex += `_${entityTemplatesMap.keys().next().value}`;
+    const entityIdMatch = entityIdsToInclude?.length
+        ? `
+        UNION
+        MATCH (node)
+        WHERE node._id IN $entityIdsToInclude
+        RETURN node
+    `
+        : '';
 
     if (calculateOverallCount) {
         return {
             cypherQuery: `
-                CALL db.index.fulltext.queryNodes($latestIndex, $query)
-                YIELD node, score
-                WHERE ${filterQuery.cypherQuery}
-                RETURN count(node)`,
-            parameters: { latestIndex, query, ...filterQuery.parameters },
+                CALL() {
+                    ${indexHandling}
+                    YIELD node, score
+                    WHERE ${filterQuery.cypherQuery}
+                    RETURN node
+                    ${entityIdMatch}
+                }
+                RETURN count(node)
+            `,
+            parameters: {
+                query,
+                ...parameters,
+                ...filterQuery.parameters,
+                ...(entityIdsToInclude?.length && { entityIdsToInclude }),
+            },
         };
     }
 
-    const sortQueryOfUser = searchBody.sort!.length > 0 ? `${sortToNeo4JSort(searchBody.sort)},` : '';
-    // sort by scoring, but only as the lowest priority, to not override user defined sorts
-    const defaultSortQuery = 'score DESC';
-    const sortQuery = `ORDER BY ${sortQueryOfUser} ${defaultSortQuery}`;
+    const sortQueryOfUser = searchBody.sort && searchBody.sort.length > 0 ? sortToNeo4JSort(searchBody.sort) : '';
+    const defaultSortQuery = 'node.createdAt DESC';
+    const sortQuery = `ORDER BY ${sortQueryOfUser ? `${sortQueryOfUser}, ` : ''}${defaultSortQuery}`;
 
     return {
         cypherQuery: `
-            CALL db.index.fulltext.queryNodes($latestIndex, $query)
-            YIELD node, score
-            WHERE ${filterQuery.cypherQuery}
+            CALL () {
+                ${indexHandling}
+                YIELD node, score
+                WHERE ${filterQuery.cypherQuery}
+                RETURN node
+                ${entityIdMatch}
+            }
             RETURN node
             ${sortQuery}
             SKIP toInteger($skip)
-            LIMIT toInteger($limit)`,
+            LIMIT toInteger($limit)
+        `,
         parameters: {
-            latestIndex,
             query,
             skip: searchBody.skip,
             limit: searchBody.limit,
+            ...parameters,
             ...filterQuery.parameters,
+            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
         },
     };
+};
+
+// TODO clean code
+const fulltextSearchToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    prefixIndexName: string,
+    entityIdsToInclude?: string[],
+    calculateOverallCount = false,
+) => {
+    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
+
+    let latestIndex: string = prefixIndexName;
+    if (entityTemplatesMap.size === 1) latestIndex = `${config.neo4j.templateSearchIndexPrefix}${entityTemplatesMap.keys().next().value}`;
+
+    const indexHandling = `CALL db.index.fulltext.queryNodes($latestIndex, $query)`;
+
+    const parameters = {
+        latestIndex,
+    };
+
+    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount, entityIdsToInclude);
+};
+
+const fulltextBatchSearchToNeoQuery = (
+    searchBody: ISearchBatchBody,
+    entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    entityIdsToInclude?: string[],
+    calculateOverallCount = false,
+    globalSearchIndexes: string[] = [],
+) => {
+    const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
+
+    const indexHandling = `
+        WITH $indexNames AS indexNames
+        UNWIND indexNames AS indexName
+        CALL db.index.fulltext.queryNodes(indexName, $query)
+    `;
+
+    const parameters = {
+        indexNames: globalSearchIndexes,
+    };
+
+    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount, entityIdsToInclude);
 };
 
 const searchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    entityIdsToInclude?: string[],
     calculateOverallCount = false,
+    globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
-    return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount);
+    if (globalSearchIndexes.length === 0)
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.templateSearchIndexPrefix,
+            entityIdsToInclude,
+            calculateOverallCount,
+        );
+    if (globalSearchIndexes.length === 1)
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.globalSearchIndexPrefix,
+            entityIdsToInclude,
+            calculateOverallCount,
+        );
+    return fulltextBatchSearchToNeoQuery(searchBody, entityTemplatesMap, entityIdsToInclude, calculateOverallCount, globalSearchIndexes);
 };
 
 export const searchWithRelationshipsToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     calculateOverallCount = false,
+    globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
+    const { entityIdsToInclude, ...restOfSearchBody } = searchBody;
+
     if (calculateOverallCount) {
-        return searchToNeoQuery(searchBody, entityTemplatesMap, true);
+        return searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, true, globalSearchIndexes);
     }
 
-    const searchNeoQuery = searchToNeoQuery(searchBody, entityTemplatesMap, false);
+    const searchNeoQuery = searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, false, globalSearchIndexes);
 
-    const showRelationshipsPerTemplate = mapValues(searchBody.templates, ({ showRelationships }) => ({
+    const showRelationshipsPerTemplate = mapValues(restOfSearchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
         relationshipTemplateIds: typeof showRelationships === 'boolean' ? [] : showRelationships,
     }));

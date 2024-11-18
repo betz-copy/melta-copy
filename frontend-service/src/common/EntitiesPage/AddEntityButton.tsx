@@ -1,12 +1,12 @@
-import React, { useState, CSSProperties } from 'react';
-import i18next from 'i18next';
 import { Dialog } from '@mui/material';
+import i18next from 'i18next';
+import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
 import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
-import IconButtonWithPopover from '../IconButtonWithPopover';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
 import { IEntity } from '../../interfaces/entities';
 import { useDraftIdStore } from '../../stores/drafts';
+import { TableButton } from '../TableButton';
 
 const AddEntityButton: React.FC<{
     style?: CSSProperties;
@@ -35,26 +35,27 @@ const AddEntityButton: React.FC<{
 
     return (
         <>
-            <IconButtonWithPopover
-                popoverText={
-                    popoverText ?? (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity'))
-                }
-                disabledToolTip={disabledToolTip}
-                iconButtonProps={{
-                    onClick: () => {
-                        setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
-                        setExternalErrors({ files: false, unique: {}, action: '' });
-                        setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                        toast.dismiss();
-                        setDraftId('');
+            <TableButton
+                iconButtonWithPopoverProps={{
+                    iconButtonProps: {
+                        onClick: () => {
+                            setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
+                            setExternalErrors({ files: false, unique: {}, action: '' });
+                            setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                            toast.dismiss();
+                            setDraftId('');
+                        },
+                        style,
                     },
-                    style,
+                    popoverText:
+                        popoverText ??
+                        (disabled ? i18next.t('permissions.dontHaveWritePermissions') : i18next.t('entitiesTableOfTemplate.addEntity')),
+                    disabledToolTip,
                 }}
-                style={style}
-                disabled={disabled}
             >
                 {children}
-            </IconButtonWithPopover>
+            </TableButton>
+
             <Dialog
                 open={addEntityWizardState.isOpen}
                 maxWidth={addEntityWizardState.initialValues?.template.documentTemplatesIds?.length ? 'lg' : 'md'}

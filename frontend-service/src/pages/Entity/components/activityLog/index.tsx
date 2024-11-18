@@ -1,15 +1,16 @@
-import React, { useEffect } from 'react';
+import { History } from '@mui/icons-material';
+import { Button, Divider } from '@mui/material';
 import i18next from 'i18next';
+import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Divider } from '@mui/material';
-import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
+import { InfiniteScroll } from '../../../../common/InfiniteScroll';
+import { MeltaTooltip } from '../../../../common/MeltaTooltip';
+import PopperSidebar from '../../../../common/PopperSidebar';
+import { environment } from '../../../../globals';
 import { IEntityExpanded } from '../../../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
-import PopperSidebar from '../../../../common/PopperSidebar';
-import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
-import { environment } from '../../../../globals';
 
 const { infiniteScrollPageCount } = environment.activityLog;
 
@@ -25,12 +26,17 @@ const ActivityLog: React.FC<{ expandedEntity: IEntityExpanded; entityTemplate: I
 
     return (
         <>
-            <IconButtonWithPopover
-                popoverText={i18next.t('entityPage.activityLog.header')}
-                iconButtonProps={{ onClick: () => setOpenPopper((previousOpen) => !previousOpen) }}
-            >
-                <img src="/icons/history.svg" />
-            </IconButtonWithPopover>
+            <MeltaTooltip title={i18next.t('entityPage.activityLog.header')}>
+                <Button
+                    variant="contained"
+                    startIcon={<History />}
+                    onClick={() => setOpenPopper((previousOpen) => !previousOpen)}
+                    sx={{ marginLeft: '1rem' }}
+                >
+                    {i18next.t('entityPage.activityLog.header')}
+                </Button>
+            </MeltaTooltip>
+
             <PopperSidebar open={openPopper} setOpen={setOpenPopper} title={i18next.t('entityPage.activityLog.header')} side="left">
                 <InfiniteScroll<IActivityLog>
                     queryKey={['getActivityLogRequest', entityId]}

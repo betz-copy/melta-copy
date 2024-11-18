@@ -1,4 +1,5 @@
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
 
 const relationshipTemplates: IMongoRelationshipTemplate[] = [
@@ -77,7 +78,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
 const mockRelationshipTemplates = (mock: MockAdapter) => {
     // Create
     mock.onPost('/api/templates/relationships').reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
             name: 'goingOn',
@@ -91,7 +92,7 @@ const mockRelationshipTemplates = (mock: MockAdapter) => {
 
     // Update
     mock.onPut(/\/api\/templates\/relationships\/[0-9a-fA-F]{24}/).reply(() => [
-        200,
+        StatusCodes.OK,
         {
             _id: '61e3ea6e4d51a83e87e83c7e',
             name: 'goingOn',
@@ -104,7 +105,7 @@ const mockRelationshipTemplates = (mock: MockAdapter) => {
     ]);
 
     // Delete
-    mock.onDelete(/\/api\/templates\/relationships\/[0-9a-fA-F]{24}/).reply(() => [200, {}]);
+    mock.onDelete(/\/api\/templates\/relationships\/[0-9a-fA-F]{24}/).reply(() => [StatusCodes.OK, {}]);
 };
 
 export { mockRelationshipTemplates, relationshipTemplates };

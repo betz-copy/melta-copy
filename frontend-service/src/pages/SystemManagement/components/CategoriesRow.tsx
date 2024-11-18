@@ -1,25 +1,28 @@
-import React, { useState } from 'react';
+import { AddCircle, Edit, Hive as HiveIcon } from '@mui/icons-material';
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
-import { Hive as HiveIcon } from '@mui/icons-material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
-import { AxiosError } from 'axios';
 import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
 import { ViewingCard } from './Card';
 import { CustomIcon } from '../../../common/CustomIcon';
-import { CategoryWizard } from '../../../common/wizards/category';
-import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { Box } from './Box';
-import { CardMenu } from './CardMenu';
-import { MeltaTooltip } from '../../../common/MeltaTooltip';
-import { environment } from '../../../globals';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
 import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { useUserStore } from '../../../stores/user';
 import { PermissionScope } from '../../../interfaces/permissions';
+import { ErrorToast } from '../../../common/ErrorToast';
+import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
+import { MeltaTooltip } from '../../../common/MeltaTooltip';
+import { CategoryWizard } from '../../../common/wizards/category';
+import { environment } from '../../../globals';
+import { categoryObjectToCategoryForm, deleteCategoryRequest } from '../../../services/templates/categoriesService';
+import { Box } from './Box';
+import { CardMenu } from './CardMenu';
+import { CreateButton } from './CreateButton';
 
 interface CategoryCardProps {
     category: IMongoCategory;
@@ -157,17 +160,28 @@ const CategoriesRow: React.FC = () => {
     const [isHoverOnBox, setIsHoverOnBox] = useState(false);
     console.log({ isHoverOnBox });
 
+    const theme = useTheme();
+
     return (
         <Grid item container gap="10px">
             <Box
-                header={<Grid item container alignItems="center" height="20px" />}
+                header={
+                    <Grid item container justifyContent="space-between" alignItems="center" height="40px">
+                        <Typography style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}>
+                            {i18next.t('general')}
+                        </Typography>
+                        {isHoverOnBox && (
+                            <IconButton onClick={() => {}}>
+                                <Edit color="primary" />
+                            </IconButton>
+                        )}
+                    </Grid>
+                }
                 addingIcon={
-                    <IconButton
-                        style={{ borderRadius: '5px', width: 'fit-content' }}
+                    <CreateButton
                         onClick={() => setCategoryWizardDialogState({ isWizardOpen: true, category: null })}
-                    >
-                        <img src="/icons/add-new-category.svg" />
-                    </IconButton>
+                        text={i18next.t('systemManagement.newCategory')}
+                    />
                 }
                 onHover={(isHover: boolean) => setIsHoverOnBox(isHover)}
             >
@@ -181,6 +195,19 @@ const CategoriesRow: React.FC = () => {
                         />
                     ))}
             </Box>
+
+            {/* TODO - add when category group will be supported */}
+            <Grid>
+                <IconButtonWithPopover
+                    popoverText={i18next.t('soon')}
+                    style={{ display: 'flex', gap: '0.25rem', height: '40px', borderRadius: '5px', cursor: 'default', opacity: 0.5 }}
+                >
+                    <AddCircle color="primary" />
+                    <Typography color={theme.palette.primary.main} sx={{ fontSize: '0.9rem' }}>
+                        {i18next.t('systemManagement.newCollection')}
+                    </Typography>
+                </IconButtonWithPopover>
+            </Grid>
 
             <CategoryWizard
                 open={categoryWizardDialogState.isWizardOpen}

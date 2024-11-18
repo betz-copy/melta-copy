@@ -42,7 +42,9 @@ const EntitiesTableOfTemplateWithQuickFilter: React.FC<{
                         shouldSaveSorting: false,
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
+                        shouldSaveScrollPosition: false,
                     }}
+                    paginationPageSizeSelector={false}
                 />
             </div>
         </Box>

@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { generateMongoId } from './permissions';
 import { INotificationPopulated, NotificationType } from '../interfaces/notifications';
 import { generateRuleBreachAlert, generateRuleBreachRequest } from './ruleBreaches';
@@ -42,14 +43,14 @@ for (let i = 0; i < chance.integer({ min: 1, max: 200 }); i += 1) {
 
 export const mockNotifications = (mock: MockAdapter) => {
     mock.onGet('/api/notifications/my/count').reply(() => {
-        return [200, myNotifications.length];
+        return [StatusCodes.OK, myNotifications.length];
     });
 
     mock.onGet('/api/notifications/my').reply((data) => {
         const { step = 0, limit } = data.params;
         const skip = step * limit;
 
-        return [200, myNotifications.slice(skip, limit + skip)];
+        return [StatusCodes.OK, myNotifications.slice(skip, limit + skip)];
     });
 
     mock.onPatch(/\/api\/notifications\/.*\/seen/).reply((data) => {
@@ -58,6 +59,6 @@ export const mockNotifications = (mock: MockAdapter) => {
         const notificationIndex = myNotifications.findIndex((notification) => notification._id === id);
         myNotifications.splice(notificationIndex, 1);
 
-        return [200, myNotifications];
+        return [StatusCodes.OK, myNotifications];
     });
 };

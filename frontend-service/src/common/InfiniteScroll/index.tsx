@@ -1,5 +1,5 @@
 import { Grid, GridProps } from '@mui/material';
-import React, { CSSProperties, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { PureInfiniteScroll, PureInfiniteScrollProps } from './PureInfiniteScroll';
 
 interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
@@ -7,7 +7,7 @@ interface InfiniteScrollProps<T> extends PureInfiniteScrollProps<T> {
     direction?: GridProps['direction'];
     wrap?: GridProps['wrap'];
     spacing?: GridProps['spacing'];
-    style?: CSSProperties;
+    style?: object;
 }
 
 export const InfiniteScroll = <T extends any>({
@@ -20,6 +20,7 @@ export const InfiniteScroll = <T extends any>({
 }: InfiniteScrollProps<T>) => {
     if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const overflow = useMemo(() => {
         switch (direction) {
             case 'row':

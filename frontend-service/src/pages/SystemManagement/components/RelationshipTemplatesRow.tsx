@@ -1,33 +1,34 @@
-import React, { useState } from 'react';
-import { Grid, IconButton, Typography } from '@mui/material';
+import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-material';
+import { Grid, IconButton, Typography, useTheme } from '@mui/material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
+import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { AppRegistration as AppRegistrationIcon } from '@mui/icons-material';
-
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { ViewingCard } from './Card';
+import { CustomIcon } from '../../../common/CustomIcon';
+import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
+import { ErrorToast } from '../../../common/ErrorToast';
+import { InfiniteScroll } from '../../../common/InfiniteScroll';
+import SearchInput from '../../../common/inputs/SearchInput';
+import { RelationshipTitle } from '../../../common/RelationshipTitle';
+import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
+import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
+import { environment } from '../../../globals';
+import { ICategoryMap } from '../../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
-import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
-import { RelationshipTitle } from '../../../common/RelationshipTitle';
-import SearchInput from '../../../common/inputs/SearchInput';
-import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
-import { populateRelationshipTemplate } from '../../../utils/templates';
-import { ErrorToast } from '../../../common/ErrorToast';
-import { Box } from './Box';
-import { CustomIcon } from '../../../common/CustomIcon';
-import { CardMenu } from './CardMenu';
-import { environment } from '../../../globals';
-import { InfiniteScroll } from '../../../common/InfiniteScroll';
 import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
 import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
+import { populateRelationshipTemplate } from '../../../utils/templates';
+import { Box } from './Box';
+import { ViewingCard } from './Card';
+import { CardMenu } from './CardMenu';
+import { CreateButton } from './CreateButton';
+import { FilterButton } from './FilterButton';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -148,6 +149,16 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const [isSrcRelationChecked, setIsSrcRelationChecked] = useState(true);
 
+    const isFilterButtonDisabled = useMemo(
+        () =>
+            !(
+                sourceEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                destinationEntityTemplatesToShow.length < entityTemplatesArray.length ||
+                searchText.length
+            ),
+        [destinationEntityTemplatesToShow, entityTemplatesArray, searchText, sourceEntityTemplatesToShow],
+    );
+
     const [deleteRelationshipTemplateDialogState, setDeleteRelationshipTemplateDialogState] = useState<{
         isDialogOpen: boolean;
         relationshipTemplateId: string | null;
@@ -200,6 +211,8 @@ const RelationshipTemplatesRow: React.FC = () => {
         return relationsGroupedByEntities;
     };
 
+    const theme = useTheme();
+
     return (
         <Grid item container marginBottom="30px">
             <Grid container alignItems="center" flexWrap="nowrap" flexDirection="row" justifyContent="space-between">
@@ -235,32 +248,21 @@ const RelationshipTemplatesRow: React.FC = () => {
                         />
                     </Grid>
                     <Grid item>
-                        {sourceEntityTemplatesToShow.length < entityTemplatesArray.length ||
-                        destinationEntityTemplatesToShow.length < entityTemplatesArray.length ||
-                        searchText.length ? (
-                            <IconButton
-                                style={{ borderRadius: '5px' }}
-                                onClick={() => {
-                                    setSearchText('');
-                                    setSourceEntityTemplatesToShow(entityTemplatesArray);
-                                    setDestinationEntityTemplatesToShow(entityTemplatesArray);
-                                }}
-                            >
-                                <img src="/icons/delete-filters-enable.svg" />
-                            </IconButton>
-                        ) : (
-                            <IconButton style={{ borderRadius: '5px', cursor: 'default' }}>
-                                <img src="/icons/delete-filters.svg" />
-                            </IconButton>
-                        )}
+                        <FilterButton
+                            onClick={() => {
+                                setSearchText('');
+                                setSourceEntityTemplatesToShow(entityTemplatesArray);
+                                setDestinationEntityTemplatesToShow(entityTemplatesArray);
+                            }}
+                            disabled={isFilterButtonDisabled}
+                            text={i18next.t('entitiesTableOfTemplate.resetFilters')}
+                        />
                     </Grid>
                     <Grid item sx={{ display: 'flex', justifyContent: 'center', alignContent: 'center' }}>
-                        <IconButton
-                            style={{ borderRadius: '5px' }}
+                        <CreateButton
                             onClick={() => setRelationshipTemplateWizardDialogState({ isWizardOpen: true, relationshipTemplate: null })}
-                        >
-                            <img src="/icons/add-new-relation-template.svg" />
-                        </IconButton>
+                            text={i18next.t('systemManagement.newRelationshipTemplate')}
+                        />
                     </Grid>
                 </Grid>
                 <Grid item>
@@ -291,7 +293,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     entityTemplate: IMongoEntityTemplatePopulated;
                     relationships: IMongoRelationshipTemplatePopulated[];
                 }>
-                    queryKey={['searchRelationshipTemplates', searchText]}
+                    queryKey={['searchRelationshipTemplates', searchText, sourceEntityTemplatesToShow, destinationEntityTemplatesToShow]}
                     queryFunction={({ pageParam }) => {
                         return getRelationshipGroupedByEntitiesTemplate(
                             filterRelationships({
@@ -338,23 +340,23 @@ const RelationshipTemplatesRow: React.FC = () => {
                                             iconUrl={relationshipTemplateWithEntity.entityTemplate.iconFileId}
                                             height="24px"
                                             width="24px"
-                                            color="#9398C2"
+                                            color={theme.palette.primary.main}
                                         />
                                     ) : (
-                                        <AppRegistrationIcon style={{ color: '#9398C2', ...environment.iconSize }} fontSize="small" />
+                                        <AppRegistrationIcon color="primary" style={{ ...environment.iconSize }} fontSize="small" />
                                     )}
                                     <Typography
-                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400', color: '#9398C2' }}
+                                        color={theme.palette.primary.main}
+                                        style={{ fontSize: environment.mainFontSizes.headlineSubTitleFontSize, fontWeight: '400' }}
                                     >
                                         {relationshipTemplateWithEntity.entityTemplate.displayName}
                                     </Typography>
-                                    <img src="/icons/arrow-relation-title.svg" />
+                                    <ArrowBack color="primary" fontSize="small" />
                                 </Grid>
                             }
                             key={relationshipTemplateWithEntity.entityTemplate._id}
                             addingIcon={
-                                <IconButton
-                                    style={{ borderRadius: '5px', width: 'fit-content' }}
+                                <CreateButton
                                     onClick={() => {
                                         if (isSrcRelationChecked)
                                             setRelationshipTemplateWizardDialogState({
@@ -373,9 +375,8 @@ const RelationshipTemplatesRow: React.FC = () => {
                                                 },
                                             });
                                     }}
-                                >
-                                    <img src="/icons/add-new-relation-template.svg" />
-                                </IconButton>
+                                    text={i18next.t('systemManagement.newRelationshipTemplate')}
+                                />
                             }
                         >
                             {relationshipTemplateWithEntity.relationships.map((relationshipTemplate) => (

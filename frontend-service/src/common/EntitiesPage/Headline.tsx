@@ -1,9 +1,13 @@
-import React, { Dispatch, SetStateAction, useRef } from 'react';
-import i18next from 'i18next';
-import { BaseTextFieldProps, CircularProgress, Grid, Icon, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
-import CardsViewIcon from '@mui/icons-material/RecentActors';
+import { AutoAwesome, Search, TableChartOutlined } from '@mui/icons-material';
 import AddIcon from '@mui/icons-material/Add';
+import CardsViewIcon from '@mui/icons-material/RecentActors';
 import DownloadIcon from '@mui/icons-material/VerticalAlignBottomOutlined';
+import { GridApi } from '@ag-grid-community/core';
+import { BaseTextFieldProps, Box, CircularProgress, Grid, IconButton, ToggleButton, ToggleButtonGroup, Typography, useTheme } from '@mui/material';
+import i18next from 'i18next';
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { debounce } from 'lodash';
+import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
@@ -14,51 +18,123 @@ import { MeltaTooltip } from '../MeltaTooltip';
 import { environment } from '../../globals';
 import { IEntity } from '../../interfaces/entities';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
+import { useSearchParams } from '../../utils/hooks/useSearchParams';
+import { convertToBool } from '../../utils/convertStringToBool';
 
 export const GlobalSearchBar: React.FC<{
     inputValue?: string;
     setInputValue?: (newInputValue: string) => void;
     onSearch: (searchValue: string) => void;
+    gridApi?: GridApi;
     borderRadius?: string;
     placeholder?: string;
     size?: BaseTextFieldProps['size'];
     toTopBar?: boolean;
     height?: string;
     width?: string;
-}> = ({ inputValue, setInputValue, onSearch, borderRadius, placeholder, size, toTopBar = false, height, width }) => {
+    autoSearch?: boolean;
+    showAiButton?: boolean;
+}> = ({
+    inputValue,
+    setInputValue,
+    onSearch,
+    gridApi,
+    borderRadius,
+    placeholder,
+    size,
+    toTopBar = false,
+    height,
+    width,
+    autoSearch = false,
+    showAiButton = false,
+}) => {
     const valueForSearchButtonRef = useRef(inputValue ?? '');
     const theme = useTheme();
 
+    const [semanticSearch, setSemanticSearch] = useLocalStorage<boolean>('semanticSearch', true);
+    const [urlSearchParams, setUrlSearchParams] = useSearchParams();
+    const urlSemanticSearch = urlSearchParams.get('semanticSearch');
+    const boolUrl = convertToBool(urlSemanticSearch!);
+
+    const [debouncedSearchValue, setDebouncedSearchValue] = useState(inputValue ?? '');
+
+    const debouncedSearch = useCallback(
+        debounce((value: string) => {
+            if (value !== valueForSearchButtonRef.current) {
+                valueForSearchButtonRef.current = value;
+                onSearch(value);
+                if (gridApi) {
+                    gridApi.setGridOption('quickFilterText', value);
+                }
+            }
+        }, 300),
+        [onSearch, gridApi, valueForSearchButtonRef.current],
+    );
+
+    useEffect(() => {
+        // If a value exists in the url, override the value in the localStorage.
+        const realValue = urlSemanticSearch ? boolUrl : semanticSearch;
+
+        if (realValue !== semanticSearch) setSemanticSearch(realValue);
+        if (realValue !== boolUrl) setUrlSearchParams({ ...Object.fromEntries(urlSearchParams.entries()), semanticSearch: realValue.toString() });
+    }, [boolUrl, semanticSearch, JSON.stringify(urlSearchParams), urlSemanticSearch, showAiButton]);
+
+    // eslint-disable-next-line consistent-return
+    useEffect(() => {
+        if (autoSearch) {
+            debouncedSearch(debouncedSearchValue);
+
+            return () => {
+                debouncedSearch.cancel();
+            };
+        }
+
+        return undefined;
+    }, [debouncedSearchValue, gridApi, onSearch, autoSearch, debouncedSearch]);
+
+    const aiToolTip = useCallback(
+        () => (
+            <MeltaTooltip title={boolUrl ? i18next.t('globalSearch.turnOffSemanticSearch') : i18next.t('globalSearch.turnOnSemanticSearch')} arrow>
+                <IconButton
+                    onClick={() =>
+                        setUrlSearchParams({
+                            ...Object.fromEntries(urlSearchParams.entries()),
+                            semanticSearch: (!convertToBool(urlSemanticSearch!)).toString(),
+                        })
+                    }
+                >
+                    {boolUrl ? <AutoAwesome color="primary" /> : <AutoAwesomeOutlinedIcon />}
+                </IconButton>
+            </MeltaTooltip>
+        ),
+        [boolUrl, setUrlSearchParams, urlSearchParams, urlSemanticSearch],
+    );
+
     return (
         <SearchInput
-            value={inputValue}
+            value={debouncedSearchValue}
             onChange={(newSearchValue) => {
-                valueForSearchButtonRef.current = newSearchValue;
+                setDebouncedSearchValue(newSearchValue);
                 setInputValue?.(newSearchValue);
             }}
             onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                    onSearch(valueForSearchButtonRef.current);
+                if (!autoSearch && event.key === 'Enter') {
+                    onSearch(debouncedSearchValue);
                 }
             }}
             endAdornmentChildren={
-                <IconButton
-                    style={{ color: theme.palette.primary.main }}
-                    onClick={() => onSearch(valueForSearchButtonRef.current)}
-                    sx={{ padding: 0 }}
-                    disableRipple
-                >
-                    <img
-                        color="#1E2775"
-                        width="14px"
-                        height="14px"
-                        style={{
-                            top: '7px',
-                            left: '8px',
-                        }}
-                        src="/icons/search-blue.svg"
-                    />
-                </IconButton>
+                <Box>
+                    <IconButton
+                        style={{ color: theme.palette.primary.main }}
+                        onClick={() => onSearch(valueForSearchButtonRef.current)}
+                        sx={{ padding: 0 }}
+                        disableRipple
+                    >
+                        <Search sx={{ fontSize: '1.25rem' }} />
+                    </IconButton>
+                    {showAiButton && aiToolTip()}
+                </Box>
             }
             placeholder={placeholder}
             size={size}
@@ -69,7 +145,6 @@ export const GlobalSearchBar: React.FC<{
         />
     );
 };
-
 const EntitiesPageHeadline: React.FC<{
     searchInput?: string;
     setSearchInput?: (newSearchInput: string) => void;
@@ -166,6 +241,8 @@ const EntitiesPageHeadline: React.FC<{
                                     borderRadius="7px"
                                     placeholder={i18next.t('globalSearch.searchInPage')}
                                     toTopBar
+                                    autoSearch
+                                    showAiButton
                                 />
                             </Grid>
                         </Grid>
@@ -194,9 +271,7 @@ const EntitiesPageHeadline: React.FC<{
                             </ToggleButton>
                             <ToggleButton value="templates-tables-view">
                                 <MeltaTooltip title={i18next.t('templateTablesView')!}>
-                                    <Icon>
-                                        <img src="/icons/Tables-View.svg" height="15px" style={{ marginBottom: '10px' }} />
-                                    </Icon>
+                                    <TableChartOutlined />
                                 </MeltaTooltip>
                             </ToggleButton>
                         </ToggleButtonGroup>
@@ -222,7 +297,12 @@ const EntitiesPageHeadline: React.FC<{
                     <Grid item>
                         <AddEntityButton
                             disabledToolTip
-                            style={{ background: theme.palette.primary.main, borderRadius: '7px', width: '135px', height: '35px' }}
+                            style={{
+                                background: theme.palette.primary.main,
+                                borderRadius: '7px',
+                                width: '135px',
+                                height: '35px',
+                            }}
                             onSuccessCreate={onSuccessCreate}
                             setUpdatedEntities={setUpdatedEntities}
                         >

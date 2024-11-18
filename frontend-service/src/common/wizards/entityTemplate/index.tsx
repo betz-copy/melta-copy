@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-shadow */
-/* eslint-disable react/no-unstable-nested-components */
 import React from 'react';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
@@ -42,6 +40,7 @@ export interface EntityTemplateFormInputProperties {
     isDailyAlert: boolean | null | undefined;
     calculateTime: boolean | null | undefined;
     serialStarter: number | undefined;
+    deleted?: boolean | undefined;
     relationshipReference?: {
         relationshipTemplateId?: string;
         relationshipTemplateDirection: 'outgoing' | 'incoming';
@@ -110,10 +109,26 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
             },
             onError: (error: AxiosError, entityTemplateValues) => {
                 const errorMetadata = error.response?.data?.metadata;
+
+                if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
+                    const { type, property, relatedTemplateName } = errorMetadata;
+
+                    const errorMessages = {
+                        rules: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRules', { property })}`,
+                        gantts: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInGantts', { property })}`,
+                        relationshipReference: `${i18next.t('wizard.entityTemplate.failedToDeleteFieldThatUsedInRelationshipReference', {
+                            property,
+                            relatedTemplateName,
+                        })}`,
+                    };
+
+                    toast.error(errorMessages[type]);
+                    return;
+                }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
                     const { constraint }: { constraint: IConstraint } = errorMetadata;
 
-                    const newEntityTemplate = formToJSONSchema(entityTemplateValues);
+                    const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
 
                     if (constraint.type === 'REQUIRED') {
                         const { title: constraintPropertyDisplayName } = newEntityTemplate.properties.properties[constraint.property];

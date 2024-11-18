@@ -16,7 +16,7 @@ import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
-import { EntityPropertiesInternal } from '../../../common/EntityProperties';
+import { EntityProperties } from '../../../common/EntityProperties';
 import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
@@ -259,10 +259,9 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
                         <Grid item container justifyContent="space-between" alignItems="stretch" padding="1rem" flexDirection="column" spacing={2}>
                             <Grid item width="100%">
-                                <EntityPropertiesInternal
+                                <EntityProperties
                                     entityTemplate={entityTemplate}
                                     properties={entity.properties}
-                                    darkMode={darkMode}
                                     style={{
                                         flexDirection: 'row',
                                         flexWrap: 'wrap',

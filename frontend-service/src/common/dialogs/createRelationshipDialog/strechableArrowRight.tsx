@@ -1,7 +1,9 @@
 import React from 'react';
-import { Grid, SvgIcon } from '@mui/material';
+import { Grid, SvgIcon, useTheme } from '@mui/material';
 
 const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) => {
+    const theme = useTheme();
+
     return (
         <Grid container alignItems="center">
             <Grid item flex={1} height={height / 2} sx={{ backgroundColor: 'primary.main' }} />
@@ -12,7 +14,7 @@ const StrechableArrowRight: React.FC<{ height?: number }> = ({ height = 50 }) =>
                         'body[dir=rtl] &': { transform: 'scaleX(-1)' },
                     }}
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1E2775">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill={theme.palette.primary.main}>
                         <polygon points="0,0 24,12 0,24" />
                     </svg>
                 </SvgIcon>

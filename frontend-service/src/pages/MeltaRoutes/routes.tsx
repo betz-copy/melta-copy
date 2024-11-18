@@ -1,4 +1,4 @@
-import { Box, Button, useScrollTrigger } from '@mui/material';
+import { Box, Button, debounce, useScrollTrigger } from '@mui/material';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import React, { lazy, Suspense, useEffect, useState } from 'react';
@@ -27,6 +27,8 @@ const PermissionsManagement = lazy(() => import('../PermissionsManagement'));
 const RuleManagement = lazy(() => import('../RuleManagement'));
 const Gantts = lazy(() => import('../Gantts'));
 const GanttPage = lazy(() => import('../Gantts/GanttPage'));
+const IFrames = lazy(() => import('../IFrames'));
+const IFramePage = lazy(() => import('../IFrames/IFramePage'));
 const ProcessInstancesPage = lazy(() => import('../ProcessInstances'));
 const Unavailable = lazy(() => import('../Unavailable'));
 const ErrorPage = lazy(() => import('../ErrorPage'));
@@ -53,6 +55,37 @@ export const MeltaRoutesInner: React.FC = () => {
 
     const [pageScrollTarget, setPageScrollTarget] = useState<HTMLElement | undefined>(undefined);
     const trigger = useScrollTrigger({ target: pageScrollTarget, disableHysteresis: true, threshold: 300 });
+
+    useEffect(() => {
+        const savedScrollPosition = sessionStorage.getItem(`pageScrollPosition-${window.location.pathname}`);
+
+        if (savedScrollPosition && pageScrollTarget) {
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    pageScrollTarget.scrollTo({
+                        top: parseInt(savedScrollPosition, 10),
+                        behavior: 'smooth',
+                    });
+                });
+            }, 150);
+        }
+
+        const handleScroll = debounce(() => {
+            if (pageScrollTarget) {
+                sessionStorage.setItem(`pageScrollPosition-${window.location.pathname}`, pageScrollTarget.scrollTop.toString());
+            }
+        }, 300);
+
+        if (pageScrollTarget) {
+            pageScrollTarget.addEventListener('scroll', handleScroll);
+        }
+
+        return () => {
+            if (pageScrollTarget) {
+                pageScrollTarget.removeEventListener('scroll', handleScroll);
+            }
+        };
+    }, [pageScrollTarget, window.location.pathname]);
 
     useEffect(() => {
         const didTour = LocalStorage.get<boolean>('didTour');
@@ -120,6 +153,12 @@ export const MeltaRoutesInner: React.FC = () => {
 
                             <Route path="/gantts/:ganttId">
                                 <GanttPage />
+                            </Route>
+                            <Route path="/iframes">
+                                <IFrames isSideBarOpen={open} />
+                            </Route>
+                            <Route path="/iframes/:iFrameId">
+                                <IFramePage />
                             </Route>
 
                             <Route path="/processes">

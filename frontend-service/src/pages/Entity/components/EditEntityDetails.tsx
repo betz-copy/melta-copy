@@ -7,6 +7,7 @@ import { Form, Formik } from 'formik';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { StatusCodes } from 'http-status-codes';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IEntity, IUniqueConstraint } from '../../../interfaces/entities';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
@@ -72,7 +73,7 @@ const EditEntityDetails: React.FC<{
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
             onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
-                if (err.response?.status === 413) setExternalErrors((prev) => ({ ...prev, files: true }));
+                if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
 
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {

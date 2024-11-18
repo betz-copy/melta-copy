@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -43,11 +42,16 @@ export default {
     },
     entitiesTableOfTemplate: {
         resetFilters: 'איפוס סינונים',
+        downloadOneTableTitle: 'הורדה',
         downloadOneTable: 'הורד טבלה',
+        expandMoreTitle: 'הגדלה',
         expandMore: 'הרחב כמות שורות',
+        expandLessTitle: 'הקטנה',
         expandLess: 'צמצם כמות שורות',
         totalLines: 'סה"כ שורות',
+        addRelationshipTitle: 'קשר חדש',
         addRelationship: 'הוסף קשר',
+        addEntityTitle: 'יישות חדשה',
         addEntity: 'הוסף ישות',
         selectEntity: 'בחר ישות',
         deleteEntity: 'מחק ישות',
@@ -57,6 +61,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
+        semanticSearch: 'נמצא באמצעות AI',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -77,6 +82,8 @@ export default {
         update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
+        expansion: 'הרחבה',
+        favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
     },
     entityPage: {
@@ -124,6 +131,7 @@ export default {
             withEntity: 'עם ישות מסוג',
             failedToGetActivities: 'נכשל לטעון היסטוריה',
             undefined: 'לא ידוע',
+            wasDeleted: 'נמחק',
             viewers: 'צפיות',
             actions: 'פעולות',
         },
@@ -220,11 +228,17 @@ export default {
         permissionsManagement: 'ניהול הרשאות ',
         ruleManagement: 'חריגות חוקה',
         processInstances: 'תהליכים',
+        iFrames: 'קישורים חיצוניים',
         gantts: 'טבלאות',
         fluidSimulation: '???',
     },
     systemManagement: {
+        newCategory: 'קטגוריה חדשה',
+        newCollection: 'מאגד חדש',
+        newEntityTemplate: 'תבנית ישות חדשה',
+        newRelationshipTemplate: 'תבנית קשר חדשה',
         newRuleTemplate: 'תבנית חוק חדשה',
+        newProcessTemplate: 'תבנית תהליך חדשה',
         search: 'חיפוש',
         sourceTemplates: 'תבניות מקור',
         destinationTemplates: 'תבניות יעד',
@@ -234,6 +248,9 @@ export default {
         disabledEntityTemplate: 'תבנית מושבתת',
         disabledRule: 'חוק מושבת',
         defaultCantEdit: 'לא ניתן לערוך ',
+        deleteField: 'מחיקת שדה',
+        warningOnDeleteField: 'שים לב! מחיקת שדה',
+        continueWarningOnDeleteField: 'תגרום למחיקת כל הערכים והיסטוריית השינויים תחת שדה זה בישויות מסוג תבנית',
         entityAction: {
             copyCode: 'העתק קוד',
             successCopyCode: 'הקוד הועתק בהצלחה',
@@ -382,6 +399,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
+        turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
+        turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
     },
     wizard: {
         next: 'הבא',
@@ -406,6 +425,22 @@ export default {
             chooseIcon: 'בחירת אייקון',
             chooseColor: 'בחירת צבע',
         },
+        iFrame: {
+            title: 'יצירת כרטיסיית קישור חיצוני',
+            editedSuccessfully: 'כרטיסיית קישור חיצוני עודכנה בהצלחה',
+            createdSuccessfully: 'כרטיסיית קישור חיצוני נוצרה בהצלחה',
+            failedToCreate: 'נכשל ליצור כרטיסיית קישור חיצוני ',
+            failedToEdit: 'נכשל בעריכת כרטיסיית קישור חיצוני',
+            deletedSuccessfully: 'כרטיסיית קישור חיצוני נמחקה בהצלחה',
+            failedToDelete: 'נכשל למחוק כרטיסיית קישור חיצוני',
+            chooseIcon: 'בחירת אייקון',
+            editDetails: 'עריכת פרטים',
+            settingPermissions: 'הגדרת הרשאות גישה',
+            selectCategories: 'הרשאות גישה',
+            name: 'שם',
+            url: 'כתובת האתר',
+            placeInSideBar: 'למקם בסרגל צידי',
+        },
         entityTemplate: {
             createTitle: 'יצירת תבנית ישות',
             updateTitle: 'עריכת תבנית ישות',
@@ -421,6 +456,10 @@ export default {
             failedToEdit: 'נכשל בעריכת תבנית ישות',
             failedToUpdateRequiredConstraintsBecauseOfEntitiesWithMissing: 'נכשל לעדכן שדות חובה בגלל שקיימות ישיות שלא מוזן להם שדה',
             failedToUpdateUniqueConstraintsBecauseOfEntitiesWithDuplicates: 'נכשל לעדכן שדות יחודיים בגלל שקיימות ישויות עם שכפולים בשדות',
+            failedToDeleteFieldThatUsedInRules: 'נכשל למחוק שדה "{{property}}" אשר בשימוש בחוקים',
+            failedToDeleteFieldThatUsedInGantts: 'נכשל למחוק שדה "{{property}}" אשר בשימוש בטבלאות',
+            failedToDeleteFieldThatUsedInRelationshipReference: 'נכשל למחוק שדה "{{property}}" אשר בשימוש כשדה קשר לתבנית "{{relatedTemplateName}}"',
+            cantDeleteUniqueOrRequiredFields: 'לא ניתן למחוק שדה ייחודי או חובה',
             propertyName: 'שם שדה באנגלית',
             attachmentName: 'שם באנגלית',
             propertyDisplayName: 'שם שדה לתצוגה',
@@ -640,6 +679,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
@@ -658,6 +698,7 @@ export default {
         invalidSerialStarter: 'חייב להיות גדול או שווה ל0',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
+        oneCategory: 'חובה קטגוריה אחת לפחות',
         oneStep: 'לפחות שלב אחד',
         oneStepApprover: 'לפחות מאשר שלב אחד',
         requiredFile: 'קובץ חובה',
@@ -761,6 +802,9 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        deletedEntity: 'הישות נמחקה',
+        brokenRules: 'חריגות',
+        actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
         actionBrokeTheFollowingRules: 'הפעולה שנעשתה',
         brokeTheFollowingRule: 'הפרה את החוק',
@@ -772,6 +816,7 @@ export default {
         noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
         warning: 'אזהרה',
         enforcement: 'אכיפה',
+        relationshipsCombination: 'צירוף הקשרים',
     },
     ruleBreachAlertNotification: {
         breach: 'הפרת חוק',
@@ -910,6 +955,14 @@ export default {
         rejectedProcesses: 'תהליכים דחויים',
         archivedProcesses: 'תהליכים בארכיון',
     },
+    iFrames: {
+        arrangementIFrames: 'סידור מופעים',
+        searchFailed: 'נכשל לחפש קישורים חיצוניים',
+        noIFramesFound: 'לא נמצאו קישורים חיצוניים',
+        favoritesIFrames: 'מועדפים:',
+        filterDrags: 'איפוס גרירות',
+        addIFrame: 'הוסף קישור חיצוני',
+    },
     gantts: {
         searchFailed: 'נכשל לחפש טבלאות',
         noGanttsFound: 'לא נמצאו טבלאות',
@@ -977,7 +1030,6 @@ export default {
             primary: 'ראשי',
         },
     },
-    agGridLocaleText,
     muiDatePickersLocaleText,
     schedule: {
         schedule: {

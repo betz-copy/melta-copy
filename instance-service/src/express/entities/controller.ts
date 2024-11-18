@@ -30,7 +30,7 @@ class EntityController extends DefaultController<EntityManager> {
     }
 
     async getEntitiesCountByTemplates(req: Request, res: Response) {
-        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.textSearch));
+        res.json(await this.manager.getEntitiesCountByTemplates(req.body.templateIds, req.body.semanticSearchResult, req.body.textSearch));
     }
 
     async searchEntitiesBatch(req: Request, res: Response) {
@@ -95,6 +95,10 @@ class EntityController extends DefaultController<EntityManager> {
 
     async enumerateNewSerialNumberFields(req: Request, res: Response) {
         res.json(await this.manager.enumerateNewSerialNumberFields(req.params.templateId, req.body.newSerialNumberFields));
+    }
+
+    async deletePropertiesOfTemplate(req: Request, res: Response) {
+        res.json(await this.manager.deletePropertiesOfTemplate(req.params.templateId, req.body.properties, req.body.currentTemplateProperties));
     }
 }
 

@@ -1,15 +1,16 @@
+import { Grid } from '@mui/material';
+import { AxiosError } from 'axios';
+import i18next from 'i18next';
 import React, { useState } from 'react';
-import { Grid, IconButton } from '@mui/material';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import i18next from 'i18next';
-import { AxiosError } from 'axios';
-import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
-import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import SearchInput from '../../../../common/inputs/SearchInput';
+import { ProcessTemplateWizard } from '../../../../common/wizards/processTemplate';
 import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
+import { deleteProcessTemplateRequest, processTemplateObjectToProcessTemplateForm } from '../../../../services/templates/processTemplatesService';
+import { CreateButton } from '../CreateButton';
 import { ProcessTemplateCard } from './ProcessTemplateCard';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { environment } from '../../../../globals';
@@ -70,12 +71,10 @@ const ProcessTemplatesRow: React.FC = () => {
                     <SearchInput onChange={setSearchText} borderRadius="7px" placeholder={i18next.t('globalSearch.searchProcesses')} />
                 </Grid>
                 <Grid item>
-                    <IconButton
-                        style={{ borderRadius: '5px' }}
+                    <CreateButton
                         onClick={() => setProcessTemplateWizardDialogState({ isWizardOpen: true, processTemplate: null })}
-                    >
-                        <img src="/icons/Add-New-Process.svg" />
-                    </IconButton>
+                        text={i18next.t('systemManagement.newProcessTemplate')}
+                    />
                 </Grid>
             </Grid>
             <InfiniteScroll<IMongoProcessTemplatePopulated>

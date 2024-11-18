@@ -1,4 +1,4 @@
-import { Hive as HiveIcon } from '@mui/icons-material';
+import { AddCircle, CloseFullscreenRounded, Expand, Hive as HiveIcon, TableRowsOutlined } from '@mui/icons-material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, CircularProgress, Grid, Tab, Typography, useTheme } from '@mui/material';
 import { useTour } from '@reactour/tour';
@@ -12,8 +12,8 @@ import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDia
 import { ResetFilterButton } from '../../common/EntitiesPage/ResetFilterButton';
 import EntitiesTableOfTemplate, { EntitiesTableOfTemplateRef, IConnection } from '../../common/EntitiesTableOfTemplate';
 import { EntityLink } from '../../common/EntityLink';
-import IconButtonWithPopover from '../../common/IconButtonWithPopover';
 import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/RelationshipTitle';
+import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { environment } from '../../globals';
 import { ICategoryMap } from '../../interfaces/categories';
@@ -30,6 +30,7 @@ import { populateRelationshipTemplate } from '../../utils/templates';
 import { EntityDetails } from './components/EntityDetails';
 import { EntityTopBar } from './components/TopBar';
 import DeleteRelationshipDialog from './DeleteRelationshipDialog';
+import { RelationshipIcon } from './RelationshipIcon';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -95,7 +96,7 @@ const ConnectionsTable: React.FC<{
     hasPermissionToCategory: boolean;
 }> = ({
     expandedEntity,
-    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource },
+    connectionTemplate: { relationshipTemplate, isExpandedEntityRelationshipSource, hasInstances },
     templateIds,
     isEditButtonsDisabled,
     disabledButtonText,
@@ -182,59 +183,59 @@ const ConnectionsTable: React.FC<{
 
                 <Grid item container justifyContent="space-between" alignItems="center">
                     <Grid container item flexGrow={1} width={0} justifyContent="flex-start" alignItems="center">
-                        <IconButtonWithPopover
-                            popoverText={i18next.t('entitiesTableOfTemplate.columns')}
-                            iconButtonProps={{ onClick: () => entitiesTableRef.current?.showSideBar() }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            <img src="/icons/columns-settings.svg" />
-                        </IconButtonWithPopover>
-                        <IconButtonWithPopover
-                            popoverText={isExpand ? i18next.t('entitiesTableOfTemplate.expandLess') : i18next.t('entitiesTableOfTemplate.expandMore')}
-                            iconButtonProps={{
-                                onClick: () => {
-                                    setIsExpand(!isExpand);
-                                },
-                                size: 'small',
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: i18next.t('entitiesTableOfTemplate.columns'),
+                                iconButtonProps: { onClick: () => entitiesTableRef.current?.showSideBar() },
                             }}
-                            style={{ borderRadius: '5px' }}
-                        >
-                            {isExpand ? <img src="/icons/reduce-table.svg" /> : <img src="/icons/expans-table.svg" />}
-                        </IconButtonWithPopover>
+                            disableButton={!hasInstances}
+                            icon={<TableRowsOutlined fontSize="small" />}
+                            text={i18next.t('entitiesTableOfTemplate.columns')}
+                        />
+
+                        <TableButton
+                            iconButtonWithPopoverProps={{
+                                popoverText: isExpand
+                                    ? i18next.t('entitiesTableOfTemplate.expandLess')
+                                    : i18next.t('entitiesTableOfTemplate.expandMore'),
+                                iconButtonProps: {
+                                    onClick: () => {
+                                        setIsExpand(!isExpand);
+                                    },
+                                },
+                            }}
+                            icon={isExpand ? <CloseFullscreenRounded fontSize="small" /> : <Expand fontSize="small" />}
+                            text={i18next.t(`entitiesTableOfTemplate.expand${isExpand ? 'Less' : 'More'}Title`)}
+                            disableButton={!hasInstances}
+                        />
+
                         <ResetFilterButton entitiesTableRef={entitiesTableRef} disableButton={!isFiltered} />
                     </Grid>
-                    <IconButtonWithPopover
-                        style={{ borderRadius: '10px' }}
-                        popoverText={
-                            isEditButtonsDisabled
+                    <TableButton
+                        iconButtonWithPopoverProps={{
+                            popoverText: isEditButtonsDisabled
                                 ? disabledButtonText
-                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`)
-                        }
-                        disabled={isEditButtonsDisabled || relationshipTemplate.isProperty}
-                        iconButtonProps={{
-                            onClick: () => {
-                                const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
-                                    ? [expandedEntity.entity, null]
-                                    : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
-                                setCreateRelationshipDialogState({
-                                    isOpen: true,
-                                    initialValues: {
-                                        relationshipTemplate,
-                                        sourceEntity: defaultSourceEntity,
-                                        destinationEntity: defaultDestinationEntity,
-                                    },
-                                });
+                                : i18next.t(`ruleManagement.${relationshipTemplate.isProperty ? 'cant-' : ''}create-relationship`),
+                            disabled: isEditButtonsDisabled || relationshipTemplate.isProperty,
+                            iconButtonProps: {
+                                onClick: () => {
+                                    const [defaultSourceEntity, defaultDestinationEntity] = isExpandedEntityRelationshipSource
+                                        ? [expandedEntity.entity, null]
+                                        : [null, expandedEntity.entity]; // if source and dest are the same template, then put currentEntity in source
+                                    setCreateRelationshipDialogState({
+                                        isOpen: true,
+                                        initialValues: {
+                                            relationshipTemplate,
+                                            sourceEntity: defaultSourceEntity,
+                                            destinationEntity: defaultDestinationEntity,
+                                        },
+                                    });
+                                },
                             },
                         }}
-                    >
-                        <img
-                            src={
-                                isEditButtonsDisabled || relationshipTemplate.isProperty
-                                    ? '/icons/add-relation-icon-disabled.svg'
-                                    : '/icons/add-relation-icon.svg'
-                            }
-                        />
-                    </IconButtonWithPopover>
+                        icon={<AddCircle fontSize="small" sx={{ opacity: isEditButtonsDisabled ? 0.3 : 1 }} />}
+                        text={i18next.t('entitiesTableOfTemplate.addRelationshipTitle')}
+                    />
                 </Grid>
             </Grid>
             <Box
@@ -244,6 +245,7 @@ const ConnectionsTable: React.FC<{
                 }}
             >
                 <EntitiesTableOfTemplate
+                    hasInstances={hasInstances}
                     ref={entitiesTableRef}
                     template={isExpandedEntityRelationshipSource ? relationshipTemplate.destinationEntity : relationshipTemplate.sourceEntity}
                     showNavigateToRowButton
@@ -278,9 +280,8 @@ const ConnectionsTable: React.FC<{
                               },
                     ) => {
                         if ('relationship' in connection) {
-                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id) {
+                            if (expandedEntity.entity.properties._id === connection.destinationEntity.properties._id)
                                 return connection.sourceEntity.properties;
-                            }
                             return connection.destinationEntity.properties;
                         }
                         return connection.properties;
@@ -309,6 +310,7 @@ const ConnectionsTable: React.FC<{
                         shouldSaveSorting: false,
                         shouldSaveColumnOrder: false,
                         shouldSavePagination: false,
+                        shouldSaveScrollPosition: false,
                         pageType: `entity-${expandedEntity.entity.properties._id}`,
                     }}
                     onFilter={() => setIsFiltered(entitiesTableRef.current?.isFiltered() ?? false)}
@@ -338,6 +340,7 @@ const ConnectionsTable: React.FC<{
 export interface IConnectionTemplateOfExpandedEntity {
     relationshipTemplate: IMongoRelationshipTemplatePopulated;
     isExpandedEntityRelationshipSource: boolean; // for relationship that is of format currentEntityTemplate -> currentEntityTemplate, we want it twice, once with outgoing connections of expandedEntity, and once with incoming connections of expandedEntity
+    hasInstances?: boolean;
 }
 
 const Entity: React.FC = () => {
@@ -385,6 +388,10 @@ const Entity: React.FC = () => {
     const connectionsTemplates: IConnectionTemplateOfExpandedEntity[] = [];
 
     populatedRelationshipTemplates.forEach((relationshipTemplate) => {
+        const hasInstances = expandedEntity.connections.some(
+            (connection) => 'relationship' in connection && connection.relationship.templateId === relationshipTemplate._id,
+        );
+
         if (
             !(
                 relationshipTemplate.isProperty &&
@@ -393,10 +400,18 @@ const Entity: React.FC = () => {
             )
         ) {
             if (relationshipTemplate.sourceEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: true });
+                connectionsTemplates.push({
+                    relationshipTemplate,
+                    isExpandedEntityRelationshipSource: true,
+                    hasInstances,
+                });
             }
             if (relationshipTemplate.destinationEntity._id === currentEntityTemplate._id) {
-                connectionsTemplates.push({ relationshipTemplate, isExpandedEntityRelationshipSource: false });
+                connectionsTemplates.push({
+                    relationshipTemplate,
+                    isExpandedEntityRelationshipSource: false,
+                    hasInstances,
+                });
             }
         }
     });
@@ -404,12 +419,14 @@ const Entity: React.FC = () => {
     const categoriesWithConnectionsTemplates = Array.from(categories.values(), (category) => {
         return {
             category,
-            connectionsTemplates: connectionsTemplates.filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
-                const otherEntityTemplate = isExpandedEntityRelationshipSource
-                    ? relationshipTemplate.destinationEntity
-                    : relationshipTemplate.sourceEntity;
-                return otherEntityTemplate.category._id === category._id;
-            }),
+            connectionsTemplates: connectionsTemplates
+                .filter(({ relationshipTemplate, isExpandedEntityRelationshipSource }) => {
+                    const otherEntityTemplate = isExpandedEntityRelationshipSource
+                        ? relationshipTemplate.destinationEntity
+                        : relationshipTemplate.sourceEntity;
+                    return otherEntityTemplate.category._id === category._id;
+                })
+                .sort((a, b) => Number(b.hasInstances) - Number(a.hasInstances)),
         };
     }).filter((currCategory) => currCategory.connectionsTemplates?.length > 0);
 
@@ -425,127 +442,131 @@ const Entity: React.FC = () => {
                 <Grid item marginTop="20px" data-tour="entity-details">
                     <EntityDetails entityTemplate={currentEntityTemplate} expandedEntity={expandedEntity} />
                 </Grid>
-
-                <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
-                    <Grid item container xs={5} alignItems="center" gap="20px">
-                        <Grid item alignContent="center">
-                            <img src="\icons\relations-icon.svg" />
+                {categoriesWithConnectionsTemplates.length > 0 && (
+                    <Grid data-tour="connected-entities" style={{ marginTop: '2rem' }}>
+                        <Grid item container xs={5} alignItems="center" gap="20px">
+                            <Grid item alignContent="center">
+                                <RelationshipIcon />
+                            </Grid>
+                            <Grid item>
+                                <BlueTitle
+                                    title={i18next.t('entityPage.relationshipTitle')}
+                                    component="h5"
+                                    variant="h5"
+                                    style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
+                                />
+                            </Grid>
                         </Grid>
                         <Grid item>
-                            <BlueTitle
-                                title={i18next.t('entityPage.relationshipTitle')}
-                                component="h5"
-                                variant="h5"
-                                style={{ fontSize: '20px', fontWeight: 'semi-bold' }}
-                            />
+                            <TabContext value={value}>
+                                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                                    <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
+                                        {categoriesWithConnectionsTemplates.map(({ category: { _id, displayName, iconFileId } }, index) => (
+                                            <Tab
+                                                style={{
+                                                    display: 'flex',
+                                                    flexDirection: 'row',
+                                                    gap: '15px',
+                                                    height: '20px',
+                                                    alignItems: 'center',
+                                                }}
+                                                key={_id}
+                                                label={
+                                                    <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
+                                                        <Typography
+                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                            style={{ fontWeight: '500', fontSize: '16px' }}
+                                                        >
+                                                            {displayName}
+                                                        </Typography>
+                                                        <Typography color="#787C9E">
+                                                            {
+                                                                // calculate the amount of the related connections of each entity
+                                                                expandedEntity.connections.filter((connection) => {
+                                                                    const connectionRelationshipTemplate = relationshipTemplates.get(
+                                                                        connection.relationship.templateId,
+                                                                    )!;
+
+                                                                    if (
+                                                                        connectionRelationshipTemplate.isProperty &&
+                                                                        currentEntityTemplate.properties.properties[
+                                                                            connectionRelationshipTemplate.name
+                                                                        ]?.relationshipReference?.relationshipTemplateId ===
+                                                                            connectionRelationshipTemplate._id
+                                                                    )
+                                                                        return false;
+
+                                                                    if (
+                                                                        expandedEntity.entity.properties._id ===
+                                                                        connection.destinationEntity.properties._id
+                                                                    )
+                                                                        return (
+                                                                            entityTemplates.get(connection.sourceEntity.templateId)!.category._id ===
+                                                                            _id
+                                                                        );
+
+                                                                    return (
+                                                                        entityTemplates.get(connection.destinationEntity.templateId)!.category._id ===
+                                                                        _id
+                                                                    );
+                                                                }).length
+                                                            }
+                                                        </Typography>
+                                                    </Grid>
+                                                }
+                                                value={String(index)}
+                                                icon={
+                                                    iconFileId ? (
+                                                        <CustomIcon
+                                                            iconUrl={iconFileId}
+                                                            height="24px"
+                                                            width="24px"
+                                                            color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
+                                                        />
+                                                    ) : (
+                                                        <HiveIcon
+                                                            fontSize="medium"
+                                                            sx={{
+                                                                color: value === String(index) ? theme.palette.primary.main : '#787C9E',
+                                                            }}
+                                                        />
+                                                    )
+                                                }
+                                            />
+                                        ))}
+                                    </TabList>
+                                </Box>
+                                {categoriesWithConnectionsTemplates.map(
+                                    ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
+                                        const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
+                                            isEntityDisabled,
+                                            hasWritePermissionToCurrCategory,
+                                            _id,
+                                            currentUser.currentWorkspacePermissions,
+                                        );
+
+                                        return (
+                                            <TabPanel key={_id} value={String(index)}>
+                                                {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
+                                                    <ConnectionsTable
+                                                        // eslint-disable-next-line react/no-array-index-key
+                                                        key={connectedRelationshipTemplateIndex}
+                                                        expandedEntity={expandedEntity}
+                                                        templateIds={templateIds}
+                                                        connectionTemplate={connectionTemplate}
+                                                        isEditButtonsDisabled={isEditButtonsDisabled}
+                                                        disabledButtonText={disabledButtonText}
+                                                        hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
+                                                    />
+                                                ))}
+                                            </TabPanel>
+                                        );
+                                    },
+                                )}
+                            </TabContext>
                         </Grid>
                     </Grid>
-                    <Grid item>
-                        <TabContext value={value}>
-                            <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                                <TabList style={{ height: '60px' }} onChange={(_event, newValue) => setValue(newValue)}>
-                                    {categoriesWithConnectionsTemplates?.map(({ category: { _id, displayName, iconFileId } }, index) => (
-                                        <Tab
-                                            style={{
-                                                display: 'flex',
-                                                flexDirection: 'row',
-                                                gap: '15px',
-                                                height: '20px',
-                                                alignItems: 'center',
-                                            }}
-                                            key={_id}
-                                            label={
-                                                <Grid container flexDirection="row" alignItems="center" flexWrap="nowrap" gap="10px">
-                                                    <Typography
-                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                        style={{ fontWeight: '500', fontSize: '16px' }}
-                                                    >
-                                                        {displayName}
-                                                    </Typography>
-                                                    <Typography color="#787C9E">
-                                                        {
-                                                            // calculate the amount of the related connections of each entity
-                                                            expandedEntity.connections.filter((connection) => {
-                                                                const connectionRelationshipTemplate = relationshipTemplates.get(
-                                                                    connection.relationship.templateId,
-                                                                )!;
-
-                                                                if (
-                                                                    connectionRelationshipTemplate.isProperty &&
-                                                                    currentEntityTemplate.properties.properties[connectionRelationshipTemplate.name]
-                                                                        ?.relationshipReference?.relationshipTemplateId ===
-                                                                        connectionRelationshipTemplate._id
-                                                                )
-                                                                    return false;
-
-                                                                if (
-                                                                    expandedEntity.entity.properties._id ===
-                                                                    connection.destinationEntity.properties._id
-                                                                )
-                                                                    return (
-                                                                        entityTemplates.get(connection.sourceEntity.templateId)!.category._id === _id
-                                                                    );
-
-                                                                return (
-                                                                    entityTemplates.get(connection.destinationEntity.templateId)!.category._id === _id
-                                                                );
-                                                            }).length
-                                                        }
-                                                    </Typography>
-                                                </Grid>
-                                            }
-                                            value={String(index)}
-                                            icon={
-                                                iconFileId ? (
-                                                    <CustomIcon
-                                                        iconUrl={iconFileId}
-                                                        height="24px"
-                                                        width="24px"
-                                                        color={value === String(index) ? theme.palette.primary.main : '#787C9E'}
-                                                    />
-                                                ) : (
-                                                    <HiveIcon
-                                                        fontSize="medium"
-                                                        sx={{
-                                                            color: value === String(index) ? theme.palette.primary.main : '#787C9E',
-                                                        }}
-                                                    />
-                                                )
-                                            }
-                                        />
-                                    ))}
-                                </TabList>
-                            </Box>
-                            {categoriesWithConnectionsTemplates?.map(
-                                ({ category: { _id }, connectionsTemplates: connectionsTemplatesOfCategory }, index) => {
-                                    const { isEditButtonsDisabled, disabledButtonText, permissionToRelatedCategory } = getButtonState(
-                                        isEntityDisabled,
-                                        hasWritePermissionToCurrCategory,
-                                        _id,
-                                        currentUser.currentWorkspacePermissions,
-                                    );
-
-                                    return (
-                                        <TabPanel key={_id} value={String(index)}>
-                                            {connectionsTemplatesOfCategory.map((connectionTemplate, connectedRelationshipTemplateIndex) => (
-                                                <ConnectionsTable
-                                                    // eslint-disable-next-line react/no-array-index-key
-                                                    key={connectedRelationshipTemplateIndex}
-                                                    expandedEntity={expandedEntity}
-                                                    templateIds={templateIds}
-                                                    connectionTemplate={connectionTemplate}
-                                                    isEditButtonsDisabled={isEditButtonsDisabled}
-                                                    disabledButtonText={disabledButtonText}
-                                                    hasPermissionToCategory={Boolean(permissionToRelatedCategory)}
-                                                />
-                                            ))}
-                                        </TabPanel>
-                                    );
-                                },
-                            )}
-                        </TabContext>
-                    </Grid>
-                </Grid>
+                )}
             </Grid>
         </>
     );
