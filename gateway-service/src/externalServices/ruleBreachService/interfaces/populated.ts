@@ -12,6 +12,7 @@ import {
 } from '.';
 import { IUser } from '../../userService/interfaces/users';
 import { IEntity } from '../../instanceService/interfaces/entities';
+import { IRelationshipPopulated } from '../../../express/instances/interfaces';
 
 export interface ICreateRelationshipMetadataPopulated extends Omit<ICreateRelationshipMetadata, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntity: IEntity | string | null;
@@ -44,7 +45,7 @@ export type IActionMetadataPopulated =
     | IUpdateEntityStatusMetadataPopulated;
 
 export type IEntityForBrokenRules = IEntity | string | null;
-export type IRelationshipForBrokenRules = IEntity | string | null;
+export type IRelationshipForBrokenRules = IRelationshipPopulated | string | null;
 
 export interface ICauseInstancePopulated {
     entity: IEntityForBrokenRules;

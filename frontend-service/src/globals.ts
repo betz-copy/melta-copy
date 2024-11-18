@@ -16,6 +16,7 @@ export const environment = {
         processTemplates: '/processes/templates',
         processes: '/processes/instances',
         gantts: '/gantts',
+        iFrames: '/iframes',
         storage: '/files',
         preview: '/preview',
         permissions: '/permissions',
@@ -96,6 +97,17 @@ export const environment = {
     entitiesProperties: {
         maxNumOfCharactersNotInFullWidth: 700,
         numOfFixedDigits: 18,
+    },
+    iFrames: {
+        iFrameDimensionKey: 'iFrameDimension_',
+        iFramesOrderKey: 'iFramesOrder',
+        sideBarOpenKey: 'isSideBarOpen',
+        infiniteScrollPageCount: 6,
+        sideBarWidth: 200,
+        iFrameSpace: 10,
+        sideBarOpenWidth: 320,
+        sideBarCloseWidth: 140,
+        relativeMaxHight: 160,
     },
     notifications: {
         updateInterval: 1000 * 60 * 10,
@@ -185,6 +197,7 @@ export const environment = {
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
+        paginationPageSizeSelector: [5, 10, 25, 50],
     },
     activityLog: {
         infiniteScrollPageCount: 10,

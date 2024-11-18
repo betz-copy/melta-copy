@@ -20,6 +20,7 @@ export const InfiniteScroll = <T extends any>({
 }: InfiniteScrollProps<T>) => {
     if (!useContainer) return <PureInfiniteScroll {...innerInfiniteScrollProps} />;
 
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     const overflow = useMemo(() => {
         switch (direction) {
             case 'row':

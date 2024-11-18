@@ -13,6 +13,10 @@ const config = {
         processInstancesCollectionName: env.get('MONGO_PROCESS_INSTANCES_COLLECTION_NAME').required().asString(),
         stepTemplatesCollectionName: env.get('MONGO_STEP_TEMPLATES_COLLECTION_NAME').required().asString(),
         stepInstancesCollectionName: env.get('MONGO_STEP_INSTANCES_COLLECTION_NAME').required().asString(),
+        connectionOptions: {
+            maxIdleTimeMS: env.get('MONGO_MAX_IDLE_CONNECTION_TIME').default(10000).asIntPositive(), // Maximum time (in ms) that a connection can be idle before being closed
+            socketTimeoutMS: env.get('MONGO_MAX_IDLE_SOCKET_TIME').default(10000).asIntPositive(), // Maximum idle time for an active connection
+        },
     },
     processFields: {
         name: env.get('PROCESS_FIELDS_NAME').default('name').asString(),

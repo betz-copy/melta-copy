@@ -9,7 +9,7 @@ import { PermissionScope } from '../../externalServices/userService/interfaces/p
 import { Authorizer, RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { getWorkspaceId } from '../../utils/express';
 import DefaultController from '../../utils/express/controller';
-import { ServiceError } from '../error';
+import { ForbiddenError, ServiceError } from '../error';
 import { TemplatesManager } from '../templates/manager';
 import { IRule } from '../templates/rules/interfaces';
 import { InstancesManager } from './manager';
@@ -54,7 +54,7 @@ export class InstancesValidator extends DefaultController {
         ]);
 
         if (!userPermissions.admin?.scope && !Object.keys(userPermissions.instances?.categories ?? {}).includes(categoryId)) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
+            throw new ForbiddenError('user not authorized', { metadata: `user does not have write permission on category ${categoryId}` });
         }
     }
 
@@ -72,7 +72,7 @@ export class InstancesValidator extends DefaultController {
 
         const unauthorizedTemplates = templateIds.filter((templateId) => !allowedEntityTemplateIds.includes(templateId));
         if (unauthorizedTemplates.length > 0) {
-            throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
+            throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(unauthorizedTemplates)}` });
         }
     }
 
@@ -107,7 +107,7 @@ export class InstancesValidator extends DefaultController {
                 ([category, { scope }]) => category === categoryId && (scope === permissionScope || scope === PermissionScope.write),
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
+            throw new ForbiddenError(`user not authorized, does not have ${permissionScope} permission on category ${categoryId}`);
         }
 
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
@@ -152,7 +152,7 @@ export class InstancesValidator extends DefaultController {
                 ([categoryId, { scope }]) => categoriesIds.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${categoriesIds}`);
+            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${categoriesIds}`);
         }
 
         (req as RequestWithPermissionsOfUserId).permissionsOfUserId = userPermissions;
@@ -179,7 +179,7 @@ export class InstancesValidator extends DefaultController {
         const isAllowedAllTemplates = (templateIds as string[]).every((templateId) => allAllowedEntityTemplates.includes(templateId));
 
         if (!isAllowedAllTemplates)
-            throw new ServiceError(403, 'user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
+            throw new ForbiddenError('user not authorized', { metadata: `unauthorized templates ${JSON.stringify(templateIds)}` });
     }
 
     // relationships
@@ -209,7 +209,7 @@ export class InstancesValidator extends DefaultController {
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
     }
 
@@ -227,7 +227,7 @@ export class InstancesValidator extends DefaultController {
                 ([categoryId, { scope }]) => relatedCategories.includes(categoryId) && scope === PermissionScope.write,
             )
         ) {
-            throw new ServiceError(403, `user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
+            throw new ForbiddenError(`user not authorized, does not have ${PermissionScope.write} permission on categories ${relatedCategories}`);
         }
     }
 
@@ -236,7 +236,7 @@ export class InstancesValidator extends DefaultController {
         const { ignoredRules } = req.body;
         const { user } = req;
 
-        if (!user) throw new Error('req.user is undefined');
+        if (!user) throw new ServiceError(undefined, 'req.user is undefined');
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(user.id);
 
@@ -247,7 +247,7 @@ export class InstancesValidator extends DefaultController {
         );
 
         if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
-            throw new ServiceError(403, 'a user without rule permissions only ignore "WARNING" rules', {});
+            throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
     }
 }

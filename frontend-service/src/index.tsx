@@ -2,13 +2,14 @@ import { ThemeProvider } from '@mui/material';
 import { AxiosError } from 'axios';
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './i18n';
+import './utils/agGrid';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { ToastContainer } from 'react-toastify';
+import { StatusCodes } from 'http-status-codes';
 import App from './App';
 import { TourWrapper } from './TourWrapper';
-import './aggrid';
-import './i18n';
 import './initWindowGlobal';
 import { useDarkModeStore } from './stores/darkMode';
 import { darkTheme, lightTheme } from './theme';
@@ -22,7 +23,7 @@ const queryClient = new QueryClient({
         queries: {
             refetchOnWindowFocus: false,
             retry: (count, error) => {
-                if ((error as AxiosError).response?.status === 403) {
+                if ((error as AxiosError).response?.status === StatusCodes.FORBIDDEN) {
                     return false;
                 }
 

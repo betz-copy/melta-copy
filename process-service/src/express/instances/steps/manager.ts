@@ -4,7 +4,7 @@ import config from '../../../config';
 import ElasticSearchManager from '../../../utils/elastic/documentsOnElastic';
 import { getTemplateAggregation, transaction } from '../../../utils/mongo';
 import { DefaultManagerMongo } from '../../../utils/mongo/manager';
-import { NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
+import { InstanceNotFoundError, NotFoundError, ServiceError, StepNotPartOfProcessError, ValidationError } from '../../error';
 import { IMongoStepTemplate } from '../../templates/steps/interface';
 import ProcessInstanceManager from '../processes/manager';
 import { IMongoStepInstance, IStepInstance, UpdateStepReqBody } from './interface';
@@ -25,19 +25,19 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
     }
 
     async getStepById(id: string): Promise<IMongoStepInstance> {
-        return this.model.findById(id).orFail(new NotFoundError('step', id)).lean();
+        return this.model.findById(id).orFail(new InstanceNotFoundError('step', id)).lean();
     }
 
     async getSteps(ids: string[]): Promise<IMongoStepInstance[]> {
         return this.model
             .find({ _id: { $in: ids } })
-            .orFail(new ServiceError(404, 'No matching step Templates found'))
+            .orFail(new NotFoundError('No matching step Templates found'))
             .lean();
     }
 
     async getStepTemplateByStepInstanceId(id: string): Promise<IMongoStepTemplate> {
         const [result] = await getTemplateAggregation(this.model, config.mongo.stepTemplatesCollectionName, id);
-        if (!result) throw new NotFoundError('step', id);
+        if (!result) throw new InstanceNotFoundError('step', id);
         return result;
     }
 
@@ -61,7 +61,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
         const currProcess = await processInstanceManager.getProcessById(processId, true);
 
         if (!currProcess.steps.find((step) => String(step._id) === id)) throw new StepNotPartOfProcessError(id, processId);
-        if (currProcess.archived) throw new ServiceError(500, "Can`t edit an archived process's step");
+        if (currProcess.archived) throw new ServiceError(undefined, "Can`t edit an archived process's step");
 
         if (!statusReview) {
             updatedStep = await this.model
@@ -72,7 +72,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
                         new: true,
                     },
                 )
-                .orFail(new NotFoundError('step', id))
+                .orFail(new InstanceNotFoundError('step', id))
                 .lean();
         } else {
             const currStep = await this.getStepById(id);
@@ -83,7 +83,7 @@ export default class StepInstanceManager extends DefaultManagerMongo<IStepInstan
 
                 return this.model
                     .findByIdAndUpdate(id, { properties, comments, ...statusReview, reviewedAt: new Date() }, { new: true, session })
-                    .orFail(new NotFoundError('step', id))
+                    .orFail(new InstanceNotFoundError('step', id))
                     .lean();
             });
         }

@@ -7,14 +7,16 @@ import { VerifyLink } from '../../common/VerifyLink';
 import { getFirstLine, getNumLines, containsHTMLTags, renderHTML } from '../HtmlTagsStringValue';
 import { CalculateDateDifference } from './CalculateDateDifference';
 import { getFixedNumber, isStartWithHebrewLetter } from '../stringValues';
+import { HighlightText } from '../HighlightText';
 
 const Value: React.FC<{
     hideValue: boolean;
     value: string;
-    color?: string;
+    color?: string | null;
     calculateTime?: boolean;
     isNumberField?: boolean;
-}> = ({ hideValue, value, color, calculateTime, isNumberField }) => {
+    searchValue?: string;
+}> = ({ hideValue, value, color, calculateTime, isNumberField, searchValue }) => {
     const containsHtmlTags = containsHTMLTags(value);
     const [hideField, setHideField] = React.useState(true);
     const [anchorEl, setAnchorEl] = React.useState<HTMLDivElement | HTMLButtonElement | null>(null);
@@ -41,20 +43,22 @@ const Value: React.FC<{
 
     const open = Boolean(anchorEl);
 
-    let innerContent;
+    let innerContent: string | React.JSX.Element | undefined;
+
     if (hideValue && hideField) innerContent = <>••••••••</>;
-    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} />;
+    else if (color || color === 'default') innerContent = <ColoredEnumChip label={value} color={color} searchValue={searchValue} />;
     else if (containsHtmlTags) innerContent = getFirstLine(value);
-    else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} />;
+    else if (calculateTime && value) innerContent = <CalculateDateDifference date={value} searchValue={searchValue} />;
     else if (isNumberField && value) innerContent = getFixedNumber(Number(value));
     else innerContent = value;
 
     let popoverText;
+
     if (containsHtmlTags) popoverText = renderHTML(value);
     else if (calculateTime) popoverText = <CalculateDateDifference date={value} />;
     else popoverText = <VerifyLink>{value} </VerifyLink>;
 
-    const textDirection = containsHtmlTags ? true : isStartWithHebrewLetter(value);
+    const textDirection = containsHtmlTags || calculateTime ? true : isStartWithHebrewLetter(value);
 
     return (
         <Grid container justifyContent="space-between" alignItems="center">
@@ -62,7 +66,6 @@ const Value: React.FC<{
                 item
                 sx={{
                     fontFamily: 'Rubik',
-                    fontWeight: '200',
                     overflow: 'hidden',
                     whiteSpace: 'nowrap',
                     textOverflow: 'ellipsis',
@@ -70,7 +73,9 @@ const Value: React.FC<{
                 }}
                 onDoubleClick={handleDoubleClick}
             >
-                <VerifyLink>{innerContent}</VerifyLink>
+                <VerifyLink>
+                    <HighlightText text={innerContent} searchedText={searchValue} />
+                </VerifyLink>
                 {(!hideValue || !hideField) && numLines > 1 && (
                     <IconButton onClick={handleDoubleClick} disableRipple>
                         <Typography style={{ color: '#9398C2', fontSize: '13px', lineHeight: '11.85px' }}>{i18next.t('actions.viewMore')}</Typography>

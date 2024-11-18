@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -64,6 +63,7 @@ export default {
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
         multipleSelect: 'בחירה מרובה',
+        semanticSearch: 'נמצא באמצעות AI',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -84,6 +84,8 @@ export default {
         update: 'מעדכן',
         print: 'הדפסה',
         viewMore: 'הצג עוד...',
+        expansion: 'הרחבה',
+        favorites: 'מועדפים',
         addActions: 'הוספת פעולות',
     },
     entityPage: {
@@ -231,6 +233,7 @@ export default {
         permissionsManagement: 'ניהול הרשאות ',
         ruleManagement: 'חריגות חוקה',
         processInstances: 'תהליכים',
+        iFrames: 'קישורים חיצוניים',
         gantts: 'טבלאות',
         fluidSimulation: '???',
     },
@@ -398,6 +401,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
+        turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
+        turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
     },
     wizard: {
         next: 'הבא',
@@ -420,6 +425,22 @@ export default {
             chooseName: 'בחירת שם קטגוריה',
             chooseIcon: 'בחירת אייקון',
             chooseColor: 'בחירת צבע',
+        },
+        iFrame: {
+            title: 'יצירת כרטיסיית קישור חיצוני',
+            editedSuccessfully: 'כרטיסיית קישור חיצוני עודכנה בהצלחה',
+            createdSuccessfully: 'כרטיסיית קישור חיצוני נוצרה בהצלחה',
+            failedToCreate: 'נכשל ליצור כרטיסיית קישור חיצוני ',
+            failedToEdit: 'נכשל בעריכת כרטיסיית קישור חיצוני',
+            deletedSuccessfully: 'כרטיסיית קישור חיצוני נמחקה בהצלחה',
+            failedToDelete: 'נכשל למחוק כרטיסיית קישור חיצוני',
+            chooseIcon: 'בחירת אייקון',
+            editDetails: 'עריכת פרטים',
+            settingPermissions: 'הגדרת הרשאות גישה',
+            selectCategories: 'הרשאות גישה',
+            name: 'שם',
+            url: 'כתובת האתר',
+            placeInSideBar: 'למקם בסרגל צידי',
         },
         entityTemplate: {
             title: 'יצירת תבנית ישות',
@@ -655,6 +676,7 @@ export default {
     },
     validation: {
         required: 'חובה',
+        url: 'פורמט אתר שגוי',
         mustBeEqualToFormat: 'חייב להיות בפורמט',
         preview: 'תצוגה מצומצמת',
         mustSelectUniqueGroup: 'חובה לשייך לקבוצת ייחודיים',
@@ -673,6 +695,7 @@ export default {
         invalidSerialStarter: 'חייב להיות גדול או שווה ל0',
         hebrew: 'עברית',
         oneField: 'לפחות שדה חובה אחד',
+        oneCategory: 'חובה קטגוריה אחת לפחות',
         oneStep: 'לפחות שלב אחד',
         oneStepApprover: 'לפחות מאשר שלב אחד',
         requiredFile: 'קובץ חובה',
@@ -773,6 +796,9 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        deletedEntity: 'הישות נמחקה',
+        brokenRules: 'חריגות',
+        actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
         actionBrokeTheFollowingRules: 'הפעולה שנעשתה',
         brokeTheFollowingRule: 'הפרה את החוק',
@@ -784,6 +810,7 @@ export default {
         noRelevantEntitiesForBrokenRule: 'אין ישויות רלוונטיות למעבר על חוק זה',
         warning: 'אזהרה',
         enforcement: 'אכיפה',
+        relationshipsCombination: 'צירוף הקשרים',
     },
     ruleBreachAlertNotification: {
         breach: 'הפרת חוק',
@@ -922,6 +949,14 @@ export default {
         rejectedProcesses: 'תהליכים דחויים',
         archivedProcesses: 'תהליכים בארכיון',
     },
+    iFrames: {
+        arrangementIFrames: 'סידור מופעים',
+        searchFailed: 'נכשל לחפש קישורים חיצוניים',
+        noIFramesFound: 'לא נמצאו קישורים חיצוניים',
+        favoritesIFrames: 'מועדפים:',
+        filterDrags: 'איפוס גרירות',
+        addIFrame: 'הוסף קישור חיצוני',
+    },
     gantts: {
         searchFailed: 'נכשל לחפש טבלאות',
         noGanttsFound: 'לא נמצאו טבלאות',
@@ -989,7 +1024,6 @@ export default {
             primary: 'ראשי',
         },
     },
-    agGridLocaleText,
     muiDatePickersLocaleText,
     schedule: {
         schedule: {

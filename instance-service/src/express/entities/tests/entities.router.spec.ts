@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import request from 'supertest';
 
+import { StatusCodes } from 'http-status-codes';
 import Neo4jClient from '../../../utils/neo4j';
 import Server from '../../server';
 import { formatDate } from '../../../utils/neo4j/lib';
@@ -14,6 +15,8 @@ const mockDateStr = mockDate.toISOString();
 
 const defaultRelationshipTemplateId = '888888888888888888888888';
 const defaultTemplateId = '999999999999999999999999';
+
+const { BAD_REQUEST: badRequestStatus, NOT_FOUND: notFoundStatus, OK: okStatus } = StatusCodes;
 
 const defaultTemplate: IMongoEntityTemplate = {
     _id: defaultTemplateId,
@@ -83,7 +86,7 @@ describe('Entity router', () => {
 
     describe('/isAlive', () => {
         it('should return alive', async () => {
-            const response = await request(app).get('/isAlive').expect(200);
+            const response = await request(app).get('/isAlive').expect(okStatus);
 
             expect(response.text).toBe('alive');
         });
@@ -91,7 +94,7 @@ describe('Entity router', () => {
 
     describe('/badRoute', () => {
         it('should return invalid route', async () => {
-            const response = await request(app).get('/badRoute').expect(404);
+            const response = await request(app).get('/badRoute').expect(notFoundStatus);
 
             expect(response.text).toBe('Invalid Route');
         });
@@ -110,7 +113,7 @@ describe('Entity router', () => {
                 properties,
             });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toBeDefined();
             expect(res.body.templateId).toBe(defaultTemplateId);
             expect(res.body.properties).toEqual(expect.objectContaining(properties));
@@ -119,7 +122,7 @@ describe('Entity router', () => {
         it('Should fail to create a new entity', async () => {
             const res = await request(app).post('/api/instances/entities').send({ properties: defaultProperties });
 
-            expect(res.statusCode).toBe(400);
+            expect(res.statusCode).toBe(badRequestStatus);
             expect(res.body.type).toEqual('ValidationError');
         });
     });
@@ -140,7 +143,7 @@ describe('Entity router', () => {
         it('Should update an existing entity', async () => {
             const res = await request(app).put(`/api/instances/entities/${id}`).send({ templateId: defaultTemplateId, properties: newProperties });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toBeDefined();
             expect(res.body.templateId).toBe(defaultTemplateId);
             expect(res.body.properties).toEqual(expect.objectContaining(newProperties));
@@ -153,7 +156,7 @@ describe('Entity router', () => {
                 .put(`/api/instances/entities/${unknownId}`)
                 .send({ templateId: defaultTemplateId, properties: newProperties });
 
-            expect(res.statusCode).toBe(404);
+            expect(res.statusCode).toBe(notFoundStatus);
             expect(res.body.type).toEqual('NotFound');
             expect(res.body.message).toEqual(`[NEO4J] entity "${unknownId}" not found`);
         });
@@ -173,7 +176,7 @@ describe('Entity router', () => {
         it('Should get an existing entity', async () => {
             const res = await request(app).get(`/api/instances/entities/${id}`);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toBeDefined();
             expect(res.body.templateId).toBe(defaultTemplateId);
             expect(res.body.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -184,7 +187,7 @@ describe('Entity router', () => {
 
             const res = await request(app).get(`/api/instances/entities/${unknownId}`);
 
-            expect(res.statusCode).toBe(404);
+            expect(res.statusCode).toBe(notFoundStatus);
             expect(res.body.type).toEqual('NotFound');
             expect(res.body.message).toEqual(`[NEO4J] entity "${unknownId}" not found`);
         });
@@ -204,7 +207,7 @@ describe('Entity router', () => {
                 .post(`/api/instances/entities/expanded/${id}`)
                 .send({ disabled: false, numberOfConnections: 1, templateIds: [defaultTemplateId] });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toBeDefined();
             expect(res.body.entity.templateId).toBe(defaultTemplateId);
             expect(res.body.entity.properties).toEqual(expect.objectContaining(defaultProperties));
@@ -218,7 +221,7 @@ describe('Entity router', () => {
                 .post(`/api/instances/entities/expanded/${unknownId}`)
                 .send({ disabled: false, numberOfConnections: 1, templateIds: [defaultTemplateId] });
 
-            expect(res.statusCode).toBe(404);
+            expect(res.statusCode).toBe(notFoundStatus);
             expect(res.body.type).toEqual('NotFound');
             expect(res.body.message).toEqual(`[NEO4J] entity "${unknownId}" not found`);
         });
@@ -236,7 +239,7 @@ describe('Entity router', () => {
         it('Should delete an existing entity', async () => {
             const res = await request(app).delete(`/api/instances/entities/${id}`);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toStrictEqual(id);
         });
 
@@ -245,7 +248,7 @@ describe('Entity router', () => {
 
             const res = await request(app).delete(`/api/instances/entities/${unknownId}`);
 
-            expect(res.statusCode).toBe(404);
+            expect(res.statusCode).toBe(notFoundStatus);
             expect(res.body.type).toEqual('NotFound');
             expect(res.body.message).toEqual(`[NEO4J] entity "${unknownId}" not found`);
         });
@@ -253,7 +256,7 @@ describe('Entity router', () => {
         it('Should delete an existing entity (deleteAllRelationships=true)', async () => {
             const res = await request(app).delete(`/api/instances/entities/${id}?deleteAllRelationships=true`);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body).toStrictEqual(id);
         });
 
@@ -295,14 +298,14 @@ describe('Entity router', () => {
             it('Should fail to delete an existing entity because it has connections', async () => {
                 const res = await request(app).delete(`/api/instances/entities/${id}?deleteAllRelationships=false`);
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.message).toEqual(`[NEO4J] entity "${id}" has existing relationships. Delete them first.`);
             });
 
             it('Should delete an existing entity and its connections', async () => {
                 const res = await request(app).delete(`/api/instances/entities/${id}?deleteAllRelationships=true`);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body).toStrictEqual(id);
             });
         });
@@ -316,7 +319,7 @@ describe('Entity router', () => {
         it('Should get an existing entity (expanded mode - without connections)', async () => {
             const res = await request(app).delete(`/api/instances/entities?templateId=${defaultTemplateId}`);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
         });
     });
 
@@ -332,7 +335,7 @@ describe('Entity router', () => {
         it('Should update the disabled state of an existing entity', async () => {
             const res = await request(app).patch(`/api/instances/entities/${id}/status`).send({ disabled: true });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.properties.disabled).toEqual(true);
         });
     });
