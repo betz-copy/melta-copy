@@ -10,5 +10,6 @@ export * from "./interfaces/relationship";
 export * from "./interfaces/relationshipTemplate";
 export * from "./interfaces/user";
 export * from "./interfaces/workspace";
+export * from "./interfaces/activityLog";
 
 export * from "./utils/types";

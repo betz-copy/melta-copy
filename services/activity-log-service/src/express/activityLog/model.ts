@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { Action } from './interface';
+import { Action } from '@microservices/shared';
 
 export const ActivityLogSchema = new mongoose.Schema({
     timestamp: {
