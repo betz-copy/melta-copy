@@ -180,8 +180,6 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             isSubmitting={isLoadingActionOnEntity || isLoadingCreateRuleBreachRequest}
             onCancel={handleClose}
             onSubmit={async () => {
-                console.log({ brokenRules });
-
                 const someBrokenRuleIsEnforcement = brokenRules.some(({ ruleId }) => {
                     const rule = rules.get(ruleId)!;
                     return rule.actionOnFail === 'ENFORCEMENT';

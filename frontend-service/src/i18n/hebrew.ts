@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { allEntities } from '../mocks/entities/allEntities';
 import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
@@ -576,10 +575,13 @@ export default {
                 brokenRulesEntitiesDescription: 'ניתן יהיה לצפות בחריגות ולהגיש בקשה בשלב הבא',
                 failedLoadEntities: 'טעינת קובץ נכשלה',
                 entitiesStatus: 'סטטוס יישויות',
-                tableCantLoadEntities: 'טבלה זו לא יכולה לטעון יישויות',
-                allEntities: 'היישויות שנבחרו',
-                allEntitiesDescription: 'אלה היישויות שנבחרו. האם אתה מאשר העלת יישויות אלה?',
                 preview: 'תצוגה מקדימה',
+                loadEntities: 'טעינת יישויות',
+                handleRules: 'טיפול בחריגות חוקה',
+                failed: 'נכשל',
+                brokenRules: 'חריגות חוקה',
+                failedUploadEntities: 'יצירת יישויות נכשלה',
+                required: 'ליישות חסרה שדה חובה',
             },
         },
         rule: {

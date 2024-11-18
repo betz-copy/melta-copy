@@ -181,12 +181,21 @@ export class EntityManager extends DefaultManagerNeo4j {
             });
         } else if (neo4jMessage.includes('already exists with') || neo4jMessage.includes('uniqueConstraint')) {
             let label = '';
-            let properties: any[] = [];
+            let properties: string[] = [];
+            const values = {};
+
             if (neo4jMessage.includes('already exists with')) {
-                // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
-                // support unique w/ multiple props
+                // Extract label and properties
                 const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
                 [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
+
+                // Extract property values
+                const valueMatch = neo4jMessage.match(/= '(.*?)'/);
+                if (valueMatch) {
+                    const propertyValue = valueMatch[1];
+                    values[properties[0]] = propertyValue;
+                }
+
                 properties = properties.map((property) =>
                     property.endsWith(config.neo4j.relationshipReferencePropertySuffix) ? property.split('.')[0] : property,
                 );
@@ -201,6 +210,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 templateId: label,
                 uniqueGroupName: '',
                 properties,
+                values,
             };
 
             throw new ServiceError(badRequestStatus, `[NEO4J] instance has duplicates on unique properties`, {

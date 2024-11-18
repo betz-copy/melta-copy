@@ -30,26 +30,31 @@ const StepperActions = <T extends object>({
                     <Button
                         variant="outlined"
                         onClick={() => {
-                            if (step.stepperActions?.handleBack) step.stepperActions?.handleBack();
-                            handleBack();
+                            if (step.stepperActions?.back?.onClick) step.stepperActions?.back?.onClick();
+                            else handleBack();
                         }}
                         disabled={isLoading || isFirstStep}
-                        style={{ display: isFirstStep ? 'none' : '' }}
+                        style={{ display: isFirstStep ? 'none' : '', gap: '5px', borderRadius: '7px' }}
                     >
                         <ArrowBackIcon
                             style={{
                                 transform: 'scaleX(-1)',
                             }}
                         />
-                        {i18next.t('wizard.back')}
+                        {step.stepperActions?.back?.text ?? i18next.t('wizard.back')}
                     </Button>
                 )}
             </Grid>
             <Grid item>
                 {/* type submit for formik goto next step */}
                 {step.stepperActions?.disable !== 'next' && (
-                    <Button type="submit" variant="contained" disabled={isLoading || (isLastStep && isSameObject)}>
-                        {i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        disabled={isLoading || (isLastStep && isSameObject)}
+                        style={{ gap: '5px', borderRadius: '7px' }}
+                    >
+                        {step.stepperActions?.next?.text ?? i18next.t(isLastStep ? 'wizard.finish' : 'wizard.next')}
                         {isLoading && <CircularProgress size={20} />}
                         {isLastStep ? (
                             <DoneIcon />

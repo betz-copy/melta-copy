@@ -82,10 +82,13 @@ export class BulkActionValidator extends DefaultController {
 
         if (!valid) {
             const errors = validateFunction.errors?.map((error) => ({
-                message: error.message,
-                path: error.instancePath,
-                schemaPath: error.schemaPath,
-                params: error.params,
+                type: 'VALIDATION',
+                metadata: {
+                    message: error.message,
+                    path: error.instancePath,
+                    schemaPath: error.schemaPath,
+                    params: error.params,
+                },
             }));
 
             throw new ValidationError(`Entity does not match template schema`, {

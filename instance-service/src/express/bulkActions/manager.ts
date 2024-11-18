@@ -9,7 +9,7 @@ import { IMongoEntityTemplate } from '../../externalServices/templates/interface
 import { IMongoRelationshipTemplate } from '../../externalServices/templates/interfaces/relationshipTemplates';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
-import { EntitiesIdsRulesReasonsMap, IEntity, RunRuleReason } from '../entities/interface';
+import { EntitiesIdsRulesReasonsMap, IEntity, IRequiredConstraint, RunRuleReason } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -24,6 +24,7 @@ import {
     IUpdateEntityMetadata,
 } from './interface';
 import config from '../../config';
+import { BadRequestError } from '../error';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -434,6 +435,35 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         relationshipTemplates.map((relationshipTemplate) => [relationshipTemplate._id, relationshipTemplate]),
                     );
 
+                    const constraints = await this.entityManager.getAllConstraints();
+
+                    actions.forEach((action, index) => {
+                        if (action.actionType === ActionTypes.CreateEntity) {
+                            const { templateId, properties } = action.actionMetadata as ICreateEntityMetadata;
+                            const templateConstraint = constraints.find((constraint) => constraint.templateId === templateId);
+                            console.log({ templateConstraint, properties });
+
+                            if (templateConstraint) {
+                                const missingProperty = templateConstraint.requiredConstraints.find(
+                                    (requiredProperty) => !Object.keys(properties).includes(requiredProperty),
+                                );
+
+                                if (missingProperty) {
+                                    const requiredConstraint: Omit<IRequiredConstraint, 'constraintName'> = {
+                                        type: 'REQUIRED',
+                                        templateId,
+                                        property: missingProperty,
+                                        index,
+                                    };
+                                    throw new BadRequestError('instance is missing required property', {
+                                        errorCode: config.errorCodes.failedConstraintsValidation,
+                                        constraint: requiredConstraint,
+                                    });
+                                }
+                            }
+                        }
+                    });
+
                     // collecting all the entitiesIds and their rules for preparation to search their related rules
                     const { entitiesIdsRulesReasonsMapBeforeRunActions, entitiesTemplatesIdsOfRules } = await this.getEntitiesIdsRulesReasonsBefore(
                         actions,
@@ -491,7 +521,6 @@ export class BulkActionManager extends DefaultManagerNeo4j {
                         await Promise.all(activityLogsPromises);
                     }
 
-                    console.log({ results });
                     return results;
                 },
                 dryRun,

@@ -148,6 +148,7 @@ const config = {
         ruleBlock: 'RULE_BLOCK',
         ruleHasAlertsOrRequests: 'RULE_HAS_ALERTS_OR_REQUESTS',
         failedToDeleteField: 'FAILED_DELETE_FIELD',
+        failedConstraintsValidation: 'FAILED_CONSTRAINTS_VALIDATION',
     },
     rabbit: {
         url: env.get('RABBIT_URL').required().asUrlString(),

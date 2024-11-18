@@ -61,10 +61,10 @@ const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     const type = excelConfig.propertyType[propertyTemplate.format ? propertyTemplate.format : propertyTemplate.type];
 
     if (type === propertyType.string) {
-        if (propertyTemplate.enum) return propertyType.enum;
+        if (propertyTemplate.enum) return propertyTemplate.enum.join('/ ');
         if (propertyTemplate.pattern) return propertyType.pattern;
     }
-    if (type === propertyType.array && propertyTemplate.items?.type === 'string') return propertyType.enumArray;
+    if (type === propertyType.array && propertyTemplate.items?.type === 'string') return propertyTemplate.items.enum?.join(', ');
 
     return type;
 };
@@ -86,8 +86,8 @@ const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEnt
             const allowedValues = formulae.boolean;
             worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
                 type: 'list',
-                allowBlank: true,
                 formulae: [allowedValues],
+                allowBlank: true,
                 showErrorMessage: true,
                 errorTitle: formulae.errorTitle,
                 error: `${formulae.errorDescription} ${allowedValues}`,
@@ -99,7 +99,7 @@ const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEnt
             worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
                 type: 'decimal',
                 operator: 'between',
-                formulae: ['-9999999999', '9999999999'],
+                formulae: [Number.MIN_VALUE, Number.MAX_VALUE],
                 allowBlank: true,
                 showErrorMessage: true,
                 errorTitle: formulae.errorTitle,
@@ -113,29 +113,39 @@ const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEnt
         for (let row = 2; row <= 100; row++) {
             worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
                 type: 'list',
-                allowBlank: true,
                 formulae: [allowedValues],
+                allowBlank: true,
                 showErrorMessage: true,
                 errorTitle: formulae.errorTitle,
                 error: `${formulae.errorDescription} ${allowedValues}`,
             };
         }
     }
-    // TODO: array list not working
-    // if (propertyTemplate.type === 'array' && propertyTemplate.items?.type === 'string' && propertyTemplate.items.enum) {
-    //     const allowedValues = propertyTemplate.items.enum.join(', ');
-
-    //     for (let row = 2; row <= 100; row++) {
-    //         worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-    //             type: 'list',
-    //             allowBlank: true,
-    //             formulae: [allowedValues],
-    //             showErrorMessage: true,
-    //             errorTitle: formulae.errorTitle,
-    //             error: `${formulae.errorDescription} ${allowedValues}`,
-    //         };
-    //     }
-    // }
+    if (propertyTemplate.format === 'date') {
+        for (let row = 2; row <= 100; row++) {
+            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+                type: 'date',
+                operator: 'greaterThan',
+                formulae: [new Date(1800, 1, 1)],
+                allowBlank: true,
+                showErrorMessage: true,
+                errorTitle: formulae.errorTitle,
+                error: formulae.dateError,
+            };
+        }
+    }
+    if (propertyTemplate.format === 'email') {
+        for (let row = 2; row <= 100; row++) {
+            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+                type: 'custom',
+                formulae: [`ISNUMBER(SEARCH("@", ${columnIndexToExcelColumn(columnIndex + 1)}${row}))`],
+                allowBlank: true,
+                showErrorMessage: true,
+                errorTitle: formulae.errorTitle,
+                error: formulae.mailError,
+            };
+        }
+    }
 };
 
 const createWorksheet = async (
@@ -220,6 +230,7 @@ const styleAWorksheet = (
     template: IMongoEntityTemplatePopulated,
     workspace: { path: string; id: string },
     displayColumns?: string[],
+    insert?: boolean,
 ) => {
     worksheet.getRow(1).eachCell((cell) => {
         cell.font = excelStyle.columnHeader.font;
@@ -274,9 +285,8 @@ const styleAWorksheet = (
                     // Check if value is simple list
                     if (value.type === 'string' && value.enum)
                         cell.font = { ...excelStyle.cell.font, color: { argb: hexToARGB(template.enumPropertiesColors![key][row[key]]) } };
-
                     // Check if value is multiple list
-                    if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
+                    if (!insert) if (value.type === 'array' && value.items?.type === 'string' && value.items.enum) cell.value = row[key].join(', ');
                 }
             }
         });

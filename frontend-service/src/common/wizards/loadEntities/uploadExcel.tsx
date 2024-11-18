@@ -35,15 +35,6 @@ export const UploadExcel: React.FC<{
                 if (data) {
                     console.log({ data });
                     setStepsData({ status: 'stepsPreview', data });
-
-                    if (data.failedEntities.length > 0)
-                        await exportTemplateToExcel({
-                            fileName: `${template.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}.xlsx`,
-                            insertEntities: {
-                                insert: true,
-                                entities: data.failedEntities.map((entity) => entity.properties),
-                            },
-                        });
                 }
             },
         },
@@ -66,42 +57,41 @@ export const UploadExcel: React.FC<{
                 disableCamera
             />
         );
+    if (stepsData.status === 'stepsExpand') return <OpenPreview fileId={formikProps.values.file!} type="preview" showText />;
 
     return (
-        <Grid container direction="column">
-            <Grid>
+        <Grid container direction="column" padding="5px">
+            <Grid marginTop="10px">
                 <OpenPreview fileId={formikProps.values.file!} type="preview" showText />
             </Grid>
             <Grid>
-                <Grid paddingY="10px">
+                <Grid paddingTop="10px">
                     <Typography color="#1E2775" fontSize="14px" fontWeight={400}>
                         {i18next.t('wizard.entity.loadEntities.preview')}
                     </Typography>
                 </Grid>
-                {stepsData.status === 'stepsPreview' && (
-                    <Grid sx={{ marginTop: '10px', marginBottom: '30px', width: '100%' }}>
-                        <EntitiesTableOfTemplate
-                            template={template}
-                            getRowId={(currentEntity) => currentEntity.properties._id}
-                            getEntityPropertiesData={(currentEntity) => currentEntity.properties}
-                            rowModelType="clientSide"
-                            rowHeight={defaultRowHeight}
-                            pageRowCount={10}
-                            fontSize={`${defaultFontSize}px`}
-                            rowData={stepsData.data.allEntities}
-                            saveStorageProps={{
-                                shouldSaveFilter: false,
-                                shouldSaveWidth: false,
-                                shouldSaveVisibleColumns: false,
-                                shouldSaveSorting: false,
-                                shouldSaveColumnOrder: false,
-                                shouldSavePagination: false,
-                                shouldSaveScrollPosition: false,
-                            }}
-                            showErrors
-                        />
-                    </Grid>
-                )}
+                <Grid sx={{ marginTop: '10px', marginBottom: '30px', width: '100%' }}>
+                    <EntitiesTableOfTemplate
+                        template={template}
+                        getRowId={(currentEntity) => currentEntity.properties._id}
+                        getEntityPropertiesData={(currentEntity) => currentEntity.properties}
+                        rowModelType="clientSide"
+                        rowHeight={defaultRowHeight}
+                        pageRowCount={10}
+                        fontSize={`${defaultFontSize}px`}
+                        rowData={stepsData.data.allEntities}
+                        saveStorageProps={{
+                            shouldSaveFilter: false,
+                            shouldSaveWidth: false,
+                            shouldSaveVisibleColumns: false,
+                            shouldSaveSorting: false,
+                            shouldSaveColumnOrder: false,
+                            shouldSavePagination: false,
+                            shouldSaveScrollPosition: false,
+                        }}
+                        showErrors
+                    />
+                </Grid>
             </Grid>
         </Grid>
     );

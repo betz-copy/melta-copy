@@ -26,6 +26,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {

@@ -20,6 +20,7 @@ export interface IUniqueConstraint {
     constraintName: string;
     templateId: string;
     properties: string[];
+    values?: Record<string, any>;
 }
 
 export interface IRequiredConstraint {
@@ -27,6 +28,7 @@ export interface IRequiredConstraint {
     constraintName: string;
     templateId: string;
     property: string;
+    index?: number;
 }
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;

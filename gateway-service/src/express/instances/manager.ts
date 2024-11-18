@@ -11,7 +11,13 @@ import { menash } from 'menashmq';
 import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntity,
+    IRequiredConstraint,
+    ISearchFilter,
+    ISearchSort,
+    IUniqueConstraint,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -168,6 +174,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         template,
                         workspace,
                         displayColumns,
+                        insertEntities?.insert,
                     );
                 }
             }
@@ -180,10 +187,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         const allEntities = actions.map((action) => action.actionMetadata);
         let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
 
-        type IErrorProperty = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+        type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
         type IErrorData = {
             properties: Record<string, any>;
-            errors: IErrorProperty[];
+            errors: { type: 'VALIDATION' | 'UNIQUE' | 'REQUIRED'; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
         };
 
         const failedEntities: IErrorData[] = [];
@@ -193,28 +200,75 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         while (result[0].status !== 'fulfilled' && result.length > 0) {
             try {
                 result = await this.runBulkOfActions([actions], true, userId, []);
+                console.dir({ result }, { depth: null });
+
                 if (result[0].status === 'rejected') {
                     if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
-                        const entities = result[0].reason.metadata.brokenRules
-                            .map((brokenRule: IBrokenRule) =>
-                                brokenRule.failures.map((failure) => {
-                                    const entityIdNumberMatch = failure.entityId.match(/\d+/);
-                                    const index = entityIdNumberMatch ? Number(entityIdNumberMatch[0]) : 0;
-                                    const action = actions[index];
-                                    actions.splice(index, 1);
+                        const indexes = new Set<number>();
+                        result[0].reason.metadata.brokenRules.forEach((brokenRule: IBrokenRule) =>
+                            brokenRule.failures.forEach((failure) => {
+                                const entityIdNumberMatch = failure.entityId.match(/\d+/);
+                                const index = entityIdNumberMatch ? Number(entityIdNumberMatch[0]) : 0;
+                                if (!indexes.has(index)) indexes.add(index);
+                            }),
+                        );
 
-                                    return { properties: (action.actionMetadata as ICreateEntityMetadata).properties };
-                                }),
-                            )
-                            .flat();
                         const rawBrokenRules = result[0].reason.metadata.brokenRules;
                         const brokenRulePopulated = await this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
+
+                        const entities: { properties: Record<string, any> }[] = [];
+                        const sortedIndexes = [...indexes].sort((a, b) => b - a);
+
+                        sortedIndexes.forEach((index) => {
+                            const action = actions[index];
+                            entities.push({ properties: (action.actionMetadata as ICreateEntityMetadata).properties });
+                            actions.splice(index, 1);
+                        });
 
                         brokenRulesEntities = {
                             rawBrokenRules,
                             brokenRules: brokenRulePopulated,
                             entities,
                         };
+                    }
+                    if (result[0].reason.metadata.errorCode === 'FAILED_CONSTRAINTS_VALIDATION') {
+                        const { constraint } = result[0].reason.metadata;
+                        if (constraint.type === 'UNIQUE') {
+                            const { values } = constraint;
+                            const indexes = new Set<number>();
+                            Object.entries(values).forEach(([key, value]) => {
+                                const index = actions.findIndex(
+                                    (action) => (action.actionMetadata as ICreateEntityMetadata).properties[key] === value,
+                                );
+                                if (!indexes.has(index)) indexes.add(index);
+                            });
+                            const sortedIndexes = [...indexes].sort((a, b) => b - a);
+
+                            sortedIndexes.forEach((index) => {
+                                const action = actions[index];
+                                failedEntities.push({
+                                    properties: (action.actionMetadata as ICreateEntityMetadata).properties,
+                                    errors: [{ type: 'UNIQUE', metadata: constraint }],
+                                });
+
+                                actions.splice(index, 1);
+                            });
+                        }
+                        if (constraint.type === 'REQUIRED') {
+                            const { index } = constraint;
+                            console.log({ index });
+                            console.log({
+                                properties: (actions[index].actionMetadata as ICreateEntityMetadata).properties,
+                                errors: [{ type: 'REQUIRED', metadata: constraint }],
+                            });
+
+                            failedEntities.push({
+                                properties: (actions[index].actionMetadata as ICreateEntityMetadata).properties,
+                                errors: [{ type: 'REQUIRED', metadata: constraint }],
+                            });
+                            actions.splice(index, 1);
+                            console.log({ actions });
+                        }
                     }
                 }
             } catch (error) {
@@ -223,7 +277,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     message: string;
                     metadata: {
                         properties: Record<string, any> & { index: number };
-                        errors: IErrorProperty[];
+                        errors: { type: 'VALIDATION'; metadata: IValidationError }[];
                     };
                 };
 

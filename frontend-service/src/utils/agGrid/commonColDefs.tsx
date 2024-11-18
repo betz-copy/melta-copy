@@ -14,19 +14,42 @@ import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
 
 const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string) => {
-    const error = props.data!.errors.find((error) => error.path.slice(1) === field);
+    const { errors } = props.data;
+
+    const error = errors.find((error) => {
+        console.log({ error });
+        if (error.type === 'REQUIRED') return error.metadata.property === field;
+        if (error.type === 'UNIQUE') return error.metadata.properties.some((property) => property === field);
+        if (error.type === 'VALIDATION') return error.metadata.path.slice(1) === field;
+        return false;
+    });
 
     return (
         <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
-            <Value hideValue={false} value={props.value} color="#A40000" />
-            <MeltaTooltip title={error.message}>
+            <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
+            <MeltaTooltip
+                title={
+                    error.metadata.message ?? i18next.t(`wizard.entity.${props.value ? 'someEntityAlreadyHasTheSameField' : 'loadEntities.required'}`)
+                }
+            >
                 <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
             </MeltaTooltip>
         </Box>
     );
 };
-const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) =>
-    showErrors && props.data && props.data.errors && props.data.errors.find((error) => error.path.slice(1) === field);
+
+const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) => {
+    if (showErrors && props.data && props.data.errors) {
+        return props.data.errors.find((error) => {
+            if (error.type === 'REQUIRED') return error.metadata.property === field;
+            if (error.type === 'UNIQUE') return error.metadata.properties.some((property) => property === field);
+            if (error.type === 'VALIDATION') return error.metadata.path.slice(1) === field;
+            return false;
+        });
+    }
+    return false;
+};
+
 export const numberColDef = <Data extends any = IEntity>(
     field: string,
     valueGetter: ValueGetterFunc<Data>,

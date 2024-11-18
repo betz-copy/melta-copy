@@ -73,7 +73,7 @@ const DashedHorizontalLine = styled('div')(({ theme }) => ({
 
 const DashedVerticalLine = styled('div')(({ theme }) => ({
     width: '2px',
-    minHeight: '50px',
+    minHeight: '43px',
     margin: '15px',
     borderLeft: `2px solid ${theme.palette.mode === 'dark' ? 'rgba(200, 200, 200, 0.2)' : '#4752B6'}`,
 }));
