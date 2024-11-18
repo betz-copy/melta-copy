@@ -2,8 +2,7 @@ import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IDateAboutToExpireMetadataPopulated } from '../../../../interfaces/notifications';
-import { IEntityTemplateMap } from '../../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IDateAboutToExpireMetadataPopulated } from '@microservices/shared';
 import { EntityLink } from '../../../EntityLink';
 
 export const DateAboutToExpireNotification: React.FC<{ notificationMetadata: IDateAboutToExpireMetadataPopulated }> = ({

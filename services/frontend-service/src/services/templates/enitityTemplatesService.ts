@@ -1,14 +1,14 @@
 import { v4 as uuid } from 'uuid';
-import axios from '../../axios';
-import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
-import { environment } from '../../globals';
 import {
     IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
-    ISearchEntityTemplateQuery,
-} from '../../interfaces/entityTemplates';
+    ISearchEntityTemplatesBody,
+} from '@microservices/shared';
+import axios from '../../axios';
+import { EntityTemplateFormInputProperties, EntityTemplateWizardValues } from '../../common/wizards/entityTemplate';
+import { environment } from '../../globals';
 import { getFileName } from '../../utils/getFileName';
 import { CommonFormInputProperties } from '../../common/wizards/entityTemplate/commonInterfaces';
 
@@ -246,7 +246,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
     };
 };
 
-const searchEntityTemplates = async (searchQuery: ISearchEntityTemplateQuery) => {
+const searchEntityTemplates = async (searchQuery: ISearchEntityTemplatesBody) => {
     const { data } = await axios.post<IEntityTemplateMap>(`${entityTemplates}/search`, searchQuery);
     return data;
 };

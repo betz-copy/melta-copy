@@ -1,6 +1,5 @@
-import { IFilterOfField, IGraphFilterBody, IGraphFilterBodyBatch, ISearchFilter } from '../../interfaces/entities';
+import { IFilterOfField, IGraphFilterBody, IGraphFilterBodyBatch, IMongoEntityTemplatePopulated, ISearchFilter } from '@microservices/shared';
 import { getDayEnd, getDayStart } from '../../utils/date';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getFormattedDateAccordingToField } from '../../utils/gantts';
 
 export interface IGraphFilterToBackendBody {

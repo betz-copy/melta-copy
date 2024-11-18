@@ -1,5 +1,5 @@
 import config from '../../config/index';
-import { IUser } from '../../interfaces/users';
+import { IUser } from '@microservices/shared';
 import { IMongoCategory } from '../../templates/categories';
 import { getPermissionsToCreate } from './permissions';
 

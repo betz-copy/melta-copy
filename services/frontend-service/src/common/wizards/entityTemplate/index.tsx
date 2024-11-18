@@ -3,19 +3,23 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
+import {
+    IConstraint,
+    IUniqueConstraintOfTemplate,
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
 import { createEntityTemplateRequest, formToJSONSchema, updateEntityTemplateRequest } from '../../../services/templates/enitityTemplatesService';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ChooseIcon } from './ChooseIcon';
 import fileDetails from '../../../interfaces/fileDetails';
 import { ErrorToast } from '../../ErrorToast';
 import { environment } from '../../../globals';
-import { IConstraint, IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 import { UploadExportFormats } from './UploadExportFormats';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { getAllRelationshipTemplatesRequest } from '../../../services/templates/relationshipTemplatesService';
 import { mapTemplates } from '../../../utils/templates';
 

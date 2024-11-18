@@ -2,10 +2,14 @@
 import i18next from 'i18next';
 import * as Yup from 'yup';
 import cloneDeep from 'lodash.clonedeep';
-import { IEntityWithDirectConnections, IFilterOfTemplate, ISearchBatchBody } from '../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import {
+    IEntityWithDirectRelationships,
+    IFilterOfTemplate,
+    ISearchBatchBody,
+    IMongoEntityTemplatePopulated,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
-import { IRelationshipTemplateMap } from '../interfaces/relationshipTemplates';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';
 import { dateBetween, getDayEnd, getDayStart } from './date';
@@ -95,7 +99,7 @@ const isAllDay = (entityTemplate: IMongoEntityTemplatePopulated, ganttItems: IGa
 };
 
 export const getScheduleComponentData = (
-    entities: IEntityWithDirectConnections[],
+    entities: IEntityWithDirectRelationships[],
     ganttItems: IGanttItem[],
     entityTemplatesMap: IEntityTemplateMap,
 ): IScheduleComponentData[] => {

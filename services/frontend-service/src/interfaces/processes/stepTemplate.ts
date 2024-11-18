@@ -1,4 +1,4 @@
-import { IUser } from '../users';
+import { IUser } from '@microservices/shared';
 import { IProcessDetails } from './processTemplate';
 
 export interface IStepTemplate extends IProcessDetails {

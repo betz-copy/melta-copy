@@ -4,6 +4,7 @@ import { makeStyles } from '@mui/styles';
 import i18next from 'i18next';
 import React, { Dispatch, useState } from 'react';
 import { IoIosArrowBack, IoIosArrowDown } from 'react-icons/io';
+import { IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
 import {
     ChooseAllMenuItem,
     getOptionsAndGroupsMiniFiltered,
@@ -12,8 +13,6 @@ import {
     SelectCheckboxProps,
     SelectOptionsMenuItemsGrouped,
 } from '../../common/SelectCheckbox';
-import { IMongoCategory } from '../../interfaces/categories';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 const useStyles = makeStyles(() => ({

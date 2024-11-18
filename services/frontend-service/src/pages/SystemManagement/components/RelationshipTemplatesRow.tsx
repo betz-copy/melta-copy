@@ -5,6 +5,14 @@ import i18next from 'i18next';
 import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import {
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+    ICategoryMap,
+} from '@microservices/shared';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -14,9 +22,6 @@ import { RelationshipTitle } from '../../../common/RelationshipTitle';
 import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { environment } from '../../../globals';
-import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     deleteRelationshipTemplateRequest,
     relationshipTemplateObjectToRelationshipTemplateForm,

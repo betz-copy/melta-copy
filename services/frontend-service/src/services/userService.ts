@@ -1,7 +1,7 @@
+import { IExternalUser, IUser, IUserSearchBody } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
 import { ICompactNullablePermissions, ICompactPermissions, IPermission, ISubCompactPermissions } from '../interfaces/permissions/permissions';
-import { IExternalUser, IUser, IUserSearchBody } from '../interfaces/users';
 import { RecursiveNullable } from '../utils/types';
 
 const { users } = environment.api;

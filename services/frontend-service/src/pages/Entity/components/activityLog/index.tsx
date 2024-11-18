@@ -3,12 +3,11 @@ import { Button, Divider } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect } from 'react';
 import { toast } from 'react-toastify';
+import { IEntityExpanded, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { InfiniteScroll } from '../../../../common/InfiniteScroll';
 import { MeltaTooltip } from '../../../../common/MeltaTooltip';
 import PopperSidebar from '../../../../common/PopperSidebar';
 import { environment } from '../../../../globals';
-import { IEntityExpanded } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { getActivityLogRequest, IActivityLog } from '../../../../services/activityLogService';
 import ActivityLogRow from './ActivityLogRow';
 

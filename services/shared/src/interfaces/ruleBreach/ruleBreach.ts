@@ -1,4 +1,11 @@
-import { IActionMetadata, ActionTypes } from "./actionMetadata";
+import { IEntity } from "../entity";
+import { IRelationshipPopulated } from "../relationship";
+import { IUser } from "../user";
+import {
+  IActionMetadata,
+  ActionTypes,
+  IActionPopulated,
+} from "./actionMetadata";
 
 export interface ICauseInstance {
   // same format of IVariable in Formula interfaces, but with instance ids
@@ -31,3 +38,40 @@ export interface IRuleBreach {
   createdAt: Date;
   _id: string;
 }
+
+export type IEntityForBrokenRules = IEntity | string | null;
+export type IRelationshipForBrokenRules =
+  | IRelationshipPopulated
+  | string
+  | null;
+
+export interface ICauseInstancePopulated {
+  entity: IEntityForBrokenRules;
+  aggregatedRelationship?: {
+    relationship: IRelationshipForBrokenRules;
+    otherEntity: IEntityForBrokenRules;
+  };
+}
+
+export interface ICausesOfInstancePopulated {
+  instance: ICauseInstancePopulated;
+  properties: string[];
+}
+
+export interface IBrokenRulePopulated extends Omit<IBrokenRule, "failures"> {
+  ruleId: string;
+  failures: Array<{
+    entity: IEntityForBrokenRules;
+    causes: ICausesOfInstancePopulated[];
+  }>;
+}
+
+export interface IRuleBreachPopulated {
+  _id: string;
+  originUser: IUser;
+  brokenRules: IBrokenRulePopulated[];
+  actions: IActionPopulated[];
+  createdAt: Date;
+}
+
+export type BreachType = "alert" | "request";

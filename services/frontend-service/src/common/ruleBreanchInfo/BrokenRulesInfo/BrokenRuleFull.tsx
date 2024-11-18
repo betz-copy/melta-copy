@@ -5,7 +5,7 @@ import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import { ExpandLess as ExpandLessIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import isEqual from 'lodash.isequal';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
 import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../../interfaces/rules';
@@ -14,7 +14,6 @@ import { MeltaTooltip } from '../../MeltaTooltip';
 import { EntityInfo } from '../InstanceInfo/EntityInfo';
 import { RelationshipInfo } from '../InstanceInfo/RelationshipInfo';
 import { BrokenRuleActions } from './BrokenRuleActions';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     getActionsByFailureOnEntity,
     getActionsByFailureOnRelationship,

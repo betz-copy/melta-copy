@@ -6,14 +6,12 @@ import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, Di
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoRelationshipTemplatePopulated } from '../../../interfaces/relationshipTemplates';
+import { IRelationship, IEntity, IMongoRelationshipTemplatePopulated } from '@microservices/shared';
 import RelationshipTemplateAutocomplete from '../../inputs/RelationshipTemplateAutocomplete';
 import TemplateTableSelect from '../../inputs/TemplateTableSelect';
 import StrechableArrowRight from './strechableArrowRight';
 import { trycatch } from '../../../utils/trycatch';
 import { createRelationshipRequest } from '../../../services/relationshipsService';
-import { IRelationship } from '../../../interfaces/relationships';
 import { ErrorToast } from '../../ErrorToast';
 import { IBrokenRule, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { ICreateRelationshipMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';

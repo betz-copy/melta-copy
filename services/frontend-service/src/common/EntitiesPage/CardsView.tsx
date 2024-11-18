@@ -3,9 +3,8 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import { IEntityWithDirectRelationships, IEntityTemplateMap } from '@microservices/shared';
 import { environment } from '../../globals';
-import { IEntityWithDirectConnections } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import { InfiniteScroll } from '../InfiniteScroll';
@@ -44,7 +43,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
             </Grid>
             <Grid item>
                 <Grid container>
-                    <InfiniteScroll<IEntityWithDirectConnections & { minioFileIds?: string[] }>
+                    <InfiniteScroll<IEntityWithDirectRelationships & { minioFileIds?: string[] }>
                         queryKey={['searchEntities', templateIds, searchInput]}
                         queryFunction={async ({ pageParam: startRow = 0 }) => {
                             if (startRow === 0) {

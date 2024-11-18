@@ -8,8 +8,9 @@ import {
     ISearchEntitiesOfTemplateBody,
     ISearchEntitiesByTemplatesBody,
     ICountSearchResult,
+    IExportEntitiesBody,
+    IGraphFilterBodyBatch,
 } from '@microservices/shared';
-import { IExportEntitiesBody, IGraphFilterBodyBatch } from '../interfaces/entities';
 import axios from '../axios';
 import { environment } from '../globals';
 import { EntityWizardValues } from '../common/dialogs/entity';

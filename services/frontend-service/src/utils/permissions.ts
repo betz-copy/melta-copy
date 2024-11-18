@@ -1,4 +1,4 @@
-import { IUser } from '../interfaces/users';
+import { IUser } from '@microservices/shared';
 import { getWorkspaceHierarchyIds } from '../services/workspacesService';
 
 export const getWorkspacePermissions = async (workspaceId: string, permissions: IUser['permissions']) => {

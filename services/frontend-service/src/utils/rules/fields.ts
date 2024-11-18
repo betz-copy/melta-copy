@@ -1,8 +1,12 @@
 import lodashIsEqual from 'lodash.isequal';
 import { Fields, ImmutableTree, SimpleField } from '@react-awesome-query-builder/mui';
 import lodashFindLast from 'lodash.findlast';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import {
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import {
     addDefaultFieldsToTemplate,
     getOppositeEntityTemplate,

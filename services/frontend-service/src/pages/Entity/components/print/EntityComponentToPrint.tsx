@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box, useTheme } from '@mui/material';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { EntityPropertiesInternal } from '../../../../common/EntityProperties';
-import { IEntity } from '../../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { EntityDisableCheckbox } from '../EntityDisableCheckbox';
 import { EntityDates } from '../EntityDates';
 

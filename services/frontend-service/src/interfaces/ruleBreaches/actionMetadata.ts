@@ -1,4 +1,4 @@
-import { IEntity } from '../entities';
+import { IEntity } from '@microservices/shared';
 
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;

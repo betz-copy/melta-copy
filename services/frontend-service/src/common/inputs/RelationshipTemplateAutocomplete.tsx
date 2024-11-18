@@ -2,8 +2,7 @@ import React from 'react';
 import { Autocomplete, AutocompleteChangeDetails, AutocompleteProps, TextField } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap, IEntityTemplateMap } from '@microservices/shared';
 import { populateRelationshipTemplate } from '../../utils/templates';
 
 type PartialByKeys<T, K extends keyof T> = Omit<T, K> & Partial<Pick<T, K>>;

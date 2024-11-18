@@ -2,9 +2,8 @@ import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, ICategoryMap } from '@microservices/shared';
 import EntitiesPage from '../../common/EntitiesPage';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
 const Category: React.FC = () => {

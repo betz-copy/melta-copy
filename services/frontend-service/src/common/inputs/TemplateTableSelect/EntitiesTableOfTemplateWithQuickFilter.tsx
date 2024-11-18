@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Box, Grid } from '@mui/material';
 import _debounce from 'lodash.debounce';
-import { IEntity } from '../../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import SearchInput from '../SearchInput';
 

@@ -1,6 +1,5 @@
+import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { environment } from '../../globals';
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getDayStart, getDayEnd } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
 import {

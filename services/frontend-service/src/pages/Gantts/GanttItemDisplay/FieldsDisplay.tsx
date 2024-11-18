@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { Typography } from '@mui/material';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { environment } from '../../../globals';
 
 const { ganttSettings } = environment;

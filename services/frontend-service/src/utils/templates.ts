@@ -1,5 +1,9 @@
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
+import {
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IMongoRelationshipTemplatePopulated,
+} from '@microservices/shared';
 
 export const templatesCompareFunc = (templateA: IMongoEntityTemplatePopulated, templateB: IMongoEntityTemplatePopulated) => {
     if (templateA.category._id !== templateB.category._id) {
@@ -18,7 +22,7 @@ export const populateRelationshipTemplate = (
         sourceEntity: entityTemplates.get(sourceEntityId)!,
         destinationEntity: entityTemplates.get(destinationEntityId)!,
         ...restOfRelationshipTemplate,
-    };
+    } as IMongoRelationshipTemplatePopulated;
 };
 
 export const getOppositeEntityTemplate = (entityTemplateId: string, relationshipTemplate: IMongoRelationshipTemplatePopulated) => {

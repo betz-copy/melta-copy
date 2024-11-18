@@ -2,17 +2,20 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, Grid, Button, FormControlLabel, DialogActions, IconButton, CircularProgress } from '@mui/material';
 import { PrintOutlined, CloseOutlined } from '@mui/icons-material';
 import i18next from 'i18next';
+import {
+    IEntityExpanded,
+    IEntitySingleProperty,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplatePopulated,
+    IMongoCategory,
+} from '@microservices/shared';
 import { SelectCheckbox } from '../SelectCheckbox';
-import { IMongoRelationshipTemplatePopulated } from '../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../interfaces/categories';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
-import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
 import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IEntityExpanded } from '../../interfaces/entities';
 
 type IOption = {
     show: boolean;

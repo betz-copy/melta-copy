@@ -1,8 +1,8 @@
 import { JsonItem, JsonTree, Utils as QbUtils } from '@react-awesome-query-builder/mui';
+import { IEntityTemplateMap } from '@microservices/shared';
 import axios from '../../axios';
 import { RuleWizardValues } from '../../common/wizards/rule';
 import { environment } from '../../globals';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { IMongoRule, IRule, ISearchRuleBody } from '../../interfaces/rules';
 import { RuleParser } from '../../utils/rules/parser';
 import { RuleSerializer } from '../../utils/rules/serializer';

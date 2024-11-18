@@ -2,9 +2,9 @@ import { Dialog } from '@mui/material';
 import i18next from 'i18next';
 import React, { CSSProperties, useState } from 'react';
 import { toast } from 'react-toastify';
+import { IEntity } from '@microservices/shared';
 import { emptyEntityTemplate, EntityWizardValues } from '../dialogs/entity';
 import { CreateOrEditEntityDetails, ICreateOrUpdateWithRuleBreachDialogState } from '../dialogs/entity/CreateOrEditEntityDialog';
-import { IEntity } from '../../interfaces/entities';
 import { useDraftIdStore } from '../../stores/drafts';
 import { TableButton } from '../TableButton';
 

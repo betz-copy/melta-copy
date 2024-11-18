@@ -1,5 +1,5 @@
 import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { IProcessDetails } from '../interfaces/processes/processTemplate';
 
 export const filterFieldsFromPropertiesSchema = (

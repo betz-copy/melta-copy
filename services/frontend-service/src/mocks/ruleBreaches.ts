@@ -2,6 +2,7 @@
 import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
 import { StatusCodes } from 'http-status-codes';
+import { IRelationship, IRelationshipPopulated, IEntity } from '@microservices/shared';
 import {
     ActionTypes,
     ICreateRelationshipMetadataPopulated,
@@ -12,8 +13,6 @@ import { IRuleBreachPopulated } from '../interfaces/ruleBreaches/ruleBreach';
 import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreachAlert';
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../interfaces/ruleBreaches/ruleBreachRequest';
 import { generateMongoId, generateUser } from './permissions';
-import { IEntity } from '../interfaces/entities';
-import { IRelationship, IRelationshipPopulated } from '../interfaces/relationships';
 
 const chance = new Chance();
 

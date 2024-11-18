@@ -10,3 +10,5 @@ export interface ICategory {
 export interface IMongoCategory extends ICategory, Document<string> {
   _id: string;
 }
+
+export type ICategoryMap = Map<string, IMongoCategory>;

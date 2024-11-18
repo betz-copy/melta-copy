@@ -1,4 +1,4 @@
-import { IUser } from '../users';
+import { IUser } from '@microservices/shared';
 import { InstanceProperties, Status } from './processInstance';
 
 export interface IStepInstance {

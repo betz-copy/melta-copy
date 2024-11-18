@@ -1,5 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated } from '../interfaces/relationshipTemplates';
+import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplatePopulated } from '@microservices/shared';
 
 const isRelationshipMatchSourceAndDestTemplate = (
     relationshipTemplate: IMongoRelationshipTemplatePopulated,

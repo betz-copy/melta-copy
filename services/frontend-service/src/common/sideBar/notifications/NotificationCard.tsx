@@ -5,8 +5,8 @@ import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
+import { INotificationPopulated, NotificationType } from '@microservices/shared';
 import {
-    INotificationPopulated,
     isArchiveProcessNotification,
     isDateAboutToExpireNotification,
     isDeleteProcessNotification,
@@ -16,7 +16,6 @@ import {
     isRuleBreachAlertNotification,
     isRuleBreachRequestNotification,
     isRuleBreachResponseNotification,
-    NotificationType,
 } from '../../../interfaces/notifications';
 import { notificationSeenRequest } from '../../../services/notificationService';
 import { useDarkModeStore } from '../../../stores/darkMode';

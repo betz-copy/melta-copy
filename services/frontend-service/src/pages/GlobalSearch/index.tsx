@@ -1,9 +1,8 @@
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap, ICategoryMap, IMongoCategory } from '@microservices/shared';
 import EntitiesPage from '../../common/EntitiesPage';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import StartPageSearch from './components/StartPageSearch';

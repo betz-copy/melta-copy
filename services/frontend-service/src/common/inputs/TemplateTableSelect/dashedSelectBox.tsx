@@ -1,9 +1,8 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';

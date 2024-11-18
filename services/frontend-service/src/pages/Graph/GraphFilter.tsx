@@ -5,10 +5,9 @@ import { Autocomplete, Box, Checkbox, Chip, Divider, Grid, IconButton, ListItemT
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { IoIosArrowDown } from 'react-icons/io';
+import { IGraphFilterBody, IGraphFilterBodyBatch, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { CustomIcon } from '../../common/CustomIcon';
 import DateRange from '../../common/inputs/DateRange';
-import { IGraphFilterBody, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useDarkModeStore } from '../../stores/darkMode';
 
 interface GraphFilterProps {

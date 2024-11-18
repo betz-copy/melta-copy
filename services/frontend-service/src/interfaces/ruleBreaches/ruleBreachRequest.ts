@@ -1,4 +1,4 @@
-import { IUser } from '../users';
+import { IUser } from '@microservices/shared';
 import { IRuleBreach, IRuleBreachPopulated } from './ruleBreach';
 
 export enum RuleBreachRequestStatus {

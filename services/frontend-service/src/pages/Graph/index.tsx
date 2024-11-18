@@ -12,11 +12,15 @@ import { BsFillPlusCircleFill } from 'react-icons/bs';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import { toast } from 'react-toastify';
+import {
+    IEntityExpanded,
+    IGraphFilterBodyBatch,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IRelationshipTemplateMap,
+    ICategoryMap,
+} from '@microservices/shared';
 import { environment } from '../../globals';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntityExpanded, IGraphFilterBodyBatch } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { expandedEntityToGraphData, fixHighlighted, getFixedGraphLinks, getGraphDataWithNodeSizes, updateNodeLabelIcons } from '../../utils/graph';

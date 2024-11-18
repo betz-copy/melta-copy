@@ -1,9 +1,9 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
+import { IEntity } from '@microservices/shared';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
-import { IEntity } from '../../interfaces/entities';
 import { getDateWithoutTime, getLongDate } from '../date';
 import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';

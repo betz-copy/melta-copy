@@ -3,8 +3,8 @@ import React from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 
+import { IUser } from '@microservices/shared';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
-import { IUser } from '../../interfaces/users';
 import { syncUserPermissionsRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 

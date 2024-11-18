@@ -1,6 +1,6 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
+import { IMongoRelationshipTemplate } from '@microservices/shared';
 
 const relationshipTemplates: IMongoRelationshipTemplate[] = [
     {
@@ -12,7 +12,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(1111, 10, 1).toISOString(),
         updatedAt: new Date(2222, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e4d51a83e87e83c7c',
         name: 'soldTripTo',
@@ -22,7 +22,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(3333, 10, 1).toISOString(),
         updatedAt: new Date(4444, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e4d51a83e87e43c7c',
         name: 'fliesOn',
@@ -32,7 +32,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(5555, 10, 1).toISOString(),
         updatedAt: new Date(6666, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e4d51a73e87e43c7c',
         name: 'departueFrom',
@@ -42,7 +42,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(7777, 10, 1).toISOString(),
         updatedAt: new Date(8888, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e4d51a23e87e43c7c',
         name: 'staysIn',
@@ -52,7 +52,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(9999, 10, 1).toISOString(),
         updatedAt: new Date(1122, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e3d51a83e87e43c7c',
         name: 'staysIn',
@@ -62,7 +62,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(1212, 10, 1).toISOString(),
         updatedAt: new Date(2121, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
     {
         _id: '61e3ea6e3d51a83e87e42c7c',
         name: 'flightInTrip',
@@ -72,7 +72,7 @@ const relationshipTemplates: IMongoRelationshipTemplate[] = [
         createdAt: new Date(2323, 10, 1).toISOString(),
         updatedAt: new Date(3232, 10, 1).toISOString(),
         isProperty: true,
-    },
+    } as IMongoRelationshipTemplate,
 ];
 
 const mockRelationshipTemplates = (mock: MockAdapter) => {

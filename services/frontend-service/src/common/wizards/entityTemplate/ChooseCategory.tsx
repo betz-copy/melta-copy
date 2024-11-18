@@ -3,9 +3,9 @@ import { TextField, Autocomplete } from '@mui/material';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { ICategoryMap, IMongoCategory } from '@microservices/shared';
 import { EntityTemplateWizardValues } from './index';
 import { StepComponentProps } from '../index';
-import { ICategoryMap } from '../../../interfaces/categories';
 
 const chooseCategorySchema = Yup.object({
     category: Yup.object({

@@ -7,6 +7,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
+import {
+    IEntityTemplate,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IRelationshipTemplateMap,
+    ICategoryMap,
+    IMongoCategory,
+} from '@microservices/shared';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
@@ -17,9 +25,6 @@ import { MeltaTooltip } from '../../../common/MeltaTooltip';
 import { SelectCheckbox } from '../../../common/SelectCheckbox';
 import { EntityTemplateWizard } from '../../../common/wizards/entityTemplate';
 import { environment } from '../../../globals';
-import { ICategoryMap, IMongoCategory } from '../../../interfaces/categories';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { updateCategoryRequest } from '../../../services/templates/categoriesService';
 import {
     deleteEntityTemplateRequest,

@@ -3,8 +3,8 @@ import { Chance } from 'chance';
 import faker from '@faker-js/faker';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
+import { IUser } from '@microservices/shared';
 import { categories } from './templates/categories';
-import { IUser } from '../interfaces/users';
 
 const chance = new Chance();
 faker.locale = 'he';

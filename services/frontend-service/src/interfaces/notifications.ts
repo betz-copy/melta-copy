@@ -1,74 +1,16 @@
-import { IMongoProcessInstancePopulated, Status } from './processes/processInstance';
-import { IMongoStepInstancePopulated } from './processes/stepInstance';
-import { IRuleBreachAlertPopulated } from './ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated } from './ruleBreaches/ruleBreachRequest';
-import { IEntity } from './entities';
-
-export enum NotificationType {
-    ruleBreachAlert = 'ruleBreachAlert',
-    ruleBreachRequest = 'ruleBreachRequest',
-    ruleBreachResponse = 'ruleBreachResponse',
-    processReviewerUpdate = 'processReviewerUpdate',
-    processStatusUpdate = 'processStatusUpdate',
-    newProcess = 'newProcess',
-    deleteProcess = 'deleteProcess',
-    archivedProcess = 'archivedProcess',
-    dateAboutToExpire = 'dateAboutToExpire',
-}
-
-export interface IRuleBreachAlertNotificationMetadataPopulated {
-    alert: IRuleBreachAlertPopulated;
-}
-export interface IRuleBreachRequestNotificationMetadataPopulated {
-    request: IRuleBreachRequestPopulated;
-}
-export interface IRuleBreachResponseNotificationMetadataPopulated {
-    request: IRuleBreachRequestPopulated;
-}
-
-export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
-    addedSteps: (IMongoStepInstancePopulated | null)[];
-    deletedSteps: (IMongoStepInstancePopulated | null)[];
-    unchangedSteps: (IMongoStepInstancePopulated | null)[];
-}
-export interface IProcessStatusUpdateNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
-    step?: IMongoStepInstancePopulated | null;
-    status: Status;
-}
-export interface INewProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
-}
-export interface IDeleteProcessNotificationMetadataPopulated {
-    processName: string;
-}
-export interface IArchiveProcessNotificationMetadataPopulated {
-    process: IMongoProcessInstancePopulated | null;
-    isArchived?: boolean;
-}
-export interface IDateAboutToExpireMetadataPopulated {
-    entity: IEntity | null;
-    propertyName: string;
-    datePropertyValue: Date;
-}
-export type INotificationMetadataPopulated =
-    | IRuleBreachAlertNotificationMetadataPopulated
-    | IRuleBreachRequestNotificationMetadataPopulated
-    | IRuleBreachResponseNotificationMetadataPopulated
-    | IProcessReviewerUpdateNotificationMetadataPopulated
-    | IProcessStatusUpdateNotificationMetadataPopulated
-    | INewProcessNotificationMetadataPopulated
-    | IDateAboutToExpireMetadataPopulated
-    | IDeleteProcessNotificationMetadataPopulated
-    | IArchiveProcessNotificationMetadataPopulated;
-
-export interface INotificationPopulated<T = INotificationMetadataPopulated> {
-    type: NotificationType;
-    metadata: T;
-    createdAt: Date;
-    _id: string;
-}
+import {
+    IArchiveProcessNotificationMetadataPopulated,
+    IDateAboutToExpireMetadataPopulated,
+    IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadataPopulated,
+    INotificationPopulated,
+    IProcessReviewerUpdateNotificationMetadataPopulated,
+    IProcessStatusUpdateNotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
+    NotificationType,
+} from '@microservices/shared';
 
 export const isDeleteProcessNotification = (
     notification: Partial<INotificationPopulated>,

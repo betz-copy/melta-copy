@@ -1,4 +1,4 @@
-import { IMongoCategory } from '../../interfaces/categories';
+import { IMongoCategory } from '@microservices/shared';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 

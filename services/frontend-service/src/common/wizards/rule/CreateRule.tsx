@@ -3,9 +3,9 @@ import { TextField, Grid, RadioGroup, Radio, FormControl, FormControlLabel, Form
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
+import { IEntityTemplateMap } from '@microservices/shared';
 import { StepComponentProps } from '../index';
 import { RuleWizardValues } from '.';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
 const createRuleSchema = {
     name: Yup.string().required(i18next.t('validation.required')),

@@ -1,6 +1,4 @@
-import { IUser } from '../users';
-import { IEntity } from '../entities';
-import { IRelationshipPopulated } from '../relationships';
+import { IUser, IRelationshipPopulated, IEntity } from '@microservices/shared';
 import { IAction, IActionPopulated } from './actionMetadata';
 
 export interface ICauseInstance {

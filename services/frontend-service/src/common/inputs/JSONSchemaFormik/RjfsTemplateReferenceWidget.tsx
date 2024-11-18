@@ -1,9 +1,8 @@
 import React from 'react';
 import { WidgetProps } from '@rjsf/utils';
 import { useQueryClient } from 'react-query';
+import { IEntity, IEntityTemplateMap } from '@microservices/shared';
 import TemplateEntitiesAutocomplete from '../TemplateEntitiesAutocomplete';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
-import { IEntity } from '../../../interfaces/entities';
 
 const RjfsTemplateReferenceWidget = ({
     id,

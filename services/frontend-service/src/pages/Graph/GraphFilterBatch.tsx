@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated, IGraphFilterBodyBatch } from '@microservices/shared';
 import { GraphFilter } from './GraphFilter';
-import { IGraphFilterBodyBatch } from '../../interfaces/entities';
 
 interface GraphFilterBatchProps {
     templateOptions: IMongoEntityTemplatePopulated[];

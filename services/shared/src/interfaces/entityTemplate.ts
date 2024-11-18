@@ -89,3 +89,5 @@ export interface ISearchEntityTemplatesBody extends ISearchBody {
   ids?: string[];
   categoryIds?: string[];
 }
+
+export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;

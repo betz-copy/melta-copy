@@ -3,6 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
+import { IMongoEntityTemplatePopulated, IRelationshipTemplateMap } from '@microservices/shared';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {
@@ -10,8 +11,6 @@ import {
     updateRelationshipTemplateRequest,
     relationshipTemplateFormToRelationshipTemplateObject,
 } from '../../../services/templates/relationshipTemplatesService';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import { ErrorToast } from '../../ErrorToast';
 
 export interface RelationshipTemplateWizardValues {

@@ -6,6 +6,16 @@ import i18next from 'i18next';
 import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
+import {
+    IRelationship,
+    IEntity,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+    ICategoryMap,
+    IMongoCategory,
+} from '@microservices/shared';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
 import CreateRelationshipDialog from '../../common/dialogs/createRelationshipDialog';
@@ -16,13 +26,8 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { environment } from '../../globals';
-import { ICategoryMap } from '../../interfaces/categories';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IRelationship } from '../../interfaces/relationships';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';

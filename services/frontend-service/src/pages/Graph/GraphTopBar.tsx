@@ -4,9 +4,9 @@ import { useTheme } from '@mui/material/styles';
 import i18next from 'i18next';
 import React from 'react';
 import { useQuery, useQueryClient } from 'react-query';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import IconButtonWithPopover from '../../common/IconButtonWithPopover';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useDarkModeStore } from '../../stores/darkMode';
 

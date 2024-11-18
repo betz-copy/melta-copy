@@ -1,6 +1,4 @@
-import { IUser } from '../users';
-import { IEntity } from '../entities';
-import { IMongoEntityTemplatePopulated } from '../entityTemplates';
+import { IUser, IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { IBaseSearchProperties } from './processTemplate';
 import { IMongoStepInstance, IMongoStepInstancePopulated } from './stepInstance';
 

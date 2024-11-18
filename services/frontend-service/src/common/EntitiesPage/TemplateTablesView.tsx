@@ -5,10 +5,9 @@ import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
-import { IEntity } from '../../interfaces/entities';
 import { environment } from '../../globals';
 
 const { tablesPerLoadingChunkSize } = environment.ganttSettings;

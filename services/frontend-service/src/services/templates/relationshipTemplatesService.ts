@@ -1,8 +1,13 @@
+import {
+    IMongoRelationshipTemplate,
+    IRelationshipTemplate,
+    ISearchRelationshipTemplatesBody,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+} from '@microservices/shared';
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
 import { environment } from '../../globals';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplate, ISearchRelationshipTemplatesBody } from '../../interfaces/relationshipTemplates';
 
 const { relationshipTemplates } = environment.api;
 
@@ -32,7 +37,7 @@ const relationshipTemplateFormToRelationshipTemplateObject = (
         ...restOfRelationshipWizardValues,
         sourceEntityId: sourceEntity._id,
         destinationEntityId: destinationEntity._id,
-    };
+    } as IRelationshipTemplate | IMongoRelationshipTemplate;
 };
 
 const createRelationshipTemplateRequest = async (newRelationshipTemplate: IRelationshipTemplate) => {

@@ -3,9 +3,8 @@ import { Grid } from '@mui/material';
 import i18next from 'i18next';
 import React, { memo } from 'react';
 import { Link } from 'wouter';
+import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { IButtonProps } from '.';
-import { IEntity } from '../../interfaces/entities';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import {
     booleanColDef,
     dateColDef,

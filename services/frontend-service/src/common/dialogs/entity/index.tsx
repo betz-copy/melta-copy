@@ -1,4 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoEntityTemplatePopulated } from '@microservices/shared';
 
 export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     _id: '',

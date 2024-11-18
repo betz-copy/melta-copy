@@ -8,15 +8,14 @@ import * as ts from 'typescript-actions';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'react-toastify';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
 import { ErrorToast } from '../../../../common/ErrorToast';
 import { ActionManagement } from './actionsManagement';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../../interfaces/entityTemplates';
 import { updateActionToEntity } from '../../../../services/templates/enitityTemplatesService';
 import IconButtonWithPopover from '../../../../common/IconButtonWithPopover';
 import { generateInterfaceWithRelationships } from '../../../../utils/interfaceGenerator';
 import { environment } from '../../../../globals';
 import { AreYouSureDialog } from '../../../../common/dialogs/AreYouSureDialog';
-import { IMongoCategory } from '../../../../interfaces/categories';
 
 const {
     systemManagement: {

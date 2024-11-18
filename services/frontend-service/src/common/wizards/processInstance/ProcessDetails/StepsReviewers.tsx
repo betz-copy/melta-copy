@@ -5,6 +5,7 @@ import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
 import i18next from 'i18next';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
+import { IUser } from '@microservices/shared';
 import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
 import { IDetailsStepProp } from '.';
 import { ReviewerSelector } from './ReviewerSelector';
@@ -12,7 +13,6 @@ import { CustomIcon } from '../../../CustomIcon';
 import { getStepInstanceByStepTemplateId } from '../../../../utils/processWizard/steps';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 import { useDarkModeStore } from '../../../../stores/darkMode';
-import { IUser } from '../../../../interfaces/users';
 
 const ReviewCard = ({ stepTemplate, values, setFieldValue, isEditMode, processInstance }) => {
     const darkMode = useDarkModeStore((state) => state.darkMode);

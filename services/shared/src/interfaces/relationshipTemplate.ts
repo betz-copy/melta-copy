@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import { ISearchBody } from "./entityTemplate";
+import { IMongoEntityTemplatePopulated, ISearchBody } from "./entityTemplate";
 
 export interface IRelationshipTemplate {
   name: string;
@@ -13,10 +13,22 @@ export interface IMongoRelationshipTemplate
   extends IRelationshipTemplate,
     Document<string> {
   _id: string;
+  createdAt: string;
+  updatedAt: string;
 }
+
+export type IMongoRelationshipTemplatePopulated = Omit<
+  IMongoRelationshipTemplate,
+  "sourceEntityId" | "destinationEntityId"
+> & {
+  sourceEntity: IMongoEntityTemplatePopulated;
+  destinationEntity: IMongoEntityTemplatePopulated;
+};
 
 export interface ISearchRelationshipTemplatesBody extends ISearchBody {
   ids?: string[];
   sourceEntityIds?: string[];
   destinationEntityIds?: string[];
 }
+
+export type IRelationshipTemplateMap = Map<string, IMongoRelationshipTemplate>;

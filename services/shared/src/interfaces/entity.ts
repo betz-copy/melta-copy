@@ -1,3 +1,4 @@
+import { IMongoEntityTemplatePopulated } from "./entityTemplate";
 import { IRelationship } from "./relationship";
 import { IMongoRelationshipTemplate } from "./relationshipTemplate";
 
@@ -65,7 +66,7 @@ export interface IFilterOfField {
 }
 
 export type IFilterOfTemplate<
-  T extends Record<string, any> = Record<string, any>,
+  T extends Record<string, any> = Record<string, any>
 > = {
   [field in keyof T]?: IFilterOfField;
 };
@@ -133,4 +134,26 @@ export interface ICountSearchResult {
 export interface ITemplateSearchBody {
   textSearch?: string;
   templateIds: string[];
+}
+
+export interface IExportEntitiesBody {
+  fileName: string;
+  textSearch?: string;
+  templates: {
+    [templateId: string]: {
+      filter?: ISearchFilter;
+      sort?: ISearchSort;
+      displayColumns: string[];
+    };
+  };
+}
+
+export interface IGraphFilterBody {
+  selectedTemplate: IMongoEntityTemplatePopulated;
+  selectedProperty?: string;
+  filterField?: any;
+}
+
+export interface IGraphFilterBodyBatch {
+  [key: string]: IGraphFilterBody;
 }

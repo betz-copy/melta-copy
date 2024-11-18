@@ -2,10 +2,15 @@
 import uniqBy from 'lodash.uniqby';
 import { GraphData, LinkObject, NodeObject } from 'react-force-graph-2d';
 
+import {
+    IEntity,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import { environment } from '../../globals';
-import { IEntity, IEntityExpanded } from '../../interfaces/entities';
-import { IEntityTemplateMap, IEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
 import { apiUrlToImageSource } from '../../services/storageService';
 import { drawText, getRectangleDimensionsByString, traceRectangle } from '../canvas';
 import { getEntityTemplateColor, getRelationshipTemplateColor } from '../colors';

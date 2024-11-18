@@ -1,6 +1,6 @@
 import { JsonGroup, JsonItem, JsonRule, JsonRuleGroupExt, RuleProperties } from '@react-awesome-query-builder/mui';
 import { v4 as uuid } from 'uuid';
-import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '@microservices/shared';
 import { IFormula } from '../../interfaces/rules/formula';
 import { FunctionObject, ValueType } from './interfaces';
 import { IArgument, IConstant, IPropertyOfVariable, IVariable, isConstant, isPropertyOfVariable } from '../../interfaces/rules/formula/argument';

@@ -4,7 +4,7 @@ import _debounce from 'lodash.debounce';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { toast } from 'react-toastify';
-import { IUser } from '../../interfaces/users';
+import { IUser } from '@microservices/shared';
 import { searchExternalUsersRequest, searchUsersRequest } from '../../services/userService';
 import { useWorkspaceStore } from '../../stores/workspace';
 import { MeltaTooltip } from '../MeltaTooltip';

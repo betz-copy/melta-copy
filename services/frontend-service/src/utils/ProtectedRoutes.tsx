@@ -4,7 +4,7 @@ import React, { isValidElement } from 'react';
 import { useQuery } from 'react-query';
 import { Redirect, useLocation, useParams } from 'wouter';
 import { StatusCodes } from 'http-status-codes';
-import { IEntityTemplateMap } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '@microservices/shared';
 import { PermissionScope } from '../interfaces/permissions';
 import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../services/entitiesService';

@@ -4,14 +4,14 @@ import { useQueryClient } from 'react-query';
 import { AppRegistration as DefaultEntityTemplateIcon } from '@mui/icons-material';
 import { Link } from 'wouter';
 import i18next from 'i18next';
+import { IEntity } from '@microservices/shared';
 import { MeltaTooltip } from './MeltaTooltip';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { EntityPropertiesInternal } from './EntityProperties';
 import { CustomIcon } from './CustomIcon';
 import { environment } from '../globals';
 import { getEntityTemplateColor } from '../utils/colors';
 import { ColoredEnumChip } from './ColoredEnumChip';
-import { IEntity } from '../interfaces/entities';
 
 interface RelationshipReferenceViewProps {
     entity: IEntity | string;

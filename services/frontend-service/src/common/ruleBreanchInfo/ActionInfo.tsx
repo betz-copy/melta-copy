@@ -2,9 +2,14 @@ import React, { CSSProperties, ReactNode } from 'react';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { useQueryClient } from 'react-query';
-import { IEntity } from '../../interfaces/entities';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../interfaces/relationshipTemplates';
+import {
+    IUser,
+    IEntity,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplatePopulated,
+    IRelationshipTemplateMap,
+} from '@microservices/shared';
 import {
     ActionTypes,
     IActionMetadataPopulated,
@@ -18,7 +23,6 @@ import {
 } from '../../interfaces/ruleBreaches/actionMetadata';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
-import { IUser } from '../../interfaces/users';
 import { EntityLink } from '../EntityLink';
 import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
 import { IMongoRule } from '../../interfaces/rules';

@@ -1,5 +1,5 @@
 import { QueryClient } from 'react-query';
-import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../interfaces/entityTemplates';
+import { IEntitySingleProperty, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
 
 const generateFromString = ({ format, relationshipReference, enum: typeEnum }: IEntitySingleProperty, queryClient: QueryClient) => {
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;

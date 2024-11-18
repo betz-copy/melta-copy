@@ -3,8 +3,8 @@ import React from 'react';
 import { FormikErrors, FormikTouched } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
+import { IEntityTemplateMap } from '@microservices/shared';
 import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
-import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 
 export interface FieldEditCardProps {
     value: CommonFormInputProperties;

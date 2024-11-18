@@ -1,10 +1,10 @@
 import React from 'react';
 import { Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
+import { IUser } from '@microservices/shared';
 import { IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ActionInfo } from './ActionInfo';
 import { BrokenRulesInfo } from './BrokenRulesInfo';
-import { IUser } from '../../interfaces/users';
 import { IActionPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const RuleBreachInfo: React.FC<{

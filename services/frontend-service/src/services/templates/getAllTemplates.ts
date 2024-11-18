@@ -1,8 +1,6 @@
-import axios from '../../axios';
+import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplate, IMongoCategory } from '@microservices/shared';
 import { environment } from '../../globals';
-import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
-import { IMongoRelationshipTemplate } from '../../interfaces/relationshipTemplates';
-import { IMongoCategory } from '../../interfaces/categories';
+import axios from '../../axios';
 import { IMongoRule } from '../../interfaces/rules';
 import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 

@@ -6,13 +6,12 @@ import { FieldArray, FormikErrors, FormikHelpers, FormikTouched } from 'formik';
 import i18next from 'i18next';
 import { DragHandle as DragHandleIcon, ExpandMore as ExpandMoreIcon } from '@mui/icons-material';
 import _debounce from 'lodash.debounce';
+import { IUniqueConstraintOfTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { FieldEditCardProps, MemoFieldEditCard } from './FieldEditCard';
 import { MemoAttachmentEditCard } from './AttachmentEditCard';
 import { StepComponentHelpers } from '..';
 import { CommonFormInputProperties } from './commonInterfaces';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
-import { IUniqueConstraintOfTemplate } from '../../../interfaces/entities';
 
 export const FieldBlockAccordion = styled(Accordion)({
     width: '100%',

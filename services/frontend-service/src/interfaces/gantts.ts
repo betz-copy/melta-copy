@@ -1,5 +1,4 @@
-import { IMongoEntityTemplatePopulated } from './entityTemplates';
-import { IMongoRelationshipTemplate } from './relationshipTemplates';
+import { IMongoRelationshipTemplate, IMongoEntityTemplatePopulated } from '@microservices/shared';
 import { IScheduleComponentData } from './syncfusion';
 
 export interface IGanttGroupBy {

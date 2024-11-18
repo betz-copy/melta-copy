@@ -1,6 +1,6 @@
 import i18next from 'i18next';
+import { NotificationType } from '@microservices/shared';
 import { ILabelIcon } from './utils/graph/helperTypes';
-import { NotificationType } from './interfaces/notifications';
 
 export const environment = {
     api: {

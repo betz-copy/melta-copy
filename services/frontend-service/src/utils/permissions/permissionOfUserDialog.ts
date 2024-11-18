@@ -1,7 +1,7 @@
 import isEqualWith from 'lodash.isequalwith';
+import { IUser } from '@microservices/shared';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
-import { IUser } from '../../interfaces/users';
 
 export const userHasNoPermissions = (permissions: ISubCompactPermissions) => {
     return (
