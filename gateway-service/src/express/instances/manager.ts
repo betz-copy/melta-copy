@@ -34,7 +34,7 @@ import {
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
-import { trycatch } from '../../utils';
+// import { trycatch } from '../../utils';
 import { createWorksheet, createWorkbook, styleAWorksheet } from '../../utils/excel/excelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
@@ -582,32 +582,32 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedEntity;
     }
 
-    private async deleteAllEntitiesFiles(currentEntities: IEntity[]) {
-        const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntities[0].templateId);
+    // private async deleteAllEntitiesFiles(currentEntities: IEntity[]) {
+    //     const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntities[0].templateId);
 
-        const filesProperties: Record<string, string | string[]> = currentEntities.reduce((acc, currentEntity) => {
-            const entityProps = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
-            return { ...acc, ...entityProps };
-        }, {});
+    //     const filesProperties: Record<string, string | string[]> = currentEntities.reduce((acc, currentEntity) => {
+    //         const entityProps = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
+    //         return { ...acc, ...entityProps };
+    //     }, {});
 
-        const fileIdsToRemove = Object.values(filesProperties).flat();
+    //     const fileIdsToRemove = Object.values(filesProperties).flat();
 
-        if (!fileIdsToRemove.length) return [];
+    //     if (!fileIdsToRemove.length) return [];
 
-        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+    //     await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
-        return fileIdsToRemove;
-    }
+    //     return fileIdsToRemove;
+    // }
 
-    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean, selectAll?: boolean) {
-        const currentEntities = await this.service.getEntityInstancesByIds(ids);
-        const deletedInstance = await this.service.deleteEntityInstances(ids, deleteAllRelationships, selectAll);
+    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean, selectAll?: boolean, templateId?: string) {
+        // const currentEntities = await this.service.getEntityInstancesByIds(ids);
+        const deletedInstance = await this.service.deleteEntityInstances(ids, deleteAllRelationships, selectAll, templateId);
 
-        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(currentEntities));
+        // const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(currentEntities));
 
-        if (error) {
-            logger.error(`failed to delete files of instances ${ids}`, { error });
-        }
+        // if (error) {
+        //     logger.error(`failed to delete files of instances ${ids}`, { error });
+        // }
 
         return deletedInstance;
     }

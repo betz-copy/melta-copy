@@ -52,8 +52,8 @@ class EntityController extends DefaultController<EntityManager> {
         res.json(await this.manager.getExpandedGraphById(req.params.id, req.body, entityTemplatesMap, req.body.userId));
     }
 
-    async deleteEntityById(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityById(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll));
+    async deleteEntitiesByIds(req: Request, res: Response) {
+        res.json(await this.manager.deleteEntitiesByIds(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll, req.body.templateId));
     }
 
     async deleteEntitiesByTemplateId(req: Request, res: Response) {

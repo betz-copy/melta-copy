@@ -95,8 +95,7 @@ export class InstancesValidator extends DefaultController {
         await this.validateHasPermissionsToEntitiesInTemplates(req.user!, Object.keys(templates));
     }
 
-    private async validateUserPermissionForEntityInstance(req: Request, instanceId: string, permissionScope: PermissionScope) {
-        const { templateId } = await this.instancesService.getEntityInstanceById(instanceId);
+    private async validateUserPermissionForEntityInstance(req: Request, templateId: string, permissionScope: PermissionScope) {
         const categoryId = await this.getCategoryIdFromTemplateId(templateId);
 
         const userPermissions = await this.authorizer.getWorkspacePermissions(req.user!.id);
@@ -115,14 +114,15 @@ export class InstancesValidator extends DefaultController {
 
     async validateUserCanWriteEntityInstance(req: Request) {
         const { id } = req.params;
+        const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, id, PermissionScope.write);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
-    async validateUserCanWriteEntityInstances(req: Request) {
-        const { ids } = req.body;
+    async validateUserCanDeleteEntityInstances(req: Request) {
+        const { templateId } = req.body;
 
-        await this.validateUserPermissionForEntityInstance(req, ids[0], PermissionScope.write);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.write);
     }
 
     private async getCategoriesIdsByEntitiesAndTemplatesIds(entitiesIds: string[], templateIdsFromReq: string[]) {
@@ -160,8 +160,9 @@ export class InstancesValidator extends DefaultController {
 
     async validateUserCanReadEntityInstance(req: Request) {
         const { id } = req.params;
+        const { templateId } = await this.instancesService.getEntityInstanceById(id);
 
-        await this.validateUserPermissionForEntityInstance(req, id, PermissionScope.read);
+        await this.validateUserPermissionForEntityInstance(req, templateId, PermissionScope.read);
     }
 
     async validateUserCanGetExpandedEntity(req: Request) {

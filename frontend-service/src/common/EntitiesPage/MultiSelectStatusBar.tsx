@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { IStatusPanelParams } from '@ag-grid-community/core';
-import { CircularProgress, Grid, useTheme } from '@mui/material';
+import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
+import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
@@ -12,11 +12,15 @@ import { ErrorToast } from '../ErrorToast';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IDeleteEntityBody } from '../../interfaces/entities';
 
-export const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
-    const theme = useTheme();
+interface MultiSelectStatusBarProps extends IStatusPanelParams {
+    templateId: string;
+}
 
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, templateId }) => {
+    const theme = useTheme();
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
+    console.log({ selectedRowCount });
 
     useEffect(() => {
         const updateSelectedRowCount = () => setSelectedRowCount(api.getSelectedRows().length);
@@ -49,9 +53,14 @@ export const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
     };
 
     const deleteSelectedRows = (deleteAllRelationships = false) => {
-        const selectedRows = api.getSelectedRows();
-        const ids = selectedRows.map((row) => row.properties._id);
-        deleteMutation({ ids, deleteAllRelationships });
+        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+
+        if (selectAll) deleteMutation({ ids: toggledNodes, selectAll, deleteAllRelationships, templateId });
+        else {
+            const selectedRows = api.getSelectedRows();
+            const ids = selectedRows.map((row) => row.properties._id);
+            deleteMutation({ ids, selectAll: false, deleteAllRelationships, templateId });
+        }
     };
 
     const handleYesDeleteWithRelationships = () => {
@@ -74,7 +83,7 @@ export const MultiSelectStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
                     color: theme.palette.primary.main,
                     marginTop: 5,
                 }}
-                disabled={selectedRowCount === 0}
+                // disabled={selectedRowCount === 0}
             >
                 <>
                     {isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}

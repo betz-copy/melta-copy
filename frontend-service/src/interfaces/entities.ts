@@ -151,7 +151,8 @@ export interface IGraphFilterBodyBatch {
 }
 
 export interface IDeleteEntityBody {
-    ids: string[];
+    ids: string[]; // when selectall Exclude these IDs otherwise Include only these IDs
+    selectAll: boolean;
     deleteAllRelationships?: boolean;
-    selectAll?: boolean;
+    templateId: string;
 }

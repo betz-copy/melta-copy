@@ -103,17 +103,20 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
         },
     );
 
-    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest({ ids: [entity.properties._id] }), {
-        onError: (error: AxiosError) => {
-            closeDeleteDialog();
-            toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+    const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
+        () => deleteEntityRequest({ ids: [entity.properties._id], selectAll: false, templateId: currentEntityTemplate?._id as string }),
+        {
+            onError: (error: AxiosError) => {
+                closeDeleteDialog();
+                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+            },
+            onSuccess: () => {
+                toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
+                closeDeleteDialog();
+                navigate(`/category/${currentEntityTemplate?.category._id}`);
+            },
         },
-        onSuccess: () => {
-            toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
-            closeDeleteDialog();
-            navigate(`/category/${currentEntityTemplate?.category._id}`);
-        },
-    });
+    );
 
     if (isEditMode) {
         return (

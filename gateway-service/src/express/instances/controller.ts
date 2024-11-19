@@ -48,7 +48,9 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async deleteEntityInstance(req: Request, res: Response) {
-        res.json(await this.manager.deleteEntityInstance(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll));
+        console.log(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll, req.body.templateId);
+
+        res.json(await this.manager.deleteEntityInstance(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll, req.body.templateId));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {

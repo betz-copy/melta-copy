@@ -894,10 +894,52 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    async deleteEntityById(ids: string[], deleteAllRelationships: boolean, selectAll: boolean) {
+    async deleteEntitiesByIdsInTransaction(
+        transaction: Transaction,
+        ids: string[],
+        deleteAllRelationships: boolean,
+        selectAll: boolean,
+        templateId: string,
+    ) {
+        let whereQuery = '';
+
+        if (selectAll)
+            if (ids && ids.length) whereQuery = 'WHERE NOT e._id IN $ids';
+            else whereQuery = 'WHERE e._id IN $ids';
+
+        await runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e:\`${templateId}\`) 
+            ${whereQuery}
+            ${deleteAllRelationships ? 'DETACH' : ''}
+            DELETE e`,
+            normalizeReturnedEntity('multipleResponses'),
+            { ids },
+        );
+    }
+
+    async getEntitiesToDelete(transaction: Transaction, templateId: string, selectAll: boolean, ids: string[]) {
+        let entitiesToDelete: IEntity[];
+
+        if (selectAll)
+            entitiesToDelete = await runInTransactionAndNormalize(
+                transaction,
+                `MATCH (e:\`${templateId}\`) 
+                WHERE NOT e._id IN $ids
+                RETURN e`,
+                normalizeReturnedEntity('multipleResponses'),
+                { ids },
+            );
+        else entitiesToDelete = await this.getEntitiesByIds(ids);
+
+        return entitiesToDelete;
+    }
+
+    async deleteEntitiesByIds(ids: string[], deleteAllRelationships: boolean, selectAll: boolean, templateId: string) {
+        console.dir({ ids, selectAll, templateId }, { depth: null });
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const entitiesToDelete = await this.getEntitiesByIds(ids);
+                const entitiesToDelete = await this.getEntitiesToDelete(transaction, templateId, selectAll, ids);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entitiesToDelete[0].templateId);
 
                 await Promise.all(
@@ -906,7 +948,10 @@ export class EntityManager extends DefaultManagerNeo4j {
 
                 await runInTransactionAndNormalize(
                     transaction,
-                    `MATCH e:\`${entityTemplate._id}\` ${selectAll ? 'WHERE e._id NOT IN $ids' : 'WHERE e._id IN $ids'}  ${deleteAllRelationships ? 'DETACH' : ''} DELETE e`,
+                    `MATCH (e:\`${templateId}\`) 
+                    ${selectAll ? 'WHERE NOT e._id IN $ids' : 'WHERE e._id IN $ids'}
+                    ${deleteAllRelationships ? 'DETACH' : ''}
+                    DELETE e`,
                     normalizeReturnedEntity('multipleResponses'),
                     { ids },
                 );

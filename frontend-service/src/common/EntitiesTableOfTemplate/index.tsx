@@ -373,16 +373,23 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         align: 'right',
                         key: 'selectRowCount',
                     },
-                    multipleSelect ? { statusPanel: MultiSelectStatusBar, align: 'left' } : undefined,
+                    multipleSelect
+                        ? { statusPanel: MultiSelectStatusBar, align: 'left', statusPanelParams: { templateId: template._id } }
+                        : undefined,
                 ].filter(Boolean) as StatusPanelDef[],
-            [multipleSelect],
+            [multipleSelect, template._id],
         );
 
-        const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple'>(() => {
-            return {
-                mode: 'multiRow',
-            };
-        }, []);
+        const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
+            if (onRowSelected) return 'single';
+
+            if (multipleSelect)
+                return {
+                    mode: 'multiRow',
+                };
+
+            return undefined;
+        }, [multipleSelect, onRowSelected]);
 
         const gridContent = (
             <Box
@@ -426,7 +433,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     enableRtl
                     enableCellTextSelection
                     maintainColumnOrder
-                    // rowSelection={(onRowSelected && 'single') || (multipleSelect && 'multiple') || undefined}
                     rowSelection={rowSelection}
                     suppressAggFuncInHeader
                     // TODO
@@ -472,11 +478,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                     }}
                     onFirstDataRendered={(params) => {
-                        params.api.setServerSideSelectionState({
-                            selectAll: true,
-                            toggledNodes: [],
-                        });
-
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);
 
                         if (savedPage !== null) {
