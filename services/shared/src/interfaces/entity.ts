@@ -128,7 +128,7 @@ export interface IFilterDatesRange {
 export interface ICountSearchResult {
   count: number;
   templateId: string;
-  entityIdsToInclude: string[];
+  entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
 
 export interface ITemplateSearchBody {
