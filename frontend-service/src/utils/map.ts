@@ -1,4 +1,6 @@
 import { GeometryUtil, LatLng, LatLngExpression } from 'leaflet';
+import { IEntity } from '../interfaces/entities';
+import { IEntityTemplatePopulated } from '../interfaces/entityTemplates';
 
 export const jerusalemCoordinates: LatLngExpression = [31.7683, 35.2137];
 
@@ -68,20 +70,16 @@ export const latLngToString = (latLng: LatLng | LatLng[], includePolygon = true)
     const points = matchedPoints.map((point) =>
         point
             .replace(/LatLng|\(|\)/g, '')
-            .replace(',', ' ')
+            .replace(',', '')
             .trim(),
     );
 
     // Return the POLYGON format
-    return includePolygon ? `POLYGON((${points.join(', ')}))` : points.join(', ');
+    return includePolygon ? `POLYGON((${points.join(',')}))` : points.join(',');
 };
 
 // ugly af find better solution
 export const bindPopupForMarker = (coordinates: LatLng) => {
-    const { lat, lng } = coordinates;
-    if (lat && lng) {
-        return `Coordinates: ${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-    }
     return `Coordinates: ${coordinates[0].toFixed(5)}, ${coordinates[1].toFixed(5)}`;
 };
 
@@ -101,4 +99,14 @@ export const bindPopupForCircle = (radius: number) => {
     const areaMeters = Math.PI * radius * radius;
     const areaKm2 = areaMeters / 1_000_000;
     return `Area: ${areaKm2.toFixed(2)} km²`;
+};
+
+export const extractLocationFieldsFromEntity = (entity: IEntity, entityTemplate: IEntityTemplatePopulated) => {
+    const locationFields = Object.entries(entityTemplate.properties.properties)
+        .filter(([, value]) => value.format === 'location')
+        .map(([key]) => key);
+
+    return Object.entries(entity.properties)
+        .filter(([key]) => locationFields.includes(key))
+        .map(([, value]) => value as string);
 };

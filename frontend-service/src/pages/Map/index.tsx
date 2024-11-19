@@ -2,10 +2,17 @@ import React, { useMemo, useRef } from 'react';
 import { MapContainer, TileLayer, LayersControl, FeatureGroup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-draw/dist/leaflet.draw.css';
-import L from 'leaflet';
+import L, { LatLng, LatLngExpression } from 'leaflet';
 import { EditControl } from 'react-leaflet-draw';
 import { useMutation, useQueryClient } from 'react-query';
-import { bindPopupForCircle, bindPopupForLine, bindPopupForMarker, bindPopupForPolygon, jerusalemCoordinates } from '../../utils/map';
+import {
+    bindPopupForCircle,
+    bindPopupForLine,
+    bindPopupForMarker,
+    bindPopupForPolygon,
+    jerusalemCoordinates,
+    stringToCoordinates,
+} from '../../utils/map';
 import { getEntitiesByLocation } from '../../services/entitiesService';
 import { IEntityTemplateMap } from '../../interfaces/entityTemplates';
 import { Circle, ISearchEntitiesByLocationTemplatesBody } from '../../interfaces/entities';
@@ -17,13 +24,27 @@ const EditableMapControl = ({ featureGroupRef }) => {
 
     const { mutate } = useMutation(getEntitiesByLocation, {
         onSuccess: (response) => {
-            // test
-            const locationField = response[0]?.properties.test_marker;
+            console.log({ response });
 
-            const marker = L.marker([locationField.x, locationField.y]);
+            response.forEach((item) => {
+                const { matchingFields, node } = item;
 
-            // Add the marker to the map
-            marker.addTo(map);
+                matchingFields.forEach((field) => {
+                    const { type, value } = stringToCoordinates(node.properties[field]);
+
+                    if (type === 'polygon') {
+                        // Handle polygon
+                        L.polygon(value as LatLngExpression[])
+                            .addTo(map)
+                            .bindPopup(bindPopupForPolygon(value as LatLng[]));
+                    } else {
+                        // Handle point
+                        L.marker(value as LatLngExpression)
+                            .addTo(map)
+                            .bindPopup(bindPopupForMarker(value as LatLng));
+                    }
+                });
+            });
         },
         onError: (error) => {
             console.log('error', error);
@@ -58,7 +79,7 @@ const EditableMapControl = ({ featureGroupRef }) => {
                 map.fitBounds(bounds);
             });
         } else if (layer instanceof L.Circle) {
-            handleFetchCircleRequest({ coordinate: [layer.getLatLng().lat, layer.getLatLng().lng], radius: layer.getRadius() * 1000 });
+            handleFetchCircleRequest({ coordinate: [layer.getLatLng().lng, layer.getLatLng().lat], radius: layer.getRadius() });
             const bounds = layer.getBounds();
             map.fitBounds(bounds);
             layer.bindPopup(bindPopupForCircle(layer.getRadius())).openPopup();

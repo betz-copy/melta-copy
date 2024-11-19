@@ -88,6 +88,13 @@ export const normalizeReturnedEntity =
         return entities as Response<T, IEntity>;
     };
 
+export const normalizeSearchByLocationResponse = (result: QueryResult): Array<{ node: IEntity; matchingFields: string[] }> => {
+    return result.records.map((record) => ({
+        node: nodeToEntity(record.get(0) as Node),
+        matchingFields: record.get(1) as string[],
+    }));
+};
+
 export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
@@ -284,6 +291,7 @@ const getLocationPoint = (pointString: string, splitBy: ' ' | ',') => {
 };
 
 export const getNeo4jLocation = (locationString: string) => {
+    console.log('aaaaaaaaaaaaa', { locationString });
     if (!locationString.startsWith('POLYGON')) return getLocationPoint(locationString, ',');
 
     const prefix = 'POLYGON((';

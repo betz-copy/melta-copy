@@ -25,6 +25,7 @@ import {
     normalizeResponseTemplatesCount,
     normalizeReturnedEntity,
     normalizeReturnedRelAndEntities,
+    normalizeSearchByLocationResponse,
     normalizeSearchWithRelationships,
     runInTransactionAndNormalize,
 } from '../../utils/neo4j/lib';
@@ -744,28 +745,30 @@ export class EntityManager extends DefaultManagerNeo4j {
     buildCircleQuery() {
         let query = this.buildBaseQuery();
 
-        // Add circle-specific spatial condition
         query += `
             AND templateData.circle IS NOT NULL 
-            AND ANY(field IN templateData.locationFields WHERE 
+    
+            WITH n, templateData,
+            [field IN templateData.locationFields WHERE 
                 point.distance(
                     n[field],  
                     point({
-                        longitude: templateData.circle.coordinate[1], 
-                        latitude: templateData.circle.coordinate[0]
+                        latitude: templateData.circle.coordinate[0],
+                        longitude: templateData.circle.coordinate[1]
                     })
                 ) <= templateData.circle.radius
-            )
+            ] AS matchingFields
+    
+            WHERE size(matchingFields) > 0
+    
+            RETURN n, matchingFields
         `;
-
-        query += 'RETURN n';
         return query;
     }
 
     buildPolygonQuery() {
         let query = this.buildBaseQuery();
 
-        // Add polygon-specific spatial condition
         query += `
             AND templateData.polygon IS NOT NULL 
             AND ANY(field IN templateData.locationFields WHERE 
@@ -783,16 +786,18 @@ export class EntityManager extends DefaultManagerNeo4j {
     async searchEntitiesByLocation(requestBody: ISearchEntitiesByLocationBody) {
         const { circle, polygon, templates } = requestBody;
 
-        let query: null | string = null;
+        let query: string | null = null;
 
         if (circle) query = this.buildCircleQuery();
-        if (polygon) query = this.buildPolygonQuery();
+        else if (polygon) query = this.buildPolygonQuery();
 
-        if (!query) throw new Error('Payload must include either circle or polygon, not both.');
+        if (!query) throw new Error('Payload must include either circle or polygon.');
 
         const updatedTemplates = Object.fromEntries(Object.entries(templates).map(([key, value]) => [key, { ...value, circle, polygon }]));
 
-        return this.neo4jClient.readTransaction(query, normalizeReturnedEntity('multipleResponses'), { templates: updatedTemplates });
+        // return this.neo4jClient.readTransaction(query, normalizeReturnedEntity('multipleResponses'), { templates: updatedTemplates });
+
+        return this.neo4jClient.readTransaction(query, (result) => normalizeSearchByLocationResponse(result), { templates: updatedTemplates });
     }
 
     async getEntityById(id: string) {
