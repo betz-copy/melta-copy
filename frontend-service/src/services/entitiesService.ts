@@ -137,7 +137,6 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-    console.log('newEntityData.properties: ', newEntityData.properties);
 
     formData.append(
         'properties',
@@ -147,7 +146,6 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
-    console.log(...formData);
 
     formData.append('templateId', newEntityData.template._id);
 

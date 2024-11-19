@@ -509,6 +509,8 @@ export default {
             failedToDelete: 'נכשל למחוק תבנית קשר',
             sourceEntity: 'תבנית ישות מקור',
             destinationEntity: 'תבנית ישות יעד',
+            convertToRelationshipFieldSuccessfully: 'קשר הומר לשדה קשר בהצלחה',
+            failedToConvertToRelationshipField: 'נכשל בהמרת קשר לשדה קשר',
         },
         processTemplate: {
             title: 'יצירת תבנית תהליך',

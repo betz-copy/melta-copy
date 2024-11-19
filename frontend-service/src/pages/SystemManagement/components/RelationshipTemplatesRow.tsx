@@ -2,7 +2,7 @@ import { AppRegistration as AppRegistrationIcon, ArrowBack } from '@mui/icons-ma
 import { Grid, IconButton, Typography, useTheme } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { CustomIcon } from '../../../common/CustomIcon';
@@ -15,7 +15,7 @@ import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     convertToRelationshipFieldRequest,
@@ -151,7 +151,6 @@ const RelationshipTemplatesRow: React.FC = () => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
-
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
 
@@ -210,30 +209,48 @@ const RelationshipTemplatesRow: React.FC = () => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
         },
     });
-    // const { sourceEntity, destinationEntity, _id } = relationshipTemplate;
 
-    const { mutateAsync: convertRelationshipRoRelationShipFieldRequest } = useMutation(
-        (id: string) =>
+    const { mutateAsync: convertRelationshipToRelationShipFieldRequest } = useMutation(
+        ({
+            id,
+            fieldName,
+            displayFieldName,
+            relatedTemplateField,
+        }: {
+            id: string;
+            fieldName: string;
+            displayFieldName: string;
+            relatedTemplateField: string;
+        }) =>
             convertToRelationshipFieldRequest(id, {
-                fieldName: 'englishName',
-                displayFieldName: 'hebrewName',
-                relatedTemplateField: 'name',
+                fieldName,
+                displayFieldName,
+                relatedTemplateField,
                 relationshipTemplateDirection: 'outgoing',
                 sourceEntityId: convertToRelationshipFieldDialogState.relationshipTemplate?.sourceEntityId!,
                 destinationEntityId: convertToRelationshipFieldDialogState.relationshipTemplate?.sourceEntityId!,
             }),
         {
-            onSuccess: (_data, id) => {
-                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) => {
-                    relationshipTemplateMap!.delete(id);
-                    return relationshipTemplateMap!;
-                });
+            onSuccess: (data, { id }) => {
+                queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
+                    relationshipTemplateMap!.set(id, data),
+                );
+                queryClient.invalidateQueries(['searchRelationshipTemplates']);
+                queryClient.invalidateQueries({ queryKey: ['searchEntities', id, ''], exact: true });
+
                 setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
                 queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
-                toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
+                toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
             onError: (error: AxiosError) => {
-                toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
+                console.log('noticeeeee:', error.response?.data.message);
+
+                toast.error(
+                    <ErrorToast
+                        axiosError={error}
+                        defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToConvertToRelationshipField')}
+                    />,
+                );
             },
         },
     );
@@ -258,6 +275,11 @@ const RelationshipTemplatesRow: React.FC = () => {
     };
 
     const theme = useTheme();
+    const [destEntity, setDestEntity] = useState<IMongoEntityTemplatePopulated | undefined>();
+    useEffect(() => {
+        if (convertToRelationshipFieldDialogState.relationshipTemplate)
+            setDestEntity(entityTemplates.get(convertToRelationshipFieldDialogState.relationshipTemplate?.destinationEntityId!));
+    }, [convertToRelationshipFieldDialogState]);
 
     return (
         <Grid item container marginBottom="30px">
@@ -455,8 +477,18 @@ const RelationshipTemplatesRow: React.FC = () => {
             <ConvertToRelationship
                 open={convertToRelationshipFieldDialogState.isDialogOpen}
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
-                onYes={() => convertRelationshipRoRelationShipFieldRequest(convertToRelationshipFieldDialogState.relationshipTemplate?._id!)}
+                onYes={({ fieldName, displayFieldName, relatedTemplateField }) =>
+                    convertRelationshipToRelationShipFieldRequest({
+                        id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
+                        fieldName,
+                        displayFieldName,
+                        relatedTemplateField,
+                    })
+                }
                 isLoading={isLoading}
+                targetEntityFields={[]}
+                destEntity={destEntity}
+                relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
             />
         </Grid>
     );

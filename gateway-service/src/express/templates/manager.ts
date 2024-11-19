@@ -981,16 +981,16 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         existingRelationships: IRelationship[],
         templateId: string,
     ) {
-        if (!requiredConstraints.length) throw new ServiceError(StatusCodes.BAD_REQUEST, 'foo');
+        if (!requiredConstraints.length) throw new ServiceError(StatusCodes.BAD_REQUEST, 'There are no required fields for the destination entity');
 
         const sourceEntityIdsMap = new Map<string, boolean>();
         existingRelationships.forEach((relationship) => {
             if (!sourceEntityIdsMap.has(relationship.sourceEntityId)) sourceEntityIdsMap.set(relationship.sourceEntityId, true);
-            else throw new ServiceError(StatusCodes.BAD_REQUEST, 'bar');
+            else throw new ServiceError(StatusCodes.BAD_REQUEST, 'Some entities have more than one relationship');
         });
 
         if ((await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId)).length)
-            throw new ServiceError(StatusCodes.BAD_REQUEST, 'baz');
+            throw new ServiceError(StatusCodes.BAD_REQUEST, 'There are rules attached to this relationship');
     }
 
     async convertRelationshipToRelationshipField(
@@ -1022,8 +1022,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             isProperty: true,
         });
 
-        // console.log({ updatedRelationShip, userId, fieldName }, entityTemplate.propertiesOrder);
-
         const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = srcEntityTemplate;
         const newRelationshipField: IEntitySingleProperty = {
             title: displayFieldName,
@@ -1053,8 +1051,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         await Promise.all(
             existingRelationships.map(async (relationship) => {
                 const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
-                console.log('source instance entity ', { sourceEntity });
-
                 await this.instancesService.updateEntityInstance(
                     relationship.sourceEntityId,
                     { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },

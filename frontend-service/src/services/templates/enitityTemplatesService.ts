@@ -18,8 +18,6 @@ export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
 const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
-    console.log('hello');
-
     if (!entityTemplate) return undefined;
     const {
         iconFileId,

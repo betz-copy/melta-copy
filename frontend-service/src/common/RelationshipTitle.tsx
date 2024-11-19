@@ -9,7 +9,7 @@ import { getEntityTemplateColor } from '../utils/colors';
 import { EntityTemplateColor } from './EntityTemplateColor';
 import { MeltaTooltip } from './MeltaTooltip';
 
-const ArrowTail: React.FC = () => {
+export const ArrowTail: React.FC = () => {
     const theme = useTheme();
 
     return (
@@ -22,7 +22,7 @@ const ArrowTail: React.FC = () => {
     );
 };
 
-const ArrowHead: React.FC = () => {
+export const ArrowHead: React.FC = () => {
     const theme = useTheme();
 
     return (
@@ -35,7 +35,7 @@ const ArrowHead: React.FC = () => {
     );
 };
 
-const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
+export const TextComponent: React.FC<{ title: string; style?: CSSProperties }> = ({ title, style }) => {
     return (
         <MeltaTooltip title={title}>
             <Typography
