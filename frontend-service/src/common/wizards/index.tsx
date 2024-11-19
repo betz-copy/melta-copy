@@ -1,11 +1,12 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, IconButton, Box } from '@mui/material';
 import { Close as CloseIcon } from '@mui/icons-material';
 import { Formik, Form, FormikProps, FormikConfig } from 'formik';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
 import { Stepper } from './stepper';
 import { useDarkModeStore } from '../../stores/darkMode';
+import { StepperActions } from './stepper/StepperActions';
 
 export interface StepComponentHelpers {
     isEditMode: boolean;
@@ -62,6 +63,8 @@ const Wizard = <T extends object>({
 >): JSX.Element | null => {
     const [activeStep, setActiveStep] = useState(initialStep);
     const isLastStep = activeStep === steps.length - 1;
+
+    const [block, setBlock] = useState(false);
 
     const darkMode = useDarkModeStore((state) => state.darkMode);
 
@@ -124,14 +127,25 @@ const Wizard = <T extends object>({
                         <Form>
                             <Stepper
                                 activeStep={activeStep}
-                                handleBack={handleBack}
                                 steps={steps}
-                                isLoading={isLoading}
                                 formikProps={formikProps}
+                                setBlock={setBlock}
                                 isEditMode={!!isEditMode}
                                 direction={direction}
                                 showPrevSteps={showPrevSteps}
                             />
+                            {steps[activeStep].stepperActions?.disable !== 'all' && (
+                                <Box sx={{ position: 'sticky', bottom: 0 }}>
+                                    <StepperActions
+                                        step={steps[activeStep]}
+                                        handleBack={handleBack}
+                                        isLastStep={isLastStep}
+                                        isFirstStep={activeStep === 0}
+                                        isLoading={isLoading || block}
+                                        formikProps={formikProps}
+                                    />
+                                </Box>
+                            )}
                         </Form>
                     )}
                 </Formik>

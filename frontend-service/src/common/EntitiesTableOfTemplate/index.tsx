@@ -117,7 +117,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
     datasourceOnFail?: (err: unknown) => void,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: false, paginationPageSize };
+        return { rowModelType, rowData, pagination: true, paginationPageSize };
     }
 
     const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;

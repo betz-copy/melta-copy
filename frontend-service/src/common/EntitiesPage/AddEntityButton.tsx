@@ -60,7 +60,7 @@ const AddEntityButton: React.FC<{
                     iconButtonProps: {
                         onClick: () => {
                             if (isLoadEntities) {
-                                if (!disabled) setLoadEntitiesState({ isOpen: true });
+                                if (!disabled) setLoadEntitiesState({ isOpen: true, initialStep: 1 });
                             } else {
                                 setAddEntityWizardState({ isOpen: true, initialStep, initialValues });
                                 setExternalErrors({ files: false, unique: {}, action: '' });

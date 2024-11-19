@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
 import { Grid, Typography } from '@mui/material';
+import { v4 as uuid } from 'uuid';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { EntitiesWizardValues, ISteps } from '.';
 import { loadExcelEntitiesRequest } from '../../../services/entitiesService';
@@ -19,7 +20,9 @@ export const UploadExcel: React.FC<{
     template: IMongoEntityTemplatePopulated;
     stepsData: ISteps;
     setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
-}> = ({ formikProps, template, stepsData, setStepsData }) => {
+    isLoading: boolean;
+    onDownload: () => Promise<any>;
+}> = ({ formikProps, template, stepsData, setStepsData, isLoading, onDownload }) => {
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(
@@ -56,12 +59,28 @@ export const UploadExcel: React.FC<{
                 disableCamera
             />
         );
-    if (stepsData.status === 'stepsExpand') return <OpenPreview fileId={formikProps.values.file!} type="preview" showText />;
+
+    if (stepsData.status === 'stepsExpand')
+        return (
+            <OpenPreview
+                fileId={`${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}.xlsx`}
+                onClick={() => onDownload()}
+                loading={isLoading}
+                type="exportTable"
+                showText
+            />
+        );
 
     return (
         <Grid container direction="column" padding="5px">
             <Grid marginTop="10px">
-                <OpenPreview fileId={formikProps.values.file!} type="preview" showText />
+                <OpenPreview
+                    fileId={`${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}.xlsx`}
+                    onClick={() => onDownload()}
+                    loading={isLoading}
+                    type="exportTable"
+                    showText
+                />
             </Grid>
             <Grid>
                 <Grid paddingTop="10px">
@@ -69,10 +88,10 @@ export const UploadExcel: React.FC<{
                         {i18next.t('wizard.entity.loadEntities.preview')}
                     </Typography>
                 </Grid>
-                <Grid sx={{ marginTop: '10px', marginBottom: '30px', width: '100%' }}>
+                <Grid sx={{ marginTop: '10px', marginBottom: '10px', width: '100%' }}>
                     <EntitiesTableOfTemplate
                         template={template}
-                        getRowId={(currentEntity) => currentEntity.properties._id}
+                        getRowId={() => uuid()}
                         getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                         rowModelType="clientSide"
                         rowHeight={defaultRowHeight}

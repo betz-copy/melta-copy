@@ -1,31 +1,26 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
 import { StepType } from '..';
-import { StepperActions } from './StepperActions';
 import { StepperSideBar } from './StepperSideBar';
 
 const Stepper = <T extends object>({
     activeStep,
-    handleBack,
     steps,
-    isLoading,
     formikProps,
+    setBlock,
     isEditMode,
     direction,
     showPrevSteps = false,
 }: {
     activeStep: number;
-    handleBack: () => void;
     steps: StepType<T>[];
-    isLoading: boolean;
     formikProps: FormikProps<T>;
+    setBlock: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;
     direction: 'row' | 'column';
     showPrevSteps?: boolean;
 }): JSX.Element | null => {
-    const [block, setBlock] = useState(false);
-
     return (
         <Grid container minWidth="70vh" spacing={2}>
             {steps.length > 1 && (
@@ -51,16 +46,6 @@ const Stepper = <T extends object>({
                 >
                     {steps[activeStep].component(formikProps, { isEditMode, setBlock })}
                 </Grid>
-            )}
-            {steps[activeStep].stepperActions?.disable !== 'all' && (
-                <StepperActions
-                    step={steps[activeStep]}
-                    handleBack={handleBack}
-                    isLastStep={activeStep === steps.length - 1}
-                    isFirstStep={activeStep === 0}
-                    isLoading={isLoading || block}
-                    formikProps={formikProps}
-                />
             )}
         </Grid>
     );

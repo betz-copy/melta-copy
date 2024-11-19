@@ -197,7 +197,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 if (result[0].status === ActionStatus.rejected) {
                     if (result[0].reason.metadata.errorCode === errorCodes.ruleBlock) {
                         const populateBrokenRules = (rawBrokenRules: IBrokenRule[]) => this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
-                        getBrokenRulesErrorEntities(result[0].reason.metadata.brokenRules, actions, populateBrokenRules);
+                        brokenRulesEntities = await getBrokenRulesErrorEntities(result[0].reason.metadata.brokenRules, actions, populateBrokenRules);
                     }
 
                     if (result[0].reason.metadata.errorCode === errorCodes.failedConstraintsValidation) {

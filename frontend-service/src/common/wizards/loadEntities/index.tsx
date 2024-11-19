@@ -73,8 +73,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         {
             onSuccess: (data) => {
                 console.log('not dry', { data });
-                // handleClose();
-                // setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                handleClose();
+                setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
             },
             onError: (err: AxiosError) => {
                 console.log({ err });
@@ -109,7 +109,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 rawBrokenRules: stepsData.data.brokenRulesEntities.rawBrokenRules,
                 brokenRules: stepsData.data.brokenRulesEntities.brokenRules,
                 actions: stepsData.data.brokenRulesEntities.entities.map((properties) => {
-                    return { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, properties } };
+                    return { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, ...properties } };
                 }),
             });
         else handleClose();
@@ -140,7 +140,24 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
-            component: (props) => <UploadExcel formikProps={props} template={template} stepsData={stepsData} setStepsData={setStepsData} />,
+            component: (props) => (
+                <UploadExcel
+                    formikProps={props}
+                    template={template}
+                    stepsData={stepsData}
+                    setStepsData={setStepsData}
+                    isLoading={isExportingTableToExcelFile}
+                    onDownload={() =>
+                        exportTemplateToExcel({
+                            fileName: `${template.displayName}.xlsx`,
+                            insertEntities: {
+                                insert: true,
+                                entities: stepsData.data.allEntities.map((entity) => entity.properties),
+                            },
+                        })
+                    }
+                />
+            ),
             validationSchema: stepsData.status === 'initialSteps' ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
                 disable: stepsData.status === 'initialSteps' ? 'all' : undefined,
@@ -151,6 +168,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                                 status: 'initialSteps',
                                 data: { allEntities: [], succeededEntities: [], failedEntities: [] },
                             });
+                            props.setFieldValue('file', undefined);
                         }
                     },
                 },
@@ -168,15 +186,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                                         entities: stepsData.data.failedEntities.map((entity) => entity.properties),
                                     },
                                 });
-
-                            const actions = stepsData.data.succeededEntities.map((properties) => ({
-                                actionType: ActionTypes.CreateEntity,
-                                actionMetadata: { templateId: template._id, properties },
-                            }));
-                            createBulkMutation({
-                                actionsGroups: [actions],
-                                ignoredRules: [],
-                            });
                         }
                     },
                 },
@@ -253,6 +262,11 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                             brokenRules,
                         }))
                     }
+                    entityFormData={{
+                        template,
+                        properties: { ...stepsData.data.brokenRulesEntities!.entities[0].properties, disabled: false },
+                        attachmentsProperties: {},
+                    }}
                     onCreateRuleBreachRequest={() => handleClose()}
                     actions={createOrUpdateWithRuleBreachDialogState.actions}
                     rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}

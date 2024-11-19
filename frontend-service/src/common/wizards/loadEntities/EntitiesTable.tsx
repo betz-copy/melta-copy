@@ -2,6 +2,7 @@ import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, 
 import React from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
+import { v4 as uuid } from 'uuid';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { environment } from '../../../globals';
@@ -77,7 +78,7 @@ export const EntitiesTable: React.FC<{
             <AccordionDetails>
                 <EntitiesTableOfTemplate
                     template={template}
-                    getRowId={(currentEntity) => currentEntity.properties._id}
+                    getRowId={(currentEntity) => currentEntity.properties._id || uuid()}
                     getEntityPropertiesData={(currentEntity) => currentEntity.properties}
                     rowModelType="clientSide"
                     rowHeight={defaultRowHeight}

@@ -75,7 +75,7 @@ interface IActionOnEntityWithRuleBreachDialogProps {
     currEntity?: IEntity;
     brokenRules: IRuleBreachPopulated['brokenRules'];
     rawBrokenRules: IRuleBreach['brokenRules'];
-    entityFormData?: EntityWizardValues;
+    entityFormData: EntityWizardValues;
     onUpdatedRuleBlock: (brokenRules: IRuleBreachPopulated['brokenRules'], rawBrokenRules: IRuleBreach['brokenRules']) => void;
     onCreateRuleBreachRequest: () => void;
     actions?: IActionPopulated[];
@@ -101,46 +101,43 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
 
     let actionMetadataWithoutFiles: ICreateEntityMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
     let actionMetadataPopulated: ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated | IUpdateEntityMetadataPopulated;
-    if (actions) actionMetadataPopulated = actions[0] as unknown as ICreateEntityMetadata;
 
     let entityAttachmentsProperties = {};
-    if (entityFormData) {
-        const { template, properties, attachmentsProperties } = entityFormData;
-        entityAttachmentsProperties = attachmentsProperties;
-        if (actionType === ActionTypes.CreateEntity) {
-            actionMetadataWithoutFiles = {
-                templateId: template._id,
-                properties,
-            } satisfies ICreateEntityMetadata;
-            actionMetadataPopulated = {
-                templateId: template._id,
-                properties: { ...properties, ...attachmentsProperties },
-            } satisfies ICreateEntityMetadataPopulated;
-        } else if (actionType === ActionTypes.DuplicateEntity) {
-            const fixedDuplicatedAttachmentProperties = mapValues(
-                pickBy(attachmentsProperties, (value) => !(value instanceof File)),
-                (file) => (Array.isArray(file) ? file.map(({ name }) => name) : file!.name),
-            );
-            actionMetadataWithoutFiles = {
-                templateId: template._id,
-                properties: { ...properties, ...fixedDuplicatedAttachmentProperties },
-                entityIdToDuplicate: currEntity!.properties._id,
-            } satisfies IDuplicateEntityMetadata;
-            actionMetadataPopulated = {
-                templateId: template._id,
-                properties: { ...properties, ...attachmentsProperties, ...fixedDuplicatedAttachmentProperties }, // override fixedDuplicatedAttachmentProperties
-                entityToDuplicate: currEntity!,
-            } satisfies IDuplicateEntityMetadataPopulated;
-        } else if (actionType === ActionTypes.UpdateEntity) {
-            actionMetadataPopulated = getUpdateEntityActionMetadata(currEntity!, entityFormData);
-            const updatedFieldsWithoutFiles = pickBy(actionMetadataPopulated.updatedFields, (value) => !(value instanceof File));
-            actionMetadataWithoutFiles = {
-                entityId: currEntity!.properties._id,
-                updatedFields: updatedFieldsWithoutFiles,
-            } satisfies IUpdateEntityMetadata;
-        } else {
-            throw new Error('unsupported action type. cant create actionMetadata');
-        }
+    const { template, properties, attachmentsProperties } = entityFormData;
+    entityAttachmentsProperties = attachmentsProperties;
+    if (actionType === ActionTypes.CreateEntity) {
+        actionMetadataWithoutFiles = {
+            templateId: template._id,
+            properties,
+        } satisfies ICreateEntityMetadata;
+        actionMetadataPopulated = {
+            templateId: template._id,
+            properties: { ...properties, ...attachmentsProperties },
+        } satisfies ICreateEntityMetadataPopulated;
+    } else if (actionType === ActionTypes.DuplicateEntity) {
+        const fixedDuplicatedAttachmentProperties = mapValues(
+            pickBy(attachmentsProperties, (value) => !(value instanceof File)),
+            (file) => (Array.isArray(file) ? file.map(({ name }) => name) : file!.name),
+        );
+        actionMetadataWithoutFiles = {
+            templateId: template._id,
+            properties: { ...properties, ...fixedDuplicatedAttachmentProperties },
+            entityIdToDuplicate: currEntity!.properties._id,
+        } satisfies IDuplicateEntityMetadata;
+        actionMetadataPopulated = {
+            templateId: template._id,
+            properties: { ...properties, ...attachmentsProperties, ...fixedDuplicatedAttachmentProperties }, // override fixedDuplicatedAttachmentProperties
+            entityToDuplicate: currEntity!,
+        } satisfies IDuplicateEntityMetadataPopulated;
+    } else if (actionType === ActionTypes.UpdateEntity) {
+        actionMetadataPopulated = getUpdateEntityActionMetadata(currEntity!, entityFormData);
+        const updatedFieldsWithoutFiles = pickBy(actionMetadataPopulated.updatedFields, (value) => !(value instanceof File));
+        actionMetadataWithoutFiles = {
+            entityId: currEntity!.properties._id,
+            updatedFields: updatedFieldsWithoutFiles,
+        } satisfies IUpdateEntityMetadata;
+    } else {
+        throw new Error('unsupported action type. cant create actionMetadata');
     }
 
     const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
