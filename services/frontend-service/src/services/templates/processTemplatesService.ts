@@ -1,23 +1,23 @@
 import { v4 as uuid } from 'uuid';
-import axios from '../../axios';
-import { environment } from '../../globals';
-import fileDetails from '../../interfaces/fileDetails';
-import { ProcessTemplateFormInputProperties, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 import {
-    IMongoProcessTemplatePopulated,
-    ICreateProcessTemplateBody,
+    IMongoProcessTemplateReviewerPopulated,
+    IProcessTemplatePopulated,
     IUpdateProcessTemplateBody,
     IProcessDetails,
     IProcessSingleProperty,
     ISearchProcessTemplatesBody,
-} from '../../interfaces/processes/processTemplate';
+} from '@microservices/shared';
+import axios from '../../axios';
+import { environment } from '../../globals';
+import fileDetails from '../../interfaces/fileDetails';
+import { ProcessTemplateFormInputProperties, ProcessTemplateWizardValues } from '../../common/wizards/processTemplate';
 
 const { processTemplates } = environment.api;
 export const basePropertyTypes = ['string', 'number', 'boolean', 'array'];
 export const stringFormats = ['date', 'date-time', 'email', 'entityReference', 'fileId', 'text-area'];
 
 const processTemplateObjectToProcessTemplateForm = (
-    processTemplate: IMongoProcessTemplatePopulated | null,
+    processTemplate: IMongoProcessTemplateReviewerPopulated | null,
 ): ProcessTemplateWizardValues | undefined => {
     if (!processTemplate) return undefined;
     const { details, steps, ...restOfProcessTemplate } = processTemplate;
@@ -142,10 +142,10 @@ const addAttachmentProperties = (
     });
 };
 
-const formToJSONSchema = (values: ProcessTemplateWizardValues): ICreateProcessTemplateBody | IUpdateProcessTemplateBody => {
+const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplatePopulated | IUpdateProcessTemplateBody => {
     const { detailsProperties, detailsAttachmentProperties, steps, ...restOfProperties } = values;
     const detailsPropertiesOrder: string[] = [];
-    const stepTemplates: ICreateProcessTemplateBody['steps'] | IUpdateProcessTemplateBody['steps'] = [];
+    const stepTemplates: IProcessTemplatePopulated['steps'] | IUpdateProcessTemplateBody['steps'] = [];
 
     const detailsSchema: IProcessDetails['properties'] = {
         type: 'object',
@@ -222,7 +222,7 @@ const createProcessTemplateRequest = async (newProcessTemplate: ProcessTemplateW
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
 
-    const { data } = await axios.post<IMongoProcessTemplatePopulated>(processTemplates, formData);
+    const { data } = await axios.post<IMongoProcessTemplateReviewerPopulated>(processTemplates, formData);
     return data;
 };
 
@@ -238,7 +238,7 @@ const updateProcessTemplateRequest = async (processTemplateId: string, updatedPr
     formData.append('displayName', processTemplate.displayName);
     formData.append('details', JSON.stringify(processTemplate.details));
     formData.append('steps', JSON.stringify(processTemplate.steps));
-    const { data } = await axios.put<IMongoProcessTemplatePopulated>(`${processTemplates}/${processTemplateId}`, formData);
+    const { data } = await axios.put<IMongoProcessTemplateReviewerPopulated>(`${processTemplates}/${processTemplateId}`, formData);
 
     return data;
 };
@@ -249,7 +249,7 @@ const deleteProcessTemplateRequest = async (processTemplateId: string) => {
 };
 
 const searchProcessTemplates = async (searchBody: ISearchProcessTemplatesBody) => {
-    const { data } = await axios.post<IMongoProcessTemplatePopulated[]>(`${processTemplates}/search`, searchBody);
+    const { data } = await axios.post<IMongoProcessTemplateReviewerPopulated[]>(`${processTemplates}/search`, searchBody);
     return data;
 };
 

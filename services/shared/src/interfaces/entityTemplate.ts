@@ -1,5 +1,6 @@
 import { Document } from "mongoose";
 import { IMongoCategory } from "./category";
+import { IUniqueConstraintOfTemplate } from "./entity";
 
 export interface IRelationshipReference {
   relationshipTemplateId?: string;
@@ -91,3 +92,38 @@ export interface ISearchEntityTemplatesBody extends ISearchBody {
 }
 
 export type IEntityTemplateMap = Map<string, IMongoEntityTemplatePopulated>;
+
+export interface IEntityTemplateWithConstraints extends IEntityTemplate {
+  uniqueConstraints: IUniqueConstraintOfTemplate[];
+  properties: IEntityTemplate["properties"] & { required: string[] };
+}
+
+export interface IMongoEntityTemplateWithConstraints
+  extends IMongoEntityTemplate {
+  uniqueConstraints: IUniqueConstraintOfTemplate[];
+  properties: IEntityTemplate["properties"] & { required: string[] };
+}
+
+export interface IEntityTemplateWithConstraintsPopulated
+  extends IEntityTemplatePopulated {
+  uniqueConstraints: IUniqueConstraintOfTemplate[];
+  properties: IEntityTemplate["properties"] & { required: string[] };
+}
+
+export interface IMongoEntityTemplateWithConstraintsPopulated
+  extends IMongoEntityTemplatePopulated {
+  uniqueConstraints: IUniqueConstraintOfTemplate[];
+  properties: IEntityTemplate["properties"] & { required: string[] };
+}
+
+export interface IUpdateOrDeleteEnumFieldReqData {
+  name: string;
+  type: string;
+  options: string[];
+  optionColors?: Record<string, string>;
+}
+
+export type IEntityTemplateWithConstraintsMap = Map<
+  string,
+  IMongoEntityTemplateWithConstraintsPopulated
+>;

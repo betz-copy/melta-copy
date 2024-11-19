@@ -12,6 +12,7 @@ import {
 } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
+import { PermissionScope } from '@microservices/shared';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
@@ -23,7 +24,6 @@ import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 
 const {
     separators,

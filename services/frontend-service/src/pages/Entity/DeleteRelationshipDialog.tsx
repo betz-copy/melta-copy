@@ -3,13 +3,18 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { AxiosError } from 'axios';
-import { IEntityExpanded } from '@microservices/shared';
+import {
+    IEntityExpanded,
+    IRuleMap,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ActionTypes,
+    IDeleteRelationshipMetadata,
+    IDeleteRelationshipMetadataPopulated,
+} from '@microservices/shared';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
 import { deleteRelationshipRequest } from '../../services/relationshipsService';
-import { IRuleMap } from '../../interfaces/rules';
-import { IRuleBreach, IRuleBreachPopulated } from '../../interfaces/ruleBreaches/ruleBreach';
-import { ActionTypes, IDeleteRelationshipMetadata, IDeleteRelationshipMetadataPopulated } from '../../interfaces/ruleBreaches/actionMetadata';
 import { createRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { ErrorToast } from '../../common/ErrorToast';
 import { environment } from '../../globals';

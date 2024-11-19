@@ -55,6 +55,8 @@ const TemplateEntitiesAutocomplete: React.FC<{
                 limit: cacheBlockSize,
                 filter: { $and: { disabled: { $eq: false } } },
                 textSearch: inputValue,
+                showRelationships: false,
+                sort: [],
             });
         },
         {

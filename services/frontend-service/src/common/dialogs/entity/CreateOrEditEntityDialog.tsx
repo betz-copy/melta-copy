@@ -13,15 +13,22 @@ import { v4 as uuid } from 'uuid';
 import { useLocation } from 'wouter';
 import { cloneDeep } from 'lodash';
 import { StatusCodes } from 'http-status-codes';
-import { IEntity, IUniqueConstraint, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import {
+    IEntity,
+    IUniqueConstraint,
+    IMongoEntityTemplatePopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+} from '@microservices/shared';
 import { createEntityRequest, updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '.';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
 import { ChooseTemplate } from './ChooseTemplate';
-import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import { BlueTitle } from '../../BlueTitle';
 import { ExportFormats } from './ExportFormats';

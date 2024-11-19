@@ -1,15 +1,21 @@
 import isEqual from 'lodash.isequal';
-import { IRelationshipPopulated, IEntity, IEntityTemplateMap, IMongoEntityTemplatePopulated, IRelationshipTemplateMap } from '@microservices/shared';
-import { environment } from '../../globals';
 import {
+    IRelationshipPopulated,
+    IEntity,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IRelationshipTemplateMap,
+    ICausesOfInstancePopulated,
+    IEntityForBrokenRules,
+    IRelationshipForBrokenRules,
     ActionTypes,
     IActionPopulated,
     ICreateEntityMetadataPopulated,
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
-} from '../../interfaces/ruleBreaches/actionMetadata';
-import { ICausesOfInstancePopulated, IEntityForBrokenRules, IRelationshipForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
+} from '@microservices/shared';
+import { environment } from '../../globals';
 
 export const getActionsByFailureOnEntity = (
     failure: { entity: IEntityForBrokenRules; causes: ICausesOfInstancePopulated[] },

@@ -1,5 +1,6 @@
 import { IEntity } from "../../entity";
 import { IMongoEntityTemplatePopulated } from "../../entityTemplate";
+import { IUser } from "../../user";
 import { IBaseSearchProperties } from "../templates/process";
 import { IMongoStepInstance, IMongoStepInstancePopulated } from "./step";
 
@@ -76,3 +77,5 @@ export interface IReferencedEntityForProcess {
   userHavePermission: boolean;
   entityTemplate: IMongoEntityTemplatePopulated;
 }
+
+export type StepsObjectPopulated = Record<string, IUser[]>;

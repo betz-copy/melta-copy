@@ -4,6 +4,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { AddCircle as AddCircleIcon } from '@mui/icons-material';
 import { useQueryClient } from 'react-query';
+import { PermissionScope } from '@microservices/shared';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import { GanttsCard } from './Card';
@@ -13,7 +14,6 @@ import { environment } from '../../globals';
 import { GlobalSearchBar } from '../../common/EntitiesPage/Headline';
 import { CreateGanttDialog } from './CreateGanttDialog';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.ganttSettings;
 

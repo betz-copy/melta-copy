@@ -10,7 +10,7 @@ import { ProcessTemplatesRow } from './components/ProcessTemplates/ProcessTempla
 import '../../css/pages.css';
 import { NoPermissions } from './components/NoPermissions';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
+import { PermissionScope } from '@microservices/shared';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
 
 const SystemManagement: React.FC<{ setTitle: React.Dispatch<React.SetStateAction<string>> }> = ({ setTitle }) => {

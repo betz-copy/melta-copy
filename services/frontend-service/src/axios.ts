@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import axiosInstance from 'axios';
+import axiosInstance, { AxiosHeaders } from 'axios';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
 import { environment } from './globals';
@@ -15,7 +15,7 @@ const axios = axiosInstance.create({
 axios.interceptors.request.use((config) => {
     const { workspace } = useWorkspaceStore.getState();
 
-    if (!config.headers) config.headers = {};
+    if (!config.headers) config.headers = new AxiosHeaders();
     config.headers[environment.workspaceIdHeaderName] = workspace._id;
 
     return config;

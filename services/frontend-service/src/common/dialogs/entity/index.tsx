@@ -1,4 +1,4 @@
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoCategory, IMongoEntityTemplatePopulated, IProperties } from '@microservices/shared';
 
 export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
     _id: '',
@@ -9,18 +9,18 @@ export const emptyEntityTemplate: IMongoEntityTemplatePopulated = {
         name: '',
         displayName: '',
         color: '',
-    },
+    } as IMongoCategory,
     properties: {
         properties: {},
-        required: [],
         type: 'object',
         hide: [],
-    },
+    } as IProperties,
     propertiesOrder: [],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
     propertiesPreview: [],
-    uniqueConstraints: [],
     disabled: false,
+    createdAt: '',
+    updatedAt: '',
 };
 
 export interface EntityWizardValues {

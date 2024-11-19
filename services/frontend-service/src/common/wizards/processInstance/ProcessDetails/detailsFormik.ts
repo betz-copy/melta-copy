@@ -2,8 +2,12 @@ import { useFormik, yupToFormErrors } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
 import { useMemo } from 'react';
-import { IMongoProcessTemplatePopulated, IProcessDetails, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
+import {
+    IMongoProcessTemplateReviewerPopulated,
+    IProcessDetails,
+    IProcessTemplateMap,
+    IMongoProcessInstanceReviewerPopulated,
+} from '@microservices/shared';
 import { ProcessDetailsValues } from '.';
 import { getStepsObjectPopulated } from '../../../../utils/processWizard/steps';
 import { splitSpacialProperties } from '../../../../utils/processWizard/formik';
@@ -19,7 +23,7 @@ const validationSchema = Yup.object().shape({
     steps: Yup.object().nullable().required('This field is required'),
 });
 
-export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Object => {
+export const initDetailsValues = (template: IMongoProcessTemplateReviewerPopulated): Object => {
     const details = {};
     Object.keys(template.details.properties.properties).forEach((field) => {
         details[field] = undefined;
@@ -28,7 +32,7 @@ export const initDetailsValues = (template: IMongoProcessTemplatePopulated): Obj
 };
 
 export const getInitialDetailsValues = (
-    processInstance: IMongoProcessInstancePopulated | undefined,
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
 ): ProcessDetailsValues => {
     if (processInstance) {
@@ -78,7 +82,7 @@ const getValidationErrors = async (values) => {
 };
 
 export const useProcessDetailsFormik = (
-    processInstance: IMongoProcessInstancePopulated | undefined,
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined,
     processTemplatesMap: IProcessTemplateMap,
     mutateAsync: (data: ProcessDetailsValues) => Promise<any>,
 ) => {

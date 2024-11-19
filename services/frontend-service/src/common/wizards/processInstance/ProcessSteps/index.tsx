@@ -2,11 +2,15 @@ import { Box, Grid, Tab, useTheme } from '@mui/material';
 import React from 'react';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { ScatterPlotOutlined as HiveIcon } from '@mui/icons-material';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../../../interfaces/processes/stepTemplate';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import {
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoStepTemplatePopulated,
+    IMongoStepInstancePopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IReferencedEntityForProcess,
+    Status,
+} from '@microservices/shared';
 import { ProcessStep } from './processStep';
-import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, Status } from '../../../../interfaces/processes/processInstance';
 import { CustomIcon } from '../../../CustomIcon';
 import { useDarkModeStore } from '../../../../stores/darkMode';
 
@@ -19,8 +23,8 @@ export interface ProcessStepValues {
 }
 
 export interface IStepsProp {
-    processTemplate: IMongoProcessTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     isStepEditMode: boolean;
     setIsStepEditMode: React.Dispatch<React.SetStateAction<boolean>>;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
@@ -29,7 +33,7 @@ export interface IStepsProp {
 
 const getStepTemplateByStepInstance = (
     stepInstance: IMongoStepInstancePopulated,
-    processTemplate: IMongoProcessTemplatePopulated,
+    processTemplate: IMongoProcessTemplateReviewerPopulated,
 ): IMongoStepTemplatePopulated => {
     return processTemplate.steps.find((step) => stepInstance.templateId === step._id)!;
 };

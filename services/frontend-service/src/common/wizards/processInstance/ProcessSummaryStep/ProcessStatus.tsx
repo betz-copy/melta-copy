@@ -9,8 +9,7 @@ import { Grid, IconButton, SvgIconProps, Typography } from '@mui/material';
 import { FormikProps } from 'formik';
 import i18next from 'i18next';
 import React from 'react';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import { IMongoStepInstancePopulated, IMongoProcessInstanceReviewerPopulated, Status } from '@microservices/shared';
 import { StatusColorsNames } from '../../../../pages/ProcessInstances/ProcessCard';
 import { useUserStore } from '../../../../stores/user';
 import { getLongDate } from '../../../../utils/date';
@@ -77,10 +76,10 @@ export const StatusDisplay: React.FC<StatusDisplayProps> = ({ status, Icon, text
     );
 };
 
-export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated }> = ({
-    isPrinting,
-    instance,
-}) => {
+export const ReviewedAtProcessStatus: React.FC<{
+    isPrinting?: boolean;
+    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
+}> = ({ isPrinting, instance }) => {
     const currentUser = useUserStore((state) => state.user);
 
     return (
@@ -108,7 +107,7 @@ export const ReviewedAtProcessStatus: React.FC<{ isPrinting?: boolean; instance:
 
 interface ProcessStatusProps {
     title?: string;
-    instance: IMongoProcessInstancePopulated | IMongoStepInstancePopulated;
+    instance: IMongoProcessInstanceReviewerPopulated | IMongoStepInstancePopulated;
     editStatus?: {
         setFieldValue: FormikProps<ProcessStepValues>['setFieldValue'];
         isEditMode: boolean;

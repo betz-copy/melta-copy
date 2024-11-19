@@ -15,6 +15,8 @@ import {
     IRelationshipTemplateMap,
     ICategoryMap,
     IMongoCategory,
+    PermissionScope,
+    ISubCompactPermissions,
 } from '@microservices/shared';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -26,8 +28,6 @@ import { EntityTemplateTextComponent, RelationshipTitle } from '../../common/Rel
 import { TableButton } from '../../common/TableButton';
 import '../../css/pages.css';
 import { environment } from '../../globals';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ISubCompactPermissions } from '../../interfaces/permissions/permissions';
 import { getExpandedEntityByIdRequest } from '../../services/entitiesService';
 import { useUserStore } from '../../stores/user';
 import { checkUserCategoryPermission } from '../../utils/permissions/instancePermissions';

@@ -1,13 +1,13 @@
 import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React from 'react';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { SelectCheckbox } from '../../common/SelectCheckbox';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
 const ProcessTemplatesSelectCheckbox: React.FC<{
-    templates: IMongoProcessTemplatePopulated[];
-    selectedTemplates: IMongoProcessTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoProcessTemplatePopulated[]>>;
+    templates: IMongoProcessTemplateReviewerPopulated[];
+    selectedTemplates: IMongoProcessTemplateReviewerPopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoProcessTemplateReviewerPopulated[]>>;
 }> = ({ templates, selectedTemplates, setSelectedTemplates }) => {
     return (
         <SelectCheckbox

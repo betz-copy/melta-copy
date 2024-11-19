@@ -3,9 +3,12 @@ import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
 import { JSONSchemaFaker } from 'json-schema-faker';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoProcessInstancePopulated, Status } from '../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
-import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
+import {
+    IMongoStepInstancePopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    Status,
+    IMongoProcessTemplateReviewerPopulated,
+} from '@microservices/shared';
 import { generateMongoId, generateUser } from './permissions';
 import { processTemplates } from './templates/processTemplates';
 
@@ -13,7 +16,7 @@ const chance = new Chance();
 
 JSONSchemaFaker.format('fileId', (_value) => '01234567890123456789012345678901bla bla.docx');
 
-function generateProcessInstanceOfTemplate(template: IMongoProcessTemplatePopulated): IMongoProcessInstancePopulated {
+function generateProcessInstanceOfTemplate(template: IMongoProcessTemplateReviewerPopulated): IMongoProcessInstanceReviewerPopulated {
     const steps: IMongoStepInstancePopulated[] = template.steps.map((step) => {
         const status = chance.pickone(Object.values(Status));
         return {
@@ -47,7 +50,7 @@ function generateProcessInstanceOfTemplate(template: IMongoProcessTemplatePopula
 }
 
 const generateProcessInstance = () => {
-    const template = chance.pickone(processTemplates as IMongoProcessTemplatePopulated[]);
+    const template = chance.pickone(processTemplates as IMongoProcessTemplateReviewerPopulated[]);
     return generateProcessInstanceOfTemplate(template);
 };
 

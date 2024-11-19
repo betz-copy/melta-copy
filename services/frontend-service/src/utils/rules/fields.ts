@@ -6,6 +6,7 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplatePopulated,
     IRelationshipTemplateMap,
+    IVariable,
 } from '@microservices/shared';
 import {
     addDefaultFieldsToTemplate,
@@ -13,7 +14,6 @@ import {
     isRelationshipConnectedToEntityTemplate,
     populateRelationshipTemplate,
 } from '../templates';
-import { IVariable } from '../../interfaces/rules/formula/argument';
 import { getAggVariablesInTree } from './getAggVariablesInTree';
 
 const entityTemplateToFieldsConfig = (

@@ -5,16 +5,14 @@ import { toast } from 'react-toastify';
 import { FiberManualRecordOutlined as StatusIcon, FiberManualRecord as StatusIconFilled } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { useQueryClient } from 'react-query';
+import { Status, IMongoProcessInstanceReviewerPopulated, PermissionScope } from '@microservices/shared';
 import { ViewingBox } from '../SystemManagement/components/ViewingBox';
 import ProcessCard, { StatusColors } from './ProcessCard';
 import { searchProcessesRequest } from '../../services/processesService';
 import { environment } from '../../globals';
-import { Status, IMongoProcessInstancePopulated } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
 import './ProcessesList.css';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -24,7 +22,7 @@ const ProcessesList: React.FC<{
     search: string;
     startDateInput: Date | null;
     endDateInput: Date | null;
-    templatesToShowCheckbox: IMongoProcessTemplatePopulated[]; // todo: support in backend
+    templatesToShowCheckbox: IMongoProcessTemplateReviewerPopulated[]; // todo: support in backend
 }> = ({ templatesToShowCheckbox, search, startDateInput, endDateInput }) => {
     const [statusFilter, setStatusFilter] = useState<'all' | Status | undefined>('all');
 
@@ -108,7 +106,7 @@ const ProcessesList: React.FC<{
             </Grid>
             <Grid item>
                 <ViewingBox minHeight="80vh">
-                    <InfiniteScroll<IMongoProcessInstancePopulated>
+                    <InfiniteScroll<IMongoProcessInstanceReviewerPopulated>
                         queryKey={['searchProcesses', templatesToShowCheckbox, search, startDateInput, endDateInput, statusFilter]}
                         queryFunction={({ pageParam }) => {
                             return searchProcessesRequest({

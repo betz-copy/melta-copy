@@ -1,7 +1,6 @@
-import { IRelationship } from '@microservices/shared';
+import { IRelationship, IRuleBreach } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 
 const { relationships } = environment.api;
 

@@ -1,8 +1,12 @@
-import { IMongoEntityTemplatePopulated, IMongoRelationshipTemplate, IMongoCategory } from '@microservices/shared';
+import {
+    IMongoEntityTemplatePopulated,
+    IMongoRelationshipTemplate,
+    IMongoCategory,
+    IMongoRule,
+    IMongoProcessTemplateReviewerPopulated,
+} from '@microservices/shared';
 import { environment } from '../../globals';
 import axios from '../../axios';
-import { IMongoRule } from '../../interfaces/rules';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
 
 const { getAllTemplates: getAllTemplatesRoute } = environment.api;
 
@@ -10,7 +14,7 @@ export type GetAllTemplatesType = {
     categories: IMongoCategory[];
     entityTemplates: IMongoEntityTemplatePopulated[];
     relationshipTemplates: IMongoRelationshipTemplate[];
-    processTemplates: IMongoProcessTemplatePopulated[];
+    processTemplates: IMongoProcessTemplateReviewerPopulated[];
     rules: IMongoRule[];
 };
 

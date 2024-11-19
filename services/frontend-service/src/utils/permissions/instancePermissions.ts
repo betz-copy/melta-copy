@@ -1,6 +1,4 @@
-import { IMongoCategory } from '@microservices/shared';
-import { PermissionScope } from '../../interfaces/permissions';
-import { ICompact, IInstancesPermission, ISubCompactPermissions } from '../../interfaces/permissions/permissions';
+import { IMongoCategory, PermissionScope, ICompact, IInstancesPermission, ISubCompactPermissions } from '@microservices/shared';
 
 export const checkUserCategoryPermission = (
     permissions: ISubCompactPermissions,

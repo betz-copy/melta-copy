@@ -10,11 +10,11 @@ import {
     ICountSearchResult,
     IExportEntitiesBody,
     IGraphFilterBodyBatch,
+    IRuleBreach,
 } from '@microservices/shared';
 import axios from '../axios';
 import { environment } from '../globals';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 
 const { entities, relationships } = environment.api;

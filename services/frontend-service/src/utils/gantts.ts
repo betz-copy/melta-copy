@@ -8,6 +8,7 @@ import {
     ISearchBatchBody,
     IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
+    IEntityTemplateMap,
 } from '@microservices/shared';
 import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
@@ -88,6 +89,7 @@ export const getEntitiesSearchBody = (
         limit,
         skip,
         templates,
+        sort: [],
     };
 };
 
@@ -163,11 +165,14 @@ export const getScheduleComponentEntityTemplateResourceData = (
 export const getScheduleComponentGroupByEntityResourceData = async (groupBy: IGanttGroupBy): Promise<IScheduleComponentResourceData[]> => {
     const { entities } = await getEntitiesWithDirectConnections({
         limit: groupByEntitiesChunkSize,
+        skip: 0,
         templates: {
             [groupBy.entityTemplateId]: {
                 filter: { $and: { disabled: { $eq: false } } },
+                showRelationships: [],
             },
         },
+        sort: [],
     });
 
     return filteredMap(entities, ({ entity }) => {

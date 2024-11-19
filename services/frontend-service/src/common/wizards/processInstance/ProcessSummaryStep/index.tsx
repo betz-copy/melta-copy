@@ -1,14 +1,13 @@
 import { Box, Grid } from '@mui/material';
 import React from 'react';
 import i18next from 'i18next';
+import { IMongoProcessInstanceReviewerPopulated, IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import ProcessStatus from './ProcessStatus';
 import StepsStatuses from './StepsStatuses';
-import { IMongoProcessInstancePopulated } from '../../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 
 export interface ProcessSummaryProp {
-    processInstance: IMongoProcessInstancePopulated;
-    processTemplate: IMongoProcessTemplatePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
     isPrinting: boolean;
 }
 

@@ -1,11 +1,9 @@
 import React from 'react';
 import { Grid, List } from '@mui/material';
 import { useQueryClient } from 'react-query';
+import { IRuleMap, IRuleBreachPopulated, IActionPopulated } from '@microservices/shared';
 import { BrokenRuleCompact } from './BrokenRuleCompact';
 import { BrokenRuleFull } from './BrokenRuleFull';
-import { IRuleMap } from '../../../interfaces/rules';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { useDarkModeStore } from '../../../stores/darkMode';
 
 export const BrokenRulesInfo: React.FC<{

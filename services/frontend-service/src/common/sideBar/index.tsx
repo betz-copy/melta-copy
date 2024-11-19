@@ -14,10 +14,9 @@ import { Box, Button, Grid, IconButton, Slide, Typography, useTheme } from '@mui
 import i18next from 'i18next';
 import { useLocation } from 'wouter';
 import StarBorderPurple500Icon from '@mui/icons-material/StarBorderPurple500';
-import { ICategoryMap } from '@microservices/shared';
+import { ICategoryMap, PermissionScope } from '@microservices/shared';
 import { environment } from '../../globals';
 import { INotificationCountGroups } from '../../interfaces/notifications';
-import { PermissionScope } from '../../interfaces/permissions';
 import { getMyNotificationGroupCountRequest } from '../../services/notificationService';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useMeltaPlusStore } from '../../stores/meltaPlus';

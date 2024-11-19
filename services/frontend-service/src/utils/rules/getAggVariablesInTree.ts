@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-use-before-define -- recursive circular functions */
 import { ImmutableTree, JsonGroup, JsonItem, JsonRuleGroupExt, Utils as QbUtils } from '@react-awesome-query-builder/mui';
-import { IVariable } from '../../interfaces/rules/formula/argument';
+import { IVariable } from '@microservices/shared';
 import { RuleParser } from './parser';
 
 export const getAggVariablesInGroup = (group: JsonGroup): Required<IVariable>[] => {

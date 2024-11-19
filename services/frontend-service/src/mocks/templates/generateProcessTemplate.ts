@@ -1,6 +1,5 @@
+import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IMongoStepTemplatePopulated } from '@microservices/shared';
 import { generateMongoId, generateUser } from '../permissions';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
-import { IMongoStepTemplatePopulated } from '../../interfaces/processes/stepTemplate';
 
 const generateRandomString = (length: number) => {
     const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
@@ -69,7 +68,7 @@ const generateStepTemplatePopulated = (): IMongoStepTemplatePopulated => {
     };
 };
 
-export const generateProcessTemplatePopulated = (): IMongoProcessTemplatePopulated => {
+export const generateProcessTemplatePopulated = (): IMongoProcessTemplateReviewerPopulated => {
     const processName = generateRandomString(6);
     const { properties: detailsProperties, propertiesOrder: detailsPropertiesOrder } = generateProperties();
 

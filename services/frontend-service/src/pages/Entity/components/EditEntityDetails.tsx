@@ -8,16 +8,24 @@ import React, { useState } from 'react';
 import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { StatusCodes } from 'http-status-codes';
-import { IEntity, IUniqueConstraint, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import {
+    IEntity,
+    IUniqueConstraint,
+    IMongoEntityTemplatePopulated,
+    IBrokenRule,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ActionTypes,
+    IAction,
+    IActionPopulated,
+} from '@microservices/shared';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
 import { JSONSchemaFormik, ajvValidate } from '../../../common/inputs/JSONSchemaFormik';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../../globals';
 import { InstanceFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceFileInput';
 import { InstanceSingleFileInput } from '../../../common/inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { ActionTypes, IAction, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { filterFieldsFromPropertiesSchema } from '../../../utils/pickFieldsPropertiesSchema';
 import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDialog';
 

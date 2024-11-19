@@ -5,9 +5,8 @@ import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
 import * as Yup from 'yup';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated, PermissionScope } from '@microservices/shared';
 import { emptyEntityTemplate, EntityWizardValues } from '.';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
 

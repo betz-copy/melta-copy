@@ -9,8 +9,8 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplatePopulated,
     IRelationshipTemplateMap,
-} from '@microservices/shared';
-import {
+    IMongoRule,
+    IEntityForBrokenRules,
     ActionTypes,
     IActionMetadataPopulated,
     IActionPopulated,
@@ -20,12 +20,10 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
     IUpdateEntityStatusMetadataPopulated,
-} from '../../interfaces/ruleBreaches/actionMetadata';
+} from '@microservices/shared';
 import { populateRelationshipTemplate } from '../../utils/templates';
 import { UpdatedFieldsDiff } from './UpdatedFieldsDiff';
 import { EntityLink } from '../EntityLink';
-import { IEntityForBrokenRules } from '../../interfaces/ruleBreaches/ruleBreach';
-import { IMongoRule } from '../../interfaces/rules';
 import { EntityPropertiesInternal } from '../EntityProperties';
 import { environment } from '../../globals';
 

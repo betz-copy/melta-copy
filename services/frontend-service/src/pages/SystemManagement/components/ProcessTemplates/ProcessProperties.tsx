@@ -2,8 +2,8 @@ import { ChevronLeft, ExpandMore } from '@mui/icons-material';
 import { Button, Grid, Typography } from '@mui/material';
 import i18next from 'i18next';
 import React, { useState } from 'react';
+import { IProcessSingleProperty } from '@microservices/shared';
 import { environment } from '../../../../globals';
-import { IProcessSingleProperty } from '../../../../interfaces/processes/processTemplate';
 
 interface ProcessPropertiesProps {
     properties: Record<string, IProcessSingleProperty>;

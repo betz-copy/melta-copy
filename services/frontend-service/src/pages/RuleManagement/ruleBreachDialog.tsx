@@ -20,14 +20,11 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AxiosError } from 'axios';
-import { IRuleBreachAlertPopulated } from '../../interfaces/ruleBreaches/ruleBreachAlert';
-import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../../interfaces/ruleBreaches/ruleBreachRequest';
+import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus, PermissionScope } from '@microservices/shared';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
-import { BreachType } from '../../interfaces/ruleBreaches/ruleBreach';
 import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { useUserStore } from '../../stores/user';
-import { PermissionScope } from '../../interfaces/permissions';
 import { ActionInfo } from '../../common/ruleBreanchInfo/ActionInfo';
 import { BrokenRulesInfo } from '../../common/ruleBreanchInfo/BrokenRulesInfo';
 

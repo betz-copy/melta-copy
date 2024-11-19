@@ -1,6 +1,5 @@
 import { create } from 'zustand';
-import { IUser } from '@microservices/shared';
-import { ISubCompactPermissions } from '../interfaces/permissions/permissions';
+import { IUser, ISubCompactPermissions } from '@microservices/shared';
 
 export interface UserState {
     user: {

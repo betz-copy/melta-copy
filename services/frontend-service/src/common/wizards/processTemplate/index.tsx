@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
-import { IUser } from '@microservices/shared';
+import { IUser, IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
@@ -12,7 +12,6 @@ import { CreateTemplateName, createTemplateNameSchema } from '../entityTemplate/
 import { updateProcessTemplateRequest, createProcessTemplateRequest } from '../../../services/templates/processTemplatesService';
 import { AddStepsFields, addStepsFieldsSchema } from './AddStepsFields';
 import fileDetails from '../../../interfaces/fileDetails';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 
 export interface ProcessTemplateFormInputProperties {
     name: string;
@@ -24,7 +23,7 @@ export interface ProcessTemplateFormInputProperties {
     patternCustomErrorMessage: string;
     required: boolean;
 }
-export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplatePopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
+export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateReviewerPopulated, 'details' | 'steps' | 'createdAt' | 'updatedAt'> {
     detailsProperties: ProcessTemplateFormInputProperties[];
     detailsAttachmentProperties: ProcessTemplateFormInputProperties[];
     steps: Array<{

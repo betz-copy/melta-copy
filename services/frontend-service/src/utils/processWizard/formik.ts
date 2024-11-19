@@ -1,7 +1,6 @@
 import { get } from 'lodash';
 import pickBy from 'lodash.pickby';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
+import { IMongoProcessTemplateReviewerPopulated, IMongoProcessInstanceReviewerPopulated, InstanceProperties } from '@microservices/shared';
 import { ProcessDetailsValues } from '../../common/wizards/processInstance/ProcessDetails';
 
 export const getAllFieldsTouched = (values: ProcessDetailsValues) => {
@@ -14,8 +13,8 @@ export const getAllFieldsTouched = (values: ProcessDetailsValues) => {
 };
 
 export const splitSpacialProperties = (
-    template: IMongoProcessTemplatePopulated,
-    process: IMongoProcessInstancePopulated,
+    template: IMongoProcessTemplateReviewerPopulated,
+    process: IMongoProcessInstanceReviewerPopulated,
     pathToProperties: string,
 ) => {
     const templateProperties = get(template, pathToProperties);

@@ -12,32 +12,36 @@ import lodashIsEqual from 'lodash.isequal';
 import DeleteIcon from '@mui/icons-material/Delete';
 import UnarchiveIcon from '@mui/icons-material/Unarchive';
 import ArchiveIcon from '@mui/icons-material/Archive';
+import {
+    IMongoStepTemplatePopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    Status,
+    IMongoProcessTemplateReviewerPopulated,
+    IProcessTemplateMap,
+    PermissionScope,
+} from '@microservices/shared';
 import { ProcessSideStepper } from './ProcessSideStepper';
 import { BlueTitle } from '../../BlueTitle';
 import ProcessDetails, { ProcessDetailsValues } from './ProcessDetails';
-import { IMongoProcessInstancePopulated, Status } from '../../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from './ProcessDetails/detailsFormik';
 import { getProcessByIdRequest, deleteProcessRequest, archiveProcessRequest } from '../../../services/processesService';
 import ProcessSummary from './ProcessSummaryStep/index';
 import ProcessStepsStep from './ProcessSteps/index';
-import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { Print } from '../../../pages/ProcessInstances/print';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 
 interface IProcessInstanceWizard {
     open: boolean;
     onClose: (wasProcessChanged: boolean) => void;
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     stepTemplate?: IMongoStepTemplatePopulated;
-    processTemplate: IMongoProcessTemplatePopulated;
-    currProcessInstance: IMongoProcessInstancePopulated;
-    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstancePopulated>>;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
+    currProcessInstance: IMongoProcessInstanceReviewerPopulated;
+    setCurrProcessInstance: React.Dispatch<React.SetStateAction<IMongoProcessInstanceReviewerPopulated>>;
     isLoading: any;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
     isProcessChanged: boolean;
     setIsProcessChanged: React.Dispatch<React.SetStateAction<boolean>>;
     isEditMode: boolean;
@@ -166,11 +170,11 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
     );
 
     const { mutateAsync: archiveProcessMutate, isLoading: isLodingArchiveProcess } = useMutation(
-        (process: IMongoProcessInstancePopulated) => {
+        (process: IMongoProcessInstanceReviewerPopulated) => {
             return archiveProcessRequest(process._id, !process.archived);
         },
         {
-            onError: (error: AxiosError, process: IMongoProcessInstancePopulated) => {
+            onError: (error: AxiosError, process: IMongoProcessInstanceReviewerPopulated) => {
                 if (process.archived) {
                     console.log('failed to send process to archive. error:', error);
                     toast.success(i18next.t('processInstancesPage.failedToRemoveProcessFromArchive'));
@@ -179,7 +183,7 @@ const ProcessInstanceWizard: React.FC<IProcessInstanceWizard> = ({
                     toast.success(i18next.t('processInstancesPage.failedToSendProcessToArchive'));
                 }
             },
-            onSuccess: (process: IMongoProcessInstancePopulated) => {
+            onSuccess: (process: IMongoProcessInstanceReviewerPopulated) => {
                 if (process.archived) toast.success(i18next.t('processInstancesPage.processSendToArchiveSuccessfully'));
                 else toast.success(i18next.t('processInstancesPage.processRemoveFromArchiveSuccessfully'));
             },

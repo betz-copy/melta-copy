@@ -3,21 +3,23 @@ import { Box, Typography, useTheme } from '@mui/material';
 import i18next from 'i18next';
 import { AxiosError } from 'axios';
 import { UseMutateAsyncFunction, useQueryClient } from 'react-query';
-import { IMongoProcessInstancePopulated } from '../../../interfaces/processes/processInstance';
+import {
+    IMongoStepInstancePopulated,
+    IMongoStepTemplatePopulated,
+    IProcessTemplateMap,
+    IMongoProcessInstanceReviewerPopulated,
+} from '@microservices/shared';
 import GeneralDetails from '../../../common/wizards/processInstance/ProcessDetails/GeneralDetails';
 import { EntityDates } from '../../Entity/components/EntityDates';
 import { CommentsDetails, ProcessStep } from '../../../common/wizards/processInstance/ProcessSteps/processStep';
-import { IMongoStepInstancePopulated } from '../../../interfaces/processes/stepInstance';
-import { IMongoStepTemplatePopulated } from '../../../interfaces/processes/stepTemplate';
 import { BlueTitle } from '../../../common/BlueTitle';
-import { IProcessTemplateMap } from '../../../interfaces/processes/processTemplate';
 import { getInitialDetailsValues, useProcessDetailsFormik } from '../../../common/wizards/processInstance/ProcessDetails/detailsFormik';
 import { ProcessDetailsValues } from '../../../common/wizards/processInstance/ProcessDetails';
 import { getStepInstanceByStepTemplateId } from '../../../utils/processWizard/steps';
 
 const ProcessComponentToPrint: React.FC<{
-    processInstance: IMongoProcessInstancePopulated;
-    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstancePopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
+    mutateAsync: UseMutateAsyncFunction<IMongoProcessInstanceReviewerPopulated, AxiosError<any, any>, ProcessDetailsValues, unknown>;
 }> = ({ processInstance, mutateAsync }) => {
     const theme = useTheme();
 
@@ -46,7 +48,7 @@ const ProcessComponentToPrint: React.FC<{
 const StepComponentToPrint: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
     stepTemplate: IMongoStepTemplatePopulated;
-    processInstance: IMongoProcessInstancePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
     onStepUpdateSuccess: (stepInstance: IMongoStepInstancePopulated) => void;
 }> = ({ stepInstance, stepTemplate, processInstance, onStepUpdateSuccess }) => {
     const theme = useTheme();

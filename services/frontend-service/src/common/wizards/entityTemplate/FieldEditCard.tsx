@@ -44,7 +44,7 @@ import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../service
 import { AreYouSureDialog } from '../../dialogs/AreYouSureDialog';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import RelationshipReferenceField from './RelationshipReferenceField';
-import { PermissionScope } from '../../../interfaces/permissions';
+import { PermissionScope } from '@microservices/shared';
 import { useUserStore } from '../../../stores/user';
 
 enum dateNotificationOptions {

@@ -3,12 +3,17 @@ import i18next from 'i18next';
 import React from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntity } from '@microservices/shared';
+import {
+    IEntity,
+    IRuleMap,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    ActionTypes,
+    IUpdateEntityStatusMetadata,
+    IUpdateEntityStatusMetadataPopulated,
+} from '@microservices/shared';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
-import { ActionTypes, IUpdateEntityStatusMetadata, IUpdateEntityStatusMetadataPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 
 const getActionMetadata = (currEntity: IEntity, disabledStatus: boolean): IUpdateEntityStatusMetadataPopulated => {

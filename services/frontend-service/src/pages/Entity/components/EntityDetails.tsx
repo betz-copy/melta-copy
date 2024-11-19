@@ -13,7 +13,15 @@ import React, { useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-import { IEntity, IEntityExpanded, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import {
+    IEntity,
+    IEntityExpanded,
+    IEntityTemplateMap,
+    IMongoEntityTemplatePopulated,
+    IRuleBreach,
+    IRuleBreachPopulated,
+    PermissionScope,
+} from '@microservices/shared';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
 import { ExportFormats } from '../../../common/dialogs/entity/ExportFormats';
 import { EntityProperties } from '../../../common/EntityProperties';
@@ -21,8 +29,6 @@ import { ErrorToast } from '../../../common/ErrorToast';
 import IconButtonWithPopover from '../../../common/IconButtonWithPopover';
 import { ImageWithDisable } from '../../../common/ImageWithDisable';
 import { MenuButton } from '../../../common/MenuButton';
-import { PermissionScope } from '../../../interfaces/permissions';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { deleteEntityRequest, updateEntityStatusRequest } from '../../../services/entitiesService';
 import { useDarkModeStore } from '../../../stores/darkMode';
 import { useUserStore } from '../../../stores/user';

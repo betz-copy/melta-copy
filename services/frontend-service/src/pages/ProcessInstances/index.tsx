@@ -2,16 +2,16 @@ import { Grid } from '@mui/material';
 import React, { useState, useCallback } from 'react';
 import { useQueryClient } from 'react-query';
 import debounce from 'lodash/debounce';
+import { IMongoProcessTemplateReviewerPopulated, IProcessTemplateMap } from '@microservices/shared';
 import ProcessInstancesHeadline from './Headline';
 import ProcessesList from './ProcessesList';
-import { IMongoProcessTemplatePopulated, IProcessTemplateMap } from '../../interfaces/processes/processTemplate';
 
 const ProcessInstancesPage: React.FC = () => {
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
     const processTemplates = Array.from(processTemplatesMap.values());
 
-    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplatePopulated[]>(processTemplates);
+    const [templatesToShowCheckbox, setTemplatesToShowCheckbox] = useState<IMongoProcessTemplateReviewerPopulated[]>(processTemplates);
 
     const [searchInput, setSearchInput] = useState('');
     const [startDateInput, setStartDateInput] = useState<Date | null>(null);

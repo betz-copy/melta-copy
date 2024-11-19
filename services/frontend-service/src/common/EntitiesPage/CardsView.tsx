@@ -53,6 +53,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                             const searchEntitiesResult = await getEntitiesWithDirectConnections({
                                 skip: startRow,
                                 limit: infiniteScrollPageCount,
+                                sort: [],
                                 textSearch: searchInput,
                                 templates: Object.fromEntries(templateIds.map((templateId) => [templateId, { showRelationships: false }])),
                             });

@@ -1,12 +1,11 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplatePopulated, PermissionScope } from '@microservices/shared';
 import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
 import { checkUserCategoryPermission } from '../../../utils/permissions/instancePermissions';
-import { PermissionScope } from '../../../interfaces/permissions';
 import { useUserStore } from '../../../stores/user';
 
 const DashedSelectBox: React.FC<{

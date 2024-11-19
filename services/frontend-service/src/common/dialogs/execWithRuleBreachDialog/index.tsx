@@ -2,9 +2,7 @@ import { Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogT
 import i18next from 'i18next';
 import React from 'react';
 import { useQueryClient } from 'react-query';
-import { ActionTypes, IActionMetadataPopulated, IActionPopulated } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
-import { IRuleMap } from '../../../interfaces/rules';
+import { IRuleMap, IRuleBreachPopulated, ActionTypes, IActionMetadataPopulated, IActionPopulated } from '@microservices/shared';
 import RuleBreachInfo from '../../ruleBreanchInfo/RuleBreachInfo';
 import { MeltaTooltip } from '../../MeltaTooltip';
 import { useDarkModeStore } from '../../../stores/darkMode';

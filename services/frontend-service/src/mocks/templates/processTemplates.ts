@@ -1,9 +1,9 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoProcessTemplatePopulated } from '../../interfaces/processes/processTemplate';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import { generateProcessTemplatePopulated } from './generateProcessTemplate';
 
-const removeDuplicates = (arr: IMongoProcessTemplatePopulated[]) => {
+const removeDuplicates = (arr: IMongoProcessTemplateReviewerPopulated[]) => {
     const uniqueDisplayNames = new Set();
     return arr.filter((obj) => {
         if (uniqueDisplayNames.has(obj.displayName)) {
@@ -13,7 +13,7 @@ const removeDuplicates = (arr: IMongoProcessTemplatePopulated[]) => {
         return true;
     });
 };
-const generatedTemplates: ReadonlyArray<IMongoProcessTemplatePopulated> = removeDuplicates(
+const generatedTemplates: ReadonlyArray<IMongoProcessTemplateReviewerPopulated> = removeDuplicates(
     Array.from({ length: 10 }, () => generateProcessTemplatePopulated()),
 );
 const processTemplates = generatedTemplates;

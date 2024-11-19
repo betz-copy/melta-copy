@@ -1,16 +1,20 @@
 /* eslint-disable no-param-reassign */
 import mapValues from 'lodash.mapvalues';
-import { IMongoStepInstancePopulated } from '../interfaces/processes/stepInstance';
+import {
+    IMongoStepInstancePopulated,
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IReferencedEntityForProcess,
+    IProcessInstanceSearchProperties,
+} from '@microservices/shared';
 import axios from '../axios';
 import { ProcessDetailsValues } from '../common/wizards/processInstance/ProcessDetails';
 import { environment } from '../globals';
-import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, ISearchProcessInstancesBody } from '../interfaces/processes/processInstance';
 import { ProcessStepValues } from '../common/wizards/processInstance/ProcessSteps';
-import { IMongoProcessTemplatePopulated } from '../interfaces/processes/processTemplate';
 
 const { processes } = environment.api;
 export const getProcessByIdRequest = async (processId: string) => {
-    const { data } = await axios.get<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
+    const { data } = await axios.get<IMongoProcessInstanceReviewerPopulated>(`${processes}/${processId}`);
     return data;
 };
 
@@ -52,12 +56,12 @@ export const createProcessRequest = async (process: ProcessDetailsValues) => {
     const transformedStepsObj = mapValues(process.steps, (reviewers) => reviewers.map(({ _id }) => _id));
     formData.append('steps', JSON.stringify(transformedStepsObj));
 
-    const { data } = await axios.post<IMongoProcessInstancePopulated>(processes, formData);
+    const { data } = await axios.post<IMongoProcessInstanceReviewerPopulated>(processes, formData);
     return data;
 };
 
 export const deleteProcessRequest = async (processId: string) => {
-    const { data } = await axios.delete<IMongoProcessInstancePopulated>(`${processes}/${processId}`);
+    const { data } = await axios.delete<IMongoProcessInstanceReviewerPopulated>(`${processes}/${processId}`);
 
     return data;
 };
@@ -99,7 +103,11 @@ const handleAttachmentProperties = (attachments: object, template: any) => {
     return { formData, fileProperties };
 };
 
-export const updateProcessRequest = async (processId: string, updatedData: ProcessDetailsValues, template: IMongoProcessTemplatePopulated) => {
+export const updateProcessRequest = async (
+    processId: string,
+    updatedData: ProcessDetailsValues,
+    template: IMongoProcessTemplateReviewerPopulated,
+) => {
     const entityReferences = referencedEntityToEntityId(updatedData.entityReferences);
     const { formData, fileProperties } = handleAttachmentProperties(updatedData.detailsAttachments, template.details.properties.properties);
     const transformedStepsObj = mapValues(updatedData.steps, (reviewers) => reviewers.map(({ _id }) => _id));
@@ -115,19 +123,19 @@ export const updateProcessRequest = async (processId: string, updatedData: Proce
     formData.append('startDate', updatedData.startDate!.toISOString());
     formData.append('endDate', updatedData.endDate!.toISOString());
     formData.append('steps', JSON.stringify(transformedStepsObj));
-    const { data } = await axios.put<IMongoProcessInstancePopulated>(`${processes}/${processId}`, formData);
+    const { data } = await axios.put<IMongoProcessInstanceReviewerPopulated>(`${processes}/${processId}`, formData);
     return data;
 };
 export const archiveProcessRequest = async (processId: string, archived: Boolean) => {
-    const { data } = await axios.patch<IMongoProcessInstancePopulated>(`${processes}/archive/${processId}`, {
+    const { data } = await axios.patch<IMongoProcessInstanceReviewerPopulated>(`${processes}/archive/${processId}`, {
         archived,
     });
     return data;
 };
-export const searchProcessesRequest = async (searchBody: ISearchProcessInstancesBody) => {
+export const searchProcessesRequest = async (searchBody: IProcessInstanceSearchProperties) => {
     const updatedSearchBody = { ...searchBody, searchText: searchBody.searchText || undefined };
 
-    const { data } = await axios.post<IMongoProcessInstancePopulated[]>(`${processes}/search`, updatedSearchBody);
+    const { data } = await axios.post<IMongoProcessInstanceReviewerPopulated[]>(`${processes}/search`, updatedSearchBody);
     return data;
 };
 

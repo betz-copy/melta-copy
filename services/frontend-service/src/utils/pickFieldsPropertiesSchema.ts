@@ -1,6 +1,5 @@
 import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
-import { IProcessDetails } from '../interfaces/processes/processTemplate';
+import { IMongoEntityTemplatePopulated, IProcessDetails } from '@microservices/shared';
 
 export const filterFieldsFromPropertiesSchema = (
     schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],

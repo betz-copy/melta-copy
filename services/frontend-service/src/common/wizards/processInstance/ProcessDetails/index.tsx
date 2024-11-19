@@ -3,14 +3,18 @@ import { Box, StepLabel, Stepper, Step, Grid } from '@mui/material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
 import { pickBy } from 'lodash';
+import {
+    IMongoProcessTemplateReviewerPopulated,
+    IMongoProcessInstanceReviewerPopulated,
+    IReferencedEntityForProcess,
+    StepsObjectPopulated,
+} from '@microservices/shared';
 import GeneralDetails from './GeneralDetails';
 import StepsReviewers from './StepsReviewers';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
-import { IMongoProcessInstancePopulated, IReferencedEntityForProcess, StepsObjectPopulated } from '../../../../interfaces/processes/processInstance';
 import { getAllFieldsTouched } from '../../../../utils/processWizard/formik';
 
 export interface ProcessDetailsValues {
-    template: IMongoProcessTemplatePopulated | null;
+    template: IMongoProcessTemplateReviewerPopulated | null;
     name: string;
     startDate: Date | null;
     endDate: Date | null;
@@ -28,7 +32,7 @@ interface IStepProps {
 export interface IDetailsStepProp extends IStepProps {
     detailsFormikData: FormikProps<ProcessDetailsValues>;
     isEditMode?: boolean;
-    processInstance: IMongoProcessInstancePopulated | undefined;
+    processInstance: IMongoProcessInstanceReviewerPopulated | undefined;
     toPrint?: boolean;
 }
 
@@ -42,7 +46,7 @@ interface RenderFormStepProps extends IDetailsStepProp {
 interface ProcessDetailsProps {
     detailsFormikData: FormikProps<ProcessDetailsValues>;
     isEditMode?: boolean;
-    processInstance?: IMongoProcessInstancePopulated;
+    processInstance?: IMongoProcessInstanceReviewerPopulated;
 }
 
 const steps = [

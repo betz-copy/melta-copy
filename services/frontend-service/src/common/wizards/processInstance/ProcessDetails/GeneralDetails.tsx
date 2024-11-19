@@ -8,8 +8,8 @@ import i18next from 'i18next';
 import pickBy from 'lodash.pickby';
 import React, { useEffect, useState } from 'react';
 import { useQueryClient } from 'react-query';
+import { IMongoProcessTemplateReviewerPopulated, IProcessSingleProperty, IProcessTemplateMap } from '@microservices/shared';
 import { IDetailsStepProp, ProcessDetailsValues } from '.';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty, IProcessTemplateMap } from '../../../../interfaces/processes/processTemplate';
 import { pickProcessFieldsPropertiesSchema } from '../../../../utils/pickFieldsPropertiesSchema';
 import { setInitialStepsObject } from '../../../../utils/processWizard/steps';
 import { BlueTitle } from '../../../BlueTitle';
@@ -188,7 +188,7 @@ const GeneralDetails: React.FC<IDetailsStepProp> = ({ detailsFormikData, onNext,
     const { values, touched, errors, setFieldValue, setFieldTouched, handleBlur, resetForm } = detailsFormikData;
     const queryClient = useQueryClient();
     const processTemplatesMap = queryClient.getQueryData<IProcessTemplateMap>('getProcessTemplates')!;
-    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplatePopulated>();
+    const [previousTemplate, setPreviousTemplate] = useState<IMongoProcessTemplateReviewerPopulated>();
     const viewMode = Boolean(processInstance && !isEditMode);
     const variant = viewMode ? 'standard' : 'outlined';
     const templateFileProperties = values.template

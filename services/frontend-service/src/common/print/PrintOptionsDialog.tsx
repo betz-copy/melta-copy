@@ -8,14 +8,16 @@ import {
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplatePopulated,
     IMongoCategory,
+    IMongoProcessInstanceReviewerPopulated,
+    InstanceProperties,
+    IMongoProcessTemplateReviewerPopulated,
+    IProcessSingleProperty,
 } from '@microservices/shared';
 import { SelectCheckbox } from '../SelectCheckbox';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
 import { MeltaCheckbox } from '../MeltaCheckbox';
 import { IFile } from '../../interfaces/preview';
 import { getFile } from '../../utils/getFileType';
-import { IMongoProcessInstancePopulated, InstanceProperties } from '../../interfaces/processes/processInstance';
-import { IMongoProcessTemplatePopulated, IProcessSingleProperty } from '../../interfaces/processes/processTemplate';
 
 type IOption = {
     show: boolean;
@@ -60,8 +62,8 @@ const getFilesFromTemplate = (
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    template: IMongoEntityTemplatePopulated | IMongoProcessTemplatePopulated;
-    instance: IEntityExpanded | IMongoProcessInstancePopulated;
+    template: IMongoEntityTemplatePopulated | IMongoProcessTemplateReviewerPopulated;
+    instance: IEntityExpanded | IMongoProcessInstanceReviewerPopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;
     selectedFiles: IFile[];
@@ -108,8 +110,8 @@ const PrintOptionsDialog: React.FC<{
     const getPropertiesFiles = React.useCallback((): IFile[] => {
         if ('category' in template && 'entity' in instance) return getFilesFromTemplate(instance.entity.properties, template.properties);
         return getFilesFromTemplate(
-            (instance as IMongoProcessInstancePopulated).details,
-            (template as IMongoProcessTemplatePopulated).details.properties,
+            (instance as IMongoProcessInstanceReviewerPopulated).details,
+            (template as IMongoProcessTemplateReviewerPopulated).details.properties,
         );
     }, [template, instance]);
 

@@ -7,18 +7,21 @@ import AccessTimeFilledIcon from '@mui/icons-material/AccessTimeFilled';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import CardHeader from '@mui/material/CardHeader';
-import { IMongoProcessInstancePopulated, Status } from '../../../../interfaces/processes/processInstance';
-import { IMongoStepInstancePopulated } from '../../../../interfaces/processes/stepInstance';
+import {
+    IMongoProcessInstanceReviewerPopulated,
+    Status,
+    IMongoStepInstancePopulated,
+    IMongoProcessTemplateReviewerPopulated,
+} from '@microservices/shared';
 import { BlueTitle } from '../../../BlueTitle';
 import { getStepTemplateByStepInstance } from '../../../../utils/processWizard/steps';
-import { IMongoProcessTemplatePopulated } from '../../../../interfaces/processes/processTemplate';
 import { getLongDate } from '../../../../utils/date';
 import { StatusColorsNames, StyledCard } from '../../../../pages/ProcessInstances/ProcessCard';
 import { MeltaTooltip } from '../../../MeltaTooltip';
 
 const StepStatus: React.FC<{
     stepInstance: IMongoStepInstancePopulated;
-    processTemplate: IMongoProcessTemplatePopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
     open: boolean;
     handleClick: () => void;
     isPrinting: boolean;
@@ -114,8 +117,8 @@ const StepStatus: React.FC<{
 };
 
 const StepsStatuses: React.FC<{
-    processInstance: IMongoProcessInstancePopulated;
-    processTemplate: IMongoProcessTemplatePopulated;
+    processInstance: IMongoProcessInstanceReviewerPopulated;
+    processTemplate: IMongoProcessTemplateReviewerPopulated;
     isPrinting: boolean;
 }> = ({ processInstance, processTemplate, isPrinting }) => {
     const [openStep, setOpenStep] = useState(-1);

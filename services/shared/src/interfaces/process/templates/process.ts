@@ -1,4 +1,8 @@
-import { IMongoStepTemplate, IMongoStepTemplatePopulated } from "./step";
+import {
+  IMongoStepTemplate,
+  IMongoStepTemplatePopulated,
+  IStepTemplate,
+} from "./step";
 
 export enum ProcessPropertyFormats {
   Date = "date",
@@ -42,6 +46,11 @@ export interface IProcessTemplatePopulated
   steps: IMongoStepTemplate[];
 }
 
+export interface IUpdateProcessTemplateBody
+  extends Omit<IProcessTemplate, "steps"> {
+  steps: (IStepTemplate & { _id: string })[];
+}
+
 export interface IMongoProcessTemplate extends IProcessTemplate {
   _id: string;
   createdAt: Date;
@@ -59,6 +68,10 @@ export interface IMongoProcessTemplateReviewerPopulated
   extends Omit<IMongoProcessTemplatePopulated, "steps"> {
   steps: IMongoStepTemplatePopulated[];
 }
+export type IProcessTemplateMap = Map<
+  string,
+  IMongoProcessTemplateReviewerPopulated
+>;
 
 export interface IBaseSearchProperties {
   ids?: string[];
