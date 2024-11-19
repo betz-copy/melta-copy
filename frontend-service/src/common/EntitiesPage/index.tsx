@@ -28,7 +28,6 @@ const EntitiesPage: React.FC<{
     excelExportAllTablesFileName: string;
     pageType: string;
     pageTitle: string;
-    pageScrollTarget?: HTMLElement;
 }> = ({
     templates,
     setTemplates,
@@ -36,7 +35,6 @@ const EntitiesPage: React.FC<{
     excelExportAllTablesFileName,
     pageType,
     pageTitle,
-    pageScrollTarget,
     templatesToShowCheckbox,
     setTemplatesToShowCheckbox,
     isTemplatesCheckboxDraggableDisabled,
@@ -170,7 +168,6 @@ const EntitiesPage: React.FC<{
                         semanticSearch={convertToBool(urlSearchParams.get('semanticSearch'))}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
-                        pageScrollTarget={pageScrollTarget}
                     />
                 )}
                 {viewMode === 'cards-view' && (

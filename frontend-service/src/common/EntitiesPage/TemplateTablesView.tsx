@@ -26,7 +26,6 @@ const TemplateTablesViewResults = forwardRef<
         pageSize?: number;
         pageType: string;
         setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
-        pageScrollTarget?: HTMLElement;
     }
 >(({ templates, searchInput, pageType, setUpdatedEntities }, ref) => {
     const templateTablesRefs = useRef<Record<string, TemplateTableRef>>({});
@@ -115,7 +114,6 @@ export interface TemplateTablesViewProps {
     pageType: string;
     semanticSearch: boolean;
     setUpdatedEntities: React.Dispatch<React.SetStateAction<IEntity[]>>;
-    pageScrollTarget?: HTMLElement;
 }
 
 export interface TemplateTablesViewRef {
@@ -124,7 +122,7 @@ export interface TemplateTablesViewRef {
 }
 
 const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewProps>(
-    ({ templates, searchInput, pageType, setUpdatedEntities, semanticSearch, pageScrollTarget }, ref) => {
+    ({ templates, searchInput, pageType, setUpdatedEntities, semanticSearch }, ref) => {
         const { setSteps } = useTour();
         const {
             data: templatesFilteredByCount,
@@ -171,7 +169,6 @@ const TemplateTablesView = forwardRef<TemplateTablesViewRef, TemplateTablesViewP
                         searchInput={searchInput}
                         pageType={pageType}
                         setUpdatedEntities={setUpdatedEntities}
-                        pageScrollTarget={pageScrollTarget}
                     />
                 )}
             </Grid>

@@ -6,11 +6,7 @@ import { ICategoryMap } from '../../interfaces/categories';
 import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
-interface CategoryProps {
-    pageScrollTarget?: HTMLElement | undefined;
-}
-
-const Category: React.FC<CategoryProps> = ({ pageScrollTarget }) => {
+const Category: React.FC = () => {
     const { categoryId } = useParams<{ categoryId: string }>();
     const queryClient = useQueryClient();
 
@@ -80,7 +76,6 @@ const Category: React.FC<CategoryProps> = ({ pageScrollTarget }) => {
             excelExportAllTablesFileName={`${category.displayName}.xlsx`}
             pageType="category"
             pageTitle={category.displayName}
-            pageScrollTarget={pageScrollTarget}
         />
     );
 };
