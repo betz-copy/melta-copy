@@ -791,6 +791,7 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        deletedEntity: 'הישות נמחקה',
         brokenRules: 'חריגות',
         actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',

@@ -52,6 +52,7 @@ export const EntityInfo: React.FC<EntityInfoProps> = ({
 
     if (!entity) {
         entityForLink = null;
+        linkable = false;
     } else if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
         // The id structure is '$numberPart._id' so the slice(1,-4) is in order to cut the '$' in the beginning,
         // and the '._id' in the end
@@ -280,7 +281,7 @@ const UpdateEntityActionInfo: React.FC<{
     const { entity } = actionMetadata;
 
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
-    const entityTemplate = !entity ? null : entityTemplates.get(entity.templateId)!;
+    const entityTemplate = !entity ? entityTemplates.get(actionMetadata.updatedFields.templateId) : entityTemplates.get(entity.templateId)!;
 
     const { templateId, ...restFields } = actionMetadata.updatedFields;
     // TODO get properties of causes
@@ -293,16 +294,14 @@ const UpdateEntityActionInfo: React.FC<{
                     <EntityLink
                         entityPropertiesToHighlightTooltip={failedProperties}
                         entityPropertiesToHighlightColor="red"
-                        entity={{ ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } }}
-                        entityTemplate={entityTemplate}
-                        linkable={
-                            entity?.properties._id !== undefined && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)
-                        }
+                        entity={entity ? { ...(entity as IEntity), properties: { ...(entity as IEntity).properties, ...restFields } } : null}
+                        entityTemplate={entityTemplate || null}
+                        linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
                     />
-                    {!isCompact ? ':' : ''}
+                    {!isCompact && entityTemplate ? ':' : ''}
                 </Typography>
             </Grid>
-            {!isCompact && (
+            {!isCompact && entityTemplate && (
                 <Grid item marginTop="5px" border={1} padding="5px" borderRadius="5px">
                     <UpdatedFieldsDiff entityTemplate={entityTemplate} actionMetadata={actionMetadata} />
                 </Grid>
@@ -329,6 +328,7 @@ const UpdateEntityStatusActionInfo: React.FC<{
                 entityTemplate={entityTemplate}
                 entityPropertiesToHighlightColor="red"
                 entityPropertiesToHighlightTooltip={failedProperties}
+                linkable={!!entity?.properties._id && !entity?.properties._id.startsWith(environment.brokenRulesFakeEntityIdPrefix)}
             />{' '}
             <Box component="span" fontWeight="bold">
                 {disabled

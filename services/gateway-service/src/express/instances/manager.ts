@@ -17,6 +17,7 @@ import {
     IUpdateEntityMetadata,
     IAction,
     IBrokenRule,
+    ICountSearchResult,
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
@@ -24,9 +25,11 @@ import {
     ISearchSort,
     ITemplateSearchBody,
     IRelationship,
+    RuleBreachRequestStatus,
 } from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
+
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
@@ -152,21 +155,23 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     ) {
         const worksheet = await createWorksheet(workbook, template, displayColumns);
         const { searchEntitiesChunkSize } = config.service;
-        const { count } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
-            limit: 1,
-            filter,
-            sort: sort || [],
-            skip: 0,
-            showRelationships: false,
+
+        const templateCount = await this.getEntitiesCountByTemplates(true, {
+            templateIds: [template._id],
+            textSearch,
         });
+
+        const { count, entityIdsToInclude } = templateCount?.[0] ?? { count: 0, entityIdsToInclude: {} };
+
         for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
             const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
                 skip,
                 limit: searchEntitiesChunkSize,
                 textSearch,
                 filter,
-                sort: sort || [],
                 showRelationships: false,
+                sort: sort || [],
+                entityIdsToInclude: Object.keys(entityIdsToInclude),
             });
             styleAWorksheet(
                 worksheet,
@@ -340,7 +345,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return this.service.searchEntitiesBatch(searchBody);
     }
 
-    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody): Promise<ICountSearchResult[] | undefined> {
         return this.service.getEntitiesCountByTemplates({
             ...searchBody,
             semanticSearchResult:
@@ -596,6 +601,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     async deleteEntityInstance(id: string) {
         const currentEntity = await this.service.getEntityInstanceById(id);
         const deletedInstance = await this.service.deleteEntityInstance(id);
+
+        await this.ruleBreachesManager.updateManyRuleBreachRequestsStatusesByRelatedEntityId(id, RuleBreachRequestStatus.Canceled);
 
         const { err: error } = await trycatch(() => this.deleteAllEntityFiles(currentEntity));
 

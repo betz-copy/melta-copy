@@ -38,6 +38,20 @@ export const createRuleBreachRequestRequestSchema = joi.object({
     params: {},
 });
 
+// PUT /api/rule-breaches/requests/many/status/:entityId
+export const updateManyRuleBreachRequestsStatusesByRelatedEntityIdRequestSchema = joi.object({
+    query: {},
+    body: {
+        status: joi
+            .string()
+            .valid(...Object.values(RuleBreachRequestStatus))
+            .required(),
+    },
+    params: {
+        entityId: joi.string().required(),
+    },
+});
+
 // PATCH /api/rule-breaches/requests/:ruleBreachRequestId/status
 export const updateRuleBreachRequestStatusRequestSchema = joi.object({
     query: {},

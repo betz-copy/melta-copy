@@ -40,6 +40,53 @@ export default class RuleBreachRequestsManager extends DefaultManagerMongo<IRule
         return this.model.create({ ...ruleBreachRequestData, status: RuleBreachRequestStatus.Pending });
     }
 
+    public async updateManyRuleBreachRequestsStatusesByRelatedEntityId(
+        entityId: string,
+        status: RuleBreachRequestStatus,
+    ): Promise<IRuleBreachRequest[]> {
+        const statusFilter = { status: RuleBreachRequestStatus.Pending };
+        const brokenRulesEntityIdConditions = [
+            { 'failures.entityId': entityId },
+            { 'failures.causes.instance.entityId': entityId },
+            { 'failures.causes.instance.aggregatedRelationship.otherEntityId': entityId },
+        ];
+        const actionsEntityIdConditions = [
+            { 'actionMetadata.sourceEntityId': entityId },
+            { 'actionMetadata.destinationEntityId': entityId },
+            { 'actionMetadata.properties._id': entityId },
+            { 'actionMetadata.entityIdToDuplicate': entityId },
+            { 'actionMetadata.entityId': entityId },
+        ];
+        const filter = {
+            $and: [
+                statusFilter,
+                {
+                    $or: [
+                        {
+                            brokenRules: {
+                                $elemMatch: {
+                                    failures: {
+                                        $elemMatch: {
+                                            $or: brokenRulesEntityIdConditions,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        {
+                            actions: {
+                                $elemMatch: {
+                                    $or: actionsEntityIdConditions,
+                                },
+                            },
+                        },
+                    ],
+                },
+            ],
+        };
+        return this.model.updateMany(filter, { status }, { new: true }).lean();
+    }
+
     public async updateRuleBreachRequestStatus(
         ruleBreachRequestId: string,
         reviewerId: string,

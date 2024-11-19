@@ -34,7 +34,7 @@ export const EntityLink: React.FC<EntityLinkProps> = ({
     const entityPropertiesTooltip =
         // eslint-disable-next-line no-nested-ternary
         !entityTemplate || !entity ? (
-            ''
+            i18next.t('ruleBreachInfo.deletedEntity')
         ) : !entityTemplate.propertiesPreview.length ? (
             i18next.t('graph.noPreviewProperties')
         ) : (
