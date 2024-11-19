@@ -10,7 +10,7 @@ import DefaultController from '../../utils/express/controller';
 import { IEntity } from '../entities/interface';
 import { EntityManager } from '../entities/manager';
 import { ValidationError } from '../error';
-import { ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
+import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata, ICreateRelationshipMetadata } from './interface';
 import config from '../../config';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
@@ -82,7 +82,7 @@ export class BulkActionValidator extends DefaultController {
 
         if (!valid) {
             const errors = validateFunction.errors?.map((error) => ({
-                type: 'VALIDATION',
+                type: ActionErrors.validation,
                 metadata: {
                     message: error.message,
                     path: error.instancePath,

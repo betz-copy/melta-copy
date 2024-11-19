@@ -1,5 +1,6 @@
 import { IRelationship } from './relationships';
 import { IRelationshipTemplate } from '../../templates/relationshipsTemplateService';
+import { IEntitySingleProperty } from '../../templates/entityTemplateService';
 
 export interface IEntity {
     templateId: string;
@@ -30,6 +31,8 @@ export interface IRequiredConstraint {
     property: string;
     index?: number;
 }
+
+export type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
 
 export type IConstraint = IRequiredConstraint | IUniqueConstraint;
 

@@ -2,10 +2,10 @@ import { FormikProps } from 'formik';
 import React from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { UseMutateAsyncFunction, useMutation } from 'react-query';
+import { useMutation } from 'react-query';
 import { Grid, Typography } from '@mui/material';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { EntitiesWizardValues, ExportRequestParams, ISteps } from '.';
+import { EntitiesWizardValues, ISteps } from '.';
 import { loadExcelEntitiesRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import OpenPreview from '../../FilePreview/OpenPreview';
@@ -19,8 +19,7 @@ export const UploadExcel: React.FC<{
     template: IMongoEntityTemplatePopulated;
     stepsData: ISteps;
     setStepsData: React.Dispatch<React.SetStateAction<ISteps>>;
-    exportTemplateToExcel: UseMutateAsyncFunction<any, unknown, ExportRequestParams, unknown>;
-}> = ({ formikProps, template, stepsData, setStepsData, exportTemplateToExcel }) => {
+}> = ({ formikProps, template, stepsData, setStepsData }) => {
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(

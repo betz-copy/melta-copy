@@ -12,17 +12,22 @@ import { agGridLocaleText } from './agGridLocaleText';
 import { getFileName } from '../getFileName';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
+
+const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) => {
+    if (showErrors && props.data && props.data.errors) {
+        return props.data.errors.find((error) => {
+            if (error.type === ActionErrors.required) return error.metadata.property === field;
+            if (error.type === ActionErrors.unique) return error.metadata.properties.some((property) => property === field);
+            if (error.type === ActionErrors.validation) return error.metadata.path.slice(1) === field;
+            return false;
+        });
+    }
+    return false;
+};
 
 const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string) => {
-    const { errors } = props.data;
-
-    const error = errors.find((error) => {
-        console.log({ error });
-        if (error.type === 'REQUIRED') return error.metadata.property === field;
-        if (error.type === 'UNIQUE') return error.metadata.properties.some((property) => property === field);
-        if (error.type === 'VALIDATION') return error.metadata.path.slice(1) === field;
-        return false;
-    });
+    const error = isError(props, field, true);
 
     return (
         <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
@@ -36,18 +41,6 @@ const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data
             </MeltaTooltip>
         </Box>
     );
-};
-
-const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) => {
-    if (showErrors && props.data && props.data.errors) {
-        return props.data.errors.find((error) => {
-            if (error.type === 'REQUIRED') return error.metadata.property === field;
-            if (error.type === 'UNIQUE') return error.metadata.properties.some((property) => property === field);
-            if (error.type === 'VALIDATION') return error.metadata.path.slice(1) === field;
-            return false;
-        });
-    }
-    return false;
 };
 
 export const numberColDef = <Data extends any = IEntity>(

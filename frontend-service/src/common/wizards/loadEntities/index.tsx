@@ -140,15 +140,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         },
         {
             label: i18next.t('wizard.entity.loadEntities.uploadFilesTitle'),
-            component: (props) => (
-                <UploadExcel
-                    formikProps={props}
-                    template={template}
-                    stepsData={stepsData}
-                    setStepsData={setStepsData}
-                    exportTemplateToExcel={exportTemplateToExcel}
-                />
-            ),
+            component: (props) => <UploadExcel formikProps={props} template={template} stepsData={stepsData} setStepsData={setStepsData} />,
             validationSchema: stepsData.status === 'initialSteps' ? attachmentPropertiesBaseSchema : {},
             stepperActions: {
                 disable: stepsData.status === 'initialSteps' ? 'all' : undefined,

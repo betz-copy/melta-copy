@@ -3,49 +3,50 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-await-in-loop */
 import axios, { AxiosError } from 'axios';
-import Excel, { stream } from 'exceljs';
+import { stream } from 'exceljs';
 import { promises as fsp } from 'fs';
 import { Dictionary } from 'lodash';
 import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import {
-    IEntity,
-    IRequiredConstraint,
-    ISearchFilter,
-    ISearchSort,
-    IUniqueConstraint,
-} from '../../externalServices/instanceService/interfaces/entities';
+import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
+    ActionErrors,
+    ActionStatus,
     ActionTypes,
     IAction,
     IBrokenRule,
     ICreateEntityMetadata,
     ICreateRelationshipMetadata,
+    IFailedEntity,
+    IRuleEntity,
     IUpdateEntityMetadata,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
-    IEntitySingleProperty,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
 } from '../../externalServices/templates/entityTemplateService';
 import { trycatch } from '../../utils';
-import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/excelFunctions';
+import { createWorkbook, createWorksheet, styleAWorksheet } from '../../utils/excel/createExcelFunctions';
 import DefaultManagerProxy from '../../utils/express/manager';
 import logger from '../../utils/logger/logsLogger';
 import { objectFilter } from '../../utils/object';
-import { BadRequestError, ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
-import { excelConfig } from '../../utils/excel/excelConfig';
 import { WorkspaceService } from '../workspaces/service';
-import { IBrokenRulePopulated } from '../../externalServices/ruleBreachService/interfaces/populated';
+import {
+    getBrokenRulesErrorEntities,
+    getRequiredErrorEntities,
+    getUniqueErrorEntities,
+    getValidationErrorEntities,
+    readExcelFile,
+} from '../../utils/excel/getExcelFunctions';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -183,165 +184,47 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     async loadExcelEntities(file: Express.Multer.File, templateId: string, userId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        const actions = await this.readExcelFile(file, template);
+        const actions = await readExcelFile(file, template);
         const allEntities = actions.map((action) => action.actionMetadata);
         let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
 
-        type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
-        type IErrorData = {
-            properties: Record<string, any>;
-            errors: { type: 'VALIDATION' | 'UNIQUE' | 'REQUIRED'; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
-        };
-
-        const failedEntities: IErrorData[] = [];
-        let brokenRulesEntities:
-            | { rawBrokenRules: IBrokenRule[]; brokenRules: IBrokenRulePopulated[]; entities: { properties: Record<string, any> }[] }
-            | undefined;
-        while (result[0].status !== 'fulfilled' && result.length > 0) {
+        const failedEntities: IFailedEntity[] = [];
+        let brokenRulesEntities: IRuleEntity | undefined;
+        while (result[0].status !== ActionStatus.fulfilled && result.length > 0) {
             try {
                 result = await this.runBulkOfActions([actions], true, userId, []);
-                console.dir({ result }, { depth: null });
 
-                if (result[0].status === 'rejected') {
-                    if (result[0].reason.metadata.errorCode === 'RULE_BLOCK') {
-                        const indexes = new Set<number>();
-                        result[0].reason.metadata.brokenRules.forEach((brokenRule: IBrokenRule) =>
-                            brokenRule.failures.forEach((failure) => {
-                                const entityIdNumberMatch = failure.entityId.match(/\d+/);
-                                const index = entityIdNumberMatch ? Number(entityIdNumberMatch[0]) : 0;
-                                if (!indexes.has(index)) indexes.add(index);
-                            }),
-                        );
-
-                        const rawBrokenRules = result[0].reason.metadata.brokenRules;
-                        const brokenRulePopulated = await this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
-
-                        const entities: { properties: Record<string, any> }[] = [];
-                        const sortedIndexes = [...indexes].sort((a, b) => b - a);
-
-                        sortedIndexes.forEach((index) => {
-                            const action = actions[index];
-                            entities.push({ properties: (action.actionMetadata as ICreateEntityMetadata).properties });
-                            actions.splice(index, 1);
-                        });
-
-                        brokenRulesEntities = {
-                            rawBrokenRules,
-                            brokenRules: brokenRulePopulated,
-                            entities,
-                        };
+                if (result[0].status === ActionStatus.rejected) {
+                    if (result[0].reason.metadata.errorCode === errorCodes.ruleBlock) {
+                        const populateBrokenRules = (rawBrokenRules: IBrokenRule[]) => this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
+                        getBrokenRulesErrorEntities(result[0].reason.metadata.brokenRules, actions, populateBrokenRules);
                     }
-                    if (result[0].reason.metadata.errorCode === 'FAILED_CONSTRAINTS_VALIDATION') {
+
+                    if (result[0].reason.metadata.errorCode === errorCodes.failedConstraintsValidation) {
                         const { constraint } = result[0].reason.metadata;
-                        if (constraint.type === 'UNIQUE') {
-                            const { values } = constraint;
-                            const indexes = new Set<number>();
-                            Object.entries(values).forEach(([key, value]) => {
-                                const index = actions.findIndex(
-                                    (action) => (action.actionMetadata as ICreateEntityMetadata).properties[key] === value,
-                                );
-                                if (!indexes.has(index)) indexes.add(index);
-                            });
-                            const sortedIndexes = [...indexes].sort((a, b) => b - a);
-
-                            sortedIndexes.forEach((index) => {
-                                const action = actions[index];
-                                failedEntities.push({
-                                    properties: (action.actionMetadata as ICreateEntityMetadata).properties,
-                                    errors: [{ type: 'UNIQUE', metadata: constraint }],
-                                });
-
-                                actions.splice(index, 1);
-                            });
-                        }
-                        if (constraint.type === 'REQUIRED') {
-                            const { index } = constraint;
-                            console.log({ index });
-                            console.log({
-                                properties: (actions[index].actionMetadata as ICreateEntityMetadata).properties,
-                                errors: [{ type: 'REQUIRED', metadata: constraint }],
-                            });
-
-                            failedEntities.push({
-                                properties: (actions[index].actionMetadata as ICreateEntityMetadata).properties,
-                                errors: [{ type: 'REQUIRED', metadata: constraint }],
-                            });
-                            actions.splice(index, 1);
-                            console.log({ actions });
-                        }
+                        if (constraint.type === ActionErrors.unique) getUniqueErrorEntities(constraint, actions, failedEntities);
+                        if (constraint.type === ActionErrors.required) getRequiredErrorEntities(constraint, actions, failedEntities);
                     }
                 }
             } catch (error) {
-                const errorData = (error as AxiosError).response?.data as {
-                    type: string;
-                    message: string;
-                    metadata: {
-                        properties: Record<string, any> & { index: number };
-                        errors: { type: 'VALIDATION'; metadata: IValidationError }[];
-                    };
-                };
-
-                const { metadata } = errorData;
-                const { properties, errors } = metadata;
-                const { index, ...entityProperties } = properties;
-
-                actions.splice(index, 1);
-                failedEntities.push({ properties: entityProperties, errors });
+                getValidationErrorEntities(error as AxiosError, actions, failedEntities);
             }
+        }
+
+        if (result[0].status === ActionStatus.fulfilled) {
+            const succeededActions = result[0].value.map((entity) => ({
+                actionType: ActionTypes.CreateEntity,
+                actionMetadata: entity,
+            }));
+            if (succeededActions.length > 0) await this.runBulkOfActions([succeededActions], false, userId, []);
         }
 
         return {
             allEntities,
-            succeededEntities: result[0].status === 'fulfilled' ? result[0].value : [],
+            succeededEntities: result[0].status === ActionStatus.fulfilled ? result[0].value : [],
             failedEntities,
             brokenRulesEntities,
         };
-    }
-
-    private formatExcel(value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) {
-        const { type, format } = propertyTemplate;
-        if (value === null) return undefined;
-
-        if (type === 'boolean') {
-            if (value === excelConfig.TRUE_TO_HEBREW) return true;
-            if (value === excelConfig.FALSE_TO_HEBREW) return false;
-        }
-        if (type === 'string') {
-            if (format === 'date') return new Date(value as string).toLocaleDateString('en-uk');
-            if (format === 'date-time') return new Date(value as string).toLocaleString('en-uk');
-        }
-        if (type === 'array') {
-            if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
-                return value?.richText.map((item) => item.text).filter((text) => text !== ', ');
-        }
-        return value;
-    }
-
-    private async readExcelFile(file: Express.Multer.File, template: IMongoEntityTemplatePopulated) {
-        const workbook = new Excel.Workbook();
-        await workbook.xlsx.readFile(file.path);
-        const worksheet = workbook.worksheets[0];
-
-        const expectedName = `${template.displayName}${template._id}`.trim();
-        if (!expectedName.includes(worksheet.name)) throw new ServiceError(StatusCodes.BAD_REQUEST, 'invalid excel');
-
-        const actions: IAction[] = [];
-        worksheet.eachRow((row, rowIndex) => {
-            if (rowIndex === 1) return;
-
-            const rowData: Record<string, any> = {};
-
-            Object.entries(template.properties.properties).forEach(([key, value], columnIndex) => {
-                const cellValue = row.getCell(columnIndex + 1).value;
-                const formatCellValue = this.formatExcel(cellValue, value);
-                rowData[key] = formatCellValue;
-            });
-            const action = { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, properties: rowData } };
-
-            actions.push(action);
-        });
-
-        return actions;
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {
@@ -885,16 +768,5 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         );
 
         return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
-
-        // if (!catchErrors) return this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
-        // console.dir({ newActionsGroups }, { depth: null });
-        // let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
-        // while (result[0].status !== 'fulfilled' && result.length > 0) {
-        //     result = this.service.runBulkOfActions(newActionsGroups, dryRun, userId, ignoredRules);
-        //     console.dir({ result }, { depth: null });
-
-        //     if (result[0].status === 'rejected') {
-        //     }
-        // }
     }
 }
