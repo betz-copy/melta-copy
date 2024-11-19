@@ -57,18 +57,14 @@ export class BulkActionValidator extends DefaultController {
 
     private validateRelationship(relationshipTemplate: IMongoRelationshipTemplate, sourceEntity: IEntity, destinationEntity: IEntity) {
         if (!relationshipTemplate) {
-            throw new ValidationError(`Relationship template doesnt exist`, { relationshipTemplate, sourceEntity, destinationEntity });
+            throw new ValidationError(`Relationship template doesnt exist`);
         }
 
         if (
             relationshipTemplate.destinationEntityId !== destinationEntity.templateId ||
             relationshipTemplate.sourceEntityId !== sourceEntity.templateId
         ) {
-            throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`, {
-                relationshipTemplate,
-                sourceEntity,
-                destinationEntity,
-            });
+            throw new ValidationError(`Relationship template source/destination id does not match entity source/destination id.`);
         }
     }
 

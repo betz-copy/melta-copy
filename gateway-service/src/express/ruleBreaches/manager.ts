@@ -734,7 +734,6 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
                 }),
             };
         });
-
         return {
             ruleId,
             failures: failuresPopulated,

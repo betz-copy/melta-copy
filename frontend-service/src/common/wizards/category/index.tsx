@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { CreateCategoryName, createCategoryNameSchema } from './CreateCategoryName';
 import { createCategoryRequest, updateCategoryRequest } from '../../../services/templates/categoriesService';
 import { ICategory, ICategoryMap } from '../../../interfaces/categories';
@@ -16,7 +16,7 @@ import { ErrorToast } from '../../ErrorToast';
 export interface CategoryWizardValues extends Omit<ICategory, 'iconFileId'> {
     icon?: fileDetails;
 }
-const steps: StepsType<CategoryWizardValues> = [
+const steps: StepType<CategoryWizardValues>[] = [
     {
         label: i18next.t('wizard.category.chooseName'),
         component: (props) => <CreateCategoryName {...props} />,

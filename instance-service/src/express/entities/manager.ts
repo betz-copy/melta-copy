@@ -185,11 +185,11 @@ export class EntityManager extends DefaultManagerNeo4j {
             const values = {};
 
             if (neo4jMessage.includes('already exists with')) {
-                // Extract label and properties
+                // neo4jMessage = Node(...) already exists with label `someLabel...` and properties `property1` = ..., `property2` = ...
+                // support unique w/ multiple props
                 const variableMatchesInMessage = neo4jMessage.matchAll(/`(.*?)`/g)!;
                 [label, ...properties] = Array.from(variableMatchesInMessage).map((match) => match[1]);
 
-                // Extract property values
                 const valueMatch = neo4jMessage.match(/= '(.*?)'/);
                 if (valueMatch) {
                     const propertyValue = valueMatch[1];

@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ChooseCategory, chooseCategorySchema } from './ChooseCategory';
 import { CreateTemplateName, createTemplateNameSchema } from './CreateTemplateName';
 import { AddFields, addFieldsSchema } from './AddFields';
@@ -63,7 +63,7 @@ export interface EntityTemplateWizardValues
     documentTemplatesIds?: File[];
 }
 
-const steps: StepsType<EntityTemplateWizardValues> = [
+const steps: StepType<EntityTemplateWizardValues>[] = [
     {
         label: i18next.t('wizard.entityTemplate.chooseCategroy'),
         component: (props) => <ChooseCategory {...props} />,

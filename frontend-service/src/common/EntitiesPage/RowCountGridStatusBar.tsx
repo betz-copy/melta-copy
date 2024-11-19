@@ -9,7 +9,6 @@ interface IStatusPanelParams {
 const RowCountGridStatusBar: React.FC<IStatusPanelParams> = ({ api }) => {
     const [count, setCount] = useState<number>(0);
     const isMounted = useRef<boolean>(false);
-    console.log({ count, api });
 
     useEffect(() => {
         isMounted.current = true;

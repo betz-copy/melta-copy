@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid } from '@mui/material';
 import { FormikProps } from 'formik';
-import { StepsType } from '..';
+import { StepType } from '..';
 import { StepperActions } from './StepperActions';
 import { StepperSideBar } from './StepperSideBar';
 
@@ -17,7 +17,7 @@ const Stepper = <T extends object>({
 }: {
     activeStep: number;
     handleBack: () => void;
-    steps: StepsType<T>;
+    steps: StepType<T>[];
     isLoading: boolean;
     formikProps: FormikProps<T>;
     isEditMode: boolean;

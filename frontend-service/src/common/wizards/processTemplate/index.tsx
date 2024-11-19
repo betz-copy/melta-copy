@@ -4,7 +4,7 @@ import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
 import { v4 as uuid } from 'uuid';
-import { StepsType, Wizard, WizardBaseType } from '../index';
+import { StepType, Wizard, WizardBaseType } from '../index';
 import { ErrorToast } from '../../ErrorToast';
 import { addDetailsFieldsSchema, AddDetailsFields } from './AddDetailsFields';
 import { CreateTemplateName, createTemplateNameSchema } from '../entityTemplate/CreateTemplateName';
@@ -39,7 +39,7 @@ export interface ProcessTemplateWizardValues extends Omit<IMongoProcessTemplateP
     }>;
 }
 
-const stepsComponents: StepsType<ProcessTemplateWizardValues> = [
+const stepsComponents: StepType<ProcessTemplateWizardValues>[] = [
     {
         label: i18next.t('wizard.processTemplate.chooseProcessTemplateName'),
         component: (props, { isEditMode }) => <CreateTemplateName {...props} isEditMode={isEditMode} />,

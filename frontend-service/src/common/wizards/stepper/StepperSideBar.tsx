@@ -3,7 +3,7 @@ import { Grid } from '@mui/material';
 import { Done as DoneIcon } from '@mui/icons-material';
 
 import { FormikProps } from 'formik';
-import { StepComponentHelpers, StepsType } from '..';
+import { StepComponentHelpers, StepType } from '..';
 import { StepNumberTypography, StepNameTypography, DashedHorizontalLine, DashedVerticalLine, StepDescriptionTypography } from './index.styles';
 
 const StepperSideBar = <T extends object>({
@@ -14,7 +14,7 @@ const StepperSideBar = <T extends object>({
     showPrevSteps,
 }: {
     activeStep: number;
-    steps: StepsType<T>;
+    steps: StepType<T>[];
     direction: 'row' | 'column';
     componentProps: { formikProps: FormikProps<T>; helpers: StepComponentHelpers };
     showPrevSteps: boolean;

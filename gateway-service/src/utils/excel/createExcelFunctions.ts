@@ -79,72 +79,108 @@ const columnIndexToExcelColumn = (index: number): string => {
     return result;
 };
 
-const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySingleProperty, columnIndex: number) => {
+const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
-    if (propertyTemplate.type === 'boolean') {
-        for (let row = 2; row <= 100; row++) {
-            const allowedValues = formulae.boolean;
-            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-                type: 'list',
-                formulae: [allowedValues],
-                allowBlank: true,
-                showErrorMessage: true,
-                errorTitle: formulae.errorTitle,
-                error: `${formulae.errorDescription} ${allowedValues}`,
-            };
-        }
-    }
-    if (propertyTemplate.type === 'number') {
-        for (let row = 2; row <= 100; row++) {
-            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-                type: 'decimal',
-                operator: 'between',
-                formulae: [Number.MIN_VALUE, Number.MAX_VALUE],
-                allowBlank: true,
-                showErrorMessage: true,
-                errorTitle: formulae.errorTitle,
-                error: formulae.numberError,
-            };
-        }
-    }
-    if (propertyTemplate.type === 'string' && propertyTemplate.enum) {
-        const allowedValues = propertyTemplate.enum.join(', ');
 
-        for (let row = 2; row <= 100; row++) {
-            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-                type: 'list',
-                formulae: [allowedValues],
-                allowBlank: true,
-                showErrorMessage: true,
-                errorTitle: formulae.errorTitle,
-                error: `${formulae.errorDescription} ${allowedValues}`,
-            };
-        }
+    for (let row = 2; row <= 100; row++) {
+        const allowedValues = formulae.boolean;
+        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+            type: 'list',
+            formulae: [allowedValues],
+            allowBlank: true,
+            showErrorMessage: true,
+            errorTitle: formulae.errorTitle,
+            error: `${formulae.errorDescription} ${allowedValues}`,
+        };
     }
-    if (propertyTemplate.format === 'date') {
-        for (let row = 2; row <= 100; row++) {
-            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-                type: 'date',
-                operator: 'greaterThan',
-                formulae: [new Date(1800, 1, 1)],
-                allowBlank: true,
-                showErrorMessage: true,
-                errorTitle: formulae.errorTitle,
-                error: formulae.dateError,
-            };
-        }
+};
+
+const numberValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
+    const { formulae } = excelConfig;
+
+    for (let row = 2; row <= 100; row++) {
+        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+            type: 'decimal',
+            operator: 'between',
+            formulae: [Number.MIN_VALUE, Number.MAX_VALUE],
+            allowBlank: true,
+            showErrorMessage: true,
+            errorTitle: formulae.errorTitle,
+            error: formulae.numberError,
+        };
     }
-    if (propertyTemplate.format === 'email') {
-        for (let row = 2; row <= 100; row++) {
-            worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
-                type: 'custom',
-                formulae: [`ISNUMBER(SEARCH("@", ${columnIndexToExcelColumn(columnIndex + 1)}${row}))`],
-                allowBlank: true,
-                showErrorMessage: true,
-                errorTitle: formulae.errorTitle,
-                error: formulae.mailError,
-            };
-        }
+};
+
+const listValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySingleProperty, columnIndex: number) => {
+    const { formulae } = excelConfig;
+    const allowedValues = propertyTemplate.enum!.join(', ');
+
+    for (let row = 2; row <= 100; row++) {
+        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+            type: 'list',
+            formulae: [allowedValues],
+            allowBlank: true,
+            showErrorMessage: true,
+            errorTitle: formulae.errorTitle,
+            error: `${formulae.errorDescription} ${allowedValues}`,
+        };
+    }
+};
+
+const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
+    const { formulae } = excelConfig;
+
+    for (let row = 2; row <= 100; row++) {
+        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+            type: 'date',
+            operator: 'greaterThan',
+            formulae: [new Date(1800, 1, 1)],
+            allowBlank: true,
+            showErrorMessage: true,
+            errorTitle: formulae.errorTitle,
+            error: formulae.dateError,
+        };
+    }
+};
+
+const mailValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
+    const { formulae } = excelConfig;
+
+    for (let row = 2; row <= 100; row++) {
+        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+            type: 'custom',
+            formulae: [`ISNUMBER(SEARCH("@", ${columnIndexToExcelColumn(columnIndex + 1)}${row}))`],
+            allowBlank: true,
+            showErrorMessage: true,
+            errorTitle: formulae.errorTitle,
+            error: formulae.mailError,
+        };
+    }
+};
+
+const columnDataValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySingleProperty, columnIndex: number) => {
+    switch (propertyTemplate.type) {
+        case 'boolean':
+            booleanValidation(worksheet, columnIndex);
+            break;
+        case 'number':
+            numberValidation(worksheet, columnIndex);
+            break;
+        default:
+            break;
+    }
+
+    if (propertyTemplate.type === 'string' && propertyTemplate.enum) listValidation(worksheet, propertyTemplate, columnIndex);
+
+    switch (propertyTemplate.format) {
+        case 'date':
+            dateValidation(worksheet, columnIndex);
+            break;
+        case 'email':
+            mailValidation(worksheet, columnIndex);
+            break;
+        default:
+            break;
     }
 };
 

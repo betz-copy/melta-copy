@@ -6,7 +6,7 @@ import fileDownload from 'js-file-download';
 import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
 import { AxiosError } from 'axios';
-import { StepsType, Wizard, WizardBaseType } from '..';
+import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import { exportEntitiesRequest, runBulkOfActionsRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
@@ -115,7 +115,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         else handleClose();
     };
 
-    const steps: StepsType<EntitiesWizardValues> = [
+    const steps: StepType<EntitiesWizardValues>[] = [
         {
             label: i18next.t('wizard.entity.loadEntities.downloadFileTitle'),
             description: i18next.t('wizard.entity.loadEntities.downloadFileDescription'),
