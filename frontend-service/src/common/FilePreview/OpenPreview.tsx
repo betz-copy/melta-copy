@@ -44,7 +44,7 @@ const OpenPreview: React.FC<{
     img?: ReactNode;
     showText?: boolean;
     type?: 'download' | 'preview' | 'exportTable';
-    onClick?: React.MouseEventHandler<HTMLButtonElement>;
+    onClick?: () => Promise<void>;
     loading?: boolean;
 }> = ({ fileId, img, showText = true, type = 'preview', onClick, loading }) => {
     // eslint-disable-next-line no-nested-ternary
@@ -71,11 +71,7 @@ const OpenPreview: React.FC<{
                 </Box>
             )}
             {type === 'exportTable' &&
-                (loading ? (
-                    <CircularProgress size="24px" />
-                ) : (
-                    <OpenPreviewContent fileName={fileName} onClick={onClick as React.MouseEventHandler<HTMLButtonElement>} showText={showText} />
-                ))}
+                (loading ? <CircularProgress size="24px" /> : <OpenPreviewContent fileName={fileName} onClick={onClick} showText={showText} />)}
         </Grid>
     );
 };

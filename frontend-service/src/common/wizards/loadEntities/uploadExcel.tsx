@@ -6,7 +6,7 @@ import { useMutation } from 'react-query';
 import { Grid, Typography } from '@mui/material';
 import { v4 as uuid } from 'uuid';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
-import { EntitiesWizardValues, ISteps } from '.';
+import { EntitiesWizardValues, ISteps, StepStatus } from '.';
 import { loadExcelEntitiesRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import OpenPreview from '../../FilePreview/OpenPreview';
@@ -35,14 +35,13 @@ export const UploadExcel: React.FC<{
             },
             async onSuccess(data) {
                 if (data) {
-                    console.log({ data });
-                    setStepsData({ status: 'stepsPreview', data });
+                    setStepsData({ status: StepStatus.stepsPreview, data });
                 }
             },
         },
     );
 
-    if (stepsData.status === 'initialSteps')
+    if (stepsData.status === StepStatus.initialSteps)
         return (
             <InstanceSingleFileInput
                 {...formikProps}
@@ -60,7 +59,7 @@ export const UploadExcel: React.FC<{
             />
         );
 
-    if (stepsData.status === 'stepsExpand')
+    if (stepsData.status === StepStatus.stepsExpand)
         return (
             <OpenPreview
                 fileId={`${i18next.t('entitiesTableOfTemplate.downloadOneTableTitle')}.xlsx`}
@@ -92,7 +91,14 @@ export const UploadExcel: React.FC<{
                     <EntitiesTableOfTemplate
                         template={template}
                         getRowId={() => uuid()}
-                        getEntityPropertiesData={(currentEntity) => currentEntity.properties}
+                        getEntityPropertiesData={(currentEntity) =>
+                            currentEntity.properties as {
+                                _id: string;
+                                createdAt: string;
+                                updatedAt: string;
+                                disabled: boolean;
+                            } & Record<string, any>
+                        }
                         rowModelType="clientSide"
                         rowHeight={defaultRowHeight}
                         pageRowCount={10}
@@ -108,6 +114,7 @@ export const UploadExcel: React.FC<{
                             shouldSaveScrollPosition: false,
                         }}
                         showErrors
+                        showNavigateToRowButton={false}
                     />
                 </Grid>
             </Grid>

@@ -582,6 +582,8 @@ export default {
                 brokenRules: 'חריגות חוקה',
                 failedUploadEntities: 'יצירת יישויות נכשלה',
                 required: 'ליישות חסרה שדה חובה',
+                createdSuccessfully: 'ישויות נוצרו בהצלחה',
+                tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקובץ',
             },
         },
         rule: {

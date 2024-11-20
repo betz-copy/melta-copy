@@ -102,9 +102,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     let actionMetadataWithoutFiles: ICreateEntityMetadata | IDuplicateEntityMetadata | IUpdateEntityMetadata;
     let actionMetadataPopulated: ICreateEntityMetadataPopulated | IDuplicateEntityMetadataPopulated | IUpdateEntityMetadataPopulated;
 
-    let entityAttachmentsProperties = {};
     const { template, properties, attachmentsProperties } = entityFormData;
-    entityAttachmentsProperties = attachmentsProperties;
     if (actionType === ActionTypes.CreateEntity) {
         actionMetadataWithoutFiles = {
             templateId: template._id,
@@ -152,7 +150,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                         },
                     ],
                 },
-                rawActions ? undefined : entityAttachmentsProperties,
+                rawActions ? undefined : attachmentsProperties,
             );
         },
         {

@@ -5,6 +5,7 @@ import i18next from 'i18next';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { ITablesResults } from '.';
 import { EntitiesTable } from './EntitiesTable';
+import { IEntity } from '../../../interfaces/entities';
 
 export const LoadEntitiesTables: React.FC<{
     tablesData: ITablesResults;
@@ -17,14 +18,14 @@ export const LoadEntitiesTables: React.FC<{
     return (
         <Grid container direction="column" padding="5px" paddingY="15px">
             <EntitiesTable
-                rowData={tablesData.succeededEntities}
+                rowData={tablesData.succeededEntities as IEntity[]}
                 template={template}
                 defaultExpanded={false}
                 icon={<Check sx={{ color: '#4FC318' }} />}
                 title={`${tablesData.succeededEntities.length} ${i18next.t('wizard.entity.loadEntities.succeededEntities')}`}
             />
             <EntitiesTable
-                rowData={tablesData.brokenRulesEntities?.entities || []}
+                rowData={(tablesData.brokenRulesEntities?.entities as IEntity[]) || []}
                 template={template}
                 defaultExpanded={isBrokenRulesEntities}
                 icon={<Gavel style={{ color: '#FFAC2F' }} />}

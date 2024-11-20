@@ -123,9 +123,8 @@ const AddEntityButton: React.FC<{
                     onSuccessCreate();
                     setLoadEntitiesState({ isOpen: false });
                 }}
-                template={initialValues?.template}
+                initialValues={{ template: initialValues?.template, file: undefined }}
                 initialStep={1}
-                initialValues={{ file: undefined }}
             />
         </>
     );
