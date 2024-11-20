@@ -1,4 +1,4 @@
-import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography } from '@mui/material';
+import { Accordion, AccordionDetails, AccordionSummary, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Download, ExpandMore } from '@mui/icons-material';
 import i18next from 'i18next';
@@ -20,6 +20,8 @@ export const EntitiesTable: React.FC<{
     description?: string;
     download?: { onDownload: (brokenRulesEntities?: boolean) => Promise<any>; isLoading: boolean };
 }> = ({ rowData, template, defaultExpanded, icon, title, description, download }) => {
+    const theme = useTheme();
+
     return (
         <Accordion
             sx={{
@@ -50,7 +52,7 @@ export const EntitiesTable: React.FC<{
             >
                 <Grid container direction="row" alignItems="center" gap="10px">
                     {icon}
-                    <Typography color="#1E2775" fontFamily="Rubik" fontWeight={400} fontSize="14px">
+                    <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontFamily="Rubik" fontWeight={400} fontSize="14px">
                         {title}
                     </Typography>
                     {description && defaultExpanded && (

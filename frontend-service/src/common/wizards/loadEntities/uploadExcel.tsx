@@ -3,7 +3,7 @@ import React from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
-import { Grid, Typography } from '@mui/material';
+import { Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { EntitiesWizardValues, ISteps, StepStatus } from '.';
@@ -23,6 +23,7 @@ export const UploadExcel: React.FC<{
     isLoading: boolean;
     onDownload: () => Promise<any>;
 }> = ({ formikProps, template, stepsData, setStepsData, isLoading, onDownload }) => {
+    const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(
@@ -83,7 +84,7 @@ export const UploadExcel: React.FC<{
             </Grid>
             <Grid>
                 <Grid paddingTop="10px">
-                    <Typography color="#1E2775" fontSize="14px" fontWeight={400}>
+                    <Typography color={theme.palette.mode === 'dark' ? '#FFFFFF' : '#1E2775'} fontSize="14px" fontWeight={400}>
                         {i18next.t('wizard.entity.loadEntities.preview')}
                     </Typography>
                 </Grid>

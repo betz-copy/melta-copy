@@ -288,7 +288,7 @@ const styleAWorksheet = (
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, rowIndex) => {
-            const cell = worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${rowIndex + 2}`);
+            const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + 2}`);
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;
