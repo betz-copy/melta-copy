@@ -1,8 +1,4 @@
 /* eslint-disable no-param-reassign */
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
-import { ClientSideRowModelModule } from '@ag-grid-community/client-side-row-model';
-
-import { AgGridReact } from '@ag-grid-community/react';
 import {
     BodyScrollEvent,
     ColumnMovedEvent,
@@ -15,30 +11,24 @@ import {
     PaginationChangedEvent,
     RowStyle,
 } from '@ag-grid-community/core';
-import '@ag-grid-community/styles/ag-grid.css';
-import '@ag-grid-community/styles/ag-theme-material.css';
-
+import { AgGridReact } from '@ag-grid-community/react';
 import { Box, CircularProgress, debounce } from '@mui/material';
 import i18next from 'i18next';
 import isEqual from 'lodash.isequal';
 import pickBy from 'lodash.pickby';
 import sortBy from 'lodash.sortby';
+import React, { ForwardedRef, forwardRef, useImperativeHandle, useMemo, useRef, useState } from 'react';
 import { toast } from 'react-toastify';
 import { useLocation } from 'wouter';
-
 import '../../css/resizeTable.css';
 import '../../css/table.css';
-
-import { StatusBarModule } from '@noam7700/ag-grid-enterprise-status-bar';
-import { MenuModule } from '@noam7700/ag-grid-enterprise-menu';
-import { SetFilterModule } from '@noam7700/ag-grid-enterprise-set-filter';
-import { ServerSideRowModelModule } from '@noam7700/ag-grid-enterprise-server-side-row-model';
-import { ColumnsToolPanelModule } from '@noam7700/ag-grid-enterprise-column-tool-panel';
 import { environment } from '../../globals';
 import { IEntity, IEntityExpanded } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { IRelationship } from '../../interfaces/relationships';
 import { searchEntitiesOfTemplateRequest } from '../../services/entitiesService';
+import { useDarkModeStore } from '../../stores/darkMode';
+import { agGridLocaleText } from '../../utils/agGrid/agGridLocaleText';
 import { agGridToSearchEntitiesOfTemplateRequest } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { DateFilterComponent } from '../../utils/agGrid/DateFilterComponent';
 import { IAGGridRequest } from '../../utils/agGrid/interfaces';
@@ -80,7 +70,7 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            const agGridRequest = { ...params.request, filterModel: { ...params.request.filterModel, ...defaultFilterModel } };
+            const agGridRequest = { ...params.request, filterModel: { ...defaultFilterModel, ...params.request.filterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
@@ -115,9 +105,15 @@ export const getRowModelProps = <Data extends any = IEntity>(
     paginationPageSize: number,
     quickFilterText?: string,
     datasourceOnFail?: (err: unknown) => void,
+    hasInstances?: boolean,
 ): React.ComponentProps<typeof AgGridReact<Data>> => {
     if (rowModelType === 'clientSide') {
-        return { rowModelType, rowData, pagination: true, paginationPageSize };
+        return {
+            rowModelType,
+            rowData,
+            pagination: hasInstances ?? true,
+            paginationPageSize,
+        };
     }
 
     const { cacheBlockSize, maxConcurrentDatasourceRequests } = environment.agGrid;
@@ -132,8 +128,10 @@ export const getRowModelProps = <Data extends any = IEntity>(
     };
 };
 
+const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
+
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated;
+    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -162,6 +160,8 @@ export type EntitiesTableOfTemplateProps<Data> = {
     onFilter?: () => void;
     mainEntity?: IEntityExpanded;
     showErrors?: boolean;
+    hasInstances?: boolean;
+    paginationPageSizeSelector?: boolean | number[];
 };
 
 export type EntitiesTableOfTemplateRef<Data> = {
@@ -198,9 +198,13 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             onFilter,
             hasPermissionToCategory,
             showErrors,
+            mainEntity,
+            hasInstances,
+            paginationPageSizeSelector = environment.agGrid.paginationPageSizeSelector as unknown as number[],
         }: EntitiesTableOfTemplateProps<Data>,
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
+        const darkMode = useDarkModeStore((state) => state.darkMode);
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
@@ -219,7 +223,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         const [gridHeight, setGridHeight] = useState<number>(rowHeight * defaultExpandedRowCount);
 
         const getSortModel = () => {
-            const colState = gridRef.current!.columnApi.getColumnState();
+            const colState = gridRef.current!.api.getColumnState();
             return sortBy(
                 colState.filter((s) => Boolean(s.sort)),
                 (c) => c.sortIndex,
@@ -267,7 +271,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     gridApi.openToolPanel('columns');
                 }
             },
-            getDisplayColumns: () => gridRef.current?.columnApi.getAllDisplayedColumns().map((column) => column.getColId()) || [],
+            getDisplayColumns: () => gridRef.current?.api.getAllDisplayedColumns().map((column) => column.getColId()) || [],
         }));
 
         const columnDefProps: IGetColumnDefsOptions<Data> = {
@@ -283,8 +287,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             defaultColumnWidths,
             rowHeight,
             showErrors,
+            searchValue: quickFilterText,
         };
-
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
         const datasourceOnFail = (err: unknown) => {
@@ -293,13 +297,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         };
 
         const rowModelProps = useMemo(
-            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail),
-            [rowModelType, template, rowData, pageRowCount, quickFilterText],
+            () => getRowModelProps(rowModelType, template, rowData, pageRowCount, quickFilterText, datasourceOnFail, hasInstances),
+            [rowModelType, template, rowData, pageRowCount, quickFilterText, mainEntity, hasInstances],
         );
 
         const gridStyles = {
-            '.ag-column-select-virtual-list-viewport': { height: `${rowHeight * pageRowCount}px !important` },
-            '.ag-center-cols-clipper': { minHeight: `${rowHeight * pageRowCount}px !important` },
+            '.ag-center-cols-viewport': {
+                minHeight: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+            },
             '.ag-paging-panel': {
                 height: '45px',
             },
@@ -308,7 +313,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const handleColumnVisible = (params: ColumnVisibleEvent<Data>) => {
             if (!saveStorageProps.shouldSaveVisibleColumns) return;
-            const columnState = params.columnApi.getColumnState();
+            const columnState = params.api.getColumnState();
             const updatedVisibleColumns = columnState.reduce<Record<string, boolean>>((acc, col) => {
                 acc[col.colId] = !col.hide;
                 return acc;
@@ -318,7 +323,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const handleColumnMoved = (params: ColumnMovedEvent<Data>) => {
             if (!saveStorageProps.shouldSaveColumnOrder) return;
-            const columnState = params.columnApi.getColumnState();
+            const columnState = params.api.getColumnState();
             const newColumnsOrder = columnState.reduce<Record<string, { order: number }>>((acc, column, index) => {
                 acc[column.colId] = { order: index };
                 return acc;
@@ -375,11 +380,11 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     suppressDragLeaveHidesColumns={showErrors}
                     getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
-                            return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
+                            return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };
                         }
                         return undefined;
                     }}
-                    className="ag-theme-material"
+                    className={`ag-theme-material${darkMode ? '-dark' : ''}`}
                     containerStyle={{
                         width: '100%',
                         height: rowModelType === 'infinite' ? `${gridHeight}px` : undefined,
@@ -387,14 +392,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         fontSize,
                         fontWeight: 300,
                     }}
-                    modules={[
-                        ServerSideRowModelModule,
-                        ColumnsToolPanelModule,
-                        MenuModule,
-                        SetFilterModule,
-                        ClientSideRowModelModule,
-                        StatusBarModule,
-                    ]}
                     domLayout={rowModelType !== 'infinite' ? 'autoHeight' : undefined}
                     getRowId={({ data }) => getRowId(data)}
                     columnDefs={columnDefs}
@@ -431,8 +428,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
                     }}
                     animateRows
-                    // eslint-disable-next-line react/no-unstable-nested-components
-                    loadingCellRenderer={() => <CircularProgress size={20} sx={{ marginLeft: 1 }} />}
+                    loadingCellRenderer={LoadingCellRenderer}
                     suppressCsvExport
                     suppressContextMenu
                     onToolPanelVisibleChanged={() => {
@@ -445,7 +441,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         const savedSortModel = localStorage.getItem(`sortModel-${saveStorageProps.pageType}-${template._id}`);
                         if (savedSortModel) {
                             const sortModel: IServerSideGetRowsRequest['sortModel'] = JSON.parse(savedSortModel);
-                            params.columnApi.applyColumnState({
+                            params.api.applyColumnState({
                                 state: sortModel.map((s, i) => ({ ...s, sortIndex: i })),
                                 defaultState: { sort: null },
                             });
@@ -487,7 +483,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     }}
                     defaultColDef={{
                         filterParams: {
-                            suppressAndOrCondition: true,
+                            maxNumConditions: 1,
                             buttons: ['reset'],
                         },
                         sortable: true,
@@ -527,7 +523,8 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                               }
                             : undefined
                     }
-                    localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+                    localeText={agGridLocaleText}
+                    paginationPageSizeSelector={paginationPageSizeSelector}
                 />
             </Box>
         );

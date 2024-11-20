@@ -28,6 +28,7 @@ const StartPageSearch: React.FC<{
                     borderRadius="30px"
                     height="56px"
                     width="768px"
+                    showAiButton
                 />
             </Grid>
         </Grid>

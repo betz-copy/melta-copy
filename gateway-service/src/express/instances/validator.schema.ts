@@ -93,12 +93,26 @@ export const searchEntitiesBatchRequestSchema = Joi.object({
         skip: Joi.any(),
         limit: Joi.any(),
         textSearch: Joi.any(),
+        shouldSemanticSearch: Joi.boolean().default(true),
         // validation only in order to check permissions to templates
         templates: Joi.object().pattern(Joi.string(), {
             filter: Joi.any(),
             showRelationships: Joi.alternatives(Joi.boolean(), Joi.array().items(Joi.string())).default(false),
         }),
         sort: Joi.any(),
+    },
+    query: {},
+    params: {},
+});
+
+/*
+ * POST /api/instances/entities/count
+ */
+export const getEntitiesCountByTemplates = Joi.object({
+    body: {
+        templateIds: Joi.array().items(Joi.string()).required(),
+        textSearch: Joi.string().allow(''),
+        shouldSemanticSearch: Joi.boolean().default(true),
     },
     query: {},
     params: {},

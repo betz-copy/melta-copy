@@ -1,7 +1,6 @@
 import { environment } from '../globals';
 import { ActionTypes } from '../interfaces/ruleBreaches/actionMetadata';
 import { WorkspaceTypes } from '../interfaces/workspaces';
-import { agGridLocaleText } from '../utils/agGrid/agGridLocaleText';
 import { muiDatePickersLocaleText } from '../utils/datePickers';
 
 export default {
@@ -63,6 +62,7 @@ export default {
         navigateToEntityPage: 'עמוד פרט',
         failedToLoadData: 'נכשל לטעון מידע',
         columns: 'עמודות',
+        semanticSearch: 'נמצא באמצעות AI',
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',
@@ -397,6 +397,8 @@ export default {
         searchRelations: 'חיפוש קשרים...',
         searchProcesses: 'חיפוש תהליכים...',
         searchInPage: 'חיפוש בעמוד',
+        turnOnSemanticSearch: 'חיפוש חכם בתוכן הקבצים כבוי',
+        turnOffSemanticSearch: 'חיפוש חכם בתוכן הקבצים דלוק',
     },
     wizard: {
         next: 'הבא',
@@ -814,6 +816,7 @@ export default {
             toDisabled: 'למושבת',
             toActive: 'למופעל',
         },
+        deletedEntity: 'הישות נמחקה',
         brokenRules: 'חריגות',
         actionsOrder: 'סדר פעולות',
         actionsBrokeTheFollowingRules: 'הפעולות שנעשו',
@@ -1041,7 +1044,6 @@ export default {
             primary: 'ראשי',
         },
     },
-    agGridLocaleText,
     muiDatePickersLocaleText,
     schedule: {
         schedule: {

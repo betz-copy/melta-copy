@@ -198,6 +198,7 @@ export const environment = {
         maxConcurrentDatasourceRequests: 1,
         infiniteInitialRowCount: 1,
         defaultExpandedTableHeight: 650,
+        paginationPageSizeSelector: [5, 10, 25, 50],
     },
     activityLog: {
         infiniteScrollPageCount: 10,

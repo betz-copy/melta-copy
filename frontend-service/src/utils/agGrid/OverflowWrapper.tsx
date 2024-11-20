@@ -2,6 +2,7 @@ import React, { useState, useRef, useLayoutEffect, createRef } from 'react';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import { MeltaTooltip } from '../../common/MeltaTooltip';
+import { HighlightText } from '../HighlightText';
 
 interface IOverflowWrapperProps<T> {
     items: T[];
@@ -9,9 +10,10 @@ interface IOverflowWrapperProps<T> {
     renderItem: (item: T) => React.JSX.Element;
     files?: T[];
     containerStyle?: React.CSSProperties;
+    searchValue?: string;
 }
 
-const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle, files }: IOverflowWrapperProps<T>) => {
+const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, containerStyle, files, searchValue }: IOverflowWrapperProps<T>) => {
     const [visibleItems, setVisibleItems] = useState(items);
     const containerRef = useRef(null);
     const itemRefs = useRef<React.RefObject<HTMLDivElement>[]>([]);
@@ -71,9 +73,12 @@ const OverflowWrapper = <T extends any>({ items, renderItem, getItemKey, contain
                 <Grid item style={{ cursor: 'pointer' }}>
                     <MeltaTooltip
                         title={overflowItems.map((item, index) => (
-                            // eslint-disable-next-line react/no-array-index-key
-                            <Typography key={`${getItemKey(item)}/${index}`} style={{ margin: '5px' }}>
-                                {item}
+                            <Typography
+                                // eslint-disable-next-line react/no-array-index-key
+                                key={`${getItemKey(item)}/${index}`}
+                                style={{ margin: '5px' }}
+                            >
+                                <HighlightText text={item as string} searchedText={searchValue} />
                             </Typography>
                         ))}
                         arrow

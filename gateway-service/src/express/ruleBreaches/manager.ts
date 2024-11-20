@@ -640,6 +640,10 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
         };
     }
 
+    async updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId: string, status: RuleBreachRequestStatus): Promise<IRuleBreachRequest[]> {
+        return this.service.updateManyRuleBreachRequestsStatusesByRelatedEntityId(entityId, status);
+    }
+
     async getRuleBreachRequestById(ruleBreachRequestId: string, user?: Express.User): Promise<IRuleBreachRequestPopulated> {
         const ruleBreachRequest = await this.service.getRuleBreachRequestById(ruleBreachRequestId);
 
@@ -829,6 +833,11 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(templateId);
         const createdEntityWithPopulatedRelationshipReferences = await this.getPopulatedRelationshipReferences(entityTemplate, properties);
+
+        await this.instancesService.getEntityInstanceById(properties._id).catch(() => {
+            createdEntityWithPopulatedRelationshipReferences._id = null;
+        });
+
         return { ...actionMetadata, properties: createdEntityWithPopulatedRelationshipReferences };
     }
 

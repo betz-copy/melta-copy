@@ -2,6 +2,7 @@ import './initWindowGlobal';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './i18n';
+import './utils/agGrid';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { ThemeProvider } from '@mui/material';
