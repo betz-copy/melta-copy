@@ -69,14 +69,18 @@ const TypesToHebrew = (propertyTemplate: IEntitySingleProperty) => {
     return type;
 };
 
-const columnIndexToExcelColumn = (index: number): string => {
-    let result = '';
+const indexToExcelColumn = (index: number): string => {
+    let columnName = '';
+    const NUMBER_OF_ENGLISH_LETTERS = 26;
+    const A_ASCII_CODE = 65;
+
     while (index > 0) {
         index--;
-        result = String.fromCharCode((index % 26) + 65) + result;
-        index = Math.floor(index / 26);
+        columnName = String.fromCharCode((index % NUMBER_OF_ENGLISH_LETTERS) + A_ASCII_CODE) + columnName;
+        index = Math.floor(index / NUMBER_OF_ENGLISH_LETTERS);
     }
-    return result;
+
+    return columnName;
 };
 
 const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
@@ -84,7 +88,7 @@ const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
 
     for (let row = 2; row <= 100; row++) {
         const allowedValues = formulae.boolean;
-        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
             type: 'list',
             formulae: [allowedValues],
             allowBlank: true,
@@ -99,7 +103,7 @@ const numberValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
             type: 'decimal',
             operator: 'between',
             formulae: [Number.MIN_VALUE, Number.MAX_VALUE],
@@ -116,7 +120,7 @@ const listValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySin
     const allowedValues = propertyTemplate.enum!.join(', ');
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
             type: 'list',
             formulae: [allowedValues],
             allowBlank: true,
@@ -131,7 +135,7 @@ const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
             type: 'date',
             operator: 'greaterThan',
             formulae: [new Date(1800, 1, 1)],
@@ -147,9 +151,9 @@ const mailValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${columnIndexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
             type: 'custom',
-            formulae: [`ISNUMBER(SEARCH("@", ${columnIndexToExcelColumn(columnIndex + 1)}${row}))`],
+            formulae: [`ISNUMBER(SEARCH("@", ${indexToExcelColumn(columnIndex + 1)}${row}))`],
             allowBlank: true,
             showErrorMessage: true,
             errorTitle: formulae.errorTitle,
