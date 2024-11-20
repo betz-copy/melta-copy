@@ -9,8 +9,12 @@ import {
     IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
     IEntityTemplateMap,
+    IGantt,
+    IMongoGantt,
+    IGanttGroupBy,
+    IGanttItem,
 } from '@microservices/shared';
-import { IBasicGantt, IConnectedEntityTemplateDetails, IGantt, IGanttGroupBy, IGanttHeatmapBox, IGanttItem } from '../interfaces/gantts';
+import { IConnectedEntityTemplateDetails, IGanttHeatmapBox } from '../interfaces/gantts';
 import { IScheduleComponentData, IScheduleComponentResourceData } from '../interfaces/syncfusion';
 import { getEntityTemplateColor } from './colors';
 import { dateBetween, getDayEnd, getDayStart } from './date';
@@ -264,8 +268,8 @@ export const getRelationshipString = (
     return `${relationShip.displayName} (${sourceEntityTemplate.displayName} > ${destinationEntityTemplate.displayName})`;
 };
 
-export const formikInitialGanttData = (gantt: IGantt): IBasicGantt => {
-    const items = gantt.items.map<IBasicGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
+export const formikInitialGanttData = (gantt: IMongoGantt): IGantt => {
+    const items = gantt.items.map<IGantt['items'][number]>((item) => ({ ...cloneDeep(item) }));
 
     return { name: gantt.name, items, groupBy: gantt.groupBy };
 };

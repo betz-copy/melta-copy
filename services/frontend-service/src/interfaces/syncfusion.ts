@@ -1,5 +1,4 @@
-import { IEntityWithDirectRelationships } from '@microservices/shared';
-import { IGanttItem } from './gantts';
+import { IEntityWithDirectRelationships, IGanttItem } from '@microservices/shared';
 
 export interface IScheduleComponentResourceData {
     // Fields with uppercase letter at the start are used specificity in the component

@@ -2,8 +2,7 @@ import React, { useMemo } from 'react';
 import { Grid } from '@mui/material';
 import { useQueryClient } from 'react-query';
 import { FormikProps } from 'formik';
-import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
-import { IBasicGantt, IGanttItem } from '../../../interfaces/gantts';
+import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared';
 import { getConnectedEntityTemplatesDetails } from '../../../utils/gantts';
 import { EntityTemplateDisplay } from './EntityTemplateDisplay';
 import { environment } from '../../../globals';
@@ -16,7 +15,7 @@ const { separators } = environment.ganttSettings;
 interface IGanttItemDisplayProps {
     item: IGanttItem;
     index: number;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     expanded?: boolean;
     edit?: boolean;
 }

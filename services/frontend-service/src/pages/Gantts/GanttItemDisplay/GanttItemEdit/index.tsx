@@ -3,8 +3,7 @@ import { Grid } from '@mui/material';
 import { FieldArray, FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
-import { IEntityTemplateMap, IRelationshipTemplateMap } from '@microservices/shared';
-import { IBasicGantt, IGanttItem } from '../../../../interfaces/gantts';
+import { IEntityTemplateMap, IRelationshipTemplateMap, IGantt, IGanttItem } from '@microservices/shared';
 import { FormikAutoComplete } from '../../../../common/inputs/FormikAutoComplete';
 import { getGanttItemEditDetails, getRelationshipString } from '../../../../utils/gantts';
 import { EditConnectedEntityTemplates } from './EditConnectedEntityTemplates.tsx';
@@ -14,7 +13,7 @@ import { useDarkModeStore } from '../../../../stores/darkMode';
 interface IGanttItemEditProps {
     ganttItem: IGanttItem;
     index: number;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
 }
 
 export const GanttItemEdit: React.FC<IGanttItemEditProps> = ({ ganttItem, index, formik }) => {

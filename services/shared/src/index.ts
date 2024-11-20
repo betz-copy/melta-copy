@@ -12,5 +12,6 @@ export * from "./interfaces/user";
 export * from "./interfaces/workspace";
 export * from "./interfaces/activityLog";
 export * from "./interfaces/iframe";
+export * from "./interfaces/gantt";
 
 export * from "./utils/types";

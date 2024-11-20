@@ -12,11 +12,10 @@ import {
 } from '@mui/icons-material';
 import i18next from 'i18next';
 import { FormikProps } from 'formik';
-import { PermissionScope } from '@microservices/shared';
+import { PermissionScope, IGantt } from '@microservices/shared';
 import { Swap } from '../../common/Swap';
 import { BlueTitle } from '../../common/BlueTitle';
 import { TopBarGrid } from '../../common/TopBar';
-import { IBasicGantt } from '../../interfaces/gantts';
 import { CopyUrlButton } from '../../common/CopyUrlButton';
 import { environment } from '../../globals';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
@@ -32,7 +31,7 @@ const {
 
 interface IGanttTopBar {
     title: string;
-    formik: FormikProps<IBasicGantt>;
+    formik: FormikProps<IGantt>;
     onEdit: () => void;
     onDelete: () => void;
     onAddGroupBy: () => void;

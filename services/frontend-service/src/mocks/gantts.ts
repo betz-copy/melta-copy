@@ -2,9 +2,8 @@
 import { Chance } from 'chance';
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplatePopulated, IMongoGantt, IGanttItem } from '@microservices/shared';
 import { generateMongoId } from './permissions';
-import { IGantt, IGanttItem } from '../interfaces/gantts';
 import { entityTemplates } from './templates/entityTemplates';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from './utils';
 import { relationshipTemplates } from './templates/relationshipTemplates';
@@ -87,7 +86,7 @@ const generateGanttItem = (optionalEntityTemplates: IMongoEntityTemplatePopulate
     };
 };
 
-const generateGantt = (): IGantt | undefined => {
+const generateGantt = (): IMongoGantt | undefined => {
     const entityTemplatesCopy = [...entityTemplates];
     const items: IGanttItem[] = [];
 
@@ -109,7 +108,7 @@ const generateGantt = (): IGantt | undefined => {
     };
 };
 
-const gantts: IGantt[] = [];
+const gantts: IMongoGantt[] = [];
 
 for (let i = 0; i < chance.integer({ min: 1, max: 40 }); i++) {
     const gantt = generateGantt();

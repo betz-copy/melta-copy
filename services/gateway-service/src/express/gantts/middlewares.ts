@@ -1,5 +1,6 @@
 import { Request } from 'express';
-import { GanttsService, IGantt } from '../../externalServices/ganttsService';
+import { IGantt } from '@microservices/shared';
+import { GanttsService } from '../../externalServices/ganttsService';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultController from '../../utils/express/controller';
 import { ForbiddenError } from '../error';

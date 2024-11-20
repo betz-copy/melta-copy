@@ -22,7 +22,7 @@ import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import flatten from 'lodash.flatten';
 import { CircularProgress, Grid } from '@mui/material';
-import { IEntityTemplateMap } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoGantt } from '@microservices/shared';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
 import {
     getEntitiesSearchBody,
@@ -40,7 +40,6 @@ import caHebrew from '../../CLDR/hebrew/ca-hebrew.json';
 import { useDynamicStyleSheet } from '../../utils/hooks/useDynamicStyleSheet';
 import lightTheme from '../../css/syncfusion/light.css?inline'; // eslint-disable-line import/no-unresolved
 import darkTheme from '../../css/syncfusion/dark.css?inline'; // eslint-disable-line import/no-unresolved
-import { IGantt } from '../../interfaces/gantts';
 import '../../css/syncfusion/schedule.css';
 import { environment } from '../../globals';
 import { Heatmap } from './Heatmap';
@@ -58,7 +57,7 @@ const {
 } = environment.ganttSettings;
 
 interface IGanttProps {
-    gantt: IGantt;
+    gantt: IMongoGantt;
 }
 
 export const Gantt: React.FC<IGanttProps> = ({ gantt }) => {
