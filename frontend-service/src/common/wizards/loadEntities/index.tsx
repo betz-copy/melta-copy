@@ -54,9 +54,10 @@ export interface ExportRequestParams {
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
-    initialValues = { file: undefined },
-    isEditMode = false,
     template,
+    initialValues = { file: undefined },
+    initialStep = 1,
+    isEditMode = false,
 }) => {
     const [stepsData, setStepsData] = useState<ISteps>({
         status: 'initialSteps',
@@ -75,6 +76,10 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 console.log('not dry', { data });
                 handleClose();
                 setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                setStepsData({
+                    status: 'initialSteps',
+                    data: { allEntities: [], succeededEntities: [], failedEntities: [] },
+                });
             },
             onError: (err: AxiosError) => {
                 console.log({ err });
@@ -112,7 +117,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     return { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, ...properties } };
                 }),
             });
-        else handleClose();
+        else {
+            handleClose();
+            setStepsData({
+                status: 'initialSteps',
+                data: { allEntities: [], succeededEntities: [], failedEntities: [] },
+            });
+        }
     };
 
     const steps: StepType<EntitiesWizardValues>[] = [
@@ -230,10 +241,16 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         <Grid>
             <Wizard
                 open={open}
-                handleClose={handleClose}
+                handleClose={() => {
+                    handleClose();
+                    setStepsData({
+                        status: 'initialSteps',
+                        data: { allEntities: [], succeededEntities: [], failedEntities: [] },
+                    });
+                }}
                 initialValues={initialValues}
                 // eslint-disable-next-line no-nested-ternary
-                initialStep={1}
+                initialStep={initialStep}
                 isEditMode={isEditMode}
                 title={i18next.t('wizard.entity.loadEntities.title')}
                 // eslint-disable-next-line no-nested-ternary
@@ -246,7 +263,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             {createOrUpdateWithRuleBreachDialogState.isOpen && (
                 <ActionOnEntityWithRuleBreachDialog
                     isLoadingActionOnEntity={isCreateBulkLoading}
-                    handleClose={() => setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false })}
+                    handleClose={() => {
+                        setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                        setStepsData({
+                            status: 'initialSteps',
+                            data: { allEntities: [], succeededEntities: [], failedEntities: [] },
+                        });
+                    }}
                     doActionEntity={() => {
                         return createBulkMutation({
                             actionsGroups: [createOrUpdateWithRuleBreachDialogState.actions as IAction[]],
@@ -267,7 +290,14 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         properties: { ...stepsData.data.brokenRulesEntities!.entities[0].properties, disabled: false },
                         attachmentsProperties: {},
                     }}
-                    onCreateRuleBreachRequest={() => handleClose()}
+                    onCreateRuleBreachRequest={() => {
+                        handleClose();
+                        setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                        setStepsData({
+                            status: 'initialSteps',
+                            data: { allEntities: [], succeededEntities: [], failedEntities: [] },
+                        });
+                    }}
                     actions={createOrUpdateWithRuleBreachDialogState.actions}
                     rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
                 />

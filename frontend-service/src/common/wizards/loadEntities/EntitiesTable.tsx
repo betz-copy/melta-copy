@@ -53,12 +53,12 @@ export const EntitiesTable: React.FC<{
                     <Typography color="#1E2775" fontFamily="Rubik" fontWeight={400} fontSize="14px">
                         {title}
                     </Typography>
-                    {description && (
+                    {description && defaultExpanded && (
                         <Typography color="#787C9E" fontFamily="Rubik" fontWeight={400} fontSize="12px">
                             {description}
                         </Typography>
                     )}
-                    {download && (
+                    {download && defaultExpanded && (
                         <TableButton
                             iconButtonWithPopoverProps={{
                                 popoverText: i18next.t('entitiesTableOfTemplate.downloadOneTable'),

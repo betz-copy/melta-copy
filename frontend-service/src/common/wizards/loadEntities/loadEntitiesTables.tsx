@@ -29,8 +29,8 @@ export const LoadEntitiesTables: React.FC<{
                 defaultExpanded={isBrokenRulesEntities}
                 icon={<Gavel style={{ color: '#FFAC2F' }} />}
                 title={`${tablesData.brokenRulesEntities?.entities.length || 0} ${i18next.t('wizard.entity.loadEntities.brokenRulesEntities')}`}
-                description={isBrokenRulesEntities ? i18next.t('wizard.entity.loadEntities.brokenRulesEntitiesDescription') : undefined}
-                download={isBrokenRulesEntities ? { onDownload: () => onDownload(true), isLoading } : undefined}
+                description={i18next.t('wizard.entity.loadEntities.brokenRulesEntitiesDescription')}
+                download={{ onDownload: () => onDownload(true), isLoading }}
             />
             <EntitiesTable
                 rowData={tablesData.failedEntities}
@@ -39,7 +39,7 @@ export const LoadEntitiesTables: React.FC<{
                 icon={<Close sx={{ color: '#A40000' }} />}
                 title={`${tablesData.failedEntities.length} ${i18next.t('wizard.entity.loadEntities.failedEntities')}`}
                 description={i18next.t('wizard.entity.loadEntities.failedEntitiesDescription')}
-                download={isFailedEntities ? { onDownload: () => onDownload(false), isLoading } : undefined}
+                download={{ onDownload: () => onDownload(false), isLoading }}
             />
         </Grid>
     );

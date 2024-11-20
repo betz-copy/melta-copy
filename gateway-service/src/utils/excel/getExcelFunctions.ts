@@ -67,15 +67,25 @@ const getBrokenRulesErrorEntities = async (
     populateBrokenRules: (rawBrokenRules: IBrokenRule[]) => Promise<IBrokenRulePopulated[]>,
 ) => {
     const indexes = new Set<number>();
-    rawBrokenRules.forEach((brokenRule: IBrokenRule) =>
-        brokenRule.failures.forEach((failure) => {
+    const updatedBrokenRules = rawBrokenRules.map((brokenRule) => ({
+        ...brokenRule,
+        failures: brokenRule.failures.map((failure) => {
             const entityIdNumberMatch = failure.entityId.match(/\d+/);
             const index = entityIdNumberMatch ? Number(entityIdNumberMatch[0]) : 0;
-            if (!indexes.has(index)) indexes.add(index);
-        }),
-    );
 
-    const brokenRulePopulated = await populateBrokenRules(rawBrokenRules);
+            if (!indexes.has(index)) indexes.add(index);
+            const updatedCauses = failure.causes.map((cause) => {
+                return { ...cause, instance: { entityId: `$${indexes.size - 1}._id` } };
+            });
+
+            return {
+                causes: updatedCauses,
+                entityId: `$${indexes.size - 1}._id`,
+            };
+        }),
+    }));
+
+    const brokenRulePopulated = await populateBrokenRules(updatedBrokenRules);
 
     const entities: { properties: Record<string, any> }[] = [];
     const sortedIndexes = [...indexes].sort((a, b) => b - a);
@@ -87,7 +97,7 @@ const getBrokenRulesErrorEntities = async (
     });
 
     return {
-        rawBrokenRules,
+        rawBrokenRules: updatedBrokenRules,
         brokenRules: brokenRulePopulated,
         entities,
     };
