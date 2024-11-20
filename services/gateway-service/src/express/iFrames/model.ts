@@ -1,7 +1,7 @@
 import * as mongoose from 'mongoose';
-import { IFrameDocument } from './interface';
+import { IMongoIFrame } from '@microservices/shared';
 
-const IFrameSchema = new mongoose.Schema<IFrameDocument>(
+const IFrameSchema = new mongoose.Schema<IMongoIFrame>(
     {
         name: {
             type: String,

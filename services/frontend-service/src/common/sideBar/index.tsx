@@ -58,7 +58,9 @@ const SideBar: React.FC<SideBarProps> = ({ toggleDrawer, isDrawerOpen }) => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
     const iFramesStored = localStorage.getItem('iFramesOrder');
-    const { data } = useQuery('allIFrames', () => searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored) } : {}));
+    const { data } = useQuery('allIFrames', () =>
+        searchIFrames(iFramesStored ? { ids: JSON.parse(iFramesStored), limit: 0, skip: 0 } : { limit: 0, skip: 0 }),
+    );
 
     const iFramesInSidebar = data?.filter((iFrame) => iFrame.placeInSideBar);
 

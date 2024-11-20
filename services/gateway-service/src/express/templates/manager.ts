@@ -18,6 +18,10 @@ import {
     IFormula,
     IUniqueConstraintOfTemplate,
     PermissionType,
+    IEntityTemplateWithConstraints,
+    IMongoEntityTemplateWithConstraints,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IUpdateOrDeleteEnumFieldReqData,
 } from '@microservices/shared';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
@@ -33,12 +37,6 @@ import { removeTmpFile } from '../../utils/fs';
 import { BadRequestError, NotFoundError, ServiceError } from '../error';
 import ProcessTemplatesManager from '../processes/processTemplates/manager';
 import { UsersManager } from '../users/manager';
-import {
-    IEntityTemplateWithConstraints,
-    IMongoEntityTemplateWithConstraints,
-    IMongoEntityTemplateWithConstraintsPopulated,
-    IUpdateOrDeleteEnumFieldReqData,
-} from './interfaces';
 import { getParametersOfFormula } from './rules';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';

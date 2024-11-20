@@ -1,7 +1,7 @@
+import { IMongoIFrame, ISearchIFramesBody } from '@microservices/shared';
 import axios from '../axios';
 import { IFrameWizardValues } from '../common/wizards/iFrame';
 import { environment } from '../globals';
-import { IMongoIFrame, ISearchIFramesBody } from '../interfaces/iFrames';
 import { getFileName } from '../utils/getFileName';
 
 const { iFrames } = environment.api;

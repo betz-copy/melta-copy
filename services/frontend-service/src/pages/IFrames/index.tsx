@@ -4,9 +4,9 @@ import { useQueryClient } from 'react-query';
 import { Grid } from '@mui/material';
 import { toast } from 'react-toastify';
 import i18next from 'i18next';
+import { IMongoIFrame } from '@microservices/shared';
 import { iFrameObjectToIFrameForm, searchIFrames } from '../../services/iFramesService';
 import IFramesPageHeadline from './IFramesHeadline';
-import { IMongoIFrame } from '../../interfaces/iFrames';
 import { IFrameWizard } from '../../common/wizards/iFrame';
 import IFramePage from './IFramePage';
 import { InfiniteScroll } from '../../common/InfiniteScroll';
@@ -93,6 +93,8 @@ const IFramesPage: React.FC<{ isSideBarOpen: boolean }> = ({ isSideBarOpen }) =>
                                 return searchIFrames({
                                     search: searchInput,
                                     ids: currentOrder.map((iFrameId) => iFrameId),
+                                    limit: 0,
+                                    skip: 0,
                                 });
                             }
 

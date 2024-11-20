@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { IFrame } from '../../externalServices/iFramesService';
+import { IFrame } from '@microservices/shared';
 import { ServiceError } from '../error';
 import DefaultController from '../../utils/express/controller';
 import { Authorizer } from '../../utils/authorizer';

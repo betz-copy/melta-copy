@@ -1,16 +1,15 @@
 import { FilterQuery, Types } from 'mongoose';
 import { StatusCodes } from 'http-status-codes';
+import { ISearchIFramesBody, IFrame, IMongoIFrame } from '@microservices/shared';
 import config from '../../config';
-import { ISearchIFramesBody } from '../../externalServices/iFramesService';
 import { StorageService } from '../../externalServices/storageService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import { removeTmpFile } from '../../utils/fs';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
 import { ServiceError } from '../error';
-import { IFrame, IFrameDocument } from './interface';
 import IFrameSchema from './model';
 
-export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
+export class IFrameManager extends DefaultManagerMongo<IMongoIFrame> {
     private storageService: StorageService;
 
     constructor(workspaceId: string) {
@@ -18,7 +17,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
         this.storageService = new StorageService(workspaceId);
     }
 
-    private filterIFramesWithPermissions(allIFrames: IFrameDocument[], allowedCategories: string[]) {
+    private filterIFramesWithPermissions(allIFrames: IMongoIFrame[], allowedCategories: string[]) {
         return allIFrames.filter((iFrame) => iFrame.categoryIds.every((categoryId) => allowedCategories.includes(categoryId)));
     }
 
@@ -32,7 +31,7 @@ export class IFrameManager extends DefaultManagerMongo<IFrameDocument> {
     ) {
         const allowedCategories = Object.keys(permissionsOfUserId.instances?.categories ?? {});
 
-        const query: FilterQuery<IFrameDocument> = {};
+        const query: FilterQuery<IMongoIFrame> = {};
         if (search) {
             const searchRegex = { $regex: this.escapeRegExp(search), $options: 'i' };
             query.$or = [{ name: searchRegex }, { url: searchRegex }];
