@@ -1,28 +1,20 @@
+import { IMongoEntityTemplate, IMongoRelationshipTemplate, IRelationshipTemplate } from '@microservices/shared';
 import config from '../config';
 import { createAxiosInstance } from '../utils/axios';
-import { IMongoEntityTemplate } from './entityTemplates';
 
 const {
     url,
     relationships: { createRelationshipTemplateRoute },
 } = config.templateService;
 
-export interface IRelationshipTemplate {
-    name: string;
-    displayName: string;
+export interface IMockRelationshipTemplate extends Omit<IRelationshipTemplate, 'sourceEntityId' | 'destinationEntityId'> {
     sourceEntityId: { name: string };
     destinationEntityId: { name: string };
 }
 
-export interface IMongoRelationshipTemplate extends Omit<IRelationshipTemplate, 'sourceEntityId' | 'destinationEntityId'> {
-    sourceEntityId: string;
-    destinationEntityId: string;
-    _id: string;
-}
-
 export const createRelationshipTemplates = async (
     workspaceId: string,
-    relationshipTemplates: IRelationshipTemplate[],
+    relationshipTemplates: IMockRelationshipTemplate[],
     entityTemplates: IMongoEntityTemplate[],
 ) => {
     const axiosInstance = createAxiosInstance(workspaceId);

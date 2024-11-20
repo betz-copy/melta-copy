@@ -1,6 +1,5 @@
-import { IUser } from '@microservices/shared';
+import { IUser, IMongoCategory } from '@microservices/shared';
 import config from '../../config/index';
-import { IMongoCategory } from '../../templates/categories';
 import { getPermissionsToCreate } from './permissions';
 
 export const getUsersToCreate = (rootWorkspaceId: string, mainWorkspaceId: string, categories: IMongoCategory[]): Omit<IUser, '_id'>[] => {

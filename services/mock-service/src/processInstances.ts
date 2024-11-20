@@ -3,61 +3,13 @@
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import { Axios } from 'axios';
-import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
+import { IMongoProcessTemplatePopulated } from '@microservices/shared';
 import config from './config';
 import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
 
 const { url, processInstanceRoute, minNumberOfProcesses, maxNumberOfProcesses, nameMinLength, nameMaxLength, characters } = config.processService;
-
-// eslint-disable-next-line no-shadow
-export enum Status {
-    Pending = 'pending',
-    Approved = 'approved',
-    Rejected = 'rejected',
-}
-
-export interface IStepInstance {
-    templateId: string;
-    properties?: Record<string, any>;
-    status: Status;
-    reviewers: string[];
-    reviewerId?: string;
-    reviewedAt?: Date;
-}
-
-export interface IMongoStepInstance extends IStepInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-export type InstanceDetails = Record<string, any>;
-
-export interface IProcessInstance {
-    templateId: string;
-    name: string;
-    details: Record<string, any>;
-    startDate: Date;
-    endDate: Date;
-    steps: string[];
-    status: Status;
-    reviewerId?: string;
-    reviewedAt?: Date;
-}
-export interface IProcessInstancePopulated extends Omit<IProcessInstance, 'steps'> {
-    steps: IMongoStepInstance[];
-}
-export interface IMongoProcessInstance extends IProcessInstance {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
-export interface IMongoProcessInstancePopulated extends IProcessInstancePopulated {
-    _id: string;
-    createdAt: Date;
-    updatedAt: Date;
-}
 
 const generateName = (): string => {
     const length = Math.floor(Math.random() * (nameMaxLength - nameMinLength + 1)) + nameMinLength;
@@ -89,7 +41,7 @@ const generateUniqueName = (generatedNames: Set<string>): string => {
 
 const createProcessInstance = (
     axiosInstance: Axios,
-    processTemplate: IMongoProcessTemplateReviewerPopulated,
+    processTemplate: IMongoProcessTemplatePopulated,
     generatedNames: Set<string>,
     userIds: string[],
     chance: Chance.Chance,
@@ -105,7 +57,7 @@ const createProcessInstance = (
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
-            const allowedReviewers = userIds.filter((userId) => !step.reviewers.map((reviewer) => reviewer._id).includes(userId));
+            const allowedReviewers = userIds.filter((userId) => !step.reviewers.includes(userId));
             if (!allowedReviewers.length) {
                 throw new Error(`There are not enough userIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`);
             }
@@ -129,7 +81,7 @@ const createProcessInstance = (
 
 export const createProcessInstances = async (
     workspaceId: string,
-    processTemplates: IMongoProcessTemplateReviewerPopulated[],
+    processTemplates: IMongoProcessTemplatePopulated[],
     userIds: string[],
     chance: Chance.Chance,
     fileId: string,

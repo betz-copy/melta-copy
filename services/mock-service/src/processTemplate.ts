@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { IMongoProcessTemplateReviewerPopulated, ICreateProcessTemplateBody } from '@microservices/shared';
+import { IMongoProcessTemplatePopulated, ICreateProcessTemplateBody } from '@microservices/shared';
 import config from './config';
 import { trycatch } from './utils';
 import { createAxiosInstance } from './utils/axios';
@@ -10,7 +10,7 @@ export const createProcessTemplates = async (workspaceId: string, processTemplat
     const axiosInstance = createAxiosInstance(workspaceId);
 
     const promises = processTemplates.map((processTemplate) => {
-        return axiosInstance.post<IMongoProcessTemplateReviewerPopulated>(url + createProcessTemplateRoute, processTemplate);
+        return axiosInstance.post<IMongoProcessTemplatePopulated>(url + createProcessTemplateRoute, processTemplate);
     });
 
     const results = await Promise.all(promises);

@@ -1,7 +1,6 @@
+import { IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
 import { IGantt, IGanttItem } from '../../gantts';
-import { IMongoEntityTemplate } from '../../templates/entityTemplates';
 import { pickOneIf, pickRandomSet, pickSetIf, popRandom } from '../../utils/mock';
-import { IMongoRelationshipTemplate } from '../../templates/relationshipTemplates';
 
 const generateGanttItemEntityTemplate = (
     chance: Chance.Chance,

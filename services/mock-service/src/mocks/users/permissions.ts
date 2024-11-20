@@ -1,6 +1,6 @@
+import { IMongoCategory } from '@microservices/shared';
 import { PermissionScope } from '../../interfaces/permissions';
 import { ICompactPermissions } from '../../interfaces/permissions/permissions';
-import { IMongoCategory } from '../../templates/categories';
 
 export interface SyncUserPermissions {
     userId: string;

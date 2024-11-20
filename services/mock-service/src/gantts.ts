@@ -1,9 +1,8 @@
 import axios from 'axios';
+import { IMongoEntityTemplate, IMongoRelationshipTemplate } from '@microservices/shared';
 import config from './config';
 import { getRandomGantts } from './mocks/gantts/generate';
 import { getHardcodedRealGantts } from './mocks/gantts/hardcoded';
-import { IMongoEntityTemplate } from './templates/entityTemplates';
-import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';
 import { createAxiosInstance } from './utils/axios';
 
