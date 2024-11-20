@@ -133,7 +133,7 @@ export const ProcessStep: FC<ProcessStepProps> = ({
                 toast.success(i18next.t('wizard.processInstance.step.editedSuccessfully'));
                 onStepUpdateSuccess(updatedStepInstance);
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.step.failedToEdit')} />);
                 console.log('failed to edit step. error', error);
             },

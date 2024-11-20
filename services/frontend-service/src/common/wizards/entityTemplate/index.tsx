@@ -101,14 +101,15 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
         name: '',
         displayName: '',
         icon: undefined,
-        category: { displayName: '', name: '', _id: '', color: '' },
+        category: { displayName: '', name: '', _id: '', color: '', iconFileId: '' },
         disabled: false,
         properties: [],
         attachmentProperties: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         uniqueConstraints: [],
         documentTemplatesIds: [],
-    },
+        _id: '',
+    } as EntityTemplateWizardValues,
     isEditMode = false,
 }) => {
     const queryClient = useQueryClient();
@@ -136,7 +137,12 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                 }
                 handleClose();
             },
-            onError: (error: AxiosError, entityTemplateValues) => {
+            onError: (
+                error: AxiosError<{
+                    metadata: { errorCode: string; type?: string; property?: string; relatedTemplateName?: string; constraint?: IConstraint };
+                }>,
+                entityTemplateValues,
+            ) => {
                 const errorMetadata = error.response?.data?.metadata;
 
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToDeleteField) {
@@ -151,11 +157,11 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
                         })}`,
                     };
 
-                    toast.error(errorMessages[type]);
+                    toast.error(errorMessages[type ?? '']);
                     return;
                 }
                 if (isEditMode && errorMetadata?.errorCode === errorCodes.failedToCreateConstraints) {
-                    const { constraint }: { constraint: IConstraint } = errorMetadata;
+                    const { constraint }: any = errorMetadata; // TODO: yona - fix
 
                     const newEntityTemplate = formToJSONSchema(entityTemplateValues, false);
 
@@ -193,14 +199,14 @@ const EntityTemplateWizard: React.FC<WizardBaseType<EntityTemplateWizardValues>>
     );
 
     return (
-        <Wizard
+        <Wizard<EntityTemplateWizardValues>
             open={open}
             handleClose={handleClose}
             initialValues={initialValues}
             initialStep={initialStep}
             isEditMode={isEditMode}
             title={isEditMode ? i18next.t('wizard.entityTemplate.editTitle') : i18next.t('wizard.entityTemplate.title')}
-            steps={steps}
+            steps={steps as StepsType<EntityTemplateWizardValues>}
             isLoading={isLoading}
             submitFunction={(values) => mutateAsync(values)}
         />

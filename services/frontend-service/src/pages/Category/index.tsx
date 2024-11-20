@@ -2,7 +2,7 @@ import _debounce from 'lodash.debounce';
 import React, { useEffect } from 'react';
 import { useQueryClient } from 'react-query';
 import { useParams } from 'wouter';
-import { IEntityTemplateMap, IMongoEntityTemplatePopulated, ICategoryMap } from '@microservices/shared';
+import { IEntityTemplateMap, IMongoEntityTemplateWithConstraintsPopulated, ICategoryMap } from '@microservices/shared';
 import EntitiesPage from '../../common/EntitiesPage';
 import { useLocalStorage } from '../../utils/hooks/useLocalStorage';
 
@@ -24,7 +24,7 @@ const Category: React.FC = () => {
 
     const categoryTemplates = categoryTemplatesId
         .map((id) => entityTemplates.get(id))
-        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+        .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
 
     const [templateIdsToShowCheckbox, setTemplateIdsToShowCheckbox] = useLocalStorage<string[]>(
         `templatesToShow-${categoryId}`,
@@ -33,13 +33,13 @@ const Category: React.FC = () => {
 
     const templatesToShowCheckbox = templateIdsToShowCheckbox
         .map((id) => entityTemplates.get(id))
-        .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+        .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
 
-    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplatePopulated[]>) => {
+    const setTemplatesToShowCheckbox = (newTemplates: React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>) => {
         setTemplateIdsToShowCheckbox((prevtemplateIdsToShowCheckbox) => {
             const prevTemplates = prevtemplateIdsToShowCheckbox
                 .map((id) => entityTemplates.get(id))
-                .filter((template): template is IMongoEntityTemplatePopulated => !!template);
+                .filter((template): template is IMongoEntityTemplateWithConstraintsPopulated => !!template);
             const updatedTemplates = typeof newTemplates === 'function' ? newTemplates(prevTemplates) : newTemplates;
             return updatedTemplates.map((template) => template._id);
         });
@@ -68,7 +68,7 @@ const Category: React.FC = () => {
             key={category._id}
             templates={categoryTemplates}
             setTemplates={(newTemplates) => {
-                const ids = (newTemplates as IMongoEntityTemplatePopulated[]).map((template) => template._id);
+                const ids = (newTemplates as IMongoEntityTemplateWithConstraintsPopulated[]).map((template) => template._id);
                 setCategoryTemplatesId(ids);
             }}
             templatesToShowCheckbox={templatesToShowCheckbox}

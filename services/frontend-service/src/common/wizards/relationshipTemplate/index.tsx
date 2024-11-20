@@ -3,7 +3,7 @@ import { toast } from 'react-toastify';
 import i18next from 'i18next';
 import { useMutation, useQueryClient } from 'react-query';
 import { AxiosError } from 'axios';
-import { IMongoEntityTemplatePopulated, IRelationshipTemplateMap } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IRelationshipTemplateMap } from '@microservices/shared';
 import { StepsType, Wizard, WizardBaseType } from '../index';
 import { CreateRelationshipTemplateName, createRelationshipTemplateNameSchema } from './CreateRelationshipTemplate';
 import {
@@ -15,12 +15,12 @@ import { ErrorToast } from '../../ErrorToast';
 
 export interface RelationshipTemplateWizardValues {
     _id?: string;
-    createdAt?: string;
-    updatedAt?: string;
+    createdAt?: Date;
+    updatedAt?: Date;
     name: string;
     displayName: string;
-    sourceEntity: IMongoEntityTemplatePopulated;
-    destinationEntity: IMongoEntityTemplatePopulated;
+    sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;
+    destinationEntity: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export const defaultInitialValues: RelationshipTemplateWizardValues = {
@@ -36,24 +36,30 @@ export const defaultInitialValues: RelationshipTemplateWizardValues = {
             required: [],
             hide: [],
         },
-        category: { _id: '', displayName: '', name: '', color: '' },
+        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     destinationEntity: {
         _id: '',
         displayName: '',
         name: '',
         properties: { type: 'object', properties: {}, required: [], hide: [] },
-        category: { _id: '', displayName: '', name: '', color: '' },
+        category: { _id: '', displayName: '', name: '', color: '', iconFileId: null },
         propertiesOrder: [],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: [],
         uniqueConstraints: [],
         disabled: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
 };
 
@@ -96,7 +102,7 @@ const RelationshipTemplateWizard: React.FC<WizardBaseType<RelationshipTemplateWi
                 }
                 handleClose();
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 if (isEditMode) {
                     toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToEdit')} />);
                 } else {

@@ -3,8 +3,8 @@
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import { Axios } from 'axios';
+import { IMongoProcessTemplateReviewerPopulated } from '@microservices/shared';
 import config from './config';
-import { IMongoProcessTemplatePopulated } from './processTemplate';
 import { createAxiosInstance } from './utils/axios';
 
 const limit = pLimit(config.requestLimit);
@@ -89,7 +89,7 @@ const generateUniqueName = (generatedNames: Set<string>): string => {
 
 const createProcessInstance = (
     axiosInstance: Axios,
-    processTemplate: IMongoProcessTemplatePopulated,
+    processTemplate: IMongoProcessTemplateReviewerPopulated,
     generatedNames: Set<string>,
     userIds: string[],
     chance: Chance.Chance,
@@ -105,7 +105,7 @@ const createProcessInstance = (
         startDate: randomStartDate,
         endDate: randomEndDate,
         steps: processTemplate.steps.reduce((acc, step) => {
-            const allowedReviewers = userIds.filter((userId) => !step.reviewers.includes(userId));
+            const allowedReviewers = userIds.filter((userId) => !step.reviewers.map((reviewer) => reviewer._id).includes(userId));
             if (!allowedReviewers.length) {
                 throw new Error(`There are not enough userIds to add unique reviewers to step '${step.name}' of template '${processTemplate.name}'`);
             }
@@ -129,7 +129,7 @@ const createProcessInstance = (
 
 export const createProcessInstances = async (
     workspaceId: string,
-    processTemplates: IMongoProcessTemplatePopulated[],
+    processTemplates: IMongoProcessTemplateReviewerPopulated[],
     userIds: string[],
     chance: Chance.Chance,
     fileId: string,

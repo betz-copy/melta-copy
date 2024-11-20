@@ -11,6 +11,7 @@ import {
     ActionTypes,
     IDeleteRelationshipMetadata,
     IDeleteRelationshipMetadataPopulated,
+    IBrokenRule,
 } from '@microservices/shared';
 import { AreYouSureDialog } from '../../common/dialogs/AreYouSureDialog';
 import ExecWithRuleBreachDialog from '../../common/dialogs/execWithRuleBreachDialog';
@@ -43,7 +44,9 @@ const DeleteRelationshipDialog: React.FC<{
             });
         },
         {
-            onError: (err: AxiosError) => {
+            onError: (
+                err: AxiosError<{ metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IBrokenRule[] } }>,
+            ) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.ruleBlock) {
                     setDeleteWithRuleBreachDialogState({
@@ -83,9 +86,11 @@ const DeleteRelationshipDialog: React.FC<{
             });
         },
         {
-            onError: (err: AxiosError) => {
+            onError: (
+                err: AxiosError<{ metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IBrokenRule[] } }>,
+            ) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === environment.errorCodes) {
+                if (errorMetadata?.errorCode && errorMetadata.errorCode in errorCodes) {
                     setDeleteWithRuleBreachDialogState({
                         isOpen: true,
                         brokenRules: errorMetadata.brokenRules,

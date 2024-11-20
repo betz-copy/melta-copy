@@ -55,7 +55,7 @@ const CodeEditorDialog: React.FC<{
             return updateActionToEntity(entityTemplate._id, editorValue);
         },
         {
-            onError: (err: AxiosError) => {
+            onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('systemManagement.entityAction.failedUpdateAction')} />);
             },
             onSuccess: (data) => {

@@ -6,12 +6,13 @@ import React, { useMemo, useState } from 'react';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import {
-    IEntityTemplateMap,
     IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplate,
     IMongoRelationshipTemplatePopulated,
     IRelationshipTemplateMap,
     ICategoryMap,
+    IEntityTemplateWithConstraintsMap,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -113,26 +114,29 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
 
 const defaultRelationshipTemplate: IMongoRelationshipTemplate = {
     _id: '',
-    createdAt: '',
+    createdAt: new Date(),
     destinationEntityId: '',
     displayName: '',
+    isProperty: false,
     name: '',
     sourceEntityId: '',
-    updatedAt: '',
+    updatedAt: new Date(),
 };
 
 const RelationshipTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
 
-    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
-    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] = useState<IMongoEntityTemplatePopulated[]>(entityTemplatesArray);
+    const [sourceEntityTemplatesToShow, setSourceEntityTemplatesToShow] =
+        useState<IMongoEntityTemplateWithConstraintsPopulated[]>(entityTemplatesArray);
+    const [destinationEntityTemplatesToShow, setDestinationEntityTemplatesToShow] =
+        useState<IMongoEntityTemplateWithConstraintsPopulated[]>(entityTemplatesArray);
 
     const [searchText, setSearchText] = useState('');
 
@@ -174,7 +178,7 @@ const RelationshipTemplatesRow: React.FC = () => {
             queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
             toast.success(i18next.t('wizard.relationshipTemplate.deletedSuccessfully'));
         },
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.relationshipTemplate.failedToDelete')} />);
         },
     });

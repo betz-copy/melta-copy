@@ -39,7 +39,7 @@ const GanttPage: React.FC = () => {
                 setEdit(false);
                 toast.success(i18next.t('gantts.actions.updatedSuccessfully'));
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToUpdate')} />);
             },
         },
@@ -49,7 +49,7 @@ const GanttPage: React.FC = () => {
             navigate('/gantts');
             toast.success(i18next.t('gantts.actions.deletedSuccessfully'));
         },
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('gantts.actions.failedToDelete')} />);
         },
     });

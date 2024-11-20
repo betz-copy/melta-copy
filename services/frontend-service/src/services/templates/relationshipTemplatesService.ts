@@ -3,7 +3,7 @@ import {
     IRelationshipTemplate,
     ISearchRelationshipTemplatesBody,
     IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import axios from '../../axios';
 import { RelationshipTemplateWizardValues, defaultInitialValues } from '../../common/wizards/relationshipTemplate';
@@ -20,12 +20,14 @@ const relationshipTemplateObjectToRelationshipTemplateForm = (
 
     return {
         sourceEntity: entityTemplates.get(sourceEntityId)
-            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplatePopulated)
-            : (defaultInitialValues.sourceEntity as IMongoEntityTemplatePopulated),
+            ? (entityTemplates.get(sourceEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
+            : (defaultInitialValues.sourceEntity as IMongoEntityTemplateWithConstraintsPopulated),
         destinationEntity: entityTemplates.get(destinationEntityId)
-            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplatePopulated)
-            : (defaultInitialValues.destinationEntity as IMongoEntityTemplatePopulated),
+            ? (entityTemplates.get(destinationEntityId) as IMongoEntityTemplateWithConstraintsPopulated)
+            : (defaultInitialValues.destinationEntity as IMongoEntityTemplateWithConstraintsPopulated),
         ...restOfEntityTemplate,
+        createdAt: relationshipTemplate.createdAt,
+        updatedAt: relationshipTemplate.updatedAt,
     };
 };
 

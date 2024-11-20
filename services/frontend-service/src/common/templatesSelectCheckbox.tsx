@@ -1,12 +1,12 @@
 import { FilterList } from '@mui/icons-material';
 import i18next from 'i18next';
 import React, { Dispatch } from 'react';
-import { IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory } from '@microservices/shared';
 import { SelectCheckbox, SelectCheckboxProps } from './SelectCheckbox';
 
 const getCategoriesSelectCheckboxGroupProps = (
     categories: IMongoCategory[] | undefined,
-): SelectCheckboxProps<IMongoEntityTemplatePopulated, IMongoCategory>['groupsProps'] => {
+): SelectCheckboxProps<IMongoEntityTemplateWithConstraintsPopulated, IMongoCategory>['groupsProps'] => {
     if (!categories) {
         return {
             useGroups: false,
@@ -24,12 +24,12 @@ const getCategoriesSelectCheckboxGroupProps = (
 
 const TemplatesSelectCheckbox: React.FC<{
     title: string;
-    templates: IMongoEntityTemplatePopulated[];
-    selectedTemplates: IMongoEntityTemplatePopulated[];
-    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    templates: IMongoEntityTemplateWithConstraintsPopulated[];
+    selectedTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
+    setSelectedTemplates: React.Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     categories?: any[];
     isDraggableDisabled?: boolean;
-    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplatePopulated[]>>;
+    setTemplates?: Dispatch<React.SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
     size?: 'small' | 'medium';
     toTopBar?: boolean;
 }> = ({ title, templates, selectedTemplates, setSelectedTemplates, categories, isDraggableDisabled, setTemplates, size, toTopBar }) => {

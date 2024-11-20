@@ -2,8 +2,8 @@
 import { generate, format, JSONSchemaFaker } from 'json-schema-faker';
 import pLimit from 'p-limit';
 import axios from 'axios';
+import { IRelationship } from '@microservices/shared';
 import config from './config';
-import { IRelationship } from './interfaces/relationships';
 import { IMongoEntityTemplate } from './templates/entityTemplates';
 import { IMongoRelationshipTemplate } from './templates/relationshipTemplates';
 import { trycatch } from './utils';

@@ -5,13 +5,13 @@ import i18next from 'i18next';
 import {
     IEntityExpanded,
     IEntitySingleProperty,
-    IMongoEntityTemplatePopulated,
     IMongoRelationshipTemplatePopulated,
     IMongoCategory,
     IMongoProcessInstanceReviewerPopulated,
     InstanceProperties,
     IMongoProcessTemplateReviewerPopulated,
     IProcessSingleProperty,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import { SelectCheckbox } from '../SelectCheckbox';
 import { IConnectionTemplateOfExpandedEntity } from '../../pages/Entity';
@@ -62,7 +62,7 @@ const getFilesFromTemplate = (
 const PrintOptionsDialog: React.FC<{
     open: boolean;
     handleClose: () => void;
-    template: IMongoEntityTemplatePopulated | IMongoProcessTemplateReviewerPopulated;
+    template: IMongoEntityTemplateWithConstraintsPopulated | IMongoProcessTemplateReviewerPopulated;
     instance: IEntityExpanded | IMongoProcessInstanceReviewerPopulated;
     files: IFile[];
     setFiles: React.Dispatch<React.SetStateAction<IFile[]>>;

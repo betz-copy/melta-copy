@@ -422,7 +422,7 @@ export class MailManager {
         const viewersMail = await Promise.all(viewersMailPromises);
         const title = mailTitle[type];
 
-        const html = renderToString(await this.getMailHtml(type, populatedMetaData));
+        const html = renderToString((await this.getMailHtml(type, populatedMetaData)) || <></>);
         return {
             from: mailerService.mailUser,
             to: viewersMail,

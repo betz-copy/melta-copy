@@ -164,7 +164,7 @@ const RulesRow: React.FC = () => {
             setDeleteRuleWizardState({ isWizardOpen: false, ruleId: null });
             toast.success(i18next.t('wizard.rule.deletedSuccessfully'));
         },
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.rule.failedToDelete')} />);
         },
     });

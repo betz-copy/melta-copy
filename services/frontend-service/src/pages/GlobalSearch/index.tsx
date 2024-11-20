@@ -1,7 +1,7 @@
 import i18next from 'i18next';
 import React, { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import { IEntityTemplateMap, ICategoryMap, IMongoCategory } from '@microservices/shared';
+import { ICategoryMap, IEntityTemplateWithConstraintsMap } from '@microservices/shared';
 import EntitiesPage from '../../common/EntitiesPage';
 import { useUserStore } from '../../stores/user';
 import { useSearchParams } from '../../utils/hooks/useSearchParams';
@@ -13,7 +13,7 @@ const GlobalSearch: React.FC<{}> = () => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
 
     const allowedCategories = currentUser.currentWorkspacePermissions.admin
         ? Array.from(categories.values())

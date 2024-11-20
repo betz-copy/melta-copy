@@ -1,5 +1,5 @@
 import { IEntity } from "../../entity";
-import { IMongoEntityTemplatePopulated } from "../../entityTemplate";
+import { IMongoEntityTemplateWithConstraintsPopulated } from "../../entityTemplate";
 import { IUser } from "../../user";
 import { IBaseSearchProperties } from "../templates/process";
 import { IMongoStepInstance, IMongoStepInstancePopulated } from "./step";
@@ -22,7 +22,7 @@ export interface IProcessInstance {
   status: Status;
   reviewedAt: Date;
   reviewerId: string;
-  archived: Boolean;
+  archived: boolean;
 }
 export interface IProcessInstancePopulated
   extends Omit<IProcessInstance, "steps"> {
@@ -75,7 +75,7 @@ export interface ProcessInstanceDocument extends IProcessInstance {
 export interface IReferencedEntityForProcess {
   entity: IEntity;
   userHavePermission: boolean;
-  entityTemplate: IMongoEntityTemplatePopulated;
+  entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
 }
 
 export type StepsObjectPopulated = Record<string, IUser[]>;

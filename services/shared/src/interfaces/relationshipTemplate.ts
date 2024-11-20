@@ -1,5 +1,7 @@
-import { Document } from "mongoose";
-import { IMongoEntityTemplatePopulated, ISearchBody } from "./entityTemplate";
+import {
+  IMongoEntityTemplateWithConstraintsPopulated,
+  ISearchBody,
+} from "./entityTemplate";
 
 export interface IRelationshipTemplate {
   name: string;
@@ -9,20 +11,18 @@ export interface IRelationshipTemplate {
   isProperty: boolean;
 }
 
-export interface IMongoRelationshipTemplate
-  extends IRelationshipTemplate,
-    Document<string> {
+export interface IMongoRelationshipTemplate extends IRelationshipTemplate {
   _id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type IMongoRelationshipTemplatePopulated = Omit<
   IMongoRelationshipTemplate,
   "sourceEntityId" | "destinationEntityId"
 > & {
-  sourceEntity: IMongoEntityTemplatePopulated;
-  destinationEntity: IMongoEntityTemplatePopulated;
+  sourceEntity: IMongoEntityTemplateWithConstraintsPopulated;
+  destinationEntity: IMongoEntityTemplateWithConstraintsPopulated;
 };
 
 export interface ISearchRelationshipTemplatesBody extends ISearchBody {

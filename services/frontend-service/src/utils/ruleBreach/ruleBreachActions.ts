@@ -3,7 +3,6 @@ import {
     IRelationshipPopulated,
     IEntity,
     IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
     ICausesOfInstancePopulated,
     IEntityForBrokenRules,
@@ -14,6 +13,8 @@ import {
     ICreateRelationshipMetadataPopulated,
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadataPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IMongoRelationshipTemplatePopulated,
 } from '@microservices/shared';
 import { environment } from '../../globals';
 
@@ -161,7 +162,7 @@ export const getEntityForRelationshipInfo = (
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
     entityTemplateId: string = '',
-): IMongoEntityTemplatePopulated => {
+): IMongoEntityTemplateWithConstraintsPopulated => {
     if (!entity || (typeof entity === 'string' && !entity.startsWith(environment.brokenRulesFakeEntityIdPrefix))) {
         const entityTemplate = entityTemplates.get(entityTemplateId);
 
@@ -175,6 +176,7 @@ export const getEntityForRelationshipInfo = (
                     required: [],
                     type: 'object',
                 },
+                uniqueConstraints: [],
             };
         }
         return {
@@ -185,7 +187,7 @@ export const getEntityForRelationshipInfo = (
                 required: [],
                 type: 'object',
             },
-            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty' },
+            category: { _id: 'empty', color: 'yellow', displayName: 'empty', name: 'empty', iconFileId: null },
             disabled: false,
             displayName: '---',
             name: '---',
@@ -193,6 +195,9 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            iconFileId: null,
         };
     }
     if (typeof entity === 'string' && entity.startsWith(environment.brokenRulesFakeEntityIdPrefix)) {
@@ -237,6 +242,9 @@ export const getEntityForRelationshipInfo = (
             propertiesPreview: [],
             propertiesTypeOrder: [],
             uniqueConstraints: [],
+            createdAt: currEntityTemplate.createdAt,
+            updatedAt: currEntityTemplate.updatedAt,
+            iconFileId: currEntityTemplate.iconFileId,
         };
     }
 
@@ -259,6 +267,9 @@ export const getEntityForRelationshipInfo = (
         propertiesPreview: [],
         propertiesTypeOrder: [],
         uniqueConstraints: [],
+        createdAt: currEntityTemplate.createdAt,
+        updatedAt: currEntityTemplate.updatedAt,
+        iconFileId: currEntityTemplate.iconFileId,
     };
 };
 
@@ -267,7 +278,7 @@ export const getRelationshipForRelationshipInfo = (
     actions: IActionPopulated[],
     entityTemplates: IEntityTemplateMap,
     relationshipTemplates: IRelationshipTemplateMap,
-) => {
+): IMongoRelationshipTemplatePopulated | null => {
     let relationshipTemplateId: string | null = null;
 
     if (!relationship) return null;
@@ -298,6 +309,7 @@ export const getRelationshipForRelationshipInfo = (
             displayName: relationshipTemplate.displayName,
             createdAt: relationshipTemplate.createdAt,
             updatedAt: relationshipTemplate.updatedAt,
+            isProperty: relationshipTemplate.isProperty,
         };
     }
 
@@ -319,7 +331,8 @@ export const getRelationshipForRelationshipInfo = (
         ),
         name: relationshipTemplate?.name || '',
         displayName: relationshipTemplate?.displayName || '',
-        createdAt: relationshipTemplate?.createdAt || '',
-        updatedAt: relationshipTemplate?.updatedAt || '',
+        createdAt: relationshipTemplate?.createdAt || new Date(),
+        updatedAt: relationshipTemplate?.updatedAt || new Date(),
+        isProperty: relationshipTemplate?.isProperty || false,
     };
 };

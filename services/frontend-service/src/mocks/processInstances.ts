@@ -44,7 +44,8 @@ function generateProcessInstanceOfTemplate(template: IMongoProcessTemplateReview
         steps,
         status: Status.Pending,
         // reviewer: undefined,
-        reviewedAt: undefined,
+        reviewedAt: new Date(),
+        reviewerId: generateMongoId(),
         archived: false,
     };
 }

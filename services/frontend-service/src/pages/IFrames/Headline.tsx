@@ -64,7 +64,7 @@ const IFrameHeadline: React.FC<{
             setDeleteIFrameDialogState({ isDialogOpen: false, iFrameId: null });
             toast.success(i18next.t('wizard.iFrame.deletedSuccessfully'));
         },
-        onError: (err: AxiosError) => {
+        onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.iFrame.failedToDelete')} />);
         },
     });

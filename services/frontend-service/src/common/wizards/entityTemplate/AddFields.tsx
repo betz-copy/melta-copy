@@ -95,11 +95,13 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
             searchEntitiesOfTemplateRequest((values as EntityTemplateWizardValues & { _id: string })._id, {
                 skip: 0,
                 limit: 1,
+                showRelationships: false,
+                sort: [],
             }),
         {
             enabled: isEditMode,
             initialData: { count: 1, entities: [] },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('systemManagement.defaultCantEdit')} />);

@@ -1,30 +1,34 @@
-import pickBy from 'lodash.pickby';
-import { IMongoEntityTemplatePopulated, IProcessDetails } from '@microservices/shared';
+import omitBy from 'lodash.omitby';
+import { IMongoEntityTemplateWithConstraintsPopulated, IProcessDetails } from '@microservices/shared';
 
-export const filterFieldsFromPropertiesSchema = (
-    schema: IMongoEntityTemplatePopulated['properties'] | undefined = {} as IMongoEntityTemplatePopulated['properties'],
-): IMongoEntityTemplatePopulated['properties'] => {
+export const filterFieldsFromPropertiesSchema = <
+    T extends IMongoEntityTemplateWithConstraintsPopulated['properties'] | (IProcessDetails['properties'] & { hide: string[] }),
+>(
+    schema: T | undefined = {} as T,
+): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
+    const { properties, required, hide = [] } = schema || {};
     return {
-        ...schema,
-        properties: pickBy(
-            schema?.properties,
-            (value) => value.format !== 'fileId' && value.format !== 'entityReference' && value.items?.format !== 'fileId',
+        properties: omitBy(
+            properties,
+            (value) => value.format === 'fileId' || value.format === 'entityReference' || value.items?.format === 'fileId',
         ),
         required:
-            schema?.required?.filter(
+            required?.filter(
                 (requiredKey) =>
-                    schema.properties[requiredKey].format !== 'fileId' &&
-                    schema.properties[requiredKey].format !== 'entityReference' &&
-                    schema.properties[requiredKey].items?.format !== 'fileId' &&
-                    schema.properties[requiredKey].serialCurrent === undefined,
-            ) ?? [],
+                    properties[requiredKey].format !== 'fileId' &&
+                    properties[requiredKey].format !== 'entityReference' &&
+                    properties[requiredKey].items?.format !== 'fileId',
+                // TODO: yona - return this like some how: && schema.properties[requiredKey].serialCurrent === undefined,
+            ) || [],
+        hide,
+        type: 'object',
     };
 };
 
-export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplatePopulated['properties'] => {
+export const pickProcessFieldsPropertiesSchema = (schema: IProcessDetails): IMongoEntityTemplateWithConstraintsPopulated['properties'] => {
     const filteredProperties = filterFieldsFromPropertiesSchema({
         ...schema.properties,
-        hide: [],
+        hide: [] as string[],
         required: schema.properties.required,
     });
 

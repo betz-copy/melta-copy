@@ -8,12 +8,13 @@ import { DragDropContext, Draggable, Droppable } from 'react-beautiful-dnd';
 import { UseMutateAsyncFunction, useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import {
-    IEntityTemplate,
     IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
     IRelationshipTemplateMap,
     ICategoryMap,
     IMongoCategory,
+    IMongoEntityTemplateWithConstraintsPopulated,
+    IEntityTemplateWithConstraints,
+    IEntityTemplateWithConstraintsMap,
 } from '@microservices/shared';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { AreYouSureDialog } from '../../../common/dialogs/AreYouSureDialog';
@@ -45,7 +46,7 @@ import { FilterButton } from './FilterButton';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
-const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
+const defaultEntityTemplatePopulated: IMongoEntityTemplateWithConstraintsPopulated = {
     _id: '',
     propertiesOrder: [],
     propertiesTypeOrder: ['properties', 'attachmentProperties'],
@@ -53,7 +54,13 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
     uniqueConstraints: [],
     name: '',
     displayName: '',
-    category: { displayName: '', name: '', _id: '', color: '' },
+    category: {
+        displayName: '',
+        name: '',
+        _id: '',
+        color: '',
+        iconFileId: null,
+    },
     disabled: false,
     properties: {
         type: 'object',
@@ -61,13 +68,16 @@ const defaultEntityTemplatePopulated: IMongoEntityTemplatePopulated = {
         required: [],
         hide: [],
     },
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    iconFileId: null,
 };
 interface EntityTemplateCardProps {
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     setDeleteEntityTemplateDialogState: React.Dispatch<
@@ -79,11 +89,11 @@ interface EntityTemplateCardProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+        IMongoEntityTemplateWithConstraintsPopulated,
         unknown,
         {
             entityTemplateId: string;
@@ -294,12 +304,12 @@ const EntityTemplateCard: React.FC<EntityTemplateCardProps> = ({
 interface CategoryEntitiesBoxProps {
     entityTemplatesWithCategory: {
         category: IMongoCategory;
-        entityTemplates: IMongoEntityTemplatePopulated[];
+        entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
     };
     setEntityTemplateWizardDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     setDeleteEntityTemplateDialogState: React.Dispatch<
@@ -311,11 +321,11 @@ interface CategoryEntitiesBoxProps {
     setAddActionsDialogState: React.Dispatch<
         React.SetStateAction<{
             isWizardOpen: boolean;
-            entityTemplate: IMongoEntityTemplatePopulated | null;
+            entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
         }>
     >;
     updateEntityTemplateStatusAsync: UseMutateAsyncFunction<
-        IMongoEntityTemplatePopulated,
+        IMongoEntityTemplateWithConstraintsPopulated,
         unknown,
         {
             entityTemplateId: string;
@@ -449,7 +459,7 @@ const EntityTemplatesRow: React.FC = () => {
     const queryClient = useQueryClient();
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
 
     const categoriesArray = Array.from(categories.values());
     const [categoriesToShow, setCategoriesToShow] = useState<IMongoCategory[]>(categoriesArray);
@@ -472,7 +482,7 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [entityTemplateWizardDialogState, setEntityTemplateWizardDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
@@ -480,16 +490,16 @@ const EntityTemplatesRow: React.FC = () => {
 
     const [addActionsToEntityTemplateDialogState, setAddActionsToEntityTemplateDialogState] = useState<{
         isWizardOpen: boolean;
-        entityTemplate: IMongoEntityTemplatePopulated | null;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null;
     }>({
         isWizardOpen: false,
         entityTemplate: null,
     });
 
     const getEntityTemplatesToShowGroupedByCategories = (
-        entityTemplatesToShow: IMongoEntityTemplatePopulated[],
-    ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] => {
-        const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplatePopulated[] }[] = [];
+        entityTemplatesToShow: IMongoEntityTemplateWithConstraintsPopulated[],
+    ): { category: IMongoCategory; entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] }[] => {
+        const categoriesToShowMapEntities: { category: IMongoCategory; entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] }[] = [];
         categoriesToShow.forEach((category) => {
             const relatedEntityTemplatesToShow = entityTemplatesToShow.filter((entity) => entity.category._id === category._id);
             categoriesToShowMapEntities.push({
@@ -537,14 +547,22 @@ const EntityTemplatesRow: React.FC = () => {
                     toast.error(i18next.t('wizard.failedToUpdateSystemData'));
                 }
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToDelete')} />);
             },
         },
     );
 
     const { mutateAsync } = useMutation(
-        ({ entityTemplateId, entityTemplate, category }: { entityTemplateId: string; entityTemplate: IEntityTemplate; category: IMongoCategory }) => {
+        ({
+            entityTemplateId,
+            entityTemplate,
+            category,
+        }: {
+            entityTemplateId: string;
+            entityTemplate: IEntityTemplateWithConstraints;
+            category: IMongoCategory;
+        }) => {
             setLoadedEntityTemplateId(entityTemplateId);
 
             return updateEntityTemplateRequest(entityTemplateId, {
@@ -559,7 +577,7 @@ const EntityTemplatesRow: React.FC = () => {
                 queryClient.invalidateQueries(['searchEntityTemplates', searchText, categoriesToShow]);
                 setLoadedEntityTemplateId('');
             },
-            onError(error: AxiosError) {
+            onError(error: AxiosError<{ metadata: { errorCode: string } }>) {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entityTemplate.failedToEdit')} />);
                 setLoadedEntityTemplateId('');
             },
@@ -619,7 +637,7 @@ const EntityTemplatesRow: React.FC = () => {
                 <Grid container gap="30px" marginTop="30px">
                     <InfiniteScroll<{
                         category: IMongoCategory;
-                        entityTemplates: IMongoEntityTemplatePopulated[];
+                        entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[];
                     }>
                         queryKey={['searchEntityTemplates', searchText, categoriesToShow]}
                         queryFunction={({ pageParam }) =>

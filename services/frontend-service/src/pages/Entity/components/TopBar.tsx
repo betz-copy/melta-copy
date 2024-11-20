@@ -2,7 +2,7 @@ import { AppRegistration } from '@mui/icons-material';
 import { Box, Grid, Typography, useTheme } from '@mui/material';
 import React from 'react';
 import { Link } from 'wouter';
-import { IEntityExpanded, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
+import { IEntityExpanded, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { IConnectionTemplateOfExpandedEntity } from '..';
 import { CustomIcon } from '../../../common/CustomIcon';
 import { EntityTemplateColor } from '../../../common/EntityTemplateColor';
@@ -12,7 +12,7 @@ import { ActivityLog } from './activityLog';
 import { Print } from './print';
 
 const EntityTopBar: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     expandedEntity: IEntityExpanded;
     connectionsTemplates: IConnectionTemplateOfExpandedEntity[];
     categoriesWithConnectionsTemplates: {

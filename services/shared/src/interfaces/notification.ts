@@ -1,7 +1,7 @@
 import { IEntity } from "./entity";
 import { IMongoStepInstancePopulated } from "./process";
 import {
-  IMongoProcessInstancePopulated,
+  IMongoProcessInstanceReviewerPopulated,
   Status,
 } from "./process/instances/process";
 import {
@@ -104,24 +104,24 @@ export interface IRuleBreachResponseNotificationMetadataPopulated {
 }
 
 export interface IProcessReviewerUpdateNotificationMetadataPopulated {
-  process: IMongoProcessInstancePopulated | null;
+  process: IMongoProcessInstanceReviewerPopulated | null;
   addedSteps: (IMongoStepInstancePopulated | null)[];
   deletedSteps: (IMongoStepInstancePopulated | null)[];
   unchangedSteps: (IMongoStepInstancePopulated | null)[];
 }
 export interface IProcessStatusUpdateNotificationMetadataPopulated {
-  process: IMongoProcessInstancePopulated | null;
+  process: IMongoProcessInstanceReviewerPopulated | null;
   step?: IMongoStepInstancePopulated | null;
   status: Status;
 }
 export interface INewProcessNotificationMetadataPopulated {
-  process: IMongoProcessInstancePopulated | null;
+  process: IMongoProcessInstanceReviewerPopulated | null;
 }
 export interface IDeleteProcessNotificationMetadataPopulated {
   processName: string;
 }
 export interface IArchiveProcessNotificationMetadataPopulated {
-  process: IMongoProcessInstancePopulated | null;
+  process: IMongoProcessInstanceReviewerPopulated | null;
   isArchived?: boolean;
 }
 export interface IDateAboutToExpireMetadataPopulated {

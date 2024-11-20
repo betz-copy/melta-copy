@@ -3,7 +3,7 @@ import i18next from 'i18next';
 import React, { forwardRef, useImperativeHandle, useState } from 'react';
 import { useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
-import { IEntityWithDirectRelationships, IEntityTemplateMap } from '@microservices/shared';
+import { IEntityWithDirectRelationships, IEntityTemplateWithConstraintsMap } from '@microservices/shared';
 import { environment } from '../../globals';
 import EntityCard from '../../pages/GlobalSearch/components/entityCard';
 import { getEntitiesWithDirectConnections } from '../../services/entitiesService';
@@ -78,7 +78,7 @@ const CardsView = forwardRef<CardsViewRef, CardsViewProps>(({ templateIds, searc
                         useContainer={false}
                     >
                         {({ entity, minioFileIds }) => {
-                            const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates');
+                            const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates');
                             const entityTemplate = entityTemplates?.get(entity.templateId)!;
                             return (
                                 <EntityCard

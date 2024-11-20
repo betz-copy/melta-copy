@@ -30,8 +30,8 @@ export interface IGantt {
 
 export interface IMongoGantt extends IGantt {
     _id: string;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ISearchGanttsBody {

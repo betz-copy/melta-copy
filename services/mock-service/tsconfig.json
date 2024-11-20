@@ -20,6 +20,7 @@
     "forceConsistentCasingInFileNames": true,
     "outDir": "./dist/",
     "lib": ["ES2020.Promise"],
+    "skipLibCheck": true,
     "paths": {
       "@microservices/*": ["./services/*/src"]
     }

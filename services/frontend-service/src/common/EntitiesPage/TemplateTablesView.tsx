@@ -5,7 +5,7 @@ import { useQuery } from 'react-query';
 import { useTour } from '@reactour/tour';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
-import { IEntity, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import { TemplateTable, TemplateTableRef } from './TemplateTable';
 import { getCountByTemplateIdsRequest } from '../../services/entitiesService';
 import { environment } from '../../globals';
@@ -18,7 +18,7 @@ type TemplateTablesViewResultsRef = {
 const TemplateTablesViewResults = forwardRef<
     TemplateTablesViewResultsRef,
     {
-        templates: IMongoEntityTemplatePopulated[];
+        templates: IMongoEntityTemplateWithConstraintsPopulated[];
         searchInput: string;
         pageSize?: number;
         pageType: string;
@@ -82,7 +82,7 @@ const TemplateTablesViewResults = forwardRef<
 });
 
 const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
-    templates: IMongoEntityTemplatePopulated[],
+    templates: IMongoEntityTemplateWithConstraintsPopulated[],
     searchInput: string,
     semanticSearch: boolean,
 ) => {
@@ -99,7 +99,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 };
 
 export interface TemplateTablesViewProps {
-    templates: IMongoEntityTemplatePopulated[];
+    templates: IMongoEntityTemplateWithConstraintsPopulated[];
     searchInput: string;
     pageType: string;
     semanticSearch: boolean;

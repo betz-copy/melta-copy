@@ -21,11 +21,11 @@ const addDetailsFieldsSchema = Yup.object({
 export const useAreThereProcessInstancesByTemplateId = (templateId: string, enabled: boolean) => {
     const { data: areThereInstancesByTemplateIdResponse } = useQuery(
         ['areThereInstancesByTemplateId', templateId],
-        () => searchProcessesRequest({ templateIds: [templateId] }),
+        () => searchProcessesRequest({ templateIds: [templateId], limit: 1, skip: 0 }),
         {
             enabled,
             initialData: [],
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 // eslint-disable-next-line no-console
                 console.log('failed to check areThereInstancesByTemplateId. error:', error);
 

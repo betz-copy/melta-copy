@@ -46,6 +46,11 @@ export interface IProcessTemplatePopulated
   steps: IMongoStepTemplate[];
 }
 
+export interface ICreateProcessTemplateBody
+  extends Omit<IProcessTemplate, "steps"> {
+  steps: IStepTemplate[];
+}
+
 export interface IUpdateProcessTemplateBody
   extends Omit<IProcessTemplate, "steps"> {
   steps: (IStepTemplate & { _id: string })[];

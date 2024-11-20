@@ -8,7 +8,7 @@ import i18next from 'i18next';
 import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import { debounce } from 'lodash';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
-import { IEntity, IMongoEntityTemplatePopulated, IMongoCategory } from '@microservices/shared';
+import { IEntity, IMongoCategory, IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 import SearchInput from '../inputs/SearchInput';
 import { AddEntityButton } from './AddEntityButton';
 import TemplatesSelectCheckbox from '../templatesSelectCheckbox';
@@ -149,10 +149,10 @@ const EntitiesPageHeadline: React.FC<{
     onSearch: (value: string) => void;
     entityTemplateSelectCheckboxProps: {
         categories?: IMongoCategory[];
-        templates: IMongoEntityTemplatePopulated[];
-        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
-        templatesToShow: IMongoEntityTemplatePopulated[];
-        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplatePopulated[]>>;
+        templates: IMongoEntityTemplateWithConstraintsPopulated[];
+        setTemplates?: Dispatch<SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
+        templatesToShow: IMongoEntityTemplateWithConstraintsPopulated[];
+        setTemplatesToShow: Dispatch<SetStateAction<IMongoEntityTemplateWithConstraintsPopulated[]>>;
         isDraggableDisabled?: boolean;
     };
     excelExportProps?: {

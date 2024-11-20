@@ -1,7 +1,7 @@
 import React from 'react';
 import { Grid } from '@mui/material';
 import i18next from 'i18next';
-import { IEntity, IMongoEntityTemplatePopulated, PermissionScope } from '@microservices/shared';
+import { IEntity, IMongoEntityTemplateWithConstraintsPopulated, PermissionScope } from '@microservices/shared';
 import { AddEntityButton } from '../../EntitiesPage/AddEntityButton';
 import { AddIconWithText } from '../../AddIconWithText';
 import IconButtonWithPopover from '../../IconButtonWithPopover';
@@ -13,7 +13,7 @@ const DashedSelectBox: React.FC<{
     checkUsersPermissions: PermissionScope;
     onClick: React.MouseEventHandler<HTMLDivElement>;
     error?: boolean;
-    entityTemplate?: IMongoEntityTemplatePopulated;
+    entityTemplate?: IMongoEntityTemplateWithConstraintsPopulated;
     minHeight: React.CSSProperties['minHeight'];
     onSuccessCreate: (entity: IEntity) => void;
     addNewEntityLabel?: string;
@@ -73,7 +73,11 @@ const DashedSelectBox: React.FC<{
                                 popoverText={popoverText}
                                 initialValues={
                                     entityTemplate
-                                        ? { template: entityTemplate, properties: { disabled: false }, attachmentsProperties: {} }
+                                        ? {
+                                              template: entityTemplate,
+                                              properties: { disabled: false },
+                                              attachmentsProperties: {},
+                                          }
                                         : undefined
                                 }
                                 style={{ borderRadius: '5px' }}

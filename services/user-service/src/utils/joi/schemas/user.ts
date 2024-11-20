@@ -23,4 +23,5 @@ export const partialBaseUserSchema = partialSchema(baseUserSchema);
 
 export const userSchema = baseUserSchema.keys({
     permissions: CompactPermissionsSchema.required(),
+    displayName: joi.string(),
 });

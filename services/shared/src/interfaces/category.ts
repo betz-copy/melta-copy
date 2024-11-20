@@ -1,5 +1,3 @@
-import { Document } from "mongoose";
-
 export interface ICategory {
   name: string;
   displayName: string;
@@ -7,7 +5,7 @@ export interface ICategory {
   color: string;
 }
 
-export interface IMongoCategory extends ICategory, Document<string> {
+export interface IMongoCategory extends ICategory {
   _id: string;
 }
 

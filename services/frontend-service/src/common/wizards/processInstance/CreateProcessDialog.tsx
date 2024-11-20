@@ -27,7 +27,7 @@ const CreateProcess: React.FC<ISimpleDialogProps> = ({ open, onClose }) => {
             onClose();
             queryClient.resetQueries({ queryKey: ['searchProcesses'] }); // reset ProcessesList search results
         },
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('processInstancesPage.failedToCreateProcess')} />);
             console.log('Failed to create process. Error', error);
         },

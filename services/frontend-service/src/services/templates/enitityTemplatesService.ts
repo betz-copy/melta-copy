@@ -1,9 +1,10 @@
 import { v4 as uuid } from 'uuid';
 import {
     IEntitySingleProperty,
-    IEntityTemplate,
     IEntityTemplateMap,
+    IEntityTemplateWithConstraints,
     IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
     ISearchEntityTemplatesBody,
 } from '@microservices/shared';
 import axios from '../../axios';
@@ -17,7 +18,9 @@ export const basePropertyTypes = ['string', 'number', 'boolean'];
 export const stringFormats = ['date', 'date-time', 'email', 'fileId', 'text-area', 'relationshipReference'];
 export const arrayTypes = ['multipleFiles', 'enumArray'];
 
-const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTemplatePopulated | null): EntityTemplateWizardValues | undefined => {
+const entityTemplateObjectToEntityTemplateForm = (
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated | null,
+): EntityTemplateWizardValues | undefined => {
     if (!entityTemplate) return undefined;
     const {
         iconFileId,
@@ -36,7 +39,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     propertiesOrder.forEach((key) => {
         const value = properties.properties[key];
 
-        let type = value.format || value.type;
+        let type: IEntitySingleProperty['type'] | any = value.format || value.type; // TODO: yona - fix
         if (value.serialStarter !== undefined) type = 'serialNumber';
         else if (value.enum) type = 'enum';
         else if (value.pattern) type = 'pattern';
@@ -90,21 +93,21 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
     return { ...restOfEntityTemplate, properties: propertiesArray, attachmentProperties, uniqueConstraints, documentTemplatesIds: documentTemplates };
 };
 
-export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplate => {
+export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode: boolean): IEntityTemplateWithConstraints => {
     // change to support file types
     const { properties, attachmentProperties, propertiesTypeOrder, documentTemplatesIds, ...restOfProperties } = values;
     const serialsUniqueConstraints: string[][] = [];
     const propertiesOrder: string[] = [];
     const attachmentPropertiesOrder: string[] = [];
     const propertiesPreview: string[] = [];
-    const schema: IEntityTemplate['properties'] = {
+    const schema: IEntityTemplateWithConstraints['properties'] = {
         type: 'object',
         properties: {},
         required: [],
         hide: [],
     };
 
-    let enumPropertiesColors: IEntityTemplate['enumPropertiesColors'];
+    let enumPropertiesColors: IEntityTemplateWithConstraints['enumPropertiesColors'];
 
     properties.forEach(
         ({
@@ -148,7 +151,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
                 schema.properties[name] = {
                     title,
                     type: propertyType,
-                    format: stringFormats.includes(type) ? type : undefined,
+                    format: stringFormats.includes(type) ? (type as IEntitySingleProperty['format']) : undefined,
                     enum: type === 'enum' ? options : undefined,
                     items: type === 'enumArray' ? { type: 'string', enum: options } : undefined,
                     minItems: type === 'enumArray' ? 1 : undefined,
@@ -243,6 +246,7 @@ export const formToJSONSchema = (values: EntityTemplateWizardValues, isEditMode:
         propertiesPreview,
         enumPropertiesColors,
         uniqueConstraints: restOfProperties.uniqueConstraints || [],
+        iconFileId: null,
     };
 };
 
@@ -278,20 +282,23 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
     formData.append('propertiesPreview', JSON.stringify(entityTemplate.propertiesPreview));
     formData.append('uniqueConstraints', JSON.stringify(entityTemplate.uniqueConstraints));
 
-    const { data } = await axios.post<IMongoEntityTemplatePopulated>(entityTemplates, formData);
+    const { data } = await axios.post<IMongoEntityTemplateWithConstraintsPopulated>(entityTemplates, formData);
     return data;
 };
 
 const updateEntityTemplateStatusRequest = async (entityTemplateId: string, disabledStatus: boolean) => {
-    const { data } = await axios.patch<IMongoEntityTemplatePopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
+    const { data } = await axios.patch<IMongoEntityTemplateWithConstraintsPopulated>(`${entityTemplates}/${entityTemplateId}/status`, {
         disabled: disabledStatus,
     });
     return data;
 };
 
-const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEntityTemplate: IEntityTemplate | EntityTemplateWizardValues) => {
+const updateEntityTemplateRequest = async (
+    entityTemplateId: string,
+    updatedEntityTemplate: IEntityTemplateWithConstraints | EntityTemplateWizardValues,
+) => {
     const formData = new FormData();
-    const entityTemplate: IEntityTemplate =
+    const entityTemplate: IEntityTemplateWithConstraints =
         'attachmentProperties' in updatedEntityTemplate // its type is - EntityTemplateWizardValues
             ? formToJSONSchema(updatedEntityTemplate as EntityTemplateWizardValues, true)
             : updatedEntityTemplate;

@@ -4,7 +4,7 @@ import { FormikProps } from 'formik';
 import { useQueryClient } from 'react-query';
 import i18next from 'i18next';
 import lodashIsEqual from 'lodash.isequal';
-import { IEntityTemplateMap } from '@microservices/shared';
+import { IEntityTemplateWithConstraintsMap } from '@microservices/shared';
 import { IBasicGantt, IGanttGroupBy } from '../../../interfaces/gantts';
 import { FormikAutoComplete } from '../../../common/inputs/FormikAutoComplete';
 import { RemoveFromArrayButton } from '../GanttItemDisplay/GanttItemEdit/RemoveFromArrayButton';
@@ -21,7 +21,7 @@ interface GroupByDisplayProps {
 
 export const GroupByDisplay: React.FC<GroupByDisplayProps> = ({ groupBy, formik, expanded, edit }) => {
     const queryClient = useQueryClient();
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
 
     const groupByEntityTemplate = entityTemplates.get(groupBy.entityTemplateId);
 

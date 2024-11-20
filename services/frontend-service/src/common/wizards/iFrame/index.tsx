@@ -86,7 +86,7 @@ const IFrameWizard: React.FC<IFrameWizardBaseType> = ({
                 i18next.t(isEditMode ? 'wizard.iFrame.editedSuccessfully' : 'wizard.iFrame.createdSuccessfully');
                 handleClose();
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(
                     <ErrorToast
                         axiosError={error}

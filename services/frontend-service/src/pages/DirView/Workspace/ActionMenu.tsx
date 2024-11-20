@@ -36,7 +36,7 @@ export const ActionMenu: React.FC<IActionMenuProps> = ({ workspace, openEditWiza
                 setMovedWorkspace(null);
                 toast.success(i18next.t('workspaces.movedSuccessfully'));
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('workspaces.failedToMove')} />);
             },
         },

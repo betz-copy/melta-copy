@@ -48,7 +48,11 @@ const UpdateStatusWithRuleBreachDialog: React.FC<{
             });
         },
         {
-            onError: (err: AxiosError) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IRuleBreach['brokenRules'] };
+                }>,
+            ) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === 'RULE_BLOCK') {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);

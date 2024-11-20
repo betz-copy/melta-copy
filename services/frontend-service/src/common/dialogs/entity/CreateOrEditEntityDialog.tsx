@@ -16,7 +16,7 @@ import { StatusCodes } from 'http-status-codes';
 import {
     IEntity,
     IUniqueConstraint,
-    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
     IRuleBreach,
     IRuleBreachPopulated,
     ActionTypes,
@@ -48,7 +48,7 @@ export type ICreateOrUpdateWithRuleBreachDialogState = {
     rawActions?: IAction[];
 };
 
-const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePopulated) => {
+const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplateWithConstraintsPopulated) => {
     const templateFilesProperties = pickBy(
         entityTemplate.properties.properties,
         (value) => (value.type === 'array' && value.items?.format === 'fileId') || value.format === 'fileId',
@@ -61,7 +61,7 @@ const getEntityTemplateFilesFieldsInfo = (entityTemplate: IMongoEntityTemplatePo
 
 const convertIEntityToEntityWizardValues = (
     entityToUpdate: IEntity,
-    entityTemplate: IMongoEntityTemplatePopulated,
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated,
     initialTemplateFileKeys: string[],
 ): EntityWizardValues => {
     const { _id, createdAt, updatedAt, disabled, ...entityToUpdateData } = entityToUpdate.properties;
@@ -88,7 +88,7 @@ const convertIEntityToEntityWizardValues = (
 
 const CreateOrEditEntityDetails: React.FC<{
     isEditMode?: boolean;
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     initialCurrValues?: EntityWizardValues;
     entityToUpdate?: IEntity;
     onSuccessUpdate?: (entity: IEntity) => void;
@@ -142,7 +142,21 @@ const CreateOrEditEntityDetails: React.FC<{
         };
     }, [entityToUpdate, entityTemplate, initialTemplateFileKeys]);
 
-    const handleMutationError = (err: AxiosError, template: IMongoEntityTemplatePopulated, newEntityData?: EntityWizardValues | undefined) => {
+    const handleMutationError = (
+        err: AxiosError<{
+            metadata: {
+                errorCode: string;
+                constraint?: Omit<IUniqueConstraint, 'constraintName'>;
+                message?: string;
+                brokenRules: IRuleBreachPopulated['brokenRules'];
+                rawBrokenRules: IRuleBreach['brokenRules'];
+                actions: IActionPopulated[];
+                rawActions: IAction[];
+            };
+        }>,
+        template: IMongoEntityTemplateWithConstraintsPopulated,
+        newEntityData?: EntityWizardValues | undefined,
+    ) => {
         if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
 
         const errorMetadata = err.response?.data?.metadata;
@@ -170,7 +184,7 @@ const CreateOrEditEntityDetails: React.FC<{
             }
 
             case errorCodes.actionsCustomError:
-                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message }));
+                setExternalErrors((prev) => ({ ...prev, action: errorMetadata?.message ?? '' }));
                 break;
 
             case errorCodes.ruleBlock: {
@@ -199,7 +213,20 @@ const CreateOrEditEntityDetails: React.FC<{
             onSuccess: (data) => {
                 if (onSuccessUpdate) onSuccessUpdate(data);
             },
-            onError: (err: AxiosError, { newEntityData }) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: {
+                        errorCode: string;
+                        constraint?: Omit<IUniqueConstraint, 'constraintName'>;
+                        message?: string;
+                        brokenRules: IRuleBreachPopulated['brokenRules'];
+                        rawBrokenRules: IRuleBreach['brokenRules'];
+                        actions: IActionPopulated[];
+                        rawActions: IAction[];
+                    };
+                }>,
+                { newEntityData },
+            ) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },
@@ -216,7 +243,20 @@ const CreateOrEditEntityDetails: React.FC<{
                 onSuccessUpdate?.(currEntity);
                 entityId = currEntity.properties._id;
             },
-            onError: (err: AxiosError, { newEntityData }) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: {
+                        errorCode: string;
+                        constraint?: Omit<IUniqueConstraint, 'constraintName'>;
+                        message?: string;
+                        brokenRules: IRuleBreachPopulated['brokenRules'];
+                        rawBrokenRules: IRuleBreach['brokenRules'];
+                        actions: IActionPopulated[];
+                        rawActions: IAction[];
+                    };
+                }>,
+                { newEntityData },
+            ) => {
                 handleMutationError(err, entityTemplate, newEntityData);
             },
         },

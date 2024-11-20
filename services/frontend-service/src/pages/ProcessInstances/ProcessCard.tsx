@@ -198,7 +198,7 @@ const ProcessCard: React.FC<{
                 setIsEditMode(false);
                 setCurrProcessInstance(processNewData);
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.processInstance.failedToEdit')} />);
                 console.log('failed to update process instance. error', error);
             },
@@ -210,7 +210,7 @@ const ProcessCard: React.FC<{
             return deleteProcessRequest(processId);
         },
         {
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 console.log('failed to delete process. error:', error);
                 toast.error(i18next.t('processInstancesPage.failedToDeleteProcess'));
             },

@@ -197,6 +197,8 @@ const formToJSONSchema = (values: ProcessTemplateWizardValues): IProcessTemplate
         const reviewersIds: string[] = step.reviewers.map((reviewer) => reviewer._id);
         stepTemplates.push({
             _id: step._id!,
+            createdAt: new Date(),
+            updatedAt: new Date(),
             properties: stepSchema,
             displayName: step.displayName,
             iconFileId: step.icon!.file instanceof File ? null : step.icon!.file.name!,

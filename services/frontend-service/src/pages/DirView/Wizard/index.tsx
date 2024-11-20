@@ -70,7 +70,7 @@ export const WorkspaceWizard: React.FC<WizardBaseType<WorkspaceWizardValues>> = 
                 toast.success(i18next.t(isEditMode ? 'wizard.workspace.editedSuccessfully' : 'wizard.workspace.createdSuccessfully'));
                 handleClose();
             },
-            onError: (error: AxiosError) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
                 if (isEditMode) toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.workspace.failedToEdit')} />);
                 else toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.workspace.failedToCreate')} />);
             },

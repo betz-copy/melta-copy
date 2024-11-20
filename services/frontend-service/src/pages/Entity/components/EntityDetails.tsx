@@ -17,7 +17,7 @@ import {
     IEntity,
     IEntityExpanded,
     IEntityTemplateMap,
-    IMongoEntityTemplatePopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
     IRuleBreach,
     IRuleBreachPopulated,
     PermissionScope,
@@ -39,7 +39,7 @@ import { EntityDisableCheckbox } from './EntityDisableCheckbox';
 import TooltipMenuButton from './TooltipMenuButton';
 import UpdateStatusWithRuleBreachDialog from './UpdateStatusWithRuleBreachDialog';
 
-const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; expandedEntity: IEntityExpanded }> = ({
+const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplateWithConstraintsPopulated; expandedEntity: IEntityExpanded }> = ({
     entityTemplate,
     expandedEntity,
 }) => {
@@ -92,7 +92,12 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 if (data.properties.disabled) toast.success(i18next.t('entityPage.disabledSuccessfully'));
                 else toast.success(i18next.t('entityPage.activatedSuccessfully'));
             },
-            onError: (err: AxiosError, { disabled }) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IRuleBreach['brokenRules'] };
+                }>,
+                { disabled },
+            ) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === 'RULE_BLOCK') {
                     setUpdateStatusWithRuleBreachDialogState({
@@ -109,7 +114,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     );
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(() => deleteEntityRequest(entity.properties._id), {
-        onError: (error: AxiosError) => {
+        onError: (error: AxiosError<{ metadata: { errorCode: string } }>) => {
             closeDeleteDialog();
             toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
         },

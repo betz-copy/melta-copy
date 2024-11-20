@@ -11,13 +11,13 @@ import { StatusCodes } from 'http-status-codes';
 import {
     IEntity,
     IUniqueConstraint,
-    IMongoEntityTemplatePopulated,
     IBrokenRule,
     IRuleBreach,
     IRuleBreachPopulated,
     ActionTypes,
     IAction,
     IActionPopulated,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import { updateEntityRequestForMultiple } from '../../../services/entitiesService';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
@@ -32,7 +32,7 @@ import ActionOnEntityWithRuleBreachDialog from './ActionOnEntityWithRuleBreachDi
 const { errorCodes } = environment;
 
 const EditEntityDetails: React.FC<{
-    entityTemplate: IMongoEntityTemplatePopulated;
+    entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
     entity: IEntity;
     onSuccessUpdate: (data: IEntity) => void;
     onCancelUpdate: () => void;
@@ -79,7 +79,20 @@ const EditEntityDetails: React.FC<{
                 onSuccessUpdate(data);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
-            onError: (err: AxiosError, { newEntityData: newEntityDate }) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: {
+                        errorCode: string;
+                        constraint: IUniqueConstraint;
+                        message: string;
+                        brokenRules: IRuleBreachPopulated['brokenRules'];
+                        rawBrokenRules: IBrokenRule[];
+                        actions: IActionPopulated[];
+                        rawActions: IAction[];
+                    };
+                }>,
+                { newEntityData: newEntityDate },
+            ) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
 

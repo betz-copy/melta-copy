@@ -20,7 +20,14 @@ import { useMutation } from 'react-query';
 import { toast } from 'react-toastify';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { AxiosError } from 'axios';
-import { BreachType, IRuleBreachAlertPopulated, IRuleBreachRequestPopulated, RuleBreachRequestStatus, PermissionScope } from '@microservices/shared';
+import {
+    BreachType,
+    IRuleBreachAlertPopulated,
+    IRuleBreachRequestPopulated,
+    RuleBreachRequestStatus,
+    PermissionScope,
+    IBrokenRulePopulated,
+} from '@microservices/shared';
 import { approveRuleBreachRequestRequest, cancelRuleBreachRequestRequest, denyRuleBreachRequestRequest } from '../../services/ruleBreachesService';
 import { environment } from '../../globals';
 import { useDarkModeStore } from '../../stores/darkMode';
@@ -63,7 +70,7 @@ const RuleBreachDialog: React.FC<{
             throw new Error('unknown request status');
         },
         {
-            onError: (error: AxiosError, status) => {
+            onError: (error: AxiosError<{ metadata: { errorCode: string; brokenRules: IBrokenRulePopulated[] } }>, status) => {
                 console.log('failed to review ruleBreach. error:', error);
 
                 if (error.response?.data?.metadata?.errorCode === errorCodes.ruleBlock) {

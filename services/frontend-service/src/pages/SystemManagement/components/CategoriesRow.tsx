@@ -121,7 +121,7 @@ const CategoriesRow: React.FC = () => {
             setDeleteCategoryDialogState({ isDialogOpen: false, categoryId: null });
             toast.success(i18next.t('wizard.category.deletedSuccessfully'));
         },
-        onError: (err: AxiosError) => {
+        onError: (err: AxiosError<{ metadata: { errorCode: string } }>) => {
             toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('wizard.category.failedToDelete')} />);
         },
     });

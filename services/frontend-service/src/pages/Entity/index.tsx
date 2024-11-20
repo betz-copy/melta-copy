@@ -10,13 +10,12 @@ import {
     IRelationship,
     IEntity,
     IEntityExpanded,
-    IEntityTemplateMap,
     IMongoRelationshipTemplatePopulated,
     IRelationshipTemplateMap,
     ICategoryMap,
-    IMongoCategory,
     PermissionScope,
     ISubCompactPermissions,
+    IEntityTemplateWithConstraintsMap,
 } from '@microservices/shared';
 import { BlueTitle } from '../../common/BlueTitle';
 import { CustomIcon } from '../../common/CustomIcon';
@@ -358,7 +357,7 @@ const Entity: React.FC = () => {
     const currentUser = useUserStore((state) => state.user);
 
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
-    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateWithConstraintsMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
 
     const templateIds = Array.from(entityTemplates.keys());

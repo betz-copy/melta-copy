@@ -13,12 +13,13 @@ import {
     IEntity,
     IEntityExpanded,
     IUniqueConstraint,
-    IMongoEntityTemplatePopulated,
     IRuleBreach,
     IRuleBreachPopulated,
     ActionTypes,
     IAction,
     IActionPopulated,
+    IBrokenRule,
+    IMongoEntityTemplateWithConstraintsPopulated,
 } from '@microservices/shared';
 import { BlueTitle } from '../../../common/BlueTitle';
 import { EntityWizardValues } from '../../../common/dialogs/entity';
@@ -40,7 +41,7 @@ const DuplicateEntity: React.FC<{}> = () => {
         entityTemplate,
         expandedEntity: { entity },
     } = state as {
-        entityTemplate: IMongoEntityTemplatePopulated;
+        entityTemplate: IMongoEntityTemplateWithConstraintsPopulated;
         expandedEntity: IEntityExpanded;
     };
 
@@ -67,7 +68,19 @@ const DuplicateEntity: React.FC<{}> = () => {
                 navigate(`/entity/${data?.properties._id}`);
                 setExternalErrors({ files: false, unique: {}, action: '' });
             },
-            onError: (err: AxiosError) => {
+            onError: (
+                err: AxiosError<{
+                    metadata: {
+                        errorCode: string;
+                        constraint: IUniqueConstraint;
+                        message: string;
+                        brokenRules: IRuleBreachPopulated['brokenRules'];
+                        rawBrokenRules: IBrokenRule[];
+                        actions: IActionPopulated[];
+                        rawActions: IAction[];
+                    };
+                }>,
+            ) => {
                 if (err.response?.status === StatusCodes.REQUEST_TOO_LONG) setExternalErrors((prev) => ({ ...prev, files: true }));
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes.failedConstraintsValidation) {

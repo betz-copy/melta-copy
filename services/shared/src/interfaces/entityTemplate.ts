@@ -1,4 +1,3 @@
-import { Document } from "mongoose";
 import { IMongoCategory } from "./category";
 import { IUniqueConstraintOfTemplate } from "./entity";
 
@@ -62,9 +61,7 @@ export interface IEntityTemplate {
   documentTemplatesIds?: string[];
 }
 
-export interface IMongoEntityTemplate
-  extends IEntityTemplate,
-    Document<string> {
+export interface IMongoEntityTemplate extends IEntityTemplate {
   _id: string;
 }
 
@@ -76,8 +73,8 @@ export interface IEntityTemplatePopulated
 export interface IMongoEntityTemplatePopulated
   extends IEntityTemplatePopulated {
   _id: string;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface ISearchBody {

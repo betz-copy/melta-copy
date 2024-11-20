@@ -19,6 +19,7 @@ import {
     IDuplicateEntityMetadataPopulated,
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
+    IBrokenRule,
 } from '@microservices/shared';
 import ExecWithRuleBreachDialog from '../../../common/dialogs/execWithRuleBreachDialog';
 import { ErrorToast } from '../../../common/ErrorToast';
@@ -155,9 +156,11 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             );
         },
         {
-            onError: (err: AxiosError) => {
+            onError: (
+                err: AxiosError<{ metadata: { errorCode: string; brokenRules: IRuleBreachPopulated['brokenRules']; rawBrokenRules: IBrokenRule[] } }>,
+            ) => {
                 const errorMetadata = err.response?.data?.metadata;
-                if (errorMetadata?.errorCode === errorCodes) {
+                if (errorMetadata?.errorCode && errorMetadata.errorCode in errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
 

@@ -1,8 +1,8 @@
 import MockAdapter from 'axios-mock-adapter';
 import { StatusCodes } from 'http-status-codes';
-import { IMongoEntityTemplatePopulated } from '@microservices/shared';
+import { IMongoEntityTemplateWithConstraintsPopulated } from '@microservices/shared';
 
-const entityTemplates: IMongoEntityTemplatePopulated[] = [
+const entityTemplates: IMongoEntityTemplateWithConstraintsPopulated[] = [
     {
         _id: '61e3ea6e4d51a83e87e83c7e',
         name: 'trip',
@@ -13,6 +13,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'trips',
             displayName: 'טיולים',
             color: '#B3E5FC',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -53,6 +54,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'startDate', 'endDate'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c7f',
@@ -64,6 +68,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'pepole',
             displayName: 'אנשים',
             color: '#B80000',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -97,6 +102,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c80',
@@ -108,6 +116,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'pepole',
             displayName: 'אנשים',
             color: '#B80000',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -140,6 +149,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['firstName', 'lastName', 'age'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c81',
@@ -151,6 +163,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'flights',
             displayName: 'טיסות',
             color: '#E65100',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -190,6 +203,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['flightNumber', 'from', 'to'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c82',
@@ -201,6 +217,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'flights',
             displayName: 'טיסות',
             color: '#E65100',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -225,6 +242,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['airportName', 'country'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c83',
@@ -236,6 +256,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'hotels',
             displayName: 'מלונות',
             color: '#FCDC00',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -270,6 +291,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesPreview: ['hotelName', 'checkInDate', 'checkOutDate'],
         propertiesOrder: ['hotelName', 'hotelChain', 'checkInDate', 'checkOutDate', 'country'],
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c84',
@@ -281,6 +305,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'hotels',
             displayName: 'מלונות',
             color: '#FCDC00',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -311,6 +336,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'checkInDate', 'checkOutDate'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c85',
@@ -322,6 +350,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'money',
             displayName: 'כסף',
             color: '#F78DA7',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -351,6 +380,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'expirtaionDate'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c86',
@@ -363,6 +395,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'money',
             displayName: 'כסף',
             color: '#F78DA7',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -383,6 +416,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['name', 'amount'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c87',
@@ -394,6 +430,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'communcation',
             displayName: 'תקשורת',
             color: '#0D47A1',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -418,6 +455,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['model', 'serialNumber'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c88',
@@ -429,6 +469,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'communcation',
             displayName: 'תקשורת',
             color: '#0D47A1',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -449,6 +490,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['company', 'number'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
     {
         _id: '61e3ea6e4d51a83e87e83c89',
@@ -460,6 +504,7 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
             name: 'things',
             displayName: 'דברים',
             color: '#7B1FA2',
+            iconFileId: null,
         },
         properties: {
             type: 'object',
@@ -484,6 +529,9 @@ const entityTemplates: IMongoEntityTemplatePopulated[] = [
         propertiesTypeOrder: ['properties', 'attachmentProperties'],
         propertiesPreview: ['company', 'weight'],
         uniqueConstraints: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        iconFileId: null,
     },
 ];
 const mockEntityTemplates = (mock: MockAdapter) => {
