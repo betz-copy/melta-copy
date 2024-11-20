@@ -9,6 +9,17 @@ import {
     IDeleteProcessNotificationMetadata,
     INotification,
     IArchiveProcessNotificationMetadata,
+    IArchiveProcessNotificationMetadataPopulated,
+    IDateAboutToExpireMetadataPopulated,
+    IDeleteProcessNotificationMetadataPopulated,
+    INewProcessNotificationMetadataPopulated,
+    INotificationMetadataPopulated,
+    INotificationPopulated,
+    IProcessReviewerUpdateNotificationMetadataPopulated,
+    IProcessStatusUpdateNotificationMetadataPopulated,
+    IRuleBreachAlertNotificationMetadataPopulated,
+    IRuleBreachRequestNotificationMetadataPopulated,
+    IRuleBreachResponseNotificationMetadataPopulated,
 } from '@microservices/shared';
 import {
     isDateAboutToExpireNotification,
@@ -21,19 +32,6 @@ import {
     isDeleteProcessNotification,
     isArchiveProcessNotification,
 } from '../../externalServices/notificationService/interfaces';
-import {
-    IArchiveProcessNotificationMetadataPopulated,
-    IDateAboutToExpireMetadataPopulated,
-    IDeleteProcessNotificationMetadataPopulated,
-    INewProcessNotificationMetadataPopulated,
-    INotificationMetadataPopulated,
-    INotificationPopulated,
-    IProcessReviewerUpdateNotificationMetadataPopulated,
-    IProcessStatusUpdateNotificationMetadataPopulated,
-    IRuleBreachAlertNotificationMetadataPopulated,
-    IRuleBreachRequestNotificationMetadataPopulated,
-    IRuleBreachResponseNotificationMetadataPopulated,
-} from '../../externalServices/notificationService/interfaces/populated';
 import { NotificationService } from '../../externalServices/notificationService';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import ProcessesInstancesManager from '../processes/processInstances/manager';

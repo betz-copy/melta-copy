@@ -1,22 +1,25 @@
-import { ICountSearchResult, IFilterOfTemplate, ISearchEntitiesOfTemplateBody, IMongoEntityTemplatePopulated } from '@microservices/shared';
+import {
+    ICountSearchResult,
+    IFilterOfTemplate,
+    ISearchEntitiesOfTemplateBody,
+    IMongoEntityTemplatePopulated,
+    IAgGridNumberFilter,
+    IAgGridDateFilter,
+    IAgGridFilterModel,
+    IAgGridRequest,
+    IAgGridSetFilter,
+    IAgGridSort,
+    IAgGridTextFilter,
+} from '@microservices/shared';
 import { environment } from '../../globals';
 import { getDayStart, getDayEnd } from '../date';
 import { addDefaultFieldsToTemplate } from '../templates';
-import {
-    IAGGidNumberFilter,
-    IAGGridDateFilter,
-    IAGGridFilterModel,
-    IAGGridRequest,
-    IAGGridSetFilter,
-    IAGGridSort,
-    IAGGridTextFilter,
-} from './interfaces';
 
-export const setFilterToFilterOfTemplate = (field: string, { values }: IAGGridSetFilter): IFilterOfTemplate => {
+export const setFilterToFilterOfTemplate = (field: string, { values }: IAgGridSetFilter): IFilterOfTemplate => {
     return { [field]: { $in: values } };
 };
 
-export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
+export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IAgGridTextFilter): IFilterOfTemplate => {
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
@@ -42,7 +45,7 @@ export const textFilterToFilterOfTemplate = (field: string, { type, filter }: IA
     }
 };
 
-export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAGGridTextFilter): IFilterOfTemplate => {
+export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }: IAgGridTextFilter): IFilterOfTemplate => {
     const escapeRegExp = (string: string) => {
         return string.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'); // $& means the whole matched string
     };
@@ -69,7 +72,7 @@ export const textFilterOfFileToFilterTemplate = (field: string, { type, filter }
     }
 };
 
-export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAGGidNumberFilter): IFilterOfTemplate => {
+export const numberFilterToFilterOfTemplate = (field: string, { type, filter, filterTo }: IAgGridNumberFilter): IFilterOfTemplate => {
     switch (type) {
         case 'equals':
             return { [field]: { $eq: filter } };
@@ -97,7 +100,7 @@ export const numberFilterToFilterOfTemplate = (field: string, { type, filter, fi
 
 export const dateFilterToFilterOfTemplate = (
     field: string,
-    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
 ): IFilterOfTemplate => {
     if (!dateFromString) {
         switch (type) {
@@ -136,7 +139,7 @@ export const dateFilterToFilterOfTemplate = (
 
 export const dateTimeFilterToFilterOfTemplate = (
     field: string,
-    { type, dateFrom: dateFromString, dateTo: dateToString }: IAGGridDateFilter,
+    { type, dateFrom: dateFromString, dateTo: dateToString }: IAgGridDateFilter,
 ): IFilterOfTemplate => {
     if (!dateFromString) {
         switch (type) {
@@ -174,7 +177,7 @@ export const dateTimeFilterToFilterOfTemplate = (
 };
 
 export const filterModelToFilterOfTemplate = (
-    filterModel: IAGGridFilterModel,
+    filterModel: Record<string, IAgGridFilterModel>,
     entityTemplate: IMongoEntityTemplatePopulated,
 ): ISearchEntitiesOfTemplateBody['filter'] => {
     const entityTemplateWithDefaultFields = addDefaultFieldsToTemplate(entityTemplate);
@@ -205,12 +208,12 @@ export const filterModelToFilterOfTemplate = (
     return queries.length > 0 ? { $and: queries } : undefined;
 };
 
-export const sortModelToSortOfSearchRequest = (sortModel: IAGGridSort[]): ISearchEntitiesOfTemplateBody['sort'] => {
+export const sortModelToSortOfSearchRequest = (sortModel: IAgGridSort[]): ISearchEntitiesOfTemplateBody['sort'] => {
     return sortModel.map(({ colId, sort }) => ({ field: colId, sort }));
 };
 
 export const agGridToSearchEntitiesOfTemplateRequest = (
-    agGridRequest: IAGGridRequest,
+    agGridRequest: IAgGridRequest,
     entityTemplate: IMongoEntityTemplatePopulated & { entityIdsToInclude?: ICountSearchResult['entityIdsToInclude'] },
 ): ISearchEntitiesOfTemplateBody => {
     const { startRow, endRow, filterModel, quickFilter, sortModel } = agGridRequest;

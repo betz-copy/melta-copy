@@ -24,6 +24,8 @@ import {
     NotificationType,
     IEntity,
     IRelationship,
+    IAgGridRequest,
+    basicFilterOperationTypes,
 } from '@microservices/shared';
 import { trycatch } from '../../utils';
 import { BadRequestError, ForbiddenError } from '../error';
@@ -57,7 +59,7 @@ import {
 } from '../../externalServices/ruleBreachService/interfaces/populated';
 import { StorageService } from '../../externalServices/storageService';
 import { EntityTemplateService } from '../../externalServices/templates/entityTemplateService';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import { IAgGridResult } from '../../utils/agGrid/interface';
 import { Authorizer } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
 import { RabbitManager } from '../../utils/rabbit';
@@ -676,7 +678,7 @@ export class RuleBreachesManager extends DefaultManagerProxy<RuleBreachService> 
 
         updatedAgGridRequest.filterModel.originUserId = {
             filterType: 'text',
-            type: 'equals',
+            type: basicFilterOperationTypes.equals,
             filter: user.id,
         };
 

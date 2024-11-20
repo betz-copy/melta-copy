@@ -1,6 +1,14 @@
-import { IRuleBreachAlert, IRuleBreachRequest, RuleBreachRequestStatus, ActionTypes, IActionMetadata, IBrokenRule } from '@microservices/shared';
+import {
+    IRuleBreachAlert,
+    IRuleBreachRequest,
+    RuleBreachRequestStatus,
+    ActionTypes,
+    IActionMetadata,
+    IBrokenRule,
+    IAgGridRequest,
+} from '@microservices/shared';
 import config from '../../config';
-import { IAgGridRequest, IAgGridResult } from '../../utils/agGrid/interface';
+import { IAgGridResult } from '../../utils/agGrid/interface';
 import DefaultExternalServiceApi from '../../utils/express/externalService';
 
 const { url, baseRoute, requestTimeout } = config.ruleBreachService;
