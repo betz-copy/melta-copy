@@ -1,4 +1,4 @@
-import { Button, Divider, Grid, Typography } from '@mui/material';
+import { Button, Divider, Grid } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import isEqual from 'lodash/isEqual';
@@ -87,7 +87,7 @@ const MyAccount: React.FC<{
 
             onError: (err: AxiosError) => {
                 console.log('failed to create rule breach request. error:', err);
-                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToCreateRequest')} />);
+                toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('user.failedToUpdateRequest')} />);
             },
         },
     );

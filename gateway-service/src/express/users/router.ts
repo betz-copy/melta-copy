@@ -35,7 +35,7 @@ usersRouter.get(
 );
 
 usersRouter.get(
-    '/kartoffelUserProfile/:kartoffelId',
+    '/kartoffel-user-profile/:kartoffelId',
     ValidateRequest(getKartoffelUserProfileRequestSchema),
     wrapController(UsersController.getKartoffelUserProfile),
 );

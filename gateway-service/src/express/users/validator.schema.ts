@@ -67,7 +67,7 @@ export const getKartoffelUserByIdRequestSchema = joi.object({
     },
 });
 
-// GET /api/users/kartoffelUserProfile/:kartoffelId
+// GET /api/users/kartoffel-user-profile/:kartoffelId
 export const getKartoffelUserProfileRequestSchema = joi.object({
     query: {},
     body: {},

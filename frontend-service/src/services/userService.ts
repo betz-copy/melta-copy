@@ -34,12 +34,10 @@ export const updateUserPreferencesMetadataRequest = async (
     darkMode?: boolean,
 ) => {
     const formData = new FormData();
-    if (profilePreference.icon) {
-        if (profilePreference.icon.file instanceof File) {
-            formData.append('file', profilePreference.icon.file);
-        } else {
-            formData.append('profilePath', profilePreference.icon.file.name!);
-        }
+    if (profilePreference.icon?.file instanceof File) {
+        formData.append('file', profilePreference.icon.file);
+    } else if (profilePreference.icon) {
+        formData.append('profilePath', profilePreference.icon.file.name!);
     } else if (profilePreference.profilePath) {
         formData.append('profilePath', profilePreference.profilePath);
     }
@@ -80,6 +78,6 @@ export const getKartoffelUserByIdRequest = async (kartoffelId: string) => {
 };
 
 export const getKartoffelUserProfileRequest = async (kartoffelId: string) => {
-    const { data } = await axios.get<string>(`${users}/kartoffelUserProfile/${kartoffelId}`);
+    const { data } = await axios.get<string>(`${users}/kartoffel-user-profile/${kartoffelId}`);
     return data;
 };

@@ -55,18 +55,9 @@ const UserProfile: React.FC<{
                     <UserProfilePicker
                         user={existingUser}
                         onPick={(value: any) => {
-                            if (!existingUser) return;
-                            if (!value) {
-                                setProfilePreference({ icon: undefined, profilePath: undefined });
-                            } else if (value.file) {
-                                setProfilePreference({ icon: value, profilePath: undefined });
-                            } else {
-                                setProfilePreference({ icon: undefined, profilePath: value });
-                            }
+                            setProfilePreference(value.file ? { icon: value } : { profilePath: value });
                         }}
-                        onDelete={() => {
-                            setProfilePreference({ icon: undefined, profilePath: undefined });
-                        }}
+                        onDelete={() => setProfilePreference({})}
                         kartoffelProfile={kartoffelUserProfile}
                         imageName={isProfileFileType(existingUser.preferences.profilePath) ? existingUser.preferences.profilePath : undefined}
                         defaultInputType={defaultInputType(existingUser.preferences.profilePath)}

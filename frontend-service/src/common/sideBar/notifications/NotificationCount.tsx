@@ -1,15 +1,16 @@
 import React from 'react';
 import { Typography } from '@mui/material';
+import { environment } from '../../../globals';
 
 interface NotificationCountProps {
     notificationCount?: number;
     style?: React.CSSProperties;
 }
 
+const { color } = environment.notifications;
+
 export const NotificationCount: React.FC<NotificationCountProps> = ({ notificationCount, style }) => {
     if (!notificationCount) return null;
-
-    const color = '#FF006B';
 
     return (
         <Typography

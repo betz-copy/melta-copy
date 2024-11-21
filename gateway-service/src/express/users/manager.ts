@@ -3,7 +3,6 @@ import config from '../../config';
 import { Kartoffel } from '../../externalServices/kartoffel';
 import { IKartoffelUser, IKartoffelUserDigitalIdentity } from '../../externalServices/kartoffel/interface';
 import { StorageService } from '../../externalServices/storageService';
-// import { NotificationType } from '../../externalServices/notificationService/interfaces';
 import { UserService } from '../../externalServices/userService';
 import {
     ICompactNullablePermissions,

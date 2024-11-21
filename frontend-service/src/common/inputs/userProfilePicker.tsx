@@ -1,7 +1,6 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
-import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import { getFileName } from '../../utils/getFileName';

@@ -3,7 +3,7 @@ import config from '../../config';
 import { IKartoffelUser } from './interface';
 
 const {
-    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout },
+    kartoffel: { url, baseEntitiesRoute, searchRoute, fieldToSearch, getByIdRoute, requestTimeout, profilePath },
 } = config;
 
 export class Kartoffel {
@@ -30,7 +30,7 @@ export class Kartoffel {
     };
 
     static getUserProfile = async (kartoffelId: string) => {
-        const { data } = await this.kartoffel.get<IKartoffelUser>(`${baseEntitiesRoute}/${kartoffelId}/pictures/profile`);
+        const { data } = await this.kartoffel.get<IKartoffelUser>(`${baseEntitiesRoute}/${kartoffelId}${profilePath}`);
         return data;
     };
 }
