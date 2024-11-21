@@ -9,10 +9,10 @@ export interface IRelationshipTemplate {
 }
 
 export interface IConvertToRelationshipField {
-    fieldName: string; // שם השדה באנגלית לדיבי
-    displayFieldName: string; // שם השדה לתצוגה
-    relatedTemplateField: string; // של הישות יעד - שם השדה חובה
-    relationshipTemplateDirection: 'outgoing' | 'incoming'; // כיוון הקשר outgoing/incoming
+    fieldName: string;
+    displayFieldName: string;
+    relatedTemplateField: string;
+    relationshipTemplateDirection: 'outgoing' | 'incoming';
     sourceEntityId: string;
     destinationEntityId: string;
 }

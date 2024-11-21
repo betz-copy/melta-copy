@@ -137,7 +137,6 @@ export const updateEntityRequestForMultiple = async (
             }
         }
     });
-
     formData.append(
         'properties',
         JSON.stringify(
@@ -146,7 +145,6 @@ export const updateEntityRequestForMultiple = async (
             ),
         ),
     );
-
     formData.append('templateId', newEntityData.template._id);
 
     if (ignoredRules) {

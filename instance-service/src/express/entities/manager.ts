@@ -1157,22 +1157,18 @@ export class EntityManager extends DefaultManagerNeo4j {
     ) {
         const activityLogUpdatedFields: IUpdatedFields[] = [];
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
-        console.log('a');
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
-        console.log('b');
 
         if (entity.properties.disabled) {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
-        console.log('c');
 
         const updatedProperties = this.getKeysOfUpdatedProperties(
             entity.properties,
             { ...entityProperties, updatedAt: new Date().toISOString() },
             entityTemplate,
         );
-        console.log('d');
 
         const { fixedProperties } = await this.handleRelationshipReferenceFieldsChanges(
             entity,
@@ -1183,7 +1179,6 @@ export class EntityManager extends DefaultManagerNeo4j {
             userId ?? '',
             convertToRelationshipField,
         );
-        console.log('e');
 
         const updatedEntity = await runInTransactionAndNormalize(
             transaction,
@@ -1202,10 +1197,8 @@ export class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
-        console.log('f');
 
         await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
-        console.log('g');
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -1240,7 +1233,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 newValue: newValue ?? null,
             });
         }
-        console.log('h');
 
         if (userId) {
             activityLogsToCreate.push({
@@ -1251,7 +1243,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                 userId,
             });
         }
-        console.log('i');
 
         return { updatedEntity, activityLogsToCreate };
     }
@@ -1280,16 +1271,10 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         convertToRelationshipField = false,
     ) {
-        console.log('1');
-
         const entity = await this.getEntityById(id);
-        console.log('2');
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
-        console.log('3');
 
-        console.log({ entityProperties });
         if (entity.properties.disabled) throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
-        console.log('4');
 
         if (entityTemplate.actions && isBodyFunctionHasContent(entityTemplate.actions, IEntityCrudAction.onUpdateEntity)) {
             const actions = await this.buildActionsArray(
@@ -1299,23 +1284,13 @@ export class EntityManager extends DefaultManagerNeo4j {
                 userId,
                 unPopulatedEntity,
             );
-            console.log('5');
 
             const bulkManager = new BulkActionManager(this.workspaceId);
-            console.log('6');
-
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
-            console.log('7');
-
             const updatedEntity = await this.getEntityById(results[0].properties._id);
-            console.log('8');
-
             const fixedActions = this.fixActions(actions, results);
-            console.log('9');
-
             return { updatedEntity, actions: fixedActions };
         }
-        console.log('10');
 
         return this.neo4jClient
             .performComplexTransaction('writeTransaction', async (transaction) => {
@@ -1324,10 +1299,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     { ...entityProperties, updatedAt: new Date().toISOString() },
                     entityTemplate,
                 );
-                console.log('11');
-
                 const ruleFailuresBeforeAction = await this.runRulesDependOnEntityUpdate(transaction, entity, updatedProperties);
-                console.log('12');
 
                 const { updatedEntity, activityLogsToCreate } = await this.updateEntityByIdInnerTransaction(
                     id,
@@ -1337,21 +1309,16 @@ export class EntityManager extends DefaultManagerNeo4j {
                     userId,
                     convertToRelationshipField,
                 );
-                console.log('13');
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
-                console.log('14');
 
                 throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
-                console.log('15');
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),
                 );
-                console.log('16');
 
                 await Promise.all(activityLogsPromises);
-                console.log('17');
 
                 return { updatedEntity };
             })

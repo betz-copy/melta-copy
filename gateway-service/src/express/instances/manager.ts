@@ -57,8 +57,6 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         props: TProps = {} as TProps,
     ): Promise<{ props: TProps; files: Record<string, any> }> {
         if (files.length === 0) {
-            console.log('no files');
-
             return { props, files: {} };
         }
 

@@ -91,7 +91,6 @@ export default class TemplatesController extends DefaultController<TemplatesMana
     }
 
     async convertToRelationshipField(req: Request, res: Response) {
-        console.log('uhfsdfujsvfjsvjhsbvjhsdvchzsvchgzsavcc');
         res.json(await this.manager.convertRelationshipToRelationshipField(req.params.id, req.body, req.user!.id));
     }
 

@@ -51,14 +51,10 @@ const updateRelationshipTemplateRequest = async (relationshipTemplateId: string,
 };
 
 const convertToRelationshipFieldRequest = async (relationshipTemplateId: string, updatedData: IConvertToRelationshipField) => {
-    console.log({ updatedData });
-
-    const { data } = await axios.put<IMongoRelationshipTemplate>(
-        `${relationshipTemplates}/convertToRelationshipField/${relationshipTemplateId}`,
-        updatedData,
-    );
-    console.log({ data });
-
+    const { data } = await axios.put<{
+        updatedRelationShipTemplate: IMongoRelationshipTemplate;
+        updatedEntityTemplate: IMongoEntityTemplatePopulated;
+    }>(`${relationshipTemplates}/convertToRelationshipField/${relationshipTemplateId}`, updatedData);
     return data;
 };
 

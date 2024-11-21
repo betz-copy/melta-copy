@@ -241,6 +241,5 @@ export class InstancesValidator extends DefaultController {
         if (ignoredRulesPopulated.some((rule) => rule.actionOnFail !== 'WARNING')) {
             throw new ForbiddenError('a user without rule permissions only ignore "WARNING" rules', {});
         }
-        console.log('everything ok!!!!!!!');
     }
 }

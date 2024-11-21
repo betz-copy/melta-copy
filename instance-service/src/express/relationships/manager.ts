@@ -133,10 +133,8 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         userId: string,
     ) {
         const { templateId, sourceEntityId, destinationEntityId } = relationship;
-        console.log('lllllllllllllllll1');
 
         await this.validateCreateRelationshipDuplicate(transaction, templateId, sourceEntityId, destinationEntityId);
-        console.log('lllllllllllllllll2');
 
         const ruleFailuresBeforeAction = await this.runRulesDependOnRelationship(
             transaction,
@@ -144,10 +142,8 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             sourceEntityId,
             destinationEntityId,
         );
-        console.log('lllllllllllllllll3');
 
         const { createdRelationship, activityLogsToCreate } = await this.createRelationshipInTransaction(transaction, relationship, userId);
-        console.log('lllllllllllllllll4');
 
         const ruleFailuresAfterAction = await this.runRulesDependOnRelationship(
             transaction,
@@ -155,14 +151,12 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             sourceEntityId,
             destinationEntityId,
         );
-        console.log('lllllllllllllllll5');
 
         throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [
             {
                 createdRelationshipId: createdRelationship.properties._id,
             },
         ]);
-        console.log('lllllllllllllllll6');
 
         return { createdRelationship, activityLogsToCreate };
     }

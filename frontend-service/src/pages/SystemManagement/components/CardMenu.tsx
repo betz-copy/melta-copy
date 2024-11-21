@@ -98,11 +98,7 @@ export const CardMenu: React.FC<{
                 {onConvertToRelationShipFieldClick && (
                     <MenuButton
                         onClick={(e) => {
-                            console.log('1');
-
                             onConvertToRelationShipFieldClick(e);
-                            console.log('2');
-
                             handleClose(e);
                         }}
                         text={i18next.t('actions.convertToRelationShipFieldClick')}

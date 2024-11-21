@@ -14,7 +14,6 @@ import { StorageService } from '../../externalServices/storageService';
 import {
     EntityTemplateService,
     ICategory,
-    IEntitySingleProperty,
     IEntityTemplate,
     IEntityTemplatePopulated,
     IMongoEntityTemplatePopulated,
@@ -41,11 +40,18 @@ import {
     IUpdateOrDeleteEnumFieldReqData,
 } from './interfaces';
 import { getParametersOfFormula } from './rules';
-import { IRule } from './rules/interfaces';
+import { IMongoRule, IRule } from './rules/interfaces';
 import { IFormula } from './rules/interfaces/formula';
 import { GanttsService } from '../../externalServices/ganttsService';
 import { checkPropertyInUsedFromFormula } from './rules/checkIfPropertyInUsed';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
+import {
+    buildNewRelationshipField,
+    validateFieldUniqueness,
+    validateNoDependentRules,
+    validateRequiredConstraints,
+    validateUniqueRelationships,
+} from '../../utils/templates/relationship';
 
 const {
     categoryHasTemplates,
@@ -976,94 +982,6 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         return this.relationshipTemplateService.updateRelationshipTemplate(templateId, updatedFields);
     }
 
-    async validateConvertRelationshipToRelationshipField(
-        requiredConstraints: IConstraintsOfTemplate['requiredConstraints'],
-        existingRelationships: IRelationship[],
-        templateId: string,
-    ) {
-        if (!requiredConstraints.length) throw new ServiceError(StatusCodes.BAD_REQUEST, 'There are no required fields for the destination entity');
-
-        const sourceEntityIdsMap = new Map<string, boolean>();
-        existingRelationships.forEach((relationship) => {
-            if (!sourceEntityIdsMap.has(relationship.sourceEntityId)) sourceEntityIdsMap.set(relationship.sourceEntityId, true);
-            else throw new ServiceError(StatusCodes.BAD_REQUEST, 'Some entities have more than one relationship');
-        });
-
-        if ((await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId)).length)
-            throw new ServiceError(StatusCodes.BAD_REQUEST, 'There are rules attached to this relationship');
-    }
-
-    async convertRelationshipToRelationshipField(
-        templateId: string,
-        { fieldName, displayFieldName, relatedTemplateField, relationshipTemplateDirection },
-        userId: string,
-    ) {
-        const { destinationEntityId, sourceEntityId, displayName, name } =
-            await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
-
-        const [existingRelationships, { requiredConstraints: destRequiredConstraints }] = await Promise.all([
-            this.instancesService.getRelationshipsByEntitiesAndTemplate({
-                sourceEntityId,
-                destinationEntityId,
-                templateId,
-            }),
-            this.instancesService.getConstraintsOfTemplate(destinationEntityId),
-        ]);
-
-        await this.validateConvertRelationshipToRelationshipField(destRequiredConstraints, existingRelationships, templateId);
-
-        const srcEntityTemplate = await this.entityTemplateService.getEntityTemplateById(sourceEntityId);
-
-        const updatedRelationShip = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
-            destinationEntityId,
-            sourceEntityId,
-            displayName,
-            name,
-            isProperty: true,
-        });
-
-        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = srcEntityTemplate;
-        const newRelationshipField: IEntitySingleProperty = {
-            title: displayFieldName,
-            type: 'string',
-            format: 'relationshipReference',
-            relationshipReference: {
-                relationshipTemplateId: templateId,
-                relationshipTemplateDirection,
-                relatedTemplateId: destinationEntityId,
-                relatedTemplateField,
-            },
-        };
-
-        await this.entityTemplateService.updateEntityTemplate(srcEntityTemplate._id, {
-            ...restOfEntityTemplate,
-            category: category._id,
-            properties: {
-                ...srcEntityTemplate.properties,
-                properties: {
-                    ...srcEntityTemplate.properties.properties,
-                    [fieldName]: newRelationshipField,
-                },
-            },
-            propertiesOrder: [...srcEntityTemplate.propertiesOrder, fieldName],
-        });
-
-        await Promise.all(
-            existingRelationships.map(async (relationship) => {
-                const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
-                await this.instancesService.updateEntityInstance(
-                    relationship.sourceEntityId,
-                    { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },
-                    [],
-                    userId,
-                    true,
-                );
-            }),
-        );
-
-        return updatedRelationShip;
-    }
-
     getDependentRelationshipTemplates(formula: IFormula) {
         const parameters = getParametersOfFormula(formula);
         const variablesWithAggregation = parameters.filter(({ variable }) => variable.aggregatedRelationship);
@@ -1100,6 +1018,94 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         return this.relationshipTemplateService.deleteRelationshipTemplate(templateId);
+    }
+
+    async validateConvertRelationshipToRelationshipField(
+        sourceEntityTemplate: IMongoEntityTemplatePopulated,
+        requiredConstraints: IConstraintsOfTemplate['requiredConstraints'],
+        existingRelationships: IRelationship[],
+        templateId: string,
+        fieldName: string,
+        displayFieldName: string,
+    ) {
+        validateRequiredConstraints(requiredConstraints);
+        validateFieldUniqueness(sourceEntityTemplate.properties.properties, fieldName, displayFieldName);
+        validateUniqueRelationships(existingRelationships);
+        const rules: IMongoRule[] = await this.instancesService.getDependantRules(await this.relationshipTemplateService.searchRules({}), templateId);
+        validateNoDependentRules(rules);
+    }
+
+    async convertRelationshipToRelationshipField(
+        templateId: string,
+        { fieldName, displayFieldName, relatedTemplateField, relationshipTemplateDirection },
+        userId: string,
+    ) {
+        const { destinationEntityId, sourceEntityId, displayName, name } =
+            await this.relationshipTemplateService.getRelationshipTemplateById(templateId);
+
+        const [srcEntityTemplate, existingRelationships, { requiredConstraints: destRequiredConstraints }] = await Promise.all([
+            this.entityTemplateService.getEntityTemplateById(sourceEntityId),
+            this.instancesService.getRelationshipsByEntitiesAndTemplate({
+                sourceEntityId,
+                destinationEntityId,
+                templateId,
+            }),
+            this.instancesService.getConstraintsOfTemplate(destinationEntityId),
+        ]);
+
+        await this.validateConvertRelationshipToRelationshipField(
+            srcEntityTemplate,
+            destRequiredConstraints,
+            existingRelationships,
+            templateId,
+            fieldName,
+            displayFieldName,
+        );
+
+        const updatedRelationShipTemplate = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
+            destinationEntityId,
+            sourceEntityId,
+            displayName,
+            name,
+            isProperty: true,
+        });
+
+        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = srcEntityTemplate;
+        const newRelationshipField = buildNewRelationshipField(
+            displayFieldName,
+            templateId,
+            relationshipTemplateDirection,
+            destinationEntityId,
+            relatedTemplateField,
+        );
+
+        const updatedEntityTemplate = await this.entityTemplateService.updateEntityTemplate(srcEntityTemplate._id, {
+            ...restOfEntityTemplate,
+            category: category._id,
+            properties: {
+                ...srcEntityTemplate.properties,
+                properties: {
+                    ...srcEntityTemplate.properties.properties,
+                    [fieldName]: newRelationshipField,
+                },
+            },
+            propertiesOrder: [...srcEntityTemplate.propertiesOrder, fieldName],
+        });
+
+        await Promise.all(
+            existingRelationships.map(async (relationship) => {
+                const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
+                await this.instancesService.updateEntityInstance(
+                    relationship.sourceEntityId,
+                    { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },
+                    [],
+                    userId,
+                    true,
+                );
+            }),
+        );
+
+        return { updatedRelationShipTemplate, updatedEntityTemplate };
     }
 
     // entities

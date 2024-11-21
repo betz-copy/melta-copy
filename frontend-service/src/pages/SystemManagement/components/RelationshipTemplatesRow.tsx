@@ -110,15 +110,6 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                             ...restOfRelationshipTemplate,
                                         },
                                     });
-                                    // const { sourceEntity, destinationEntity, _id } = relationshipTemplate;
-                                    // convertToRelationshipFieldRequest(_id, {
-                                    //     fieldName: 'englishName',
-                                    //     displayFieldName: 'hebrewName',
-                                    //     relatedTemplateField: 'name',
-                                    //     relationshipTemplateDirection: 'outgoing',
-                                    //     sourceEntityId: sourceEntity._id,
-                                    //     destinationEntityId: destinationEntity._id,
-                                    // });
                                 }}
                                 disabledProps={{
                                     isDisabled: false,
@@ -231,20 +222,19 @@ const RelationshipTemplatesRow: React.FC = () => {
                 destinationEntityId: convertToRelationshipFieldDialogState.relationshipTemplate?.sourceEntityId!,
             }),
         {
-            onSuccess: (data, { id }) => {
+            onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
-                    relationshipTemplateMap!.set(id, data),
+                    relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
+                );
+                queryClient.setQueryData<IEntityTemplateMap>('getEntityTemplates', (entityTemplateMap) =>
+                    entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );
                 queryClient.invalidateQueries(['searchRelationshipTemplates']);
-                queryClient.invalidateQueries({ queryKey: ['searchEntities', id, ''], exact: true });
+                queryClient.invalidateQueries({ queryKey: ['searchEntities', updatedEntityTemplate._id, ''], exact: true });
 
-                setDeleteRelationshipTemplateDialogState({ isDialogOpen: false, relationshipTemplateId: null });
-                queryClient.invalidateQueries(['searchRelationshipTemplates', searchText]);
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
             onError: (error: AxiosError) => {
-                console.log('noticeeeee:', error.response?.data.message);
-
                 toast.error(
                     <ErrorToast
                         axiosError={error}
