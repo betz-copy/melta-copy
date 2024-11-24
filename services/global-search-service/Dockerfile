@@ -2,6 +2,7 @@ FROM node:22-alpine AS builder
 WORKDIR /usr/src/app
 
 COPY package*.json ./
+COPY tsconfig.json ./
 COPY services/shared/package*.json ./services/shared/
 COPY services/global-search-service/package*.json ./services/global-search-service/
 

@@ -1,5 +1,10 @@
 {
   "extends": "../../tsconfig.json",
-  "compilerOptions": {},
+  "compilerOptions": {
+    "outDir": "./dist/",
+    "paths": {
+      "@microservices/*": ["./services/*/src"]
+    }
+  },
   "include": ["src/**/*"]
 }

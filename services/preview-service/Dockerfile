@@ -11,6 +11,7 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 COPY package*.json ./
+COPY tsconfig.json ./
 COPY services/shared/package*.json ./services/shared/
 COPY services/preview-service/package*.json ./services/preview-service/
 

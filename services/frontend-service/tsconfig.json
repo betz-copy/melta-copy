@@ -1,9 +1,9 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "esnext",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "esModuleInterop": false,
+    // "target": "esnext",
+    "lib": ["ES2020.Promise", "dom", "dom.iterable", "esnext"],
+    // "esModuleInterop": true,
     "useDefineForClassFields": true,
     "allowSyntheticDefaultImports": true,
     "module": "esnext",
@@ -12,7 +12,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "typeRoots": ["./node_modules/@types", "./src/customTypes"],
-    "jsx": "react"
+    "jsx": "react",
+    "paths": {
+      "@microservices/*": ["./services/*/src"]
+    }
   },
   "include": ["src"]
 }
