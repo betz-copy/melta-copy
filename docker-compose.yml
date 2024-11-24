@@ -219,7 +219,9 @@ services:
       SEMANTIC_SEARCH_SERVICE: ${SEMANTIC_SEARCH_SERVICE}
 
   # frontend-service:
-  #   build: ./frontend-service
+  #   build:
+  #     context: .
+  #     dockerfile: services/frontend-service/Dockerfile
 
   nginx:
     image: nginx:alpine
