@@ -73,11 +73,10 @@ export const getDatasource = <Data extends any = IEntity>(
                 return;
             }
 
-            const agGridRequest = { ...params.request, filterModel: { ...defaultFilterModel, ...params.request.filterModel } };
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest({ ...params.request, quickFilter: quickFilterText } as IAGGridRequest, template),
                 ),
             );
 
@@ -207,6 +206,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
         ref: ForwardedRef<EntitiesTableOfTemplateRef<Data>>,
     ) => {
         const darkMode = useDarkModeStore((state) => state.darkMode);
+
         const savedVisibleColumns = localStorage.getItem(`visibleColumns-${saveStorageProps.pageType}-${template._id}`);
         const defaultVisibleColumns = savedVisibleColumns ? JSON.parse(savedVisibleColumns) : {};
 
@@ -287,6 +287,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             rowHeight,
             searchValue: quickFilterText,
         };
+
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
 
         const datasourceOnFail = (err: unknown) => {
@@ -301,7 +302,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
 
         const gridStyles = {
             '.ag-center-cols-viewport': {
-                minHeight: `${rowHeight * (hasInstances ? pageRowCount : 2)}px !important`,
+                minHeight: `${rowHeight * (hasInstances !== false ? pageRowCount : 2)}px !important`,
             },
             '.ag-paging-panel': {
                 height: '45px',
@@ -365,20 +366,18 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
         }, 300);
 
-        const statusPanels = useMemo(
-            () =>
-                [
-                    {
-                        statusPanel: RowCountGridStatusBar,
-                        align: 'right',
-                        key: 'selectRowCount',
-                    },
-                    multipleSelect
-                        ? { statusPanel: MultiSelectStatusBar, align: 'left', statusPanelParams: { templateId: template._id } }
-                        : undefined,
-                ].filter(Boolean) as StatusPanelDef[],
-            [multipleSelect, template._id],
-        );
+        const statusPanels = useMemo(() => {
+            const panels: StatusPanelDef[] = [{ statusPanel: RowCountGridStatusBar, align: 'right' }];
+
+            if (multipleSelect)
+                panels.push({
+                    statusPanel: MultiSelectStatusBar,
+                    align: 'left',
+                    statusPanelParams: { entityTemplate: template, quickFilterText },
+                });
+
+            return panels;
+        }, [multipleSelect, quickFilterText, template]);
 
         const rowSelection = useMemo<RowSelectionOptions | 'single' | 'multiple' | undefined>(() => {
             if (onRowSelected) return 'single';
@@ -386,6 +385,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (multipleSelect)
                 return {
                     mode: 'multiRow',
+                    enableClickSelection: false,
                 };
 
             return undefined;
@@ -435,9 +435,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     maintainColumnOrder
                     rowSelection={rowSelection}
                     suppressAggFuncInHeader
-                    // TODO
                     onRowSelected={onRowSelected ? ({ data }) => data && onRowSelected(data) : undefined}
-                    suppressRowClickSelection={multipleSelect}
                     rowStyle={onRowSelected ? { cursor: 'pointer' } : undefined}
                     suppressCellFocus
                     onFilterChanged={(params) => {
@@ -475,7 +473,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
 
                         const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-                        if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
+                        params.api.setFilterModel(savedFilterModel ?? defaultFilterModel);
                     }}
                     onFirstDataRendered={(params) => {
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);

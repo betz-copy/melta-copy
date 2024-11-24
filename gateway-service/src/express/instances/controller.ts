@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { Request, Response } from 'express';
 import { InstancesManager } from './manager';
 import DefaultController from '../../utils/express/controller';
+import { IDeleteBody } from '../../externalServices/instanceService/interfaces/entities';
 
 export class InstancesController extends DefaultController<InstancesManager> {
     constructor(workspaceId: string) {
@@ -47,10 +48,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         );
     }
 
-    async deleteEntityInstance(req: Request, res: Response) {
-        console.log(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll, req.body.templateId);
+    async deleteEntityInstances(req: Request, res: Response) {
+        const body = req.body as IDeleteBody;
 
-        res.json(await this.manager.deleteEntityInstance(req.body.ids, req.body.deleteAllRelationships, req.body.selectAll, req.body.templateId));
+        res.json(await this.manager.deleteEntityInstances(body));
     }
 
     async createRelationshipInstance(req: Request, res: Response) {

@@ -12,6 +12,7 @@ import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
 import {
     ICountSearchResult,
+    IDeleteBody,
     IEntity,
     ISearchBatchBody,
     ISearchFilter,
@@ -47,6 +48,7 @@ import { RabbitManager } from '../../utils/rabbit';
 import { SemanticSearchService } from '../../externalServices/semanticSearch';
 import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
+import { trycatch } from '../../utils';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
 
@@ -582,34 +584,20 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return updatedEntity;
     }
 
-    // private async deleteAllEntitiesFiles(currentEntities: IEntity[]) {
-    //     const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntities[0].templateId);
+    private async deleteAllEntitiesFiles(fileIdsToRemove: string[]) {
+        if (!fileIdsToRemove.length) return [];
 
-    //     const filesProperties: Record<string, string | string[]> = currentEntities.reduce((acc, currentEntity) => {
-    //         const entityProps = this.getEntityFileProperties(currentEntity.properties, entityTemplate);
-    //         return { ...acc, ...entityProps };
-    //     }, {});
+        await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
-    //     const fileIdsToRemove = Object.values(filesProperties).flat();
+        return fileIdsToRemove;
+    }
 
-    //     if (!fileIdsToRemove.length) return [];
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const filesOfDeletedInstances = await this.service.deleteEntityInstances(deleteBody);
 
-    //     await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
+        const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(filesOfDeletedInstances));
 
-    //     return fileIdsToRemove;
-    // }
-
-    async deleteEntityInstance(ids: string[], deleteAllRelationships?: boolean, selectAll?: boolean, templateId?: string) {
-        // const currentEntities = await this.service.getEntityInstancesByIds(ids);
-        const deletedInstance = await this.service.deleteEntityInstances(ids, deleteAllRelationships, selectAll, templateId);
-
-        // const { err: error } = await trycatch(() => this.deleteAllEntitiesFiles(currentEntities));
-
-        // if (error) {
-        //     logger.error(`failed to delete files of instances ${ids}`, { error });
-        // }
-
-        return deletedInstance;
+        if (error) logger.error(`failed to delete files ${filesOfDeletedInstances}`, { error });
     }
 
     async createRelationshipInstance(relationship: IRelationship, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {

@@ -1,19 +1,22 @@
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-continue */
 /* eslint-disable no-await-in-loop */
+import { StatusCodes } from 'http-status-codes';
 import differenceWith from 'lodash.differencewith';
 import groupBy from 'lodash.groupby';
 import mapValues from 'lodash.mapvalues';
 import pickBy from 'lodash.pickby';
 import { Neo4jError, Transaction } from 'neo4j-driver';
-import { StatusCodes } from 'http-status-codes';
 import config from '../../config';
 import { ActionsLog, IActivityLog, IUpdatedFields } from '../../externalServices/activityLog/interface';
 import { ActivityLogProducer } from '../../externalServices/activityLog/producer';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { EntityTemplateManagerService } from '../../externalServices/templates/entityTemplateManager';
 import { IEntitySingleProperty, IMongoEntityTemplate, IRelationshipReference } from '../../externalServices/templates/interfaces/entityTemplates';
 import { IMongoRule } from '../../externalServices/templates/interfaces/rules';
 import { RelationshipsTemplateManagerService } from '../../externalServices/templates/relationshipTemplateManager';
+import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
+import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
 import { arraysEqualsNonOrdered } from '../../utils/lib';
 import { expandEntityToNeoQuery, getExpandedFilteredGraphRecursively } from '../../utils/neo4j/getExpandedEntityByIdRecursive';
 import {
@@ -30,6 +33,8 @@ import {
 } from '../../utils/neo4j/lib';
 import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
+import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
+import BulkActionManager from '../bulkActions/manager';
 import { NotFoundError, ServiceError, ValidationError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
@@ -41,25 +46,22 @@ import {
     EntitiesIdsRulesReasonsMap,
     IConstraint,
     IConstraintsOfTemplate,
+    IDeleteBody,
     IEntity,
-    IEntityWithDirectRelationships,
     IEntityCrudAction,
+    IEntityWithDirectRelationships,
     IExecutionOutput,
     IGetExpandedEntityBody,
     IRequiredConstraint,
     ISearchBatchBody,
     ISearchEntitiesByTemplatesBody,
     ISearchEntitiesOfTemplateBody,
+    ISearchFilter,
     IUniqueConstraint,
     IUniqueConstraintOfTemplate,
     RunRuleReason,
 } from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
-import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
-import { executeActionCodeAndGetEntitiesToUpdate } from '../../utils/actions/executeScript';
-import BulkActionManager from '../bulkActions/manager';
-import { isBodyFunctionHasContent } from '../../utils/actions/isBodyFunctionHasContent';
-import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 
 const { brokenRulesFakeEntityIdPrefix } = config;
 
@@ -650,7 +652,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                     showRelationships: searchBody.showRelationships,
                 },
             },
-            sort: searchBody.sort,
+            sort: searchBody.sort ?? [],
             entityIdsToInclude: searchBody.entityIdsToInclude,
         };
 
@@ -894,69 +896,89 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    async deleteEntitiesByIdsInTransaction(
+    async getEntitiesToDelete(
         transaction: Transaction,
-        ids: string[],
-        deleteAllRelationships: boolean,
         selectAll: boolean,
-        templateId: string,
+        ids: string[],
+        templateId?: string,
+        filter?: ISearchFilter,
+        textSearch: string = '',
     ) {
-        let whereQuery = '';
+        if (selectAll && templateId)
+            if (filter || textSearch) {
+                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
 
-        if (selectAll)
-            if (ids && ids.length) whereQuery = 'WHERE NOT e._id IN $ids';
-            else whereQuery = 'WHERE e._id IN $ids';
+                const { entities } = await this.searchEntitiesOfTemplate(
+                    { limit: 100000, skip: 0, filter, showRelationships: true, textSearch },
+                    entityTemplate,
+                );
 
-        await runInTransactionAndNormalize(
-            transaction,
-            `MATCH (e:\`${templateId}\`) 
-            ${whereQuery}
-            ${deleteAllRelationships ? 'DETACH' : ''}
-            DELETE e`,
-            normalizeReturnedEntity('multipleResponses'),
-            { ids },
+                return entities.map(({ entity }) => entity);
+            } else
+                return runInTransactionAndNormalize(
+                    transaction,
+                    `MATCH (e:\`${templateId}\`) 
+                     WHERE NOT e._id IN $ids
+                     RETURN e`,
+                    normalizeReturnedEntity('multipleResponses'),
+                    { ids },
+                );
+
+        return this.getEntitiesByIds(ids);
+    }
+
+    getFilesProperties(entityTemplate: IMongoEntityTemplate) {
+        return Object.keys(entityTemplate.properties.properties).reduce(
+            (acc, propertyToRemove) => {
+                const { format, items } = entityTemplate.properties.properties[propertyToRemove];
+
+                if (format === 'fileId' || items?.format === 'fileId') {
+                    acc[propertyToRemove] = items?.format === 'fileId';
+                }
+
+                return acc;
+            },
+            {} as Record<string, boolean>,
         );
     }
 
-    async getEntitiesToDelete(transaction: Transaction, templateId: string, selectAll: boolean, ids: string[]) {
-        let entitiesToDelete: IEntity[];
+    getFilesOfDeletedEntities(entitiesToDelete: IEntity[], entityTemplate: IMongoEntityTemplate): string[] {
+        const filesProperties = this.getFilesProperties(entityTemplate);
 
-        if (selectAll)
-            entitiesToDelete = await runInTransactionAndNormalize(
-                transaction,
-                `MATCH (e:\`${templateId}\`) 
-                WHERE NOT e._id IN $ids
-                RETURN e`,
-                normalizeReturnedEntity('multipleResponses'),
-                { ids },
-            );
-        else entitiesToDelete = await this.getEntitiesByIds(ids);
-
-        return entitiesToDelete;
+        return entitiesToDelete.reduce<string[]>((filesIds, { properties }) => {
+            Object.entries(filesProperties).forEach(([key, isMultiple]) => {
+                const propertyValue = properties[key];
+                if (propertyValue) filesIds.push(...(isMultiple ? propertyValue : [propertyValue]));
+            });
+            return filesIds;
+        }, []);
     }
 
-    async deleteEntitiesByIds(ids: string[], deleteAllRelationships: boolean, selectAll: boolean, templateId: string) {
-        console.dir({ ids, selectAll, templateId }, { depth: null });
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const { ids, deleteAllRelationships, filter, selectAll, templateId, textSearch } = deleteBody;
+
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const entitiesToDelete = await this.getEntitiesToDelete(transaction, templateId, selectAll, ids);
+                const entitiesToDelete = await this.getEntitiesToDelete(transaction, selectAll, ids, templateId, filter, textSearch);
                 const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entitiesToDelete[0].templateId);
 
                 await Promise.all(
                     entitiesToDelete.map((entityToDelete) => this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction)),
                 );
 
+                const entitiesToDeleteIds = entitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
+
                 await runInTransactionAndNormalize(
                     transaction,
-                    `MATCH (e:\`${templateId}\`) 
-                    ${selectAll ? 'WHERE NOT e._id IN $ids' : 'WHERE e._id IN $ids'}
+                    `MATCH (e:\`${entityTemplate._id}\`) 
+                     WHERE e._id IN $ids
                     ${deleteAllRelationships ? 'DETACH' : ''}
                     DELETE e`,
                     normalizeReturnedEntity('multipleResponses'),
-                    { ids },
+                    { ids: entitiesToDeleteIds },
                 );
 
-                return ids;
+                return this.getFilesOfDeletedEntities(entitiesToDelete, entityTemplate);
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed')
@@ -1701,29 +1723,29 @@ export class EntityManager extends DefaultManagerNeo4j {
     removeRelationshipReferences(relatedEntityTemplate: IMongoEntityTemplate, property: string, propertiesToRemove: string[]) {
         const propertiesWithGeneratedProperties: Record<string, IEntitySingleProperty> = {
             ...relatedEntityTemplate.properties.properties,
-            disabled: { title: 'doesntMatter', type: 'string' },
-            createdAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-            updatedAt: { title: 'doesntMatter', type: 'string', format: 'date-time' },
-            _id: { title: 'doesntMatter', type: 'string' },
+            disabled: { title: 'disabled', type: 'string' },
+            createdAt: { title: 'createdAt', type: 'string', format: 'date-time' },
+            updatedAt: { title: 'updatedAt', type: 'string', format: 'date-time' },
+            _id: { title: '_id', type: 'string' },
         };
 
         Object.entries(propertiesWithGeneratedProperties).forEach(([key, value]) => {
             propertiesToRemove.push(`${property}.properties.${key}${config.neo4j.relationshipReferencePropertySuffix}`);
-            if (value.type !== 'string') {
+
+            if (value.type !== 'string')
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.stringPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
-            }
-            if (value.type === 'boolean') {
+
+            if (value.type === 'boolean')
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.booleanPropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
-            }
-            if (value.format === 'fileId' || (value.type === 'array' && value.items?.format === 'fileId')) {
+
+            if (value.format === 'fileId' || (value.type === 'array' && value.items?.format === 'fileId'))
                 propertiesToRemove.push(
                     `${property}.properties.${key}${config.neo4j.filePropertySuffix}${config.neo4j.relationshipReferencePropertySuffix}`,
                 );
-            }
         });
 
         propertiesToRemove.push(`${property}.templateId${config.neo4j.relationshipReferencePropertySuffix}`);

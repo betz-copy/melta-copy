@@ -114,3 +114,12 @@ export interface ICountSearchResult {
     templateId: string;
     entityIdsToInclude: Record<string, string[]>; // { entityId: minioFileIds:[] }
 }
+
+export interface IDeleteBody {
+    ids: string[];
+    deleteAllRelationships?: boolean;
+    selectAll?: boolean;
+    templateId?: string;
+    filter?: IFilterOfTemplate;
+    textSearch?: string;
+}

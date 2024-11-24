@@ -4,6 +4,7 @@ import { IAction, IBrokenRule } from '../ruleBreachService/interfaces';
 import {
     IConstraintsOfTemplate,
     ICountSearchResult,
+    IDeleteBody,
     IEntity,
     ISearchBatchBody,
     ISearchEntitiesOfTemplateBody,
@@ -86,9 +87,8 @@ export class InstancesService extends DefaultExternalServiceApi {
         return data;
     }
 
-    async deleteEntityInstances(ids: string[], deleteAllRelationships?: boolean, selectAll?: boolean, templateId?: string) {
-        console.dir({ ids, deleteAllRelationships, selectAll, templateId }, { depth: null });
-        const { data } = await this.api.post(`${baseEntitiesRoute}/delete/bulk`, { ids, deleteAllRelationships, selectAll, templateId });
+    async deleteEntityInstances(deleteBody: IDeleteBody) {
+        const { data } = await this.api.post<string[]>(`${baseEntitiesRoute}/delete/bulk`, deleteBody);
 
         return data;
     }

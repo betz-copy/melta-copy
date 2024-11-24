@@ -84,7 +84,7 @@ export interface ISearchEntitiesOfTemplateBody {
     textSearch?: string;
     filter?: ISearchFilter;
     showRelationships: boolean | Array<IMongoRelationshipTemplate['_id']>;
-    sort: ISearchSort;
+    sort?: ISearchSort;
     entityIdsToInclude?: string[];
 }
 
@@ -158,4 +158,13 @@ export enum IEntityCrudAction {
 export interface IExecutionOutput {
     entityId: string;
     properties: Record<string, any>;
+}
+
+export interface IDeleteBody {
+    ids: string[];
+    deleteAllRelationships?: boolean;
+    selectAll: boolean;
+    templateId?: string;
+    filter?: IFilterOfTemplate;
+    textSearch?: string;
 }

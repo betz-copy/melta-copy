@@ -155,4 +155,6 @@ export interface IDeleteEntityBody {
     selectAll: boolean;
     deleteAllRelationships?: boolean;
     templateId: string;
+    filter?: ISearchEntitiesOfTemplateBody['filter'];
+    textSearch?: string;
 }

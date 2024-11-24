@@ -107,7 +107,7 @@ InstancesRouter.post(
     '/entities/delete/bulk',
     ValidateRequest(deleteEntityInstancesSchema),
     InstancesValidatorMiddleware.validateUserCanDeleteEntityInstances,
-    InstancesControllerMiddleware.deleteEntityInstance,
+    InstancesControllerMiddleware.deleteEntityInstances,
 );
 InstancesRouter.patch(
     '/entities/:id/status',

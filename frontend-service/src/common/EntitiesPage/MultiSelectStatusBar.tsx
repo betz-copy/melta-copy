@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { Box, CircularProgress, Grid, Typography, useTheme } from '@mui/material';
+import { CircularProgress, Grid, useTheme } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
@@ -11,25 +11,36 @@ import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { ErrorToast } from '../ErrorToast';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IDeleteEntityBody } from '../../interfaces/entities';
+import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
+import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
-    templateId: string;
+    entityTemplate: IMongoEntityTemplatePopulated;
+    quickFilterText: string;
 }
 
-export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, templateId }) => {
+export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, entityTemplate, quickFilterText }) => {
     const theme = useTheme();
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
-    console.log({ selectedRowCount });
+
+    const updateSelectedRowCount = useCallback(() => {
+        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+
+        if (selectAll) {
+            const toggledNodesCount = toggledNodes.length;
+            setSelectedRowCount(api.getDisplayedRowCount() - toggledNodesCount);
+        } else {
+            setSelectedRowCount(api.getSelectedRows().length);
+        }
+    }, [api]);
 
     useEffect(() => {
-        const updateSelectedRowCount = () => setSelectedRowCount(api.getSelectedRows().length);
-
         api.addEventListener('selectionChanged', updateSelectedRowCount);
         updateSelectedRowCount();
 
         return () => api.removeEventListener('selectionChanged', updateSelectedRowCount);
-    }, [api]);
+    }, [api, updateSelectedRowCount]);
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
         (deleteBody: IDeleteEntityBody) => deleteEntityRequest(deleteBody),
@@ -47,25 +58,32 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         },
     );
 
-    const handleClose = () => {
+    const handleMultipleDelete = (deleteAllRelationships = false) => {
+        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+
+        if (selectAll) {
+            deleteMutation({
+                ids: toggledNodes,
+                selectAll,
+                deleteAllRelationships,
+                templateId: entityTemplate._id,
+                filter: filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
+                textSearch: quickFilterText,
+            });
+        } else {
+            const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
+            deleteMutation({ ids: selectedRowsIds, selectAll: false, deleteAllRelationships, templateId: entityTemplate._id });
+        }
+    };
+
+    const handleCloseRelationshipDialog = () => {
         setOpenRelationshipDialog(false);
         api.deselectAll();
     };
 
-    const deleteSelectedRows = (deleteAllRelationships = false) => {
-        const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
-
-        if (selectAll) deleteMutation({ ids: toggledNodes, selectAll, deleteAllRelationships, templateId });
-        else {
-            const selectedRows = api.getSelectedRows();
-            const ids = selectedRows.map((row) => row.properties._id);
-            deleteMutation({ ids, selectAll: false, deleteAllRelationships, templateId });
-        }
-    };
-
     const handleYesDeleteWithRelationships = () => {
-        deleteSelectedRows(true);
-        handleClose();
+        handleMultipleDelete(true);
+        handleCloseRelationshipDialog();
     };
 
     return (
@@ -73,7 +91,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
             <IconButtonWithPopover
                 popoverText={i18next.t('actions.delete')}
                 iconButtonProps={{
-                    onClick: () => deleteSelectedRows(),
+                    onClick: () => handleMultipleDelete(),
                 }}
                 style={{
                     display: 'flex',
@@ -83,7 +101,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     color: theme.palette.primary.main,
                     marginTop: 5,
                 }}
-                // disabled={selectedRowCount === 0}
+                disabled={selectedRowCount === 0}
             >
                 <>
                     {isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
@@ -93,7 +111,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
             <AreYouSureDialog
                 open={openRelationshipDialog}
-                handleClose={handleClose}
+                handleClose={handleCloseRelationshipDialog}
                 title={i18next.t('entityPage.payAttention')}
                 body={i18next.t('entityPage.wouldYouLikeToDeleteTheRelationships')}
                 onYes={handleYesDeleteWithRelationships}
