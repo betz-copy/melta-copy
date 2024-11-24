@@ -16,3 +16,31 @@ export * from "./interfaces/gantt";
 export * from "./interfaces/ruleBreach/agGrid";
 
 export * from "./utils/types";
+
+// Exporting all enums and functions so frontend can use them too
+export {
+  ActionTypes,
+  RuleBreachRequestStatus,
+  basicFilterOperationTypes,
+  numberFilterOperationTypes,
+  textFilterOperationTypes,
+  filterTypes,
+} from "./interfaces/ruleBreach";
+export {
+  isPropertyOfVariable,
+  isConstant,
+  isAggregationGroup,
+  isGroup,
+  isRegularFunction,
+  isCountAggFunction,
+  isSumAggFunction,
+  isEquation,
+} from "./interfaces/rule";
+export { NotificationType } from "./interfaces/notification";
+export { WorkspaceTypes, Colors } from "./interfaces/workspace";
+export {
+  PermissionScope,
+  PermissionType,
+  InstancesSubclassesPermissions,
+} from "./interfaces/permission";
+export { Status, ProcessPropertyFormats } from "./interfaces/process";

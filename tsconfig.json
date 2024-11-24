@@ -19,6 +19,8 @@
     "forceConsistentCasingInFileNames": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
+    "isolatedModules": true,
+    "moduleResolution": "node",
     "lib": ["ES2020.Promise"]
   }
 }
