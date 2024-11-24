@@ -16,7 +16,7 @@ import {
 import { EntityWizardValues } from '../common/dialogs/entity';
 import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { IAction } from '../interfaces/ruleBreaches/actionMetadata';
+import { IAction, ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
 const { entities, relationships, bulk } = environment.api;
 
@@ -25,12 +25,18 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     return data;
 };
 
-export const loadExcelEntitiesRequest = async (file: File, templateId: string) => {
+export const readExcelEntitiesRequest = async (file: File, templateId: string) => {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('templateId', templateId);
 
-    const { data } = await axios.post(`${entities}/loadExcel`, formData);
+    const { data } = await axios.post(`${entities}/readExcel`, formData);
+
+    return data;
+};
+
+export const loadEntitiesRequest = async (entitiesToCreate: ICreateEntityMetadata[], templateId: string) => {
+    const { data } = await axios.post(`${entities}/loadEntities`, { templateId, entities: entitiesToCreate });
 
     return data;
 };

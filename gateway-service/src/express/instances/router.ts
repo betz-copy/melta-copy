@@ -15,12 +15,13 @@ import {
     exportEntitiesSchema,
     exportEntityToDocumentSchema,
     exportEntityToDocumentSchemaByEntityId,
-    loadExcelEntitiesSchema,
     searchEntitiesBatchRequestSchema,
     getEntitiesCountByTemplates,
     searchEntitiesByTemplatesSchema,
     updateEntityInstanceSchema,
     updateEntityStatusSchema,
+    readExcelSchema,
+    loadEntitiesSchema,
 } from './validator.schema';
 
 const { instanceService } = config;
@@ -72,12 +73,20 @@ InstancesRouter.post(
     ValidateRequest(exportEntitiesSchema),
     InstancesControllerMiddleware.exportEntities,
 );
+
 InstancesRouter.post(
-    '/entities/loadExcel',
+    '/entities/readExcel',
     wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
-    ValidateRequest(loadExcelEntitiesSchema),
-    InstancesControllerMiddleware.loadExcelEntities,
+    ValidateRequest(readExcelSchema),
+    InstancesControllerMiddleware.readExcelEntities,
+);
+
+InstancesRouter.post(
+    '/entities/loadEntities',
+    InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
+    ValidateRequest(loadEntitiesSchema),
+    InstancesControllerMiddleware.loadEntities,
 );
 
 InstancesRouter.get('/entities/:id', InstancesValidatorMiddleware.validateUserCanReadEntityInstance, InstanceManagerProxy);

@@ -4,16 +4,9 @@ import { AxiosError } from 'axios';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { ServiceError } from '../../express/error';
-import {
-    ActionErrors,
-    ActionTypes,
-    IAction,
-    IBrokenRule,
-    ICreateEntityMetadata,
-    IFailedEntity,
-} from '../../externalServices/ruleBreachService/interfaces';
+import { ActionErrors, ActionTypes, IAction, IBrokenRule, IFailedEntity, IRuleEntity } from '../../externalServices/ruleBreachService/interfaces';
+import { IEntity, IValidationError } from '../../externalServices/instanceService/interfaces/entities';
 import { IBrokenRulePopulated } from '../../externalServices/ruleBreachService/interfaces/populated';
-import { IValidationError } from '../../externalServices/instanceService/interfaces/entities';
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -61,93 +54,77 @@ const readExcelFile = async (file: Express.Multer.File, template: IMongoEntityTe
     return actions;
 };
 
-const getBrokenRulesErrorEntities = async (
-    rawBrokenRules: IBrokenRule[],
-    actions: IAction[],
-    populateBrokenRules: (rawBrokenRules: IBrokenRule[]) => Promise<IBrokenRulePopulated[]>,
-) => {
-    const indexes = new Set<number>();
+const getBrokenRulesErrorEntities = (rawBrokenRules: IBrokenRule[], entity: IEntity) => {
     const updatedBrokenRules = rawBrokenRules.map((brokenRule) => ({
         ...brokenRule,
         failures: brokenRule.failures.map((failure) => {
-            const entityIdNumberMatch = failure.entityId.match(/\d+/);
-            const index = entityIdNumberMatch ? Number(entityIdNumberMatch[0]) : 0;
-
-            if (!indexes.has(index)) indexes.add(index);
+            const entityId = (failure as any).entity;
             const updatedCauses = failure.causes.map((cause) => {
-                return { ...cause, instance: { entityId: `$${indexes.size - 1}._id` } };
+                return { ...cause, instance: { entityId } };
             });
 
             return {
                 causes: updatedCauses,
-                entityId: `$${indexes.size - 1}._id`,
+                entityId,
             };
         }),
     }));
 
-    const brokenRulePopulated = await populateBrokenRules(updatedBrokenRules);
-
-    const entities: { properties: Record<string, any> }[] = [];
-    const sortedIndexes = [...indexes].sort((a, b) => b - a);
-
-    sortedIndexes.forEach((index) => {
-        const action = actions[index];
-        entities.push({ properties: (action.actionMetadata as ICreateEntityMetadata).properties });
-        actions.splice(index, 1);
-    });
-
     return {
         rawBrokenRules: updatedBrokenRules,
-        brokenRules: brokenRulePopulated,
-        entities,
+        entities: [{ properties: entity.properties }],
     };
 };
 
-const getUniqueErrorEntities = (constraint, actions: IAction[], failedEntities: IFailedEntity[]) => {
-    const { values } = constraint;
-    const indexes = new Set<number>();
-    Object.entries(values).forEach(([key, value]) => {
-        const index = actions.findIndex((action) => (action.actionMetadata as ICreateEntityMetadata).properties[key] === value);
-        if (!indexes.has(index)) indexes.add(index);
-    });
-    const sortedIndexes = [...indexes].sort((a, b) => b - a);
-
-    sortedIndexes.forEach((index) => {
-        const action = actions[index];
-        failedEntities.push({
-            properties: (action.actionMetadata as ICreateEntityMetadata).properties,
-            errors: [{ type: ActionErrors.unique, metadata: constraint }],
-        });
-
-        actions.splice(index, 1);
-    });
-};
-
-const getRequiredErrorEntities = (constraint, actions: IAction[], failedEntities: IFailedEntity[]) => {
-    const { index } = constraint;
-    failedEntities.push({
-        properties: (actions[index].actionMetadata as ICreateEntityMetadata).properties,
-        errors: [{ type: ActionErrors.required, metadata: constraint }],
-    });
-    actions.splice(index, 1);
-};
-
-const getValidationErrorEntities = (error: AxiosError, actions: IAction[], failedEntities: IFailedEntity[]) => {
+const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
     const errorData = error.response?.data as {
         type: string;
         message: string;
         metadata: {
-            properties: Record<string, any> & { index: number };
+            properties: Record<string, any>;
             errors: { type: ActionErrors.validation; metadata: IValidationError }[];
         };
     };
 
     const { metadata } = errorData;
     const { properties, errors } = metadata;
-    const { index, ...entityProperties } = properties;
 
-    actions.splice(index, 1);
-    failedEntities.push({ properties: entityProperties, errors });
+    failedEntities.push({ properties, errors });
 };
 
-export { readExcelFile, getBrokenRulesErrorEntities, getUniqueErrorEntities, getRequiredErrorEntities, getValidationErrorEntities };
+const getPopulatedBrokenRulesErrorEntities = async (
+    allBrokenRulesEntities: IRuleEntity[],
+    populateBrokenRules: (rawBrokenRules: IBrokenRule[]) => Promise<IBrokenRulePopulated[]>,
+) => {
+    const rawBrokenRulesEntities = allBrokenRulesEntities.reduce<IRuleEntity>(
+        (accumulator, current, index) => {
+            const updatedRawBrokenRules = current.rawBrokenRules.map((rule) => ({
+                ...rule,
+                failures: rule.failures.map((failure) => {
+                    const entityId = `$${index}._id`;
+
+                    const updatedCauses = failure.causes.map((cause) => ({
+                        ...cause,
+                        instance: { entityId },
+                    }));
+
+                    return {
+                        ...failure,
+                        causes: updatedCauses,
+                        entityId,
+                    };
+                }),
+            }));
+
+            return {
+                rawBrokenRules: [...accumulator.rawBrokenRules, ...updatedRawBrokenRules],
+                entities: [...accumulator.entities, ...current.entities],
+            };
+        },
+        { rawBrokenRules: [], entities: [] },
+    );
+
+    return { ...rawBrokenRulesEntities, brokenRules: await populateBrokenRules(rawBrokenRulesEntities.rawBrokenRules) };
+};
+
+export { readExcelFile, getBrokenRulesErrorEntities, getValidationErrorEntities, getPopulatedBrokenRulesErrorEntities };

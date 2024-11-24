@@ -14,6 +14,10 @@ export class InstancesController extends DefaultController<InstancesManager> {
         res.json(await this.manager.createEntityInstance(instanceData, req.files as Express.Multer.File[], ignoredRules, req.user!.id));
     }
 
+    async readExcelEntities(req: Request, res: Response) {
+        res.json(await this.manager.readExcelEntities(req.file as Express.Multer.File, req.body.templateId));
+    }
+
     async exportEntities(req: Request, res: Response) {
         const filePath = await this.manager.exportEntities(req.body);
         try {
@@ -23,8 +27,8 @@ export class InstancesController extends DefaultController<InstancesManager> {
         }
     }
 
-    async loadExcelEntities(req: Request, res: Response) {
-        res.json(await this.manager.loadExcelEntities(req.file as Express.Multer.File, req.body.templateId, req.user!.id));
+    async loadEntities(req: Request, res: Response) {
+        res.json(await this.manager.loadEntities(req.body.entities, req.user!.id));
     }
 
     async updateEntityInstance(req: Request, res: Response) {

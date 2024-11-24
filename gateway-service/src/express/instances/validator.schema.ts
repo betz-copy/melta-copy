@@ -160,10 +160,19 @@ export const deleteRelationshipSchema = Joi.object({
     },
 });
 
-// POST /api/instances/entities/loadExcel/:templateId
-export const loadExcelEntitiesSchema = Joi.object({
+// POST /api/instances/entities/readExcel/:templateId
+export const readExcelSchema = Joi.object({
     body: {
         file: documentTemplateSchema,
+        templateId: Joi.string().required(),
+    },
+    query: {},
+});
+
+// POST /api/instances/entities/loadEntities
+export const loadEntitiesSchema = Joi.object({
+    body: {
+        entities: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
         templateId: Joi.string().required(),
     },
     query: {},

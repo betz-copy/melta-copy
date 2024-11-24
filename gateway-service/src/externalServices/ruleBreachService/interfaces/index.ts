@@ -116,6 +116,9 @@ export type IFailedEntity = {
 
 export type IRuleEntity = {
     rawBrokenRules: IBrokenRule[];
-    brokenRules: IBrokenRulePopulated[];
     entities: { properties: Record<string, any> }[];
 };
+
+export interface IRuleEntityPopulated extends IRuleEntity {
+    brokenRules: IBrokenRulePopulated[];
+}

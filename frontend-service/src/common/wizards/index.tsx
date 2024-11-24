@@ -116,10 +116,10 @@ const Wizard = <T extends object>({
                         if (isLastStep) {
                             await submitFunction(values);
                         } else {
+                            steps[activeStep].stepperActions?.next?.onClick?.();
                             setActiveStep((prevActiveStep) => prevActiveStep + 1);
                             actions.setTouched({});
                             actions.setSubmitting(false);
-                            steps[activeStep].stepperActions?.next?.onClick?.();
                         }
                     }}
                 >

@@ -22,7 +22,6 @@ import {
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionErrors,
-    ActionStatus,
     ActionTypes,
     IAction,
     IBrokenRule,
@@ -54,8 +53,7 @@ import { ISemanticSearchResult } from '../../externalServices/semanticSearch/int
 import { WorkspaceService } from '../workspaces/service';
 import {
     getBrokenRulesErrorEntities,
-    getRequiredErrorEntities,
-    getUniqueErrorEntities,
+    getPopulatedBrokenRulesErrorEntities,
     getValidationErrorEntities,
     readExcelFile,
 } from '../../utils/excel/getExcelFunctions';
@@ -203,49 +201,61 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    async loadExcelEntities(file: Express.Multer.File, templateId: string, userId: string) {
+    async readExcelEntities(file: Express.Multer.File, templateId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
         const actions = await readExcelFile(file, template);
-        const allEntities = actions.map((action) => action.actionMetadata);
-        let result: PromiseSettledResult<(IEntity | IRelationship)[]>[] = [{ status: 'rejected', reason: {} }];
+        return actions.map((action) => action.actionMetadata);
+    }
 
+    async loadEntities(entities: IEntity[], userId: string) {
+        const succeededEntities: IEntity[] = [];
         const failedEntities: IFailedEntity[] = [];
-        let brokenRulesEntities: IRuleEntity | undefined;
-        while (result[0].status !== ActionStatus.fulfilled && result.length > 0) {
-            try {
-                result = await this.runBulkOfActions([actions], true, userId, []);
+        const allBrokenRulesEntities: IRuleEntity[] = [];
 
-                if (result[0].status === ActionStatus.rejected) {
-                    if (result[0].reason.metadata.errorCode === errorCodes.ruleBlock) {
-                        const populateBrokenRules = (rawBrokenRules: IBrokenRule[]) => this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
-                        brokenRulesEntities = await getBrokenRulesErrorEntities(result[0].reason.metadata.brokenRules, actions, populateBrokenRules);
-                    }
+        await Promise.all(
+            entities.map(async (entity) => {
+                try {
+                    const result = await this.createEntityInstance(entity, [], [], userId);
+                    succeededEntities.push(result);
+                    return result;
+                } catch (error) {
+                    if (error instanceof AxiosError) {
+                        const { data } = error.response!;
 
-                    if (result[0].reason.metadata.errorCode === errorCodes.failedConstraintsValidation) {
-                        const { constraint } = result[0].reason.metadata;
-                        if (constraint.type === ActionErrors.unique) getUniqueErrorEntities(constraint, actions, failedEntities);
-                        if (constraint.type === ActionErrors.required) getRequiredErrorEntities(constraint, actions, failedEntities);
+                        if (data.metadata.errorCode === errorCodes.failedConstraintsValidation) {
+                            const { constraint } = data.metadata;
+                            if (constraint.type === ActionErrors.unique) {
+                                failedEntities.push({
+                                    properties: entity.properties,
+                                    errors: [{ type: ActionErrors.unique, metadata: constraint }],
+                                });
+                                return null;
+                            }
+                            if (constraint.type === ActionErrors.required) {
+                                failedEntities.push({
+                                    properties: entity.properties,
+                                    errors: [{ type: ActionErrors.required, metadata: constraint }],
+                                });
+                                return null;
+                            }
+                            return null;
+                        }
+                        if (data.type === 'TemplateValidationError') getValidationErrorEntities(error as AxiosError, failedEntities);
+                        return null;
                     }
+                    if ((error as any).metadata.errorCode === errorCodes.ruleBlock) {
+                        allBrokenRulesEntities.push(getBrokenRulesErrorEntities((error as any).metadata.brokenRules, entity));
+                        return null;
+                    }
+                    return null;
                 }
-            } catch (error) {
-                getValidationErrorEntities(error as AxiosError, actions, failedEntities);
-            }
-        }
+            }),
+        );
 
-        if (result[0].status === ActionStatus.fulfilled) {
-            const succeededActions = result[0].value.map((entity) => ({
-                actionType: ActionTypes.CreateEntity,
-                actionMetadata: entity,
-            }));
-            if (succeededActions.length > 0) await this.runBulkOfActions([succeededActions], false, userId, []);
-        }
+        const populateBrokenRules = (rawBrokenRules: IBrokenRule[]) => this.ruleBreachesManager.populateBrokenRules(rawBrokenRules);
+        const brokenRulesEntities = await getPopulatedBrokenRulesErrorEntities(allBrokenRulesEntities, populateBrokenRules);
 
-        return {
-            allEntities,
-            succeededEntities: result[0].status === ActionStatus.fulfilled ? result[0].value : [],
-            failedEntities,
-            brokenRulesEntities,
-        };
+        return { succeededEntities, failedEntities, brokenRulesEntities };
     }
 
     getEntityFileProperties(entityProperties: IEntity['properties'], template: IEntityTemplatePopulated): Record<string, string | string[]> {

@@ -7,7 +7,7 @@ import { Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
 import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
 import { EntitiesWizardValues, ISteps, StepStatus } from '.';
-import { loadExcelEntitiesRequest } from '../../../services/entitiesService';
+import { readExcelEntitiesRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
@@ -26,17 +26,17 @@ export const UploadExcel: React.FC<{
     const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
-    const { isLoading: isLoadingExcelEntities, mutateAsync: loadExcelEntities } = useMutation(
+    const { isLoading: isReadingExcel, mutateAsync: readExcelEntities } = useMutation(
         async (file: File) => {
-            return loadExcelEntitiesRequest(file, template._id);
+            return readExcelEntitiesRequest(file, template._id);
         },
         {
             onError() {
                 toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
-            async onSuccess(data) {
-                if (data) {
-                    setStepsData({ status: StepStatus.stepsPreview, data });
+            async onSuccess(allEntities) {
+                if (allEntities) {
+                    setStepsData((prev) => ({ ...prev, status: StepStatus.stepsPreview, allEntities }));
                 }
             },
         },
@@ -54,8 +54,8 @@ export const UploadExcel: React.FC<{
                 acceptedFilesTypes={{ 'excel/xlsx': ['.xlsx', '.xls'] }}
                 setFieldTouched={setFieldTouched}
                 error={formikProps.errors.file}
-                onDrop={(file: File) => loadExcelEntities(file)}
-                isLoading={isLoadingExcelEntities}
+                onDrop={(file: File) => readExcelEntities(file)}
+                isLoading={isReadingExcel}
                 disableCamera
             />
         );
@@ -104,7 +104,7 @@ export const UploadExcel: React.FC<{
                         rowHeight={defaultRowHeight}
                         pageRowCount={10}
                         fontSize={`${defaultFontSize}px`}
-                        rowData={stepsData.data.allEntities}
+                        rowData={stepsData.allEntities}
                         saveStorageProps={{
                             shouldSaveFilter: false,
                             shouldSaveWidth: false,

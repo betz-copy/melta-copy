@@ -31,7 +31,7 @@ const StepperSideBar = <T extends object>({
                         <Fragment key={step.label}>
                             <Grid container justifyContent="start" alignItems="flex-start">
                                 <Grid container justifyContent="start" alignItems="center">
-                                    <Grid item>
+                                    <Grid item display="flex" justifyContent="center" alignContent="center">
                                         <StepNumberTypography type={type}>
                                             {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                         </StepNumberTypography>
@@ -69,7 +69,7 @@ const StepperSideBar = <T extends object>({
                     <Fragment key={step.label}>
                         <Grid>
                             <Grid container justifyContent="center" alignItems="center">
-                                <Grid item>
+                                <Grid item display="flex" justifyContent="center" alignContent="center">
                                     <StepNumberTypography type={type}>
                                         {type === 'finishedStep' ? <DoneIcon fontSize="small" /> : index + 1}
                                     </StepNumberTypography>
