@@ -1,29 +1,7 @@
 {
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "CommonJS",
-    "allowJs": false,
-    "sourceMap": true,
-    "removeComments": true,
-    "strict": true,
-    "noImplicitAny": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,
-    "outDir": "./dist/",
-    "skipLibCheck": true,
-    "lib": ["ES2020.Promise", "ES6"],
-    "paths": {
-      "@microservices/*": ["./services/*/src"]
-    }
+    "lib": ["ES2020.Promise", "ES6"]
   },
   "include": ["src/**/*"]
 }

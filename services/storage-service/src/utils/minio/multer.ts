@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import * as Multer from 'multer';
+import Multer from 'multer';
 import { callbackify } from 'util';
 import { config } from '../../config';
 import { BadRequestError } from '../../express/error';

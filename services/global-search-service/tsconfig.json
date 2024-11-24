@@ -1,28 +1,5 @@
 {
-  "compilerOptions": {
-    "target": "ES2019",
-    "module": "CommonJS",
-    "allowJs": false,
-    "sourceMap": true,
-    "removeComments": true,
-    "strict": true,
-    "noImplicitAny": false,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictPropertyInitialization": false,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,
-    "outDir": "./dist/",
-    "lib": ["ES2019"],
-    "paths": {
-      "@microservices/*": ["./services/shared/src"]
-    }
-  },
+  "extends": "../../tsconfig.json",  
+  "compilerOptions": {},
   "include": ["src/**/*"]
 }

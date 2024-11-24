@@ -1,6 +1,6 @@
 import * as http from 'http';
 import { Client } from 'minio';
-import * as pdf from 'pdf-parse';
+import pdf from 'pdf-parse';
 import * as mammoth from 'mammoth';
 import config from '../../config';
 import { streamToBuffer } from '../fs';
