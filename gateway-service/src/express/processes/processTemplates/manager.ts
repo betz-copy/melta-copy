@@ -17,7 +17,6 @@ import { PermissionScope } from '../../../externalServices/userService/interface
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
-import logger from '../../../utils/logger/logsLogger';
 import { ServiceError } from '../../error';
 import { UsersManager } from '../../users/manager';
 import ProcessesInstancesManager from '../processInstances/manager';
@@ -69,7 +68,9 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
-            await this.storageService.deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused icons: ${idsToDelete}`));
+            await this.storageService.deleteFiles(idsToDelete).catch((error) => {
+                throw new ServiceError(undefined, `failed to delete unused icons: ${idsToDelete}`, { error });
+            });
     }
 
     private async handleIcons(icons: Express.Multer.File[], newSteps: IMongoStepTemplate[]) {
@@ -119,8 +120,7 @@ export class ProcessTemplatesManager extends DefaultManagerProxy<ProcessService>
             return step.iconFileId;
         });
         await this.storageService.deleteFiles(iconsIds.filter((id) => id !== null).map((id) => id!)).catch((error) => {
-            logger.error('failed to delete icons images', { error });
-            throw new ServiceError(500, `failed to delete process template, failed when deleting icon files: ${error}`);
+            throw new ServiceError(undefined, 'failed to delete icons images', { error });
         });
         return this.getTemplateWithPopulatedStepReviewers(deletedTemplate);
     }

@@ -1,9 +1,11 @@
 import { ConsumerMessage } from 'menashmq';
+import { StatusCodes } from 'http-status-codes';
 import { basicValidateRequest } from '../utils/joi';
 import { Action, IUpdateIndexRequest } from './interfaces';
 import Manager from './manager';
 import { requestSchema } from './validator.schema';
 import logger from '../utils/logger/logsLogger';
+import { ServiceError } from '../error';
 import config from '../config';
 
 const {
@@ -37,7 +39,7 @@ export const updateIndexConsumeFunction = async (msg: ConsumerMessage) => {
             }
 
             default:
-                throw new Error('invalid action type (should be caught in joi valiton)');
+                throw new ServiceError(StatusCodes.INTERNAL_SERVER_ERROR, 'invalid action type (should be caught in joi validation)');
         }
     } catch (error) {
         logger.error('Failed to update search index', { error });

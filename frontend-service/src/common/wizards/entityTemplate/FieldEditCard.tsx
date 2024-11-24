@@ -38,7 +38,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useMutation, useQueryClient } from 'react-query';
 import { toast } from 'react-toastify';
 import { dateNotificationTypes, validPropertyTypes } from './AddFields';
-import { CommonFormInputProperties } from './commonInterfaces';
+import { CommonFormInputProperties, IRelationshipReference } from './commonInterfaces';
 import { MinimizedColorPicker } from '../../inputs/MinimizedColorPicker';
 import { MeltaCheckbox } from '../../MeltaCheckbox';
 import { deleteEnumFieldRequest, updateEnumFieldRequest } from '../../../services/templates/enitityTemplatesService';
@@ -90,6 +90,7 @@ export interface FieldEditCardProps {
     setUniqueConstraints?: (uniqueConstraints: SetStateAction<IUniqueConstraintOfTemplate[]>) => void;
     supportEditEnum?: boolean;
     supportUnique?: boolean;
+    supportArchive?: boolean;
     hasActions?: boolean;
 }
 
@@ -117,6 +118,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     supportRelationshipReference,
     supportEditEnum,
     supportUnique,
+    supportArchive,
     hasActions,
 }) => {
     const currentUser = useUserStore((state) => state.user);
@@ -161,7 +163,6 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const preview = `properties[${index}].preview`;
     const hide = `properties[${index}].hide`;
     const readOnly = `properties[${index}].readOnly`;
-    const archive = `properties[${index}].archive`;
 
     const unique =
         value.type !== 'serialNumber' &&
@@ -325,6 +326,23 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
     const [editIndex, setEditIndex] = useState<number | null>(null);
 
     const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const relationshipRefs = Array.from(entityTemplates.values()).reduce((acc: IRelationshipReference[], template) => {
+        const properties = template.properties?.properties || {};
+
+        const references = Object.values(properties).reduce((refAcc: IRelationshipReference[], property) => {
+            if (property.format === 'relationshipReference' && property.relationshipReference) refAcc.push(property.relationshipReference);
+
+            return refAcc;
+        }, []);
+
+        return acc.concat(references);
+    }, []);
+
+    const disableRemoveRequire = Boolean(
+        relationshipRefs.find((ref) => ref.relatedTemplateField === value.name && ref.relatedTemplateId === templateId) !== undefined,
+    );
 
     const [localOption, setLocalOption] = useState<string>('');
     const [duplicate, setDuplicate] = useState<boolean>(false);
@@ -942,7 +960,8 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                       areThereAnyInstances &&
                                                                       (isNewProperty || (!isNewProperty && !initialValue?.required))) ||
                                                                 value.deleted ||
-                                                                value.archive
+                                                                value.archive ||
+                                                                disableRemoveRequire
                                                             }
                                                             checked={value.required}
                                                         />
@@ -961,7 +980,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 readOnly: checked || undefined,
                                                             }));
                                                         }}
-                                                        disabled={value.required}
+                                                        disabled={value.required || value.archive}
                                                         checked={value.readOnly}
                                                     />
                                                 }
@@ -974,7 +993,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={preview}
                                                             name={preview}
                                                             onChange={onChange}
-                                                            disabled={value.hide || value.deleted}
+                                                            disabled={value.hide || value.deleted || value.archive}
                                                             checked={value.preview}
                                                         />
                                                     }
@@ -988,7 +1007,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={hide}
                                                             name={hide}
                                                             onChange={onChange}
-                                                            disabled={value.preview || value.deleted}
+                                                            disabled={value.preview || value.deleted || value.archive}
                                                             checked={value.hide}
                                                         />
                                                     }
@@ -1002,6 +1021,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                             id={String(unique)}
                                                             name={String(unique)}
                                                             checked={unique}
+                                                            disabled={value.archive}
                                                             onChange={(_e, checked) => {
                                                                 setValues((prevValue) => ({
                                                                     ...prevValue,
@@ -1047,6 +1067,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                                                 }));
                                                             }}
                                                             checked={value.type === 'text-area'}
+                                                            disabled={value.archive}
                                                         />
                                                     }
                                                     label={i18next.t('propertyTypes.text-area')}
@@ -1058,9 +1079,11 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
                                             <Grid>
-                                                <IconButton onClick={() => setFieldValue('archive', !value.archive)} disabled={value.required}>
-                                                    {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                </IconButton>
+                                                {supportArchive && (
+                                                    <IconButton onClick={() => setFieldValue('archive', !value.archive)} disabled={value.required}>
+                                                        {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                    </IconButton>
+                                                )}
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}
                                                     disabled={

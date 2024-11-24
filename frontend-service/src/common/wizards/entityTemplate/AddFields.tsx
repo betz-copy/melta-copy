@@ -119,6 +119,18 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         setFieldValue('propertiesTypeOrder', newPropertiesTypeOrder);
     };
 
+    const getTitle = (itemId: string) => {
+        let title = '';
+
+        if (itemId === 'properties') title = i18next.t('wizard.entityTemplate.properties');
+        else if (itemId === 'attachmentProperties') title = i18next.t('wizard.entityTemplate.attachments');
+        else if (itemId === 'archiveProperties') title = i18next.t('wizard.entityTemplate.archiveProperties');
+
+        return title;
+    };
+
+    console.log({ values });
+
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
@@ -159,11 +171,7 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             areThereAnyInstances={areThereAnyInstances}
                                             isEditMode={isEditMode}
                                             setBlock={setBlock}
-                                            title={
-                                                itemId === 'properties'
-                                                    ? i18next.t('wizard.entityTemplate.properties')
-                                                    : i18next.t('wizard.entityTemplate.attachments')
-                                            }
+                                            title={getTitle(itemId)}
                                             addPropertyButtonLabel={
                                                 itemId === 'properties'
                                                     ? i18next.t('wizard.entityTemplate.addProperty')
@@ -179,6 +187,8 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
                                             supportDeleteForExistingInstances
                                             supportEditEnum
                                             supportUnique
+                                            supportArchive
+                                            supportAddButton={itemId === 'attachmentProperties' || itemId === 'properties'}
                                             hasActions={hasActions}
                                             draggable={{ isDraggable: true, dragHandleProps: draggableProvided.dragHandleProps }}
                                         />

@@ -1,6 +1,7 @@
 import { Express } from 'express';
 import request from 'supertest';
 import { v4 as uuidv4 } from 'uuid';
+import { StatusCodes } from 'http-status-codes';
 import Neo4jClient from '../../../utils/neo4j';
 import { IMongoEntityTemplate } from '../../../externalServices/templates/interfaces/entityTemplates';
 import config from '../../../config';
@@ -18,6 +19,8 @@ import RelationshipManager from '../../relationships/manager';
 import { IRelationship } from '../../relationships/interfaces';
 
 const { neo4j } = config;
+
+const { BAD_REQUEST: badRequestStatus, OK: okStatus } = StatusCodes;
 
 const defaultTemplateId = uuidv4(); // supposed to be mongoId, but good enough
 // const defaultProperties = { testProp: 'testProp' };
@@ -234,7 +237,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [{ field: 'flightNumber', sort: 'asc' }],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(2);
             expect(res.body.entities).toHaveLength(2);
 
@@ -256,7 +259,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [{ field: 'flightNumber', sort: 'asc' }],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(2);
             expect(res.body.entities).toHaveLength(2);
 
@@ -324,7 +327,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [{ field: 'flightNumber', sort: 'asc' }],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(2);
             expect(res.body.entities).toHaveLength(2);
 
@@ -379,7 +382,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(9);
             expect(res.body.entities).toHaveLength(9);
 
@@ -481,7 +484,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(1);
                 expect(res.body.entities).toHaveLength(1);
 
@@ -503,7 +506,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -529,7 +532,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -555,7 +558,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -581,7 +584,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -607,7 +610,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -636,7 +639,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -662,7 +665,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(2);
                 expect(res.body.entities).toHaveLength(2);
 
@@ -704,7 +707,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(1);
                 expect(res.body.entities).toHaveLength(1);
 
@@ -726,7 +729,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(1);
                 expect(res.body.entities).toHaveLength(1);
 
@@ -748,7 +751,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
                 expect(res.body.count).toBe(1);
                 expect(res.body.entities).toHaveLength(1);
 
@@ -777,7 +780,7 @@ describe('e2e search entities batch tests', () => {
             };
             const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(3);
             expect(res.body.entities).toHaveLength(3);
 
@@ -833,7 +836,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(1);
             expect(res.body.entities).toHaveLength(1);
             expect(res.body.entities[0].entity.templateId).toBe(defaultTemplateId);
@@ -898,7 +901,7 @@ describe('e2e search entities batch tests', () => {
             };
             const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(1);
             expect(res.body.entities).toHaveLength(1);
 
@@ -945,7 +948,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(1);
             expect(res.body.entities).toHaveLength(1);
             expect(res.body.entities[0].entity.templateId).toBe(defaultTemplateId);
@@ -977,7 +980,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [{ field: 'num', sort: 'asc' }],
                 });
 
-            expect(res.statusCode).toBe(200);
+            expect(res.statusCode).toBe(okStatus);
             expect(res.body.count).toBe(4);
             expect(res.body.entities).toHaveLength(2);
 
@@ -1001,7 +1004,7 @@ describe('e2e search entities batch tests', () => {
                     sort: [{ field: 'num', sort: 'asc' }],
                 });
 
-            expect(secondRes.statusCode).toBe(200);
+            expect(secondRes.statusCode).toBe(okStatus);
             expect(secondRes.body.count).toBe(4);
             expect(secondRes.body.entities).toHaveLength(2);
 
@@ -1045,7 +1048,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
                     `filter on field templates.${entityTemplate._id}.filter.$and.name.${filterType} should be of type string`,
@@ -1070,7 +1073,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(`filter on field templates.${entityTemplate._id}.filter.$and.name.$in.0 should be of type string`);
             });
@@ -1093,7 +1096,7 @@ describe('e2e search entities batch tests', () => {
                 };
                 const res = await request(app).post('/api/instances/entities/search/batch').send(searchBody);
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
                     `filter on field templates.${entityTemplate._id}.filter.$and.bDate.$eqi is invalid. must be on field of type strict string (not date format)`,
@@ -1122,7 +1125,7 @@ describe('e2e search entities batch tests', () => {
                         ],
                     });
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
                     `sort.1.field "airportName" must exist in all templates of search, but doesnt exist in template id "${flightEntityTemplate._id}"`,
@@ -1149,7 +1152,7 @@ describe('e2e search entities batch tests', () => {
                         ],
                     });
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toMatch(/sort\.1\.field "from" must be the same type in all templates of search/);
             });
@@ -1174,7 +1177,7 @@ describe('e2e search entities batch tests', () => {
                         ],
                     });
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toMatch(/sort\.1\.field "landingDate" must be the same type in all templates of search/);
             });
@@ -1199,7 +1202,7 @@ describe('e2e search entities batch tests', () => {
                         ],
                     });
 
-                expect(res.statusCode).toBe(200);
+                expect(res.statusCode).toBe(okStatus);
             });
         });
         describe('check validation of showRelationships with templates', () => {
@@ -1217,7 +1220,7 @@ describe('e2e search entities batch tests', () => {
                         sort: [],
                     });
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
                     `relationship template id "unknown-relationship-template" doesnt exist in templates.${tripEntityTemplate._id}.showRelationships.1`,
@@ -1238,7 +1241,7 @@ describe('e2e search entities batch tests', () => {
                         sort: [],
                     });
 
-                expect(res.statusCode).toBe(400);
+                expect(res.statusCode).toBe(badRequestStatus);
                 expect(res.body.type).toEqual('TemplateValidationError');
                 expect(res.body.message).toBe(
                     `relationship template id "${flightsOnRelationshipTemplate._id}" doesnt exist in templates.${tripEntityTemplate._id}.showRelationships.1`,

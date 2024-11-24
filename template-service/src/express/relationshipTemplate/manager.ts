@@ -1,8 +1,8 @@
 import { ClientSession, FilterQuery } from 'mongoose';
 import config from '../../config';
+import { NotFoundError } from '../error';
 import { escapeRegExp } from '../../utils';
 import { DefaultManagerMongo } from '../../utils/mongo/manager';
-import { ServiceError } from '../error';
 import { IMongoRelationshipTemplate, IRelationshipTemplate } from './interface';
 import { RelationshipTemplateSchema } from './model';
 
@@ -12,19 +12,19 @@ export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelat
     }
 
     async getTemplateById(templateId: string) {
-        return this.model.findById(templateId).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+        return this.model.findById(templateId).orFail(new NotFoundError('Relationship Template not found')).lean().exec();
     }
 
     async updateTemplateById(templateId: string, updatedFields: Partial<IRelationshipTemplate>, session?: ClientSession) {
         return this.model
             .findByIdAndUpdate(templateId, updatedFields, { new: true, session })
-            .orFail(new ServiceError(404, 'Relationship Template not found'))
+            .orFail(new NotFoundError('Relationship Template not found'))
             .lean()
             .exec();
     }
 
     async deleteTemplateById(templateId: string, session?: ClientSession) {
-        return this.model.findByIdAndDelete(templateId, { session }).orFail(new ServiceError(404, 'Relationship Template not found')).lean().exec();
+        return this.model.findByIdAndDelete(templateId, { session }).orFail(new NotFoundError('Relationship Template not found')).lean().exec();
     }
 
     async deleteManyTemplatesByIds(templateIds: string[], session?: ClientSession) {
@@ -33,7 +33,7 @@ export class RelationshipTemplateManager extends DefaultManagerMongo<IMongoRelat
             .lean()
             .exec();
 
-        if (deletedCount !== templateIds.length) throw new ServiceError(404, 'Some Relationship Templates not found');
+        if (deletedCount !== templateIds.length) throw new NotFoundError('Some Relationship Templates not found');
     }
 
     async createTemplate(relationshipTemplate: IRelationshipTemplate, session?: ClientSession) {

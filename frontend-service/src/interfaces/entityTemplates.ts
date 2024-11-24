@@ -4,7 +4,7 @@ import { IUniqueConstraintOfTemplate } from './entities';
 export interface IEntitySingleProperty {
     title: string;
     type: 'string' | 'number' | 'boolean' | 'array';
-    format?: 'date' | 'date-time' | 'email' | 'fileId' | 'text-area' | 'relationshipReference';
+    format?: string;
     enum?: string[];
     items?: {
         type: 'string';
@@ -45,7 +45,7 @@ export interface IEntityTemplate {
     disabled: boolean;
     category: IMongoCategory['_id'];
     propertiesOrder: string[];
-    propertiesTypeOrder: ('properties' | 'attachmentProperties')[];
+    propertiesTypeOrder: ('properties' | 'attachmentProperties' | 'archiveProperties')[];
     propertiesPreview: string[];
     enumPropertiesColors?: Record<string, Record<string, string>>; // { [fieldName]: { [enumOption1]: [color1], [enumOption2]: [color2] } }
     actions?: string;

@@ -5,7 +5,7 @@ import { EntityTemplateService, IMongoEntityTemplatePopulated } from '../../exte
 import { IRelationshipTemplate, RelationshipsTemplateService } from '../../externalServices/templates/relationshipsTemplateService';
 import { RequestWithPermissionsOfUserId } from '../../utils/authorizer';
 import DefaultManagerProxy from '../../utils/express/manager';
-import { ServiceError } from '../error';
+import { BadRequestError } from '../error';
 import { InstancesValidator } from '../instances/middlewares';
 
 export class GanttManager extends DefaultManagerProxy<GanttsService> {
@@ -58,15 +58,14 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
     ) {
         const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
         if (!relationshipTemplate) {
-            throw new ServiceError(400, `gantt contains unknown relationship template id "${relationshipTemplateId}"`);
+            throw new BadRequestError(`gantt contains unknown relationship template id "${relationshipTemplateId}"`);
         }
 
         const doesEntityTemplateInRelationshipTemplate =
             relationshipTemplate.sourceEntityId === entityTemplateId || relationshipTemplate.destinationEntityId === entityTemplateId;
 
         if (!doesEntityTemplateInRelationshipTemplate) {
-            throw new ServiceError(
-                400,
+            throw new BadRequestError(
                 `gantt contains relationship template id "${relationshipTemplateId}" which doesnt contain entity template "${entityTemplateId}" as source/destination`,
             );
         }
@@ -75,7 +74,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
     private async validateGanttGroupBy(gantt: IGantt, relationshipTemplatesMap: Map<string, IRelationshipTemplate>) {
         if (!gantt.groupBy) {
             if (gantt.items.some(({ groupByRelationshipId }) => groupByRelationshipId)) {
-                throw new ServiceError(400, 'gantt contains items with "groupByRelationshipId" without having "groupBy"');
+                throw new BadRequestError('gantt contains items with "groupByRelationshipId" without having "groupBy"');
             }
             return;
         }
@@ -86,15 +85,14 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
                 lodashIsEqual(uniqueConstraint.properties, [gantt.groupBy!.groupNameField]),
             )
         ) {
-            throw new ServiceError(
-                400,
+            throw new BadRequestError(
                 `gantt contains groupBy with groupNameField "${gantt.groupBy.groupNameField}" which is not unique under entity template id "${gantt.groupBy.entityTemplateId}"`,
             );
         }
 
         gantt.items.forEach(({ groupByRelationshipId }) => {
             if (!groupByRelationshipId) {
-                throw new ServiceError(400, 'gantt contains items without "groupByRelationshipId" while having "groupBy"');
+                throw new BadRequestError('gantt contains items without "groupByRelationshipId" while having "groupBy"');
             }
 
             this.doesRelationshipContainsEntityTemplate(groupByRelationshipId, relationshipTemplatesMap, gantt.groupBy!.entityTemplateId);
@@ -108,15 +106,12 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
         const entityTemplate = entityTemplatesMap.get(entityTemplateId);
         if (!entityTemplate) {
-            throw new ServiceError(400, `gantt contains unknown entity template id "${entityTemplateId}"`);
+            throw new BadRequestError(`gantt contains unknown entity template id "${entityTemplateId}"`);
         }
 
         [startDateField, endDateField, ...fieldsToShow].forEach((field) => {
             if (!entityTemplate.propertiesOrder.includes(field)) {
-                throw new ServiceError(
-                    400,
-                    `gantt contains unknown field "${field}" under gantt item with entity template id "${entityTemplate._id}"`,
-                );
+                throw new BadRequestError(`gantt contains unknown field "${field}" under gantt item with entity template id "${entityTemplate._id}"`);
             }
         });
     }
@@ -145,7 +140,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
         connectedEntityTemplates.forEach(({ relationshipTemplateId, fieldsToShow }) => {
             const relationshipTemplate = relationshipTemplatesMap.get(relationshipTemplateId);
             if (!relationshipTemplate) {
-                throw new ServiceError(400, `gantt contains unknown relationship template id "${relationshipTemplateId}"`);
+                throw new BadRequestError(`gantt contains unknown relationship template id "${relationshipTemplateId}"`);
             }
 
             const otherEntityTemplateId =
@@ -156,8 +151,7 @@ export class GanttManager extends DefaultManagerProxy<GanttsService> {
 
             fieldsToShow.forEach((field) => {
                 if (!otherEntityTemplate.propertiesOrder.includes(field)) {
-                    throw new ServiceError(
-                        400,
+                    throw new BadRequestError(
                         `gantt contains unknown field "${field}" under entity template id "${otherEntityTemplateId}" which is connectedEntity of gantt item of entity template id "${entityTemplateId}"`,
                     );
                 }
