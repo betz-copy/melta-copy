@@ -50,6 +50,7 @@ import { RowCountGridStatusBar } from '../EntitiesPage/RowCountGridStatusBar';
 import { getColumnDefs, IGetColumnDefsOptions } from './getColumnDefs';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 import { ErrorToast } from '../ErrorToast';
+import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 
 const { rowCount, defaultExpandedRowCount } = environment.agGrid;
 
@@ -335,11 +336,6 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             setSelectedRow,
             setOpenDeleteDialog,
             updateEntityStatus,
-            openDeleteDialog,
-            selectedRow,
-            closeDeleteDialog,
-            deleteMutation,
-            isDeleteLoading,
         };
 
         const columnDefs = useDeepCompareMemo(() => getColumnDefs(columnDefProps), [columnDefProps]);
@@ -587,6 +583,14 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                             : undefined
                     }
                     localeText={i18next.t('agGridLocaleText', { returnObjects: true })}
+                />
+                <AreYouSureDialog
+                    open={openDeleteDialog && selectedRow !== ''}
+                    handleClose={closeDeleteDialog}
+                    onYes={() => {
+                        deleteMutation(selectedRow);
+                    }}
+                    isLoading={isDeleteLoading}
                 />
             </Box>
         );

@@ -22,7 +22,6 @@ import {
 } from '../../utils/agGrid/commonColDefs';
 import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
-import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { CardMenu } from '../../pages/SystemManagement/components/CardMenu';
 import { IRuleBreach } from '../../interfaces/ruleBreaches/ruleBreach';
 
@@ -48,11 +47,6 @@ export interface IGetColumnDefsOptions<Data extends any> {
         { currEntity: IEntity; disabled: boolean; ignoredRules?: IRuleBreach['brokenRules'] },
         unknown
     >;
-    openDeleteDialog: boolean;
-    selectedRow: string;
-    closeDeleteDialog: () => void;
-    deleteMutation: UseMutateAsyncFunction<any, AxiosError<any, any>, string, unknown>;
-    isDeleteLoading: boolean;
 }
 
 export const getColumnDefs = <Data extends any = IEntity>({
@@ -72,11 +66,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
     setSelectedRow,
     setOpenDeleteDialog,
     updateEntityStatus,
-    openDeleteDialog,
-    selectedRow,
-    closeDeleteDialog,
-    deleteMutation,
-    isDeleteLoading,
 }: IGetColumnDefsOptions<Data>): ColDef[] => {
     const columnDefs = template.propertiesOrder.map((property) => {
         const propertyTemplate = template.properties.properties[property];
@@ -302,14 +291,6 @@ export const getColumnDefs = <Data extends any = IEntity>({
                                         canEdit: menuRowButtonProps,
                                         tooltipTitle: i18next.t('systemManagement.disabledEntity'),
                                     }}
-                                />
-                                <AreYouSureDialog
-                                    open={openDeleteDialog && selectedRow !== ''}
-                                    handleClose={closeDeleteDialog}
-                                    onYes={() => {
-                                        deleteMutation(selectedRow);
-                                    }}
-                                    isLoading={isDeleteLoading}
                                 />
                             </Grid>
                         )}
