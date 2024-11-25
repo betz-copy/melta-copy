@@ -10,7 +10,14 @@ import groupBy from 'lodash.groupby';
 import { menash } from 'menashmq';
 import config from '../../config';
 import { InstancesService } from '../../externalServices/instanceService';
-import { IEntity, ISearchFilter, ISearchSort } from '../../externalServices/instanceService/interfaces/entities';
+import {
+    IEntity,
+    ISearchBatchBody,
+    ISearchFilter,
+    ISearchResult,
+    ISearchSort,
+    ITemplateSearchBody,
+} from '../../externalServices/instanceService/interfaces/entities';
 import { IRelationship } from '../../externalServices/instanceService/interfaces/relationships';
 import {
     ActionTypes,
@@ -35,6 +42,9 @@ import { BadRequestError } from '../error';
 import RuleBreachesManager from '../ruleBreaches/manager';
 import { patchDocumentAsStream } from './documentExport';
 import { IExportEntitiesBody } from './interfaces';
+import { RabbitManager } from '../../utils/rabbit';
+import { SemanticSearchService } from '../../externalServices/semanticSearch';
+import { ISemanticSearchResult } from '../../externalServices/semanticSearch/interface';
 import { WorkspaceService } from '../workspaces/service';
 
 const { errorCodes, rabbit, ruleBreachService } = config;
@@ -44,7 +54,11 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
 
     private storageService: StorageService;
 
+    private semanticSearchSearch: SemanticSearchService;
+
     private ruleBreachesManager: RuleBreachesManager;
+
+    private rabbitManager: RabbitManager;
 
     private workspaceId: string;
 
@@ -53,7 +67,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         this.workspaceId = workspaceId;
         this.entityTemplateService = new EntityTemplateService(workspaceId);
         this.storageService = new StorageService(workspaceId);
+        this.semanticSearchSearch = new SemanticSearchService(workspaceId);
         this.ruleBreachesManager = new RuleBreachesManager(workspaceId);
+        this.rabbitManager = new RabbitManager(workspaceId);
     }
 
     async uploadInstanceFiles<TProps = Record<string, any>>(
@@ -207,7 +223,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
     }
 
     async handlePreparationsBeforeCreateEntity(instanceData: IEntity, files: Express.Multer.File[]) {
-        const { props: propertiesWithFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
+        const { props: propertiesWithFiles, files: upserstedFiles } = await this.uploadInstanceFiles(files, instanceData.properties);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(instanceData.templateId);
         const newInstanceProperties = await this.setSerialPropertiesAndUpdateTemplate(propertiesWithFiles, entityTemplate);
@@ -215,6 +231,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return {
             templateId: instanceData.templateId,
             properties: newInstanceProperties,
+            files: upserstedFiles,
         };
     }
 
@@ -225,10 +242,10 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const newInstanceData: IEntity = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
+        const { templateId, properties, files: upserstedFiles } = await this.handlePreparationsBeforeCreateEntity(instanceData, files);
 
         const { createdEntity, actions } = await this.service
-            .createEntityInstance(newInstanceData, ignoredRules, userId)
+            .createEntityInstance({ properties, templateId }, ignoredRules, userId)
             .catch((err) => this.handleBrokenRulesError(err));
 
         if (createAlert && ignoredRules.length) {
@@ -247,6 +264,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, Object.values(upserstedFiles).flat());
         }
 
         return createdEntity;
@@ -273,6 +292,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToDelete);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToDelete));
 
         return fileIdsToDelete;
@@ -286,6 +306,52 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         entityProperties: IEntity['properties'];
     }) {
         return patchDocumentAsStream(await this.storageService.downloadFile(documentTemplateId), entityProperties);
+    }
+
+    private async formatEntitiesSearch(searchResults: ISearchResult, semanticSearchResult?: ISemanticSearchResult) {
+        return semanticSearchResult
+            ? {
+                  ...searchResults,
+                  entities: searchResults.entities.map((entity) => ({
+                      ...entity,
+                      minioFileIds: semanticSearchResult?.[entity.entity.templateId]?.[entity.entity.properties._id],
+                  })),
+              }
+            : searchResults;
+    }
+
+    async searchEntitiesBatch(shouldSemanticSearch: boolean, searchBody: ISearchBatchBody) {
+        if (shouldSemanticSearch && searchBody.textSearch) {
+            const semanticSearchResult = await this.semanticSearchSearch.search({
+                textSearch: searchBody.textSearch,
+                limit: searchBody.limit,
+                skip: searchBody.skip,
+                templates: Object.keys(searchBody.templates),
+            });
+
+            return this.formatEntitiesSearch(
+                await this.service.searchEntitiesBatch({
+                    ...searchBody,
+                    entityIdsToInclude: semanticSearchResult ? Object.values(semanticSearchResult).map(Object.keys).flat() : undefined,
+                }),
+                semanticSearchResult,
+            );
+        }
+
+        return this.service.searchEntitiesBatch(searchBody);
+    }
+
+    async getEntitiesCountByTemplates(shouldSemanticSearch: boolean, searchBody: ITemplateSearchBody) {
+        return this.service.getEntitiesCountByTemplates({
+            ...searchBody,
+            semanticSearchResult:
+                searchBody.textSearch && shouldSemanticSearch
+                    ? await this.semanticSearchSearch.search({
+                          textSearch: searchBody.textSearch,
+                          templates: searchBody.templateIds,
+                      })
+                    : undefined,
+        });
     }
 
     async updateEntityStatus(id: string, disabledStatus: boolean, ignoredRules: IBrokenRule[], userId: string, createAlert: boolean = true) {
@@ -408,6 +474,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            const fileIds = Object.values(fileProperties).flat();
+            await this.rabbitManager.indexFiles(createdEntity.templateId, createdEntity.properties._id, fileIds);
         }
 
         return createdEntity;
@@ -435,7 +504,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         userId: string,
         createAlert: boolean = true,
     ) {
-        const { props: uploadedFilesAndProperties } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
+        const { props: uploadedFilesAndProperties, files: updatedFiles } = await this.uploadInstanceFiles(files, updatedInstanceData.properties);
         const currentEntity = await this.service.getEntityInstanceById(id);
 
         const entityTemplate = await this.entityTemplateService.getEntityTemplateById(currentEntity.templateId);
@@ -502,6 +571,8 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                 },
                 userId,
             );
+        } else {
+            await this.rabbitManager.indexFiles(updatedEntity.templateId, updatedEntity.properties._id, Object.values(updatedFiles).flat());
         }
 
         return updatedEntity;
@@ -517,6 +588,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
             return [];
         }
 
+        await this.rabbitManager.deleteFiles(currentEntity.templateId, currentEntity.properties._id, fileIdsToRemove);
         await menash.send(rabbit.deleteUnusedFilesQueue, JSON.stringify(fileIdsToRemove));
 
         return fileIdsToRemove;

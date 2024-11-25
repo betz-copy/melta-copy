@@ -112,6 +112,20 @@ const fixComplexProperties = (
     return false;
 };
 
+const indexToExcelColumn = (index: number): string => {
+    let columnName = '';
+    const NUMBER_OF_ENGLISH_LETTERS = 26;
+    const A_ASCII_CODE = 65;
+
+    while (index > 0) {
+        index--;
+        columnName = String.fromCharCode((index % NUMBER_OF_ENGLISH_LETTERS) + A_ASCII_CODE) + columnName;
+        index = Math.floor(index / NUMBER_OF_ENGLISH_LETTERS);
+    }
+
+    return columnName;
+};
+
 const styleAWorksheet = (
     worksheet: Excel.Worksheet,
     rows: IEntity['properties'][],
@@ -135,7 +149,7 @@ const styleAWorksheet = (
 
     Object.entries(allProperties).forEach(([key, value], columnIndex) => {
         rows.forEach((row, rowIndex) => {
-            const cell = worksheet.getCell(`${(columnIndex + 10).toString(36).toUpperCase()}${rowIndex + 2}`);
+            const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${rowIndex + 2}`);
             if (row[key] !== undefined) {
                 cell.alignment = excelStyle.cell.alignment;
                 cell.font = excelStyle.cell.font;

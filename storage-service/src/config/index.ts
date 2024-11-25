@@ -27,6 +27,8 @@ export const config = {
             keepAlive: env.get('TRANSPORT_AGENT_KEEP_ALIVE').default(1).asBool(),
             keepAliveMsecs: env.get('TRANSPORT_AGENT_KEEP_ALIVE_MSECS').default(1000).asIntPositive(),
         },
+        useDevBucket: env.get('USE_DEV_BUCKETS').default('false').asBool(),
+        devBucketPrefix: env.get('DEV_BUCKET_PREFIX').default('dev-').asString(),
     },
     logs: {
         format: env.get('LOGGING_DATE_FORMAT').default('YYYY-MM-DD HH:mm:ss').asString(),
