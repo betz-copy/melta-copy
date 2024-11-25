@@ -6,7 +6,7 @@ import {
     Edit as EditIcon,
     MoreVertOutlined,
 } from '@mui/icons-material';
-import { Card, CardContent, Grid, IconButton, Menu } from '@mui/material';
+import { Card, CardContent, FormControlLabel, Grid, IconButton, Menu, Switch } from '@mui/material';
 import { AxiosError } from 'axios';
 import i18next from 'i18next';
 import React, { useState } from 'react';
@@ -44,6 +44,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const queryClient = useQueryClient();
     const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+    const [displayArchiveProperties, setDisplayArchiveProperties] = useState(false);
 
     const currentUser = useUserStore((state) => state.user);
     const darkMode = useDarkModeStore((state) => state.darkMode);
@@ -136,6 +137,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
 
     const canWriteInstance = checkUserCategoryPermission(currentUser.currentWorkspacePermissions, entityTemplate.category, PermissionScope.write);
     const isEntityDisabled = expandedEntity.entity.properties.disabled;
+
+    const handleDisplayArchiveChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setDisplayArchiveProperties(event.target.checked);
+    };
+
     return (
         <>
             <Card
@@ -150,6 +156,10 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
+                                <FormControlLabel
+                                    control={<Switch checked={displayArchiveProperties} onChange={handleDisplayArchiveChange} />}
+                                    label={i18next.t('entityPage.displayArchiveSwitch')}
+                                />
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -272,6 +282,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     innerStyle={{ width: '32%' }}
                                     textWrap
                                     mode="normal"
+                                    displayArchiveProperties={displayArchiveProperties}
                                 />
                             </Grid>
 

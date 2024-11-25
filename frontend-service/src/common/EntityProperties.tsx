@@ -86,6 +86,7 @@ interface IEntityPropertiesProps {
     isPrintingMode?: boolean;
     pureString?: boolean;
     searchedText?: string;
+    displayArchiveProperties?: boolean;
 }
 
 const getPropertyColor = (
@@ -119,7 +120,9 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     isPrintingMode = false,
     pureString = false,
     searchedText,
+    displayArchiveProperties,
 }) => {
+    console.log({ entityTemplate });
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));
@@ -131,6 +134,11 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
                 entityTemplate.properties.properties[propertyKey].format !== 'fileId' &&
                 entityTemplate.properties.properties[propertyKey].items?.format !== 'fileId',
         );
+    } else if (!displayArchiveProperties) {
+        propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => {
+            const propertyTemplate = entityTemplate.properties.properties[propertyKey];
+            return !propertyTemplate.archive;
+        });
     } else propertiesOrderedToShow = entityTemplate.propertiesOrder;
 
     const [hideFieldsToDisplay, setHideFieldsToDisplay] = React.useState(entityTemplate.properties.hide);
