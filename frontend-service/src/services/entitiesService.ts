@@ -14,11 +14,11 @@ import {
     ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
-import { IAction, ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
+import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
-const { entities, relationships, bulk } = environment.api;
+const { entities, relationships } = environment.api;
 
 export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     const { data } = await axios.post(`${entities}/export`, body, { responseType: 'blob' });
@@ -267,10 +267,5 @@ export const getEntitiesWithDirectConnections = async (searchBody: ISearchBatchB
 
 export const exportEntityToDocumentRequest = async (documentTemplateId: string, entityProperties: EntityWizardValues['properties']) => {
     const { data } = await axios.post<Blob>(`${entities}/export/document`, { documentTemplateId, entityProperties }, { responseType: 'blob' });
-    return data;
-};
-
-export const runBulkOfActionsRequest = async (actionsGroups: IAction[][], ignoredRules: IBrokenRule[] = [], dryRun: boolean = false) => {
-    const { data } = await axios.post<Blob>(`${bulk}?dryRun=${dryRun}`, { actionsGroups, ignoredRules });
     return data;
 };

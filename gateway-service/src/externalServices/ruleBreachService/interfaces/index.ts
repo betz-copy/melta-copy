@@ -1,5 +1,5 @@
 import { IRequiredConstraint, IUniqueConstraint, IValidationError } from '../../instanceService/interfaces/entities';
-import { IBrokenRulePopulated } from './populated';
+import { IActionMetadataPopulated, IBrokenRulePopulated } from './populated';
 
 export interface ICreateRelationshipMetadata {
     relationshipTemplateId: string;
@@ -114,11 +114,13 @@ export type IFailedEntity = {
     errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
 };
 
-export type IRuleEntity = {
+export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];
+    brokenRules: IBrokenRulePopulated[];
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+    rawActions: IAction[];
     entities: { properties: Record<string, any> }[];
 };
-
-export interface IRuleEntityPopulated extends IRuleEntity {
-    brokenRules: IBrokenRulePopulated[];
-}

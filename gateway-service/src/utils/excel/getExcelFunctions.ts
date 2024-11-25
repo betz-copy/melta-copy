@@ -4,9 +4,16 @@ import { AxiosError } from 'axios';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
 import { ServiceError } from '../../express/error';
-import { ActionErrors, ActionTypes, IAction, IBrokenRule, IFailedEntity, IRuleEntity } from '../../externalServices/ruleBreachService/interfaces';
-import { IEntity, IValidationError } from '../../externalServices/instanceService/interfaces/entities';
-import { IBrokenRulePopulated } from '../../externalServices/ruleBreachService/interfaces/populated';
+import {
+    ActionErrors,
+    ActionTypes,
+    IAction,
+    IBrokenRuleEntity,
+    ICreateEntityMetadata,
+    IFailedEntity,
+} from '../../externalServices/ruleBreachService/interfaces';
+import { IValidationError } from '../../externalServices/instanceService/interfaces/entities';
+import { ICreateEntityMetadataPopulated, IUpdateEntityMetadataPopulated } from '../../externalServices/ruleBreachService/interfaces/populated';
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -54,28 +61,6 @@ const readExcelFile = async (file: Express.Multer.File, template: IMongoEntityTe
     return actions;
 };
 
-const getBrokenRulesErrorEntities = (rawBrokenRules: IBrokenRule[], entity: IEntity) => {
-    const updatedBrokenRules = rawBrokenRules.map((brokenRule) => ({
-        ...brokenRule,
-        failures: brokenRule.failures.map((failure) => {
-            const entityId = (failure as any).entity;
-            const updatedCauses = failure.causes.map((cause) => {
-                return { ...cause, instance: { entityId } };
-            });
-
-            return {
-                causes: updatedCauses,
-                entityId,
-            };
-        }),
-    }));
-
-    return {
-        rawBrokenRules: updatedBrokenRules,
-        entities: [{ properties: entity.properties }],
-    };
-};
-
 const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {
     const errorData = error.response?.data as {
         type: string;
@@ -92,11 +77,8 @@ const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEn
     failedEntities.push({ properties, errors });
 };
 
-const getPopulatedBrokenRulesErrorEntities = async (
-    allBrokenRulesEntities: IRuleEntity[],
-    populateBrokenRules: (rawBrokenRules: IBrokenRule[]) => Promise<IBrokenRulePopulated[]>,
-) => {
-    const rawBrokenRulesEntities = allBrokenRulesEntities.reduce<IRuleEntity>(
+const getPopulatedBrokenRulesErrorEntities = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
+    return allBrokenRulesEntities.reduce<IBrokenRuleEntity>(
         (accumulator, current, index) => {
             const updatedRawBrokenRules = current.rawBrokenRules.map((rule) => ({
                 ...rule,
@@ -105,7 +87,9 @@ const getPopulatedBrokenRulesErrorEntities = async (
 
                     const updatedCauses = failure.causes.map((cause) => ({
                         ...cause,
-                        instance: { entityId },
+                        instance: {
+                            entityId,
+                        },
                     }));
 
                     return {
@@ -116,15 +100,80 @@ const getPopulatedBrokenRulesErrorEntities = async (
                 }),
             }));
 
+            const updatedBrokenRules = current.brokenRules.map((rule) => ({
+                ...rule,
+                failures: rule.failures.map((failure) => {
+                    const entity = `$${index}._id`;
+
+                    const updatedCauses = failure.causes.map((cause) => ({
+                        ...cause,
+                        instance: {
+                            entity,
+                        },
+                    }));
+
+                    return {
+                        ...failure,
+                        causes: updatedCauses,
+                        entity,
+                    };
+                }),
+            }));
+
+            const updatedRawActions = current.rawActions.map((rawAction) => {
+                if (rawAction.actionType === ActionTypes.CreateEntity)
+                    return {
+                        ...rawAction,
+                        actionMetadata: {
+                            ...rawAction.actionMetadata,
+                            properties: { ...(rawAction.actionMetadata as ICreateEntityMetadata).properties, _id: `$${index}._id` },
+                        },
+                    };
+                if (rawAction.actionType === ActionTypes.UpdateEntity)
+                    return { ...rawAction, actionMetadata: { ...rawAction.actionMetadata, entityId: `$${index}._id` } };
+                return rawAction;
+            });
+
+            const updatedActions = current.actions.map((action) => {
+                if (action.actionType === ActionTypes.CreateEntity) {
+                    return {
+                        ...action,
+                        ActionMetadata: {
+                            ...action.actionMetadata,
+                            properties: {
+                                ...(action.actionMetadata as ICreateEntityMetadataPopulated).properties,
+                                _id: `$${index}._id`,
+                            },
+                        },
+                    };
+                }
+                if (action.actionType === ActionTypes.UpdateEntity) {
+                    return {
+                        ...action,
+                        ActionMetadata: {
+                            ...action.actionMetadata,
+                            entity: {
+                                properties: {
+                                    ...(action.actionMetadata as IUpdateEntityMetadataPopulated).entity!.properties,
+                                    _id: `$${index}._id`,
+                                },
+                            },
+                        },
+                    };
+                }
+                return action;
+            });
+
             return {
                 rawBrokenRules: [...accumulator.rawBrokenRules, ...updatedRawBrokenRules],
+                brokenRules: [...accumulator.brokenRules, ...updatedBrokenRules],
+                actions: [...accumulator.actions, ...updatedActions],
+                rawActions: [...accumulator.rawActions, ...updatedRawActions],
                 entities: [...accumulator.entities, ...current.entities],
             };
         },
-        { rawBrokenRules: [], entities: [] },
+        { rawBrokenRules: [], brokenRules: [], actions: [], rawActions: [], entities: [] },
     );
-
-    return { ...rawBrokenRulesEntities, brokenRules: await populateBrokenRules(rawBrokenRulesEntities.rawBrokenRules) };
 };
 
-export { readExcelFile, getBrokenRulesErrorEntities, getValidationErrorEntities, getPopulatedBrokenRulesErrorEntities };
+export { readExcelFile, getValidationErrorEntities, getPopulatedBrokenRulesErrorEntities };

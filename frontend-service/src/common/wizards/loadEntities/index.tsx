@@ -7,14 +7,14 @@ import { useMutation } from 'react-query';
 import { Grid } from '@mui/material';
 import { StepType, Wizard, WizardBaseType } from '..';
 import OpenPreview from '../../FilePreview/OpenPreview';
-import { exportEntitiesRequest, loadEntitiesRequest, runBulkOfActionsRequest } from '../../../services/entitiesService';
+import { exportEntitiesRequest, loadEntitiesRequest } from '../../../services/entitiesService';
 import { attachmentPropertiesBaseSchema } from '../entityTemplate/AddFields';
 import { LoadEntitiesTables } from './loadEntitiesTables';
 import { IBrokenRule, IBrokenRulePopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { UploadExcel } from './uploadExcel';
 import ActionOnEntityWithRuleBreachDialog from '../../../pages/Entity/components/ActionOnEntityWithRuleBreachDialog';
-import { ActionErrors, ActionTypes, IAction, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
+import { ActionErrors, ActionTypes, IAction, IActionMetadataPopulated, ICreateEntityMetadata } from '../../../interfaces/ruleBreaches/actionMetadata';
 import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/CreateOrEditEntityDialog';
 import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 
@@ -24,13 +24,25 @@ export interface EntitiesWizardValues {
 }
 
 type IValidationError = { message: string; path: string; schemaPath: string; params: Partial<IEntitySingleProperty> };
+
+export type IBrokenRuleEntity = {
+    rawBrokenRules: IBrokenRule[];
+    brokenRules: IBrokenRulePopulated[];
+    actions: {
+        actionType: ActionTypes;
+        actionMetadata: IActionMetadataPopulated;
+    }[];
+    rawActions: IAction[];
+    entities: { properties: Record<string, any> }[];
+};
+
 export interface ITablesResults {
     succeededEntities: ICreateEntityMetadata[];
     failedEntities: {
         properties: Record<string, any>;
         errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
     }[];
-    brokenRulesEntities?: { rawBrokenRules: IBrokenRule[]; brokenRules: IBrokenRulePopulated[]; entities: { properties: Record<string, any> }[] };
+    brokenRulesEntities?: IBrokenRuleEntity;
 }
 
 export enum StepStatus {
@@ -82,24 +94,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         });
     };
 
-    const { isLoading: isCreateBulkLoading, mutateAsync: createBulkMutation } = useMutation(
-        ({ actionsGroups, ignoredRules }: { actionsGroups: IAction[][]; ignoredRules?: IBrokenRule[] }) =>
-            runBulkOfActionsRequest(actionsGroups, ignoredRules, false),
-        {
-            onSuccess: () => {
-                setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
-                onClose();
-                toast.success(i18next.t('wizard.entity.loadEntities.createdSuccessfully'));
-            },
-            onError: () => {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedUploadEntities'));
-            },
-        },
-    );
-
     const { isLoading: isLoadingExcelEntities, mutateAsync: loadEntities } = useMutation(
-        async () => {
-            return loadEntitiesRequest(stepsData.allEntities, template!._id);
+        async (entities: ICreateEntityMetadata[]) => {
+            return loadEntitiesRequest(entities, template!._id);
         },
         {
             onError() {
@@ -134,14 +131,15 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
+        console.log('brokenRulesEntities', stepsData.data.brokenRulesEntities);
+
         if (stepsData.data.brokenRulesEntities)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,
                 rawBrokenRules: stepsData.data.brokenRulesEntities.rawBrokenRules,
                 brokenRules: stepsData.data.brokenRulesEntities.brokenRules,
-                actions: stepsData.data.brokenRulesEntities.entities.map((properties) => {
-                    return { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template!._id, ...properties } };
-                }),
+                actions: stepsData.data.brokenRulesEntities.actions,
+                rawActions: stepsData.data.brokenRulesEntities.rawActions,
             });
         else {
             onClose();
@@ -210,7 +208,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     text: i18next.t('wizard.entity.loadEntities.loadEntities'),
                     onClick: async () => {
                         if (stepsData.status === StepStatus.stepsPreview) {
-                            await loadEntities();
+                            await loadEntities(stepsData.allEntities);
                             if (stepsData.data.failedEntities.length > 0)
                                 await exportTemplateToExcel({
                                     fileName: `${template?.displayName}: ${i18next.t('wizard.entity.loadEntities.failedEntities')}.xlsx`,
@@ -277,7 +275,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             />
             {createOrUpdateWithRuleBreachDialogState.isOpen && (
                 <ActionOnEntityWithRuleBreachDialog
-                    isLoadingActionOnEntity={isCreateBulkLoading}
+                    isLoadingActionOnEntity={isLoadingExcelEntities}
                     handleClose={() => {
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         setStepsData({
@@ -287,10 +285,10 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         });
                     }}
                     doActionEntity={() => {
-                        return createBulkMutation({
-                            actionsGroups: [createOrUpdateWithRuleBreachDialogState.actions as IAction[]],
-                            ignoredRules: createOrUpdateWithRuleBreachDialogState.rawBrokenRules,
+                        const brokenRulesEntities = stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => {
+                            return { templateId: template!._id, properties };
                         });
+                        return loadEntities(brokenRulesEntities!);
                     }}
                     actionType={ActionTypes.CreateEntity}
                     brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
@@ -312,6 +310,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     }}
                     actions={createOrUpdateWithRuleBreachDialogState.actions}
                     rawActions={createOrUpdateWithRuleBreachDialogState.rawActions}
+                    loadEntities
                 />
             )}
         </Grid>

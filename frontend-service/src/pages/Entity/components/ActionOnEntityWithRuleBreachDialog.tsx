@@ -20,10 +20,11 @@ import {
     IUpdateEntityMetadata,
     IUpdateEntityMetadataPopulated,
 } from '../../../interfaces/ruleBreaches/actionMetadata';
-import { IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach, IRuleBreachPopulated } from '../../../interfaces/ruleBreaches/ruleBreach';
 import { IRuleMap } from '../../../interfaces/rules';
 import { createRuleBreachRequestRequest } from '../../../services/ruleBreachesService';
 import { environment } from '../../../globals';
+import { IRuleBreachRequestPopulated } from '../../../interfaces/ruleBreaches/ruleBreachRequest';
 
 const { errorCodes } = environment;
 
@@ -80,7 +81,100 @@ interface IActionOnEntityWithRuleBreachDialogProps {
     onCreateRuleBreachRequest: () => void;
     actions?: IActionPopulated[];
     rawActions?: IAction[];
+    loadEntities?: boolean;
 }
+
+export const groupBrokenRulesByEntity = (brokenRules: IBrokenRule[]): IBrokenRule[][] => {
+    const entityMap = new Map<string, IBrokenRule[]>();
+
+    for (const brokenRule of brokenRules) {
+        for (const failure of brokenRule.failures) {
+            const { entityId, causes } = failure;
+
+            if (!entityMap.has(entityId)) {
+                entityMap.set(entityId, []);
+            }
+
+            const brokenRuleForEntity: IBrokenRule = {
+                ruleId: brokenRule.ruleId,
+                failures: [{ entityId, causes }],
+            };
+
+            entityMap.get(entityId)!.push(brokenRuleForEntity);
+        }
+    }
+
+    return Array.from(entityMap.values()).map((group) =>
+        group.map((brokenRule) => ({
+            ...brokenRule,
+            failures: brokenRule.failures.map((failure) => {
+                const entityId = '$0._id';
+
+                const updatedCauses = failure.causes.map((cause) => ({
+                    ...cause,
+                    instance: {
+                        entityId,
+                    },
+                }));
+
+                return {
+                    ...failure,
+                    causes: updatedCauses,
+                    entityId,
+                };
+            }),
+        })),
+    );
+};
+
+export const groupActionsByEntityId = (actions: IAction[]): IAction[][] => {
+    const entityMap = new Map<string, IAction[]>();
+
+    for (const action of actions) {
+        let entityId: string | undefined;
+
+        if (action.actionType === ActionTypes.CreateEntity) {
+            entityId = (action.actionMetadata as ICreateEntityMetadata).properties._id;
+        } else if (action.actionType === ActionTypes.UpdateEntity) {
+            entityId = (action.actionMetadata as IUpdateEntityMetadata).entityId;
+        }
+
+        if (entityId) {
+            if (!entityMap.has(entityId)) {
+                entityMap.set(entityId, []);
+            }
+
+            entityMap.get(entityId)!.push(action);
+        }
+    }
+
+    return Array.from(entityMap.values()).map((group) =>
+        group.map((action) => {
+            if (action.actionType === ActionTypes.CreateEntity) {
+                return {
+                    ...action,
+                    actionMetadata: {
+                        ...action.actionMetadata,
+                        properties: {
+                            ...(action.actionMetadata as ICreateEntityMetadata).properties,
+                            _id: '$0._id',
+                        },
+                    },
+                };
+            }
+            if (action.actionType === ActionTypes.UpdateEntity) {
+                return {
+                    ...action,
+                    actionMetadata: {
+                        ...action.actionMetadata,
+                        entityId: '$0._id',
+                    },
+                };
+            }
+            return action;
+        }),
+    );
+};
 
 const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreachDialogProps> = ({
     isLoadingActionOnEntity,
@@ -95,6 +189,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
     onCreateRuleBreachRequest,
     actions,
     rawActions,
+    loadEntities,
 }) => {
     const queryClient = useQueryClient();
     const rules = queryClient.getQueryData<IRuleMap>('getRules')!;
@@ -138,28 +233,31 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
         throw new Error('unsupported action type. cant create actionMetadata');
     }
 
-    const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation(
-        () => {
-            return createRuleBreachRequestRequest(
+    const { mutateAsync: createRuleBreachRequest, isLoading: isLoadingCreateRuleBreachRequest } = useMutation<
+        IRuleBreachRequestPopulated,
+        AxiosError,
+        { overrideActions?: IAction[]; overrideBrokenRules?: IRuleBreach['brokenRules'] }
+    >(
+        ({ overrideActions, overrideBrokenRules }) =>
+            createRuleBreachRequestRequest(
                 {
-                    brokenRules: rawBrokenRules,
-                    actions: rawActions ?? [
-                        {
-                            actionType,
-                            actionMetadata: actionMetadataWithoutFiles,
-                        },
-                    ],
+                    brokenRules: overrideBrokenRules ?? rawBrokenRules,
+                    actions: overrideActions ??
+                        rawActions ?? [
+                            {
+                                actionType,
+                                actionMetadata: actionMetadataWithoutFiles,
+                            },
+                        ],
                 },
                 rawActions ? undefined : attachmentsProperties,
-            );
-        },
+            ),
         {
             onError: (err: AxiosError) => {
                 const errorMetadata = err.response?.data?.metadata;
                 if (errorMetadata?.errorCode === errorCodes) {
                     onUpdatedRuleBlock(errorMetadata.brokenRules, errorMetadata.rawBrokenRules);
                 }
-
                 console.log('failed to create rule breach request. error:', err);
                 toast.error(<ErrorToast axiosError={err} defaultErrorMessage={i18next.t('execActionWithRuleBreach.failedToCreateRequest')} />);
             },
@@ -170,6 +268,7 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
             },
         },
     );
+
     return (
         <ExecWithRuleBreachDialog
             isSubmitting={isLoadingActionOnEntity || isLoadingCreateRuleBreachRequest}
@@ -181,7 +280,14 @@ const ActionOnEntityWithRuleBreachDialog: React.FC<IActionOnEntityWithRuleBreach
                 });
 
                 if (someBrokenRuleIsEnforcement) {
-                    await createRuleBreachRequest();
+                    if (loadEntities) {
+                        const groupedRawBrokenRules = groupBrokenRulesByEntity(rawBrokenRules);
+                        const groupedRawActions = groupActionsByEntityId(rawActions!);
+
+                        groupedRawActions.map(async (overrideActions, index) =>
+                            createRuleBreachRequest({ overrideActions, overrideBrokenRules: groupedRawBrokenRules[index] }),
+                        );
+                    } else await createRuleBreachRequest({});
                 } else {
                     await doActionEntity();
                 }
