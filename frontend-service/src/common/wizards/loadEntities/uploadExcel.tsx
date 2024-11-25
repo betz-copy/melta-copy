@@ -1,17 +1,18 @@
 import { FormikProps } from 'formik';
-import React from 'react';
+import React, { useState } from 'react';
 import i18next from 'i18next';
 import { toast } from 'react-toastify';
 import { useMutation } from 'react-query';
 import { Grid, Typography, useTheme } from '@mui/material';
 import { v4 as uuid } from 'uuid';
-import { InstanceSingleFileInput } from '../../inputs/InstanceFilesInput/InstanceSingleFileInput';
+import { AxiosError } from 'axios';
 import { EntitiesWizardValues, ISteps, StepStatus } from '.';
 import { readExcelEntitiesRequest } from '../../../services/entitiesService';
 import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import OpenPreview from '../../FilePreview/OpenPreview';
 import EntitiesTableOfTemplate from '../../EntitiesTableOfTemplate';
 import { environment } from '../../../globals';
+import { InstanceFileInput } from '../../inputs/InstanceFilesInput/InstanceFileInput';
 
 const { defaultRowHeight, defaultFontSize } = environment.agGrid;
 
@@ -26,37 +27,57 @@ export const UploadExcel: React.FC<{
     const theme = useTheme();
     const { values, setFieldValue, setFieldTouched } = formikProps;
 
+    const [errorText, setErrorText] = useState<string | undefined>();
+
     const { isLoading: isReadingExcel, mutateAsync: readExcelEntities } = useMutation(
-        async (file: File) => {
-            return readExcelEntitiesRequest(file, template._id);
+        async (files: Record<string, File>) => {
+            return readExcelEntitiesRequest(files, template._id);
         },
         {
-            onError() {
-                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
-            },
             async onSuccess(allEntities) {
                 if (allEntities) {
                     setStepsData((prev) => ({ ...prev, status: StepStatus.stepsPreview, allEntities }));
                 }
+            },
+            onError(error) {
+                const { message, metadata } = (error as AxiosError).response!.data;
+
+                if (message.includes('file limit'))
+                    setErrorText(`${metadata.originalname}: ${i18next.t('wizard.entity.loadEntities.limitNumberEntities')}`);
+                else if (message.includes('Invalid excel'))
+                    setErrorText(`${metadata.originalname}: ${i18next.t('wizard.entity.loadEntities.invalidFile')}`);
+
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
             },
         },
     );
 
     if (stepsData.status === StepStatus.initialSteps)
         return (
-            <InstanceSingleFileInput
+            <InstanceFileInput
                 {...formikProps}
                 fileFieldName="file"
                 fieldTemplateTitle={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
-                value={values.file}
+                value={values.files}
                 setFieldValue={setFieldValue}
                 required
                 acceptedFilesTypes={{ 'excel/xlsx': ['.xlsx', '.xls'] }}
                 setFieldTouched={setFieldTouched}
-                error={formikProps.errors.file}
-                onDrop={(file: File) => readExcelEntities(file)}
+                error={errorText || formikProps.errors.files}
+                setErrorText={setErrorText}
+                onDrop={async (files) => {
+                    const validFiles = files.filter((file): file is File => file !== null);
+
+                    if (validFiles.length > 5) toast.error('wizard.entity.loadEntities.limitNumberFiles');
+                    else {
+                        const filesObject = validFiles.reduce<Record<string, File>>((acc, file) => {
+                            return { ...acc, [file.name]: file };
+                        }, {});
+
+                        await readExcelEntities(filesObject);
+                    }
+                }}
                 isLoading={isReadingExcel}
-                disableCamera
             />
         );
 

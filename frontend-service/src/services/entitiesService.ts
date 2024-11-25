@@ -25,9 +25,13 @@ export const exportEntitiesRequest = async (body: IExportEntitiesBody) => {
     return data;
 };
 
-export const readExcelEntitiesRequest = async (file: File, templateId: string) => {
+export const readExcelEntitiesRequest = async (files: Record<string, File>, templateId: string) => {
     const formData = new FormData();
-    formData.append('file', file);
+
+    Object.entries(files).forEach(([key, value]) => {
+        formData.append(key, value as Blob);
+    });
+
     formData.append('templateId', templateId);
 
     const { data } = await axios.post(`${entities}/readExcel`, formData);

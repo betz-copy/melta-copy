@@ -76,7 +76,7 @@ InstancesRouter.post(
 
 InstancesRouter.post(
     '/entities/readExcel',
-    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).single('file')),
+    wrapMulter(multer({ dest: config.service.uploadsFolderPath, limits: { fileSize: config.service.maxFileSize } }).any()),
     InstancesValidatorMiddleware.validateUserCanCreateEntityInstance,
     ValidateRequest(readExcelSchema),
     InstancesControllerMiddleware.readExcelEntities,

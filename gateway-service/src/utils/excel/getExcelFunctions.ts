@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { AxiosError } from 'axios';
 import { IEntitySingleProperty, IMongoEntityTemplatePopulated } from '../../externalServices/templates/entityTemplateService';
 import { excelConfig } from './excelConfig';
-import { ServiceError } from '../../express/error';
+import { BadRequestError, ServiceError } from '../../express/error';
 import {
     ActionErrors,
     ActionTypes,
@@ -34,31 +34,41 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
     return value;
 };
 
-const readExcelFile = async (file: Express.Multer.File, template: IMongoEntityTemplatePopulated) => {
-    const workbook = new Excel.Workbook();
-    await workbook.xlsx.readFile(file.path);
-    const worksheet = workbook.worksheets[0];
+const readExcelFile = async (files: Express.Multer.File[], template: IMongoEntityTemplatePopulated) => {
+    const allActions: IAction[] = [];
 
-    const expectedName = `${template.displayName}${template._id}`.trim();
-    if (!expectedName.includes(worksheet.name)) throw new ServiceError(StatusCodes.BAD_REQUEST, 'invalid excel');
+    await Promise.all(
+        files.map(async (file) => {
+            const workbook = new Excel.Workbook();
+            await workbook.xlsx.readFile(file.path);
+            const worksheet = workbook.worksheets[0];
 
-    const actions: IAction[] = [];
-    worksheet.eachRow((row, rowIndex) => {
-        if (rowIndex === 1) return;
+            const expectedName = `${template.displayName}${template._id}`.trim();
+            if (!expectedName.includes(worksheet.name)) {
+                throw new ServiceError(StatusCodes.BAD_REQUEST, 'Invalid excel', file);
+            }
 
-        const rowData: Record<string, any> = {};
+            worksheet.eachRow((row, rowIndex) => {
+                if (rowIndex === 1) return;
 
-        Object.entries(template.properties.properties).forEach(([key, value], columnIndex) => {
-            const cellValue = row.getCell(columnIndex + 1).value;
-            const formatCellValue = formatExcel(cellValue, value);
-            rowData[key] = formatCellValue;
-        });
-        const action = { actionType: ActionTypes.CreateEntity, actionMetadata: { templateId: template._id, properties: rowData } };
+                const rowData: Record<string, any> = {};
+                Object.entries(template.properties.properties).forEach(([key, value], columnIndex) => {
+                    const cellValue = row.getCell(columnIndex + 1).value;
+                    const formatCellValue = formatExcel(cellValue, value);
+                    rowData[key] = formatCellValue;
+                });
 
-        actions.push(action);
-    });
+                allActions.push({
+                    actionType: ActionTypes.CreateEntity,
+                    actionMetadata: { templateId: template._id, properties: rowData },
+                });
+            });
 
-    return actions;
+            if (allActions.length > 500) throw new BadRequestError('file limit: more than 500 entities', file);
+        }),
+    );
+
+    return allActions;
 };
 
 const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEntity[]) => {

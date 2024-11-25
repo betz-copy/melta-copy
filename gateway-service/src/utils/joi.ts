@@ -82,6 +82,12 @@ export const documentTemplateSchema = fileSchema.keys({
         .required(),
 });
 
+export const excelsTemplateSchema = fileSchema.keys({
+    originalname: Joi.string()
+        .regex(/\.(xlsx|xls)$/)
+        .required(),
+});
+
 const defaultValidationOptions: Joi.ValidationOptions = {
     abortEarly: false,
     allowUnknown: false,

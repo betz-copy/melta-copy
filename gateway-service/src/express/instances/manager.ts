@@ -196,9 +196,9 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         }
     }
 
-    async readExcelEntities(file: Express.Multer.File, templateId: string) {
+    async readExcelEntities(files: Express.Multer.File[], templateId: string) {
         const template = await this.entityTemplateService.getEntityTemplateById(templateId);
-        const actions = await readExcelFile(file, template);
+        const actions = await readExcelFile(files, template);
         return actions.map((action) => action.actionMetadata);
     }
 

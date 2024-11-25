@@ -19,7 +19,7 @@ import { ICreateOrUpdateWithRuleBreachDialogState } from '../../dialogs/entity/C
 import { IRequiredConstraint, IUniqueConstraint } from '../../../interfaces/entities';
 
 export interface EntitiesWizardValues {
-    file?: File;
+    files?: File[];
     template?: IMongoEntityTemplatePopulated;
 }
 
@@ -131,8 +131,6 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
-        console.log('brokenRulesEntities', stepsData.data.brokenRulesEntities);
-
         if (stepsData.data.brokenRulesEntities)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,

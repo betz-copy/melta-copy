@@ -15,7 +15,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async readExcelEntities(req: Request, res: Response) {
-        res.json(await this.manager.readExcelEntities(req.file as Express.Multer.File, req.body.templateId));
+        res.json(await this.manager.readExcelEntities(req.files as Express.Multer.File[], req.body.templateId));
     }
 
     async exportEntities(req: Request, res: Response) {

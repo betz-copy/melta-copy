@@ -586,6 +586,9 @@ export default {
                 required: 'ליישות חסרה שדה חובה',
                 createdSuccessfully: 'ישויות נוצרו בהצלחה',
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקובץ',
+                limitNumberFiles: 'ניתן לעלות עד 5 קבצים',
+                limitNumberEntities: 'ניתן להעלות עד 500 ישויות בקובץ',
+                invalidFile: 'קובץ לא חוקי',
             },
         },
         rule: {
