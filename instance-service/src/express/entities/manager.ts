@@ -35,7 +35,7 @@ import DefaultManagerNeo4j from '../../utils/neo4j/manager';
 import { escapeNeo4jQuerySpecialChars, searchWithRelationshipsToNeoQuery } from '../../utils/neo4j/searchBodyToNeoQuery';
 import { ActionTypes, IAction, ICreateEntityMetadata, IDuplicateEntityMetadata, IUpdateEntityMetadata } from '../bulkActions/interface';
 import BulkActionManager from '../bulkActions/manager';
-import { NotFoundError, ServiceError, ValidationError } from '../error';
+import { BadRequestError, NotFoundError, ServiceError, ValidationError } from '../error';
 import { IRelationship } from '../relationships/interfaces';
 import { RelationshipManager } from '../relationships/manager';
 import { filterDependentRulesOnEntity, filterDependentRulesViaAggregation } from '../rules/getParametersOfFormula';
@@ -63,7 +63,7 @@ import {
 } from './interface';
 import { addStringFieldsAndNormalizeDateValues } from './validator.template';
 
-const { brokenRulesFakeEntityIdPrefix } = config;
+const { brokenRulesFakeEntityIdPrefix, deleteEntitiesMaxLimit } = config;
 
 const { BAD_REQUEST: badRequestStatus } = StatusCodes;
 
@@ -896,33 +896,38 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
+    private async getFilteredEntitiesToDelete(entityTemplate: IMongoEntityTemplate, filter?: ISearchFilter, textSearch: string = '') {
+        const { entities } = await this.searchEntitiesOfTemplate(
+            { limit: deleteEntitiesMaxLimit, skip: 0, filter, showRelationships: true, textSearch },
+            entityTemplate,
+        );
+
+        return entities.map(({ entity }) => entity);
+    }
+
+    private async getAllEntitiesExceptOfIds(transaction: Transaction, templateId: string, ids: string[]) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e:\`${templateId}\`) 
+             WHERE NOT e._id IN $ids
+             RETURN e`,
+            normalizeReturnedEntity('multipleResponses'),
+            { ids },
+        );
+    }
+
     async getEntitiesToDelete(
         transaction: Transaction,
         selectAll: boolean,
         ids: string[],
-        templateId?: string,
+        entityTemplate: IMongoEntityTemplate,
         filter?: ISearchFilter,
         textSearch: string = '',
-    ) {
-        if (selectAll && templateId)
-            if (filter || textSearch) {
-                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
-
-                const { entities } = await this.searchEntitiesOfTemplate(
-                    { limit: 100000, skip: 0, filter, showRelationships: true, textSearch },
-                    entityTemplate,
-                );
-
-                return entities.map(({ entity }) => entity);
-            } else
-                return runInTransactionAndNormalize(
-                    transaction,
-                    `MATCH (e:\`${templateId}\`) 
-                     WHERE NOT e._id IN $ids
-                     RETURN e`,
-                    normalizeReturnedEntity('multipleResponses'),
-                    { ids },
-                );
+    ): Promise<IEntity[]> {
+        if (selectAll)
+            return filter || textSearch
+                ? this.getFilteredEntitiesToDelete(entityTemplate, filter, textSearch)
+                : this.getAllEntitiesExceptOfIds(transaction, entityTemplate._id, ids);
 
         return this.getEntitiesByIds(ids);
     }
@@ -942,16 +947,29 @@ export class EntityManager extends DefaultManagerNeo4j {
         );
     }
 
-    getFilesOfDeletedEntities(entitiesToDelete: IEntity[], entityTemplate: IMongoEntityTemplate): string[] {
+    getFilesOfEntities(entitiesToDelete: IEntity[], entityTemplate: IMongoEntityTemplate) {
         const filesProperties = this.getFilesProperties(entityTemplate);
 
         return entitiesToDelete.reduce<string[]>((filesIds, { properties }) => {
             Object.entries(filesProperties).forEach(([key, isMultiple]) => {
                 const propertyValue = properties[key];
+
                 if (propertyValue) filesIds.push(...(isMultiple ? propertyValue : [propertyValue]));
             });
             return filesIds;
         }, []);
+    }
+
+    async deleteEntityInstancesInTransaction(transaction: Transaction, ids: string[], templateId: string, deleteAllRelationships?: boolean) {
+        return runInTransactionAndNormalize(
+            transaction,
+            `MATCH (e:\`${templateId}\`) 
+             WHERE e._id IN $ids
+            ${deleteAllRelationships ? 'DETACH' : ''}
+            DELETE e`,
+            normalizeReturnedEntity('multipleResponses'),
+            { ids },
+        );
     }
 
     async deleteEntityInstances(deleteBody: IDeleteBody) {
@@ -959,26 +977,21 @@ export class EntityManager extends DefaultManagerNeo4j {
 
         try {
             return await this.neo4jClient.performComplexTransaction('writeTransaction', async (transaction) => {
-                const entitiesToDelete = await this.getEntitiesToDelete(transaction, selectAll, ids, templateId, filter, textSearch);
-                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(entitiesToDelete[0].templateId);
+                const entityTemplate = await this.entityTemplateManagerService.getEntityTemplateById(templateId);
+                const entitiesToDelete = await this.getEntitiesToDelete(transaction, selectAll, ids, entityTemplate, filter, textSearch);
+
+                if (entitiesToDelete.length >= deleteEntitiesMaxLimit)
+                    throw new BadRequestError(`cant delete more then ${deleteEntitiesMaxLimit} instances`);
 
                 await Promise.all(
                     entitiesToDelete.map((entityToDelete) => this.deleteRelationshipReferenceForEntity(entityToDelete, entityTemplate, transaction)),
                 );
 
-                const entitiesToDeleteIds = entitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
+                const entityIdsToDelete = entitiesToDelete.map((entityToDelete) => entityToDelete.properties._id);
 
-                await runInTransactionAndNormalize(
-                    transaction,
-                    `MATCH (e:\`${entityTemplate._id}\`) 
-                     WHERE e._id IN $ids
-                    ${deleteAllRelationships ? 'DETACH' : ''}
-                    DELETE e`,
-                    normalizeReturnedEntity('multipleResponses'),
-                    { ids: entitiesToDeleteIds },
-                );
+                await this.deleteEntityInstancesInTransaction(transaction, entityIdsToDelete, templateId, deleteAllRelationships);
 
-                return this.getFilesOfDeletedEntities(entitiesToDelete, entityTemplate);
+                return this.getFilesOfEntities(entitiesToDelete, entityTemplate);
             });
         } catch (error) {
             if (error instanceof Neo4jError && error.code === 'Neo.ClientError.Schema.ConstraintValidationFailed')

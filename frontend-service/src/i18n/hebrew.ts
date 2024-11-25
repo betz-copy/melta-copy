@@ -64,6 +64,7 @@ export default {
         columns: 'עמודות',
         multipleSelect: 'בחירה מרובה',
         semanticSearch: 'נמצא באמצעות AI',
+        cantDeleteMoreThen: `אין אפשרות למחוק מעבר ל${environment.agGrid.limitOfDeleteEntities} ישויות`,
     },
     noSearchResults: 'לא נמצאו תוצאות. חפש שנית',
     noSearchLeft: 'אין עוד תוצאות',

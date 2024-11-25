@@ -164,7 +164,7 @@ export interface IDeleteBody {
     ids: string[];
     deleteAllRelationships?: boolean;
     selectAll: boolean;
-    templateId?: string;
+    templateId: string;
     filter?: IFilterOfTemplate;
     textSearch?: string;
 }

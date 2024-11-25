@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { IServerSideSelectionState, IStatusPanelParams } from '@ag-grid-community/core';
-import { CircularProgress, Grid, useTheme } from '@mui/material';
+import { CircularProgress, Grid, Typography, useTheme } from '@mui/material';
 import { Delete } from '@mui/icons-material';
 import i18next from 'i18next';
 import { useMutation } from 'react-query';
@@ -9,10 +9,11 @@ import { toast } from 'react-toastify';
 import { deleteEntityRequest } from '../../services/entitiesService';
 import { AreYouSureDialog } from '../dialogs/AreYouSureDialog';
 import { ErrorToast } from '../ErrorToast';
-import IconButtonWithPopover from '../IconButtonWithPopover';
 import { IDeleteEntityBody } from '../../interfaces/entities';
 import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates';
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
+import { environment } from '../../globals';
+import { TableButton } from '../TableButton';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -20,7 +21,6 @@ interface MultiSelectStatusBarProps extends IStatusPanelParams {
 }
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, entityTemplate, quickFilterText }) => {
-    const theme = useTheme();
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
 
@@ -30,9 +30,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         if (selectAll) {
             const toggledNodesCount = toggledNodes.length;
             setSelectedRowCount(api.getDisplayedRowCount() - toggledNodesCount);
-        } else {
-            setSelectedRowCount(api.getSelectedRows().length);
-        }
+        } else setSelectedRowCount(api.getSelectedRows().length);
     }, [api]);
 
     useEffect(() => {
@@ -88,26 +86,29 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     return (
         <Grid>
-            <IconButtonWithPopover
-                popoverText={i18next.t('actions.delete')}
-                iconButtonProps={{
-                    onClick: () => handleMultipleDelete(),
-                }}
-                style={{
-                    display: 'flex',
-                    gap: '0.25rem',
-                    borderRadius: '5px',
-                    fontSize: '15px',
-                    color: theme.palette.primary.main,
-                    marginTop: 5,
-                }}
-                disabled={selectedRowCount === 0}
-            >
-                <>
-                    {isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
-                    {i18next.t('actions.delete')}
-                </>
-            </IconButtonWithPopover>
+            <Grid container display="flex" flexDirection="row" alignItems="center" gap="5px">
+                <TableButton
+                    iconButtonWithPopoverProps={{
+                        popoverText: i18next.t('actions.delete'),
+                        iconButtonProps: {
+                            onClick: () => handleMultipleDelete(),
+                            style: {
+                                fontSize: '15px',
+                                marginTop: 5,
+                            },
+                        },
+                    }}
+                    icon={isDeleteLoading ? <CircularProgress /> : <Delete fontSize="small" />}
+                    text={i18next.t('actions.delete')}
+                    disableButton={selectedRowCount === 0 || selectedRowCount >= environment.agGrid.limitOfDeleteEntities}
+                />
+
+                {selectedRowCount >= environment.agGrid.limitOfDeleteEntities && (
+                    <Typography color="error" variant="caption" fontSize="14px" marginTop="5px">
+                        {`${i18next.t('entitiesTableOfTemplate.cantDeleteMoreThen')}`}
+                    </Typography>
+                )}
+            </Grid>
 
             <AreYouSureDialog
                 open={openRelationshipDialog}
