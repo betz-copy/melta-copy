@@ -26,7 +26,7 @@ const validateFieldUniqueness = (properties: Record<string, any>, fieldName: str
 };
 
 const validateUniqueRelationships = (existingRelationships: IRelationship[]) => {
-    const sourceEntityIdsMap = new Map<string, boolean>();
+    const sourceEntityIdsMap = new Set<string>();
 
     existingRelationships.forEach((relationship) => {
         if (sourceEntityIdsMap.has(relationship.sourceEntityId)) {
@@ -34,7 +34,7 @@ const validateUniqueRelationships = (existingRelationships: IRelationship[]) => 
                 errorCode: moreThenOneRelationshipInstanceExist,
             });
         }
-        sourceEntityIdsMap.set(relationship.sourceEntityId, true);
+        sourceEntityIdsMap.add(relationship.sourceEntityId);
     });
 };
 

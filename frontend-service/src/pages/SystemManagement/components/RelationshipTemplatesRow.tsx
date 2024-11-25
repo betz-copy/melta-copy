@@ -15,7 +15,7 @@ import TemplatesSelectCheckbox from '../../../common/templatesSelectCheckbox';
 import { RelationshipTemplateWizard } from '../../../common/wizards/relationshipTemplate';
 import { environment } from '../../../globals';
 import { ICategoryMap } from '../../../interfaces/categories';
-import { IEntityTemplate, IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap, IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate, IMongoRelationshipTemplatePopulated, IRelationshipTemplateMap } from '../../../interfaces/relationshipTemplates';
 import {
     convertToRelationshipFieldRequest,
@@ -142,6 +142,7 @@ const RelationshipTemplatesRow: React.FC = () => {
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
     const relationshipTemplates = queryClient.getQueryData<IRelationshipTemplateMap>('getRelationshipTemplates')!;
+
     const categoriesArray = Array.from(categories.values());
     const entityTemplatesArray = Array.from(entityTemplates.values());
 
@@ -151,6 +152,8 @@ const RelationshipTemplatesRow: React.FC = () => {
     const [searchText, setSearchText] = useState('');
 
     const [isSrcRelationChecked, setIsSrcRelationChecked] = useState(true);
+
+    const [relationshipDestEntity, setRelationshipDestEntity] = useState<IMongoEntityTemplatePopulated>();
 
     const isFilterButtonDisabled = useMemo(
         () =>
@@ -223,6 +226,8 @@ const RelationshipTemplatesRow: React.FC = () => {
             }),
         {
             onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
+                console.log({ updatedEntityTemplate, updatedRelationShipTemplate });
+
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
                     relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
                 );
@@ -230,7 +235,7 @@ const RelationshipTemplatesRow: React.FC = () => {
                     entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );
                 queryClient.invalidateQueries(['searchRelationshipTemplates']);
-                queryClient.invalidateQueries({ queryKey: ['searchEntities', updatedEntityTemplate._id, ''], exact: true });
+                // queryClient.invalidateQueries();
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
@@ -265,11 +270,12 @@ const RelationshipTemplatesRow: React.FC = () => {
     };
 
     const theme = useTheme();
-    const [destEntity, setDestEntity] = useState<IMongoEntityTemplatePopulated | undefined>();
+
     useEffect(() => {
-        if (convertToRelationshipFieldDialogState.relationshipTemplate)
-            setDestEntity(entityTemplates.get(convertToRelationshipFieldDialogState.relationshipTemplate?.destinationEntityId!));
-    }, [convertToRelationshipFieldDialogState]);
+        if (convertToRelationshipFieldDialogState.relationshipTemplate) {
+            setRelationshipDestEntity(entityTemplates.get(convertToRelationshipFieldDialogState.relationshipTemplate?.destinationEntityId!));
+        }
+    }, [convertToRelationshipFieldDialogState, entityTemplates]);
 
     return (
         <Grid item container marginBottom="30px">
@@ -476,9 +482,10 @@ const RelationshipTemplatesRow: React.FC = () => {
                     })
                 }
                 isLoading={isLoading}
-                targetEntityFields={[]}
-                destEntity={destEntity}
+                destEntity={relationshipDestEntity}
                 relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
+                x={convertToRelationshipFieldDialogState.relationshipTemplate?.name}
+                y={convertToRelationshipFieldDialogState.relationshipTemplate?.displayName}
             />
         </Grid>
     );

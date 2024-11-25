@@ -62,12 +62,16 @@ export class InstancesService extends DefaultExternalServiceApi {
     }
 
     async updateEntityInstance(id: string, entity: IEntity, ignoredRules: IBrokenRule[], userId: string, convertToRelationshipField = false) {
+        console.log('...entity ', { ...entity });
+
         const { data } = await this.api.put<{ updatedEntity: IEntity; actions?: IAction[] }>(`${baseEntitiesRoute}/${id}`, {
             ...entity,
             ignoredRules,
             userId,
             convertToRelationshipField,
         });
+        console.log({ data });
+
         return data;
     }
 

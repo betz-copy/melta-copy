@@ -1066,13 +1066,13 @@ export class EntityManager extends DefaultManagerNeo4j {
         const fixedProperties: Record<string, any> = JSON.parse(JSON.stringify(entityProperties));
         const createdRelationships: IRelationship[] = [];
         const deletedRelationships: IRelationship[] = [];
-        console.log({ updatedProperties });
-
         await Promise.all(
             updatedProperties.map(async (updatedProperty) => {
                 const property = entityTemplate.properties.properties[updatedProperty];
+                console.log({ updatedProperty }, { property });
 
                 if (property?.format === 'relationshipReference') {
+                    console.log('jj ', entity.properties[updatedProperty]);
                     if (entity.properties[updatedProperty]) {
                         const relatedEntityId = entity.properties[updatedProperty].properties._id;
                         const deletedRelationship = await this.deleteRelationshipReferenceInTransaction(
@@ -1091,7 +1091,6 @@ export class EntityManager extends DefaultManagerNeo4j {
                         const { relatedEntity, fixedField } = await this.fixRelationshipReferenceField(relatedEntityId, transaction);
 
                         fixedProperties[updatedProperty] = fixedField;
-                        console.log({ fixedField });
 
                         if (!convertToRelationshipField) {
                             const { createdRelationship } = await this.createRelationshipReference(
@@ -1159,7 +1158,6 @@ export class EntityManager extends DefaultManagerNeo4j {
         const activityLogsToCreate: Omit<IActivityLog, '_id'>[] = [];
 
         const entity = await this.getEntityByIdInTransaction(id, transaction);
-
         if (entity.properties.disabled) {
             throw new ValidationError(`[NEO4J] cannot update disabled entity.`);
         }
@@ -1271,6 +1269,8 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         convertToRelationshipField = false,
     ) {
+        console.log('dsesbvjdshbjdv ', { entityProperties });
+
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
 
@@ -1286,7 +1286,10 @@ export class EntityManager extends DefaultManagerNeo4j {
             );
 
             const bulkManager = new BulkActionManager(this.workspaceId);
+            console.log('a');
             const results = await bulkManager.runBulkOfActions(actions, ignoredRules, false, userId);
+            console.log('b');
+
             const updatedEntity = await this.getEntityById(results[0].properties._id);
             const fixedActions = this.fixActions(actions, results);
             return { updatedEntity, actions: fixedActions };

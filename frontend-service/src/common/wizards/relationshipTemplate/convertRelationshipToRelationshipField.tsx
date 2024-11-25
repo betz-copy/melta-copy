@@ -1,30 +1,32 @@
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Autocomplete, Grid } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Autocomplete, Grid, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
-import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 import { variableNameValidation } from '../../../utils/validation';
 import { BlueTitle } from '../../BlueTitle';
+import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
 
-interface Props {
+interface IConvertToRelationship {
     open: boolean;
     handleClose: () => void;
-    targetEntityFields: string[];
     isLoading?: boolean;
     onYes: (data: { fieldName: string; displayFieldName: string; relatedTemplateField: string }) => void;
+    destEntity?: IMongoEntityTemplatePopulated;
     relationshipTemplate: IMongoRelationshipTemplate | null;
-    destEntity: any;
 }
 
-const ConvertToRelationship: React.FC<Props> = ({ open, handleClose, onYes, destEntity }) => {
+const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleClose, onYes, destEntity, isLoading, relationshipTemplate }) => {
+    let x;
+    let y;
+
     const fixedRelatedTemplateFieldOptions = Object.entries(destEntity?.properties?.properties || {})
         .filter(([key, _property]) => destEntity?.properties.required.includes(key))
         .map(([key, property]) => ({
             key,
-            title: (property as { title: string; key: string }).title,
+            title: (property as unknown as { title: string; key: string }).title,
         }));
-
     const formik = useFormik({
         initialValues: {
             fieldName: '',
@@ -33,6 +35,11 @@ const ConvertToRelationship: React.FC<Props> = ({ open, handleClose, onYes, dest
         },
         validationSchema: Yup.object({
             fieldName: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
+            // .test('unique-fieldName', i18next.t('validation.duplicateFieldName'), function (value) {
+            //     return validateFieldUniqueness(properties, value, this.parent.displayFieldName); // Pass `properties` from context
+            // }),
+            // const fieldExists = Object.prototype.hasOwnProperty.call(properties, fieldName);
+            // const displayFieldExists = Object.values(properties).some((value) => value.title === displayFieldName);
             displayFieldName: Yup.string().required(i18next.t('validation.required')),
             relatedTemplateField: Yup.string().required(i18next.t('validation.required')).nullable(),
         }),
@@ -47,6 +54,14 @@ const ConvertToRelationship: React.FC<Props> = ({ open, handleClose, onYes, dest
         formik.resetForm();
         handleClose();
     };
+
+    useEffect(() => {
+        if (relationshipTemplate) {
+            formik.setFieldValue('fieldName', relationshipTemplate.name);
+            formik.setFieldValue('displayFieldName', relationshipTemplate.displayName);
+        }
+    }, [relationshipTemplate]);
+
     return (
         <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
             <DialogTitle>
@@ -165,7 +180,9 @@ const ConvertToRelationship: React.FC<Props> = ({ open, handleClose, onYes, dest
             </DialogContent>
             <DialogActions sx={{ paddingTop: 0 }}>
                 <Button onClick={onClose}>{i18next.t('wizard.cancel')}</Button>
-                <Button onClick={() => formik.handleSubmit()}>{i18next.t('wizard.finish')}</Button>
+                <Button onClick={() => formik.handleSubmit()} disabled={isLoading}>
+                    {i18next.t('wizard.finish')} {isLoading && <CircularProgress size={20} />}
+                </Button>
             </DialogActions>
         </Dialog>
     );

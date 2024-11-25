@@ -1052,6 +1052,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             }),
             this.instancesService.getConstraintsOfTemplate(destinationEntityId),
         ]);
+        console.log('1');
 
         await this.validateConvertRelationshipToRelationshipField(
             srcEntityTemplate,
@@ -1061,6 +1062,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             fieldName,
             displayFieldName,
         );
+        console.log('2');
 
         const updatedRelationShipTemplate = await this.relationshipTemplateService.updateRelationshipTemplate(templateId, {
             destinationEntityId,
@@ -1069,8 +1071,9 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             name,
             isProperty: true,
         });
+        console.log('3');
 
-        const { category, _id, createdAt, updatedAt, disabled, ...restOfEntityTemplate } = srcEntityTemplate;
+        const { category, _id, createdAt, updatedAt, disabled, properties, ...restOfEntityTemplate } = srcEntityTemplate;
         const newRelationshipField = buildNewRelationshipField(
             displayFieldName,
             templateId,
@@ -1083,27 +1086,41 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             ...restOfEntityTemplate,
             category: category._id,
             properties: {
-                ...srcEntityTemplate.properties,
+                ...properties,
                 properties: {
-                    ...srcEntityTemplate.properties.properties,
+                    ...properties.properties,
                     [fieldName]: newRelationshipField,
                 },
             },
             propertiesOrder: [...srcEntityTemplate.propertiesOrder, fieldName],
         });
+        console.log('4');
 
         await Promise.all(
             existingRelationships.map(async (relationship) => {
                 const sourceEntity = await this.instancesService.getEntityInstanceById(relationship.sourceEntityId);
+                console.log(sourceEntity.properties);
+
+                // const sourceEntityProperties = Object.fromEntries(
+                //     Object.entries(sourceEntity.properties).map(([key, property]) => [
+                //         key,
+                //         srcEntityTemplate.properties.properties[key]?.format === 'relationshipReference' ? property?.properties._id : property,
+                //     ]),
+                // );
+                // sourceEntityProperties[fieldName] = relationship.destinationEntityId;
+                // console.log({ sourceEntityProperties });
+
                 await this.instancesService.updateEntityInstance(
                     relationship.sourceEntityId,
-                    { ...sourceEntity, properties: { ...sourceEntity.properties, [fieldName]: relationship.destinationEntityId } },
+                    { templateId: sourceEntity.templateId, properties: { [fieldName]: relationship.destinationEntityId } },
                     [],
                     userId,
                     true,
                 );
+                console.log('after');
             }),
         );
+        console.log('5');
 
         return { updatedRelationShipTemplate, updatedEntityTemplate };
     }

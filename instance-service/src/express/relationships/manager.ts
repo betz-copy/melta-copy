@@ -49,8 +49,10 @@ export class RelationshipManager extends DefaultManagerNeo4j {
             `MATCH (s: \`${sourceEntityId}\`)-[r: \`${templateId}\`]-(d: \`${destEntityId}\`) RETURN r, s, d`,
             normalizeReturnedRelationship('multipleResponses'),
         );
+        console.dir({ relationships, isRelationshops: !relationships }, { depth: null });
 
-        if (!relationships) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+        if (!relationships.length) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+        console.log('hii');
 
         return relationships;
     }
