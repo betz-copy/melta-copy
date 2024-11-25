@@ -1079,7 +1079,7 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                             title={i18next.t('wizard.entityTemplate.cantDeleteUniqueOrRequiredFields')}
                                         >
                                             <Grid>
-                                                {supportArchive && (
+                                                {supportArchive && isEditMode && (
                                                     <IconButton onClick={() => setFieldValue('archive', !value.archive)} disabled={value.required}>
                                                         {value.archive ? <Unarchive color="primary" /> : <Archive />}
                                                     </IconButton>

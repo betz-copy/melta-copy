@@ -725,6 +725,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
             this.isPropertyInUsedAsRelatedFieldInRelationshipReference(currTemplate._id, removeRequiredProperties);
 
         const removedProperties: string[] = [];
+        const archiveProperties: string[] = [];
 
         if (count > 0) {
             if (updatedTemplateData.name !== currTemplate.name) throw new BadRequestError('can not change template name');
@@ -736,6 +737,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
                 else {
                     if (value.serialCurrent !== undefined) updatedTemplateData.properties.properties[key].serialCurrent = value.serialCurrent;
                     if (value.type !== newValue.type) throw new BadRequestError('can not change property type');
+                    if (!value.archive && newValue.archive && !currTemplate.actions) archiveProperties.push(key);
                     if (
                         !(
                             (value.format === 'text-area' && !newValue.format && newValue.type === 'string') ||
@@ -754,6 +756,7 @@ export class TemplatesManager extends DefaultManagerProxy<EntityTemplateService>
         }
 
         await this.checkIfPropertyInUsedBeforeDelete(id, removedProperties);
+        await this.checkIfPropertyInUsedBeforeDelete(id, archiveProperties);
 
         const { iconFileId, documentTemplatesIds } = await this.handleFiles(updatedTemplateData, currTemplate, { file, files });
 

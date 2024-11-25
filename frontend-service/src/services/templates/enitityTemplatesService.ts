@@ -78,7 +78,7 @@ const entityTemplateObjectToEntityTemplateForm = (entityTemplate: IMongoEntityTe
         }
     });
 
-    if (!propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
+    if (archiveProperties.length !== 0 && !propertiesTypeOrder.includes('archiveProperties')) propertiesTypeOrder.push('archiveProperties');
 
     const documentTemplates = documentTemplatesIds?.map((documentTemplateId) => ({ name: documentTemplateId } as File));
 
@@ -381,6 +381,10 @@ const createEntityTemplateRequest = async (newEntityTemplate: EntityTemplateWiza
         formData.append('enumPropertiesColors', JSON.stringify(entityTemplate.enumPropertiesColors));
     }
 
+    if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
+        entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
+    }
+
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
     formData.append('disabled', String(entityTemplate.disabled));
@@ -430,8 +434,6 @@ const updateEntityTemplateRequest = async (entityTemplateId: string, updatedEnti
     if (entityTemplate.propertiesTypeOrder.includes('archiveProperties')) {
         entityTemplate.propertiesTypeOrder = entityTemplate.propertiesTypeOrder.filter((str) => str !== 'archiveProperties');
     }
-
-    console.log({ updatedEntityTemplate });
 
     formData.append('displayName', entityTemplate.displayName);
     formData.append('name', entityTemplate.name);
