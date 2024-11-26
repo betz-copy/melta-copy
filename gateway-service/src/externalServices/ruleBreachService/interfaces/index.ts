@@ -114,13 +114,15 @@ export type IFailedEntity = {
     errors: { type: ActionErrors; metadata: IValidationError | IUniqueConstraint | IRequiredConstraint }[];
 };
 
+export type IActionPopulated = {
+    actionType: ActionTypes;
+    actionMetadata: IActionMetadataPopulated;
+};
+
 export type IBrokenRuleEntity = {
     rawBrokenRules: IBrokenRule[];
     brokenRules: IBrokenRulePopulated[];
-    actions: {
-        actionType: ActionTypes;
-        actionMetadata: IActionMetadataPopulated;
-    }[];
+    actions: IActionPopulated[];
     rawActions: IAction[];
     entities: { properties: Record<string, any> }[];
 };

@@ -56,16 +56,6 @@ export interface ISteps {
     data: ITablesResults;
 }
 
-interface InsertEntities {
-    insert: boolean;
-    entities?: Record<string, any>[];
-}
-
-export interface ExportRequestParams {
-    fileName: string;
-    insertEntities?: InsertEntities;
-}
-
 const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     open,
     handleClose,
@@ -80,6 +70,8 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
         allEntities: [],
         data: { succeededEntities: [], failedEntities: [] },
     });
+
+    const isBrokenRules = stepsData.data.brokenRulesEntities && stepsData.data.brokenRulesEntities.brokenRules.length > 0;
 
     const [createOrUpdateWithRuleBreachDialogState, setCreateOrUpdateWithRuleBreachDialogState] = useState<ICreateOrUpdateWithRuleBreachDialogState>({
         isOpen: false,
@@ -104,15 +96,31 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 setStepsData((prev) => ({ ...prev, status: StepStatus.stepsExpand }));
             },
             async onSuccess(data) {
-                if (data) {
-                    setStepsData((prev) => ({ ...prev, status: StepStatus.stepsExpand, data }));
-                }
+                setStepsData((prev) => ({ ...prev, status: StepStatus.stepsExpand, data }));
+                return data;
             },
         },
     );
 
-    const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation<any, unknown, ExportRequestParams>(
-        async ({ fileName, insertEntities }) => {
+    const { isLoading: isLoadingRules, mutateAsync: loadRules } = useMutation(
+        async ({ entities, ignoredRules }: { entities: ICreateEntityMetadata[]; ignoredRules?: IBrokenRule[] }) => {
+            return loadEntitiesRequest(entities, template!._id, ignoredRules);
+        },
+        {
+            onError() {
+                toast.error(i18next.t('wizard.entity.loadEntities.failedLoadEntities'));
+                setStepsData((prev) => ({ ...prev, status: StepStatus.stepsExpand }));
+            },
+            async onSuccess(data) {
+                setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
+                onClose();
+                return data;
+            },
+        },
+    );
+
+    const { isLoading: isExportingTableToExcelFile, mutateAsync: exportTemplateToExcel } = useMutation(
+        async ({ fileName, insertEntities }: { fileName: string; insertEntities?: { insert: boolean; entities?: Record<string, any>[] } }) => {
             return exportEntitiesRequest({
                 fileName,
                 templates: {
@@ -131,13 +139,13 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
     );
 
     const submitFunction = async () => {
-        if (stepsData.data.brokenRulesEntities)
+        if (isBrokenRules)
             setCreateOrUpdateWithRuleBreachDialogState({
                 isOpen: true,
-                rawBrokenRules: stepsData.data.brokenRulesEntities.rawBrokenRules,
-                brokenRules: stepsData.data.brokenRulesEntities.brokenRules,
-                actions: stepsData.data.brokenRulesEntities.actions,
-                rawActions: stepsData.data.brokenRulesEntities.rawActions,
+                rawBrokenRules: stepsData.data.brokenRulesEntities?.rawBrokenRules,
+                brokenRules: stepsData.data.brokenRulesEntities?.brokenRules,
+                actions: stepsData.data.brokenRulesEntities?.actions,
+                rawActions: stepsData.data.brokenRulesEntities?.rawActions,
             });
         else {
             onClose();
@@ -249,7 +257,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
             stepperActions: {
                 disable: 'back',
                 next: {
-                    text: stepsData.data.brokenRulesEntities?.brokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
+                    text: isBrokenRules ? i18next.t('wizard.entity.loadEntities.handleRules') : undefined,
                 },
             },
             invisibleBeforeStep: true,
@@ -271,9 +279,9 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                 direction="column"
                 showPrevSteps
             />
-            {createOrUpdateWithRuleBreachDialogState.isOpen && (
+            {createOrUpdateWithRuleBreachDialogState.isOpen && isBrokenRules && (
                 <ActionOnEntityWithRuleBreachDialog
-                    isLoadingActionOnEntity={isLoadingExcelEntities}
+                    isLoadingActionOnEntity={isLoadingRules}
                     handleClose={() => {
                         setCreateOrUpdateWithRuleBreachDialogState({ isOpen: false });
                         setStepsData({
@@ -283,10 +291,16 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                         });
                     }}
                     doActionEntity={() => {
-                        const brokenRulesEntities = stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => {
-                            return { templateId: template!._id, properties };
+                        const brokenRulesEntities =
+                            stepsData.data.brokenRulesEntities?.entities.map(({ properties }) => ({
+                                templateId: template!._id,
+                                properties,
+                            })) || [];
+
+                        return loadRules({
+                            entities: brokenRulesEntities,
+                            ignoredRules: stepsData.data.brokenRulesEntities?.rawBrokenRules,
                         });
-                        return loadEntities(brokenRulesEntities!);
                     }}
                     actionType={ActionTypes.CreateEntity}
                     brokenRules={createOrUpdateWithRuleBreachDialogState.brokenRules!}
@@ -299,7 +313,7 @@ const LoadEntitiesWizard: React.FC<WizardBaseType<EntitiesWizardValues>> = ({
                     }
                     entityFormData={{
                         template: template!,
-                        properties: { ...stepsData.data.brokenRulesEntities!.entities[0].properties, disabled: false },
+                        properties: { ...stepsData.data.brokenRulesEntities?.entities[0].properties, disabled: false },
                         attachmentsProperties: {},
                     }}
                     onCreateRuleBreachRequest={() => {

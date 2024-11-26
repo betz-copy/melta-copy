@@ -202,7 +202,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         return actions.map((action) => action.actionMetadata);
     }
 
-    async loadEntities(entities: IEntity[], userId: string) {
+    async loadEntities(entities: IEntity[], ignoredRules: IBrokenRule[], userId: string) {
         const succeededEntities: IEntity[] = [];
         const failedEntities: IFailedEntity[] = [];
         const allBrokenRulesEntities: IBrokenRuleEntity[] = [];
@@ -210,7 +210,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
         await Promise.all(
             entities.map(async (entity) => {
                 try {
-                    const result = await this.createEntityInstance(entity, [], [], userId);
+                    const result = await this.createEntityInstance(entity, [], ignoredRules, userId);
                     succeededEntities.push(result);
                     return result;
                 } catch (error) {
@@ -242,14 +242,18 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         allBrokenRulesEntities.push({
                             brokenRules: (error as any).metadata.brokenRules,
                             rawBrokenRules: (error as any).metadata.rawBrokenRules,
-                            actions: (error as any).metadata.actions ?? {
-                                actionType: ActionTypes.CreateEntity,
-                                actionMetadata: entity,
-                            },
-                            rawActions: (error as any).metadata.rawActions ?? {
-                                actionType: ActionTypes.CreateEntity,
-                                actionMetadata: entity,
-                            },
+                            actions: (error as any).metadata.actions ?? [
+                                {
+                                    actionType: ActionTypes.CreateEntity,
+                                    actionMetadata: entity,
+                                },
+                            ],
+                            rawActions: (error as any).metadata.rawActions ?? [
+                                {
+                                    actionType: ActionTypes.CreateEntity,
+                                    actionMetadata: entity,
+                                },
+                            ],
                             entities: [{ properties: entity.properties }],
                         });
                         return null;

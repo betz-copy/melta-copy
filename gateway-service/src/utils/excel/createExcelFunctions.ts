@@ -88,7 +88,8 @@ const booleanValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
 
     for (let row = 2; row <= 100; row++) {
         const allowedValues = formulae.boolean;
-        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
+        cell.dataValidation = {
             type: 'list',
             formulae: [allowedValues],
             allowBlank: true,
@@ -103,7 +104,8 @@ const numberValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
+        cell.dataValidation = {
             type: 'decimal',
             operator: 'between',
             formulae: [Number.MIN_VALUE, Number.MAX_VALUE],
@@ -120,7 +122,8 @@ const listValidation = (worksheet: Excel.Worksheet, propertyTemplate: IEntitySin
     const allowedValues = propertyTemplate.enum!.join(', ');
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
+        cell.dataValidation = {
             type: 'list',
             formulae: [allowedValues],
             allowBlank: true,
@@ -135,7 +138,8 @@ const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
+        cell.dataValidation = {
             type: 'date',
             operator: 'greaterThan',
             formulae: [new Date(1800, 1, 1)],
@@ -144,6 +148,7 @@ const dateValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
             errorTitle: formulae.errorTitle,
             error: formulae.dateError,
         };
+        cell.numFmt = 'mm/dd/yyyy';
     }
 };
 
@@ -151,7 +156,8 @@ const mailValidation = (worksheet: Excel.Worksheet, columnIndex: number) => {
     const { formulae } = excelConfig;
 
     for (let row = 2; row <= 100; row++) {
-        worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`).dataValidation = {
+        const cell = worksheet.getCell(`${indexToExcelColumn(columnIndex + 1)}${row}`);
+        cell.dataValidation = {
             type: 'custom',
             formulae: [`ISNUMBER(SEARCH("@", ${indexToExcelColumn(columnIndex + 1)}${row}))`],
             allowBlank: true,
@@ -205,12 +211,11 @@ const createWorksheet = async (
         const shouldAddColumn = displayColumns?.includes(propertyKey) && insertEntities?.insert ? !isRelationshipRef && !isFile : true;
 
         if (shouldAddColumn) {
-            const type = TypesToHebrew(propertyTemplate);
             columnDataValidation(worksheet, propertyTemplate, index);
 
             sheetColumns.push({
                 key: propertyKey,
-                header: `${propertyTemplate.title}${insertEntities?.insert ? `(${type})` : ''}`,
+                header: propertyTemplate.title,
                 width: 20,
             });
         }
@@ -219,8 +224,11 @@ const createWorksheet = async (
     const externalColumns = excelConfig.excelDefaultColumns.filter((externalColumn) => displayColumns?.includes(externalColumn.key));
     worksheet.columns = insertEntities?.insert ? sheetColumns : sheetColumns.concat(externalColumns);
     worksheet.getRow(1).eachCell((cell) => {
+        const type = TypesToHebrew(Object.values(properties).find((propertyTemplate) => propertyTemplate.title === cell.value)!);
+
         cell.font = excelStyle.columnHeader.font;
         cell.alignment = excelStyle.columnHeader.alignment;
+        cell.note = insertEntities?.insert ? type : undefined;
     });
     return worksheet;
 };

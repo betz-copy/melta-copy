@@ -588,7 +588,7 @@ export default {
                 tableCantLoadEntities: 'טבלה זו לא תומכת בטעינה מקובץ',
                 limitNumberFiles: 'ניתן לעלות עד 5 קבצים',
                 limitNumberEntities: 'ניתן להעלות עד 500 ישויות בקובץ',
-                invalidFile: 'קובץ לא חוקי',
+                invalidFile: 'קובץ לא מתאים לתבנית ישות',
             },
         },
         rule: {

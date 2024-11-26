@@ -28,7 +28,7 @@ export class InstancesController extends DefaultController<InstancesManager> {
     }
 
     async loadEntities(req: Request, res: Response) {
-        res.json(await this.manager.loadEntities(req.body.entities, req.user!.id));
+        res.json(await this.manager.loadEntities(req.body.entities, req.body.ignoredRules, req.user!.id));
     }
 
     async updateEntityInstance(req: Request, res: Response) {

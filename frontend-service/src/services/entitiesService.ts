@@ -14,7 +14,7 @@ import {
     ICountSearchResult,
 } from '../interfaces/entities';
 import { EntityWizardValues } from '../common/dialogs/entity';
-import { IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
+import { IBrokenRule, IRuleBreach } from '../interfaces/ruleBreaches/ruleBreach';
 import { filterModelToFilterOfGraph } from '../pages/Graph/GraphFilterToBackend';
 import { ICreateEntityMetadata } from '../interfaces/ruleBreaches/actionMetadata';
 
@@ -39,8 +39,8 @@ export const readExcelEntitiesRequest = async (files: Record<string, File>, temp
     return data;
 };
 
-export const loadEntitiesRequest = async (entitiesToCreate: ICreateEntityMetadata[], templateId: string) => {
-    const { data } = await axios.post(`${entities}/loadEntities`, { templateId, entities: entitiesToCreate });
+export const loadEntitiesRequest = async (entitiesToCreate: ICreateEntityMetadata[], templateId: string, ignoredRules?: IBrokenRule[]) => {
+    const { data } = await axios.post(`${entities}/loadEntities`, { templateId, entities: entitiesToCreate, ignoredRules });
 
     return data;
 };

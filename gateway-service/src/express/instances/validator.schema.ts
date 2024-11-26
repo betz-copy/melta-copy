@@ -174,6 +174,7 @@ export const loadEntitiesSchema = Joi.object({
     body: {
         entities: Joi.array().items({ templateId: Joi.string(), properties: Joi.object() }).default([]),
         templateId: Joi.string().required(),
+        ignoredRules: Joi.array().items(brokenRuleSchema).default([]),
     },
     query: {},
 });

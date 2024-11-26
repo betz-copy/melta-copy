@@ -8,12 +8,18 @@ import {
     ActionErrors,
     ActionTypes,
     IAction,
+    IActionPopulated,
+    IBrokenRule,
     IBrokenRuleEntity,
     ICreateEntityMetadata,
     IFailedEntity,
 } from '../../externalServices/ruleBreachService/interfaces';
 import { IValidationError } from '../../externalServices/instanceService/interfaces/entities';
-import { ICreateEntityMetadataPopulated, IUpdateEntityMetadataPopulated } from '../../externalServices/ruleBreachService/interfaces/populated';
+import {
+    IBrokenRulePopulated,
+    ICreateEntityMetadataPopulated,
+    IUpdateEntityMetadataPopulated,
+} from '../../externalServices/ruleBreachService/interfaces/populated';
 
 const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntitySingleProperty) => {
     const { type, format } = propertyTemplate;
@@ -24,8 +30,8 @@ const formatExcel = (value: Excel.CellValue | string, propertyTemplate: IEntityS
         if (value === excelConfig.FALSE_TO_HEBREW) return false;
     }
     if (type === 'string') {
-        if (format === 'date') return new Date(value as string).toLocaleDateString('en-uk');
-        if (format === 'date-time') return new Date(value as string).toLocaleString('en-uk');
+        if (format === 'date') return new Date(value as string).toLocaleDateString('en-CA');
+        if (format === 'date-time') return new Date(value as string).toISOString();
     }
     if (type === 'array') {
         if (propertyTemplate.items && propertyTemplate.items.type === 'string' && typeof value === 'object' && 'richText' in value)
@@ -87,92 +93,105 @@ const getValidationErrorEntities = (error: AxiosError, failedEntities: IFailedEn
     failedEntities.push({ properties, errors });
 };
 
+const updateRawBrokenRules = (rawBrokenRules: IBrokenRule[], entityId: string) => {
+    return rawBrokenRules.map((rule) => ({
+        ...rule,
+        failures: rule.failures.map((failure) => {
+            const updatedCauses = failure.causes.map((cause) => ({
+                ...cause,
+                instance: {
+                    entityId,
+                },
+            }));
+
+            return {
+                ...failure,
+                causes: updatedCauses,
+                entityId,
+            };
+        }),
+    }));
+};
+
+const updateBrokenRules = (brokenRules: IBrokenRulePopulated[], entity: string) => {
+    return brokenRules.map((rule) => ({
+        ...rule,
+        failures: rule.failures.map((failure) => {
+            const updatedCauses = failure.causes.map((cause) => ({
+                ...cause,
+                instance: {
+                    entity,
+                },
+            }));
+
+            return {
+                ...failure,
+                causes: updatedCauses,
+                entity,
+            };
+        }),
+    }));
+};
+
+const updateRawActions = (rawActions: IAction[], entityId: string) => {
+    return rawActions.map((rawAction) => {
+        if (rawAction.actionType === ActionTypes.CreateEntity)
+            return {
+                ...rawAction,
+                actionMetadata: {
+                    ...rawAction.actionMetadata,
+                    properties: { ...(rawAction.actionMetadata as ICreateEntityMetadata).properties, _id: entityId },
+                },
+            };
+        if (rawAction.actionType === ActionTypes.UpdateEntity) return { ...rawAction, actionMetadata: { ...rawAction.actionMetadata, entityId } };
+        return rawAction;
+    });
+};
+
+const updateAction = (actions: IActionPopulated[], _id: string) => {
+    return actions.map((action) => {
+        if (action.actionType === ActionTypes.CreateEntity) {
+            return {
+                ...action,
+                ActionMetadata: {
+                    ...action.actionMetadata,
+                    properties: {
+                        ...(action.actionMetadata as ICreateEntityMetadataPopulated).properties,
+                        _id,
+                    },
+                },
+            };
+        }
+        if (action.actionType === ActionTypes.UpdateEntity) {
+            return {
+                ...action,
+                ActionMetadata: {
+                    ...action.actionMetadata,
+                    entity: {
+                        properties: {
+                            ...(action.actionMetadata as IUpdateEntityMetadataPopulated).entity!.properties,
+                            _id,
+                        },
+                    },
+                },
+            };
+        }
+        return action;
+    });
+};
+
 const getPopulatedBrokenRulesErrorEntities = async (allBrokenRulesEntities: IBrokenRuleEntity[]) => {
     return allBrokenRulesEntities.reduce<IBrokenRuleEntity>(
         (accumulator, current, index) => {
-            const updatedRawBrokenRules = current.rawBrokenRules.map((rule) => ({
-                ...rule,
-                failures: rule.failures.map((failure) => {
-                    const entityId = `$${index}._id`;
+            const entityId = `$${index}._id`;
 
-                    const updatedCauses = failure.causes.map((cause) => ({
-                        ...cause,
-                        instance: {
-                            entityId,
-                        },
-                    }));
+            const updatedRawBrokenRules = updateRawBrokenRules(current.rawBrokenRules, entityId);
 
-                    return {
-                        ...failure,
-                        causes: updatedCauses,
-                        entityId,
-                    };
-                }),
-            }));
+            const updatedBrokenRules = updateBrokenRules(current.brokenRules, entityId);
 
-            const updatedBrokenRules = current.brokenRules.map((rule) => ({
-                ...rule,
-                failures: rule.failures.map((failure) => {
-                    const entity = `$${index}._id`;
+            const updatedRawActions = updateRawActions(current.rawActions, entityId);
 
-                    const updatedCauses = failure.causes.map((cause) => ({
-                        ...cause,
-                        instance: {
-                            entity,
-                        },
-                    }));
-
-                    return {
-                        ...failure,
-                        causes: updatedCauses,
-                        entity,
-                    };
-                }),
-            }));
-
-            const updatedRawActions = current.rawActions.map((rawAction) => {
-                if (rawAction.actionType === ActionTypes.CreateEntity)
-                    return {
-                        ...rawAction,
-                        actionMetadata: {
-                            ...rawAction.actionMetadata,
-                            properties: { ...(rawAction.actionMetadata as ICreateEntityMetadata).properties, _id: `$${index}._id` },
-                        },
-                    };
-                if (rawAction.actionType === ActionTypes.UpdateEntity)
-                    return { ...rawAction, actionMetadata: { ...rawAction.actionMetadata, entityId: `$${index}._id` } };
-                return rawAction;
-            });
-
-            const updatedActions = current.actions.map((action) => {
-                if (action.actionType === ActionTypes.CreateEntity) {
-                    return {
-                        ...action,
-                        ActionMetadata: {
-                            ...action.actionMetadata,
-                            properties: {
-                                ...(action.actionMetadata as ICreateEntityMetadataPopulated).properties,
-                                _id: `$${index}._id`,
-                            },
-                        },
-                    };
-                }
-                if (action.actionType === ActionTypes.UpdateEntity) {
-                    return {
-                        ...action,
-                        ActionMetadata: {
-                            ...action.actionMetadata,
-                            entity: {
-                                properties: {
-                                    ...(action.actionMetadata as IUpdateEntityMetadataPopulated).entity!.properties,
-                                    _id: `$${index}._id`,
-                                },
-                            },
-                        },
-                    };
-                }
-                return action;
-            });
+            const updatedActions = updateAction(current.actions, entityId);
 
             return {
                 rawBrokenRules: [...accumulator.rawBrokenRules, ...updatedRawBrokenRules],
