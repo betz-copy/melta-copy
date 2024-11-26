@@ -1080,9 +1080,14 @@ export const FieldEditCard: React.FC<FieldEditCardProps> = ({
                                         >
                                             <Grid>
                                                 {supportArchive && isEditMode && (
-                                                    <IconButton onClick={() => setFieldValue('archive', !value.archive)} disabled={value.required}>
-                                                        {value.archive ? <Unarchive color="primary" /> : <Archive />}
-                                                    </IconButton>
+                                                    <MeltaTooltip title={i18next.t('wizard.entityTemplate.archive')} arrow placement="right">
+                                                        <IconButton
+                                                            onClick={() => setFieldValue('archive', !value.archive)}
+                                                            disabled={value.required || value.uniqueCheckbox || value.preview}
+                                                        >
+                                                            {value.archive ? <Unarchive color="primary" /> : <Archive />}
+                                                        </IconButton>
+                                                    </MeltaTooltip>
                                                 )}
                                                 <IconButton
                                                     onClick={() => remove(index, isNewProperty)}

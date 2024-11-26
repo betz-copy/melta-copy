@@ -501,6 +501,7 @@ export default {
             addUniqueGrouptoList: 'צור',
             deleteUniqueGrouptoList: 'מחק',
             archiveProperties: 'שדות ארכיון',
+            archive: 'ארכיון',
         },
         relationshipTemplate: {
             title: 'יצירת תבנית קשר',
