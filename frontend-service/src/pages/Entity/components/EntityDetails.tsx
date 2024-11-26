@@ -5,6 +5,8 @@ import {
     DoDisturbAlt,
     Edit as EditIcon,
     MoreVertOutlined,
+    Unarchive,
+    Archive,
 } from '@mui/icons-material';
 import { Card, CardContent, FormControlLabel, Grid, IconButton, Menu, Switch } from '@mui/material';
 import { AxiosError } from 'axios';
@@ -156,10 +158,6 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                     <Grid item container flexDirection="column" flexWrap="nowrap" padding="20px">
                         <Grid item>
                             <Grid container flexDirection="row" flexWrap="nowrap" justifyContent="flex-end">
-                                <FormControlLabel
-                                    control={<Switch checked={displayArchiveProperties} onChange={handleDisplayArchiveChange} />}
-                                    label={i18next.t('entityPage.displayArchiveSwitch')}
-                                />
                                 <Grid
                                     onClick={() => {
                                         if (canWriteInstance && !isEntityDisabled) setIsEditMode(true);
@@ -261,6 +259,13 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         disabled={!canWriteInstance}
                                         icon={DoDisturbAlt}
                                         text={isEntityDisabled ? i18next.t('actions.activate') : i18next.t('actions.disable')}
+                                    />
+                                    <TooltipMenuButton
+                                        tooltipTitle=""
+                                        onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
+                                        disabled={false}
+                                        icon={displayArchiveProperties ? Archive : Unarchive}
+                                        text={i18next.t('entityPage.displayArchiveSwitch')}
                                     />
                                 </Menu>
                             </Grid>
