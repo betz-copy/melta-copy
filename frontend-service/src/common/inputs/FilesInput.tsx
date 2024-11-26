@@ -74,25 +74,34 @@ const FilesInput: React.FC<FilesInputProps> = ({
     };
 
     const inputStyle = {
-        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '1px solid #c4c4c4',
         borderRadius: '10px',
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: comment ? '225px' : '200px', // Set a fixed height
+        height: comment ? '245px' : '220px', // Set a fixed height
         display: 'flex',
-        padding: '10px',
         // alignItems: 'center',
         cursor: 'pointer',
         overflowY: 'auto',
+        padding: '10px',
         boxShadow: '-2px 2px 6px 0px #1E27754D',
+    };
+
+    const innerInputStyle = {
+        border: isDragActive ? `2px dashed ${theme.palette.primary.main}` : '2px dashed #CCCFE5',
+        BorderRadius: '10px',
+        padding: '10px',
+        height: '100%',
+        display: 'flex',
+        justifyContext: 'center',
+        alignItems: 'center',
     };
 
     const fileTextStyle = {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        gap: '10px', // Adjust the gap between images
+        gap: '7px', // Adjust the gap between images
         maxWidth: '200px', // Adjust the maximum width of the container
         margin: 'auto', // Center the container horizontally
     };
@@ -197,63 +206,71 @@ const FilesInput: React.FC<FilesInputProps> = ({
                         ))}
                     </Grid>
                 ) : (
-                    <Grid item sx={fileTextStyle}>
-                        <Box display="flex" flexDirection="column" alignItems="center" position="relative">
-                            <img src="/icons/upload-files.svg" alt="Upload Files" style={{ width: '120%' }} />
-                            <Typography
-                                fontSize="12px"
-                                style={{
-                                    position: 'absolute',
-                                    top: '85%',
-                                    left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    textAlign: 'center',
-                                    zIndex: 1,
-                                    width: '100%',
-                                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
-                                }}
-                            >
-                                {i18next.t('input.imagePicker.dragFiles')}
+                    <Grid item container sx={innerInputStyle}>
+                        {isDragActive ? (
+                            <Typography color="#9398C2" fontSize="14px" fontWeight={400} marginX="auto">
+                                {i18next.t('input.imagePicker.dropFile')}
                             </Typography>
-                        </Box>
-                        <Box display="flex" flexDirection="row" alignItems="center" gap="5px">
-                            <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
-                            <Typography fontSize="10px" color="#9398C2">
-                                {i18next.t('input.imagePicker.or')}
-                            </Typography>
-                            <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
-                        </Box>
+                        ) : (
+                            <Grid item sx={fileTextStyle}>
+                                <Box display="flex" flexDirection="column" alignItems="center" position="relative">
+                                    <img src="/icons/upload-files.svg" alt="Upload Files" style={{ width: '130%' }} />
+                                    <Typography
+                                        fontSize="12px"
+                                        style={{
+                                            position: 'absolute',
+                                            top: '85%',
+                                            left: '50%',
+                                            transform: 'translate(-50%, -50%)',
+                                            textAlign: 'center',
+                                            zIndex: 1,
+                                            width: '100%',
+                                            color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                                        }}
+                                    >
+                                        {i18next.t('input.imagePicker.dragFiles')}
+                                    </Typography>
+                                </Box>
+                                <Box display="flex" flexDirection="row" alignItems="center" gap="5px">
+                                    <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
+                                    <Typography fontSize="10px" color="#9398C2">
+                                        {i18next.t('input.imagePicker.or')}
+                                    </Typography>
+                                    <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
+                                </Box>
 
-                        <Button
-                            variant="contained"
-                            style={{
-                                gap: '5px',
-                                borderRadius: '7px',
-                                background: theme.palette.mode === 'dark' ? '#EBEFFA' : undefined,
-                                height: '32px',
-                                width: '131px',
-                            }}
-                        >
-                            <Typography fontSize="12px" color={theme.palette.mode === 'dark' ? '#1E2775' : undefined}>
-                                {i18next.t('input.imagePicker.chooseFile')}
-                            </Typography>
-                            <Upload sx={{ width: '24px', height: '24px', color: theme.palette.mode === 'dark' ? '#1E2775' : undefined }} />
-                        </Button>
+                                <Button
+                                    variant="contained"
+                                    style={{
+                                        gap: '5px',
+                                        borderRadius: '7px',
+                                        background: theme.palette.mode === 'dark' ? '#EBEFFA' : undefined,
+                                        height: '32px',
+                                        width: '131px',
+                                    }}
+                                >
+                                    <Typography fontSize="12px" color={theme.palette.mode === 'dark' ? '#1E2775' : undefined}>
+                                        {i18next.t('input.imagePicker.chooseFile')}
+                                    </Typography>
+                                    <Upload sx={{ width: '24px', height: '24px', color: theme.palette.mode === 'dark' ? '#1E2775' : undefined }} />
+                                </Button>
 
-                        {comment && (
-                            <Typography fontSize="10px" color="#9398C2">
-                                {comment}
-                            </Typography>
+                                {comment && (
+                                    <Typography fontSize="10px" color="#9398C2">
+                                        {comment}
+                                    </Typography>
+                                )}
+                            </Grid>
                         )}
                     </Grid>
                 )}
-            </Grid>
 
-            {errorText && (
-                <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
-                    {errorText}
-                </p>
-            )}
+                {errorText && (
+                    <p id="error" style={{ color: '#d32f2f', margin: 0, padding: 0 }}>
+                        {errorText}
+                    </p>
+                )}
+            </Grid>
         </Grid>
     );
 };

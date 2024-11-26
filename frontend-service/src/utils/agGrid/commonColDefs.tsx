@@ -1,7 +1,7 @@
 import { ColDef, ICellRendererParams, IDateFilterParams, ISetFilterParams, ValueFormatterParams, ValueGetterFunc } from '@ag-grid-community/core';
 import i18next from 'i18next';
 import React from 'react';
-import { Box } from '@mui/material';
+import { Box, Tooltip, tooltipClasses } from '@mui/material';
 import { PriorityHigh } from '@mui/icons-material';
 import OpenPreview from '../../common/FilePreview/OpenPreview';
 import RelationshipReferenceView from '../../common/RelationshipReferenceView';
@@ -11,7 +11,6 @@ import { getFileName } from '../getFileName';
 import { agGridLocaleText } from './agGridLocaleText';
 import OverflowWrapper from './OverflowWrapper';
 import { Value } from './Value';
-import { MeltaTooltip } from '../../common/MeltaTooltip';
 import { ActionErrors } from '../../interfaces/ruleBreaches/actionMetadata';
 
 const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string, showErrors = false) => {
@@ -29,16 +28,36 @@ const isError = <Data extends any = IEntity>(props: ICellRendererParams<Data, an
 const errorColDef = <Data extends any = IEntity>(props: ICellRendererParams<Data, any | undefined>, field: string) => {
     const error = isError(props, field, true);
 
+    const message = error.metadata.message.includes('must be')
+        ? `${i18next.t('wizard.entity.loadEntities.notValid')} ${i18next.t(`propertyTypes.${error.metadata.params.type}`)}`
+        : error.metadata.message;
+
     return (
         <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
             <Value hideValue={false} value={props.value ?? i18next.t('validation.required')} color="#A40000" />
-            <MeltaTooltip
-                title={
-                    error.metadata.message ?? i18next.t(`wizard.entity.${props.value ? 'someEntityAlreadyHasTheSameField' : 'loadEntities.required'}`)
-                }
+            <Tooltip
+                title={message ?? i18next.t(`wizard.entity.${props.value ? 'someEntityAlreadyHasTheSameField' : 'loadEntities.required'}`)}
+                placement="top"
+                arrow
+                PopperProps={{
+                    sx: {
+                        [`& .${tooltipClasses.tooltip}`]: {
+                            fontSize: '1rem',
+                            backgroundColor: 'white',
+                            borderRadius: '10px',
+                            marginLeft: '5px',
+                            color: '#A40000',
+                            fontWeight: 400,
+                            boxShadow: '0px 2.05px 6.16px 0px #00000040',
+                        },
+                        '& .MuiTooltip-arrow': {
+                            color: 'white',
+                        },
+                    },
+                }}
             >
                 <PriorityHigh color="error" fontSize="small" style={{ paddingLeft: '5px' }} />
-            </MeltaTooltip>
+            </Tooltip>
         </Box>
     );
 };

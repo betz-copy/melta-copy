@@ -589,6 +589,7 @@ export default {
                 limitNumberFiles: 'ניתן לעלות עד 5 קבצים',
                 limitNumberEntities: 'ניתן להעלות עד 500 ישויות בקובץ',
                 invalidFile: 'קובץ לא מתאים לתבנית ישות',
+                notValid: 'שדה חייב להיות מסוג',
             },
         },
         rule: {
@@ -763,6 +764,7 @@ export default {
             dragFile: 'גרור את הקובץ לכאן',
             dragFiles: 'יש לגרור קבצים כאן',
             or: 'או',
+            dropFile: 'שחרר את הקובץ כאן להעלאה',
         },
     },
     errorCodes: {
