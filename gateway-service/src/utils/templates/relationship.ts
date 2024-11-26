@@ -48,9 +48,9 @@ const validateNoDependentRules = (rules: IMongoRule[]) => {
 
 const buildNewRelationshipField = (
     displayFieldName: string,
-    templateId: string,
+    relationshipTemplateId: string,
     relationshipTemplateDirection: 'outgoing' | 'incoming',
-    destinationEntityId: string,
+    relatedTemplateId: string,
     relatedTemplateField: string,
 ): IEntitySingleProperty => {
     return {
@@ -58,9 +58,9 @@ const buildNewRelationshipField = (
         type: 'string',
         format: 'relationshipReference',
         relationshipReference: {
-            relationshipTemplateId: templateId,
+            relationshipTemplateId,
             relationshipTemplateDirection,
-            relatedTemplateId: destinationEntityId,
+            relatedTemplateId,
             relatedTemplateField,
         },
     };

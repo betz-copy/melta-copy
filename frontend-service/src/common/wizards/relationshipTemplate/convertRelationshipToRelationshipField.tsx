@@ -1,47 +1,38 @@
 import React, { useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Autocomplete, Grid, CircularProgress } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, TextField, Button, Grid, CircularProgress } from '@mui/material';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import i18next from 'i18next';
+import { useQueryClient } from 'react-query';
 import { variableNameValidation } from '../../../utils/validation';
 import { BlueTitle } from '../../BlueTitle';
-import { IMongoEntityTemplatePopulated } from '../../../interfaces/entityTemplates';
+import { IEntityTemplateMap } from '../../../interfaces/entityTemplates';
 import { IMongoRelationshipTemplate } from '../../../interfaces/relationshipTemplates';
+import { IRelationshipReference } from '../entityTemplate/commonInterfaces';
+import RelationshipReferenceField from '../entityTemplate/RelationshipReferenceField';
 
 interface IConvertToRelationship {
     open: boolean;
     handleClose: () => void;
     isLoading?: boolean;
-    onYes: (data: { fieldName: string; displayFieldName: string; relatedTemplateField: string }) => void;
-    destEntity?: IMongoEntityTemplatePopulated;
+    onYes: (data: { fieldName: string; displayFieldName: string; relationshipReference: IRelationshipReference }) => void;
     relationshipTemplate: IMongoRelationshipTemplate | null;
 }
 
-const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleClose, onYes, destEntity, isLoading, relationshipTemplate }) => {
-    let x;
-    let y;
-
-    const fixedRelatedTemplateFieldOptions = Object.entries(destEntity?.properties?.properties || {})
-        .filter(([key, _property]) => destEntity?.properties.required.includes(key))
-        .map(([key, property]) => ({
-            key,
-            title: (property as unknown as { title: string; key: string }).title,
-        }));
+const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleClose, onYes, isLoading, relationshipTemplate }) => {
     const formik = useFormik({
         initialValues: {
             fieldName: '',
             displayFieldName: '',
-            relatedTemplateField: '',
+            relationshipReference: {
+                relationshipTemplateDirection: 'outgoing' as 'outgoing' | 'incoming',
+                relatedTemplateId: '',
+                relatedTemplateField: '',
+            },
         },
         validationSchema: Yup.object({
             fieldName: Yup.string().matches(variableNameValidation, i18next.t('validation.variableName')).required(i18next.t('validation.required')),
-            // .test('unique-fieldName', i18next.t('validation.duplicateFieldName'), function (value) {
-            //     return validateFieldUniqueness(properties, value, this.parent.displayFieldName); // Pass `properties` from context
-            // }),
-            // const fieldExists = Object.prototype.hasOwnProperty.call(properties, fieldName);
-            // const displayFieldExists = Object.values(properties).some((value) => value.title === displayFieldName);
             displayFieldName: Yup.string().required(i18next.t('validation.required')),
-            relatedTemplateField: Yup.string().required(i18next.t('validation.required')).nullable(),
         }),
         onSubmit: (values) => {
             onYes({ ...values });
@@ -49,6 +40,13 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
             handleClose();
         },
     });
+    const queryClient = useQueryClient();
+    const entityTemplates = queryClient.getQueryData<IEntityTemplateMap>('getEntityTemplates')!;
+
+    const destEntity = entityTemplates.get(relationshipTemplate?.destinationEntityId!);
+    const srcEntity = entityTemplates.get(relationshipTemplate?.sourceEntityId!);
+
+    const selectedTemplate = entityTemplates.get(formik.values.relationshipReference?.relatedTemplateId || '') ?? null;
 
     const onClose = () => {
         formik.resetForm();
@@ -119,60 +117,14 @@ const ConvertToRelationship: React.FC<IConvertToRelationship> = ({ open, handleC
                             </Grid>
                         </Grid>
                         <Grid item container justifyContent="space-between" flexWrap="nowrap">
-                            <TextField
-                                label={i18next.t('entityTemplate')}
-                                id="destination-entity"
-                                name="destination-entity"
-                                defaultValue={destEntity?.displayName}
-                                sx={{ marginRight: '8px', borderRadius: '10px', width: 260 }}
-                                fullWidth
-                                InputProps={{ readOnly: true }}
-                                disabled
-                            />
-                            <TextField
-                                id="destination-entity"
-                                label={i18next.t('validation.relatedDirection')}
-                                defaultValue={i18next.t('validation.outgoing')}
-                                sx={{ marginRight: '8px', borderRadius: '10px', width: 150 }}
-                                InputProps={{ readOnly: true }}
-                                disabled
-                            />
-                            <Autocomplete
-                                id="relatedTemplateField"
-                                options={fixedRelatedTemplateFieldOptions}
-                                onChange={(_, selectedField) => {
-                                    formik.setFieldValue('relatedTemplateField', selectedField?.key || '');
-                                }}
-                                onBlur={() => formik.setFieldTouched('relatedTemplateField', true)}
-                                isOptionEqualToValue={(option, val) => option.key === val.toString()}
-                                value={fixedRelatedTemplateFieldOptions.find((field) => field.key === formik.values.relatedTemplateField) ?? null}
-                                getOptionLabel={(option) => option?.title || ''}
-                                renderInput={(params) => (
-                                    <TextField
-                                        {...params}
-                                        size="small"
-                                        error={
-                                            (formik.touched.relatedTemplateField && Boolean(formik.errors.relatedTemplateField)) ||
-                                            fixedRelatedTemplateFieldOptions.length === 0
-                                        }
-                                        fullWidth
-                                        sx={{
-                                            '& .MuiInputBase-root': {
-                                                borderRadius: '10px',
-                                                width: 240,
-                                            },
-                                        }}
-                                        helperText={
-                                            (formik.touched.relatedTemplateField && formik.errors.relatedTemplateField) ||
-                                            (fixedRelatedTemplateFieldOptions.length === 0 &&
-                                                i18next.t('wizard.entityTemplate.relatedTemplateHaveToHadRequiredFields'))
-                                        }
-                                        name="relatedTemplateField"
-                                        variant="outlined"
-                                        label={i18next.t('wizard.entityTemplate.propertyDisplayName')}
-                                    />
-                                )}
-                                sx={{ marginRight: '5px', borderRadius: '10px' }}
+                            <RelationshipReferenceField
+                                value={formik.values}
+                                index={0}
+                                touched={formik.touched}
+                                errors={formik.errors}
+                                setFieldValue={formik.setFieldValue}
+                                isDisabled={false}
+                                convertToRelationshipField={{ options: [srcEntity, destEntity], originSourceEntityId: srcEntity?._id! }}
                             />
                         </Grid>
                     </Grid>

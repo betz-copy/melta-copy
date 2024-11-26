@@ -51,7 +51,7 @@ export class RelationshipManager extends DefaultManagerNeo4j {
         );
         console.dir({ relationships, isRelationshops: !relationships }, { depth: null });
 
-        if (!relationships.length) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
+        if (!relationships) throw new NotFoundError(`[NEO4J] relationship not found by provided entities and template`);
         console.log('hii');
 
         return relationships;
@@ -302,6 +302,8 @@ export class RelationshipManager extends DefaultManagerNeo4j {
     }
 
     async updateRelationshipPropertiesById(id: string, relationshipProperties: object) {
+        console.log({ relationshipProperties });
+
         const edge = await this.neo4jClient.writeTransaction(
             `MATCH (s)-[r]->(d) WHERE r._id='${id}' SET r += $props RETURN r, s, d`,
             normalizeReturnedRelationship('singleResponse'),

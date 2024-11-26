@@ -30,6 +30,7 @@ import { CardMenu } from './CardMenu';
 import { CreateButton } from './CreateButton';
 import { FilterButton } from './FilterButton';
 import { ConvertToRelationship } from '../../../common/wizards/relationshipTemplate/convertRelationshipToRelationshipField';
+import { IRelationshipReference } from '../../../common/wizards/entityTemplate/commonInterfaces';
 
 const { infiniteScrollPageCount } = environment.processInstances;
 
@@ -153,8 +154,6 @@ const RelationshipTemplatesRow: React.FC = () => {
 
     const [isSrcRelationChecked, setIsSrcRelationChecked] = useState(true);
 
-    const [relationshipDestEntity, setRelationshipDestEntity] = useState<IMongoEntityTemplatePopulated>();
-
     const isFilterButtonDisabled = useMemo(
         () =>
             !(
@@ -209,24 +208,21 @@ const RelationshipTemplatesRow: React.FC = () => {
             id,
             fieldName,
             displayFieldName,
-            relatedTemplateField,
+            relationshipReference,
         }: {
             id: string;
             fieldName: string;
             displayFieldName: string;
-            relatedTemplateField: string;
+            relationshipReference: IRelationshipReference;
         }) =>
             convertToRelationshipFieldRequest(id, {
                 fieldName,
                 displayFieldName,
-                relatedTemplateField,
-                relationshipTemplateDirection: 'outgoing',
-                sourceEntityId: convertToRelationshipFieldDialogState.relationshipTemplate?.sourceEntityId!,
-                destinationEntityId: convertToRelationshipFieldDialogState.relationshipTemplate?.sourceEntityId!,
+                relationshipReference,
             }),
         {
             onSuccess: ({ updatedRelationShipTemplate, updatedEntityTemplate }, { id }) => {
-                console.log({ updatedEntityTemplate, updatedRelationShipTemplate });
+                console.log({ updatedRelationShipTemplate });
 
                 queryClient.setQueryData<IRelationshipTemplateMap>('getRelationshipTemplates', (relationshipTemplateMap) =>
                     relationshipTemplateMap!.set(id, updatedRelationShipTemplate),
@@ -235,7 +231,6 @@ const RelationshipTemplatesRow: React.FC = () => {
                     entityTemplateMap!.set(updatedEntityTemplate._id, updatedEntityTemplate),
                 );
                 queryClient.invalidateQueries(['searchRelationshipTemplates']);
-                // queryClient.invalidateQueries();
 
                 toast.success(i18next.t('wizard.relationshipTemplate.convertToRelationshipFieldSuccessfully'));
             },
@@ -270,12 +265,6 @@ const RelationshipTemplatesRow: React.FC = () => {
     };
 
     const theme = useTheme();
-
-    useEffect(() => {
-        if (convertToRelationshipFieldDialogState.relationshipTemplate) {
-            setRelationshipDestEntity(entityTemplates.get(convertToRelationshipFieldDialogState.relationshipTemplate?.destinationEntityId!));
-        }
-    }, [convertToRelationshipFieldDialogState, entityTemplates]);
 
     return (
         <Grid item container marginBottom="30px">
@@ -473,19 +462,16 @@ const RelationshipTemplatesRow: React.FC = () => {
             <ConvertToRelationship
                 open={convertToRelationshipFieldDialogState.isDialogOpen}
                 handleClose={() => setConvertToRelationshipFieldDialogState({ isDialogOpen: false, relationshipTemplate: null })}
-                onYes={({ fieldName, displayFieldName, relatedTemplateField }) =>
+                onYes={({ fieldName, displayFieldName, relationshipReference }) =>
                     convertRelationshipToRelationShipFieldRequest({
                         id: convertToRelationshipFieldDialogState.relationshipTemplate?._id!,
                         fieldName,
                         displayFieldName,
-                        relatedTemplateField,
+                        relationshipReference,
                     })
                 }
                 isLoading={isLoading}
-                destEntity={relationshipDestEntity}
                 relationshipTemplate={convertToRelationshipFieldDialogState.relationshipTemplate}
-                x={convertToRelationshipFieldDialogState.relationshipTemplate?.name}
-                y={convertToRelationshipFieldDialogState.relationshipTemplate?.displayName}
             />
         </Grid>
     );

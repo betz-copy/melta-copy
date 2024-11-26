@@ -1114,6 +1114,7 @@ export class EntityManager extends DefaultManagerNeo4j {
     async updateRelationshipReference(updatedEntity: IEntity, updatedProperties: string[], transaction: Transaction) {
         const { templateId, properties: entityProperties } = updatedEntity;
         const entitiesNeedToUpdate = await this.getRelatedEntitiesOfEntity(templateId, [entityProperties._id], transaction);
+        console.log({ updatedEntity, updatedProperties, entitiesNeedToUpdate });
 
         await Promise.all(
             Object.entries(entitiesNeedToUpdate).map(async ([fieldToChange, entityIdsToUpdate]) => {
@@ -1142,6 +1143,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                         },
                     },
                 );
+                console.log('after run');
             }),
         );
     }
@@ -1177,6 +1179,7 @@ export class EntityManager extends DefaultManagerNeo4j {
             userId ?? '',
             convertToRelationshipField,
         );
+        console.log('shirel1');
 
         const updatedEntity = await runInTransactionAndNormalize(
             transaction,
@@ -1195,8 +1198,10 @@ export class EntityManager extends DefaultManagerNeo4j {
                 },
             },
         );
+        console.log('shirel2');
 
         await this.updateRelationshipReference(updatedEntity, updatedProperties, transaction);
+        console.log('shirel3');
 
         const fields = Object.keys(entityTemplate.properties.properties);
         for (let i = 0; i < fields.length; i++) {
@@ -1231,6 +1236,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 newValue: newValue ?? null,
             });
         }
+        console.log('shirel4');
 
         if (userId) {
             activityLogsToCreate.push({
@@ -1241,6 +1247,7 @@ export class EntityManager extends DefaultManagerNeo4j {
                 userId,
             });
         }
+        console.log({ updatedEntity });
 
         return { updatedEntity, activityLogsToCreate };
     }
@@ -1269,7 +1276,7 @@ export class EntityManager extends DefaultManagerNeo4j {
         userId: string,
         convertToRelationshipField = false,
     ) {
-        console.log('dsesbvjdshbjdv ', { entityProperties });
+        console.log('dsesbvjdshbjdv ', { entityProperties, id });
 
         const entity = await this.getEntityById(id);
         const unPopulatedEntity = this.relationshipReferenceObjectToId(entity, entityTemplate);
@@ -1314,14 +1321,17 @@ export class EntityManager extends DefaultManagerNeo4j {
                 );
 
                 const ruleFailuresAfterAction = await this.runRulesDependOnEntityUpdate(transaction, updatedEntity, updatedProperties);
+                console.log('notice1');
 
                 throwIfActionCausedRuleFailures(ignoredRules, ruleFailuresBeforeAction, ruleFailuresAfterAction, [{}]);
+                console.log('notice2');
 
                 const activityLogsPromises = activityLogsToCreate.map((activityLogToCreate) =>
                     this.activityLogProducer.createActivityLog(activityLogToCreate),
                 );
 
                 await Promise.all(activityLogsPromises);
+                console.log('notice3');
 
                 return { updatedEntity };
             })
