@@ -16,8 +16,8 @@ const {
         rrfWindowConstant,
         queryMinScore,
         rrfRankConstant,
-        // user,
-        // password,
+        user,
+        password,
         rrfWindowFieldName,
         topHitsByGroup,
         groupByEntityId,
@@ -46,7 +46,7 @@ class ElasticClient {
         logger.info('Initializing ElasticSearch client...');
 
         try {
-            ElasticClient.client = new Client({ node: url, auth: { apiKey: 'Mld4WERKTUJrNWJOMHNzbF9kRFM6cndpM1l0Y1BSSUs0M0JyRWpQZG96Zw==' } });
+            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
 
             logger.info('ElasticSearch client initialized successfully');
         } catch (error) {
