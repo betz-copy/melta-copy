@@ -122,7 +122,6 @@ export const EntityPropertiesInternal: React.FC<IEntityPropertiesProps & { darkM
     searchedText,
     displayArchiveProperties,
 }) => {
-    console.log({ entityTemplate });
     let propertiesOrderedToShow: string[];
     if (overridePropertiesToShow) {
         propertiesOrderedToShow = entityTemplate.propertiesOrder.filter((propertyKey) => overridePropertiesToShow.includes(propertyKey));

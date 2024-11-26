@@ -129,8 +129,6 @@ const AddFields: React.FC<StepComponentProps<EntityTemplateWizardValues, 'isEdit
         return title;
     };
 
-    console.log({ values });
-
     return (
         <DragDropContext onDragEnd={onDragEnd}>
             <Droppable droppableId="propertiesArea">
