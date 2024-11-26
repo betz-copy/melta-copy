@@ -29,6 +29,7 @@ interface InstanceFileInputProps {
     >;
     onDrop?: (files: File[]) => Promise<void>;
     isLoading?: boolean;
+    comment?: string;
 }
 
 export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
@@ -44,6 +45,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
     setExternalErrors,
     onDrop,
     isLoading,
+    comment,
 }) => {
     return (
         <Box
@@ -83,6 +85,7 @@ export const InstanceFileInput: React.FC<InstanceFileInputProps> = ({
                 acceptedFilesTypes={acceptedFilesTypes}
                 isLoading={isLoading}
                 setErrorText={setErrorText}
+                comment={comment}
                 multiple
             />
         </Box>

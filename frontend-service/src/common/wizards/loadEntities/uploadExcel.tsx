@@ -57,7 +57,8 @@ export const UploadExcel: React.FC<{
             <InstanceFileInput
                 {...formikProps}
                 fileFieldName="file"
-                fieldTemplateTitle={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
+                fieldTemplateTitle={i18next.t('wizard.entity.fileFields')}
+                comment={i18next.t('wizard.entity.loadEntities.onlyExcelFiles')}
                 value={values.files}
                 setFieldValue={setFieldValue}
                 required

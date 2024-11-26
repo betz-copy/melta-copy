@@ -1,7 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { IconButton, Grid, useTheme, Typography, LinearProgress } from '@mui/material';
-import { CloseOutlined as DeleteIcon, Visibility } from '@mui/icons-material';
+import { IconButton, Grid, useTheme, Typography, LinearProgress, Button, Box, Divider } from '@mui/material';
+import { CloseOutlined as DeleteIcon, Visibility, Upload } from '@mui/icons-material';
 import { Accept, useDropzone } from 'react-dropzone';
+import i18next from 'i18next';
 import FileIcon from '../FilePreview/FileIcon';
 import { getFileExtension } from '../../utils/getFileType';
 import OpenPreview from '../FilePreview/OpenPreview';
@@ -16,6 +17,7 @@ interface FilesInputProps {
     errorText?: string;
     setErrorText?: React.Dispatch<React.SetStateAction<string | undefined>>;
     isLoading?: boolean;
+    comment?: string;
 }
 
 const FilesInput: React.FC<FilesInputProps> = ({
@@ -27,6 +29,7 @@ const FilesInput: React.FC<FilesInputProps> = ({
     errorText,
     setErrorText,
     isLoading,
+    comment,
 }) => {
     const theme = useTheme();
 
@@ -76,12 +79,13 @@ const FilesInput: React.FC<FilesInputProps> = ({
         borderColor: '#CCCFE5',
         color: '#9398C2',
         width: '100%',
-        height: '150px', // Set a fixed height
+        height: comment ? '225px' : '200px', // Set a fixed height
         display: 'flex',
         padding: '10px',
         // alignItems: 'center',
         cursor: 'pointer',
         overflowY: 'auto',
+        boxShadow: '-2px 2px 6px 0px #1E27754D',
     };
 
     const fileTextStyle = {
@@ -194,8 +198,53 @@ const FilesInput: React.FC<FilesInputProps> = ({
                     </Grid>
                 ) : (
                     <Grid item sx={fileTextStyle}>
-                        <img src="\icons\upload-files.svg" style={{ marginRight: '10px' }} />
-                        <img src="\icons\Choose-File.svg" height="25px" width="120px" />
+                        <Box display="flex" flexDirection="column" alignItems="center" position="relative">
+                            <img src="/icons/upload-files.svg" alt="Upload Files" style={{ width: '120%' }} />
+                            <Typography
+                                fontSize="12px"
+                                style={{
+                                    position: 'absolute',
+                                    top: '85%',
+                                    left: '50%',
+                                    transform: 'translate(-50%, -50%)',
+                                    textAlign: 'center',
+                                    zIndex: 1,
+                                    width: '100%',
+                                    color: theme.palette.mode === 'dark' ? 'white' : 'black',
+                                }}
+                            >
+                                {i18next.t('input.imagePicker.dragFiles')}
+                            </Typography>
+                        </Box>
+                        <Box display="flex" flexDirection="row" alignItems="center" gap="5px">
+                            <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
+                            <Typography fontSize="10px" color="#9398C2">
+                                {i18next.t('input.imagePicker.or')}
+                            </Typography>
+                            <Divider sx={{ color: '#CCCFE5', width: '33px' }} />
+                        </Box>
+
+                        <Button
+                            variant="contained"
+                            style={{
+                                gap: '5px',
+                                borderRadius: '7px',
+                                background: theme.palette.mode === 'dark' ? '#EBEFFA' : undefined,
+                                height: '32px',
+                                width: '131px',
+                            }}
+                        >
+                            <Typography fontSize="12px" color={theme.palette.mode === 'dark' ? '#1E2775' : undefined}>
+                                {i18next.t('input.imagePicker.chooseFile')}
+                            </Typography>
+                            <Upload sx={{ width: '24px', height: '24px', color: theme.palette.mode === 'dark' ? '#1E2775' : undefined }} />
+                        </Button>
+
+                        {comment && (
+                            <Typography fontSize="10px" color="#9398C2">
+                                {comment}
+                            </Typography>
+                        )}
                     </Grid>
                 )}
             </Grid>

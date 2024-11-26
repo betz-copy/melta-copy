@@ -761,7 +761,8 @@ export default {
             chooseFromOptions: 'בחירה מאפשרויות',
             chooseFile: 'בחירת קובץ',
             dragFile: 'גרור את הקובץ לכאן',
-            dragFiles: 'גרור את הקבצים לכאן',
+            dragFiles: 'יש לגרור קבצים כאן',
+            or: 'או',
         },
     },
     errorCodes: {
