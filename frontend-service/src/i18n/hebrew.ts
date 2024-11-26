@@ -113,7 +113,9 @@ export default {
         atLeastOneItem: 'חייב להיות ערך אחד לפחות',
         preview: 'תצוגה מקדימה',
         download: 'הורדת הקובץ',
-        displayArchiveSwitch: 'הצג ארכיון',
+        displayArchive: 'הצג ארכיון',
+        hideArchive: 'הסתר ארכיון',
+        archiveTitle: 'שדות ארכיון',
         activityLog: {
             deleteRelationship: 'מחק קשר מסוג',
             createRelationship: 'יצר קשר מסוג ',

@@ -265,7 +265,7 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                         onClick={() => setDisplayArchiveProperties(!displayArchiveProperties)}
                                         disabled={false}
                                         icon={displayArchiveProperties ? Archive : Unarchive}
-                                        text={i18next.t('entityPage.displayArchiveSwitch')}
+                                        text={displayArchiveProperties ? i18next.t('entityPage.hideArchive') : i18next.t('entityPage.displayArchive')}
                                     />
                                 </Menu>
                             </Grid>
@@ -287,8 +287,27 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                                     innerStyle={{ width: '32%' }}
                                     textWrap
                                     mode="normal"
-                                    displayArchiveProperties={displayArchiveProperties}
                                 />
+                                {displayArchiveProperties && (
+                                    <EntityProperties
+                                        entityTemplate={entityTemplate}
+                                        properties={entity.properties}
+                                        style={{
+                                            flexDirection: 'row',
+                                            flexWrap: 'wrap',
+                                            rowGap: '20px',
+                                            columnGap: '20px',
+                                            alignItems: 'center',
+                                            width: '100%',
+                                        }}
+                                        innerStyle={{ width: '32%' }}
+                                        textWrap
+                                        mode="normal"
+                                        displayArchiveProperties
+                                        showDivider
+                                        dividerTitle={i18next.t('entityPage.archiveTitle')}
+                                    />
+                                )}
                             </Grid>
 
                             <Grid item>
