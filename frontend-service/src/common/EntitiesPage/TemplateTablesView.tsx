@@ -95,7 +95,7 @@ const filterEmptyTemplateTablesOnGlobalSearchRequest = async (
 
     return templates.flatMap((template) => {
         const entityCount = entitiesCountByTemplates.find((countByTemplate) => countByTemplate.templateId === template._id);
-        return entityCount?.count ? { ...template, entityIdsToInclude: entityCount.entityIdsToInclude } : [];
+        return entityCount?.count ? { ...template, entitiesWithFiles: entityCount.entitiesWithFiles } : [];
     });
 };
 
