@@ -27,11 +27,18 @@ export const getUserByIdRequestSchema = joi.object({
 export const searchUsersRequestSchema = joi.object({
     query: {},
     body: {
-        search: joi.string(),
+        search: joi.string(), 
         permissions: joi.object(),
         workspaceIds: joi.array().items(MongoIdSchema.required()),
         limit: joi.number().integer().required(),
         step: joi.number().integer(),
+        filterModel: joi.object(),
+        sortModel: joi.array().items(
+            joi.object({
+                colId: joi.string(),
+                sort: joi.string(),
+            }),
+        ),
     },
     params: {},
 });
