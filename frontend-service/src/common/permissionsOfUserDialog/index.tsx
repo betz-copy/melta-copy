@@ -61,6 +61,8 @@ const PermissionsOfUserDialog: React.FC<{
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
 
+    console.log({ categories });
+
     const { mutate: createUser } = useMutation(
         (formUser: IUser) =>
             createUserRequest(formUser.externalMetadata.kartoffelId, formUser.externalMetadata.digitalIdentitySource, formUser.permissions),

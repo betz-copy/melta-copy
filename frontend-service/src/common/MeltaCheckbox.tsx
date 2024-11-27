@@ -11,15 +11,28 @@ interface MeltaCheckboxProps {
     sxIndeterminate?: SxProps<any>;
     sxEmpty?: SxProps<any>;
     sxIcon?: CSSProperties;
+    width?: string;
+    height?: string;
 }
 
-const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({ checked, indeterminate, disabled, onChange, sxChecked, sxIndeterminate, sxEmpty, sxIcon }) => {
+const MeltaCheckbox: React.FC<MeltaCheckboxProps> = ({
+    checked,
+    indeterminate,
+    disabled,
+    onChange,
+    sxChecked,
+    sxIndeterminate,
+    sxEmpty,
+    sxIcon,
+    width,
+    height,
+}) => {
     const theme = useTheme();
 
     const checkboxSx: SxProps = {
         borderRadius: '4px',
-        width: '20px',
-        height: '20px',
+        width: width || '20px',
+        height: height || '20px',
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',

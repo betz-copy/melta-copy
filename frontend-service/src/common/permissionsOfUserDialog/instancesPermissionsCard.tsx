@@ -4,14 +4,14 @@ import React from 'react';
 import { PermissionScope } from '../../interfaces/permissions';
 import { useDarkModeStore } from '../../stores/darkMode';
 import { MeltaCheckbox } from '../MeltaCheckbox';
-import PermissionViewIcon from './PermissionViewIcon';
+import CategoryCheckboxPermission from './categoryCheckboxPermission';
 
 type checkboxControlProps = {
     onChange: CheckboxProps['onChange'];
     checked: boolean;
 };
 
-type permissionTypeCheckboxProps = {
+export type permissionTypeCheckboxProps = {
     read: checkboxControlProps;
     write: checkboxControlProps;
 };
@@ -32,25 +32,30 @@ const InstancesPermissionsCard: React.FC<{
     const darkMode = useDarkModeStore((state) => state.darkMode);
     const bgcolor = darkMode ? '#242424' : 'white';
 
+    console.log({ categoriesCheckboxProps }, { checkboxAllProps });
+
     return (
         <Card variant="outlined" sx={{ bgcolor, overflowY: 'auto', maxHeight: 500 }}>
             <CardContent>
-                <Grid container spacing={2}>
+                <Grid container rowGap={1}>
                     <Grid container sx={{ position: 'sticky', top: 0, zIndex: 2, bgcolor }}>
-                        <Grid item xs={12}>
-                            <Typography sx={{ padding: 2 }} fontWeight="bold">
+                        <Grid xs={12}>
+                            <Typography sx={{ padding: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('permissions.permissionsOfUserDialog.instancesPermissions')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={6}>
-                            <Typography sx={{ paddingLeft: 2 }} fontWeight="bold">
+                        <Grid xs={6}>
+                            <Typography sx={{ paddingLeft: 2, boxSizing: 'border-box' }} fontWeight="bold">
                                 {i18next.t('category')}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3} paddingLeft={2}>
-                            <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.read')}</Typography>
+                        <Grid xs={3}>
+                            <Typography paddingLeft="15px" fontWeight="bold">
+                                {i18next.t('permissions.permissionsOfUserDialog.read')}
+                            </Typography>
                             {!viewMode && (
                                 <FormControlLabel
+                                    sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
                                         <MeltaCheckbox
@@ -62,10 +67,13 @@ const InstancesPermissionsCard: React.FC<{
                                 />
                             )}
                         </Grid>
-                        <Grid item xs={3} paddingLeft={2}>
-                            <Typography fontWeight="bold">{i18next.t('permissions.permissionsOfUserDialog.write')}</Typography>
+                        <Grid xs={3}>
+                            <Typography paddingLeft="15px" fontWeight="bold">
+                                {i18next.t('permissions.permissionsOfUserDialog.write')}
+                            </Typography>
                             {!viewMode && (
                                 <FormControlLabel
+                                    sx={{ margin: '0' }}
                                     label={i18next.t('permissions.permissionsOfUserDialog.chooseAll') as string}
                                     control={
                                         <MeltaCheckbox
@@ -81,33 +89,13 @@ const InstancesPermissionsCard: React.FC<{
                         </Grid>
                     </Grid>
                     {categoriesCheckboxProps.map(({ categoryId, categoryDisplayName, disabled, permissionType }) => (
-                        <React.Fragment key={categoryId}>
-                            <Grid item xs={6}>
-                                <Typography>{categoryDisplayName}</Typography>
-                            </Grid>
-                            <Grid item xs={3}>
-                                {viewMode ? (
-                                    <PermissionViewIcon checked={permissionType.read.checked} />
-                                ) : (
-                                    <MeltaCheckbox
-                                        checked={permissionType.read.checked}
-                                        onChange={permissionType.read.onChange}
-                                        disabled={disabled || permissionType.write.checked}
-                                    />
-                                )}
-                            </Grid>
-                            <Grid item xs={3}>
-                                {viewMode ? (
-                                    <PermissionViewIcon checked={permissionType.write.checked} />
-                                ) : (
-                                    <MeltaCheckbox
-                                        checked={permissionType.write.checked}
-                                        onChange={permissionType.write.onChange}
-                                        disabled={disabled}
-                                    />
-                                )}
-                            </Grid>
-                        </React.Fragment>
+                        <CategoryCheckboxPermission
+                            categoryDisplayName={categoryDisplayName}
+                            viewMode={viewMode}
+                            disabled={disabled}
+                            permissionType={permissionType}
+                            key={categoryId}
+                        />
                     ))}
                 </Grid>
             </CardContent>
