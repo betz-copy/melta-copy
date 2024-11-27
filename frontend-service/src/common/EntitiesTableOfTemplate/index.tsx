@@ -131,7 +131,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;

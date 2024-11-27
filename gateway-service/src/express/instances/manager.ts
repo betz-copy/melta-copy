@@ -172,7 +172,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                     textSearch,
                 });
 
-                const { count, entityIdsToInclude } = templateCount?.[0] ?? { count: 0, entityIdsToInclude: {} };
+                const { count, entitiesWithFiles } = templateCount?.[0] ?? { count: 0, entitiesWithFiles: {} };
 
                 for (let skip = 0; count - skip > 0; skip += searchEntitiesChunkSize) {
                     const { entities: chunk } = await this.service.searchEntitiesOfTemplateRequest(template._id, {
@@ -181,7 +181,7 @@ export class InstancesManager extends DefaultManagerProxy<InstancesService> {
                         textSearch,
                         filter,
                         sort,
-                        entityIdsToInclude: Object.keys(entityIdsToInclude),
+                        entityIdsToInclude: Object.keys(entitiesWithFiles),
                     });
                     styleAWorksheet(
                         worksheet,

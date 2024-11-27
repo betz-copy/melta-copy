@@ -22,7 +22,7 @@ import IconButtonWithPopover from '../IconButtonWithPopover';
 import { ImageWithDisable } from '../ImageWithDisable';
 
 export interface IGetColumnDefsOptions<Data extends any> {
-    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
     getEntityPropertiesData: (data: Data) => IEntity['properties'];
     onNavigateToRow?: (entity: Data) => void;
     deleteRowButtonProps?: IButtonProps<Data>;
@@ -107,7 +107,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 defaultColumnWidths[property],
                 hideColumn,
                 searchValue,
-                Object.values(template.entityIdsToInclude ?? {}).flat(),
+                Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         if (format === 'relationshipReference')
             return relatedTemplateColDef(
@@ -167,7 +167,7 @@ export const getColumnDefs = <Data extends any = IEntity>({
                 rowHeight,
                 false,
                 searchValue,
-                Object.values(template.entityIdsToInclude ?? {}).flat(),
+                Object.values(template.entitiesWithFiles ?? {}).flat(),
             );
         }
         return stringColDef(property, valueGetter, propertyTemplate, defaultColumnWidths[property], hideColumn, hideField, showErrors, searchValue);
