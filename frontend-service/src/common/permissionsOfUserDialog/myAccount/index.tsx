@@ -96,6 +96,7 @@ const MyAccount: React.FC<{
         <>
             <Grid
                 container
+                item
                 spacing={2}
                 sx={{
                     padding: '0px 15px 9px 8px',

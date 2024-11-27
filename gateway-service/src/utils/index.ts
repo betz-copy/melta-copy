@@ -43,3 +43,13 @@ export const objectContains = <T extends Object>(obj: T, subObj: any) => {
 export const typedObjectEntries = <T extends Object>(obj: T): [keyof T, T[keyof T]][] => {
     return Object.entries(obj) as any;
 };
+
+export const isProfileFileType = (profilePath: string) => {
+    return (
+        !!profilePath &&
+        profilePath !== '' &&
+        !profilePath.startsWith('/icons/profileAvatar') &&
+        !profilePath.startsWith('http://') &&
+        !profilePath.startsWith('https://')
+    );
+};

@@ -11,7 +11,7 @@ import {
     ISubCompactPermissions,
 } from '../../externalServices/userService/interfaces/permissions/permissions';
 import { IBaseUser, IExternalUser, IUser, IUserSearchBody } from '../../externalServices/userService/interfaces/users';
-import { objectContains } from '../../utils';
+import { isProfileFileType, objectContains } from '../../utils';
 import { removeTmpFile } from '../../utils/fs';
 import { RecursiveNullable } from '../../utils/types';
 import { DigitalIdentitySourceDoesNotExistsError, KartoffelUserMissingDataError } from './error';
@@ -79,23 +79,13 @@ export class UsersManager {
         return UserService.updateUser(userId, { externalMetadata });
     }
 
-    static isProfileFileType(profilePath: string) {
-        return (
-            !!profilePath &&
-            profilePath !== '' &&
-            !profilePath.startsWith('/icons/profileAvatar') &&
-            !profilePath.startsWith('http://') &&
-            !profilePath.startsWith('https://')
-        );
-    }
-
     static async updateUserPreferencesMetadata(userId: string, preferences: Partial<IBaseUser['preferences']>, file?: Express.Multer.File) {
         const {
             preferences: { profilePath },
         } = await UserService.getUserById(userId);
 
         if (file) {
-            if (profilePath && this.isProfileFileType(profilePath)) await UsersManager.storageService.deleteFile(profilePath);
+            if (profilePath && isProfileFileType(profilePath)) await UsersManager.storageService.deleteFile(profilePath);
             const newProfilePath = await this.storageService.uploadFile(file);
             await removeTmpFile(file.path);
             return UserService.updateUser(userId, { preferences: { ...preferences, profilePath: newProfilePath } });
