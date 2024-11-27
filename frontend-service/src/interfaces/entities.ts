@@ -158,3 +158,22 @@ export interface IDeleteEntityBody {
     filter?: ISearchEntitiesOfTemplateBody['filter'];
     textSearch?: string;
 }
+
+// TODO:
+// export interface IDeleteEntityBodyBase {
+//     selectAll: boolean;
+//     templateId: string;
+//     deleteAllRelationships?: boolean;
+// }
+
+// export type IDeleteEntityBody =
+//     | ({
+//           selectAll: true;
+//           idsToExclude?: string[];
+//           filter?: ISearchEntitiesOfTemplateBody['filter'];
+//           textSearch?: string;
+//       } & IDeleteEntityBodyBase)
+//     | ({
+//           selectAll: false;
+//           idsToInclude: string[];
+//       } & IDeleteEntityBodyBase);
