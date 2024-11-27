@@ -83,11 +83,11 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number; entitiesWithFiles: string[] }[] => {
     return result.records.map((record) => ({
         templateId: record.get('templateId'),
         count: +record.get('count'),
-        entityIdsToInclude: (record.has('entityIdsToInclude') && record.get('entityIdsToInclude')) ?? undefined,
+        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) ?? undefined,
     }));
 };
 
