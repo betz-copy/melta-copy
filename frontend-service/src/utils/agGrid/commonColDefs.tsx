@@ -366,7 +366,6 @@ interface TranslatedEnumColDefOptions<Data> {
     hardcodedWidth?: number;
     hideColumn?: boolean;
     hideValue?: boolean;
-    disableFilterAndSort?: boolean;
     searchValue?: string;
 }
 

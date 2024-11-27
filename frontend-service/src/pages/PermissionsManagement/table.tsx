@@ -64,7 +64,6 @@ const columnDefs = (
             (params.data?.permissions[workspaceId]?.permissions?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.permissionsManagement'),
         valuesMap: scopesTranslation,
-        disableFilterAndSort: true,
     }),
     translatedEnumColDef<IUser>({
         field: 'templatesManagement',
@@ -72,14 +71,12 @@ const columnDefs = (
             (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.templatesManagement'),
         valuesMap: scopesTranslation,
-        disableFilterAndSort: true,
     }),
     translatedEnumColDef<IUser>({
         field: 'rulesManagement',
         valueGetter: (params) => (params.data?.permissions[workspaceId]?.rules?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.rulesManagement'),
         valuesMap: scopesTranslation,
-        disableFilterAndSort: true,
     }),
     translatedEnumColDef<IUser>({
         field: 'processesManagement',
@@ -87,14 +84,12 @@ const columnDefs = (
             (params.data?.permissions[workspaceId]?.processes?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.processesManagement'),
         valuesMap: scopesTranslation,
-        disableFilterAndSort: true,
     }),
     {
         field: 'categoriesPermissions',
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         filter: false, // todo: do set filter with `.includes` logic
-        sortable: false,
         // filter: 'agSetColumnFilter',
         // filterParams: {
         //     values: categories.map(({ _id }) => _id),
