@@ -1,4 +1,4 @@
-import { SortModelItem } from '@ag-grid-community/core';
+import { AdvancedFilterModel, FilterModel, SortModelItem } from '@ag-grid-community/core';
 import { ICompactPermissions, ISubCompactPermissions } from './permissions/permissions';
 
 export interface IBaseUser {
@@ -26,7 +26,7 @@ export interface IUserSearchBody {
     limit: number;
     step?: number;
     search?: string;
-    filterModel?: any;
+    filterModel: AdvancedFilterModel | FilterModel | null;
     sortModel?: SortModelItem[];
 }
 

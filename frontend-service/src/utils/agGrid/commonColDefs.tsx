@@ -378,7 +378,6 @@ export const translatedEnumColDef = <Data extends any = IEntity>({
     hardcodedWidth,
     hideColumn = false,
     hideValue = false,
-    disableFilterAndSort = false,
     searchValue = undefined,
 }: TranslatedEnumColDefOptions<Data>): ColDef => {
     const formatValue = (propertyValue: string | null | undefined) => (propertyValue ? valuesMap[propertyValue] : '');
@@ -405,7 +404,5 @@ export const translatedEnumColDef = <Data extends any = IEntity>({
         width: hardcodedWidth,
         flex: hardcodedWidth ? 0 : 1,
         hide: hideColumn,
-        suppressMenu: disableFilterAndSort,
-        sortable: !disableFilterAndSort,
     };
 };

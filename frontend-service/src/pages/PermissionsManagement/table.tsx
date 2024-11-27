@@ -35,7 +35,8 @@ const defaultColDef: ColDef<IUser> = {
     },
     resizable: true,
     menuTabs: ['filterMenuTab'],
-    suppressHeaderMenuButton: true,
+    suppressHeaderMenuButton: false,
+    suppressHeaderFilterButton: true,
 };
 
 const columnDefs = (
@@ -48,6 +49,8 @@ const columnDefs = (
         field: 'displayName',
         headerName: i18next.t('permissions.userHeaderName'),
         filter: 'agTextColumnFilter',
+        sortable: true,
+        suppressHeaderFilterButton: false,
     },
     {
         field: 'externalMetadata.digitalIdentitySource',
@@ -69,7 +72,6 @@ const columnDefs = (
             (params.data?.permissions[workspaceId]?.templates?.scope || params.data?.permissions[workspaceId]?.admin?.scope) ?? '',
         title: i18next.t('permissions.templatesManagement'),
         valuesMap: scopesTranslation,
-
         disableFilterAndSort: true,
     }),
     translatedEnumColDef<IUser>({
@@ -92,9 +94,7 @@ const columnDefs = (
         headerName: i18next.t('permissions.permissionsOfUserDialog.instancesPermissions'),
         valueGetter: (params) => params.data?.permissions[workspaceId].instances?.categories,
         filter: false, // todo: do set filter with `.includes` logic
-        suppressMenu: true,
         sortable: false,
-        suppressHeaderMenuButton: true,
         // filter: 'agSetColumnFilter',
         // filterParams: {
         //     values: categories.map(({ _id }) => _id),
@@ -148,7 +148,6 @@ const columnDefs = (
         colId: 'actions', // used for autoSizeColumns onFirstDataRendered
         sortable: false,
         filter: false,
-        suppressHeaderMenuButton: true,
         suppressColumnsToolPanel: true,
         cellRenderer: (props: ICellRendererParams<IUser>) => {
             const { data } = props;
