@@ -72,11 +72,12 @@ export const getDatasource = <Data extends any = IEntity>(
                 });
                 return;
             }
+            const agGridRequest = { ...params.request, filterModel: { ...defaultFilterModel, ...params.request.filterModel } };
 
             const { result: data, err } = await trycatch(() =>
                 searchEntitiesOfTemplateRequest(
                     template._id,
-                    agGridToSearchEntitiesOfTemplateRequest({ ...params.request, quickFilter: quickFilterText } as IAGGridRequest, template),
+                    agGridToSearchEntitiesOfTemplateRequest({ ...agGridRequest, quickFilter: quickFilterText } as IAGGridRequest, template),
                 ),
             );
 
@@ -473,7 +474,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                         }
 
                         const savedFilterModel = LocalStorage.get(`tableFilter-${saveStorageProps.pageType}-${template._id}`);
-                        params.api.setFilterModel(savedFilterModel ?? defaultFilterModel);
+                        if (savedFilterModel) params.api.setFilterModel({ ...savedFilterModel });
                     }}
                     onFirstDataRendered={(params) => {
                         const savedPage = sessionStorage.getItem(`currentPage-${saveStorageProps.pageType}-${template._id}`);

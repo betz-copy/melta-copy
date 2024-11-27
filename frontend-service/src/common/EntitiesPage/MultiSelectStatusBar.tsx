@@ -14,6 +14,8 @@ import { IMongoEntityTemplatePopulated } from '../../interfaces/entityTemplates'
 import { filterModelToFilterOfTemplate } from '../../utils/agGrid/agGridToSearchEntitiesOfTemplateRequest';
 import { environment } from '../../globals';
 import { TableButton } from '../TableButton';
+import { useUserStore } from '../../stores/user';
+import { PermissionScope } from '../../interfaces/permissions';
 
 interface MultiSelectStatusBarProps extends IStatusPanelParams {
     entityTemplate: IMongoEntityTemplatePopulated;
@@ -21,7 +23,10 @@ interface MultiSelectStatusBarProps extends IStatusPanelParams {
 }
 
 export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api, entityTemplate, quickFilterText }) => {
+    const currentUser = useUserStore((state) => state.user);
+
     const [openRelationshipDialog, setOpenRelationshipDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
     const [selectedRowCount, setSelectedRowCount] = useState(0);
 
     const updateSelectedRowCount = useCallback(() => {
@@ -45,8 +50,16 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
         {
             onError: (error: AxiosError) => {
                 const errorIdentifier = error.response?.data?.metadata?.errorCode;
-                if (errorIdentifier === 'ENTITY_HAS_RELATIONSHIPS') setOpenRelationshipDialog(true);
-                else toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+
+                if (
+                    errorIdentifier === 'ENTITY_HAS_RELATIONSHIPS' &&
+                    currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write
+                ) {
+                    setOpenRelationshipDialog(true);
+                } else {
+                    toast.error(<ErrorToast axiosError={error} defaultErrorMessage={i18next.t('wizard.entity.failedToDelete')} />);
+                    api.deselectAll();
+                }
             },
             onSuccess: () => {
                 toast.success(i18next.t('wizard.entity.deletedSuccessfully'));
@@ -58,24 +71,40 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
 
     const handleMultipleDelete = (deleteAllRelationships = false) => {
         const { selectAll, toggledNodes } = api.getServerSideSelectionState() as IServerSideSelectionState;
+        const { _id: templateId } = entityTemplate;
 
         if (selectAll) {
             deleteMutation({
-                ids: toggledNodes,
                 selectAll,
+                ids: toggledNodes,
                 deleteAllRelationships,
-                templateId: entityTemplate._id,
-                filter: filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
+                templateId,
+                filter: {
+                    ...{
+                        disabled: {
+                            filterType: 'set',
+                            values: [false],
+                        },
+                    },
+                    ...filterModelToFilterOfTemplate(api.getFilterModel(), entityTemplate),
+                },
                 textSearch: quickFilterText,
             });
         } else {
             const selectedRowsIds = api.getSelectedRows().map((row) => row.properties._id);
-            deleteMutation({ ids: selectedRowsIds, selectAll: false, deleteAllRelationships, templateId: entityTemplate._id });
+            deleteMutation({ selectAll: false, ids: selectedRowsIds, deleteAllRelationships, templateId });
         }
+
+        setOpenDeleteDialog(false);
     };
 
     const handleCloseRelationshipDialog = () => {
         setOpenRelationshipDialog(false);
+        api.deselectAll();
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setOpenDeleteDialog(false);
         api.deselectAll();
     };
 
@@ -91,7 +120,7 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                     iconButtonWithPopoverProps={{
                         popoverText: i18next.t('actions.delete'),
                         iconButtonProps: {
-                            onClick: () => handleMultipleDelete(),
+                            onClick: () => setOpenDeleteDialog(true),
                             style: {
                                 fontSize: '15px',
                                 marginTop: 5,
@@ -116,6 +145,13 @@ export const MultiSelectStatusBar: React.FC<MultiSelectStatusBarProps> = ({ api,
                 title={i18next.t('entityPage.payAttention')}
                 body={i18next.t('entityPage.wouldYouLikeToDeleteTheRelationships')}
                 onYes={handleYesDeleteWithRelationships}
+            />
+
+            <AreYouSureDialog
+                open={openDeleteDialog}
+                handleClose={handleCloseDeleteDialog}
+                onYes={() => handleMultipleDelete()}
+                isLoading={isDeleteLoading}
             />
         </Grid>
     );
