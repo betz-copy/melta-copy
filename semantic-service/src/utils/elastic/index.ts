@@ -1,0 +1,182 @@
+/* eslint-disable camelcase */
+/* eslint-disable no-underscore-dangle */
+import { Client, estypes } from '@elastic/elasticsearch';
+import config from '../../config';
+import { IElasticDoc, ISemanticSearchResult } from '../../express/semantics/interface';
+import logger from '../logger/logsLogger';
+
+const {
+    elastic: {
+        index,
+        url,
+        vectorDims,
+        similarityAlgorithm,
+        knnGroupSize,
+        lexicalFuzziness,
+        rrfWindowConstant,
+        queryMinScore,
+        rrfRankConstant,
+        user,
+        password,
+        rrfWindowFieldName,
+        topHitsByGroup,
+        groupByEntityId,
+        uniqueEntityForAgg,
+    },
+} = config;
+
+interface IGroupByEntityIdAggregate {
+    group_by_unique_prop: estypes.AggregationsTermsAggregateBase<
+        estypes.AggregationsAggregate & {
+            top_hits_by_group: estypes.AggregationsTopHitsAggregate;
+        }
+    >;
+}
+
+class ElasticClient {
+    static client: Client | null;
+
+    private workspaceId: string;
+
+    constructor(workspaceId: string) {
+        this.workspaceId = workspaceId;
+    }
+
+    static async initialize() {
+        logger.info('Initializing ElasticSearch client...');
+
+        try {
+            ElasticClient.client = new Client({ node: url, auth: { username: user, password } });
+
+            logger.info('ElasticSearch client initialized successfully');
+        } catch (error) {
+            logger.error('Error initializing ElasticSearch client:', { error });
+            throw error;
+        }
+    }
+
+    createIndex() {
+        return ElasticClient.client!.indices.create({
+            index: `${index}-${this.workspaceId}`,
+            mappings: {
+                properties: {
+                    embedding: {
+                        type: 'dense_vector',
+                        dims: vectorDims,
+                        index: true,
+                        similarity: similarityAlgorithm,
+                    },
+                    text: { type: 'text' },
+                    title: { type: 'text' },
+                    workspaceId: { type: 'text' },
+                    templateId: { type: 'text' },
+                    entityId: { type: 'text' },
+                    minioFileId: { type: 'text' },
+                    chunkIndex: { type: 'integer' },
+                },
+            },
+        });
+    }
+
+    deleteIndex() {
+        return ElasticClient.client!.indices.delete({ index: `${config.elastic.index}-${this.workspaceId}` });
+    }
+
+    formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
+        if (!response?.aggregations?.group_by_unique_prop?.buckets) return {};
+
+        const buckets = response.aggregations.group_by_unique_prop.buckets as Array<{
+            key: string;
+            top_hits_by_group: estypes.AggregationsTopHitsAggregate;
+        }>;
+
+        return buckets
+            .sort((a, b) => {
+                const maxScoreA = a.top_hits_by_group.hits.max_score || 0;
+                const maxScoreB = b.top_hits_by_group.hits.max_score || 0;
+                return maxScoreB - maxScoreA;
+            })
+            .reduce((acc, { top_hits_by_group }) => {
+                top_hits_by_group.hits.hits.forEach((hit) => {
+                    const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
+
+                    if (!templateId || !minioFileId || !entityId) return;
+
+                    if (!acc[templateId]) acc[templateId] = {};
+                    if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+
+                    acc[templateId][entityId].push(minioFileId);
+                });
+
+                return acc;
+            }, {} as ISemanticSearchResult);
+    }
+
+    async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
+        const filters = templates && templates.length > 0 ? { terms: { templateId: templates } } : {};
+
+        const indexName = `${index}-${this.workspaceId}`;
+        const searchBody = {
+            index: indexName,
+            from: skip,
+            size: limit,
+            query: {
+                bool: {
+                    must: {
+                        multi_match: {
+                            query,
+                            fields: ['text'],
+                            fuzziness: lexicalFuzziness,
+                        },
+                    },
+                    filter: Object.keys(filters).length > 0 ? [filters] : [],
+                },
+            },
+            knn: {
+                field: 'embedding',
+                query_vector: embeddedQuery,
+                k: limit,
+                num_candidates: knnGroupSize,
+            },
+            rank: {
+                rrf: {
+                    [rrfWindowFieldName]: rrfWindowConstant,
+                    rank_constant: rrfRankConstant,
+                },
+            },
+            min_score: queryMinScore,
+            // Group by unique values
+            aggs: {
+                group_by_unique_prop: {
+                    terms: {
+                        field: `${uniqueEntityForAgg}.keyword`,
+                        size: topHitsByGroup, // Control how many of the unique values to return.
+                    },
+                    aggs: {
+                        top_hits_by_group: {
+                            top_hits: {
+                                size: groupByEntityId, // Control how many documents are allowed to return within each group.
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);
+        return this.formatElasticResponse(response);
+    }
+
+    async bulkIndexDocuments(documents: IElasticDoc[]) {
+        const body = documents.flatMap((doc) => [{ index: { _index: `${index}-${this.workspaceId}` } }, doc]);
+        const response = await ElasticClient.client!.bulk({ refresh: true, body });
+        return response?.items;
+    }
+
+    async deleteFiles(minioFileIds: string[]) {
+        const indexName = `${index}-${this.workspaceId}`;
+        return ElasticClient.client!.deleteByQuery({ index: indexName, query: { terms: { minioFileId: minioFileIds } } });
+    }
+}
+
+export default ElasticClient;

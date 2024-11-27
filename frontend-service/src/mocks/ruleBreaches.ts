@@ -1,6 +1,7 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import MockAdapter from 'axios-mock-adapter';
 import { Chance } from 'chance';
+import { StatusCodes } from 'http-status-codes';
 import {
     ActionTypes,
     ICreateRelationshipMetadataPopulated,
@@ -12,7 +13,7 @@ import { IRuleBreachAlertPopulated } from '../interfaces/ruleBreaches/ruleBreach
 import { IRuleBreachRequestPopulated, RuleBreachRequestStatus } from '../interfaces/ruleBreaches/ruleBreachRequest';
 import { generateMongoId, generateUser } from './permissions';
 import { IEntity } from '../interfaces/entities';
-import { IRelationship } from '../interfaces/relationships';
+import { IRelationship, IRelationshipPopulated } from '../interfaces/relationships';
 
 const chance = new Chance();
 
@@ -90,6 +91,12 @@ const tourist2OnFlight: IRelationship = {
     destinationEntityId: flight.properties._id,
 };
 
+const populatedTourist2OnFlight: IRelationshipPopulated = {
+    ...tourist2OnFlight,
+    sourceEntity: tourist2,
+    destinationEntity: flight,
+};
+
 const generateBrokenRules = (options?: { nullables?: boolean; actionType?: ActionTypes }): IRuleBreachPopulated['brokenRules'] => {
     const { nullables = true, actionType } = options ?? {};
     return [
@@ -100,11 +107,11 @@ const generateBrokenRules = (options?: { nullables?: boolean; actionType?: Actio
                     entity: actionType === ActionTypes.CreateEntity ? '$0._id' : flight,
                     causes: [
                         {
-                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist2 } },
+                            instance: { entity: flight, aggregatedRelationship: { relationship: populatedTourist2OnFlight, otherEntity: tourist2 } },
                             properties: [],
                         },
                         {
-                            instance: { entity: flight, aggregatedRelationship: { relationship: tourist2OnFlight, otherEntity: tourist3 } },
+                            instance: { entity: flight, aggregatedRelationship: { relationship: populatedTourist2OnFlight, otherEntity: tourist3 } },
                             properties: [],
                         },
                         ...(nullables
@@ -279,24 +286,24 @@ export const generateRuleBreachAlertOrRequest = () => {
 };
 
 export const mockRuleBreaches = (mock: MockAdapter) => {
-    mock.onPost('/api/rule-breaches/requests').reply(() => [200, generateRuleBreachRequest({ nullable: false })]);
+    mock.onPost('/api/rule-breaches/requests').reply(() => [StatusCodes.OK, generateRuleBreachRequest({ nullable: false })]);
 
     mock.onPost('/api/rule-breaches/alerts/search').reply(() => {
         const numberOfBreaches = chance.integer({ min: 0, max: 20 });
         const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachAlert());
-        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+        return [StatusCodes.OK, { rows: breaches, lastRowIndex: numberOfBreaches }];
     });
 
     mock.onPost('/api/rule-breaches/requests/search').reply(() => {
         const numberOfBreaches = chance.integer({ min: 0, max: 20 });
         const breaches = Array.from({ length: numberOfBreaches }).map(() => generateRuleBreachRequest());
 
-        return [200, { rows: breaches, lastRowIndex: numberOfBreaches }];
+        return [StatusCodes.OK, { rows: breaches, lastRowIndex: numberOfBreaches }];
     });
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/approve/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => [200, generateRuleBreachRequest({ isReviewed: true })]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/deny/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({ isReviewed: true })]);
 
-    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [200, generateRuleBreachRequest({})]);
+    mock.onPost(/\/api\/rule-breaches\/requests\/.*\/cancel/).reply(() => [StatusCodes.OK, generateRuleBreachRequest({})]);
 };

@@ -333,6 +333,7 @@ export const templatesFilterToNeoQuery = (
             parameters: { [templateId]: filterOfTemplateQuery.parameters },
         };
     });
+
     return {
         cypherQuery: templatesFiltersQueries.map(({ cypherQuery }) => `(${cypherQuery})`).join(' OR '),
         parameters: {
@@ -353,34 +354,52 @@ const buildFulltextSearchQuery = (
     indexHandling: string,
     parameters: any,
     calculateOverallCount: boolean,
+    entityIdsToInclude?: string[],
 ) => {
     const query = `*${escapeNeo4jQuerySpecialChars(searchBody.textSearch || '')}*`;
+    const entityIdMatch = entityIdsToInclude?.length
+        ? `
+        UNION
+        MATCH (node)
+        WHERE node._id IN $entityIdsToInclude
+        RETURN node
+    `
+        : '';
 
     if (calculateOverallCount) {
         return {
             cypherQuery: `
-                ${indexHandling}
-                YIELD node, score
-                WHERE ${filterQuery.cypherQuery}
+                CALL() {
+                    ${indexHandling}
+                    YIELD node, score
+                    WHERE ${filterQuery.cypherQuery}
+                    RETURN node
+                    ${entityIdMatch}
+                }
                 RETURN count(node)
             `,
             parameters: {
                 query,
                 ...parameters,
                 ...filterQuery.parameters,
+                ...(entityIdsToInclude?.length && { entityIdsToInclude }),
             },
         };
     }
 
     const sortQueryOfUser = searchBody.sort && searchBody.sort.length > 0 ? sortToNeo4JSort(searchBody.sort) : '';
     const defaultSortQuery = 'node.createdAt DESC';
-    const sortQuery = `ORDER BY ${sortQueryOfUser ? sortQueryOfUser + ', ' : ''}${defaultSortQuery}`;
+    const sortQuery = `ORDER BY ${sortQueryOfUser ? `${sortQueryOfUser}, ` : ''}${defaultSortQuery}`;
 
     return {
         cypherQuery: `
-            ${indexHandling}
-            YIELD node, score
-            WHERE ${filterQuery.cypherQuery}
+            CALL () {
+                ${indexHandling}
+                YIELD node, score
+                WHERE ${filterQuery.cypherQuery}
+                RETURN node
+                ${entityIdMatch}
+            }
             RETURN node
             ${sortQuery}
             SKIP toInteger($skip)
@@ -392,6 +411,7 @@ const buildFulltextSearchQuery = (
             limit: searchBody.limit,
             ...parameters,
             ...filterQuery.parameters,
+            ...(entityIdsToInclude?.length && { entityIdsToInclude }),
         },
     };
 };
@@ -401,6 +421,7 @@ const fulltextSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
     prefixIndexName: string,
+    entityIdsToInclude?: string[],
     calculateOverallCount = false,
 ) => {
     const filterQuery = templatesFilterToNeoQuery(searchBody.templates, entityTemplatesMap);
@@ -414,12 +435,13 @@ const fulltextSearchToNeoQuery = (
         latestIndex,
     };
 
-    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount);
+    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount, entityIdsToInclude);
 };
 
 const fulltextBatchSearchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    entityIdsToInclude?: string[],
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ) => {
@@ -435,20 +457,33 @@ const fulltextBatchSearchToNeoQuery = (
         indexNames: globalSearchIndexes,
     };
 
-    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount);
+    return buildFulltextSearchQuery(searchBody, filterQuery, indexHandling, parameters, calculateOverallCount, entityIdsToInclude);
 };
 
 const searchToNeoQuery = (
     searchBody: ISearchBatchBody,
     entityTemplatesMap: Map<string, IMongoEntityTemplate>,
+    entityIdsToInclude?: string[],
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
     if (globalSearchIndexes.length === 0)
-        return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, config.neo4j.templateSearchIndexPrefix, calculateOverallCount);
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.templateSearchIndexPrefix,
+            entityIdsToInclude,
+            calculateOverallCount,
+        );
     if (globalSearchIndexes.length === 1)
-        return fulltextSearchToNeoQuery(searchBody, entityTemplatesMap, config.neo4j.globalSearchIndexPrefix, calculateOverallCount);
-    return fulltextBatchSearchToNeoQuery(searchBody, entityTemplatesMap, calculateOverallCount, globalSearchIndexes);
+        return fulltextSearchToNeoQuery(
+            searchBody,
+            entityTemplatesMap,
+            config.neo4j.globalSearchIndexPrefix,
+            entityIdsToInclude,
+            calculateOverallCount,
+        );
+    return fulltextBatchSearchToNeoQuery(searchBody, entityTemplatesMap, entityIdsToInclude, calculateOverallCount, globalSearchIndexes);
 };
 
 export const searchWithRelationshipsToNeoQuery = (
@@ -457,13 +492,15 @@ export const searchWithRelationshipsToNeoQuery = (
     calculateOverallCount = false,
     globalSearchIndexes: string[] = [],
 ): CypherQueryWithParameters => {
+    const { entityIdsToInclude, ...restOfSearchBody } = searchBody;
+
     if (calculateOverallCount) {
-        return searchToNeoQuery(searchBody, entityTemplatesMap, true, globalSearchIndexes);
+        return searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, true, globalSearchIndexes);
     }
 
-    const searchNeoQuery = searchToNeoQuery(searchBody, entityTemplatesMap, false, globalSearchIndexes);
+    const searchNeoQuery = searchToNeoQuery(restOfSearchBody, entityTemplatesMap, entityIdsToInclude, false, globalSearchIndexes);
 
-    const showRelationshipsPerTemplate = mapValues(searchBody.templates, ({ showRelationships }) => ({
+    const showRelationshipsPerTemplate = mapValues(restOfSearchBody.templates, ({ showRelationships }) => ({
         shouldShowRelationships: Boolean(showRelationships),
         relationshipTemplateIds: typeof showRelationships === 'boolean' ? [] : showRelationships,
     }));

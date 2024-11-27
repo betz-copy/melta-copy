@@ -13,7 +13,7 @@ const settingIFramesPermissionsSchema = {
     categoryIds: Yup.array().of(Yup.string()).min(1, i18next.t('validation.oneCategory')).required(i18next.t('validation.required')),
 };
 
-const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors, handleChange }) => {
+const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>> = ({ values, touched, errors }) => {
     const queryClient = useQueryClient();
     const categories = queryClient.getQueryData<ICategoryMap>('getCategories')!;
     const currentUser = useUserStore((state) => state.user);
@@ -35,10 +35,11 @@ const SettingIFramesPermissions: React.FC<StepComponentProps<IFrameWizardValues>
     useEffect(() => {
         // eslint-disable-next-line no-param-reassign
         values.categoryIds = selectedCategories;
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedCategories]);
 
     return (
-        <Card variant="outlined" sx={{ bgcolor: 'white', width: '27%' }}>
+        <Card variant="outlined" sx={{ width: '27%' }}>
             <CardContent>
                 <Typography style={{ fontWeight: 'bold', cursor: 'default' }}>{i18next.t('wizard.iFrame.selectCategories')}</Typography>
                 <FormGroup>

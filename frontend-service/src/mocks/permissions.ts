@@ -2,6 +2,7 @@
 import { Chance } from 'chance';
 import faker from '@faker-js/faker';
 import MockAdapter from 'axios-mock-adapter';
+import { StatusCodes } from 'http-status-codes';
 import { categories } from './templates/categories';
 import { IUser } from '../interfaces/users';
 
@@ -50,23 +51,23 @@ const generatePermissionsOfUser = () => ({
 });
 
 const mockPermissions = (mock: MockAdapter) => {
-    mock.onGet(/\/api\/users\/search.*/).reply(() => [200, Array.from({ length: 10 }).map(generateUser)]);
-    mock.onGet(/\/api\/users\/all.*/).reply(() => [200, Array.from({ length: 200 }).map(generateUser)]);
+    mock.onGet(/\/api\/users\/search.*/).reply(() => [StatusCodes.OK, Array.from({ length: 10 }).map(generateUser)]);
+    mock.onGet(/\/api\/users\/all.*/).reply(() => [StatusCodes.OK, Array.from({ length: 200 }).map(generateUser)]);
 
-    mock.onGet(/\/api\/users\.*/).reply(() => [200, generateUser]);
+    mock.onGet(/\/api\/users\.*/).reply(() => [StatusCodes.OK, generateUser]);
 
-    mock.onGet('/api/permissions/my').reply(() => [200, generatePermissionsOfUser()]);
+    mock.onGet('/api/permissions/my').reply(() => [StatusCodes.OK, generatePermissionsOfUser()]);
 
     mock.onPost('/api/permissions/bulk').reply(({ data: permissionsToCreate }) => {
         const createdPermissions = JSON.parse(permissionsToCreate).map((permissionToCreate) => ({ ...permissionToCreate, _id: generateMongoId() }));
-        return [200, createdPermissions];
+        return [StatusCodes.OK, createdPermissions];
     });
 
     mock.onDelete(/\/api\/permissions.*/).reply(
-        () => [200, {}], // backend should return deleted permission, but not used anyway in UI
+        () => [StatusCodes.OK, {}], // backend should return deleted permission, but not used anyway in UI
     );
 
-    mock.onGet('/api/permissions').reply(() => [200, Array.from({ length: 200 }).map(() => generatePermissionsOfUser())]);
+    mock.onGet('/api/permissions').reply(() => [StatusCodes.OK, Array.from({ length: 200 }).map(() => generatePermissionsOfUser())]);
 };
 
 export { mockPermissions, generateUser };

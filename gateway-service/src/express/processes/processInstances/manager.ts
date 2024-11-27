@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { StatusCodes } from 'http-status-codes';
 import config from '../../../config';
 import { InstancesService } from '../../../externalServices/instanceService';
 import {
@@ -36,7 +37,6 @@ import { filteredMap } from '../../../utils';
 import { Authorizer } from '../../../utils/authorizer';
 import DefaultManagerProxy from '../../../utils/express/manager';
 import { removeTmpFile } from '../../../utils/fs';
-import logger from '../../../utils/logger/logsLogger';
 import { IProcessReviewerUpdateMailNotificationMetadataPopulated } from '../../../utils/mailNotifications/interfaces';
 import { RabbitManager } from '../../../utils/rabbit';
 import { ServiceError } from '../../error';
@@ -83,7 +83,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const promises = entityProperties.map(async ([key]) => {
             const entity = await this.instancesService.getEntityInstanceById(properties[key]).catch((error) => {
-                if (axios.isAxiosError(error) && error.response?.status === 404) return properties[key];
+                if (axios.isAxiosError(error) && error.response?.status === StatusCodes.NOT_FOUND) return properties[key];
                 throw error;
             });
 
@@ -134,7 +134,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
             const process = await this.service.getProcessInstanceById(id, userId);
             return this.getPopulatedProcess(process, userId);
         } catch (error: any) {
-            if (error instanceof NotFoundError && error.code === 404) return null;
+            if (error instanceof NotFoundError && error.code === StatusCodes.NOT_FOUND) return null;
             throw error;
         }
     }
@@ -175,7 +175,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const process = await this.service.createProcessInstance({ ...processData, details: processDetails }).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                logger.error('failed to delete process unused files');
+                throw new ServiceError(undefined, `failed to delete process unused files`, {
+                    error,
+                });
             });
             throw error;
         });
@@ -198,7 +200,9 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const idsToDelete = Array.from(oldFileIds).filter((id) => !newFileIds.has(id));
         if (idsToDelete.length)
-            await this.storageService.deleteFiles(idsToDelete).catch(() => logger.error(`failed to delete unused files: ${idsToDelete}`));
+            await this.storageService.deleteFiles(idsToDelete).catch((error) => {
+                throw new ServiceError(undefined, `failed to delete unused files: ${idsToDelete}`, { error });
+            });
     }
 
     async updateProcessInstance(processId: string, processData: IProcessInstance, files: Express.Multer.File[], userId: string) {
@@ -235,7 +239,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
 
         const updatedProcess = await this.service.updateProcessInstance(processId, updatedProcessInstance).catch(async (error) => {
             await this.storageService.deleteFiles(Object.values(filesToUpload).flat(1) as string[]).catch(() => {
-                logger.error('failed to delete process unused files');
+                throw new ServiceError(undefined, `failed to delete process unused files`, { error });
             });
             throw error;
         });
@@ -300,8 +304,7 @@ export default class ProcessesInstancesManager extends DefaultManagerProxy<Proce
         const populatedProcess = await this.getPopulatedProcess(process, userId);
 
         await this.deleteAllProcessFiles(process).catch((error) => {
-            logger.error(`failed to delete process files`, { error });
-            throw new ServiceError(500, `failed to delete process instance, failed when deleting files: ${error}`);
+            throw new ServiceError(undefined, `failed to delete process files`, { error });
         });
         await this.service.deleteProcessInstance(processId);
 

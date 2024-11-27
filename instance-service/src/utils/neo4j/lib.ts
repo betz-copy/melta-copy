@@ -23,7 +23,11 @@ const normalizeFields = (properties: Record<string, any>): Record<string, any> =
     const props = {};
 
     Object.entries(properties).forEach(([key, value]) => {
-        if (key.endsWith(config.neo4j.stringPropertySuffix)) {
+        if (
+            key.endsWith(config.neo4j.stringPropertySuffix) ||
+            key.endsWith(config.neo4j.booleanPropertySuffix) ||
+            key.endsWith(config.neo4j.filePropertySuffix)
+        ) {
             return;
         }
 
@@ -49,10 +53,10 @@ type ResponseType = 'singleResponse' | 'singleResponseNotNullable' | 'multipleRe
 type Response<ResType extends ResponseType, Data> = ResType extends 'singleResponse'
     ? Data | null
     : ResType extends 'singleResponseNotNullable'
-    ? Data
-    : ResType extends 'multipleResponses'
-    ? Data[]
-    : never;
+      ? Data
+      : ResType extends 'multipleResponses'
+        ? Data[]
+        : never;
 
 const nodeToEntity = (node: Node): IEntity => {
     const entity = {
@@ -79,10 +83,11 @@ export const normalizeResponseCount = (result: QueryResult): number => {
     return result.records[0].get(0);
 };
 
-export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number }[] => {
+export const normalizeResponseTemplatesCount = (result: QueryResult): { templateId: string; count: number; entitiesWithFiles: string[] }[] => {
     return result.records.map((record) => ({
         templateId: record.get('templateId'),
         count: +record.get('count'),
+        entitiesWithFiles: (record.has('entitiesWithFiles') && record.get('entitiesWithFiles')) ?? undefined,
     }));
 };
 

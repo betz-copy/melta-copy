@@ -96,7 +96,10 @@ export const LinkMiddlePoint3D = (start: number, end: number) => {
 };
 
 export const scale3DNode = (node: NodeObject) => {
-    if (!(node.__threeObj instanceof THREE.Mesh<THREE.CircleGeometry>)) return;
+    if (!(node.__threeObj instanceof THREE.Mesh)) return;
+
+    const { geometry } = node.__threeObj;
+    if (!(geometry instanceof THREE.CircleGeometry)) return;
 
     const scale = getNodeRadius(node) / node.__threeObj.geometry.parameters.radius;
     node.__threeObj.scale.set(scale, scale, scale);

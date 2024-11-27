@@ -72,6 +72,11 @@ const config = {
         fileIdLength: env.get('STORAGE_SERVICE_FILE_ID_LENGTH').default(32).asIntPositive(),
         requestTimeout: env.get('STORAGE_SERVICE_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
     },
+    semanticSearchService: {
+        requestTimeout: env.get('SEMANTIC_SEARCH_SERVICE_REQUEST_TIMEOUT').default(10000).asIntPositive(),
+        url: env.get('SEMANTIC_SEARCH_SERVICE').required().asString(),
+        searchRoute: env.get('SEMANTIC_SEARCH_SERVICE_SEARCH_ROUTE').default('/api/semantic/search').asString(),
+    },
     instanceService: {
         url: env.get('INSTANCE_SERVICE_URL').required().asString(),
         baseRoute: env.get('INSTANCE_SERVICE_BASE_ROUTE').default('/api/instances').asString(),
@@ -159,6 +164,8 @@ const config = {
         notificationQueue: env.get('NOTIFICATION_QUEUE_NAME').default('notifications-queue').asString(),
         mailNotificationQueue: env.get('MAIL_NOTIFICATION_QUEUE_NAME').default('mail-notifications-queue').asString(),
         deleteUnusedFilesQueue: env.get('DELETE_UNUSED_FILES_QUEUE_NAME').default('delete-unused-files-queue').asString(),
+        insertDocsSemanticQueue: env.get('INSERT_DOCS_SEMATIC_QUEUE').default('insert_documents_queue').asString(),
+        deleteDocsSemanticQueue: env.get('DELETE_DOCS_SEMATIC_QUEUE').default('delete_documents_queue').asString(),
     },
     mailerService: {
         mailUser: env.get('NOTIFICATIONS_MAIL_FROM').default('hope39@ethereal.email').asString(),
@@ -185,6 +192,10 @@ const config = {
             maxFiles: env.get('ROTATE_FILE_LOG_MAX_FILES').default('14d').asString(),
             dirname: env.get('ROTATE_FILE_LOG_DIRNAME').default('./logs').asString(),
         },
+    },
+    excel: {
+        multipleFilesName: env.get('MULTIPLE_FILES_NAME').default('attachmentZip').asString(),
+        columnWidth: env.get('COLUMN_WIDTH').default(20).asIntPositive(),
     },
 };
 
