@@ -8,6 +8,7 @@ import {
     getRuleBreachRequestByIdRequestSchema,
     getRuleBreachRequestsByRuleIdRequestSchema,
     searchRuleBreachRequestsRequestSchema,
+    updateManyRuleBreachRequestsStatusesByRelatedEntityIdRequestSchema,
     updateRuleBreachRequestActionMetadataRequestSchema,
     updateRuleBreachRequestBrokenRulesRequestSchema,
     updateRuleBreachRequestStatusRequestSchema,
@@ -22,6 +23,12 @@ RuleBreachRequestsRouter.post('/search', ValidateRequest(searchRuleBreachRequest
 RuleBreachRequestsRouter.post('/get-many', ValidateRequest(getManyRuleBreachesByIds), controller.getManyRuleBreachRequests);
 
 RuleBreachRequestsRouter.post('/', ValidateRequest(createRuleBreachRequestRequestSchema), controller.createRuleBreachRequest);
+
+RuleBreachRequestsRouter.put(
+    '/many/status/:entityId',
+    ValidateRequest(updateManyRuleBreachRequestsStatusesByRelatedEntityIdRequestSchema),
+    controller.updateManyRuleBreachRequestsStatusesByRelatedEntityId,
+);
 
 RuleBreachRequestsRouter.patch(
     '/:ruleBreachRequestId/status',

@@ -22,6 +22,7 @@ import {
     relationshipTemplateObjectToRelationshipTemplateForm,
 } from '../../../services/templates/relationshipTemplatesService';
 import { filterRelationships } from '../../../utils/relationshipTemplateManagement';
+import { getRelationshipInstancesCountByTemplateIdRequest } from '../../../services/entitiesService';
 import { populateRelationshipTemplate } from '../../../utils/templates';
 import { Box } from './Box';
 import { ViewingCard } from './Card';
@@ -53,7 +54,21 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
     setDeleteRelationshipTemplateDialogState,
 }) => {
     const [isHoverOnCard, setIsHoverOnCard] = useState(false);
+    const [isDeleteButtonDisabled, setIsDeleteButtonDisabled] = useState(false);
+
     const { isProperty } = relationshipTemplate;
+
+    const checkRelationshipTemplateHasRelationships = async () => {
+        const relationshipsCountByTemplates = await getRelationshipInstancesCountByTemplateIdRequest(relationshipTemplate._id);
+        setIsDeleteButtonDisabled(relationshipsCountByTemplates > 0);
+    };
+
+    const handleHover = (isHover: boolean) => {
+        setIsHoverOnCard(isHover);
+        if (isHover) {
+            checkRelationshipTemplateHasRelationships();
+        }
+    };
 
     return (
         <ViewingCard
@@ -92,16 +107,17 @@ const RelationshipTemplateCard: React.FC<RelationshipTemplateCardProps> = ({
                                     });
                                 }}
                                 disabledProps={{
-                                    isDisabled: false,
-                                    canEdit: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
-                                    tooltipTitle: i18next.t('systemManagement.disabledEntityTemplate'),
+                                    isDisabled: isDeleteButtonDisabled,
+                                    tooltipTitle: isDeleteButtonDisabled ? i18next.t('systemManagement.cannotDeleteWithRelationship') : '',
+                                    isEditDisabled: relationshipTemplate.sourceEntity.disabled || relationshipTemplate.destinationEntity.disabled,
+                                    editTooltipTitle: i18next.t('systemManagement.cannotEditEntityDisabled'),
                                 }}
                             />
                         )}
                     </Grid>
                 </Grid>
             }
-            onHover={(isHover: boolean) => setIsHoverOnCard(isHover)}
+            onHover={handleHover}
         />
     );
 };
@@ -187,7 +203,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                 return relation.destinationEntity._id === entityTemplate._id;
             });
 
-            relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            if (relatedRelations.length > 0) {
+                relationsGroupedByEntities.push({ entityTemplate, relationships: relatedRelations });
+            }
         });
 
         return relationsGroupedByEntities;
@@ -286,7 +304,9 @@ const RelationshipTemplatesRow: React.FC = () => {
                                 sourceEntityTemplatesToShow,
                                 searchText,
                             }),
-                        ).splice(pageParam, infiniteScrollPageCount);
+                        )
+                            .filter((group) => group.relationships.length > 0)
+                            .splice(pageParam, infiniteScrollPageCount);
                     }}
                     onQueryError={(error) => {
                         // eslint-disable-next-line no-console

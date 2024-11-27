@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 /* eslint-disable no-underscore-dangle */
 import { Client, estypes } from '@elastic/elasticsearch';
 import config from '../../config';
@@ -18,11 +19,14 @@ const {
         user,
         password,
         rrfWindowFieldName,
+        topHitsByGroup,
+        groupByEntityId,
+        uniqueEntityForAgg,
     },
 } = config;
 
 interface IGroupByEntityIdAggregate {
-    group_by_entity_id: estypes.AggregationsTermsAggregateBase<
+    group_by_unique_prop: estypes.AggregationsTermsAggregateBase<
         estypes.AggregationsAggregate & {
             top_hits_by_group: estypes.AggregationsTopHitsAggregate;
         }
@@ -79,18 +83,33 @@ class ElasticClient {
     }
 
     formatElasticResponse(response: estypes.SearchResponse<IElasticDoc, IGroupByEntityIdAggregate>): ISemanticSearchResult {
-        return response.hits.hits.reduce((acc, hit) => {
-            const { templateId, entityId, minioFileId } = hit?._source ?? {};
+        if (!response?.aggregations?.group_by_unique_prop?.buckets) return {};
 
-            if (!templateId || !entityId || !minioFileId) return acc;
+        const buckets = response.aggregations.group_by_unique_prop.buckets as Array<{
+            key: string;
+            top_hits_by_group: estypes.AggregationsTopHitsAggregate;
+        }>;
 
-            if (!acc[templateId]) acc[templateId] = {};
-            if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+        return buckets
+            .sort((a, b) => {
+                const maxScoreA = a.top_hits_by_group.hits.max_score || 0;
+                const maxScoreB = b.top_hits_by_group.hits.max_score || 0;
+                return maxScoreB - maxScoreA;
+            })
+            .reduce((acc, { top_hits_by_group }) => {
+                top_hits_by_group.hits.hits.forEach((hit) => {
+                    const { templateId, minioFileId, entityId } = hit?._source ?? { templateId: '', minioFileId: '', entityId: '' };
 
-            acc[templateId][entityId].push(minioFileId);
+                    if (!templateId || !minioFileId || !entityId) return;
 
-            return acc;
-        }, {} as ISemanticSearchResult);
+                    if (!acc[templateId]) acc[templateId] = {};
+                    if (!acc[templateId][entityId]) acc[templateId][entityId] = [];
+
+                    acc[templateId][entityId].push(minioFileId);
+                });
+
+                return acc;
+            }, {} as ISemanticSearchResult);
     }
 
     async hybridSearch(query: string, embeddedQuery: number[], limit: number, skip: number, templates: string[]) {
@@ -121,11 +140,27 @@ class ElasticClient {
             },
             rank: {
                 rrf: {
-                    [rrfWindowFieldName]: rrfWindowConstant, // When merge to prod change to 'window_size'
+                    [rrfWindowFieldName]: rrfWindowConstant,
                     rank_constant: rrfRankConstant,
                 },
             },
             min_score: queryMinScore,
+            // Group by unique values
+            aggs: {
+                group_by_unique_prop: {
+                    terms: {
+                        field: `${uniqueEntityForAgg}.keyword`,
+                        size: topHitsByGroup, // Control how many of the unique values to return.
+                    },
+                    aggs: {
+                        top_hits_by_group: {
+                            top_hits: {
+                                size: groupByEntityId, // Control how many documents are allowed to return within each group.
+                            },
+                        },
+                    },
+                },
+            },
         };
 
         const response = await ElasticClient.client!.search<IElasticDoc, IGroupByEntityIdAggregate>(searchBody);

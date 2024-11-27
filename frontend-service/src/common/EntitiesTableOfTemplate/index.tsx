@@ -131,7 +131,7 @@ export const getRowModelProps = <Data extends any = IEntity>(
 const LoadingCellRenderer = () => <CircularProgress size={20} sx={{ marginLeft: 1 }} />;
 
 export type EntitiesTableOfTemplateProps<Data> = {
-    template: IMongoEntityTemplatePopulated & { entityIdsToInclude?: string[] };
+    template: IMongoEntityTemplatePopulated & { entitiesWithFiles?: string[] };
     entities?: Data[];
     onRowSelected?: (data: Data) => void;
     showNavigateToRowButton: boolean;
@@ -361,7 +361,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
             if (params.api.getVerticalPixelRange().top >= 0 && rowModelType === 'infinite') {
                 sessionStorage.setItem(`scrollPosition-${template._id}`, JSON.stringify(params.api.getVerticalPixelRange().top));
             }
-        }, 300);
+        }, 500);
 
         const gridContent = (
             <Box
@@ -376,7 +376,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                     ref={gridRef}
                     getRowStyle={(params): RowStyle | undefined => {
                         if (params.data && getEntityPropertiesData(params.data).disabled) {
-                            return { background: '#FAFAFA', color: 'rgb(159 147 147 / 40%)' };
+                            return { background: darkMode ? '' : '#FAFAFA', color: darkMode ? '#7f7f7f' : 'rgb(159 147 147 / 40%)' };
                         }
                         return undefined;
                     }}
@@ -473,7 +473,7 @@ const EntitiesTableOfTemplate = forwardRef<EntitiesTableOfTemplateRef<unknown>, 
                                             });
                                         }
                                     }
-                                }, 150);
+                                }, 300);
                             }
                         }
                     }}
