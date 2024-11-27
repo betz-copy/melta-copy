@@ -104,7 +104,14 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
     );
 
     const { isLoading: isDeleteLoading, mutateAsync: deleteMutation } = useMutation(
-        () => deleteEntityRequest({ ids: [entity.properties._id], selectAll: false, templateId: currentEntityTemplate?._id as string }),
+        () =>
+            deleteEntityRequest({
+                ids: [entity.properties._id],
+                selectAll: false,
+                templateId: currentEntityTemplate?._id as string,
+                deleteAllRelationships:
+                    expandedEntity.connections.length > 0 && currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write,
+            }),
         {
             onError: (error: AxiosError) => {
                 closeDeleteDialog();
@@ -306,6 +313,11 @@ const EntityDetails: React.FC<{ entityTemplate: IMongoEntityTemplatePopulated; e
                 <AreYouSureDialog
                     open={openDeleteDialog}
                     handleClose={closeDeleteDialog}
+                    body={
+                        expandedEntity.connections.length > 0 &&
+                        currentUser.currentWorkspacePermissions.admin?.scope === PermissionScope.write &&
+                        i18next.t('entityPage.wouldYouLikeToDeleteTheRelationships')
+                    }
                     onYes={() => deleteMutation()}
                     isLoading={isDeleteLoading}
                 />
