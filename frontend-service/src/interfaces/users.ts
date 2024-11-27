@@ -26,7 +26,7 @@ export interface IUserSearchBody {
     limit: number;
     step?: number;
     search?: string;
-    filterModel: AdvancedFilterModel | FilterModel | null;
+    filterModel?: AdvancedFilterModel | FilterModel | null;
     sortModel?: SortModelItem[];
 }
 
