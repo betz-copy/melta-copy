@@ -10,6 +10,8 @@ const {
 
 export class StorageService extends DefaultExternalServiceApi {
     constructor(bucketName: string) {
+        console.log({ bucketName });
+
         super(bucketName, { baseURL: url });
     }
 
@@ -40,6 +42,17 @@ export class StorageService extends DefaultExternalServiceApi {
         });
 
         return data.map(({ path }) => path);
+    }
+
+    async downloadProfileFile(path: string) {
+        console.log('hello', { path });
+
+        const { data } = await this.api.get<ArrayBuffer>(`${downloadFileRoute}/user-profile/${encodeURIComponent(path)}`, {
+            responseType: 'arraybuffer',
+            ...docxHeaders,
+        });
+
+        return data;
     }
 
     async downloadFile(path: string) {

@@ -1,11 +1,15 @@
 import { Avatar, Box, Grid, IconButton, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import i18next from 'i18next';
 import React, { useEffect, useState } from 'react';
+import fs from 'fs';
+import path from 'path';
 import fileDetails from '../../interfaces/fileDetails';
 import { IUser } from '../../interfaces/users';
 import { getFileName } from '../../utils/getFileName';
 import FileInput from './ImageFileInput';
 import { environment } from '../../globals';
+import { UserProfile } from '../permissionsOfUserDialog/myAccount/userProfile';
+import { getNameInitials } from '../UserAvatar';
 
 type InputSelectType = 'chooseFile' | 'chooseAvatar' | 'kartoffelProfile';
 
@@ -20,10 +24,16 @@ export interface UserProfilePickerProps {
 const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick, onDelete, defaultInputType, kartoffelProfile, user }) => {
     const [inputType, setInputType] = useState(defaultInputType);
     const [fileInputValue, setFileInputValue] = useState<fileDetails | undefined>();
-    const [iconPickerValue, setIconPickerValue] = useState<string | undefined>();
-    const [image, setImage] = useState<{ name: string } | undefined>(undefined);
+    const [image, setImage] = useState<{ name: string }>();
     const [selectedIcon, setSelectedIcon] = useState<string | undefined>(user.preferences.profilePath ?? undefined);
-    const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `${environment.avatarIconPath}${index}.png`);
+    // const iconPaths = Array.from({ length: environment.profileIconsCount }, (_, index) => `${environment.avatarIconPath}.png`);
+
+    const icons = import.meta.glob('../../../public/icons/profileAvatar/*');
+
+    const fileNames = Object.keys(icons).map((filePath) => {
+        const avatarName = filePath.split('/').pop();
+        return `${environment.avatarIconPath}${avatarName}`;
+    });
 
     const handleToggleChange = (_event: React.MouseEvent<HTMLElement>, selected: InputSelectType | null) => {
         if (!selected) return;
@@ -32,7 +42,6 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
     };
 
     const handleAvatarClick = (iconPath?: string) => {
-        setIconPickerValue(iconPath);
         setSelectedIcon(iconPath ?? undefined);
         onPick(iconPath);
     };
@@ -61,7 +70,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                 <Grid item>
                     <Box style={{ padding: '20px', border: '1px solid #ccc', borderRadius: '8px' }}>
                         <Grid container>
-                            {iconPaths.map((iconPath, index) => (
+                            {fileNames.map((iconPath, index) => (
                                 // eslint-disable-next-line react/no-array-index-key
                                 <Grid item key={index} padding={2}>
                                     <Avatar
@@ -78,30 +87,27 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                                     />
                                 </Grid>
                             ))}
-                            <Grid item padding={2}>
+                            <Grid item padding={2} onClick={() => handleAvatarClick()}>
                                 <Avatar
-                                    src="/icons/profileAvatar/none.png"
+                                    // src="/icons/profileAvatar/none.png"
                                     style={{
                                         width: 50,
                                         height: 50,
                                         cursor: 'pointer',
                                         boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
                                         border: !selectedIcon ? '1px solid green' : '',
+                                        backgroundColor: '#fcfeff',
+                                        color: '#1E2775',
+                                        overflow: 'hidden',
+                                        maxWidth: '100%',
+                                        font: `${Math.round(25)}px Rubik`,
+                                        fontSize: Math.round(25),
+                                        fontWeight: 500,
                                     }}
                                     onClick={() => handleAvatarClick()}
-                                />
-                                {/* <DoNotDisturbAltIcon
-                                    style={{
-                                        width: 50,
-                                        height: 50,
-                                        cursor: 'pointer',
-                                        boxShadow: !selectedIcon ? '0px 4px 15px rgba(0, 0, 0, 1.5)' : '0px 4px 10px rgba(0, 0, 0, 0.5)',
-                                        border: !selectedIcon ? '1px solid green' : '',
-                                    }}
-                                    onClick={() => {
-                                        handleAvatarClick(undefined);
-                                    }}
-                                /> */}
+                                >
+                                    {getNameInitials(user)}
+                                </Avatar>
                             </Grid>
                         </Grid>
                     </Box>
@@ -124,7 +130,7 @@ const UserProfilePicker: React.FC<UserProfilePickerProps> = ({ imageName, onPick
                         }}
                         file={image}
                         inputText={i18next.t('user.addFile')}
-                        acceptedFilesTypes={{ 'image/png': ['.svg', '.png', '.jpeg'] }}
+                        acceptedFilesTypes={{ 'image/png': ['.png', '.jpg'] }}
                         disableCamera
                         profileImageFile
                     />

@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import Avatar from '@mui/material/Avatar';
 import { IUser } from '../interfaces/users';
 import { useDarkModeStore } from '../stores/darkMode';
-import { apiUrlToImageSource } from '../services/storageService';
+import { apiUrlToImageSource, apiUrlToProfileImageSource } from '../services/storageService';
 import { environment } from '../globals';
 import { isProfileFileType } from '../utils/profileType';
+import { useQuery } from 'react-query';
 
 interface UserAvatarProps {
     user: IUser;
@@ -13,7 +14,7 @@ interface UserAvatarProps {
     defaultProfile?: boolean;
 }
 
-const getNameInitials = (user: IUser): string => {
+export const getNameInitials = (user: IUser): string => {
     const names = user.fullName?.split(' ') ?? [];
 
     if (names.length < 3) return names.map((name) => name.charAt(0)).join('');
@@ -26,22 +27,25 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
 
     // eslint-disable-next-line no-nested-ternary
     const fontColor = !bgColor ? '#1E2775' : darkMode ? 'black' : 'white';
-    const [profile, setProfile] = useState<string>();
 
-    useEffect(() => {
-        if (!defaultProfile) {
-            const getUserProfile = async () => {
-                if (!isProfileFileType(user.preferences.profilePath)) {
-                    setProfile(user.preferences.profilePath);
-                } else {
-                    const icon = new Image();
-                    icon.src = await apiUrlToImageSource(`/api${environment.api.storage}/${user.preferences.profilePath}`, 'users-global-bucket');
-                    setProfile(icon.src);
-                }
-            };
-            getUserProfile();
-        }
-    }, [defaultProfile, user.preferences.profilePath]);
+    const { data: profile, isError } = useQuery(
+        ['userProfile', user.preferences.profilePath],
+        async () => {
+            if (!isProfileFileType(user.preferences.profilePath)) {
+                return user.preferences.profilePath;
+            }
+            return apiUrlToProfileImageSource(`/api${environment.api.storage}/user-profile/${user.preferences.profilePath}`);
+        },
+        {
+            enabled: !defaultProfile,
+            retry: false,
+            onError: (error) => {
+                console.error('Failed to fetch profile image:', error);
+            },
+        },
+    );
+
+    console.log({ profile });
 
     return (
         <Avatar
@@ -59,7 +63,7 @@ const UserAvatar: React.FC<UserAvatarProps> = ({ user, size = 48, bgColor, defau
                 border: '3px solid #FF006B',
             }}
         >
-            {profile ? (
+            {profile && !isError ? (
                 <div
                     style={{
                         backgroundImage: `url(${profile})`,

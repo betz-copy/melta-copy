@@ -10,5 +10,14 @@ export const apiUrlToImageSource = async (url: ApiUrl, workspaceId?: string) => 
         responseType: 'blob',
         ...(workspaceId ? { headers: { [environment.workspaceIdHeaderName]: workspaceId } } : {}),
     });
+
+    return URL.createObjectURL(data);
+};
+
+export const apiUrlToProfileImageSource = async (url: ApiUrl) => {
+    const { data } = await axiosInstance.get(`${url}`, {
+        baseURL: '',
+        responseType: 'blob',
+    });
     return URL.createObjectURL(data);
 };

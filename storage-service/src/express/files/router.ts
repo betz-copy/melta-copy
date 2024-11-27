@@ -13,6 +13,8 @@ filesRouter.get('/zip/:path', ValidateRequest(defaultSchema), filesController.do
 
 filesRouter.get('/', filesController.listFiles);
 filesRouter.get('/:path', ValidateRequest(defaultSchema), filesController.downloadFile);
+filesRouter.get('/user-profile/:path', ValidateRequest(defaultSchema), filesController.downloadProfileFile);
+
 filesRouter.get('/:path/stats', ValidateRequest(defaultSchema), filesController.fileStat);
 
 filesRouter.post('/delete-bulk', ValidateRequest(bulkFilesRequestSchema), filesController.deleteFiles);

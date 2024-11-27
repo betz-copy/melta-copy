@@ -23,7 +23,7 @@ const UserProfile: React.FC<{
                     onClick={() => {
                         setEditProfile(!editProfile);
                     }}
-                    sx={{ color: darkMode ? 'white' : 'black', paddingTop: '12px', left: editProfile ? 0 : 5 }}
+                    sx={{ color: darkMode ? 'white' : 'black', marginTop: '12px', left: editProfile ? 0 : 5 }}
                 >
                     {i18next.t(`user.${editProfile ? 'close' : 'edit'}`)}
                 </Button>
@@ -43,7 +43,7 @@ const UserProfile: React.FC<{
                             setProfilePreference(updatedPreferences);
                             setEditProfile(!editProfile);
                         }}
-                        sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', paddingTop: '13px' }}
+                        sx={{ justifyContent: 'center', color: darkMode ? 'white' : 'black', marginTop: '13px' }}
                     >
                         {i18next.t('user.cancel')}
                     </Button>
